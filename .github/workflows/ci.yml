@@ -82,3 +82,22 @@ jobs:
         run: cargo build -p ocas-c
       - name: Build Python bindings
         run: cargo build -p ocas-py
+      - name: Compile and run C example
+        run: |
+          gcc ocas-c/examples/basic.c -I ocas-c/include -L target/debug -locas_c -o /tmp/ocas_basic
+          LD_LIBRARY_PATH=target/debug /tmp/ocas_basic
+
+  miri:
+    name: Miri memory safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri
+      - uses: Swatinem/rust-cache@v2
+      - name: Run Miri on ocas-core
+        run: |
+          cargo +nightly miri test -p ocas-core
+        env:
+          MIRIFLAGS: "-Zmiri-disable-isolation -Zmiri-ignore-leaks"
