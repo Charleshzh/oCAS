@@ -42,7 +42,14 @@ impl Arena {
     }
 
     /// Allocate a value in the arena and return a reference tied to `self`.
-    pub fn alloc<'a, T>(&'a self, value: T) -> &'a mut T {
+    ///
+    /// # Safety
+    ///
+    /// The returned reference is unique because `alloc_raw` advances the arena
+    /// offset for each allocation. This relies on interior mutability via
+    /// `RefCell`, so the `mut_from_ref` lint is intentionally allowed.
+    #[allow(clippy::mut_from_ref)]
+    pub fn alloc<T>(&self, value: T) -> &mut T {
         let layout = Layout::new::<T>();
         let ptr = self.alloc_raw(layout);
 
@@ -58,10 +65,10 @@ impl Arena {
         let mut chunks = self.chunks.borrow_mut();
 
         // Try to allocate from the current chunk.
-        if let Some(chunk) = chunks.last_mut() {
-            if let Some(ptr) = chunk.try_alloc(layout) {
-                return ptr;
-            }
+        if let Some(chunk) = chunks.last_mut()
+            && let Some(ptr) = chunk.try_alloc(layout)
+        {
+            return ptr;
         }
 
         // Need a new chunk. Use at least the requested size.
