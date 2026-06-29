@@ -52,11 +52,9 @@ impl fmt::Display for OcasError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OcasError::ParseError { message, span } => match span {
-                Some((start, end)) => write!(
-                    f,
-                    "parse error at bytes {}..{}: {}",
-                    start, end, message
-                ),
+                Some((start, end)) => {
+                    write!(f, "parse error at bytes {}..{}: {}", start, end, message)
+                }
                 None => write!(f, "parse error: {}", message),
             },
             OcasError::DomainError { expected, found } => {

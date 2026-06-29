@@ -96,8 +96,8 @@ struct Chunk {
 
 impl Chunk {
     fn new(size: usize) -> Self {
-        let layout = Layout::from_size_align(size, mem::align_of::<usize>())
-            .expect("invalid chunk layout");
+        let layout =
+            Layout::from_size_align(size, mem::align_of::<usize>()).expect("invalid chunk layout");
         // SAFETY: layout is non-zero and properly aligned.
         let memory = unsafe { NonNull::new_unchecked(alloc::alloc(layout)) };
         Self {
@@ -139,6 +139,7 @@ fn align_up(offset: usize, align: usize) -> usize {
 
 /// An owned expression that keeps its arena alive.
 pub struct OwnedExpr<T> {
+    #[allow(dead_code)]
     arena: Box<Arena>,
     root: *mut T,
     _marker: PhantomData<T>,
