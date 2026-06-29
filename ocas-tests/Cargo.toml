@@ -22,6 +22,14 @@ ocas-atom = { path = "../ocas-atom" }
 proptest = { workspace = true }
 criterion = { workspace = true }
 
+[features]
+default = []
+gmp = ["ocas-core/gmp"]
+
 [[bench]]
-name = "polynomial"
+name = "arena"
+harness = false
+
+[[bench]]
+name = "gmp_integer"
 harness = false
