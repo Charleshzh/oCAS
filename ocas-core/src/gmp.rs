@@ -46,12 +46,7 @@ impl GmpInteger {
     /// Returns `OcasError::BackendError` if the conversion fails.
     pub fn from_bigint(value: &num_bigint::BigInt) -> Result<Self> {
         let bytes = value.to_signed_bytes_le();
-        let inner = RugInteger::from_digits(&bytes, gmp::integer::Order::Lsf).ok_or_else(|| {
-            OcasError::BackendError {
-                backend: "gmp".into(),
-                message: "failed to import integer from BigInt".into(),
-            }
-        })?;
+        let inner = RugInteger::from_digits(&bytes, gmp::integer::Order::Lsf);
         Ok(Self { inner })
     }
 
