@@ -17,12 +17,21 @@ feature-depth = 1
 [advisories]
 yanked = "warn"
 
+[[advisories.ignore]]
+id = "RUSTSEC-2026-0176"
+reason = "ocas-py is not yet ported to pyo3 0.29; tracked internally"
+
+[[advisories.ignore]]
+id = "RUSTSEC-2026-0177"
+reason = "ocas-py is not yet ported to pyo3 0.29; tracked internally"
+
 [licenses]
 allow = [
     "LGPL-3.0-or-later",
     "GPL-3.0-or-later",
     "MIT",
     "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
     "BSD-2-Clause",
     "BSD-3-Clause",
     "ISC",
