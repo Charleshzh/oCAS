@@ -50,7 +50,7 @@ pest_derive = "2.7"
 cranelift = "0.117"
 cranelift-module = "0.117"
 cranelift-jit = "0.117"
-pyo3 = { version = "0.28", features = ["abi3-py310"] }
+pyo3 = { version = "0.29", features = ["abi3-py310"] }
 cbindgen = "0.28"
 criterion = "0.5"
 proptest = "1.6"
