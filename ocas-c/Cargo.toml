@@ -1,0 +1,32 @@
+[package]
+name = "ocas-c"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "C/C++ bindings for oCAS"
+
+[lib]
+name = "ocas_c"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+ocas-core = { path = "../ocas-core" }
+ocas-atom = { path = "../ocas-atom" }
+ocas-domain = { path = "../ocas-domain" }
+ocas-poly = { path = "../ocas-poly" }
+ocas-calc = { path = "../ocas-calc" }
+ocas-eval = { path = "../ocas-eval" }
+ocas-parse = { path = "../ocas-parse" }
+
+[build-dependencies]
+cbindgen = { workspace = true }
+
+[features]
+default = []

@@ -1,0 +1,27 @@
+[package]
+name = "ocas-eval"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Evaluation and JIT code generation for oCAS"
+
+[dependencies]
+ocas-core = { path = "../ocas-core" }
+ocas-domain = { path = "../ocas-domain" }
+ocas-atom = { path = "../ocas-atom" }
+cranelift = { workspace = true, optional = true }
+cranelift-module = { workspace = true, optional = true }
+cranelift-jit = { workspace = true, optional = true }
+inkwell = { workspace = true, optional = true }
+
+[features]
+default = []
+jit = ["cranelift", "cranelift-module", "cranelift-jit"]
+llvm = ["inkwell"]

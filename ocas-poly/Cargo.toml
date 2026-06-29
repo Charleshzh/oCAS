@@ -1,0 +1,24 @@
+[package]
+name = "ocas-poly"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Polynomial algorithms for oCAS"
+
+[dependencies]
+ocas-core = { path = "../ocas-core" }
+ocas-domain = { path = "../ocas-domain" }
+num-traits = { workspace = true }
+hashbrown = { workspace = true }
+smallvec = { workspace = true }
+
+[features]
+default = []
+flint = []

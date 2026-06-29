@@ -1,0 +1,21 @@
+[package]
+name = "ocas-gpl"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license = "GPL-3.0-or-later"
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Optional GPL-only backends for oCAS"
+
+[dependencies]
+ocas-core = { path = "../ocas-core" }
+ocas-domain = { path = "../ocas-domain" }
+ocas-poly = { path = "../ocas-poly" }
+
+[features]
+default = []

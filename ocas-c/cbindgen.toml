@@ -1,0 +1,9 @@
+language = "C"
+cpp_compat = true
+header = "/* oCAS C API */"
+autogen_warning = "/* Warning: this file is auto-generated. Do not modify. */"
+include_version = true
+namespace = "ocas"
+
+[export]
+prefix = "ocas_"

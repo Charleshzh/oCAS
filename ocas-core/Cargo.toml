@@ -1,0 +1,29 @@
+[package]
+name = "ocas-core"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Core runtime, memory management, and numerical backend glue for oCAS"
+
+[dependencies]
+thiserror = { workspace = true }
+rayon = { workspace = true }
+serde = { workspace = true, optional = true }
+
+# Optional LGPL backends
+gmp = { package = "rug", version = "1.27", optional = true }
+
+[features]
+default = []
+serde = ["dep:serde"]
+gmp = ["dep:gmp"]
+
+[dev-dependencies]
+proptest = { workspace = true }

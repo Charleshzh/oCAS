@@ -1,0 +1,22 @@
+[package]
+name = "ocas-calc"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Calculus and equation solving for oCAS"
+
+[dependencies]
+ocas-core = { path = "../ocas-core" }
+ocas-domain = { path = "../ocas-domain" }
+ocas-atom = { path = "../ocas-atom" }
+ocas-poly = { path = "../ocas-poly" }
+
+[features]
+default = []

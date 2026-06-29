@@ -1,0 +1,40 @@
+# Rust
+/target
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python bindings build artifacts
+*.so
+*.pyd
+*.egg-info/
+dist/
+build/
+__pycache__/
+*.py[cod]
+
+# C/C++ bindings build artifacts
+*.a
+*.lib
+*.dll
+*.dylib
+*.o
+*.obj
+
+# Documentation build
+target/doc/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.profraw
+coverage/

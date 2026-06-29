@@ -1,0 +1,24 @@
+[package]
+name = "ocas-domain"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Algebraic domains and number types for oCAS"
+
+[dependencies]
+ocas-core = { path = "../ocas-core" }
+num-traits = { workspace = true }
+num-bigint = { workspace = true }
+num-rational = { workspace = true }
+
+[features]
+default = []
+gmp = []
+mpfr = []

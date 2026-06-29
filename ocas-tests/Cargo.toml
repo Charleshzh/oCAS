@@ -1,0 +1,27 @@
+[package]
+name = "ocas-tests"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Integration tests and benchmarks for oCAS"
+publish = false
+
+[dependencies]
+ocas = { path = "../ocas" }
+ocas-core = { path = "../ocas-core" }
+ocas-domain = { path = "../ocas-domain" }
+ocas-poly = { path = "../ocas-poly" }
+ocas-atom = { path = "../ocas-atom" }
+proptest = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "polynomial"
+harness = false
