@@ -9,14 +9,14 @@ use logos::Logos;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Logos)]
 #[logos(skip r"[ \t\n\r]+")]
 #[logos(error = LexError)]
-pub enum Token {
+pub enum Token<'a> {
     /// An integer literal, e.g. `42` or `-7`.
     #[regex(r"-?[0-9]+", |lex| lex.slice().parse::<i64>())]
     Integer(i64),
 
     /// An identifier (variable or function name), e.g. `x` or `sin`.
-    #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*")]
-    Ident,
+    #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice())]
+    Ident(&'a str),
 
     /// `+`
     #[token("+")]
@@ -54,6 +54,20 @@ pub enum Token {
     Eof,
 }
 
+/// Lex an input string into a vector of tokens.
+///
+/// # Errors
+///
+/// Returns the first lexing error encountered.
+pub fn lex(input: &str) -> Result<Vec<Token<'_>>, LexError> {
+    Token::lexer(input)
+        .collect::<Result<Vec<_>, _>>()
+        .map(|mut tokens| {
+            tokens.push(Token::Eof);
+            tokens
+        })
+}
+
 /// Lexing error produced when input does not match any known token.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct LexError;
@@ -70,20 +84,6 @@ impl From<std::num::ParseIntError> for LexError {
     fn from(_: std::num::ParseIntError) -> Self {
         LexError
     }
-}
-
-/// Lex an input string into a vector of tokens.
-///
-/// # Errors
-///
-/// Returns the first lexing error encountered.
-pub fn lex(input: &str) -> Result<Vec<Token>, LexError> {
-    Token::lexer(input)
-        .collect::<Result<Vec<_>, _>>()
-        .map(|mut tokens| {
-            tokens.push(Token::Eof);
-            tokens
-        })
 }
 
 #[cfg(test)]
@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn lex_identifier() {
         let tokens = lex("x").unwrap();
-        assert_eq!(tokens, vec![Token::Ident, Token::Eof]);
+        assert_eq!(tokens, vec![Token::Ident("x"), Token::Eof]);
     }
 
     #[test]
@@ -139,11 +139,11 @@ mod tests {
         assert_eq!(
             tokens,
             vec![
-                Token::Ident,
+                Token::Ident("x"),
                 Token::Plus,
                 Token::Integer(2),
                 Token::Star,
-                Token::Ident,
+                Token::Ident("y"),
                 Token::Caret,
                 Token::Integer(3),
                 Token::Eof
@@ -156,7 +156,12 @@ mod tests {
         let tokens = lex("  x   \n\t+  1  ").unwrap();
         assert_eq!(
             tokens,
-            vec![Token::Ident, Token::Plus, Token::Integer(1), Token::Eof]
+            vec![
+                Token::Ident("x"),
+                Token::Plus,
+                Token::Integer(1),
+                Token::Eof
+            ]
         );
     }
 

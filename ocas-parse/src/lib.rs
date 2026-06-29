@@ -4,3 +4,6 @@
 //! parser that turns text into [`ocas_atom::Atom`] expression trees.
 
 pub mod lexer;
+pub mod parser;
+
+pub use parser::{ParseError, parse};

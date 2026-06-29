@@ -15,6 +15,7 @@ description = "Parser and printer for oCAS"
 [dependencies]
 ocas-core = { path = "../ocas-core" }
 ocas-atom = { path = "../ocas-atom" }
+thiserror = { workspace = true }
 logos = { workspace = true }
 chumsky = { workspace = true }
 
