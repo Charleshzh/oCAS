@@ -38,3 +38,6 @@ Thumbs.db
 # Test artifacts
 *.profraw
 coverage/
+
+# AI assistant context (repository-local, not shared)
+CLAUDE.md
