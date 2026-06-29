@@ -11,11 +11,13 @@ use std::sync::{Mutex, OnceLock};
 
 use ocas_core::arena::Arena;
 
+pub mod normalize;
+
 /// An interned symbolic name (variable, function, or constant).
 ///
 /// Symbols are deduplicated globally and live for the remainder of the
 /// process. This keeps [`Atom`] small and comparable by identity.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Symbol(&'static str);
 
 impl Symbol {
@@ -44,7 +46,7 @@ fn intern(name: &str) -> &'static str {
 ///
 /// `Atom` is a small copyable handle. The actual node data lives in the
 /// [`Arena`] and is freed when the arena is dropped.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Atom<'a>(&'a AtomNode<'a>);
 
 impl<'a> Atom<'a> {
@@ -55,7 +57,7 @@ impl<'a> Atom<'a> {
 }
 
 /// The concrete data stored for each expression node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum AtomNode<'a> {
     /// A 64-bit signed integer literal.
     Num(i64),
