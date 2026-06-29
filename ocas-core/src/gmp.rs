@@ -13,7 +13,7 @@
 use std::fmt;
 
 #[cfg(feature = "gmp")]
-use gmp::integer::Integer as RugInteger;
+use gmp::Integer as RugInteger;
 
 #[cfg(feature = "gmp")]
 use crate::error::{OcasError, Result};
@@ -46,7 +46,7 @@ impl GmpInteger {
     /// Returns `OcasError::BackendError` if the conversion fails.
     pub fn from_bigint(value: &num_bigint::BigInt) -> Result<Self> {
         let bytes = value.to_signed_bytes_le();
-        let inner = RugInteger::from_digits(&bytes, rug::integer::Order::Lsf).ok_or_else(|| {
+        let inner = RugInteger::from_digits(&bytes, gmp::integer::Order::Lsf).ok_or_else(|| {
             OcasError::BackendError {
                 backend: "gmp".into(),
                 message: "failed to import integer from BigInt".into(),

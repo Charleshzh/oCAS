@@ -82,12 +82,14 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(not(miri))]
     fn global_pool_install() {
         let result = install(|| 21 + 21);
         assert_eq!(result, 42);
     }
 
     #[test]
+    #[cfg(not(miri))]
     fn custom_thread_pool() {
         let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
         let result = pool.install(|| {
@@ -99,6 +101,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(miri))]
     fn thread_pool_maps_error_to_ocas_error() {
         // Initialize the global pool first so that building a new pool cannot
         // conflict. Then attempt to re-initialize with a different size, which
@@ -115,6 +118,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(miri))]
     fn thread_pool_parallel_sum() {
         let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
         let data: Vec<i64> = (0..1_000).collect();

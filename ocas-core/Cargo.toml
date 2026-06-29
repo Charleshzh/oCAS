@@ -16,6 +16,7 @@ description = "Core runtime, memory management, and numerical backend glue for o
 thiserror = { workspace = true }
 rayon = { workspace = true }
 serde = { workspace = true, optional = true }
+num-bigint = { workspace = true, optional = true }
 
 # Optional LGPL backends
 gmp = { package = "rug", version = "1.27", optional = true }
@@ -23,7 +24,7 @@ gmp = { package = "rug", version = "1.27", optional = true }
 [features]
 default = []
 serde = ["dep:serde"]
-gmp = ["dep:gmp"]
+gmp = ["dep:gmp", "dep:num-bigint"]
 
 [dev-dependencies]
 proptest = { workspace = true }
