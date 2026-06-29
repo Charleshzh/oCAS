@@ -35,14 +35,14 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Workspace structure with all 12 crates / 包含全部 12 个 crate 的 workspace 结构
-- [ ] CI pipeline: `cargo test`, `cargo clippy`, `cargo-deny`, formatting / CI 流水线
-- [ ] Unified error type `OcasError` / 统一错误类型
-- [ ] Arena / bump allocator with Miri-safe API / 通过 Miri 安全验证的 arena
-- [ ] Thread pool wrapper around `rayon` / 基于 `rayon` 的线程池包装
-- [ ] FFI glue conventions / FFI 胶水约定
-- [ ] GMP bindings (via `rug` or thin `bindgen`) behind `gmp` feature / `gmp` feature 后的 GMP 绑定
-- [ ] Initial benchmark harness / 初始基准测试框架
+- [x] Workspace structure with all 12 crates / 包含全部 12 个 crate 的 workspace 结构
+- [x] CI pipeline: `cargo test`, `cargo clippy`, `cargo-deny`, formatting, Miri / CI 流水线
+- [x] Unified error type `OcasError` / 统一错误类型
+- [x] Arena / bump allocator with Miri-safe API / 通过 Miri 安全验证的 arena
+- [x] Thread pool wrapper around `rayon` / 基于 `rayon` 的线程池包装
+- [x] FFI glue conventions (minimal C ABI example) / FFI 胶水约定（最小 C ABI 示例）
+- [x] GMP bindings (via `rug`) behind `gmp` feature / `gmp` feature 后的 GMP 绑定（基于 `rug`）
+- [x] Initial benchmark harness / 初始基准测试框架
 
 **Success Criteria / 成功标准**:
 

@@ -7,7 +7,7 @@
 
 **oCAS** is a modern, high-performance computer algebra system written in Rust. It is designed to match or exceed the core performance of Symbolica and SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Early development. APIs and crate boundaries are subject to change.
+> **Status**: Pre-Alpha (0.1.0). The runtime foundation is in place (arena, errors, thread pool, optional GMP backend, minimal C ABI). Symbolic computation APIs are not yet implemented.
 
 **中文**
 

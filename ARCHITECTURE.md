@@ -169,8 +169,26 @@ Classifier / 分类器
 **English**
 
 - Each expression tree lives in an `Arena`.
-- Sub-nodes are bump-allocated; the entire tree is freed at once when the arena is dropped.
-- This avoids the overhead of per-node `Box`/`Rc` allocation and improves cache locality.
+- Sub-nodes are bump-allocated via `Arena::allocate_with`, which constructs the
+  value inside a closure; the entire tree is freed at once when the arena is
+  dropped.
+- This avoids the overhead of per-node `Box`/`Rc` allocation and improves cache
+  locality.
+
+### 0.1.0 limitation / 0.1.0 限制
+
+**English**
+
+The current `Arena` intentionally does not run destructors for allocated
+values. It is therefore only safe to store `Copy` types or types that do not
+own resources requiring explicit cleanup. A type-erased drop mechanism will be
+added once expression trees need to store owned strings or other `Drop` types.
+
+**中文**
+
+当前 `Arena` 故意不运行已分配值的析构函数。因此，仅可安全存放 `Copy`
+类型或无需显式清理资源的类型。当表达式树需要存放拥有的字符串或其他
+`Drop` 类型时，将添加类型擦除的 drop 机制。
 
 **中文**
 

@@ -107,6 +107,9 @@ cargo build --no-default-features
 **English**
 
 - MSVC + GMP is not officially supported by GMP. Use MINGW64 or vcpkg.
+- The `gmp` Cargo feature is disabled by default on Windows for this reason.
+  To run tests or benchmarks with GMP enabled, use the MINGW64 target or a
+  Linux/macOS environment.
 - Make sure `pkg-config` can locate `.pc` files for GMP/MPFR/FLINT.
 
 **中文**
