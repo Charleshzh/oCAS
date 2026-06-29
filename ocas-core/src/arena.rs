@@ -78,6 +78,38 @@ impl Arena {
         }
     }
 
+    /// Allocate a contiguous slice of `T` values in the arena.
+    ///
+    /// The returned slice is tied to the arena lifetime. Because the arena does
+    /// not run destructors, `T` must be `Copy` so that dropping the arena does
+    /// not leak resources owned by the slice elements.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `T` has zero size or if the total allocation size overflows.
+    pub fn allocate_slice<T: Copy>(&self, values: &[T]) -> &[T] {
+        if values.is_empty() {
+            return &[];
+        }
+
+        let layout = Layout::from_size_align(mem::size_of_val(values), mem::align_of::<T>())
+            .expect("invalid slice layout");
+        assert!(
+            layout.size() > 0,
+            "cannot allocate zero-sized types in Arena"
+        );
+
+        let ptr = self.alloc_raw(layout);
+
+        // SAFETY: `ptr` is non-null, properly aligned, and points to a block
+        // large enough to hold `values.len()` elements of type `T`.
+        unsafe {
+            let typed = ptr.as_ptr().cast::<T>();
+            std::ptr::copy_nonoverlapping(values.as_ptr(), typed, values.len());
+            std::slice::from_raw_parts(typed, values.len())
+        }
+    }
+
     fn alloc_raw(&self, layout: Layout) -> NonNull<u8> {
         let mut chunks = self.chunks.borrow_mut();
 
@@ -206,6 +238,41 @@ mod tests {
         let b = arena.allocate_with(|| 7);
         assert_eq!(*a, 42);
         assert_eq!(*b, 7);
+    }
+
+    #[test]
+    fn allocate_slice_empty() {
+        let arena = Arena::new();
+        let empty: &[i32] = arena.allocate_slice(&[]);
+        assert!(empty.is_empty());
+    }
+
+    #[test]
+    fn allocate_slice_integers() {
+        let arena = Arena::new();
+        let values = [1, 2, 3, 4, 5];
+        let slice = arena.allocate_slice(&values);
+        assert_eq!(slice, &values[..]);
+    }
+
+    #[test]
+    fn allocate_slice_larger_than_block() {
+        let arena = Arena::with_capacity(16);
+        let values: Vec<u8> = (0..=255).collect();
+        let slice = arena.allocate_slice(&values);
+        assert_eq!(slice, &values[..]);
+    }
+
+    #[test]
+    fn allocate_slice_many_values_triggers_new_chunks() {
+        let arena = Arena::with_capacity(64);
+        let mut total = 0i64;
+        for i in 0..50 {
+            let values: Vec<i64> = (0..10).map(|j| i * 10 + j).collect();
+            let slice = arena.allocate_slice(&values);
+            total += slice.iter().sum::<i64>();
+        }
+        assert_eq!(total, 124_750);
     }
 
     #[test]
