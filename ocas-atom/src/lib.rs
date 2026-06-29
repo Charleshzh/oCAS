@@ -5,6 +5,7 @@
 //! references into an [`Arena`] and form the core data structure used by the
 //! parser, printer, and rewrite engine.
 
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 
@@ -54,7 +55,7 @@ impl<'a> Atom<'a> {
 }
 
 /// The concrete data stored for each expression node.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AtomNode<'a> {
     /// A 64-bit signed integer literal.
     Num(i64),
@@ -71,28 +72,38 @@ pub enum AtomNode<'a> {
 /// A context that allocates [`Atom`]s in an [`Arena`].
 ///
 /// All construction methods are immutable from the caller's perspective;
-/// mutation happens through the arena's interior mutability.
+/// mutation happens through the arena's interior mutability. Identical
+/// sub-expressions are hash-consed so that structural equality implies
+/// pointer equality.
 pub struct AtomArena<'a> {
     arena: &'a Arena,
+    cons_table: RefCell<HashMap<AtomNode<'a>, Atom<'a>>>,
 }
 
 impl<'a> AtomArena<'a> {
     /// Create an `AtomArena` backed by the given arena.
     pub fn new(arena: &'a Arena) -> Self {
-        Self { arena }
+        Self {
+            arena,
+            cons_table: RefCell::new(HashMap::new()),
+        }
+    }
+
+    fn intern(&self, candidate: AtomNode<'a>) -> Atom<'a> {
+        let mut table = self.cons_table.borrow_mut();
+        *table
+            .entry(candidate)
+            .or_insert_with(|| Atom(self.arena.allocate_with(|| candidate)))
     }
 
     /// Create an integer literal atom.
     pub fn num(&self, value: i64) -> Atom<'a> {
-        Atom(self.arena.allocate_with(|| AtomNode::Num(value)))
+        self.intern(AtomNode::Num(value))
     }
 
     /// Create a variable atom from a name.
     pub fn var(&self, name: &str) -> Atom<'a> {
-        Atom(
-            self.arena
-                .allocate_with(|| AtomNode::Var(Symbol::new(name))),
-        )
+        self.intern(AtomNode::Var(Symbol::new(name)))
     }
 
     /// Create an addition atom.
@@ -103,7 +114,7 @@ impl<'a> AtomArena<'a> {
     pub fn add(&self, args: &[Atom<'a>]) -> Atom<'a> {
         debug_assert!(!args.is_empty(), "Add node requires at least one argument");
         let slice = self.arena.allocate_slice(args);
-        Atom(self.arena.allocate_with(|| AtomNode::Add(slice)))
+        self.intern(AtomNode::Add(slice))
     }
 
     /// Create a multiplication atom.
@@ -114,12 +125,12 @@ impl<'a> AtomArena<'a> {
     pub fn mul(&self, args: &[Atom<'a>]) -> Atom<'a> {
         debug_assert!(!args.is_empty(), "Mul node requires at least one argument");
         let slice = self.arena.allocate_slice(args);
-        Atom(self.arena.allocate_with(|| AtomNode::Mul(slice)))
+        self.intern(AtomNode::Mul(slice))
     }
 
     /// Create a power atom.
     pub fn pow(&self, base: Atom<'a>, exp: Atom<'a>) -> Atom<'a> {
-        Atom(self.arena.allocate_with(|| AtomNode::Pow(base, exp)))
+        self.intern(AtomNode::Pow(base, exp))
     }
 }
 
@@ -256,5 +267,28 @@ mod tests {
         let x = ctx.var("x");
         let copied = x;
         assert_eq!(x, copied);
+    }
+
+    #[test]
+    fn hash_consing_reuses_identical_nodes() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let a = ctx.add(&[x, y]);
+        let b = ctx.add(&[x, y]);
+        // Hash-consing should return the same arena pointer.
+        assert!(std::ptr::eq(a.node(), b.node()));
+    }
+
+    #[test]
+    fn hash_consing_distinguishes_different_nodes() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let a = ctx.add(&[x, y]);
+        let b = ctx.add(&[y, x]);
+        assert!(!std::ptr::eq(a.node(), b.node()));
     }
 }
