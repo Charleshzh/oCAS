@@ -46,6 +46,44 @@ pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
     fn is_zero(&self, a: &Self::Element) -> bool {
         *a == self.zero()
     }
+
+    /// Test whether an element is the multiplicative identity.
+    fn is_one(&self, a: &Self::Element) -> bool {
+        *a == self.one()
+    }
+
+    /// Return `a` raised to the non-negative integer power `n`.
+    ///
+    /// The default implementation uses binary exponentiation. Domains that
+    /// can do better (e.g. modular exponentiation) may override it.
+    fn pow(&self, a: &Self::Element, n: u64) -> Self::Element {
+        let mut base = a.clone();
+        let mut result = self.one();
+        let mut exp = n;
+        while exp > 0 {
+            if exp & 1 == 1 {
+                result = self.mul(&result, &base);
+            }
+            base = self.mul(&base, &base);
+            exp >>= 1;
+        }
+        result
+    }
+
+    /// Convert a `u64` into an element of the domain.
+    ///
+    /// This is used by generic algorithms (e.g. polynomial differentiation)
+    /// that need small positive integer coefficients. Domains that cannot
+    /// represent every `u64` may wrap or truncate as appropriate for their
+    /// semantics.
+    fn cast_u64(&self, n: u64) -> Self::Element {
+        let mut result = self.zero();
+        let one = self.one();
+        for _ in 0..n {
+            result = self.add(&result, &one);
+        }
+        result
+    }
 }
 
 /// Marker trait for domains that support exact division with remainder.

@@ -4,7 +4,7 @@
 //! term up to the leading coefficient in a contiguous vector. This is well
 //! suited for univariate arithmetic with moderate degree.
 
-use ocas_domain::Domain;
+use ocas_domain::{Domain, EuclideanDomain};
 
 /// A dense univariate polynomial with coefficients in a domain `D`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,6 +135,109 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
         Self::from_coeffs(self.domain.clone(), coeffs)
     }
 
+    /// Evaluate the polynomial at `x` using Horner's method.
+    ///
+    /// The zero polynomial evaluates to the domain's zero element.
+    pub fn eval(&self, x: &D::Element) -> D::Element {
+        let mut result = self.domain.zero();
+        for coeff in self.coeffs.iter().rev() {
+            result = self.domain.mul(&result, x);
+            result = self.domain.add(&result, coeff);
+        }
+        result
+    }
+
+    /// Return the formal derivative of this polynomial.
+    ///
+    /// For `p(x) = a_0 + a_1 x + a_2 x^2 + ...` the derivative is
+    /// `p'(x) = a_1 + 2 a_2 x + 3 a_3 x^2 + ...`.
+    pub fn derivative(&self) -> Self {
+        if self.degree().is_none() {
+            return self.zero();
+        }
+        let mut coeffs = Vec::with_capacity(self.coeffs.len().saturating_sub(1));
+        for (i, c) in self.coeffs.iter().enumerate().skip(1) {
+            let scalar = self.domain.cast_u64(i as u64);
+            coeffs.push(self.domain.mul(c, &scalar));
+        }
+        Self::from_coeffs(self.domain.clone(), coeffs)
+    }
+
+    /// Return the formal integral of this polynomial, with constant term zero.
+    ///
+    /// For `p(x) = a_0 + a_1 x + a_2 x^2 + ...` the integral is
+    /// `∫p(x) dx = 0 + a_0 x + (a_1/2) x^2 + (a_2/3) x^3 + ...`.
+    pub fn integral(&self) -> Self {
+        if self.is_zero() {
+            return self.zero();
+        }
+        let mut coeffs = Vec::with_capacity(self.coeffs.len() + 1);
+        coeffs.push(self.domain.zero());
+        for (i, c) in self.coeffs.iter().enumerate() {
+            let denom = self.domain.cast_u64((i + 1) as u64);
+            let inv = self
+                .domain
+                .inv(&denom)
+                .unwrap_or_else(|| self.domain.zero());
+            coeffs.push(self.domain.mul(c, &inv));
+        }
+        Self::from_coeffs(self.domain.clone(), coeffs)
+    }
+}
+
+impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
+    /// Divide this polynomial by another, returning `(quotient, remainder)`.
+    ///
+    /// Returns `None` if the divisor is the zero polynomial.
+    pub fn div_rem(&self, divisor: &Self) -> Option<(Self, Self)> {
+        if divisor.is_zero() {
+            return None;
+        }
+        if self.is_zero() {
+            return Some((self.zero(), self.zero()));
+        }
+        let mut remainder = self.clone();
+        let mut quotient_coeffs: Vec<D::Element> = Vec::new();
+        let domain = self.domain.clone();
+        let divisor_degree = divisor.degree().unwrap_or(0);
+        let divisor_lc = divisor.leading_coeff().unwrap().clone();
+
+        while let Some(deg) = remainder.degree() {
+            if deg < divisor_degree {
+                break;
+            }
+            let lc = remainder.leading_coeff().unwrap().clone();
+            let (q, _r) = domain.div_rem(&lc, &divisor_lc)?;
+            let term_degree = deg - divisor_degree;
+
+            // Ensure quotient_coeffs is long enough.
+            if term_degree >= quotient_coeffs.len() {
+                quotient_coeffs.resize(term_degree + 1, domain.zero());
+            }
+            quotient_coeffs[term_degree] = domain.add(&quotient_coeffs[term_degree], &q);
+
+            // remainder -= q * x^term_degree * divisor
+            let mut sub_coeffs = vec![domain.zero(); term_degree];
+            sub_coeffs.extend(divisor.coeffs.iter().map(|c| domain.mul(c, &q)));
+            let sub = Self::from_coeffs(domain.clone(), sub_coeffs);
+            remainder = remainder.sub(&sub);
+
+            // Stop if remainder did not shrink (defensive against non-exact division).
+            if let Some(rem_deg) = remainder.degree() {
+                if rem_deg >= deg {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        let quotient = Self::from_coeffs(domain, quotient_coeffs);
+        Some((quotient, remainder))
+    }
+}
+
+impl<D: Domain> DenseUnivariatePolynomial<D> {
     fn trim_trailing_zeros(&mut self) {
         while let Some(last) = self.coeffs.last() {
             if self.domain.is_zero(last) {
@@ -149,7 +252,11 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ocas_domain::{FiniteField, IntegerDomain, Rational, RationalDomain};
+    use ocas_domain::{FiniteField, Integer, IntegerDomain, Rational, RationalDomain};
+
+    fn int(i: i64) -> Integer {
+        Integer::from(i)
+    }
 
     #[test]
     fn zero_polynomial_has_no_degree() {
@@ -262,5 +369,127 @@ mod tests {
         assert_eq!(prod.coeff(1).cloned(), Some(domain.element(2)));
         assert_eq!(prod.coeff(2).cloned(), Some(domain.element(3)));
         assert_eq!(prod.coeff(3).cloned(), Some(domain.element(1)));
+    }
+
+    #[test]
+    fn evaluate_polynomial() {
+        let domain = IntegerDomain;
+        // p(x) = 1 + 2x + 3x^2
+        let p = DenseUnivariatePolynomial::from_coeffs(domain, vec![int(1), int(2), int(3)]);
+        assert_eq!(p.eval(&int(0)), int(1));
+        assert_eq!(p.eval(&int(1)), int(6));
+        assert_eq!(p.eval(&int(2)), int(17));
+    }
+
+    #[test]
+    fn polynomial_derivative() {
+        let domain = IntegerDomain;
+        // p(x) = 1 + 2x + 3x^2 + 4x^3 -> p'(x) = 2 + 6x + 12x^2
+        let p =
+            DenseUnivariatePolynomial::from_coeffs(domain, vec![int(1), int(2), int(3), int(4)]);
+        let dp = p.derivative();
+        assert_eq!(dp.coeffs().to_vec(), vec![int(2), int(6), int(12)]);
+    }
+
+    #[test]
+    fn polynomial_integral() {
+        let domain = RationalDomain;
+        // p(x) = 1 + 2x -> int p = 0 + x + x^2
+        let p = DenseUnivariatePolynomial::from_coeffs(
+            domain,
+            vec![Rational::new(1, 1), Rational::new(2, 1)],
+        );
+        let ip = p.integral();
+        assert_eq!(ip.coeff(0).cloned(), Some(Rational::new(0, 1)));
+        assert_eq!(ip.coeff(1).cloned(), Some(Rational::new(1, 1)));
+        assert_eq!(ip.coeff(2).cloned(), Some(Rational::new(1, 1)));
+    }
+
+    #[test]
+    fn polynomial_division_with_remainder_over_integers() {
+        let domain = IntegerDomain;
+        // (x^2 + 1) / (x - 1) = x + 1 remainder 2
+        let dividend = DenseUnivariatePolynomial::from_coeffs(domain, vec![int(1), int(0), int(1)]);
+        let divisor = DenseUnivariatePolynomial::from_coeffs(domain, vec![int(-1), int(1)]);
+        let (q, r) = dividend.div_rem(&divisor).unwrap();
+        assert_eq!(q.coeffs().to_vec(), vec![int(1), int(1)]);
+        assert_eq!(r.coeffs().to_vec(), vec![int(2)]);
+    }
+
+    #[test]
+    fn polynomial_division_exact_over_rationals() {
+        let domain = RationalDomain;
+        // (x^2 - 1) / (x - 1) = x + 1, remainder 0
+        let dividend = DenseUnivariatePolynomial::from_coeffs(
+            domain,
+            vec![
+                Rational::new(-1, 1),
+                Rational::new(0, 1),
+                Rational::new(1, 1),
+            ],
+        );
+        let divisor = DenseUnivariatePolynomial::from_coeffs(
+            domain,
+            vec![Rational::new(-1, 1), Rational::new(1, 1)],
+        );
+        let (q, r) = dividend.div_rem(&divisor).unwrap();
+        assert_eq!(q.degree(), Some(1));
+        assert_eq!(q.coeff(0).cloned(), Some(Rational::new(1, 1)));
+        assert_eq!(q.coeff(1).cloned(), Some(Rational::new(1, 1)));
+        assert!(r.is_zero());
+    }
+}
+
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use ocas_domain::{Integer, IntegerDomain};
+    use proptest::prelude::*;
+
+    fn any_int_poly(
+        max_degree: usize,
+    ) -> impl Strategy<Value = DenseUnivariatePolynomial<IntegerDomain>> {
+        prop::collection::vec(any::<i64>(), 0..=max_degree).prop_map(|v| {
+            let domain = IntegerDomain;
+            DenseUnivariatePolynomial::from_coeffs(
+                domain,
+                v.into_iter().map(Integer::from).collect(),
+            )
+        })
+    }
+
+    proptest! {
+        #[test]
+        fn addition_is_commutative(a in any_int_poly(8), b in any_int_poly(8)) {
+            assert_eq!(a.add(&b), b.add(&a));
+        }
+
+        #[test]
+        fn multiplication_is_commutative(a in any_int_poly(5), b in any_int_poly(5)) {
+            assert_eq!(a.mul(&b), b.mul(&a));
+        }
+
+        #[test]
+        fn derivative_reduces_degree_or_zero(a in any_int_poly(6)) {
+            let da = a.derivative();
+            match a.degree() {
+                None => assert!(da.is_zero()),
+                Some(0) => assert!(da.is_zero()),
+                Some(d) => assert!(da.degree().unwrap_or(0) < d),
+            }
+        }
+
+        #[test]
+        fn mul_then_div_exact_when_divisor_is_factor(
+            a in any_int_poly(4),
+            b in any_int_poly(4),
+        ) {
+            // Ensure b is not zero.
+            prop_assume!(!b.is_zero());
+            let prod = a.mul(&b);
+            let (q, r) = prod.div_rem(&b).unwrap();
+            assert!(r.is_zero());
+            assert_eq!(q, a);
+        }
     }
 }

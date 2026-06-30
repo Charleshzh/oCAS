@@ -89,10 +89,23 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 - [x] Domain trait for generic algorithms / 泛型算法的 Domain trait
 - [x] `ocas-poly` crate / `ocas-poly` crate
 - [x] Dense univariate polynomial / 稠密单变量多项式
-- [ ] Domains: `RealBall`, `Complex` / 域实现
-- [ ] Sparse multivariate polynomial / 稀疏多元多项式
-- [ ] Division with remainder / 带余除法
-- [ ] FLINT 3 integration behind `flint` feature / `flint` feature 后的 FLINT 3 集成
+- [x] Domains: `RealBall`, `Complex` / 域实现
+- [x] Sparse multivariate polynomial / 稀疏多元多项式
+- [x] Division with remainder / 带余除法
+- [x] FLINT 3 integration behind `flint` feature / `flint` feature 后的 FLINT 3 集成
+- [x] Optional GMP backend for `Integer`/`Rational` via `rug` / 通过 `rug` 提供的可选 GMP `Integer`/`Rational` 后端
+- [x] Optional MPFR backend for `RealBall` via `rug` / 通过 `rug` 提供的可选 MPFR `RealBall` 后端
+
+  > **Note / 说明**: The `flint` feature is experimental. It builds and runs on
+  > Linux/WSL where system FLINT is available, but it is not yet supported on
+  > Windows because `flint3-sys` depends on POSIX-only types such as
+  > `pthread_mutex_t`. The default recommended Windows backend for
+  > arbitrary-precision integers, rationals, and rigorous real balls is
+  > `gmp`/`mpfr` via `rug` with system GMP/MPFR installed through MSYS2.
+  > 该特性为实验性。在提供系统 FLINT 的 Linux/WSL 上可构建运行，但目前尚不
+  > 支持 Windows，因为 `flint3-sys` 依赖 `pthread_mutex_t` 等仅 POSIX 的类型。
+  > Windows 上默认推荐的大整数、有理数与严格实数后端为通过 MSYS2 安装系统
+  > GMP/MPFR 后使用 `rug` 的 `gmp`/`mpfr` 特性。
 
 **Success Criteria / 成功标准**:
 

@@ -18,8 +18,23 @@ num-traits = { workspace = true }
 num-integer = { workspace = true }
 num-bigint = { workspace = true }
 num-rational = { workspace = true }
+num-complex = { workspace = true }
+
+# Optional GMP/MPFR backends (LGPL).
+# On Windows/MinGW the `gmp`/`mpfr` features enable `gmp-mpfr-sys/use-system-libs`,
+# which requires MSYS2 packages `mingw-w64-x86_64-gmp` and (for mpfr)
+# `mingw-w64-x86_64-mpfr`. On other platforms the default source build is used.
+rug = { version = "1.27", optional = true, default-features = false, features = ["integer", "rational", "float"] }
+gmp-mpfr-sys = { version = "1.7", optional = true, default-features = false, features = ["mpfr"] }
 
 [features]
 default = []
-gmp = []
-mpfr = []
+# GMP-backed arbitrary-precision integers and rationals.
+# On Windows/MinGW this uses the system GMP library via `gmp-mpfr-sys/use-system-libs`.
+gmp = ["dep:rug", "dep:gmp-mpfr-sys", "gmp-mpfr-sys/use-system-libs"]
+# MPFR-backed rigorous real balls.
+# On Windows/MinGW this uses the system GMP/MPFR libraries via `gmp-mpfr-sys/use-system-libs`.
+mpfr = ["dep:rug", "dep:gmp-mpfr-sys", "gmp-mpfr-sys/use-system-libs"]
+
+[dev-dependencies]
+proptest = { workspace = true }

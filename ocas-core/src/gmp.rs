@@ -16,7 +16,7 @@ use std::fmt;
 use gmp::Integer as RugInteger;
 
 #[cfg(feature = "gmp")]
-use crate::error::{OcasError, Result};
+use crate::error::Result;
 
 /// An arbitrary-precision integer backed by GMP.
 ///
@@ -45,8 +45,11 @@ impl GmpInteger {
     ///
     /// Returns `OcasError::BackendError` if the conversion fails.
     pub fn from_bigint(value: &num_bigint::BigInt) -> Result<Self> {
-        let bytes = value.to_signed_bytes_le();
-        let inner = RugInteger::from_digits(&bytes, gmp::integer::Order::Lsf);
+        let (sign, bytes) = value.to_bytes_le();
+        let mut inner = RugInteger::from_digits(&bytes, gmp::integer::Order::Lsf);
+        if sign == num_bigint::Sign::Minus {
+            inner = -inner;
+        }
         Ok(Self { inner })
     }
 
@@ -77,7 +80,7 @@ impl GmpInteger {
     }
 
     /// Compare two `GmpInteger`s.
-    pub fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    pub fn compare(&self, other: &Self) -> std::cmp::Ordering {
         self.inner.cmp(&other.inner)
     }
 
@@ -107,14 +110,14 @@ impl Eq for GmpInteger {}
 #[cfg(feature = "gmp")]
 impl PartialOrd for GmpInteger {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
+        Some(std::cmp::Ord::cmp(self, other))
     }
 }
 
 #[cfg(feature = "gmp")]
 impl Ord for GmpInteger {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.cmp(other)
+        self.compare(other)
     }
 }
 
@@ -152,14 +155,17 @@ mod tests {
     fn gmp_comparison() {
         let a = GmpInteger::from_i64(-5);
         let b = GmpInteger::from_i64(5);
-        assert!(a.cmp(&b) == std::cmp::Ordering::Less);
-        assert!(b.cmp(&a) == std::cmp::Ordering::Greater);
-        assert_eq!(a.cmp(&GmpInteger::from_i64(-5)), std::cmp::Ordering::Equal);
+        assert!(a.compare(&b) == std::cmp::Ordering::Less);
+        assert!(b.compare(&a) == std::cmp::Ordering::Greater);
+        assert_eq!(
+            a.compare(&GmpInteger::from_i64(-5)),
+            std::cmp::Ordering::Equal
+        );
     }
 
     #[test]
     fn gmp_from_bigint_roundtrip() {
-        let big = BigInt::from(1234567890123456789i64) * BigInt::from(9876543210987654321i64);
+        let big = BigInt::from(1234567890123456789i64) * BigInt::from(9876543210987654321u64);
         let gmp = GmpInteger::from_bigint(&big).expect("conversion should succeed");
         assert_eq!(gmp.to_decimal_string(), big.to_string());
     }

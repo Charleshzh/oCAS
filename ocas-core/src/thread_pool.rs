@@ -81,48 +81,94 @@ where
 mod tests {
     use super::*;
 
-    #[test]
-    #[cfg(not(miri))]
-    fn global_pool_install() {
-        let result = install(|| 21 + 21);
-        assert_eq!(result, 42);
+    mod simple {
+        use super::*;
+
+        #[test]
+        #[cfg(not(miri))]
+        fn global_pool_install() {
+            let result = install(|| 21 + 21);
+            assert_eq!(result, 42);
+        }
+
+        #[test]
+        #[cfg(not(miri))]
+        fn thread_pool_creation_and_size() {
+            let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
+            assert_eq!(pool.current_num_threads(), 2);
+        }
     }
 
-    #[test]
-    #[cfg(not(miri))]
-    fn custom_thread_pool() {
-        let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
-        let result = pool.install(|| {
-            let (a, b) = rayon::join(|| 1 + 2, || 3 + 4);
-            a + b
-        });
-        assert_eq!(result, 10);
-        assert_eq!(pool.current_num_threads(), 2);
+    mod medium {
+        use super::*;
+
+        #[test]
+        #[cfg(not(miri))]
+        fn custom_thread_pool_join() {
+            let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
+            let result = pool.install(|| {
+                let (a, b) = rayon::join(|| 1 + 2, || 3 + 4);
+                a + b
+            });
+            assert_eq!(result, 10);
+        }
+
+        #[test]
+        #[cfg(not(miri))]
+        fn thread_pool_parallel_sum() {
+            let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
+            let data: Vec<i64> = (0..1_000).collect();
+            let sum = pool.install(|| data.into_par_iter().sum::<i64>());
+            assert_eq!(sum, 499_500);
+        }
     }
 
-    #[test]
-    #[cfg(not(miri))]
-    fn thread_pool_maps_error_to_ocas_error() {
-        // Initialize the global pool first so that building a new pool cannot
-        // conflict. Then attempt to re-initialize with a different size, which
-        // must fail.
-        init(2).ok();
-        let err = init(4).expect_err("reinitializing global pool should fail");
-        assert_eq!(
-            err,
-            OcasError::BackendError {
-                backend: "rayon".into(),
-                message: "The global thread pool has already been initialized.".into(),
-            }
-        );
+    mod complex {
+        use super::*;
+
+        #[test]
+        #[cfg(not(miri))]
+        fn thread_pool_maps_error_to_ocas_error() {
+            // Initialize the global pool first so that building a new pool cannot
+            // conflict. Then attempt to re-initialize with a different size, which
+            // must fail.
+            init(2).ok();
+            let err = init(4).expect_err("reinitializing global pool should fail");
+            assert_eq!(
+                err,
+                OcasError::BackendError {
+                    backend: "rayon".into(),
+                    message: "The global thread pool has already been initialized.".into(),
+                }
+            );
+        }
+
+        #[test]
+        #[cfg(not(miri))]
+        fn nested_pools_run_on_different_threads() {
+            let outer = ThreadPool::new(2).expect("outer pool");
+            let result = outer.install(|| {
+                let inner = ThreadPool::new(2).expect("inner pool");
+                inner.install(|| {
+                    let (a, b) = rayon::join(|| 1 + 1, || 2 + 2);
+                    a + b
+                })
+            });
+            assert_eq!(result, 6);
+        }
     }
 
-    #[test]
-    #[cfg(not(miri))]
-    fn thread_pool_parallel_sum() {
-        let pool = ThreadPool::new(2).expect("should create a 2-thread pool");
-        let data: Vec<i64> = (0..1_000).collect();
-        let sum = pool.install(|| data.into_par_iter().sum::<i64>());
-        assert_eq!(sum, 499_500);
+    mod extreme {
+        use super::*;
+
+        #[test]
+        #[cfg(not(miri))]
+        fn stress_many_parallel_tasks() {
+            let pool = ThreadPool::new(4).expect("should create a 4-thread pool");
+            let result = pool.install(|| (0..10_000).into_par_iter().map(|x| x * x).sum::<i64>());
+            // Sum of squares 0^2 + ... + (n-1)^2 = (n-1)n(2n-1)/6
+            let n = 10_000i64;
+            assert_eq!(result, (n - 1) * n * (2 * n - 1) / 6);
+        }
     }
 }

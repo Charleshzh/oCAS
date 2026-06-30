@@ -120,9 +120,11 @@ impl Arena {
             return ptr;
         }
 
-        // Need a new chunk. Use at least the requested size.
+        // Need a new chunk. Use at least the requested size and alignment so the
+        // first allocation in the chunk is correctly aligned.
         let size = layout.size().max(self.block_size);
-        let mut new_chunk = Chunk::new(size);
+        let align = layout.align();
+        let mut new_chunk = Chunk::new(size, align);
         let ptr = new_chunk
             .try_alloc(layout)
             .expect("new chunk should fit any layout up to its size");
@@ -147,18 +149,19 @@ impl Drop for Arena {
 struct Chunk {
     memory: NonNull<u8>,
     size: usize,
+    align: usize,
     offset: usize,
 }
 
 impl Chunk {
-    fn new(size: usize) -> Self {
-        let layout =
-            Layout::from_size_align(size, mem::align_of::<usize>()).expect("invalid chunk layout");
+    fn new(size: usize, align: usize) -> Self {
+        let layout = Layout::from_size_align(size, align).expect("invalid chunk layout");
         // SAFETY: layout is non-zero and properly aligned.
         let memory = unsafe { NonNull::new_unchecked(alloc::alloc(layout)) };
         Self {
             memory,
             size,
+            align,
             offset: 0,
         }
     }
@@ -179,8 +182,11 @@ impl Chunk {
 
 impl Drop for Chunk {
     fn drop(&mut self) {
-        let layout = Layout::from_size_align(self.size, mem::align_of::<usize>())
-            .expect("invalid chunk layout");
+        // Deallocation requires the same size and an alignment that is at least
+        // as large as the original allocation. The chunk was allocated with the
+        // maximum alignment requested by any layout served from this chunk, so
+        // that alignment is stored alongside the chunk.
+        let layout = Layout::from_size_align(self.size, self.align).expect("invalid chunk layout");
         // SAFETY: `memory` was allocated with this layout.
         unsafe {
             alloc::dealloc(self.memory.as_ptr(), layout);
@@ -231,109 +237,206 @@ mod tests {
     use super::*;
     use proptest::prelude::*;
 
-    #[test]
-    fn allocate_with_integers() {
-        let arena = Arena::new();
-        let a = arena.allocate_with(|| 42);
-        let b = arena.allocate_with(|| 7);
-        assert_eq!(*a, 42);
-        assert_eq!(*b, 7);
-    }
+    mod simple {
+        use super::*;
 
-    #[test]
-    fn allocate_slice_empty() {
-        let arena = Arena::new();
-        let empty: &[i32] = arena.allocate_slice(&[]);
-        assert!(empty.is_empty());
-    }
-
-    #[test]
-    fn allocate_slice_integers() {
-        let arena = Arena::new();
-        let values = [1, 2, 3, 4, 5];
-        let slice = arena.allocate_slice(&values);
-        assert_eq!(slice, &values[..]);
-    }
-
-    #[test]
-    fn allocate_slice_larger_than_block() {
-        let arena = Arena::with_capacity(16);
-        let values: Vec<u8> = (0..=255).collect();
-        let slice = arena.allocate_slice(&values);
-        assert_eq!(slice, &values[..]);
-    }
-
-    #[test]
-    fn allocate_slice_many_values_triggers_new_chunks() {
-        let arena = Arena::with_capacity(64);
-        let mut total = 0i64;
-        for i in 0..50 {
-            let values: Vec<i64> = (0..10).map(|j| i * 10 + j).collect();
-            let slice = arena.allocate_slice(&values);
-            total += slice.iter().sum::<i64>();
-        }
-        assert_eq!(total, 124_750);
-    }
-
-    #[test]
-    fn allocate_with_larger_than_block() {
-        let arena = Arena::with_capacity(16);
-        let data = [0u8; 128];
-        let ptr = arena.allocate_with(|| data);
-        assert_eq!(*ptr, data);
-    }
-
-    #[test]
-    fn allocate_with_many_values_triggers_new_chunks() {
-        let arena = Arena::with_capacity(32);
-        let mut sum = 0i64;
-        for i in 0..100 {
-            let value = arena.allocate_with(|| i);
-            sum += *value;
-        }
-        assert_eq!(sum, 4950);
-    }
-
-    #[test]
-    fn owned_expr_keeps_arena_alive() {
-        let arena = Box::new(Arena::new());
-        let root = arena.allocate_with(|| 123);
-        let root_ptr: *mut i32 = root;
-        // SAFETY: root was allocated in arena, and arena outlives OwnedExpr.
-        let owned = unsafe { OwnedExpr::new(arena, root_ptr) };
-        assert_eq!(*owned.root(), 123);
-    }
-
-    #[test]
-    fn copy_values_survive_arena_drop() {
-        let value = {
+        #[test]
+        fn allocate_single_integer() {
             let arena = Arena::new();
-            let ptr = arena.allocate_with(|| 42i32);
-            *ptr
-        };
-        assert_eq!(value, 42);
-    }
-
-    proptest! {
-        #[test]
-        fn allocate_random_sizes(size in 1usize..10_000) {
-            let arena = Arena::with_capacity(256);
-            let data: Vec<u8> = (0..size).map(|i| (i % 256) as u8).collect();
-            let ptr = arena.allocate_with(|| data.clone());
-            prop_assert_eq!(&ptr[..], &data[..]);
+            let value = arena.allocate_with(|| 42);
+            assert_eq!(*value, 42);
         }
 
         #[test]
-        fn allocate_many_random_values(sizes in prop::collection::vec(1usize..512, 1..50)) {
+        fn allocate_two_integers() {
+            let arena = Arena::new();
+            let a = arena.allocate_with(|| 1);
+            let b = arena.allocate_with(|| 2);
+            assert_eq!(*a, 1);
+            assert_eq!(*b, 2);
+        }
+
+        #[test]
+        fn allocate_empty_slice() {
+            let arena = Arena::new();
+            let slice: &[i32] = arena.allocate_slice(&[]);
+            assert!(slice.is_empty());
+        }
+
+        #[test]
+        fn allocate_small_slice() {
+            let arena = Arena::new();
+            let data = [10, 20, 30];
+            let slice = arena.allocate_slice(&data);
+            assert_eq!(slice, &data[..]);
+        }
+
+        #[test]
+        fn arena_default_matches_new() {
+            let arena: Arena = Default::default();
+            let value = arena.allocate_with(|| "x");
+            assert_eq!(*value, "x");
+        }
+    }
+
+    mod medium {
+        use super::*;
+
+        #[test]
+        fn allocate_larger_than_block() {
+            let arena = Arena::with_capacity(16);
+            let data = [0u8; 128];
+            let ptr = arena.allocate_with(|| data);
+            assert_eq!(*ptr, data);
+        }
+
+        #[test]
+        fn allocate_slice_larger_than_block() {
+            let arena = Arena::with_capacity(16);
+            let values: Vec<u8> = (0..=255).collect();
+            let slice = arena.allocate_slice(&values);
+            assert_eq!(slice, &values[..]);
+        }
+
+        #[test]
+        fn multiple_chunks_for_many_values() {
+            let arena = Arena::with_capacity(32);
+            let mut sum = 0i64;
+            for i in 0..100 {
+                let value = arena.allocate_with(|| i);
+                sum += *value;
+            }
+            assert_eq!(sum, 4950);
+        }
+
+        #[test]
+        fn multiple_chunks_for_many_slices() {
+            let arena = Arena::with_capacity(64);
+            let mut total = 0i64;
+            for i in 0..50 {
+                let values: Vec<i64> = (0..10).map(|j| i * 10 + j).collect();
+                let slice = arena.allocate_slice(&values);
+                total += slice.iter().sum::<i64>();
+            }
+            assert_eq!(total, 124_750);
+        }
+
+        #[test]
+        fn owned_expr_keeps_arena_alive() {
+            let arena = Box::new(Arena::new());
+            let root = arena.allocate_with(|| 123);
+            let root_ptr: *mut i32 = root;
+            // SAFETY: root was allocated in arena, and arena outlives OwnedExpr.
+            let owned = unsafe { OwnedExpr::new(arena, root_ptr) };
+            assert_eq!(*owned.root(), 123);
+        }
+    }
+
+    mod complex {
+        use super::*;
+
+        #[test]
+        fn copy_values_survive_arena_drop() {
+            let value = {
+                let arena = Arena::new();
+                let ptr = arena.allocate_with(|| 42i32);
+                *ptr
+            };
+            assert_eq!(value, 42);
+        }
+
+        #[test]
+        fn alignment_of_large_type() {
+            #[derive(Clone, Copy)]
+            #[repr(C, align(64))]
+            struct BigAlign(u64);
+
+            // The first allocation in a fresh chunk must respect the requested
+            // alignment. Use a single-element slice so the layout alignment is
+            // dominated by BigAlign.
+            let arena = Arena::with_capacity(4096);
+            let values = [BigAlign(7)];
+            let slice = arena.allocate_slice(&values);
+            assert!((slice.as_ptr() as usize).is_multiple_of(64));
+            assert_eq!(slice[0].0, 7);
+        }
+
+        #[test]
+        fn alignment_of_single_value() {
+            #[derive(Clone, Copy)]
+            #[repr(C, align(64))]
+            struct BigAlign(u64);
+
+            let arena = Arena::with_capacity(4096);
+            let value = arena.allocate_with(|| BigAlign(7));
+            assert_eq!((value as *const BigAlign) as usize % 64, 0);
+            assert_eq!(value.0, 7);
+        }
+
+        #[test]
+        #[should_panic(expected = "cannot allocate zero-sized types in Arena")]
+        fn zero_sized_type_panics() {
+            let arena = Arena::new();
+            let _: &mut () = arena.allocate_with(|| ());
+        }
+
+        #[test]
+        #[should_panic(expected = "cannot allocate zero-sized types in Arena")]
+        fn zero_sized_slice_panics() {
+            let arena = Arena::new();
+            let _: &[()] = arena.allocate_slice(&[()]);
+        }
+
+        #[test]
+        fn owned_expr_is_send_sync() {
+            fn assert_send_sync<T: Send + Sync>() {}
+            assert_send_sync::<OwnedExpr<u8>>();
+        }
+    }
+
+    mod extreme {
+        use super::*;
+
+        #[test]
+        fn stress_mixed_allocations() {
             let arena = Arena::with_capacity(256);
             let mut total = 0usize;
-            for (idx, size) in sizes.iter().enumerate() {
-                let expected: Vec<u8> = (0..*size).map(|i| (i.wrapping_add(idx)) as u8).collect();
-                let ptr = arena.allocate_with(|| expected.clone());
-                prop_assert_eq!(&ptr[..], &expected[..]);
-                total += size;
+            for size in (1usize..=1000).step_by(7) {
+                let data: Vec<u8> = (0..size).map(|i| (i % 256) as u8).collect();
+                let ptr = arena.allocate_with(|| data.clone());
+                total += ptr.iter().map(|&x| x as usize).sum::<usize>();
             }
-            prop_assert!(total > 0);
+            assert!(total > 0);
+        }
+
+        proptest! {
+            #[test]
+            fn allocate_random_sizes(size in 1usize..10_000) {
+                let arena = Arena::with_capacity(256);
+                let data: Vec<u8> = (0..size).map(|i| (i % 256) as u8).collect();
+                let ptr = arena.allocate_with(|| data.clone());
+                prop_assert_eq!(&ptr[..], &data[..]);
+            }
+
+            #[test]
+            fn allocate_many_random_values(sizes in prop::collection::vec(1usize..512, 1..50)) {
+                let arena = Arena::with_capacity(256);
+                let mut total = 0usize;
+                for (idx, size) in sizes.iter().enumerate() {
+                    let expected: Vec<u8> = (0..*size).map(|i| (i.wrapping_add(idx)) as u8).collect();
+                    let ptr = arena.allocate_with(|| expected.clone());
+                    prop_assert_eq!(&ptr[..], &expected[..]);
+                    total += size;
+                }
+                prop_assert!(total > 0);
+            }
+
+            #[test]
+            fn slice_roundtrip(values in prop::collection::vec(0i32..100, 0..512)) {
+                let arena = Arena::with_capacity(256);
+                let slice = arena.allocate_slice(&values);
+                prop_assert_eq!(slice, &values[..]);
+            }
         }
     }
 }

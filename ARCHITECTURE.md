@@ -363,15 +363,23 @@ Enabling `ocas-gpl` will produce a combined work under GPL terms.
 
 ## Feature Flags / 功能开关
 
+默认构建保持后端可选，确保在 Windows MSVC 等没有 GMP/MPFR/FLINT 的系统上也能直接编译。
+
 ```toml
 [features]
-default = ["gmp", "mpfr", "flint"]
+default = []
 gmp = ["ocas-core/gmp"]
 mpfr = ["ocas-domain/mpfr"]
 flint = ["ocas-poly/flint"]
 llvm = ["ocas-eval/llvm"]
 gpl = ["ocas-gpl"]
 python = ["ocas-py"]
+```
+
+要启用完整 LGPL 后端，显式传入：
+
+```bash
+cargo build -p ocas --features gmp,mpfr,flint
 ```
 
 ---

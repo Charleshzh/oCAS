@@ -19,7 +19,17 @@ num-bigint = { workspace = true }
 num-traits = { workspace = true }
 hashbrown = { workspace = true }
 smallvec = { workspace = true }
+flint3-sys = { version = "3.5", optional = true }
+rug = { version = "1.27", optional = true, default-features = false, features = ["integer", "rational"] }
+
+[dev-dependencies]
+proptest = { workspace = true }
 
 [features]
 default = []
-flint = []
+# Use the system FLINT library via pkg-config. Bundled builds require a POSIX
+# environment (sh, cp, make) and are not supported on Windows.
+flint = ["dep:flint3-sys", "flint3-sys/use-system-libs"]
+# Pure-Rust GMP-backed integer/rational polynomial backend.
+# On Windows/MinGW this uses system GMP via `gmp-mpfr-sys/use-system-libs`.
+gmp = ["ocas-domain/gmp", "dep:rug"] 

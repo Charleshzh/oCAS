@@ -157,3 +157,40 @@ mod tests {
         assert_eq!(f.mul(&q, &b), a);
     }
 }
+
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use proptest::prelude::*;
+
+    fn small_field() -> FiniteField {
+        FiniteField::new(BigInt::from(7))
+    }
+
+    proptest! {
+        #[test]
+        fn multiplication_is_commutative(a in 0u64..7, b in 0u64..7) {
+            let f = small_field();
+            let x = f.element(a);
+            let y = f.element(b);
+            assert_eq!(f.mul(&x, &y), f.mul(&y, &x));
+        }
+
+        #[test]
+        fn add_then_sub_is_identity(a in 0u64..7, b in 0u64..7) {
+            let f = small_field();
+            let x = f.element(a);
+            let y = f.element(b);
+            let sum = f.add(&x, &y);
+            assert_eq!(f.sub(&sum, &y), x);
+        }
+
+        #[test]
+        fn non_zero_inverse_exists(a in 1u64..7) {
+            let f = small_field();
+            let x = f.element(a);
+            let inv = f.inv(&x).unwrap();
+            assert_eq!(f.mul(&x, &inv), f.one());
+        }
+    }
+}

@@ -1,0 +1,7 @@
+[toolchain]
+# Windows builds default to the MSYS2 MINGW64 GNU toolchain so that optional
+# native backends (GMP/MPFR) can link against the MSYS2 ecosystem. MSVC builds
+# remain available via `cargo build --target x86_64-pc-windows-msvc`.
+# Use the MINGW64 host toolchain, not just the target. This ensures Cargo runs on
+# the GNU host and avoids cross-compiling from MSVC.
+channel = "stable-x86_64-pc-windows-gnu"

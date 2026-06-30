@@ -16,8 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ocas-domain` crate / `ocas-domain` crate
 - `Domain` and `EuclideanDomain` traits / `Domain` 与 `EuclideanDomain` trait
 - Domains: `Integer`, `Rational`, `FiniteField` / 域实现
+- Domains: `RealBall` (with optional `mpfr` backend) and `Complex` / 域实现：可选 `mpfr` 后端的 `RealBall` 与 `Complex`
+- Optional `gmp` feature using `rug` for GMP-backed `Integer` and `Rational` / 可选 `gmp` 特性：基于 `rug` 的 GMP 后端 `Integer` 与 `Rational`
 - `ocas-poly` crate / `ocas-poly` crate
-- Dense univariate polynomial / 稠密单变量多项式
+- Dense univariate polynomial with `div_rem` / 带 `div_rem` 的稠密单变量多项式
+- Sparse multivariate polynomial with `Lex` and `Grevlex` orderings / 支持 `Lex` 与 `Grevlex` 序的稀疏多元多项式
+- Experimental FLINT 3 backend for integer polynomials behind `flint` feature / `flint` feature 后用于整数多项式的实验性 FLINT 3 后端
+- Re-export `RealBall`, `Complex`, and `SparseMultivariatePolynomial` in `ocas::prelude` / 在 `ocas::prelude` 中重新导出 `RealBall`、`Complex` 与 `SparseMultivariatePolynomial`
 
 ### Notes / 说明
 
@@ -25,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for publication.
 
 - 本版本正在 `main` 分支上积极开发，**尚未**准备好发布。
+
+- The `flint` feature is experimental and requires system FLINT. It is not
+  yet supported on Windows because `flint3-sys` depends on POSIX-only types.
+  Use Linux, macOS, or WSL for FLINT-backed tests.
+
+- `flint` 特性为实验性，需要系统 FLINT。由于 `flint3-sys` 依赖仅 POSIX 的
+  类型，目前尚不支持 Windows。请在 Linux、macOS 或 WSL 下运行 FLINT 后端测试。
 
 ---
 

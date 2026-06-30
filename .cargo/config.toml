@@ -1,0 +1,14 @@
+[build]
+# On Windows, default to the MSYS2 MINGW64 GNU target so that optional native
+# backends (GMP/MPFR) can link against the MSYS2 ecosystem. The MSVC target is
+# still available explicitly via `cargo build --target x86_64-pc-windows-msvc`
+# for the no-backend build.
+target = "x86_64-pc-windows-gnu"
+
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
+[env]
+# Help pkg-config find MSYS2 MINGW64 .pc files when building from outside the
+# MSYS2 shell (e.g. from VS Code's integrated terminal).
+PKG_CONFIG_PATH = { value = "C:/msys64/mingw64/lib/pkgconfig", relative = false }

@@ -1,14 +1,27 @@
 //! Rational domain implementation.
+//!
+//! Supports arbitrary-precision rational numbers. The default build uses
+//! [`num_rational::BigRational`]. When the `gmp` feature is enabled, the
+//! implementation moves to [`crate::gmp_backend`].
 
+#[cfg(not(feature = "gmp"))]
 use num_rational::BigRational;
+#[cfg(not(feature = "gmp"))]
 use num_traits::{One, Zero};
 
-use crate::domain::Domain;
+#[cfg(not(feature = "gmp"))]
+use crate::domain::{Domain, EuclideanDomain};
 
-/// Arbitrary-precision rational number.
+/// The rational number domain.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RationalDomain;
+
+#[cfg(not(feature = "gmp"))]
+/// Arbitrary-precision rational number backed by `num-rational`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Rational(BigRational);
 
+#[cfg(not(feature = "gmp"))]
 impl Rational {
     /// Create a rational number from a numerator and denominator.
     pub fn new(numer: i64, denom: i64) -> Self {
@@ -21,10 +34,7 @@ impl Rational {
     }
 }
 
-/// The rational number domain.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RationalDomain;
-
+#[cfg(not(feature = "gmp"))]
 impl Domain for RationalDomain {
     type Element = Rational;
 
@@ -34,6 +44,10 @@ impl Domain for RationalDomain {
 
     fn one(&self) -> Self::Element {
         Rational(BigRational::one())
+    }
+
+    fn pow(&self, a: &Self::Element, n: u64) -> Self::Element {
+        Rational(a.0.clone().pow(n as i32))
     }
 
     fn add(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
@@ -67,6 +81,19 @@ impl Domain for RationalDomain {
     }
 }
 
+#[cfg(not(feature = "gmp"))]
+impl EuclideanDomain for RationalDomain {
+    fn div_rem(
+        &self,
+        a: &Self::Element,
+        b: &Self::Element,
+    ) -> Option<(Self::Element, Self::Element)> {
+        let q = self.div(a, b)?;
+        Some((q, self.zero()))
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
 #[cfg(test)]
 mod tests {
     use super::*;

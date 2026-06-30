@@ -2,12 +2,27 @@
 
 #![warn(missing_docs)]
 
+pub mod complex;
 pub mod domain;
 pub mod finite_field;
 pub mod integer;
 pub mod rational;
+pub mod real_ball;
 
+#[cfg(feature = "gmp")]
+pub mod gmp_backend;
+
+pub use complex::{Complex, ComplexDomain};
 pub use domain::{Domain, EuclideanDomain};
 pub use finite_field::{FiniteField, FiniteFieldElement};
-pub use integer::{Integer, IntegerDomain};
-pub use rational::{Rational, RationalDomain};
+pub use integer::IntegerDomain;
+pub use rational::RationalDomain;
+pub use real_ball::{RealBall, RealBallDomain};
+
+#[cfg(not(feature = "gmp"))]
+pub use integer::Integer;
+#[cfg(not(feature = "gmp"))]
+pub use rational::Rational;
+
+#[cfg(feature = "gmp")]
+pub use gmp_backend::{Integer, Rational};
