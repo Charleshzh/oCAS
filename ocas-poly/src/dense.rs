@@ -77,11 +77,7 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
 
     /// Return the negation of this polynomial.
     pub fn neg(&self) -> Self {
-        let coeffs = self
-            .coeffs
-            .iter()
-            .map(|c| self.domain.neg(c))
-            .collect();
+        let coeffs = self.coeffs.iter().map(|c| self.domain.neg(c)).collect();
         Self::from_coeffs(self.domain.clone(), coeffs)
     }
 

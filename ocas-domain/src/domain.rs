@@ -62,4 +62,3 @@ pub trait EuclideanDomain: Domain {
         b: &Self::Element,
     ) -> Option<(Self::Element, Self::Element)>;
 }
-
