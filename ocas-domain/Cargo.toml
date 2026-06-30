@@ -15,6 +15,7 @@ description = "Algebraic domains and number types for oCAS"
 [dependencies]
 ocas-core = { path = "../ocas-core" }
 num-traits = { workspace = true }
+num-integer = { workspace = true }
 num-bigint = { workspace = true }
 num-rational = { workspace = true }
 
