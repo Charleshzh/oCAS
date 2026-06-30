@@ -29,31 +29,31 @@ pub struct IntegerDomain;
 impl Domain for IntegerDomain {
     type Element = Integer;
 
-    fn zero() -> Self::Element {
+    fn zero(&self) -> Self::Element {
         Integer(BigInt::zero())
     }
 
-    fn one() -> Self::Element {
+    fn one(&self) -> Self::Element {
         Integer(BigInt::one())
     }
 
-    fn add(a: &Self::Element, b: &Self::Element) -> Self::Element {
+    fn add(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
         Integer(a.0.clone() + b.0.clone())
     }
 
-    fn sub(a: &Self::Element, b: &Self::Element) -> Self::Element {
+    fn sub(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
         Integer(a.0.clone() - b.0.clone())
     }
 
-    fn neg(a: &Self::Element) -> Self::Element {
+    fn neg(&self, a: &Self::Element) -> Self::Element {
         Integer(-a.0.clone())
     }
 
-    fn mul(a: &Self::Element, b: &Self::Element) -> Self::Element {
+    fn mul(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
         Integer(a.0.clone() * b.0.clone())
     }
 
-    fn div(a: &Self::Element, b: &Self::Element) -> Option<Self::Element> {
+    fn div(&self, a: &Self::Element, b: &Self::Element) -> Option<Self::Element> {
         if b.0.is_zero() {
             return None;
         }
@@ -61,9 +61,9 @@ impl Domain for IntegerDomain {
         if r.is_zero() { Some(Integer(q)) } else { None }
     }
 
-    fn inv(a: &Self::Element) -> Option<Self::Element> {
+    fn inv(&self, a: &Self::Element) -> Option<Self::Element> {
         if a.0.is_one() {
-            Some(Self::one())
+            Some(self.one())
         } else if a.0 == -BigInt::one() {
             Some(Integer(-BigInt::one()))
         } else {
@@ -73,7 +73,11 @@ impl Domain for IntegerDomain {
 }
 
 impl EuclideanDomain for IntegerDomain {
-    fn div_rem(a: &Self::Element, b: &Self::Element) -> Option<(Self::Element, Self::Element)> {
+    fn div_rem(
+        &self,
+        a: &Self::Element,
+        b: &Self::Element,
+    ) -> Option<(Self::Element, Self::Element)> {
         if b.0.is_zero() {
             return None;
         }
@@ -100,25 +104,28 @@ mod tests {
 
     #[test]
     fn integer_addition() {
+        let domain = IntegerDomain;
         let a = Integer::from(3);
         let b = Integer::from(5);
-        assert_eq!(IntegerDomain::add(&a, &b), Integer::from(8));
+        assert_eq!(domain.add(&a, &b), Integer::from(8));
     }
 
     #[test]
     fn integer_div_exact() {
+        let domain = IntegerDomain;
         let a = Integer::from(10);
         let b = Integer::from(3);
-        assert!(IntegerDomain::div(&a, &b).is_none());
+        assert!(domain.div(&a, &b).is_none());
         let c = Integer::from(2);
-        assert_eq!(IntegerDomain::div(&a, &c), Some(Integer::from(5)));
+        assert_eq!(domain.div(&a, &c), Some(Integer::from(5)));
     }
 
     #[test]
     fn integer_div_rem() {
+        let domain = IntegerDomain;
         let a = Integer::from(17);
         let b = Integer::from(5);
-        let (q, r) = IntegerDomain::div_rem(&a, &b).unwrap();
+        let (q, r) = domain.div_rem(&a, &b).unwrap();
         assert_eq!(q, Integer::from(3));
         assert_eq!(r, Integer::from(2));
     }

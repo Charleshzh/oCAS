@@ -6,44 +6,45 @@
 
 /// A coefficient domain for generic computer-algebra routines.
 ///
-/// Domains are zero-sized types that describe operations on their elements.
-/// This mirrors the conventional "domain object" pattern used by Flint,
-/// SymPy's `Domain`, and other CAS libraries.
-pub trait Domain: Clone + Copy + PartialEq + Eq + std::fmt::Debug + Sized {
+/// Domains describe operations on their elements. The domain object itself may
+/// carry parameters (such as a finite-field modulus), so every operation
+/// takes `&self`. This mirrors the conventional "domain object" pattern used
+/// by Flint, SymPy's `Domain`, and other CAS libraries.
+pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
     /// The type of elements in the domain.
     type Element: Clone + PartialEq + Eq + std::fmt::Debug;
 
     /// The additive identity.
-    fn zero() -> Self::Element;
+    fn zero(&self) -> Self::Element;
 
     /// The multiplicative identity.
-    fn one() -> Self::Element;
+    fn one(&self) -> Self::Element;
 
     /// Add two elements.
-    fn add(a: &Self::Element, b: &Self::Element) -> Self::Element;
+    fn add(&self, a: &Self::Element, b: &Self::Element) -> Self::Element;
 
     /// Subtract `b` from `a`.
-    fn sub(a: &Self::Element, b: &Self::Element) -> Self::Element;
+    fn sub(&self, a: &Self::Element, b: &Self::Element) -> Self::Element;
 
     /// Negate an element.
-    fn neg(a: &Self::Element) -> Self::Element;
+    fn neg(&self, a: &Self::Element) -> Self::Element;
 
     /// Multiply two elements.
-    fn mul(a: &Self::Element, b: &Self::Element) -> Self::Element;
+    fn mul(&self, a: &Self::Element, b: &Self::Element) -> Self::Element;
 
     /// Divide `a` by `b`.
     ///
     /// Returns `None` if division is not exact or `b` is zero.
-    fn div(a: &Self::Element, b: &Self::Element) -> Option<Self::Element>;
+    fn div(&self, a: &Self::Element, b: &Self::Element) -> Option<Self::Element>;
 
     /// Return the multiplicative inverse of `a`.
     ///
     /// Returns `None` if `a` is zero.
-    fn inv(a: &Self::Element) -> Option<Self::Element>;
+    fn inv(&self, a: &Self::Element) -> Option<Self::Element>;
 
     /// Test whether an element is the additive identity.
-    fn is_zero(a: &Self::Element) -> bool {
-        *a == Self::zero()
+    fn is_zero(&self, a: &Self::Element) -> bool {
+        *a == self.zero()
     }
 }
 
@@ -55,5 +56,10 @@ pub trait EuclideanDomain: Domain {
     /// Divide `a` by `b` returning `(quotient, remainder)`.
     ///
     /// Returns `None` if `b` is zero.
-    fn div_rem(a: &Self::Element, b: &Self::Element) -> Option<(Self::Element, Self::Element)>;
+    fn div_rem(
+        &self,
+        a: &Self::Element,
+        b: &Self::Element,
+    ) -> Option<(Self::Element, Self::Element)>;
 }
+

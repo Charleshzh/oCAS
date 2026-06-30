@@ -28,38 +28,38 @@ pub struct RationalDomain;
 impl Domain for RationalDomain {
     type Element = Rational;
 
-    fn zero() -> Self::Element {
+    fn zero(&self) -> Self::Element {
         Rational(BigRational::zero())
     }
 
-    fn one() -> Self::Element {
+    fn one(&self) -> Self::Element {
         Rational(BigRational::one())
     }
 
-    fn add(a: &Self::Element, b: &Self::Element) -> Self::Element {
+    fn add(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
         Rational(a.0.clone() + b.0.clone())
     }
 
-    fn sub(a: &Self::Element, b: &Self::Element) -> Self::Element {
+    fn sub(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
         Rational(a.0.clone() - b.0.clone())
     }
 
-    fn neg(a: &Self::Element) -> Self::Element {
+    fn neg(&self, a: &Self::Element) -> Self::Element {
         Rational(-a.0.clone())
     }
 
-    fn mul(a: &Self::Element, b: &Self::Element) -> Self::Element {
+    fn mul(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
         Rational(a.0.clone() * b.0.clone())
     }
 
-    fn div(a: &Self::Element, b: &Self::Element) -> Option<Self::Element> {
+    fn div(&self, a: &Self::Element, b: &Self::Element) -> Option<Self::Element> {
         if b.0.is_zero() {
             return None;
         }
         Some(Rational(a.0.clone() / b.0.clone()))
     }
 
-    fn inv(a: &Self::Element) -> Option<Self::Element> {
+    fn inv(&self, a: &Self::Element) -> Option<Self::Element> {
         if a.0.is_zero() {
             return None;
         }
@@ -73,24 +73,27 @@ mod tests {
 
     #[test]
     fn rational_addition() {
+        let domain = RationalDomain;
         let a = Rational::new(1, 2);
         let b = Rational::new(1, 3);
-        let sum = RationalDomain::add(&a, &b);
+        let sum = domain.add(&a, &b);
         assert_eq!(sum, Rational::new(5, 6));
     }
 
     #[test]
     fn rational_division() {
+        let domain = RationalDomain;
         let a = Rational::new(2, 3);
         let b = Rational::new(4, 5);
-        let q = RationalDomain::div(&a, &b).unwrap();
+        let q = domain.div(&a, &b).unwrap();
         assert_eq!(q, Rational::new(5, 6));
     }
 
     #[test]
     fn rational_division_by_zero() {
+        let domain = RationalDomain;
         let a = Rational::new(1, 2);
-        let b = RationalDomain::zero();
-        assert!(RationalDomain::div(&a, &b).is_none());
+        let b = domain.zero();
+        assert!(domain.div(&a, &b).is_none());
     }
 }
