@@ -84,13 +84,14 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] `ocas-domain` crate / `ocas-domain` crate
-- [ ] Domains: `Integer`, `Rational`, `FiniteField`, `RealBall`, `Complex` / 域实现
-- [ ] Domain trait for generic algorithms / 泛型算法的 Domain trait
-- [ ] `ocas-poly` crate / `ocas-poly` crate
-- [ ] Dense univariate polynomial / 稠密单变量多项式
+- [x] `ocas-domain` crate / `ocas-domain` crate
+- [x] Domains: `Integer`, `Rational`, `FiniteField` / 域实现
+- [x] Domain trait for generic algorithms / 泛型算法的 Domain trait
+- [x] `ocas-poly` crate / `ocas-poly` crate
+- [x] Dense univariate polynomial / 稠密单变量多项式
+- [ ] Domains: `RealBall`, `Complex` / 域实现
 - [ ] Sparse multivariate polynomial / 稀疏多元多项式
-- [ ] Addition, multiplication, division with remainder / 加减乘除与带余除法
+- [ ] Division with remainder / 带余除法
 - [ ] FLINT 3 integration behind `flint` feature / `flint` feature 后的 FLINT 3 集成
 
 **Success Criteria / 成功标准**:
