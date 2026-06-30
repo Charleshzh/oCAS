@@ -2,17 +2,35 @@
 
 **English**
 
-oCAS defaults to the MSYS2 MINGW64 toolchain on Windows. This is controlled by
-[`rust-toolchain.toml`](../rust-toolchain.toml) (host toolchain) and
-[`.cargo/config.toml`](../.cargo/config.toml) (default target). If you prefer
-MSVC, use `cargo build --target x86_64-pc-windows-msvc --no-default-features`.
+oCAS can be built on Windows with either MSYS2/MINGW64 (recommended when using
+GMP/MPFR/FLINT backends) or MSVC (for pure-Rust builds only). Because the
+project is developed on multiple platforms, the repository no longer commits a
+Windows-only `.cargo/config.toml`. If you want the default MINGW64 target and
+linker, copy the example file locally and configure rustup to use the GNU host:
+
+```powershell
+copy docs\build-windows.cargo-config.toml .cargo\config.toml
+rustup set default-host x86_64-pc-windows-gnu
+rustup default stable-x86_64-pc-windows-gnu
+```
+
+If you prefer MSVC, use `cargo build --target x86_64-pc-windows-msvc --no-default-features`.
 
 **中文**
 
-oCAS 在 Windows 上默认使用 MSYS2 MINGW64 工具链。默认行为由
-[`rust-toolchain.toml`](../rust-toolchain.toml)（主机工具链）和
-[`.cargo/config.toml`](../.cargo/config.toml)（默认目标）共同控制。如需使用
-MSVC，请执行 `cargo build --target x86_64-pc-windows-msvc --no-default-features`。
+oCAS 在 Windows 上可使用 MSYS2/MINGW64（推荐在使用 GMP/MPFR/FLINT 后端时）或
+MSVC（仅纯 Rust 构建）构建。由于本项目跨平台开发，仓库不再提交仅适用于
+Windows 的 `.cargo/config.toml`。若希望默认使用 MINGW64 目标与链接器，请将
+示例文件复制到本地，并配置 rustup 使用 GNU 主机：
+
+```powershell
+copy docs\build-windows.cargo-config.toml .cargo\config.toml
+rustup set default-host x86_64-pc-windows-gnu
+rustup default stable-x86_64-pc-windows-gnu
+```
+
+如需使用 MSVC，请执行 `cargo build --target x86_64-pc-windows-msvc --no-default-features`。
+
 
 ---
 
@@ -25,16 +43,23 @@ MSVC，请执行 `cargo build --target x86_64-pc-windows-msvc --no-default-featu
    ```bash
    pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
    ```
-3. Open the project from the MINGW64 terminal so that `sh`, `gcc`, and
+3. Copy the MINGW64 Cargo example configuration and set the host toolchain to the
+   MINGW64 GNU variant:
+   ```powershell
+   mkdir -Force .cargo
+   copy docs\build-windows.cargo-config.toml .cargo\config.toml
+   rustup set default-host x86_64-pc-windows-gnu
+   rustup default stable-x86_64-pc-windows-gnu
+   ```
+
+4. Open the project from the MINGW64 terminal so that `sh`, `gcc`, and
    `pkg-config` are on `PATH`:
    ```bash
    cd /d/rust/oCAS/ocas
    cargo build --release
    ```
-   The `rust-toolchain.toml` file selects the MINGW64 host toolchain
-   automatically, so you do not need to run `rustup default` manually.
 
-4. To use the GMP-backed `Integer`/`Rational` backend or the MPFR-backed
+5. To use the GMP-backed `Integer`/`Rational` backend or the MPFR-backed
    `RealBall` backend, make sure the MSYS2 `pkg-config` is found before any
    other `pkg-config` on `PATH`:
    ```bash
@@ -58,15 +83,21 @@ MSVC，请执行 `cargo build --target x86_64-pc-windows-msvc --no-default-featu
    ```bash
    pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
    ```
-3. 从 MINGW64 终端打开项目，确保 `sh`、`gcc` 与 `pkg-config` 在 `PATH` 中：
+3. 复制 MINGW64 的 Cargo 示例配置，并将主机工具链设为 MINGW64 GNU 变体：
+   ```powershell
+   mkdir -Force .cargo
+   copy docs\build-windows.cargo-config.toml .cargo\config.toml
+   rustup set default-host x86_64-pc-windows-gnu
+   rustup default stable-x86_64-pc-windows-gnu
+   ```
+
+4. 从 MINGW64 终端打开项目，确保 `sh`、`gcc` 与 `pkg-config` 在 `PATH` 中：
    ```bash
    cd /d/rust/oCAS/ocas
    cargo build --release
    ```
-   项目中的 `rust-toolchain.toml` 会自动选择 MINGW64 主机工具链，无需手动执行
-   `rustup default`。
 
-4. 若要使用 GMP 后端的 `Integer`/`Rational` 或 MPFR 后端的严格
+5. 若要使用 GMP 后端的 `Integer`/`Rational` 或 MPFR 后端的严格
    `RealBall`，请确保 MSYS2 的 `pkg-config` 在 `PATH` 中最先被找到：
    ```bash
    cargo test -p ocas-domain --features gmp

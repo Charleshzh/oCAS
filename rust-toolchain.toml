@@ -1,7 +1,8 @@
 [toolchain]
-# Windows builds default to the MSYS2 MINGW64 GNU toolchain so that optional
-# native backends (GMP/MPFR) can link against the MSYS2 ecosystem. MSVC builds
-# remain available via `cargo build --target x86_64-pc-windows-msvc`.
-# Use the MINGW64 host toolchain, not just the target. This ensures Cargo runs on
-# the GNU host and avoids cross-compiling from MSVC.
-channel = "stable-x86_64-pc-windows-gnu"
+# Pin the Rust version used across development and CI. Component list is kept
+# minimal so that the standard GitHub Actions rust-toolchain installer works on
+# Linux, macOS, and Windows hosts. Windows users who want the MSYS2/MINGW64
+# host toolchain should run `rustup default stable-x86_64-pc-windows-gnu`
+# locally; see docs/build-windows.md for details.
+channel = "1.89.0"
+components = ["rustfmt", "clippy"]

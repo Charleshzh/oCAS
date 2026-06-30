@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.3.0] - Unreleased / 未发布
+## [0.3.0] - 2026-06-30
 
 ### Added / 新增
 
@@ -25,11 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Re-export `RealBall`, `Complex`, and `SparseMultivariatePolynomial` in `ocas::prelude` / 在 `ocas::prelude` 中重新导出 `RealBall`、`Complex` 与 `SparseMultivariatePolynomial`
 
 ### Notes / 说明
-
-- This release is under active development on `main`. It is **not** ready
-  for publication.
-
-- 本版本正在 `main` 分支上积极开发，**尚未**准备好发布。
 
 - The `flint` feature is experimental and requires system FLINT. It is not
   yet supported on Windows because `flint3-sys` depends on POSIX-only types.

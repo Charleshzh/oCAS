@@ -1,8 +1,8 @@
 [build]
-# On Windows, default to the MSYS2 MINGW64 GNU target so that optional native
-# backends (GMP/MPFR) can link against the MSYS2 ecosystem. The MSVC target is
-# still available explicitly via `cargo build --target x86_64-pc-windows-msvc`
-# for the no-backend build.
+# Default to the MSYS2 MINGW64 GNU target so that optional native backends
+# (GMP/MPFR) can link against the MSYS2 ecosystem. The MSVC target is still
+# available explicitly via `cargo build --target x86_64-pc-windows-msvc` for
+# the no-backend build.
 target = "x86_64-pc-windows-gnu"
 
 [target.x86_64-pc-windows-gnu]

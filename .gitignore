@@ -11,6 +11,11 @@ Cargo.lock
 *.swo
 *~
 
+# Per-user Cargo configuration. The repository intentionally does not commit
+# .cargo/config.toml so that Windows MSYS2/MINGW64 users can set their local
+# target/linker without breaking Linux/macOS/CI builds.
+.cargo/
+
 # Python bindings build artifacts
 *.so
 *.pyd
