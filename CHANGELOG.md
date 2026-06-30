@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-06-30
+
+### Added / 新增
+
+- `ocas-atom` crate / `ocas-atom` crate
+- `Atom` tagged-union design / `Atom` 标签联合设计
+- Arena-backed AST with safe public API / 带安全公共 API 的 arena 后端 AST
+- Hash consing for common subexpressions / 公共子表达式 hash consing
+- Lexer using `logos` / 基于 `logos` 的词法分析器
+- Recursive-descent / Pratt parser / 递归下降 / Pratt 语法分析器
+- Printer: ASCII and compact forms / ASCII 与紧凑形式打印器
+- Normalizer: flatten `Add`/`Mul`, sort terms, merge coefficients / 规范化器
+
+### Notes / 说明
+
+- This release is **Pre-Alpha** and focuses on the expression tree core.
+  Algebraic-domain crates (`ocas-domain`, `ocas-poly`, etc.) are still
+  placeholders.
+
+- 本版本为 **Pre-Alpha**，仅聚焦表达式树核心。代数域相关 crate
+  （`ocas-domain`、`ocas-poly` 等）仍为占位。
+
+---
+
 ## [0.1.0] - 2026-06-30
 
 ### Added / 新增
