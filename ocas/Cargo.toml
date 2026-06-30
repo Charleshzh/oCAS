@@ -25,7 +25,7 @@ ocas-gpl = { path = "../ocas-gpl", optional = true }
 
 [features]
 default = []
-gmp = ["ocas-core/gmp"]
+gmp = ["ocas-domain/gmp", "ocas-poly/gmp", "ocas-core/gmp"]
 mpfr = ["ocas-domain/mpfr"]
 flint = ["ocas-poly/flint"]
 python = ["dep:ocas-py"]
