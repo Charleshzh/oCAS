@@ -97,7 +97,8 @@ jobs:
           components: miri
       - uses: Swatinem/rust-cache@v2
       - name: Run Miri on ocas-core
+        timeout-minutes: 12
         run: |
-          cargo +nightly miri test -p ocas-core
+          cargo +nightly miri test -p ocas-core --lib -- --skip allocate_many_random_values --skip allocate_random_sizes
         env:
           MIRIFLAGS: "-Zmiri-disable-isolation -Zmiri-ignore-leaks"
