@@ -178,11 +178,11 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Linear system solver (`faer` / `LinBox`) / 线性方程组求解器
-- [ ] Polynomial system solver (Gröbner + root isolation) / 多项式方程组求解器
-- [ ] Single-variable root finding via Arb / 基于 Arb 的单变量求根
-- [ ] Diophantine solver basics / 丢番图方程基础
-- [ ] Assumptions / domain system / 假设/域系统
+- [x] Linear system solver (`faer` / `LinBox`) / 线性方程组求解器
+- [x] Polynomial system solver (Gröbner + root isolation) / 多项式方程组求解器
+- [x] Single-variable root finding via Arb / 基于 Arb 的单变量求根
+- [x] Diophantine solver basics / 丢番图方程基础
+- [x] Assumptions / domain system / 假设/域系统
 
 **Success Criteria / 成功标准**:
 

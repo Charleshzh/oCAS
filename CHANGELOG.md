@@ -8,6 +8,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.7.0] - 2026-07-01
+
+### Added / 新增
+
+- **Assumptions system** (`ocas-domain`): `Assumption` enum with 14 predicates
+  (`Real`, `Positive`, `Integer`, `Even`, `Prime`, …), `Assumptions` set with
+  logical implication and conflict detection, `SymbolAssumptions` map /
+  **假设系统**：包含 14 种谓词的 `Assumption` 枚举、带逻辑蕴含与冲突检测的
+  `Assumptions` 集合、`SymbolAssumptions` 映射
+- **Matrix types** (`ocas-poly`): `Matrix<D>` with fraction-free Gaussian
+  elimination, back-substitution, and `solve()` for exact linear systems /
+  **矩阵类型**：带分数无关高斯消元、回代与 `solve()` 的 `Matrix<D>`
+- **Polynomial GCD** (`ocas-poly`): `gcd()` with pseudo-remainder algorithm,
+  `primitive_part`, `content` for `DenseUnivariatePolynomial` /
+  **多项式 GCD**：基于伪余式算法的 `gcd()`、`primitive_part`、`content`
+- **Square-free factorization** (`ocas-poly`): Yun's algorithm for
+  `DenseUnivariatePolynomial` / **无平方因子分解**：Yun 算法
+- **Real root isolation** (`ocas-poly`): Sturm sequences, `count_real_roots`,
+  `isolate_real_roots`, bisection refinement / **实根隔离**：Sturm 序列、
+  `count_real_roots`、`isolate_real_roots`、二分精化
+- **Gröbner bases** (`ocas-poly`): `GroebnerBasis` with Buchberger's algorithm,
+  coprime criterion, minimization, auto-reduction, `is_groebner_basis` /
+  **Gröbner 基**：`GroebnerBasis` 含 Buchberger 算法、互质准则、最小化、自归约
+- **Linear system solver** (`ocas-calc`): `solve_linear_rational` and
+  `solve_linear_integer` / **线性方程组求解器**
+- **Diophantine equation solver** (`ocas-calc`): `solve_diophantine` for
+  `ax + by = c` / **丢番图方程求解器**
+- **Polynomial system solver** (`ocas-calc`): `solve_polynomial_system` using
+  lexicographic Gröbner bases / **多项式系统求解器**：基于 Lex Gröbner 基
+- Sparse polynomial Gröbner helpers: `leading_term`, `reduce`, `spoly`,
+  `mul_monomial`, `monomial_divides`, `monomial_lcm`, `monomial_are_coprime` /
+  稀疏多项式 Gröbner 辅助方法
+
+### Changed / 变更
+
+- `EuclideanDomain` trait: added `gcd()` and `extended_gcd()` default methods /
+  `EuclideanDomain` trait 新增 `gcd()` 和 `extended_gcd()` 默认方法
+- `Integer` and `Rational` types: added `Display` implementation
+- `DenseUnivariatePolynomial`: added `is_one()`
+- `SparseMultivariatePolynomial`: added Gröbner-basis support methods
+- `ocas` prelude: exposed all new types and functions / 暴露所有新类型与函数
+- Workspace version bumped to `0.7.0` / 工作区版本提升至 `0.7.0`
+
+---
 ## [0.6.0] - 2026-07-08
 
 ### Added / 新增

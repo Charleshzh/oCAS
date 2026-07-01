@@ -7,3 +7,4 @@
 cc 43e3929e985f69e25ab1593f4f43bf7c28336632e9d85a382712e2876b59ed94 # shrinks to expr = Mul([Num(2), Num(4611686018427387904)])
 cc 819055738f0366526ea40fe8d860f849b2eee7508202a6fcc43e7ec403a41bfd # shrinks to expr = Mul([Mul([Mul([Num(5), Num(1844674407370955162)])])])
 cc 7597f6d5e9a4b6eb1268b831fad8755d00673f6b9f126dca4dc357c4fd642e77 # shrinks to expr = Mul([Add([Num(-2)]), Add([Num(4611686018427387905)])])
+cc 9cf925b99d7a112aabdc2b3326c3e235a6831c5951a621263172074a342d42d4 # shrinks to expr = Mul([Num(-1), Add([Mul([Var("x"), Num(-1)])])])
