@@ -176,6 +176,12 @@ Classifier / 分类器
 - This avoids the overhead of per-node `Box`/`Rc` allocation and improves cache
   locality.
 
+**中文**
+
+- 每个表达式树存在于一个 `Arena` 中。
+- 子节点通过 bump allocation 分配；arena 被 drop 时整棵树一次性释放。
+- 这避免了每个节点使用 `Box`/`Rc` 的开销，并提升缓存局部性。
+
 ### 0.1.0 limitation / 0.1.0 限制
 
 **English**
@@ -190,12 +196,6 @@ added once expression trees need to store owned strings or other `Drop` types.
 当前 `Arena` 故意不运行已分配值的析构函数。因此，仅可安全存放 `Copy`
 类型或无需显式清理资源的类型。当表达式树需要存放拥有的字符串或其他
 `Drop` 类型时，将添加类型擦除的 drop 机制。
-
-**中文**
-
-- 每个表达式树存在于一个 `Arena` 中。
-- 子节点通过 bump allocation 分配；arena 被 drop 时整棵树一次性释放。
-- 这避免了每个节点使用 `Box`/`Rc` 的开销，并提升缓存局部性。
 
 ### External Object Lifetimes / 外部对象生命周期
 

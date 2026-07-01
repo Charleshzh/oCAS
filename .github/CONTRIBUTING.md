@@ -41,7 +41,7 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    ```
 5. Run tests:
    ```bash
-   cargo test --workspace
+   cargo test --workspace --exclude ocas-py
    ```
 
 **中文**
@@ -79,7 +79,7 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    ```bash
    cargo fmt --check
    cargo clippy --workspace -- -D warnings
-   cargo test --workspace
+   cargo test --workspace --exclude ocas-py
    ```
 4. Commit with a clear message:
    ```

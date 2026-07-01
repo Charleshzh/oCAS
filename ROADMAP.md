@@ -124,6 +124,8 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 - [x] `egg` integration for equality saturation / `egg` 等式饱和集成
 - [x] Rule-based simplifier / 基于规则的化简器
 
+**Success Criteria / 成功标准**:
+
 - Common identities (e.g., `x + x -> 2*x`, `x * 0 -> 0`) are applied automatically.
 - E-graph can simplify `sin(x)^2 + cos(x)^2` to `1` under assumptions.
 

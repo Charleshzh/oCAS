@@ -79,7 +79,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 │  Parser │ Printer │ Solver │ Calculus │ Series              │
 ├─────────────────────────────────────────────────────────────┤
 │ Layer 3: Symbolic Engine / 符号引擎                         │
-│  Expression (Atom) │ Transformer │ Pattern Matcher │ E-Graph │
+│  Expression (Atom) │ Transformer │ Pattern Matcher │ Rewriting │ E-Graph │
 ├─────────────────────────────────────────────────────────────┤
 │ Layer 2: Algebraic Kernel / 代数核                          │
 │  Polynomial │ Matrix │ Domain │ Number Theory │ Factorize  │
@@ -111,7 +111,7 @@ ocas = "0.4"
 use ocas::prelude::*;
 use ocas_core::arena::Arena;
 
-fn main() -> Result<(), OcasError> {
+fn main() -> Result<(), ParseError> {
     let arena = Arena::new();
     let ctx = AtomArena::new(&arena);
 
