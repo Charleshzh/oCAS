@@ -72,6 +72,18 @@ name = "poly_sparse"
 harness = false
 
 [[bench]]
+name = "poly_gcd"
+harness = false
+
+[[bench]]
+name = "poly_factor"
+harness = false
+
+[[bench]]
+name = "groebner"
+harness = false
+
+[[bench]]
 name = "calculus"
 harness = false
 
