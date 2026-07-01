@@ -230,12 +230,12 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Python classes deferred from 0.9.0: `Polynomial`, `Matrix`, `Domain` / 从 0.9.0 推迟的 Python 类
-- [ ] Feature freeze for 1.0 / 1.0 功能冻结
-- [ ] Comprehensive documentation site / 综合文档站点
-- [ ] Performance comparison with Symbolica and SageMath / 与 Symbolica/SageMath 的性能对比
-- [ ] Community feedback integration / 社区反馈整合
-- [ ] Bug-fix only period / 仅修复 bug 阶段
+- [x] Python classes deferred from 0.9.0: `Polynomial`, `Matrix`, `Domain` / 从 0.9.0 推迟的 Python 类
+- [x] Feature freeze for 1.0 / 1.0 功能冻结
+- [x] Comprehensive documentation site / 综合文档站点
+- [x] Performance comparison with Symbolica and SageMath / 与 Symbolica/SageMath 的性能对比
+- [x] Community feedback integration / 社区反馈整合
+- [x] Bug-fix only period / 仅修复 bug 阶段
 
 **Success Criteria / 成功标准**:
 

@@ -23,6 +23,10 @@ dist/
 build/
 __pycache__/
 *.py[cod]
+.venv/
+
+# uv lock files for test/bench virtual environments (not the published package)
+ocas-py/uv.lock
 
 # C/C++ bindings build artifacts
 *.a
@@ -34,6 +38,7 @@ __pycache__/
 
 # Documentation build
 target/doc/
+docs/book/html/
 
 # OS
 .DS_Store

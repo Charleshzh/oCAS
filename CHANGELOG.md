@@ -8,6 +8,65 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.10.0] - 2026-07-02
+
+### Added / 新增
+
+- **Python `Polynomial` class**: dense univariate polynomials over ℤ, ℚ, or
+  GF(p) via an enum-erasure strategy. Exposes construction, `coeffs`,
+  `degree`, `eval`, arithmetic operators, `derivative`, `integral`, `gcd`,
+  `div_rem`, `square_free_factorization`, `primitive_part`, and finite-field
+  evaluation / **Python `Polynomial` 类**：基于枚举擦除的稠密一元多项式，
+  支持整数、有理数、有限域 GF(p) 三种系数域
+- **Python `Matrix` class**: dense matrices over ℤ, ℚ, GF(p) with
+  `transpose`, `trace`, `determinant` (Bareiss), `rank`, `inverse`, `matmul`
+  (`@`), `solve`, and arithmetic operators / **Python `Matrix` 类**：支持
+  整数、有理数、有限域的稠密矩阵
+- **Python `IntegerDomain` / `RationalDomain` / `FiniteField` classes**:
+  coefficient-domain selectors consumed by `Polynomial` and `Matrix` /
+  **Python 系数域类**：供 `Polynomial` 与 `Matrix` 使用的域选择器
+- **`Matrix` Rust API**: new methods `transpose`, `trace`, `matmul`, `rank`,
+  `determinant` (Bareiss fraction-free with partial pivoting), `inverse`,
+  `row`, `column` / **`Matrix` Rust API**：新增矩阵方法
+- **`FiniteField` now implements `EuclideanDomain`**: enables
+  `Matrix<FiniteField>` and polynomial operations over finite fields /
+  **`FiniteField` 实现 `EuclideanDomain`**：支持有限域上的矩阵与多项式运算
+- **`Display` for `Rational` and `FiniteFieldElement`**: consistent string
+  rendering across gmp/non-gmp builds / **`Rational` 与
+  `FiniteFieldElement` 的 `Display` 实现**
+- **New benchmarks**: `poly_gcd` (univariate GCD), `poly_factor`
+  (square-free factorization), `groebner` (cyclic-n Gröbner bases) /
+  **新基准**：多项式 GCD、因式分解、Gröbner 基
+- **Extended SymPy comparison**: `factor`, `gcd`, `series`, and large
+  expansion tasks / **扩展 SymPy 对比**：新增 factor/gcd/series 任务
+- **SageMath comparison harness** (`scripts/bench_sage.py`): local manual
+  comparison mirroring `bench_sympy.py` / **SageMath 对比工具**
+- **mdBook documentation site**: bilingual introduction, getting-started,
+  architecture, Python/C bindings, performance, backends, and contributing
+  chapters, deployed via `docs.yml` GitHub Actions / **mdBook 文档站点**
+- **`docs.rs` metadata**: `all-features = true` so the online API docs show
+  every backend / **`docs.rs` 元数据**：全 feature 在线文档
+- **README badges**: CI and docs.rs status badges / **README 徽章**
+
+### Changed / 变更
+
+- Workspace version bumped from `0.9.0` to `0.10.0` / 工作区版本提升
+- README status updated from "Alpha (0.4.0)" to "Beta (0.10.0)" / README 状态
+  更新
+- 0.10.0 ROADMAP deliverables marked complete / ROADMAP 0.10.0 交付物标记完成
+
+### Notes / 说明
+
+- Symbolica comparison is documented as a local manual workflow (running
+  Symbolica's example binaries) rather than linked into the build, owing to
+  Symbolica's AGPL license and separate workspace / 因 Symbolica 的 AGPL
+  许可证与独立 workspace，Symbolica 对比以本地手动工作流文档化，不链接进构建
+- `Polynomial` and `Matrix` Python objects define `__eq__` but are not
+  hashable (a pyo3 0.29 limitation); they behave like Python `list`/`dict`
+  in this respect / `Polynomial` 与 `Matrix` Python 对象定义了 `__eq__` 但
+  不可哈希（pyo3 0.29 限制），行为与 Python `list`/`dict` 一致
+
+---
 ## [0.9.0] - 2026-07-02
 
 ### Added / 新增
