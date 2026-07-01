@@ -14,6 +14,7 @@
 pub mod derivative;
 pub mod integral;
 pub mod series;
+pub mod solve;
 
 mod pattern_alloc;
 mod rules;
