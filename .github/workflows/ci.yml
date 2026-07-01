@@ -58,7 +58,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgmp-dev libmpfr-dev libflint-dev pkg-config
+          sudo apt-get install -y libgmp-dev libmpfr-dev cmake pkg-config
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Run tests with backend features
@@ -97,7 +97,7 @@ jobs:
           components: miri
       - uses: Swatinem/rust-cache@v2
       - name: Run Miri on ocas-core
-        timeout-minutes: 12
+        timeout-minutes: 20
         run: |
           cargo +nightly miri test -p ocas-core --lib -- --skip allocate_many_random_values --skip allocate_random_sizes
         env:

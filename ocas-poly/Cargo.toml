@@ -13,8 +13,8 @@ categories.workspace = true
 description = "Polynomial algorithms for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-domain = { path = "../ocas-domain" }
+ocas-core.workspace = true
+ocas-domain.workspace = true
 num-bigint = { workspace = true }
 num-traits = { workspace = true }
 hashbrown = { workspace = true }
@@ -27,9 +27,13 @@ proptest = { workspace = true }
 
 [features]
 default = []
-# Use the system FLINT library via pkg-config. Bundled builds require a POSIX
-# environment (sh, cp, make) and are not supported on Windows.
-flint = ["dep:flint3-sys", "flint3-sys/use-system-libs"]
+# Build FLINT from bundled source (requires cmake).
+# Use `flint-system` if you have FLINT >= 3.0 installed via pkg-config.
+flint = ["dep:flint3-sys"]
+# Use system FLINT library via pkg-config.
+# Bundled builds require a POSIX environment (sh, cp, make) and are not
+# supported on Windows.
+flint-system = ["dep:flint3-sys", "flint3-sys/use-system-libs"]
 # Pure-Rust GMP-backed integer/rational polynomial backend.
 # On Windows/MinGW this uses system GMP via `gmp-mpfr-sys/use-system-libs`.
 gmp = ["ocas-domain/gmp", "dep:rug"] 
