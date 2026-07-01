@@ -17,6 +17,7 @@ ocas-core = { path = "../ocas-core" }
 ocas-domain = { path = "../ocas-domain" }
 ocas-atom = { path = "../ocas-atom" }
 ocas-poly = { path = "../ocas-poly" }
+ocas-rewrite = { path = "../ocas-rewrite" }
 
 [features]
 default = []

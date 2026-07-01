@@ -135,11 +135,11 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Symbolic differentiation / 符号微分
-- [ ] Derivative table for elementary functions / 初等函数导数表
-- [ ] Taylor series expansion / Taylor 级数展开
-- [ ] Partial integration with heuristic table / 基于启发式表的部分积分
-- [ ] `ocas-calc` crate initial release / `ocas-calc` 初始版本
+- [x] Symbolic differentiation / 符号微分
+- [x] Derivative table for elementary functions / 初等函数导数表
+- [x] Taylor series expansion / Taylor 级数展开
+- [x] Partial integration with heuristic table / 基于启发式表的部分积分
+- [x] `ocas-calc` crate initial release / `ocas-calc` 初始版本
 
 **Success Criteria / 成功标准**:
 

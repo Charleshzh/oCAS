@@ -28,6 +28,7 @@
 /// ```
 pub mod prelude {
     pub use ocas_atom::{Atom, AtomArena, AtomNode, Symbol, normalize};
+    pub use ocas_calc::{diff, integrate, taylor};
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
     pub use ocas_domain::{
@@ -45,6 +46,7 @@ pub mod prelude {
 
 // Re-export crates for users who prefer fully qualified names.
 pub use ocas_atom;
+pub use ocas_calc;
 pub use ocas_core;
 pub use ocas_domain;
 pub use ocas_parse;

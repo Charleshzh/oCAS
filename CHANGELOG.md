@@ -8,6 +8,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.5.0] - 2026-07-01
+
+### Added / 新增
+
+- `ocas-calc` crate initial release / `ocas-calc` crate 初始版本
+- Symbolic differentiation (`diff`) / 符号微分 (`diff`)
+- Derivative table for elementary functions (`sin`, `cos`, `exp`, `log`, `sqrt`, `tan`, `sec`) / 初等函数导数表
+- Chain rule, product rule, and generalized power rule / 链式法则、乘积法则与广义幂法则
+- Taylor series expansion (`taylor`) around a point / 在某点处的 Taylor 级数展开 (`taylor`)
+- Heuristic integration (`integrate`) with table lookup and linear substitution / 基于查表与线性替换的启发式积分 (`integrate`)
+- Linear substitution support for integrals / 积分中的线性替换支持
+- `Derivative(expr, var)` and `Integral(expr, var)` unevaluated forms / 未求出的 `Derivative(expr, var)` 与 `Integral(expr, var)` 形式
+- Re-export `diff`, `integrate`, and `taylor` from the top-level `ocas` crate / 在顶层 `ocas` crate 中重新导出 `diff`、`integrate`、`taylor`
+- End-to-end calculus integration tests / 端到端微积分集成测试
+
+### Changed / 变更
+
+- `normalize` now removes `+0` and `*1` identity terms, absorbs `*0` into `0`, and preserves argument order for `Derivative` / `Integral` / `normalize` 现在会移除 `+0`、`*1` 单位元，将 `*0` 吸收为 `0`，并对 `Derivative` / `Integral` 保持参数顺序
+- Workspace version bumped to `0.5.0` / 工作区版本提升至 `0.5.0`
+
+---
 
 ## [0.4.0] - 2026-07-01
 

@@ -14,7 +14,10 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
         AtomNode::Num(_) | AtomNode::Var(_) => atom,
         AtomNode::Fun(name, args) => {
             let mut normalized: Vec<Atom<'a>> = args.iter().map(|a| normalize(ctx, *a)).collect();
-            normalized.sort();
+            // Preserve argument order for calculus forms where order is semantic.
+            if !matches!(name.as_str(), "Derivative" | "Integral") {
+                normalized.sort();
+            }
             ctx.fun(name.as_str(), &normalized)
         }
         AtomNode::Add(args) => {
@@ -22,9 +25,12 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
             collect_add(args, &mut flat);
             let mut normalized: Vec<Atom<'a>> =
                 flat.into_iter().map(|a| normalize(ctx, a)).collect();
+            normalized.retain(|a| !matches!(a.node(), AtomNode::Num(0)));
             normalized.sort();
             merge_numbers(ctx, &mut normalized, true);
-            if normalized.len() == 1 {
+            if normalized.is_empty() {
+                ctx.num(0)
+            } else if normalized.len() == 1 {
                 normalized[0]
             } else {
                 ctx.add(&normalized)
@@ -35,9 +41,18 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
             collect_mul(args, &mut flat);
             let mut normalized: Vec<Atom<'a>> =
                 flat.into_iter().map(|a| normalize(ctx, a)).collect();
+            if normalized
+                .iter()
+                .any(|a| matches!(a.node(), AtomNode::Num(0)))
+            {
+                return ctx.num(0);
+            }
+            normalized.retain(|a| !matches!(a.node(), AtomNode::Num(1)));
             normalized.sort();
             merge_numbers(ctx, &mut normalized, false);
-            if normalized.len() == 1 {
+            if normalized.is_empty() {
+                ctx.num(1)
+            } else if normalized.len() == 1 {
                 normalized[0]
             } else {
                 ctx.mul(&normalized)
