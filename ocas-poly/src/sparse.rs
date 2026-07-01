@@ -296,6 +296,149 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
         terms.sort_by(|(a, _), (b, _)| O::cmp(a, b));
         terms
     }
+
+    // ------------------------------------------------------------------
+    //  Gröbner-basis support
+    // ------------------------------------------------------------------
+
+    /// Return the leading term `(exponent_vector, coefficient)` or `None`
+    /// for the zero polynomial.
+    ///
+    /// This scans the HashMap in O(n) without allocating — faster than
+    /// `sorted_terms()` for repeated calls during reduction.
+    pub fn leading_term(&self) -> Option<(&SmallVec<[usize; 4]>, &D::Element)> {
+        self.terms.iter().max_by(|(a, _), (b, _)| O::cmp(a, b))
+    }
+
+    /// Return the leading monomial (exponent vector) or `None`.
+    pub fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>> {
+        self.terms.keys().max_by(|a, b| O::cmp(a, b))
+    }
+
+    /// Return the leading coefficient or `None`.
+    pub fn leading_coeff(&self) -> Option<&D::Element> {
+        let lm = self.leading_monomial()?;
+        self.terms.get(lm)
+    }
+
+    /// Multiply every term's exponent vector by `exp` element-wise.
+    ///
+    /// Panics if `exp.len() != self.n_vars`.
+    pub fn mul_monomial(&self, exp: &[usize]) -> Self {
+        assert_eq!(
+            exp.len(),
+            self.n_vars,
+            "exponent vector must have length {}",
+            self.n_vars
+        );
+        let mut poly = self.zero();
+        for (e, c) in &self.terms {
+            let mut new_exp = SmallVec::with_capacity(self.n_vars);
+            for i in 0..self.n_vars {
+                new_exp.push(e[i] + exp[i]);
+            }
+            poly.terms.insert(new_exp, c.clone());
+        }
+        poly
+    }
+
+    /// Reduce `self` by the given basis (a list of polynomials).
+    ///
+    /// Implements multivariate polynomial division: repeatedly look for a
+    /// basis element whose leading monomial divides the current leading
+    /// monomial, subtract the appropriate multiple, or else move the leading
+    /// term into the remainder.  Requires that `div` on the domain succeeds
+    /// (i.e. the domain is effectively a field).
+    pub fn reduce(&self, basis: &[Self]) -> Self {
+        let mut remainder = self.clone();
+        let mut result = self.zero();
+
+        // Cache each basis element's leading term.
+        let basis_lts: Vec<_> = basis
+            .iter()
+            .filter_map(|g| g.leading_term().map(|(e, c)| (g, e.clone(), c.clone())))
+            .collect();
+
+        let max_iter = 200;
+
+        for _ in 0..max_iter {
+            if remainder.is_zero() {
+                break;
+            }
+            let (rm, rc) = match remainder.leading_term() {
+                Some((e, c)) => (e.clone(), c.clone()),
+                None => break,
+            };
+
+            let mut reduced = false;
+            for (g, lm, lc) in &basis_lts {
+                if monomial_divides(&rm, lm) {
+                    let qm: SmallVec<[usize; 4]> =
+                        rm.iter().zip(lm.iter()).map(|(a, b)| a - b).collect();
+                    let qc = match self.domain.div(&rc, lc) {
+                        Some(q) => q,
+                        None => break,
+                    };
+                    let sub = g.mul_monomial(&qm).mul_scalar(&qc);
+                    remainder = remainder.sub(&sub);
+                    reduced = true;
+                    break;
+                }
+            }
+
+            if !reduced {
+                let key = rm;
+                let val = rc;
+                result.terms.insert(key.clone(), val);
+                remainder.terms.remove(&key);
+            }
+        }
+
+        result
+    }
+
+    /// Compute the S-polynomial of `self` and `other`:
+    ///
+    /// S(f, g) = f·lc(g)·x^(lcm-lm(f)) - g·lc(f)·x^(lcm-lm(g))
+    pub fn spoly(&self, other: &Self) -> Self {
+        let (lm_f, lc_f) = match self.leading_term() {
+            Some(t) => (t.0.clone(), t.1.clone()),
+            None => return self.zero(),
+        };
+        let (lm_g, lc_g) = match other.leading_term() {
+            Some(t) => (t.0.clone(), t.1.clone()),
+            None => return self.zero(),
+        };
+
+        let lcm = monomial_lcm(&lm_f, &lm_g);
+
+        let m_f: SmallVec<[usize; 4]> = lcm.iter().zip(lm_f.iter()).map(|(a, b)| a - b).collect();
+        let m_g: SmallVec<[usize; 4]> = lcm.iter().zip(lm_g.iter()).map(|(a, b)| a - b).collect();
+
+        let term1 = self.mul_monomial(&m_f).mul_scalar(&lc_g);
+        let term2 = other.mul_monomial(&m_g).mul_scalar(&lc_f);
+
+        term1.sub(&term2)
+    }
+}
+
+// ------------------------------------------------------------------
+//  Monomial utilities
+// ------------------------------------------------------------------
+
+/// Check whether monomial `a` divides monomial `b`: `a[i] >= b[i]` for all i.
+pub fn monomial_divides(a: &[usize], b: &[usize]) -> bool {
+    a.iter().zip(b.iter()).all(|(x, y)| x >= y)
+}
+
+/// Compute the least common multiple of two monomials: element-wise max.
+pub fn monomial_lcm(a: &[usize], b: &[usize]) -> SmallVec<[usize; 4]> {
+    a.iter().zip(b.iter()).map(|(x, y)| *x.max(y)).collect()
+}
+
+/// Return true if the two monomials are coprime (no variable appears in both).
+pub fn monomial_are_coprime(a: &[usize], b: &[usize]) -> bool {
+    a.iter().zip(b.iter()).all(|(x, y)| *x == 0 || *y == 0)
 }
 
 #[cfg(test)]

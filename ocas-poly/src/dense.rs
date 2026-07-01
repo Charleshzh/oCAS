@@ -114,6 +114,11 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
         Self::from_coeffs(self.domain.clone(), vec![self.domain.one()])
     }
 
+    /// Return whether this is the constant polynomial 1.
+    pub fn is_one(&self) -> bool {
+        self.coeffs.len() == 1 && self.domain.is_one(&self.coeffs[0])
+    }
+
     /// Return the negation of this polynomial.
     pub fn neg(&self) -> Self {
         let coeffs = self.coeffs.iter().map(|c| self.domain.neg(c)).collect();
