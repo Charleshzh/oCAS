@@ -8,6 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.6.0] - 2026-07-08
+
+### Added / 新增
+
+- Stable top-level `ocas` prelude API / 稳定的顶层 `ocas` prelude API
+- Rustdoc examples for all public items in `ocas`, `ocas-atom`, `ocas-calc`, `ocas-parse`, `ocas-rewrite`, and `ocas-core` / 为 `ocas`、`ocas-atom`、`ocas-calc`、`ocas-parse`、`ocas-rewrite` 和 `ocas-core` 的所有公共项添加 rustdoc 示例
+- Property-based tests via `proptest` in `ocas-atom`, `ocas-rewrite`, `ocas-calc`, `ocas-parse`, and `ocas-domain` / 在 `ocas-atom`、`ocas-rewrite`、`ocas-calc`、`ocas-parse` 和 `ocas-domain` 中通过 `proptest` 添加基于属性的测试
+- Criterion benchmarks for parsing, normalization, dense/sparse polynomials, calculus, rewriting, and a SymPy comparison harness via `uv` / 用于解析、规范化、稠密/稀疏多项式、微积分、重写的 Criterion 基准，以及通过 `uv` 运行的 SymPy 对比基准
+- `substitute` exported from `ocas-calc` and the top-level prelude / 从 `ocas-calc` 和顶层 prelude 导出 `substitute`
+- `#[doc(hidden)]` subcrate re-exports so the top-level `ocas` API is the documented public surface / 子 crate 重新导出标记为 `#[doc(hidden)]`，使顶层 `ocas` API 成为文档中的公共接口
+
+### Changed / 变更
+
+- Workspace version bumped to `0.6.0` / 工作区版本提升至 `0.6.0`
+- Internal workspace crates now reference each other through `[workspace.dependencies]` so they are ready for publication / 内部工作区 crate 现在通过 `[workspace.dependencies]` 互相引用，以便发布
+
+---
 ## [0.5.0] - 2026-07-01
 
 ### Added / 新增
@@ -29,7 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workspace version bumped to `0.5.0` / 工作区版本提升至 `0.5.0`
 
 ---
-
 ## [0.4.0] - 2026-07-01
 
 ### Added / 新增

@@ -13,9 +13,9 @@ categories.workspace = true
 description = "Optional GPL-only backends for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-domain = { path = "../ocas-domain" }
-ocas-poly = { path = "../ocas-poly" }
+ocas-core.workspace = true
+ocas-domain.workspace = true
+ocas-poly.workspace = true
 
 [features]
 default = []

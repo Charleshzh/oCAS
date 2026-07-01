@@ -13,10 +13,13 @@ categories.workspace = true
 description = "Symbolic expression tree and rewriting for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-domain = { path = "../ocas-domain" }
+ocas-core.workspace = true
+ocas-domain.workspace = true
 hashbrown = { workspace = true }
 smallvec = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
 
 [features]
 default = []

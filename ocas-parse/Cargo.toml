@@ -13,11 +13,14 @@ categories.workspace = true
 description = "Parser and printer for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-atom = { path = "../ocas-atom" }
+ocas-core.workspace = true
+ocas-atom.workspace = true
 thiserror = { workspace = true }
 logos = { workspace = true }
 chumsky = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
 
 [features]
 default = []

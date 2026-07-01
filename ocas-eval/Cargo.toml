@@ -13,9 +13,9 @@ categories.workspace = true
 description = "Evaluation and JIT code generation for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-domain = { path = "../ocas-domain" }
-ocas-atom = { path = "../ocas-atom" }
+ocas-core.workspace = true
+ocas-domain.workspace = true
+ocas-atom.workspace = true
 cranelift = { workspace = true, optional = true }
 cranelift-module = { workspace = true, optional = true }
 cranelift-jit = { workspace = true, optional = true }

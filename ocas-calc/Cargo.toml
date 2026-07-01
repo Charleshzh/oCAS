@@ -13,11 +13,12 @@ categories.workspace = true
 description = "Calculus and equation solving for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-domain = { path = "../ocas-domain" }
-ocas-atom = { path = "../ocas-atom" }
-ocas-poly = { path = "../ocas-poly" }
-ocas-rewrite = { path = "../ocas-rewrite" }
-
+ocas-core.workspace = true
+ocas-domain.workspace = true
+ocas-atom.workspace = true
+ocas-poly.workspace = true
+ocas-rewrite.workspace = true
+[dev-dependencies]
+proptest = { workspace = true }
 [features]
 default = []

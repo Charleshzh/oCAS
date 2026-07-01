@@ -152,16 +152,18 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Stable `ocas` prelude / 稳定的 `ocas` prelude
-- [ ] Rustdoc examples for all public APIs / 所有公共 API 的 rustdoc 示例
-- [ ] Property tests with `proptest` / `proptest` 属性测试
-- [ ] Initial benchmark suite / 初始基准测试套件
-- [ ] crates.io publish (alpha) / crates.io 发布（alpha）
+- [x] Stable `ocas` prelude / 稳定的 `ocas` prelude
+- [x] Rustdoc examples for all public APIs / 所有公共 API 的 rustdoc 示例
+- [x] Property tests with `proptest` / `proptest` 属性测试
+- [x] Initial benchmark suite / 初始基准测试套件
+- [x] SymPy comparison harness via `uv` / 通过 `uv` 的 SymPy 对比基准
+- [x] crates.io publish preparation (internal workspace deps versioned) / crates.io 发布准备（内部工作区依赖已版本化）
 
 **Success Criteria / 成功标准**:
 
-- `cargo test --workspace` passes.
-- Benchmarks demonstrate parity with SymPy on basic polynomial operations.
+- `cargo test --workspace --exclude ocas-py` passes.
+- Benchmarks demonstrate parity with SymPy on basic polynomial, calculus, and rewriting operations.
+- `cargo publish --dry-run -p ocas-core` succeeds; top-level `ocas` is ready to publish once the internal crates are uploaded.
 
 ---
 

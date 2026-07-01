@@ -13,14 +13,17 @@ categories.workspace = true
 description = "Pattern matching, rewriting and rule-based simplification for oCAS"
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-atom = { path = "../ocas-atom" }
-ocas-parse = { path = "../ocas-parse" }
+ocas-core.workspace = true
+ocas-atom.workspace = true
+ocas-parse.workspace = true
 hashbrown = { workspace = true }
 smallvec = { workspace = true }
 
 # Optional equality saturation backend.
 egg = { version = "0.10", optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
 
 [features]
 default = []

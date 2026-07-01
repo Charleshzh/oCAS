@@ -17,13 +17,13 @@ name = "ocas_py"
 crate-type = ["cdylib"]
 
 [dependencies]
-ocas-core = { path = "../ocas-core" }
-ocas-atom = { path = "../ocas-atom" }
-ocas-domain = { path = "../ocas-domain" }
-ocas-poly = { path = "../ocas-poly" }
-ocas-calc = { path = "../ocas-calc" }
-ocas-eval = { path = "../ocas-eval" }
-ocas-parse = { path = "../ocas-parse" }
+ocas-core.workspace = true
+ocas-atom.workspace = true
+ocas-domain.workspace = true
+ocas-poly.workspace = true
+ocas-calc.workspace = true
+ocas-eval.workspace = true
+ocas-parse.workspace = true
 pyo3 = { workspace = true }
 
 [features]
