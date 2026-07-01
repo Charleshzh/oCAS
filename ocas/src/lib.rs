@@ -61,6 +61,8 @@ pub mod prelude {
     };
     #[cfg(feature = "simd")]
     pub use ocas_eval::VectorEvaluator;
+    #[cfg(feature = "jit")]
+    pub use ocas_eval::jit::{JitCompiledFunction, JitEngine};
     pub use ocas_eval::{
         EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FunctionMap, Instr,
         Instruction, Slot,

@@ -27,6 +27,8 @@ criterion = { workspace = true }
 [features]
 default = []
 gmp = ["ocas-core/gmp"]
+jit = ["ocas-eval/jit"]
+simd = ["ocas-eval/simd"]
 
 [[bench]]
 name = "arena"
@@ -47,6 +49,11 @@ harness = false
 [[bench]]
 name = "eval_simd"
 harness = false
+
+[[bench]]
+name = "eval_jit"
+harness = false
+required-features = ["jit"]
 
 [[bench]]
 name = "parse"
