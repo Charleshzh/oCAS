@@ -58,6 +58,13 @@ impl Rational {
 }
 
 #[cfg(not(feature = "gmp"))]
+impl std::fmt::Display for Rational {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
 impl Domain for RationalDomain {
     type Element = Rational;
 

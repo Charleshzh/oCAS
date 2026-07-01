@@ -21,6 +21,18 @@ pub struct Integer(RugInteger);
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Rational(RugRational);
 
+impl std::fmt::Display for Integer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::fmt::Display for Rational {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl Domain for IntegerDomain {
     type Element = Integer;
 

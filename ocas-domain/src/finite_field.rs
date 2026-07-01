@@ -34,6 +34,12 @@ impl FiniteFieldElement {
     }
 }
 
+impl std::fmt::Display for FiniteFieldElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 /// A prime finite field $\mathbb{Z}/p\mathbb{Z}$.
 ///
 /// # Example
@@ -127,6 +133,27 @@ impl Domain for FiniteField {
 
     fn is_zero(&self, a: &Self::Element) -> bool {
         a.value.is_zero()
+    }
+}
+
+impl crate::domain::EuclideanDomain for FiniteField {
+    fn div_rem(
+        &self,
+        a: &Self::Element,
+        b: &Self::Element,
+    ) -> Option<(Self::Element, Self::Element)> {
+        // Every nonzero element of a field is a unit, so division is exact
+        // and the remainder is always zero.
+        self.div(a, b).map(|q| (q, self.zero()))
+    }
+
+    fn gcd(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
+        // In a field the GCD is degenerate: 0 if both are zero, else 1.
+        if self.is_zero(a) && self.is_zero(b) {
+            self.zero()
+        } else {
+            self.one()
+        }
     }
 }
 

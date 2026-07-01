@@ -355,6 +355,259 @@ impl<D: EuclideanDomain> Matrix<D> {
     pub fn data(&self) -> &[D::Element] {
         &self.data
     }
+
+    /// Return a copy of a single row as a vector.
+    pub fn row(&self, i: usize) -> Vec<D::Element> {
+        let start = i * self.ncols;
+        self.data[start..start + self.ncols].to_vec()
+    }
+
+    /// Return a copy of a single column as a vector.
+    pub fn column(&self, j: usize) -> Vec<D::Element> {
+        (0..self.nrows).map(|i| self[(i, j)].clone()).collect()
+    }
+
+    /// Return the transpose of the matrix.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::matrix::Matrix;
+    ///
+    /// let d = IntegerDomain;
+    /// let a = Matrix::from_rows(vec![vec![Integer::from(1), Integer::from(2)]], d);
+    /// let t = a.transpose();
+    /// assert_eq!(t.nrows(), 2);
+    /// assert_eq!(t.ncols(), 1);
+    /// assert_eq!(t[(0, 0)], Integer::from(1));
+    /// assert_eq!(t[(1, 0)], Integer::from(2));
+    /// ```
+    pub fn transpose(&self) -> Matrix<D> {
+        let mut data = Vec::with_capacity(self.nrows * self.ncols);
+        for j in 0..self.ncols {
+            for i in 0..self.nrows {
+                data.push(self[(i, j)].clone());
+            }
+        }
+        Matrix {
+            data,
+            nrows: self.ncols,
+            ncols: self.nrows,
+            domain: self.domain.clone(),
+        }
+    }
+
+    /// Return the trace (sum of the diagonal) of a square matrix.
+    ///
+    /// Returns an error if the matrix is not square.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::matrix::Matrix;
+    ///
+    /// let d = IntegerDomain;
+    /// let a = Matrix::from_rows(
+    ///     vec![vec![Integer::from(1), Integer::from(2)], vec![Integer::from(3), Integer::from(4)]],
+    ///     d,
+    /// );
+    /// assert_eq!(a.trace().unwrap(), Integer::from(5));
+    /// ```
+    pub fn trace(&self) -> Result<D::Element, MatrixError> {
+        if self.nrows != self.ncols {
+            return Err(MatrixError::ShapeMismatch);
+        }
+        let mut sum = self.domain.zero();
+        for i in 0..self.nrows {
+            sum = self.domain.add(&sum, &self[(i, i)]);
+        }
+        Ok(sum)
+    }
+
+    /// Compute the matrix product `self * other`.
+    ///
+    /// Returns an error if `self.ncols != other.nrows`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::matrix::Matrix;
+    ///
+    /// let d = IntegerDomain;
+    /// let a = Matrix::from_rows(vec![vec![Integer::from(1), Integer::from(2)]], d);
+    /// let b = Matrix::from_rows(vec![vec![Integer::from(3)], vec![Integer::from(4)]], d);
+    /// let c = a.matmul(&b).unwrap();
+    /// assert_eq!(c[(0, 0)], Integer::from(11));
+    /// ```
+    pub fn matmul(&self, other: &Matrix<D>) -> Result<Matrix<D>, MatrixError> {
+        if self.ncols != other.nrows {
+            return Err(MatrixError::ShapeMismatch);
+        }
+        let mut data = Vec::with_capacity(self.nrows * other.ncols);
+        for i in 0..self.nrows {
+            for j in 0..other.ncols {
+                let mut acc = self.domain.zero();
+                for k in 0..self.ncols {
+                    let term = self.domain.mul(&self[(i, k)], &other[(k, j)]);
+                    acc = self.domain.add(&acc, &term);
+                }
+                data.push(acc);
+            }
+        }
+        Ok(Matrix {
+            data,
+            nrows: self.nrows,
+            ncols: other.ncols,
+            domain: self.domain.clone(),
+        })
+    }
+
+    /// Compute the rank of the matrix via fraction-free Gaussian elimination.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::matrix::Matrix;
+    ///
+    /// let d = IntegerDomain;
+    /// let a = Matrix::from_rows(
+    ///     vec![vec![Integer::from(1), Integer::from(2)], vec![Integer::from(2), Integer::from(4)]],
+    ///     d,
+    /// );
+    /// assert_eq!(a.rank(), 1);
+    /// ```
+    pub fn rank(&self) -> usize {
+        let mut copy = self.clone();
+        copy.row_echelon(self.ncols)
+    }
+
+    /// Compute the determinant of a square matrix using the Bareiss
+    /// fraction-free algorithm with partial pivoting.
+    ///
+    /// Returns an error if the matrix is not square.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::matrix::Matrix;
+    ///
+    /// let d = IntegerDomain;
+    /// let a = Matrix::from_rows(
+    ///     vec![vec![Integer::from(1), Integer::from(2)], vec![Integer::from(3), Integer::from(4)]],
+    ///     d,
+    /// );
+    /// assert_eq!(a.determinant().unwrap(), Integer::from(-2));
+    /// ```
+    pub fn determinant(&self) -> Result<D::Element, MatrixError> {
+        if self.nrows != self.ncols {
+            return Err(MatrixError::ShapeMismatch);
+        }
+        let n = self.nrows;
+        if n == 0 {
+            return Ok(self.domain.one());
+        }
+        if n == 1 {
+            return Ok(self.data[0].clone());
+        }
+        // Bareiss fraction-free elimination with partial pivoting.
+        let mut m = self.data.clone();
+        let mut sign_pos = true;
+        let mut prev = self.domain.one();
+        for k in 0..n - 1 {
+            let pivot = m[k * n + k].clone();
+            if self.domain.is_zero(&pivot) {
+                // Find a row below with a nonzero entry in column k.
+                let mut swap_row = None;
+                for i in k + 1..n {
+                    if !self.domain.is_zero(&m[i * n + k]) {
+                        swap_row = Some(i);
+                        break;
+                    }
+                }
+                match swap_row {
+                    Some(i) => {
+                        for j in 0..n {
+                            m.swap(k * n + j, i * n + j);
+                        }
+                        sign_pos = !sign_pos;
+                    }
+                    None => return Ok(self.domain.zero()),
+                }
+            }
+            let pivot = m[k * n + k].clone();
+            for i in k + 1..n {
+                for j in k + 1..n {
+                    let term1 = self.domain.mul(&m[i * n + j], &pivot);
+                    let term2 = self.domain.mul(&m[i * n + k], &m[k * n + j]);
+                    let diff = self.domain.sub(&term1, &term2);
+                    // Bareiss guarantees exact divisibility by prev.
+                    m[i * n + j] = self.domain.div(&diff, &prev).unwrap_or(diff);
+                }
+            }
+            prev = pivot;
+        }
+        let det = m[(n - 1) * n + (n - 1)].clone();
+        if sign_pos {
+            Ok(det)
+        } else {
+            Ok(self.domain.neg(&det))
+        }
+    }
+
+    /// Compute the inverse of a square non-singular matrix.
+    ///
+    /// Returns an error if the matrix is not square or is singular over the
+    /// coefficient domain.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::matrix::Matrix;
+    ///
+    /// let d = IntegerDomain;
+    /// // Unimodular matrix: determinant 1, integer inverse exists.
+    /// let a = Matrix::from_rows(
+    ///     vec![vec![Integer::from(1), Integer::from(2)], vec![Integer::from(0), Integer::from(1)]],
+    ///     d,
+    /// );
+    /// let inv = a.inverse().unwrap();
+    /// assert_eq!(inv[(0, 0)], Integer::from(1));
+    /// assert_eq!(inv[(0, 1)], Integer::from(-2));
+    /// assert_eq!(inv[(1, 0)], Integer::from(0));
+    /// assert_eq!(inv[(1, 1)], Integer::from(1));
+    /// ```
+    pub fn inverse(&self) -> Result<Matrix<D>, MatrixError> {
+        if self.nrows != self.ncols {
+            return Err(MatrixError::ShapeMismatch);
+        }
+        let n = self.nrows;
+        let identity = Matrix::identity(n, self.domain.clone());
+        // Solve A * x_j = e_j for each column j of the identity, giving
+        // column j of A^{-1}. Stored in row-major order.
+        let mut inv_data = vec![self.domain.zero(); n * n];
+        for j in 0..n {
+            let b = identity.column(j);
+            let col = self.solve(&b)?;
+            if col.len() != n {
+                return Err(MatrixError::Underdetermined { rank: col.len() });
+            }
+            for i in 0..n {
+                inv_data[i * n + j] = col[i].clone();
+            }
+        }
+        Ok(Matrix {
+            data: inv_data,
+            nrows: n,
+            ncols: n,
+            domain: self.domain.clone(),
+        })
+    }
 }
 
 impl<D: EuclideanDomain> Index<(usize, usize)> for Matrix<D> {
@@ -488,5 +741,162 @@ mod tests {
         assert_eq!(aug[(0, 2)], i(5));
         assert_eq!(aug[(1, 0)], i(1));
         assert_eq!(aug[(1, 2)], i(2));
+    }
+
+    #[test]
+    fn transpose_rect() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2), i(3)], vec![i(4), i(5), i(6)]], d);
+        let t = a.transpose();
+        assert_eq!(t.nrows(), 3);
+        assert_eq!(t.ncols(), 2);
+        assert_eq!(t[(0, 0)], i(1));
+        assert_eq!(t[(0, 1)], i(4));
+        assert_eq!(t[(2, 1)], i(6));
+    }
+
+    #[test]
+    fn transpose_square() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(3), i(4)]], d);
+        let t = a.transpose();
+        assert_eq!(t[(0, 1)], i(3));
+        assert_eq!(t[(1, 0)], i(2));
+    }
+
+    #[test]
+    fn trace_square() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(
+            vec![
+                vec![i(1), i(2), i(3)],
+                vec![i(4), i(5), i(6)],
+                vec![i(7), i(8), i(9)],
+            ],
+            d,
+        );
+        assert_eq!(a.trace().unwrap(), i(15));
+    }
+
+    #[test]
+    fn trace_nonsquare_errors() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)]], d);
+        assert_eq!(a.trace(), Err(MatrixError::ShapeMismatch));
+    }
+
+    #[test]
+    fn matmul_basic() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(3), i(4)]], d);
+        let b = Matrix::from_rows(vec![vec![i(5), i(6)], vec![i(7), i(8)]], d);
+        let c = a.matmul(&b).unwrap();
+        assert_eq!(c[(0, 0)], i(19));
+        assert_eq!(c[(0, 1)], i(22));
+        assert_eq!(c[(1, 0)], i(43));
+        assert_eq!(c[(1, 1)], i(50));
+    }
+
+    #[test]
+    fn matmul_identity() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(3), i(4)]], d);
+        let id = Matrix::identity(2, d);
+        let c = a.matmul(&id).unwrap();
+        assert_eq!(c, a);
+    }
+
+    #[test]
+    fn matmul_shape_mismatch() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)]], d);
+        let b = Matrix::from_rows(vec![vec![i(3), i(4)]], d);
+        assert_eq!(a.matmul(&b), Err(MatrixError::ShapeMismatch));
+    }
+
+    #[test]
+    fn rank_full() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(0)], vec![i(0), i(1)]], d);
+        assert_eq!(a.rank(), 2);
+    }
+
+    #[test]
+    fn rank_deficient() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(
+            vec![
+                vec![i(1), i(2), i(3)],
+                vec![i(2), i(4), i(6)],
+                vec![i(1), i(1), i(1)],
+            ],
+            d,
+        );
+        assert_eq!(a.rank(), 2);
+    }
+
+    #[test]
+    fn determinant_2x2() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(3), i(4)]], d);
+        assert_eq!(a.determinant().unwrap(), i(-2));
+    }
+
+    #[test]
+    fn determinant_3x3() {
+        let d = IntegerDomain;
+        // det = 1*(0*7 - 6*6) - 2*(2*7 - 6*5) + 3*(2*6 - 0*5)
+        //     = 1*(-36) - 2*(14-30) + 3*(12)
+        //     = -36 - 2*(-16) + 36 = -36 + 32 + 36 = 32
+        let a = Matrix::from_rows(
+            vec![
+                vec![i(1), i(2), i(3)],
+                vec![i(4), i(5), i(6)],
+                vec![i(5), i(6), i(7)],
+            ],
+            d,
+        );
+        // Recompute: 1*(5*7-6*6) - 2*(4*7-6*5) + 3*(4*6-5*5)
+        //          = 1*(35-36) - 2*(28-30) + 3*(24-25)
+        //          = -1 -2*(-2) + 3*(-1) = -1 +4 -3 = 0
+        assert_eq!(a.determinant().unwrap(), i(0));
+    }
+
+    #[test]
+    fn determinant_singular() {
+        let d = IntegerDomain;
+        // Singular: second row is 2x first.
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(2), i(4)]], d);
+        assert_eq!(a.determinant().unwrap(), i(0));
+    }
+
+    #[test]
+    fn determinant_nonsquare_errors() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)]], d);
+        assert_eq!(a.determinant(), Err(MatrixError::ShapeMismatch));
+    }
+
+    #[test]
+    fn inverse_unimodular() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(3), i(5)]], d);
+        // det = 5 - 6 = -1, so integer inverse exists.
+        let inv = a.inverse().unwrap();
+        // A^{-1} = (1/det) * [[5,-2],[-3,1]] = (-1) * [[5,-2],[-3,1]] = [[-5,2],[3,-1]]
+        assert_eq!(inv[(0, 0)], i(-5));
+        assert_eq!(inv[(0, 1)], i(2));
+        assert_eq!(inv[(1, 0)], i(3));
+        assert_eq!(inv[(1, 1)], i(-1));
+        // Verify A * A^{-1} = I.
+        let prod = a.matmul(&inv).unwrap();
+        assert_eq!(prod, Matrix::identity(2, IntegerDomain));
+    }
+
+    #[test]
+    fn inverse_singular_errors() {
+        let d = IntegerDomain;
+        let a = Matrix::from_rows(vec![vec![i(1), i(2)], vec![i(2), i(4)]], d);
+        assert!(a.inverse().is_err());
     }
 }
