@@ -59,6 +59,13 @@ impl Integer {
 }
 
 #[cfg(not(feature = "gmp"))]
+impl std::fmt::Display for Integer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
 impl Domain for IntegerDomain {
     type Element = Integer;
 

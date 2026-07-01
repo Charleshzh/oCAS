@@ -124,4 +124,61 @@ pub trait EuclideanDomain: Domain {
         a: &Self::Element,
         b: &Self::Element,
     ) -> Option<(Self::Element, Self::Element)>;
+
+    /// Compute the greatest common divisor of `a` and `b`.
+    ///
+    /// The default implementation uses the Euclidean algorithm.
+    fn gcd(&self, a: &Self::Element, b: &Self::Element) -> Self::Element {
+        let mut a = a.clone();
+        let mut b = b.clone();
+        while !self.is_zero(&b) {
+            if let Some((_, r)) = self.div_rem(&a, &b) {
+                a = b;
+                b = r;
+            } else {
+                break;
+            }
+        }
+        a
+    }
+
+    /// Compute the extended GCD: returns `(g, x, y)` such that
+    /// `g = gcd(a, b) = a*x + b*y`.
+    ///
+    /// The default implementation uses the extended Euclidean algorithm.
+    fn extended_gcd(
+        &self,
+        a: &Self::Element,
+        b: &Self::Element,
+    ) -> (Self::Element, Self::Element, Self::Element) {
+        let mut old_r = a.clone();
+        let mut r = b.clone();
+        let mut old_s = self.one();
+        let mut s = self.zero();
+        let mut old_t = self.zero();
+        let mut t = self.one();
+
+        while !self.is_zero(&r) {
+            if let Some((q, rem)) = self.div_rem(&old_r, &r) {
+                old_r = r;
+                r = rem;
+
+                // s = old_s - q * s
+                let qs = self.mul(&q, &s);
+                let new_s = self.sub(&old_s, &qs);
+                old_s = s;
+                s = new_s;
+
+                // t = old_t - q * t
+                let qt = self.mul(&q, &t);
+                let new_t = self.sub(&old_t, &qt);
+                old_t = t;
+                t = new_t;
+            } else {
+                break;
+            }
+        }
+
+        (old_r, old_s, old_t)
+    }
 }

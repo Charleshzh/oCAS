@@ -2,6 +2,7 @@
 
 #![warn(missing_docs)]
 
+pub mod assumptions;
 pub mod complex;
 pub mod domain;
 pub mod finite_field;
@@ -12,6 +13,7 @@ pub mod real_ball;
 #[cfg(feature = "gmp")]
 pub mod gmp_backend;
 
+pub use assumptions::{Assumption, Assumptions, SymbolAssumptions};
 pub use complex::{Complex, ComplexDomain};
 pub use domain::{Domain, EuclideanDomain};
 pub use finite_field::{FiniteField, FiniteFieldElement};
