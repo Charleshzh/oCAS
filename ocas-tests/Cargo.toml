@@ -20,6 +20,7 @@ ocas-domain = { path = "../ocas-domain" }
 ocas-poly = { path = "../ocas-poly" }
 ocas-atom = { path = "../ocas-atom" }
 ocas-rewrite = { path = "../ocas-rewrite" }
+ocas-eval = { path = "../ocas-eval" }
 proptest = { workspace = true }
 criterion = { workspace = true }
 
@@ -37,6 +38,14 @@ harness = false
 
 [[bench]]
 name = "sympy_comparison"
+harness = false
+
+[[bench]]
+name = "eval_interpreter"
+harness = false
+
+[[bench]]
+name = "eval_simd"
 harness = false
 
 [[bench]]
