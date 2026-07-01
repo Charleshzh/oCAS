@@ -9,6 +9,24 @@ use crate::{Atom, AtomArena, AtomNode};
 /// Normalize an atom into canonical form.
 ///
 /// The result is allocated in the same arena as the input via `ctx`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::normalize::normalize;
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let y = ctx.var("y");
+/// let z = ctx.var("z");
+/// let inner = ctx.add(&[x, y]);
+/// let outer = ctx.add(&[inner, z, ctx.num(2), ctx.num(3)]);
+/// let result = normalize(&ctx, outer);
+/// assert_eq!(result.to_string(), "5 + x + y + z");
+/// ```
 pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
     match atom.node() {
         AtomNode::Num(_) | AtomNode::Var(_) => atom,

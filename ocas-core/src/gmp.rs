@@ -24,6 +24,17 @@ use crate::error::Result;
 /// hides most of `rug`'s API, exposing only the operations needed by oCAS's
 /// numerical backends. This keeps the dependency on `rug` replaceable in the
 /// future if necessary.
+///
+/// # Example
+///
+/// ```
+/// use ocas_core::gmp::GmpInteger;
+///
+/// let a = GmpInteger::from_i64(21);
+/// let b = GmpInteger::from_i64(21);
+/// let sum = a.add(&b);
+/// assert_eq!(sum.to_decimal_string(), "42");
+/// ```
 #[cfg(feature = "gmp")]
 #[derive(Debug, Clone)]
 pub struct GmpInteger {

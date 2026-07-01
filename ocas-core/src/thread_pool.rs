@@ -11,6 +11,19 @@ use crate::error::{OcasError, Result};
 ///
 /// Unlike the global pool, a `ThreadPool` can be created and destroyed
 /// independently, which is useful for short-lived parallel tasks or tests.
+///
+/// # Example
+///
+/// ```
+/// use ocas_core::thread_pool::ThreadPool;
+///
+/// let pool = ThreadPool::new(2).expect("failed to create pool");
+/// let result = pool.install(|| {
+///     let (a, b) = rayon::join(|| 1 + 2, || 3 + 4);
+///     a + b
+/// });
+/// assert_eq!(result, 10);
+/// ```
 pub struct ThreadPool {
     inner: rayon::ThreadPool,
 }
@@ -69,6 +82,15 @@ pub fn init(threads: usize) -> Result<()> {
 }
 
 /// Execute a closure in the global thread pool.
+///
+/// # Example
+///
+/// ```
+/// use ocas_core::thread_pool::install;
+///
+/// let result = install(|| 21 + 21);
+/// assert_eq!(result, 42);
+/// ```
 pub fn install<F, R>(op: F) -> R
 where
     F: FnOnce() -> R + Send,

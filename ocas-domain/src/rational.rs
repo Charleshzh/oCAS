@@ -2,7 +2,7 @@
 //!
 //! Supports arbitrary-precision rational numbers. The default build uses
 //! [`num_rational::BigRational`]. When the `gmp` feature is enabled, the
-//! implementation moves to [`crate::gmp_backend`].
+//! implementation moves to `gmp_backend`.
 
 #[cfg(not(feature = "gmp"))]
 use num_rational::BigRational;
@@ -13,11 +13,34 @@ use num_traits::{One, Zero};
 use crate::domain::{Domain, EuclideanDomain};
 
 /// The rational number domain.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{Domain, Rational, RationalDomain};
+///
+/// let domain = RationalDomain;
+/// let a = Rational::new(1, 2);
+/// let b = Rational::new(1, 3);
+/// let sum = domain.add(&a, &b);
+/// assert_eq!(sum, Rational::new(5, 6));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RationalDomain;
 
 #[cfg(not(feature = "gmp"))]
 /// Arbitrary-precision rational number backed by `num-rational`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::Rational;
+///
+/// let a = Rational::new(1, 2);
+/// let b = Rational::new(3, 4);
+/// let sum = a.inner() + b.inner();
+/// assert_eq!(sum.to_string(), "5/4");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Rational(BigRational);
 

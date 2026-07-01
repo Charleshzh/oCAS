@@ -70,6 +70,22 @@ pub fn taylor<'a>(
 }
 
 /// Replace every occurrence of `var` inside `expr` with `replacement`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::{AtomArena, Symbol};
+/// use ocas_calc::substitute;
+/// use ocas_core::arena::Arena;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let y = ctx.var("y");
+/// let expr = ctx.add(&[ctx.pow(x, ctx.num(2)), x]);
+/// let result = substitute(&ctx, expr, Symbol::new("x"), y);
+/// assert_eq!(result.to_string(), "(y^2) + y");
+/// ```
 pub fn substitute<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,

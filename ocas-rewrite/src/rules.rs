@@ -2,7 +2,7 @@
 //!
 //! A [`Rule`] pairs a pattern with a replacement builder. When the pattern
 //! matches a sub-expression, the builder receives the wildcard bindings and
-//! produces a replacement atom. Rules are applied by the [`simplify`]
+//! produces a replacement atom. Rules are applied by the [`simplify()`](crate::simplify::simplify)
 //! function in a bottom-up traversal until no more changes occur.
 
 use ocas_atom::{Atom, AtomArena};
@@ -18,6 +18,30 @@ use crate::pattern::{Pattern, PatternAlloc};
 /// The replacement and condition use boxed closures so that users can capture
 /// their environment when building custom rules. Built-in rules still use
 /// plain closures, so they incur only a single allocation per rule.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_atom::Symbol;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::matcher::{Bindings, MatchValue};
+/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+/// use ocas_rewrite::rules::Rule;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+/// let rule = Rule::new(pat, |bindings: &Bindings, _ctx: &AtomArena| {
+///     let x = bindings.get(Symbol::new("x")).unwrap();
+///     let MatchValue::Single(v) = x else { panic!("expected single"); };
+///     _ctx.mul(&[_ctx.num(2), *v])
+/// });
+///
+/// let y = ctx.var("y");
+/// let result = rule.apply(&ctx, y).unwrap();
+/// assert_eq!(result.to_string(), "2*y");
+/// ```
 pub struct Rule<'a> {
     pattern: Pattern<'a>,
     replacement: Replacement<'a>,
@@ -32,6 +56,30 @@ impl<'a> Rule<'a> {
     ///
     /// The `replacement` closure receives the bindings produced by a successful
     /// match and the arena context so it can construct new atoms.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_atom::AtomArena;
+    /// use ocas_atom::Symbol;
+    /// use ocas_core::arena::Arena;
+    /// use ocas_rewrite::matcher::{Bindings, MatchValue};
+    /// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+    /// use ocas_rewrite::rules::Rule;
+    ///
+    /// let arena = Arena::new();
+    /// let ctx = AtomArena::new(&arena);
+    /// let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+    /// let rule = Rule::new(pat, |bindings: &Bindings, _ctx: &AtomArena| {
+    ///     let x = bindings.get(Symbol::new("x")).unwrap();
+    ///     let MatchValue::Single(v) = x else { panic!("expected single"); };
+    ///     _ctx.pow(*v, _ctx.num(2))
+    /// });
+    ///
+    /// let z = ctx.var("z");
+    /// let result = rule.apply(&ctx, z).unwrap();
+    /// assert_eq!(result.to_string(), "z^2");
+    /// ```
     pub fn new<F>(pattern: Pattern<'a>, replacement: F) -> Self
     where
         F: Fn(&Bindings<'a>, &AtomArena<'a>) -> Atom<'a> + 'a,
@@ -47,6 +95,33 @@ impl<'a> Rule<'a> {
     ///
     /// The condition is evaluated after a successful match but before the
     /// replacement is built.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_atom::AtomArena;
+    /// use ocas_atom::Symbol;
+    /// use ocas_core::arena::Arena;
+    /// use ocas_rewrite::matcher::{Bindings, MatchValue};
+    /// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+    /// use ocas_rewrite::rules::Rule;
+    ///
+    /// let arena = Arena::new();
+    /// let ctx = AtomArena::new(&arena);
+    /// let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+    /// let rule = Rule::new(pat, |_bindings: &Bindings, ctx: &AtomArena| {
+    ///     ctx.num(99)
+    /// }).with_condition(|bindings: &Bindings| {
+    ///     let x = bindings.get(Symbol::new("x")).unwrap();
+    ///     let MatchValue::Single(v) = x else { return false; };
+    ///     v.to_string() == "y"
+    /// });
+    ///
+    /// let y = ctx.var("y");
+    /// let z = ctx.var("z");
+    /// assert_eq!(rule.apply(&ctx, y).unwrap().to_string(), "99");
+    /// assert!(rule.apply(&ctx, z).is_none());
+    /// ```
     pub fn with_condition<F>(mut self, condition: F) -> Self
     where
         F: Fn(&Bindings<'a>) -> bool + 'a,
@@ -95,6 +170,22 @@ macro_rules! binding_single {
 }
 
 /// `x + 0 -> x`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::add_zero;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.add(&[x, ctx.num(0)]);
+/// let rule = add_zero(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "x");
+/// ```
 pub fn add_zero<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "x_ + 0"), |bindings, _ctx| {
         binding_single!(bindings, "x")
@@ -102,6 +193,22 @@ pub fn add_zero<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) ->
 }
 
 /// `0 + x -> x`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::add_zero_left;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.add(&[ctx.num(0), x]);
+/// let rule = add_zero_left(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "x");
+/// ```
 pub fn add_zero_left<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "0 + x_"), |bindings, _ctx| {
         binding_single!(bindings, "x")
@@ -109,6 +216,22 @@ pub fn add_zero_left<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a
 }
 
 /// `x * 0 -> 0`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::mul_zero;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.mul(&[x, ctx.num(0)]);
+/// let rule = mul_zero(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "0");
+/// ```
 pub fn mul_zero<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "x_ * 0"), |_bindings, ctx| {
         ctx.num(0)
@@ -116,6 +239,22 @@ pub fn mul_zero<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) ->
 }
 
 /// `0 * x -> 0`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::mul_zero_left;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.mul(&[ctx.num(0), x]);
+/// let rule = mul_zero_left(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "0");
+/// ```
 pub fn mul_zero_left<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "0 * x_"), |_bindings, ctx| {
         ctx.num(0)
@@ -123,6 +262,22 @@ pub fn mul_zero_left<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a
 }
 
 /// `x * 1 -> x`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::mul_one;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.mul(&[x, ctx.num(1)]);
+/// let rule = mul_one(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "x");
+/// ```
 pub fn mul_one<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "x_ * 1"), |bindings, _ctx| {
         binding_single!(bindings, "x")
@@ -130,6 +285,22 @@ pub fn mul_one<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> 
 }
 
 /// `1 * x -> x`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::mul_one_left;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.mul(&[ctx.num(1), x]);
+/// let rule = mul_one_left(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "x");
+/// ```
 pub fn mul_one_left<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "1 * x_"), |bindings, _ctx| {
         binding_single!(bindings, "x")
@@ -137,6 +308,22 @@ pub fn mul_one_left<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>
 }
 
 /// `x + x -> 2*x`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::add_same;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.add(&[x, x]);
+/// let rule = add_same(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "2*x");
+/// ```
 pub fn add_same<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "x_ + x_"), |bindings, ctx| {
         let x = binding_single!(bindings, "x");
@@ -145,6 +332,22 @@ pub fn add_same<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) ->
 }
 
 /// `x ^ 0 -> 1`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::pow_zero;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.pow(x, ctx.num(0));
+/// let rule = pow_zero(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "1");
+/// ```
 pub fn pow_zero<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "x_ ^ 0"), |_bindings, ctx| {
         ctx.num(1)
@@ -152,6 +355,22 @@ pub fn pow_zero<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) ->
 }
 
 /// `x ^ 1 -> x`
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::pow_one;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let expr = ctx.pow(x, ctx.num(1));
+/// let rule = pow_one(&ctx, &());
+/// let result = rule.apply(&ctx, expr).unwrap();
+/// assert_eq!(result.to_string(), "x");
+/// ```
 pub fn pow_one<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> Rule<'a> {
     Rule::new(pattern_from_str(ctx, alloc, "x_ ^ 1"), |bindings, _ctx| {
         binding_single!(bindings, "x")
@@ -159,6 +378,27 @@ pub fn pow_one<'a>(ctx: &'a AtomArena<'a>, alloc: &'a impl PatternAlloc<'a>) -> 
 }
 
 /// Return the default set of algebraic rewrite rules.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::rules::default_rules;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let rules = default_rules(&ctx, &());
+/// let expr = ctx.add(&[x, ctx.num(0)]);
+/// let mut current = expr;
+/// for rule in &rules {
+///     if let Some(next) = rule.apply(&ctx, current) {
+///         current = next;
+///     }
+/// }
+/// assert_eq!(current.to_string(), "x");
+/// ```
 pub fn default_rules<'a>(
     ctx: &'a AtomArena<'a>,
     alloc: &'a impl PatternAlloc<'a>,

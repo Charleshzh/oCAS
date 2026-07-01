@@ -13,9 +13,9 @@
 
 #![warn(missing_docs)]
 
-/// Convenience prelude that brings commonly used oCAS types into scope.
+/// Convenience prelude that brings commonly used oCAS types and functions into scope.
 ///
-/// # Examples
+/// This is the recommended way to use oCAS in application code:
 ///
 /// ```
 /// use ocas::prelude::*;
@@ -26,9 +26,25 @@
 /// let x = ctx.var("x");
 /// assert_eq!(x.to_string(), "x");
 /// ```
+///
+/// The prelude contains the following groups of items:
+///
+/// - **Expression trees**: [`Atom`], [`AtomArena`], [`AtomNode`], [`Symbol`], [`normalize`]
+/// - **Calculus**: [`diff`], [`integrate`], [`taylor`], [`substitute`]
+/// - **Parsing**: [`parse`], [`ParseError`]
+/// - **Polynomials**: [`DenseUnivariatePolynomial`], [`SparseMultivariatePolynomial`],
+///   [`MonomialOrder`], [`Lex`], [`Grevlex`]
+/// - **Domains**: [`Integer`], [`Rational`], [`RealBall`], [`Complex`], [`FiniteField`],
+///   [`Domain`], [`EuclideanDomain`]
+/// - **Rewriting**: [`Pattern`], [`Rule`], [`match_pattern`], [`simplify()`], [`transform`],
+///   [`Bindings`], [`MatchError`], [`WildcardLevel`]
+/// - **Runtime**: [`Arena`], [`OcasError`], [`Result`]
+///
+/// Optional backends (GMP, MPFR, FLINT, LLVM, etc.) are enabled via the
+/// corresponding feature flags on this crate.
 pub mod prelude {
     pub use ocas_atom::{Atom, AtomArena, AtomNode, Symbol, normalize};
-    pub use ocas_calc::{diff, integrate, taylor};
+    pub use ocas_calc::{diff, integrate, substitute, taylor};
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
     pub use ocas_domain::{
@@ -44,19 +60,29 @@ pub mod prelude {
     };
 }
 
-// Re-export crates for users who prefer fully qualified names.
+// Re-export crates for users who prefer fully qualified names. These modules are
+// kept public for advanced use cases but are hidden from the generated docs; the
+// stable entry points are `ocas::prelude::*` and `ocas::*` crate-root items.
+#[doc(hidden)]
 pub use ocas_atom;
+#[doc(hidden)]
 pub use ocas_calc;
+#[doc(hidden)]
 pub use ocas_core;
+#[doc(hidden)]
 pub use ocas_domain;
+#[doc(hidden)]
 pub use ocas_parse;
+#[doc(hidden)]
 pub use ocas_poly;
+#[doc(hidden)]
 pub use ocas_rewrite;
 
-// Re-export the most common types at the crate root as well.
+// Re-export the most common types and functions at the crate root as well.
 pub use prelude::{
     Arena, Atom, AtomArena, AtomNode, Bindings, Complex, ComplexDomain, DenseUnivariatePolynomial,
-    Domain, EuclideanDomain, FiniteField, Integer, IntegerDomain, Lex, MatchError, MonomialOrder,
-    OcasError, ParseError, Pattern, Rational, RationalDomain, RealBall, RealBallDomain, Result,
-    Rule, SparseMultivariatePolynomial, Symbol, WildcardLevel, match_pattern, simplify, transform,
+    Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Grevlex, Integer, IntegerDomain, Lex,
+    MatchError, MonomialOrder, OcasError, ParseError, Pattern, Rational, RationalDomain, RealBall,
+    RealBallDomain, Result, Rule, SparseMultivariatePolynomial, Symbol, WildcardLevel, diff,
+    integrate, match_pattern, normalize, parse, simplify, substitute, taylor, transform,
 };

@@ -1,6 +1,6 @@
 //! Pattern AST for oCAS rewriting.
 //!
-//! Patterns mirror the structure of [`Atom`](ocas_atom::Atom) but add
+//! Patterns mirror the structure of [`Atom`] but add
 //! wildcard nodes. A wildcard name ending with `___` matches a (possibly
 //! empty) sequence, `__` matches a non-empty sequence, and `_` matches a
 //! single atom. Wildcards with the same name must bind consistently within
@@ -9,6 +9,17 @@
 use ocas_atom::{Atom, AtomNode, Symbol};
 
 /// The scope of a wildcard match.
+///
+/// # Example
+///
+/// ```
+/// use ocas_rewrite::pattern::WildcardLevel;
+///
+/// // Names ending with one underscore map to Single wildcards.
+/// assert!(matches!(WildcardLevel::Single, WildcardLevel::Single));
+/// assert!(matches!(WildcardLevel::Sequence, WildcardLevel::Sequence));
+/// assert!(matches!(WildcardLevel::NullSequence, WildcardLevel::NullSequence));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WildcardLevel {
     /// Match a single atom (e.g. `x_`).
@@ -19,7 +30,22 @@ pub enum WildcardLevel {
     NullSequence,
 }
 
-/// A pattern that can be matched against an [`Atom`](ocas_atom::Atom).
+/// A pattern that can be matched against an [`Atom`].
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::pattern::Pattern;
+/// use ocas_atom::Symbol;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let pat = Pattern::Literal(x);
+/// assert!(matches!(pat, Pattern::Literal(v) if v.to_string() == "x"));
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Pattern<'a> {
     /// Match the atom exactly.
@@ -43,6 +69,20 @@ impl<'a> Pattern<'a> {
     /// This allows patterns to be parsed by the existing expression parser and
     /// then promoted to patterns. Names are interned globally, so the wildcard
     /// name is simply the symbol without trailing underscores.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_atom::AtomArena;
+    /// use ocas_core::arena::Arena;
+    /// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+    ///
+    /// let arena = Arena::new();
+    /// let ctx = AtomArena::new(&arena);
+    /// let x = ctx.var("x_");
+    /// let pat = Pattern::from_atom(&(), x);
+    /// assert!(matches!(pat, Pattern::Wildcard(s, WildcardLevel::Single) if s.as_str() == "x"));
+    /// ```
     pub fn from_atom(_ctx: &'a impl PatternAlloc<'a>, atom: Atom<'a>) -> Pattern<'a> {
         match atom.node() {
             AtomNode::Num(_) | AtomNode::Var(_) => {
@@ -103,9 +143,23 @@ fn strip_underscores(name: &str) -> &str {
 
 /// Allocation helper for building [`Pattern`] slices without leaking to the
 /// global arena. Implementations are provided by the rewrite engine.
+///
+/// # Example
+///
+/// ```
+/// use ocas_rewrite::pattern::PatternAlloc;
+///
+/// let _: &dyn PatternAlloc = &();
+/// ```
 pub trait PatternAlloc<'a> {
     /// Allocate a slice of patterns in the caller's scratch arena.
     fn alloc_slice(&self, items: &[Pattern<'a>]) -> &'a [Pattern<'a>];
+}
+
+impl<'a> PatternAlloc<'a> for () {
+    fn alloc_slice(&self, _items: &[Pattern<'a>]) -> &'a [Pattern<'a>] {
+        Box::leak(_items.to_vec().into_boxed_slice())
+    }
 }
 
 #[cfg(test)]

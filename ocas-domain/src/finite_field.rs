@@ -11,6 +11,17 @@ use num_traits::{One, Zero};
 use crate::domain::Domain;
 
 /// An element of a prime finite field.
+///
+/// # Example
+///
+/// ```
+/// use num_bigint::BigInt;
+/// use ocas_domain::{Domain, FiniteField};
+///
+/// let f = FiniteField::new(BigInt::from(7));
+/// let a = f.element(10);
+/// assert_eq!(a.value().to_string(), "3");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FiniteFieldElement {
     value: BigInt,
@@ -24,6 +35,19 @@ impl FiniteFieldElement {
 }
 
 /// A prime finite field $\mathbb{Z}/p\mathbb{Z}$.
+///
+/// # Example
+///
+/// ```
+/// use num_bigint::BigInt;
+/// use ocas_domain::{Domain, FiniteField};
+///
+/// let f = FiniteField::new(BigInt::from(7));
+/// let a = f.element(3);
+/// let b = f.element(5);
+/// assert_eq!(f.add(&a, &b), f.element(1));
+/// assert_eq!(f.mul(&a, &b), f.element(1));
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FiniteField {
     prime: BigInt,

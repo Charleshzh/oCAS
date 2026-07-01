@@ -29,6 +29,16 @@ const DEFAULT_BLOCK_SIZE: usize = 64 * 1024;
 ///
 /// `Arena` does not run destructors. Only store `Copy` or otherwise
 /// non-owning values until drop support is added.
+///
+/// # Example
+///
+/// ```
+/// use ocas_core::arena::Arena;
+///
+/// let arena = Arena::new();
+/// let value = arena.allocate_with(|| 42);
+/// assert_eq!(*value, 42);
+/// ```
 pub struct Arena {
     chunks: RefCell<Vec<Chunk>>,
     block_size: usize,
@@ -36,6 +46,16 @@ pub struct Arena {
 
 impl Arena {
     /// Create a new arena with the default block size.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_core::arena::Arena;
+    ///
+    /// let arena = Arena::new();
+    /// let n = arena.allocate_with(|| 7);
+    /// assert_eq!(*n, 7);
+    /// ```
     pub fn new() -> Self {
         Self {
             chunks: RefCell::new(Vec::new()),
@@ -61,6 +81,16 @@ impl Arena {
     /// # Panics
     ///
     /// Panics if the requested layout has size zero.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_core::arena::Arena;
+    ///
+    /// let arena = Arena::new();
+    /// let value = arena.allocate_with(|| "hello");
+    /// assert_eq!(*value, "hello");
+    /// ```
     #[allow(clippy::mut_from_ref)]
     pub fn allocate_with<T>(&self, init: impl FnOnce() -> T) -> &mut T {
         let layout = Layout::new::<T>();
@@ -87,6 +117,16 @@ impl Arena {
     /// # Panics
     ///
     /// Panics if `T` has zero size or if the total allocation size overflows.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_core::arena::Arena;
+    ///
+    /// let arena = Arena::new();
+    /// let slice = arena.allocate_slice(&[1, 2, 3, 4, 5]);
+    /// assert_eq!(slice, &[1, 2, 3, 4, 5]);
+    /// ```
     pub fn allocate_slice<T: Copy>(&self, values: &[T]) -> &[T] {
         if values.is_empty() {
             return &[];

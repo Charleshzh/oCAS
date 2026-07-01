@@ -1,6 +1,6 @@
 //! Pattern matching engine for oCAS.
 //!
-//! The matcher binds [`Pattern`] wildcards to [`Atom`](ocas_atom::Atom)
+//! The matcher binds [`Pattern`] wildcards to [`Atom`]
 //! sub-expressions. It supports associative/commutative matching for `Add`
 //! and `Mul` using backtracking, and sequence wildcards for ordered argument
 //! lists such as function arguments.
@@ -12,6 +12,24 @@ use ocas_atom::{Atom, AtomNode, Symbol};
 use crate::pattern::{Pattern, WildcardLevel};
 
 /// A collection of wildcard bindings produced by a successful match.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_atom::Symbol;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::matcher::{match_pattern, Bindings, MatchValue};
+/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let pat = Pattern::Wildcard(Symbol::new("w"), WildcardLevel::Single);
+/// let bindings = match_pattern(pat, x).unwrap();
+/// let value = bindings.get(Symbol::new("w")).unwrap();
+/// assert!(matches!(value, MatchValue::Single(v) if v.to_string() == "x"));
+/// ```
 #[derive(Debug, Clone, Default)]
 pub struct Bindings<'a> {
     map: HashMap<Symbol, MatchValue<'a>>,
@@ -64,6 +82,24 @@ pub enum MatchValue<'a> {
 }
 
 /// Errors that can occur during matching.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_atom::Symbol;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::matcher::{match_pattern, MatchError};
+/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let y = ctx.var("y");
+/// let pat = Pattern::Literal(x);
+/// let err = match_pattern(pat, y).unwrap_err();
+/// assert!(matches!(err, MatchError::NoMatch));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MatchError {
     /// The pattern did not match the atom.
@@ -89,6 +125,31 @@ impl std::error::Error for MatchError {}
 /// sorted and literal patterns are matched before single wildcards. Sequence
 /// wildcards are not supported inside `Add`/`Mul` in this simplified matcher;
 /// they are supported for ordered argument lists such as function arguments.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_atom::Symbol;
+/// use ocas_core::arena::Arena;
+/// use ocas_rewrite::matcher::{match_pattern, MatchValue};
+/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let y = ctx.var("y");
+/// let sum = ctx.add(&[x, y]);
+/// let pat = Pattern::Add(vec![
+///     Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+///     Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
+/// ]);
+/// let bindings = match_pattern(pat, sum).unwrap();
+/// let a = bindings.get(Symbol::new("a")).unwrap();
+/// let b = bindings.get(Symbol::new("b")).unwrap();
+/// assert!(matches!(a, MatchValue::Single(v) if v.to_string() == "x"));
+/// assert!(matches!(b, MatchValue::Single(v) if v.to_string() == "y"));
+/// ```
 pub fn match_pattern<'a>(pattern: Pattern<'a>, atom: Atom<'a>) -> Result<Bindings<'a>, MatchError> {
     let mut bindings = Bindings::new();
     match_atom(&mut bindings, pattern, atom)?;

@@ -2,7 +2,7 @@
 //!
 //! A real ball represents a real number together with a rigorous error bound.
 //! The default build uses lightweight conservative `f64` balls. When the `mpfr`
-//! feature is enabled, the implementation is backed by [`rug::Float`] and uses
+//! feature is enabled, the implementation is backed by `rug::Float` and uses
 //! directed rounding to produce rigorous arbitrary-precision enclosures.
 //!
 //! The default `f64` version is suitable for templates and demonstration; it is
@@ -20,7 +20,7 @@ const BALL_PRECISION: u32 = 53;
 /// A real ball: midpoint with radius.
 ///
 /// The default `f64` build implements `Copy`. The `mpfr` build stores an
-/// owned [`rug::Float`] and therefore only implements `Clone`.
+/// owned `rug::Float` and therefore only implements `Clone`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct RealBall {
     #[cfg(not(feature = "mpfr"))]
@@ -137,7 +137,7 @@ impl RealBall {
 /// The real ball domain.
 ///
 /// In the default build this wraps `f64`-based balls. When the `mpfr` feature
-/// is enabled, this domain uses [`rug::Float`] with rigorous rounding.
+/// is enabled, this domain uses `rug::Float` with rigorous rounding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RealBallDomain;
 

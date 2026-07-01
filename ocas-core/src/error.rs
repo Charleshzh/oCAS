@@ -3,6 +3,18 @@
 use thiserror::Error;
 
 /// The primary error type returned by oCAS operations.
+///
+/// # Example
+///
+/// ```
+/// use ocas_core::error::OcasError;
+///
+/// let err = OcasError::ParseError {
+///     message: "unexpected token".into(),
+///     span: Some((0, 3)),
+/// };
+/// assert_eq!(err.to_string(), "parse error at bytes 0..3: unexpected token");
+/// ```
 #[derive(Debug, Clone, PartialEq, Error)]
 #[non_exhaustive]
 pub enum OcasError {

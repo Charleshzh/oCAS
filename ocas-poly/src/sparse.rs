@@ -15,6 +15,17 @@ use smallvec::SmallVec;
 ///
 /// Orderings are implemented as zero-sized types with an associated method
 /// that compares two exponent vectors.
+///
+/// # Example
+///
+/// ```
+/// use ocas_poly::sparse::{Grevlex, Lex, MonomialOrder};
+///
+/// let a = [2, 1];
+/// let b = [1, 1];
+/// assert_eq!(Lex::cmp(&a, &b), std::cmp::Ordering::Greater);
+/// assert_eq!(Grevlex::cmp(&a, &b), std::cmp::Ordering::Less);
+/// ```
 pub trait MonomialOrder: Clone + Copy + PartialEq + Eq + std::fmt::Debug {
     /// Compare two exponent vectors.
     ///
@@ -50,6 +61,30 @@ impl MonomialOrder for Grevlex {
 
 /// A sparse multivariate polynomial with coefficients in a domain `D` and
 /// monomial ordering `O`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{IntegerDomain, Integer};
+/// use ocas_poly::sparse::Grevlex;
+/// use ocas_poly::SparseMultivariatePolynomial;
+///
+/// let domain = IntegerDomain;
+/// let p = SparseMultivariatePolynomial::<IntegerDomain, Grevlex>::from_terms(
+///     domain,
+///     2,
+///     vec![(vec![1, 0], Integer::from(2)), (vec![0, 1], Integer::from(3))],
+/// );
+/// let q = SparseMultivariatePolynomial::<IntegerDomain, Grevlex>::from_terms(
+///     domain,
+///     2,
+///     vec![(vec![1, 0], Integer::from(1)), (vec![0, 0], Integer::from(1))],
+/// );
+/// let r = p.mul(&q);
+/// assert_eq!(r.coeff(&[1, 0]), Integer::from(2));
+/// assert_eq!(r.coeff(&[0, 1]), Integer::from(3));
+/// assert_eq!(r.coeff(&[2, 0]), Integer::from(2));
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SparseMultivariatePolynomial<D: Domain, O: MonomialOrder = Grevlex> {
     /// Non-zero terms indexed by exponent vector.
@@ -75,6 +110,23 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     /// Create a polynomial from a list of (exponent vector, coefficient) pairs.
     ///
     /// Zero coefficients and empty terms are dropped automatically.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{IntegerDomain, Integer};
+    /// use ocas_poly::sparse::Grevlex;
+    /// use ocas_poly::SparseMultivariatePolynomial;
+    ///
+    /// let domain = IntegerDomain;
+    /// let p = SparseMultivariatePolynomial::<IntegerDomain, Grevlex>::from_terms(
+    ///     domain,
+    ///     2,
+    ///     vec![(vec![1, 0], Integer::from(2)), (vec![0, 1], Integer::from(3))],
+    /// );
+    /// assert_eq!(p.n_terms(), 2);
+    /// assert_eq!(p.coeff(&[1, 0]), Integer::from(2));
+    /// ```
     pub fn from_terms(domain: D, n_vars: usize, terms: Vec<(Vec<usize>, D::Element)>) -> Self {
         let mut poly = Self::new(domain, n_vars);
         for (exp, coeff) in terms {

@@ -27,6 +27,19 @@ pub enum ParseError {
 /// # Errors
 ///
 /// Returns a [`ParseError`] if the input cannot be lexed or parsed.
+///
+/// # Example
+///
+/// ```
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
+/// use ocas_parse::parse;
+///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let expr = parse(&ctx, "x^2 + 2*x + 1").unwrap();
+/// assert_eq!(expr.to_string(), "((x^2) + (2*x)) + 1");
+/// ```
 pub fn parse<'a>(ctx: &'a AtomArena<'a>, input: &'a str) -> Result<Atom<'a>, ParseError> {
     let tokens = lex(input)?;
     let mut parser = Parser::new(ctx, &tokens);

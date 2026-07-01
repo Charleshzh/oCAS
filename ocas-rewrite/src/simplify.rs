@@ -3,7 +3,7 @@
 //! The [`simplify`] function applies a list of rewrite rules to an atom tree in
 //! a bottom-up traversal, repeatedly, until no rule fires or a limit is
 //! reached. It composes with the [`Transformer`](crate::transformer) and
-//! [`Rule`](crate::rules::Rule) machinery.
+//! [`Rule`] machinery.
 
 use ocas_atom::{Atom, AtomArena};
 

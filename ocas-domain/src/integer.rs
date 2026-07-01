@@ -2,7 +2,7 @@
 //!
 //! Supports arbitrary-precision integers. The default build uses
 //! [`num_bigint::BigInt`]. When the `gmp` feature is enabled, the
-//! implementation moves to [`crate::gmp_backend`].
+//! implementation moves to `gmp_backend`.
 
 #[cfg(not(feature = "gmp"))]
 use num_bigint::BigInt;
@@ -15,11 +15,33 @@ use num_traits::{One, Zero};
 use crate::domain::{Domain, EuclideanDomain};
 
 /// The integer domain.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{Domain, Integer, IntegerDomain};
+///
+/// let domain = IntegerDomain;
+/// let a = Integer::from(3);
+/// let b = Integer::from(5);
+/// assert_eq!(domain.add(&a, &b), Integer::from(8));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct IntegerDomain;
 
 #[cfg(not(feature = "gmp"))]
 /// Arbitrary-precision integer backed by `num-bigint`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::Integer;
+///
+/// let a = Integer::from(42);
+/// let b = Integer::new(100);
+/// assert_eq!(a.inner().to_string(), "42");
+/// assert_eq!(b.inner().to_string(), "100");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Integer(BigInt);
 

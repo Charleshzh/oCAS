@@ -10,6 +10,18 @@
 /// carry parameters (such as a finite-field modulus), so every operation
 /// takes `&self`. This mirrors the conventional "domain object" pattern used
 /// by Flint, SymPy's `Domain`, and other CAS libraries.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{Domain, Integer, IntegerDomain};
+///
+/// let domain = IntegerDomain;
+/// let a = Integer::from(3);
+/// let b = Integer::from(5);
+/// assert_eq!(domain.add(&a, &b), Integer::from(8));
+/// assert_eq!(domain.mul(&a, &b), Integer::from(15));
+/// ```
 pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
     /// The type of elements in the domain.
     type Element: Clone + PartialEq + Eq + std::fmt::Debug;
@@ -90,6 +102,19 @@ pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
 ///
 /// Euclidean domains provide `div_rem`, which returns the quotient and
 /// remainder. The remainder must satisfy `rem == 0` or `deg(rem) < deg(b)`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{EuclideanDomain, Integer, IntegerDomain};
+///
+/// let domain = IntegerDomain;
+/// let a = Integer::from(17);
+/// let b = Integer::from(5);
+/// let (q, r) = domain.div_rem(&a, &b).unwrap();
+/// assert_eq!(q, Integer::from(3));
+/// assert_eq!(r, Integer::from(2));
+/// ```
 pub trait EuclideanDomain: Domain {
     /// Divide `a` by `b` returning `(quotient, remainder)`.
     ///

@@ -7,6 +7,30 @@
 use ocas_domain::{Domain, EuclideanDomain};
 
 /// A dense univariate polynomial with coefficients in a domain `D`.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{IntegerDomain, Integer};
+/// use ocas_poly::DenseUnivariatePolynomial;
+///
+/// let domain = IntegerDomain;
+/// let p = DenseUnivariatePolynomial::from_coeffs(
+///     domain,
+///     vec![Integer::from(1), Integer::from(2), Integer::from(1)],
+/// );
+/// let q = DenseUnivariatePolynomial::from_coeffs(
+///     domain,
+///     vec![Integer::from(1), Integer::from(1)],
+/// );
+/// let r = p.mul(&q);
+/// assert_eq!(r.coeffs(), &[
+///     Integer::from(1),
+///     Integer::from(3),
+///     Integer::from(3),
+///     Integer::from(1),
+/// ]);
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DenseUnivariatePolynomial<D: Domain> {
     /// Coefficients from constant term upward. Trailing zeros are removed so
@@ -29,6 +53,21 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
     /// Create a polynomial from a vector of coefficients `[a0, a1, ..., an]`.
     ///
     /// Trailing zero coefficients are stripped automatically.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{IntegerDomain, Integer};
+    /// use ocas_poly::DenseUnivariatePolynomial;
+    ///
+    /// let domain = IntegerDomain;
+    /// let p = DenseUnivariatePolynomial::from_coeffs(
+    ///     domain,
+    ///     vec![Integer::from(1), Integer::from(0), Integer::from(2)],
+    /// );
+    /// assert_eq!(p.degree(), Some(2));
+    /// assert_eq!(p.coeff(2), Some(&Integer::from(2)));
+    /// ```
     pub fn from_coeffs(domain: D, coeffs: Vec<D::Element>) -> Self {
         let mut poly = Self { coeffs, domain };
         poly.trim_trailing_zeros();
@@ -121,6 +160,25 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
     }
 
     /// Multiply two polynomials.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{IntegerDomain, Integer};
+    /// use ocas_poly::DenseUnivariatePolynomial;
+    ///
+    /// let domain = IntegerDomain;
+    /// let a = DenseUnivariatePolynomial::from_coeffs(
+    ///     domain,
+    ///     vec![Integer::from(1), Integer::from(1)],
+    /// );
+    /// let b = DenseUnivariatePolynomial::from_coeffs(
+    ///     domain,
+    ///     vec![Integer::from(1), Integer::from(-1)],
+    /// );
+    /// let c = a.mul(&b);
+    /// assert_eq!(c.coeffs(), &[Integer::from(1), Integer::from(0), Integer::from(-1)]);
+    /// ```
     pub fn mul(&self, other: &Self) -> Self {
         if self.is_zero() || other.is_zero() {
             return self.zero();
@@ -138,6 +196,21 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
     /// Evaluate the polynomial at `x` using Horner's method.
     ///
     /// The zero polynomial evaluates to the domain's zero element.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{IntegerDomain, Integer};
+    /// use ocas_poly::DenseUnivariatePolynomial;
+    ///
+    /// let domain = IntegerDomain;
+    /// let p = DenseUnivariatePolynomial::from_coeffs(
+    ///     domain,
+    ///     vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+    /// );
+    /// let value = p.eval(&Integer::from(2));
+    /// assert_eq!(value, Integer::from(17));
+    /// ```
     pub fn eval(&self, x: &D::Element) -> D::Element {
         let mut result = self.domain.zero();
         for coeff in self.coeffs.iter().rev() {
@@ -189,6 +262,26 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
     /// Divide this polynomial by another, returning `(quotient, remainder)`.
     ///
     /// Returns `None` if the divisor is the zero polynomial.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{IntegerDomain, Integer};
+    /// use ocas_poly::DenseUnivariatePolynomial;
+    ///
+    /// let domain = IntegerDomain;
+    /// let p = DenseUnivariatePolynomial::from_coeffs(
+    ///     domain,
+    ///     vec![Integer::from(1), Integer::from(0), Integer::from(-1)],
+    /// );
+    /// let q = DenseUnivariatePolynomial::from_coeffs(
+    ///     domain,
+    ///     vec![Integer::from(1), Integer::from(1)],
+    /// );
+    /// let (quot, rem) = p.div_rem(&q).unwrap();
+    /// assert_eq!(quot.coeffs(), &[Integer::from(1), Integer::from(-1)]);
+    /// assert!(rem.is_zero());
+    /// ```
     pub fn div_rem(&self, divisor: &Self) -> Option<(Self, Self)> {
         if divisor.is_zero() {
             return None;
