@@ -161,7 +161,7 @@ Windows 用户请参考 [docs/build-windows.md](docs/build-windows.md)。
 ### Build / 构建
 
 ```bash
-git clone https://github.com/ocas-dev/ocas.git
+git clone https://github.com/charleshzh/ocas.git
 cd ocas
 cargo build --release
 ```
