@@ -8,6 +8,97 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.9.0] - 2026-07-02
+
+### Added / 新增
+
+- **Python bindings** (`ocas-py`): PyO3-based Python module exposing
+  `Expression`, `ExpressionEvaluator`, and `DiophantineSolution` classes,
+  plus `solve_linear_rational`, `solve_linear_integer`, and
+  `solve_diophantine` functions. Each `Expression` owns a private arena
+  for self-contained lifetime management. `Polynomial`, `Matrix`, and
+  `Domain` classes are deferred to 0.10.0 / **Python 绑定**：基于 PyO3
+  的 Python 模块，暴露 `Expression`、`ExpressionEvaluator`、
+  `DiophantineSolution` 类与 `solve_*` 函数
+- **`Expression` Python class**: Parse, `diff`, `integrate`, `taylor`,
+  `simplify`, `substitute`, `normalize`, `clone`, plus operator overloads
+  (`__add__`, `__sub__`, `__mul__`, `__pow__`, `__neg__`, `__eq__`) /
+  **`Expression` Python 类**
+- **`ExpressionEvaluator` Python class**: Compile-once / evaluate-many
+  numeric evaluator over `f64` with parameter binding /
+  **`ExpressionEvaluator` Python 类**
+- **`pyproject.toml`**: Maturin build backend; module name `ocas`;
+  `pip install ocas` ready on Linux/macOS/Windows (pure Rust wheel) /
+  **`pyproject.toml`**：Maturin 构建后端
+- **C expression lifecycle API** (`ocas-c`): `ocas_expr_parse`,
+  `ocas_expr_free`, `ocas_expr_clone`, `ocas_expr_to_string`,
+  `ocas_expr_normalize`, `ocas_string_free` / **C 表达式生命周期 API**
+- **C calculus API**: `ocas_expr_diff`, `ocas_expr_integrate`,
+  `ocas_expr_taylor`, `ocas_expr_simplify`, `ocas_expr_substitute` /
+  **C 微积分 API**
+- **Extended error model** (`ocas-c`): New error codes `OCAS_ERROR_PARSE`,
+  `OCAS_ERROR_INVALID_ARGUMENT`, `OCAS_ERROR_DIVISION_BY_ZERO`,
+  `OCAS_ERROR_OUT_OF_MEMORY` / **扩展错误模型**
+- **C++ RAII wrapper** (`ocas-c/include/ocas.hpp`): `ocas::Expression`
+  with automatic resource management, move/copy semantics, and exception
+  translation / **C++ RAII 包装**
+- **New C examples**: `examples/expression.c` and
+  `examples/cpp_example.cpp` demonstrating the full expression lifecycle /
+  **新 C/C++ 示例**
+- **C API integration tests** (`ocas-c/tests/c_api.rs`): End-to-end tests
+  exercising the `#[no_mangle] extern "C"` functions through Rust FFI /
+  **C API 集成测试**
+- **C example compilation test** (`ocas-c/tests/examples_compile.rs`):
+  Compiles and runs `examples/expression.c` against the built static
+  library, verifying the C example compiles and runs (ROADMAP success
+  criterion) / **C 示例编译验证测试**
+- **Python pytest suite** (`ocas-tests/tests/python/`): 33 tests covering
+  parsing, calculus, simplification, substitution, operators, solvers,
+  numeric evaluation, hash/eq semantics, and memory pressure cycles /
+  **Python pytest 套件**：33 个测试
+- **Wheel build CI** (`.github/workflows/wheels.yml`): Maturin-based
+  matrix build for Linux/macOS/Windows with PyPI publishing on tag /
+  **Wheel 构建 CI**
+
+### Changed / 变更
+
+- Workspace version bumped to `0.9.0` / 工作区版本提升至 `0.9.0`
+- `ocas-c` refactored into `error.rs` + `expression.rs` modules;
+  `crate-type` now includes `rlib` for integration testing / `ocas-c`
+  重构为模块化结构
+- `ocas_version()` now uses `env!("CARGO_PKG_VERSION")` instead of a
+  hardcoded string / `ocas_version()` 改用编译期版本
+- `cbindgen.toml`: Added `include_guard = "OCAS_H"`, `usize_is_size_t`,
+  `style = "tag"` / `cbindgen.toml` 补全
+- `ocas-eval`: `compile` module made public; `compile_atom`,
+  `compile_atom_with`, `compile_tree`, `compile_tree_with` re-exported /
+  `ocas-eval` 编译模块公开
+- Top-level `ocas` prelude: Added `DiophantineSolution`, `PowfExtension`;
+  crate-root flat exports now include `solve_*`, `Assumption*`, `Matrix`,
+  `GroebnerBasis`, `buchberger`, `monomial_*`, `RootInterval` / 顶层
+  prelude 一致性修复
+- `ocas-py` and `ocas-c` now depend on `ocas-rewrite` (previously
+  missing, blocking `simplify`/`transform`) / `ocas-py` 与 `ocas-c`
+  补齐 `ocas-rewrite` 依赖
+
+### Fixed / 修复
+
+- **Panic-safe arena recovery**: `build()` in both `ocas-c` and `ocas-py`
+  now uses an `ArenaGuard` RAII wrapper, ensuring leaked arenas are
+  recovered even if `normalize` or the builder closure panics /
+  **Panic 安全的 arena 回收**
+- **C++ namespace mismatch**: Removed `namespace = "ocas"` from
+  `cbindgen.toml` so generated types match the global-scope references in
+  `ocas.hpp` (the C++ RAII wrapper now compiles) / **C++ 命名空间不匹配**
+- **C error code consistency**: `cstr_to_str` failures now propagate the
+  correct error code via `error::write_last_code()` instead of
+  hardcoding `OCAS_ERROR_NULL_POINTER` for UTF-8 errors /
+  **C 错误码一致性**
+- Removed unused dependencies from `ocas-py` (`ocas-domain`,
+  `ocas-poly`) and `ocas-c` (`ocas-domain`, `ocas-poly`, `ocas-eval`) /
+  删除未使用的依赖
+
+---
 ## [0.8.0] - 2026-07-02
 
 ### Added / 新增

@@ -211,18 +211,18 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] `ocas-py` crate with PyO3 / 基于 PyO3 的 `ocas-py`
-- [ ] Python classes: `Expression`, `Polynomial`, `Matrix`, `Domain` / Python 类
-- [ ] Maturin wheel build for Linux/macOS/Windows / Maturin 轮子构建
-- [ ] `ocas-c` crate with cbindgen / 基于 cbindgen 的 `ocas-c`
-- [ ] Stable C API for expression lifecycle / 稳定的表达式生命周期 C API
-- [ ] C++ RAII wrapper / C++ RAII 包装
+- [x] `ocas-py` crate with PyO3 / 基于 PyO3 的 `ocas-py`
+- [~] Python classes: `Expression` (done), `Polynomial`/`Matrix`/`Domain` (deferred to 0.10.0) / Python 类（`Expression` 已完成，其余推迟）
+- [x] Maturin wheel build for Linux/macOS/Windows / Maturin 轮子构建
+- [x] `ocas-c` crate with cbindgen / 基于 cbindgen 的 `ocas-c`
+- [x] Stable C API for expression lifecycle / 稳定的表达式生命周期 C API
+- [x] C++ RAII wrapper / C++ RAII 包装
 
 **Success Criteria / 成功标准**:
 
 - `pip install ocas` works on supported platforms.
 - C example compiles and runs against the shared library.
-- No memory leaks in binding tests.
+- No memory leaks in binding tests (tracemalloc + RAII-guarded arenas).
 
 ### 0.10.0 — Beta Release
 
@@ -230,6 +230,7 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
+- [ ] Python classes deferred from 0.9.0: `Polynomial`, `Matrix`, `Domain` / 从 0.9.0 推迟的 Python 类
 - [ ] Feature freeze for 1.0 / 1.0 功能冻结
 - [ ] Comprehensive documentation site / 综合文档站点
 - [ ] Performance comparison with Symbolica and SageMath / 与 Symbolica/SageMath 的性能对比
