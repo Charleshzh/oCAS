@@ -19,13 +19,14 @@ crate-type = ["cdylib"]
 [dependencies]
 ocas-core.workspace = true
 ocas-atom.workspace = true
-ocas-domain.workspace = true
-ocas-poly.workspace = true
 ocas-calc.workspace = true
 ocas-eval.workspace = true
 ocas-parse.workspace = true
+ocas-rewrite.workspace = true
 pyo3 = { workspace = true }
 
 [features]
 default = ["extension-module"]
 extension-module = ["pyo3/extension-module"]
+jit = ["ocas-eval/jit"]
+simd = ["ocas-eval/simd"]

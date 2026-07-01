@@ -1,0 +1,34 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "ocas"
+description = "High-performance computer algebra system"
+requires-python = ">=3.10"
+license = { text = "LGPL-3.0-or-later" }
+authors = [{ name = "oCAS Contributors" }]
+keywords = ["cas", "symbolic", "algebra", "mathematics", "polynomial"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/charleshzh/ocas"
+repository = "https://github.com/charleshzh/ocas"
+documentation = "https://docs.rs/ocas"
+
+[tool.maturin]
+# The Rust cdylib is `ocas_py`; expose it to Python as the `ocas` module.
+module-name = "ocas"
+features = ["extension-module"]
