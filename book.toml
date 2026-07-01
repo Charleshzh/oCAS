@@ -1,0 +1,17 @@
+[book]
+title = "oCAS — open Computer Algebra System"
+authors = ["Charles H. Zhong"]
+language = "en"
+src = "docs/book/src"
+
+[build]
+build-dir = "docs/book/html"
+
+[output.html]
+git-repository-url = "https://github.com/charleshzh/ocas"
+edit-url-template = "https://github.com/charleshzh/ocas/edit/main/docs/book/src/{path}"
+cname = "ocas.book"
+
+[output.html.search]
+limit-results = 30
+use-boolean-and = true

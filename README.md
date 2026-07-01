@@ -2,18 +2,20 @@
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Rust](https://img.shields.io/badge/Rust-1.89%2B-orange.svg)](https://www.rust-lang.org)
+[![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
+[![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
 
 **English**
 
 **oCAS** is a modern, high-performance computer algebra system written in Rust. It is designed to match or exceed the core performance of Symbolica and SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Alpha (0.4.0). The runtime foundation, expression tree core, algebraic domains, polynomials, and a rule-based simplifier with optional `egg` equality saturation are implemented. Calculus, solvers, JIT, and full language bindings are still under development.
+> **Status**: Beta (0.10.0). The full symbolic engine, polynomial algebra, equation solvers, JIT/SIMD evaluation, and tri-language bindings (Rust, Python, C/C++) are feature-complete. See the [documentation](https://github.com/charleshzh/ocas/tree/main/ocas/docs/book) and [roadmap](ROADMAP.md).
 
 **中文**
 
 **oCAS** 是一个使用 Rust 编写的现代化高性能计算机代数系统。它的目标是在核心性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下保持自由与开放。
 
-> **状态**：Alpha (0.4.0)。运行时基础、表达式树核心、代数域、多项式，以及可选 `egg` 等式饱和的基于规则化简器已实现；微积分、求解器、JIT 与完整语言绑定仍在开发中。
+> **状态**：Beta (0.10.0)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD 求值与三语言绑定（Rust、Python、C/C++）已功能完备。详见[文档](https://github.com/charleshzh/ocas/tree/main/ocas/docs/book)与[路线图](ROADMAP.md)。
 
 ---
 

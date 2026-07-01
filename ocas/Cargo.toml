@@ -37,3 +37,7 @@ simd = ["ocas-eval/simd"]
 
 [dev-dependencies]
 criterion = { workspace = true }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
