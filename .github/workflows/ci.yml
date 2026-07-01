@@ -59,10 +59,22 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgmp-dev libmpfr-dev cmake pkg-config
+      - name: Verify GMP/MPFR/pkg-config
+        run: |
+          echo "=== pkg-config ==="
+          which pkg-config || echo "pkg-config NOT FOUND"
+          echo "=== GMP ==="
+          pkg-config --modversion gmp || echo "GMP NOT FOUND"
+          echo "=== MPFR ==="
+          pkg-config --modversion mpfr || echo "MPFR NOT FOUND"
+          echo "=== cmake ==="
+          which cmake || echo "cmake NOT FOUND"
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Build with backend features (diagnostic)
+        run: cargo build -p ocas --features gmp,mpfr,flint 2>&1 | tail -50
       - name: Run tests with backend features
-        run: cargo test -p ocas --features gmp,mpfr,flint
+        run: cargo test -p ocas --features gmp,mpfr,flint 2>&1 | tail -80
 
   build-bindings:
     name: Build language bindings
