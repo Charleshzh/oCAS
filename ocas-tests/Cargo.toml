@@ -19,6 +19,7 @@ ocas-core = { path = "../ocas-core" }
 ocas-domain = { path = "../ocas-domain" }
 ocas-poly = { path = "../ocas-poly" }
 ocas-atom = { path = "../ocas-atom" }
+ocas-rewrite = { path = "../ocas-rewrite" }
 proptest = { workspace = true }
 criterion = { workspace = true }
 
@@ -32,4 +33,32 @@ harness = false
 
 [[bench]]
 name = "gmp_integer"
+harness = false
+
+[[bench]]
+name = "sympy_comparison"
+harness = false
+
+[[bench]]
+name = "parse"
+harness = false
+
+[[bench]]
+name = "normalize"
+harness = false
+
+[[bench]]
+name = "poly_dense"
+harness = false
+
+[[bench]]
+name = "poly_sparse"
+harness = false
+
+[[bench]]
+name = "calculus"
+harness = false
+
+[[bench]]
+name = "rewrite"
 harness = false
