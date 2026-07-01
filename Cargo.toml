@@ -52,7 +52,7 @@ hashbrown = "0.15"
 smallvec = "1.14"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
-logos = "0.15"
+logos = "0.16"
 chumsky = "0.10"
 cranelift = "0.117"
 cranelift-module = "0.117"
