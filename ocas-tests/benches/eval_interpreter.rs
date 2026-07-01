@@ -3,10 +3,11 @@
 //! Measures compilation time and evaluation throughput for the
 //! `ExpressionEvaluator<f64>` stack VM.
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas::prelude::*;
 use ocas_atom::AtomArena;
 use ocas_core::arena::Arena;
+use std::hint::black_box;
 
 fn bench_compile(c: &mut Criterion) {
     c.bench_function("compile_polynomial", |b| {

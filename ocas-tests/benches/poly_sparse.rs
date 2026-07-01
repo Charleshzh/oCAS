@@ -1,6 +1,7 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas_domain::{Integer, IntegerDomain};
 use ocas_poly::SparseMultivariatePolynomial;
+use std::hint::black_box;
 
 fn build_sparse(
     degree: usize,

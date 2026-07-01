@@ -39,10 +39,14 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
             ctx.fun(name.as_str(), &normalized)
         }
         AtomNode::Add(args) => {
+            // Normalize children FIRST, then flatten — this ensures any child
+            // that normalizes into an Add node gets flattened, guaranteeing
+            // idempotency (normalize(normalize(x)) == normalize(x)).
+            let normalized_children: Vec<Atom<'a>> =
+                args.iter().map(|a| normalize(ctx, *a)).collect();
             let mut flat = Vec::new();
-            collect_add(args, &mut flat);
-            let mut normalized: Vec<Atom<'a>> =
-                flat.into_iter().map(|a| normalize(ctx, a)).collect();
+            collect_add(&normalized_children, &mut flat);
+            let mut normalized = flat;
             normalized.retain(|a| !matches!(a.node(), AtomNode::Num(0)));
             normalized.sort();
             merge_numbers(ctx, &mut normalized, true);
@@ -55,10 +59,12 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
             }
         }
         AtomNode::Mul(args) => {
+            // Normalize children FIRST, then flatten — same reasoning as Add.
+            let normalized_children: Vec<Atom<'a>> =
+                args.iter().map(|a| normalize(ctx, *a)).collect();
             let mut flat = Vec::new();
-            collect_mul(args, &mut flat);
-            let mut normalized: Vec<Atom<'a>> =
-                flat.into_iter().map(|a| normalize(ctx, a)).collect();
+            collect_mul(&normalized_children, &mut flat);
+            let mut normalized = flat;
             if normalized
                 .iter()
                 .any(|a| matches!(a.node(), AtomNode::Num(0)))
@@ -109,22 +115,19 @@ fn merge_numbers<'a>(ctx: &AtomArena<'a>, args: &mut Vec<Atom<'a>>, is_add: bool
         .count();
 
     if count >= 2 {
+        let nums: Vec<i64> = args[0..count]
+            .iter()
+            .map(|a| match a.node() {
+                AtomNode::Num(n) => *n,
+                _ => unreachable!(),
+            })
+            .collect();
+        // Use wrapping arithmetic to avoid panics on overflow in debug mode.
+        // This matches Rust's release-mode behavior for i64 arithmetic.
         let merged = if is_add {
-            args[0..count]
-                .iter()
-                .map(|a| match a.node() {
-                    AtomNode::Num(n) => *n,
-                    _ => unreachable!(),
-                })
-                .sum()
+            nums.into_iter().fold(0i64, |acc, n| acc.wrapping_add(n))
         } else {
-            args[0..count]
-                .iter()
-                .map(|a| match a.node() {
-                    AtomNode::Num(n) => *n,
-                    _ => unreachable!(),
-                })
-                .product()
+            nums.into_iter().fold(1i64, |acc, n| acc.wrapping_mul(n))
         };
         args.drain(0..count);
         args.insert(0, ctx.num(merged));

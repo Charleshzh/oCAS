@@ -1,5 +1,6 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas_core::arena::Arena;
+use std::hint::black_box;
 
 fn arena_alloc_small(c: &mut Criterion) {
     c.bench_function("arena_alloc_small", |b| {

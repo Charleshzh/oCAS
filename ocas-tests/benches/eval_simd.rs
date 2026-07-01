@@ -3,10 +3,11 @@
 //! Compares scalar interpreter vs `VectorEvaluator` (SIMD) throughput
 //! on batch inputs. Enabled with the `simd` feature on the `ocas` crate.
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas::prelude::*;
 use ocas_atom::AtomArena;
 use ocas_core::arena::Arena;
+use std::hint::black_box;
 
 fn bench_simd_vs_scalar(c: &mut Criterion) {
     // Build a polynomial expression and pre-compile both scalar and SIMD evaluators.

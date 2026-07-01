@@ -1,7 +1,8 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas::prelude::*;
 use ocas_core::arena::Arena;
 use ocas_rewrite::rules::default_rules;
+use std::hint::black_box;
 use std::process::Command;
 use std::time::Duration;
 

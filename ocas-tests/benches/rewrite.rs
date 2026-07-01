@@ -1,6 +1,7 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas::prelude::*;
 use ocas_core::arena::Arena;
+use std::hint::black_box;
 
 fn bench_simplify(c: &mut Criterion) {
     c.bench_function("simplify_small", |b| {

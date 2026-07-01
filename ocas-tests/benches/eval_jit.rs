@@ -3,12 +3,13 @@
 //! Measures JIT compilation latency and compares evaluation throughput
 //! against the scalar interpreter. Enabled with the `jit` feature.
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas::prelude::*;
 use ocas_atom::AtomArena;
 use ocas_core::arena::Arena;
 use ocas_eval::instruction::Instr;
 use ocas_eval::jit::JitEngine;
+use std::hint::black_box;
 
 fn bench_jit_compile(c: &mut Criterion) {
     // Build a simple instruction sequence: x + y

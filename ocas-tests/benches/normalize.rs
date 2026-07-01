@@ -1,7 +1,8 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use ocas::prelude::*;
 use ocas_atom::normalize::normalize;
 use ocas_core::arena::Arena;
+use std::hint::black_box;
 
 fn normalize_small(c: &mut Criterion) {
     c.bench_function("normalize_small", |b| {
