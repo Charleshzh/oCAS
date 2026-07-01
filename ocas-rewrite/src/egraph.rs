@@ -4,7 +4,7 @@
 //! an [`AtomLanguage`] implementation of [`egg::Language`] and a helper to
 //! simplify expressions via equality saturation.
 
-use egg::{define_language, rewrite as rw, AstSize, Extractor, Id, RecExpr, Runner};
+use egg::{AstSize, Extractor, Id, RecExpr, Runner, define_language, rewrite as rw};
 
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 
