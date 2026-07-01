@@ -12,6 +12,6 @@ fn main() {
         .expect("unable to generate C header")
         .write_to_file(&output);
 
-    println!("cargo:rerun-if-changed=src/lib.rs");
+    println!("cargo:rerun-if-changed=src");
     println!("cargo:rerun-if-changed=cbindgen.toml");
 }

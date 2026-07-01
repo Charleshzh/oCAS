@@ -14,16 +14,14 @@ description = "C/C++ bindings for oCAS"
 
 [lib]
 name = "ocas_c"
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 ocas-core.workspace = true
 ocas-atom.workspace = true
-ocas-domain.workspace = true
-ocas-poly.workspace = true
 ocas-calc.workspace = true
-ocas-eval.workspace = true
 ocas-parse.workspace = true
+ocas-rewrite.workspace = true
 
 [build-dependencies]
 cbindgen = { workspace = true }
