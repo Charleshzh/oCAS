@@ -98,6 +98,12 @@ jobs:
         run: cargo build -p ocas-c
       - name: Build Python bindings
         run: cargo build -p ocas-py
+      - name: Install maturin and pytest
+        run: pip install maturin pytest
+      - name: Build and install wheel
+        run: maturin build --release -m ocas-py/Cargo.toml && pip install --force-reinstall target/wheels/*.whl
+      - name: Run Python tests
+        run: pytest ocas-tests/tests/python/ -v
       - name: Compile and run C example
         run: |
           gcc ocas-c/examples/expression.c -I ocas-c/include -L target/debug -locas_c -o /tmp/ocas_expression
