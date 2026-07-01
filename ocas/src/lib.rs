@@ -48,8 +48,8 @@
 pub mod prelude {
     pub use ocas_atom::{Atom, AtomArena, AtomNode, Symbol, normalize};
     pub use ocas_calc::solve::{
-        self, SolveError, solve_diophantine, solve_linear_integer, solve_linear_rational,
-        solve_polynomial_system,
+        self, DiophantineSolution, SolveError, solve_diophantine, solve_linear_integer,
+        solve_linear_rational, solve_polynomial_system,
     };
     pub use ocas_calc::{diff, integrate, substitute, taylor};
     pub use ocas_core::arena::Arena;
@@ -65,7 +65,7 @@ pub mod prelude {
     pub use ocas_eval::jit::{JitCompiledFunction, JitEngine};
     pub use ocas_eval::{
         EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FunctionMap, Instr,
-        Instruction, Slot,
+        Instruction, PowfExtension, Slot,
     };
     pub use ocas_parse::{ParseError, parse};
     pub use ocas_poly::{
@@ -100,11 +100,14 @@ pub use ocas_rewrite;
 
 // Re-export the most common types and functions at the crate root as well.
 pub use prelude::{
-    Arena, Atom, AtomArena, AtomNode, Bindings, Complex, ComplexDomain, DenseUnivariatePolynomial,
-    Domain, EuclideanDomain, EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator,
-    FiniteField, FiniteFieldElement, FunctionMap, Grevlex, Instr, Instruction, Integer,
-    IntegerDomain, Lex, MatchError, MonomialOrder, OcasError, ParseError, Pattern, Rational,
-    RationalDomain, RealBall, RealBallDomain, Result, Rule, Slot, SparseMultivariatePolynomial,
-    Symbol, WildcardLevel, diff, integrate, match_pattern, normalize, parse, simplify, substitute,
-    taylor, transform,
+    Arena, Assumption, Assumptions, Atom, AtomArena, AtomNode, Bindings, Complex, ComplexDomain,
+    DenseUnivariatePolynomial, DiophantineSolution, Domain, EuclideanDomain, EvalTree,
+    EvaluationDomain, EvaluationError, ExpressionEvaluator, FiniteField, FiniteFieldElement,
+    FunctionMap, Grevlex, GroebnerBasis, Instr, Instruction, Integer, IntegerDomain, Lex,
+    MatchError, Matrix, MatrixError, MonomialOrder, OcasError, ParseError, Pattern, PowfExtension,
+    Rational, RationalDomain, RealBall, RealBallDomain, Result, RootInterval, Rule, Slot,
+    SolveError, SparseMultivariatePolynomial, Symbol, SymbolAssumptions, WildcardLevel, buchberger,
+    diff, integrate, match_pattern, monomial_are_coprime, monomial_divides, monomial_lcm,
+    normalize, parse, simplify, solve_diophantine, solve_linear_integer, solve_linear_rational,
+    solve_polynomial_system, substitute, taylor, transform,
 };

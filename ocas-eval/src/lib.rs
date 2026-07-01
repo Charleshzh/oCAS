@@ -41,7 +41,7 @@ pub mod function_map;
 pub mod instruction;
 pub mod tree;
 
-mod compile;
+pub mod compile;
 mod optimize;
 
 #[cfg(feature = "jit")]
@@ -50,6 +50,7 @@ pub mod jit;
 #[cfg(feature = "simd")]
 pub mod simd;
 
+pub use compile::{compile_atom, compile_atom_with, compile_tree, compile_tree_with};
 pub use domain::{EvaluationDomain, PowfExtension};
 pub use error::EvaluationError;
 pub use evaluator::ExpressionEvaluator;
