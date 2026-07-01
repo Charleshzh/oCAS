@@ -100,8 +100,8 @@ jobs:
         run: cargo build -p ocas-py
       - name: Compile and run C example
         run: |
-          gcc ocas-c/examples/basic.c -I ocas-c/include -L target/debug -locas_c -o /tmp/ocas_basic
-          LD_LIBRARY_PATH=target/debug /tmp/ocas_basic
+          gcc ocas-c/examples/expression.c -I ocas-c/include -L target/debug -locas_c -o /tmp/ocas_expression
+          LD_LIBRARY_PATH=target/debug /tmp/ocas_expression
 
   miri:
     name: Miri memory safety
