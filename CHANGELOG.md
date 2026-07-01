@@ -8,6 +8,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.8.0] - 2026-07-02
+
+### Added / 新增
+
+- **`ocas-eval` crate**: Expression evaluation engine with stack-based VM
+  interpreter, AST compiler, function registry, optimizer, SIMD vectorization,
+  and Cranelift JIT backend / **表达式求值引擎**：栈式 VM 解释器、AST 编译器、
+  函数注册表、优化器、SIMD 向量化、Cranelift JIT 后端
+- **`ExpressionEvaluator<T>`**: Generic stack VM that compiles `Atom` trees
+  into linear instruction sequences and evaluates them with user-provided
+  parameter values / **泛型栈式 VM**：将 `Atom` 树编译为线性指令序列并按
+  用户提供的参数值求值
+- **`VectorEvaluator`** (`simd` feature): Batch evaluation of expressions
+  using `wide::f64x4` SIMD primitives, processing 4 lanes in parallel with
+  scalar fallback for remainders / **SIMD 向量化求值器**：使用 `wide::f64x4`
+  进行 4 路并行批量求值，余数回退标量计算
+- **`EvalTree`**: Owned intermediate representation that decouples compilation
+  from the arena lifetime / **自有中间表示**：将编译与 arena 生命周期解耦
+- **`FunctionMap<T>`**: User-defined function registry with name resolution,
+  case-insensitive lookup, aliases, and index-based calling /
+  **用户自定义函数注册表**：支持名称解析、大小写不敏感查找、别名、索引调用
+- **Instruction optimizer**: Common subexpression elimination (CSE), dead code
+  elimination, and algebraic simplification (single-element Add/Mul → Copy) /
+  **指令优化器**：公共子表达式消除、死代码消除、代数简化
+- **Cranelift JIT backend** (`jit` feature): Compiles instruction sequences
+  to native machine code via Cranelift 0.117 (experimental; runtime tuning
+  in progress) / **Cranelift JIT 后端**：通过 Cranelift 将指令序列编译为
+  原生机器码（实验性，运行时调优进行中）
+- **`EvaluationDomain` trait**: Numeric evaluation trait with built-in
+  function table (sin/cos/exp/log/sqrt/abs/tan/sec/csc/cot), case-insensitive
+  function names, and `f64` implementation / **数值求值 trait**：含内置函数
+  表、大小写兼容函数名、`f64` 实现
+- Top-level prelude exports: `ExpressionEvaluator`, `VectorEvaluator`,
+  `FunctionMap`, `EvalTree`, `EvaluationDomain`, `EvaluationError`,
+  `Instr`, `Instruction`, `Slot` / **顶层 prelude 导出**
+
+### Changed / 变更
+
+- Workspace version bumped to `0.8.0` / 工作区版本提升至 `0.8.0`
+- Removed `llvm` feature from `ocas` and `ocas-eval`; LLVM backend deferred
+  to Post-1.0 / 从 `ocas` 和 `ocas-eval` 中移除 `llvm` feature；LLVM 后端
+  推迟到 1.0 之后
+- `ROADMAP.md`: 0.8.0 deliverables marked complete; LLVM moved to Post-1.0
+
+---
 ## [0.7.0] - 2026-07-01
 
 ### Added / 新增

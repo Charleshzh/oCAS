@@ -75,6 +75,10 @@ jobs:
         run: cargo build -p ocas --features gmp,mpfr,flint 2>&1 | tail -50
       - name: Run tests with backend features
         run: cargo test -p ocas --features gmp,mpfr,flint 2>&1 | tail -80
+      - name: Test ocas-eval with JIT feature
+        run: cargo test -p ocas-eval --features jit 2>&1 | tail -40
+      - name: Test ocas-eval with SIMD feature
+        run: cargo test -p ocas-eval --features simd 2>&1 | tail -40
 
   build-bindings:
     name: Build language bindings
