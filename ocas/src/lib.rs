@@ -38,6 +38,9 @@ pub mod prelude {
     pub use ocas_poly::{
         DenseUnivariatePolynomial, Grevlex, Lex, MonomialOrder, SparseMultivariatePolynomial,
     };
+    pub use ocas_rewrite::{
+        Bindings, MatchError, Pattern, Rule, WildcardLevel, match_pattern, simplify, transform,
+    };
 }
 
 // Re-export crates for users who prefer fully qualified names.
@@ -46,11 +49,12 @@ pub use ocas_core;
 pub use ocas_domain;
 pub use ocas_parse;
 pub use ocas_poly;
+pub use ocas_rewrite;
 
 // Re-export the most common types at the crate root as well.
 pub use prelude::{
-    Arena, Atom, AtomArena, AtomNode, Complex, ComplexDomain, DenseUnivariatePolynomial, Domain,
-    EuclideanDomain, FiniteField, Integer, IntegerDomain, Lex, MonomialOrder, OcasError,
-    ParseError, Rational, RationalDomain, RealBall, RealBallDomain, Result,
-    SparseMultivariatePolynomial, Symbol,
+    Arena, Atom, AtomArena, AtomNode, Bindings, Complex, ComplexDomain, DenseUnivariatePolynomial,
+    Domain, EuclideanDomain, FiniteField, Integer, IntegerDomain, Lex, MatchError, MonomialOrder,
+    OcasError, ParseError, Pattern, Rational, RationalDomain, RealBall, RealBallDomain, Result,
+    Rule, SparseMultivariatePolynomial, Symbol, WildcardLevel, match_pattern, simplify, transform,
 };

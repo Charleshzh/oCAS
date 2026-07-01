@@ -12,6 +12,11 @@ use crate::{Atom, AtomArena, AtomNode};
 pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
     match atom.node() {
         AtomNode::Num(_) | AtomNode::Var(_) => atom,
+        AtomNode::Fun(name, args) => {
+            let mut normalized: Vec<Atom<'a>> = args.iter().map(|a| normalize(ctx, *a)).collect();
+            normalized.sort();
+            ctx.fun(name.as_str(), &normalized)
+        }
         AtomNode::Add(args) => {
             let mut flat = Vec::new();
             collect_add(args, &mut flat);
@@ -148,5 +153,15 @@ mod tests {
         let two = ctx.num(2);
         let pow = ctx.pow(x, two);
         assert_eq!(normalize(&ctx, pow).to_string(), "x^2");
+    }
+
+    #[test]
+    fn normalize_sorts_fun_arguments() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let f = ctx.fun("f", &[y, x]);
+        assert_eq!(normalize(&ctx, f).to_string(), "f(x, y)");
     }
 }

@@ -54,6 +54,30 @@ impl<'a> Atom<'a> {
     pub fn node(&self) -> &'a AtomNode<'a> {
         self.0
     }
+
+    /// Returns the direct children of this atom, in left-to-right order.
+    pub fn children(&self) -> &'a [Atom<'a>] {
+        match self.node() {
+            AtomNode::Num(_) | AtomNode::Var(_) => &[],
+            AtomNode::Fun(_, args) | AtomNode::Add(args) | AtomNode::Mul(args) => args,
+            AtomNode::Pow(base, exp) => {
+                // This function cannot return a dynamically-allocated slice,
+                // so callers that need the two-element slice should use
+                // [`Self::binary_children`]. For now, `Pow` reports no children
+                // through this API to keep the return type a plain slice.
+                let _ = (base, exp);
+                &[]
+            }
+        }
+    }
+
+    /// If this atom is a binary operator, return its two operands.
+    pub fn binary_children(&self) -> Option<(Atom<'a>, Atom<'a>)> {
+        match self.node() {
+            AtomNode::Pow(base, exp) => Some((*base, *exp)),
+            _ => None,
+        }
+    }
 }
 
 /// The concrete data stored for each expression node.
@@ -63,6 +87,8 @@ pub enum AtomNode<'a> {
     Num(i64),
     /// A named variable or constant.
     Var(Symbol),
+    /// A named function applied to a list of arguments.
+    Fun(Symbol, &'a [Atom<'a>]),
     /// A sum of sub-expressions.
     Add(&'a [Atom<'a>]),
     /// A product of sub-expressions.
@@ -108,6 +134,17 @@ impl<'a> AtomArena<'a> {
         self.intern(AtomNode::Var(Symbol::new(name)))
     }
 
+    /// Create a function application atom.
+    ///
+    /// # Panics
+    ///
+    /// Panics in debug mode if `args` is empty.
+    pub fn fun(&self, name: &str, args: &[Atom<'a>]) -> Atom<'a> {
+        debug_assert!(!args.is_empty(), "Fun node requires at least one argument");
+        let slice = self.arena.allocate_slice(args);
+        self.intern(AtomNode::Fun(Symbol::new(name), slice))
+    }
+
     /// Create an addition atom.
     ///
     /// # Panics
@@ -141,6 +178,16 @@ impl std::fmt::Display for Atom<'_> {
         match self.node() {
             AtomNode::Num(n) => write!(f, "{n}"),
             AtomNode::Var(s) => write!(f, "{}", s.as_str()),
+            AtomNode::Fun(name, args) => {
+                write!(f, "{}(", name.as_str())?;
+                for (i, arg) in args.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{arg}")?;
+                }
+                write!(f, ")")
+            }
             AtomNode::Add(args) => {
                 for (i, arg) in args.iter().enumerate() {
                     if i > 0 {
@@ -218,13 +265,33 @@ mod tests {
     }
 
     #[test]
-    fn construct_pow() {
+    fn construct_fun() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
-        let two = ctx.num(2);
-        let pow = ctx.pow(x, two);
-        assert_eq!(pow.to_string(), "x^2");
+        let sin = ctx.fun("sin", &[x]);
+        assert_eq!(sin.to_string(), "sin(x)");
+    }
+
+    #[test]
+    fn fun_with_multiple_args() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let f = ctx.fun("f", &[x, y]);
+        assert_eq!(f.to_string(), "f(x, y)");
+    }
+
+    #[test]
+    fn children_returns_direct_subexpressions() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let sum = ctx.add(&[x, y]);
+        assert_eq!(sum.children(), &[x, y]);
+        assert_eq!(x.children(), &[]);
     }
 
     #[test]

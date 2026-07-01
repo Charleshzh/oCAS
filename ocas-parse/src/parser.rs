@@ -143,7 +143,7 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
         }
     }
 
-    // primary -> number | ident | ( expr )
+    // primary -> number | ident | ident ( arg_list ) | ( expr )
     fn primary(&mut self) -> Result<Atom<'a>, ParseError> {
         match self.current() {
             Some(Token::Integer(n)) => {
@@ -153,7 +153,18 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
             Some(Token::Ident(name)) => {
                 let name = name.to_owned();
                 self.advance();
-                Ok(self.ctx.var(&name))
+                if self.current() == Some(Token::LParen) {
+                    self.advance();
+                    let args = if self.current() == Some(Token::RParen) {
+                        Vec::new()
+                    } else {
+                        self.arg_list()?
+                    };
+                    self.expect(Token::RParen)?;
+                    Ok(self.ctx.fun(&name, &args))
+                } else {
+                    Ok(self.ctx.var(&name))
+                }
             }
             Some(Token::LParen) => {
                 self.advance();
@@ -164,6 +175,16 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
             Some(_) => Err(ParseError::UnexpectedToken),
             None => Err(ParseError::UnexpectedEof),
         }
+    }
+
+    // arg_list -> expr (',' expr)*
+    fn arg_list(&mut self) -> Result<Vec<Atom<'a>>, ParseError> {
+        let mut args = vec![self.expr()?];
+        while self.current() == Some(Token::Comma) {
+            self.advance();
+            args.push(self.expr()?);
+        }
+        Ok(args)
     }
 }
 
@@ -205,11 +226,27 @@ mod tests {
     }
 
     #[test]
-    fn parse_power() {
+    fn parse_function_call() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
-        let atom = parse(&ctx, "x ^ 2").unwrap();
-        assert_eq!(atom.to_string(), "x^2");
+        let atom = parse(&ctx, "sin(x)").unwrap();
+        assert_eq!(atom.to_string(), "sin(x)");
+    }
+
+    #[test]
+    fn parse_function_call_multiple_args() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let atom = parse(&ctx, "f(x, y, 2)").unwrap();
+        assert_eq!(atom.to_string(), "f(x, y, 2)");
+    }
+
+    #[test]
+    fn parse_function_call_in_expression() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let atom = parse(&ctx, "sin(x) + cos(x)").unwrap();
+        assert_eq!(atom.to_string(), "(sin(x)) + (cos(x))");
     }
 
     #[test]

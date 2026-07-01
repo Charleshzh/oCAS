@@ -20,6 +20,7 @@ ocas-atom = { path = "../ocas-atom" }
 ocas-calc = { path = "../ocas-calc" }
 ocas-eval = { path = "../ocas-eval" }
 ocas-parse = { path = "../ocas-parse" }
+ocas-rewrite = { path = "../ocas-rewrite" }
 ocas-py = { path = "../ocas-py", optional = true }
 ocas-gpl = { path = "../ocas-gpl", optional = true }
 
@@ -31,6 +32,7 @@ flint = ["ocas-poly/flint"]
 python = ["dep:ocas-py"]
 llvm = ["ocas-eval/llvm"]
 gpl = ["dep:ocas-gpl"]
+egg = ["ocas-rewrite/egg"]
 
 [dev-dependencies]
 criterion = { workspace = true }
