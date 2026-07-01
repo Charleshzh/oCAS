@@ -7,13 +7,13 @@
 
 **oCAS** is a modern, high-performance computer algebra system written in Rust. It is designed to match or exceed the core performance of Symbolica and SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Pre-Alpha (0.1.0). The runtime foundation is in place (arena, errors, thread pool, optional GMP backend, minimal C ABI). Symbolic computation APIs are not yet implemented.
+> **Status**: Alpha (0.4.0). The runtime foundation, expression tree core, algebraic domains, polynomials, and a rule-based simplifier with optional `egg` equality saturation are implemented. Calculus, solvers, JIT, and full language bindings are still under development.
 
 **中文**
 
 **oCAS** 是一个使用 Rust 编写的现代化高性能计算机代数系统。它的目标是在核心性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下保持自由与开放。
 
-> **状态**：早期开发中。API 与 crate 边界可能会发生变化。
+> **状态**：Alpha (0.4.0)。运行时基础、表达式树核心、代数域、多项式，以及可选 `egg` 等式饱和的基于规则化简器已实现；微积分、求解器、JIT 与完整语言绑定仍在开发中。
 
 ---
 
@@ -28,7 +28,7 @@
 | Rust API | ✅ Native | ✅ | ❌ |
 | High-performance backend / 高性能后端 | GMP / FLINT 3 / Arb / LinBox | Self-hosted + optional | FLINT / Singular / PARI |
 | JIT code generation / JIT 代码生成 | Cranelift / LLVM | Custom | Limited |
-| E-graph simplification / E-图简化 | ✅ `egg` | ❌ | Partial |
+| E-graph simplification / E-图简化 | ✅ `egg` (optional) | ❌ | Partial |
 
 **English**
 
@@ -104,37 +104,25 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full design.
 
 ```toml
 [dependencies]
-ocas = "0.1"
+ocas = "0.4"
 ```
 
 ```rust
 use ocas::prelude::*;
+use ocas_core::arena::Arena;
 
 fn main() -> Result<(), OcasError> {
-    let x = symbol!("x");
-    let y = symbol!("y");
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
 
-    let expr = parse!("x^2 + 2*x*y + y^2")?;
-    let factored = expr.factor()?;
-    println!("{}", factored); // (x + y)^2
-
-    let deriv = expr.derivative(&x)?;
-    println!("d/dx = {}", deriv); // 2*x + 2*y
+    let expr = parse(&ctx, "x^2 + 2*x + 1")?;
+    println!("{}", expr); // 1 + 2*x + x^2
 
     Ok(())
 }
 ```
 
-### Python
-
-```python
-import ocas
-
-x, y = ocas.symbols("x y")
-expr = ocas.parse("x^2 + 2*x*y + y^2")
-print(expr.factor())        # (x + y)^2
-print(expr.diff(x))         # 2*x + 2*y
-```
+Rule-based simplification, pattern matching, and optional `egg` equality saturation are available through `ocas::prelude` (see `ocas-rewrite` examples).
 
 ---
 
@@ -181,7 +169,7 @@ cargo build --release
 ### Run Tests / 运行测试
 
 ```bash
-cargo test --workspace
+cargo test --workspace --exclude ocas-py
 ```
 
 ---

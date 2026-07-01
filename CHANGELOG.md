@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-07-01
+
+### Added / 新增
+
+- `ocas-rewrite` crate / `ocas-rewrite` crate
+- Pattern AST with wildcards and conditional matching / 带通配符与条件匹配的模式 AST
+- AC (associative-commutative) matching for `Add`/`Mul` / `Add`/`Mul` 的 AC 匹配
+- `Transformer` visitor API for expression traversal / 用于表达式遍历的 `Transformer` 访问者 API
+- `Rule` type with closure-based replacers and conditions / 支持闭包替换器/条件的 `Rule` 类型
+- Built-in algebraic rewrite rules (`x + x -> 2*x`, `x * 0 -> 0`, etc.) / 内置代数重写规则
+- Rule-based `simplify` engine / 基于规则的 `simplify` 化简引擎
+- Optional `egg` feature for equality saturation / 可选的 `egg` 等式饱和特性
+- `sin(x)^2 + cos(x)^2 -> 1` e-graph simplification test / `sin(x)^2 + cos(x)^2 -> 1` e-graph 化简测试
+- Re-export `Pattern`, `Rule`, `simplify`, and `transform` from the top-level `ocas` crate / 在顶层 `ocas` crate 中重新导出 `Pattern`、`Rule`、`simplify` 与 `transform`
+
+### Notes / 说明
+
+- The `egg` feature is optional and disabled by default. It enables equality
+  saturation as an additional simplification backend on supported platforms.
+- `egg` 特性为可选，默认未启用。它在支持的平台上作为额外的化简后端提供等式饱和。
+
+---
+
 ## [0.3.0] - 2026-06-30
 
 ### Added / 新增

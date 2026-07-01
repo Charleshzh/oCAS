@@ -51,6 +51,7 @@ graph TD
 | `ocas-domain` | 2 | Algebraic domains: integers, rationals, finite fields, algebraic numbers, real balls, complex numbers / 代数域：整数、有理数、有限域、代数数、实数球、复数 |
 | `ocas-poly` | 2 | Dense and sparse polynomial representations, GCD, factorization, Gröbner bases, series / 稠密与稀疏多项式表示、最大公因式、因式分解、Gröbner 基、级数 |
 | `ocas-atom` | 3 | Expression tree (`Atom`), normalization, transformers, pattern matching, e-graph integration / 表达式树（Atom）、规范化、转换器、模式匹配、e-graph 集成 |
+| `ocas-rewrite` | 3 | Pattern matching, rewriting, rule-based simplification / 模式匹配、重写、基于规则的化简 |
 | `ocas-calc` | 4 | Differentiation, integration, equation solving, series expansion / 微分、积分、方程求解、级数展开 |
 | `ocas-eval` | 4 | Interpreter, AST compiler, JIT via Cranelift/LLVM / 解释器、AST 编译器、Cranelift/LLVM JIT |
 | `ocas-parse` | 4 | Lexer, parser, Mathematica/Python syntax support / 词法分析器、语法分析器、Mathematica/Python 语法支持 |

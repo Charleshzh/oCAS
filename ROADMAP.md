@@ -118,13 +118,11 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Pattern matching engine with wildcards and conditions / 模式匹配引擎
-- [ ] `Transformer` visitor API / `Transformer` 访问者 API
-- [ ] Basic built-in rewrite rules / 基础内置重写规则
-- [ ] `egg` integration for equality saturation / `egg` 等式饱和集成
-- [ ] Rule-based simplifier / 基于规则的化简器
-
-**Success Criteria / 成功标准**:
+- [x] Pattern matching engine with wildcards and conditions / 模式匹配引擎
+- [x] `Transformer` visitor API / `Transformer` 访问者 API
+- [x] Basic built-in rewrite rules / 基础内置重写规则
+- [x] `egg` integration for equality saturation / `egg` 等式饱和集成
+- [x] Rule-based simplifier / 基于规则的化简器
 
 - Common identities (e.g., `x + x -> 2*x`, `x * 0 -> 0`) are applied automatically.
 - E-graph can simplify `sin(x)^2 + cos(x)^2` to `1` under assumptions.
