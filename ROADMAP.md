@@ -194,12 +194,11 @@ This document outlines the development roadmap of oCAS from pre-alpha experiment
 
 **Deliverables / 交付物**:
 
-- [ ] Tree interpreter for scalar and vector evaluation / 标量与向量求值解释器
-- [ ] AST-to-instruction compiler / AST 到指令序列编译器
-- [ ] Function registry for user-defined functions / 用户自定义函数注册表
-- [ ] Cranelift JIT backend / Cranelift JIT 后端
-- [ ] Optional LLVM/Inkwell backend / 可选 LLVM/Inkwell 后端
-- [ ] SIMD vectorized evaluation / SIMD 向量化求值
+- [x] Tree interpreter for scalar and vector evaluation / 标量与向量求值解释器
+- [x] AST-to-instruction compiler / AST 到指令序列编译器
+- [x] Function registry for user-defined functions / 用户自定义函数注册表
+- [x] Cranelift JIT backend / Cranelift JIT 后端
+- [x] SIMD vectorized evaluation / SIMD 向量化求值
 
 **Success Criteria / 成功标准**:
 
@@ -279,6 +278,7 @@ After 1.0, development will focus on:
 - Differential equation solvers
 - Optional GPL backends (`ocas-gpl`)
 - GPU acceleration (CUDA / HIP / Vulkan compute)
+- LLVM/Inkwell JIT backend / LLVM JIT 后端
 - Domain-specific toolkits (physics, robotics, machine learning)
 
 **中文**
@@ -289,6 +289,7 @@ After 1.0, development will focus on:
 - 微分方程求解器
 - 可选 GPL 后端（`ocas-gpl`）
 - GPU 加速（CUDA / HIP / Vulkan compute）
+- LLVM/Inkwell JIT 后端
 - 领域专用工具包（物理、机器人、机器学习）
 
 ---

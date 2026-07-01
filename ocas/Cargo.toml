@@ -30,9 +30,10 @@ gmp = ["ocas-domain/gmp", "ocas-poly/gmp", "ocas-core/gmp"]
 mpfr = ["ocas-domain/mpfr"]
 flint = ["ocas-poly/flint"]
 python = ["dep:ocas-py"]
-llvm = ["ocas-eval/llvm"]
 gpl = ["dep:ocas-gpl"]
 egg = ["ocas-rewrite/egg"]
+jit = ["ocas-eval/jit"]
+simd = ["ocas-eval/simd"]
 
 [dev-dependencies]
 criterion = { workspace = true }

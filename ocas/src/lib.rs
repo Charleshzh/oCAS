@@ -39,6 +39,8 @@
 ///   [`Domain`], [`EuclideanDomain`]
 /// - **Rewriting**: [`Pattern`], [`Rule`], [`match_pattern`], [`simplify()`], [`transform`],
 ///   [`Bindings`], [`MatchError`], [`WildcardLevel`]
+/// - **Evaluation**: [`ExpressionEvaluator`], [`FunctionMap`], [`EvaluationDomain`],
+///   [`EvaluationError`], [`EvalTree`], [`Instr`], [`Instruction`], [`Slot`]
 /// - **Runtime**: [`Arena`], [`OcasError`], [`Result`]
 ///
 /// Optional backends (GMP, MPFR, FLINT, LLVM, etc.) are enabled via the
@@ -56,6 +58,12 @@ pub mod prelude {
         Assumption, Assumptions, Complex, ComplexDomain, Domain, EuclideanDomain, FiniteField,
         FiniteFieldElement, Integer, IntegerDomain, Rational, RationalDomain, RealBall,
         RealBallDomain, SymbolAssumptions,
+    };
+    #[cfg(feature = "simd")]
+    pub use ocas_eval::VectorEvaluator;
+    pub use ocas_eval::{
+        EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FunctionMap, Instr,
+        Instruction, Slot,
     };
     pub use ocas_parse::{ParseError, parse};
     pub use ocas_poly::{
@@ -80,6 +88,8 @@ pub use ocas_core;
 #[doc(hidden)]
 pub use ocas_domain;
 #[doc(hidden)]
+pub use ocas_eval;
+#[doc(hidden)]
 pub use ocas_parse;
 #[doc(hidden)]
 pub use ocas_poly;
@@ -89,8 +99,10 @@ pub use ocas_rewrite;
 // Re-export the most common types and functions at the crate root as well.
 pub use prelude::{
     Arena, Atom, AtomArena, AtomNode, Bindings, Complex, ComplexDomain, DenseUnivariatePolynomial,
-    Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Grevlex, Integer, IntegerDomain, Lex,
-    MatchError, MonomialOrder, OcasError, ParseError, Pattern, Rational, RationalDomain, RealBall,
-    RealBallDomain, Result, Rule, SparseMultivariatePolynomial, Symbol, WildcardLevel, diff,
-    integrate, match_pattern, normalize, parse, simplify, substitute, taylor, transform,
+    Domain, EuclideanDomain, EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator,
+    FiniteField, FiniteFieldElement, FunctionMap, Grevlex, Instr, Instruction, Integer,
+    IntegerDomain, Lex, MatchError, MonomialOrder, OcasError, ParseError, Pattern, Rational,
+    RationalDomain, RealBall, RealBallDomain, Result, Rule, Slot, SparseMultivariatePolynomial,
+    Symbol, WildcardLevel, diff, integrate, match_pattern, normalize, parse, simplify, substitute,
+    taylor, transform,
 };

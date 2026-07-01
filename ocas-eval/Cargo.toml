@@ -16,12 +16,15 @@ description = "Evaluation and JIT code generation for oCAS"
 ocas-core.workspace = true
 ocas-domain.workspace = true
 ocas-atom.workspace = true
+thiserror.workspace = true
 cranelift = { workspace = true, optional = true }
 cranelift-module = { workspace = true, optional = true }
 cranelift-jit = { workspace = true, optional = true }
-inkwell = { workspace = true, optional = true }
+cranelift-codegen = { workspace = true, optional = true }
+cranelift-frontend = { workspace = true, optional = true }
+wide = { workspace = true, optional = true }
 
 [features]
 default = []
-jit = ["cranelift", "cranelift-module", "cranelift-jit"]
-llvm = ["inkwell"]
+jit = ["cranelift", "cranelift-module", "cranelift-jit", "cranelift-codegen", "cranelift-frontend"]
+simd = ["wide"]
