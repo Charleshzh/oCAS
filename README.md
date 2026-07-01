@@ -251,10 +251,10 @@ oCAS builds on the shoulders of many excellent open-source projects:
 oCAS 建立在众多优秀开源项目的基础之上：
 
 - [GMP](https://gmplib.org/), [MPFR](https://www.mpfr.org/), [MPC](https://www.multiprecision.org/mpc/)
-- [FLINT](https://flintlib.org/) and [Arb](https://arblib.org/)
+- [FLINT](https://flintlib.org/) and [Arb](https://arblib.org/) (now part of FLINT)
 - [LinBox](https://linalg.org/) and [Givaro](https://github.com/linbox-team/givaro)
 - [SymEngine](https://github.com/symengine/symengine)
-- [faer](https://github.com/sarah-quinones/faer-rs)
+- [faer](https://codeberg.org/sarah-quinones/faer) (primary development moved from [GitHub mirror](https://github.com/sarah-quinones/faer-rs))
 - [egg](https://github.com/egraphs-good/egg)
 - [Cranelift](https://github.com/bytecodealliance/wasmtime/tree/main/cranelift)
 - [PyO3](https://github.com/PyO3/pyo3)
