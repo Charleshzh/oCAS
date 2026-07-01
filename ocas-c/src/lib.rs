@@ -11,6 +11,7 @@
 //! Currently only runtime objects (version, arena) are exposed. Expression
 //! operations will be added in later releases.
 
+#![warn(missing_docs)]
 #![allow(clippy::missing_const_for_thread_local)]
 
 use std::cell::RefCell;

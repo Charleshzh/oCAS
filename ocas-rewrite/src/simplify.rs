@@ -45,7 +45,7 @@ pub fn simplify<'a>(
     iter_limit: usize,
 ) -> Atom<'a> {
     let mut current = transform(ctx, atom, |a| apply_rules(ctx, a, rules));
-    for _ in 0..iter_limit {
+    for _ in 1..iter_limit {
         let next = transform(ctx, current, |a| apply_rules(ctx, a, rules));
         if next == current {
             return next;

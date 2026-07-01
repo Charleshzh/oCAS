@@ -14,25 +14,31 @@ use crate::pattern::{Pattern, PatternAlloc};
 ///
 /// Rules are typically created from parsed patterns via [`Rule::new`], or by
 /// using the convenience constructors in the [`rules`](crate::rules) module.
-#[derive(Clone)]
+///
+/// The replacement and condition use boxed closures so that users can capture
+/// their environment when building custom rules. Built-in rules still use
+/// plain closures, so they incur only a single allocation per rule.
 pub struct Rule<'a> {
     pattern: Pattern<'a>,
-    replacement: fn(&Bindings<'a>, &AtomArena<'a>) -> Atom<'a>,
-    condition: Option<fn(&Bindings<'a>) -> bool>,
+    replacement: Replacement<'a>,
+    condition: Option<Condition<'a>>,
 }
+
+type Replacement<'a> = Box<dyn Fn(&Bindings<'a>, &AtomArena<'a>) -> Atom<'a> + 'a>;
+type Condition<'a> = Box<dyn Fn(&Bindings<'a>) -> bool + 'a>;
 
 impl<'a> Rule<'a> {
     /// Create a rule from a pattern and a replacement builder.
     ///
-    /// The `replacement` function receives the bindings produced by a successful
+    /// The `replacement` closure receives the bindings produced by a successful
     /// match and the arena context so it can construct new atoms.
-    pub fn new(
-        pattern: Pattern<'a>,
-        replacement: fn(&Bindings<'a>, &AtomArena<'a>) -> Atom<'a>,
-    ) -> Self {
+    pub fn new<F>(pattern: Pattern<'a>, replacement: F) -> Self
+    where
+        F: Fn(&Bindings<'a>, &AtomArena<'a>) -> Atom<'a> + 'a,
+    {
         Self {
             pattern,
-            replacement,
+            replacement: Box::new(replacement),
             condition: None,
         }
     }
@@ -41,8 +47,11 @@ impl<'a> Rule<'a> {
     ///
     /// The condition is evaluated after a successful match but before the
     /// replacement is built.
-    pub fn with_condition(mut self, condition: fn(&Bindings<'a>) -> bool) -> Self {
-        self.condition = Some(condition);
+    pub fn with_condition<F>(mut self, condition: F) -> Self
+    where
+        F: Fn(&Bindings<'a>) -> bool + 'a,
+    {
+        self.condition = Some(Box::new(condition));
         self
     }
 
@@ -51,7 +60,7 @@ impl<'a> Rule<'a> {
     pub fn apply(&self, ctx: &AtomArena<'a>, atom: Atom<'a>) -> Option<Atom<'a>> {
         match match_pattern(self.pattern.clone(), atom) {
             Ok(bindings) => {
-                if let Some(cond) = self.condition
+                if let Some(cond) = &self.condition
                     && !cond(&bindings)
                 {
                     return None;
