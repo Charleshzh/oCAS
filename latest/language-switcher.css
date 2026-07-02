@@ -1,0 +1,20 @@
+/* Language switch button — injected by language-switcher.js into mdBook's
+   right-button bar. Styled to match the built-in GitHub/editor buttons. */
+.ocas-lang-switch {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 1.35em;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ocas-lang-switch:hover {
+  opacity: 0.7;
+}
+
+/* Default mdBook uses .right-buttons with font-size 0.9em on its <a> links. */
+.right-buttons .ocas-lang-switch {
+  font-size: inherit;
+}

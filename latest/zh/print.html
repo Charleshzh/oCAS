@@ -1,0 +1,647 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>oCAS — 开源计算机代数系统</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-0392ca55.css">
+        <link rel="stylesheet" href="css/chrome-fc474251.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../language-switcher.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-189bf316.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-25f49014.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="简介"><a class="header" href="#简介">简介</a></h1>
+<p>oCAS（开源计算机代数系统）是一个使用 Rust 编写的现代化高性能计算机代数系统，目标是在核心性能上达到或超越 Symbolica 与 SageMath，同时在 LGPL-3.0-or-later 许可证下保持自由开源。</p>
+<hr>
+<h2 id="为什么选择-ocas"><a class="header" href="#为什么选择-ocas">为什么选择 oCAS？</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>特性</th><th>oCAS</th><th>Symbolica</th><th>SymPy</th><th>SageMath</th></tr>
+</thead>
+<tbody>
+<tr><td>语言</td><td>Rust</td><td>Rust</td><td>Python</td><td>Python/Cython</td></tr>
+<tr><td>许可证</td><td>LGPL-3.0+</td><td>专有/源码可用</td><td>BSD</td><td>GPL</td></tr>
+<tr><td>原生性能</td><td>✅</td><td>✅</td><td>❌</td><td>⚠️</td></tr>
+<tr><td>Rust API</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Python API</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>C/C++ API</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+<tr><td>无 GPL 污染</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="关键特性"><a class="header" href="#关键特性">关键特性</a></h2>
+<ul>
+<li><strong>分层 Rust 架构</strong> —— 从 arena 运行时到语言绑定的 12 个 crate，依赖严格向下。</li>
+<li><strong>多种系数域</strong> —— 任意精度整数、有理数、有限域、实数球、复数。</li>
+<li><strong>多项式代数</strong> —— 稠密/稀疏多元多项式、GCD、无平方因子分解、Gröbner 基（Buchberger）。</li>
+<li><strong>符号微积分</strong> —— 微分、Taylor 级数、启发式积分。</li>
+<li><strong>JIT 求值</strong> —— Cranelift 后端与 SIMD 向量化求值。</li>
+<li><strong>三语言绑定</strong> —— Rust、Python（PyO3）、C/C++（cbindgen）。</li>
+<li><strong>可选数值后端</strong> —— GMP/MPFR/FLINT 隐藏在 feature flag 后，GPL 后端隔离在 <code>ocas-gpl</code>。</li>
+</ul>
+<hr>
+<h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
+<p>oCAS 当前版本为 <strong>0.10.0（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值与三语言绑定已达到 Beta 功能完备。通往稳定 1.0 的路线见
+<a href="https://github.com/charleshzh/ocas/blob/main/ROADMAP_CN.md">路线图</a>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
+<h2 id="安装"><a class="header" href="#安装">安装</a></h2>
+<p>oCAS 提供 Rust crate、Python 包和 C/C++ 库三种形式。</p>
+<h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
+<p>在你的 <code>Cargo.toml</code> 中添加：</p>
+<pre><code class="language-toml">[dependencies]
+ocas = "0.10"
+</code></pre>
+<pre class="playground"><code class="language-rust">use ocas::prelude::*;
+
+fn main() {
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "x^2 + 2*x + 1").unwrap();
+    let d = diff(&amp;ctx, e, Symbol::new("x"));
+    println!("{}", d); // 2*x + 2
+}</code></pre>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-bash">pip install ocas
+</code></pre>
+<pre><code class="language-python">import ocas
+
+e = ocas.Expression("x^2 + 2*x + 1")
+print(e.diff("x"))          # 2*x + 2
+print(e.simplify())
+
+# 整数多项式
+p = ocas.Polynomial([1, 2, 1])    # 1 + 2x + x^2
+print(p.degree())                  # 2
+print(p.eval(2))                   # "9"
+
+# 矩阵
+m = ocas.Matrix([[1, 2], [3, 4]])
+print(m.determinant())             # "-2"
+print((m @ m).rows())
+
+# 有限域
+gf5 = ocas.FiniteField(5)
+q = ocas.Polynomial([1, 2, 1], domain=gf5)
+print(q.eval(3))                   # "4"  (1 + 6 + 9 = 16 ≡ 4 mod 5)
+</code></pre>
+<h3 id="cc"><a class="header" href="#cc">C/C++</a></h3>
+<p>构建 C 库并链接 <code>libocas_c</code>。详见 <a href="#cc-api">C/C++ API</a> 章节。</p>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+
+ocas_expr* e = ocas_expr_parse("x^2 + 2*x + 1", NULL);
+ocas_expr* d = ocas_expr_diff(e, "x", NULL);
+char* s = ocas_expr_to_string(d, NULL);
+printf("%s\n", s);   /* 2*x + 2 */
+ocas_string_free(s);
+ocas_expr_free(d);
+ocas_expr_free(e);
+</code></pre>
+<hr>
+<h2 id="第一步"><a class="header" href="#第一步">第一步</a></h2>
+<p>最常用的入口：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>任务</th><th>Rust</th><th>Python</th></tr>
+</thead>
+<tbody>
+<tr><td>解析表达式</td><td><code>parse(&amp;ctx, "x+1")</code></td><td><code>ocas.Expression("x+1")</code></td></tr>
+<tr><td>微分</td><td><code>diff(&amp;ctx, e, x)</code></td><td><code>e.diff("x")</code></td></tr>
+<tr><td>化简</td><td><code>simplify(&amp;ctx, e, &amp;rules, n)</code></td><td><code>e.simplify()</code></td></tr>
+<tr><td>解线性方程组</td><td><code>solve_linear_rational(&amp;a, &amp;b)</code></td><td><code>ocas.solve_linear_rational(a, b)</code></td></tr>
+<tr><td>数值求值</td><td><code>ExpressionEvaluator::&lt;f64&gt;</code></td><td><code>ocas.ExpressionEvaluator</code></td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="架构"><a class="header" href="#架构">架构</a></h1>
+<p>oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，不允许反向或循环依赖。</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>层级</th><th>crate</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td>5 绑定</td><td><code>ocas</code>、<code>ocas-py</code>、<code>ocas-c</code></td><td>Rust、Python、C/C++ 公共 API</td></tr>
+<tr><td>4 应用</td><td><code>ocas-calc</code>、<code>ocas-eval</code>、<code>ocas-parse</code></td><td>微积分、求值、解析</td></tr>
+<tr><td>3 符号引擎</td><td><code>ocas-atom</code>、<code>ocas-rewrite</code></td><td>Atom、转换器、模式匹配、e-graph</td></tr>
+<tr><td>2 代数核</td><td><code>ocas-domain</code>、<code>ocas-poly</code></td><td>域、多项式、数论</td></tr>
+<tr><td>1 数值后端</td><td><code>ocas-core</code></td><td>GMP/FLINT 封装</td></tr>
+<tr><td>0 运行时</td><td><code>ocas-core</code></td><td>arena、错误、线程池、FFI</td></tr>
+</tbody>
+</table>
+</div>
+<p>完整设计文档见仓库中的 <a href="https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_CN.md">ARCHITECTURE_CN.md</a>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="python-api"><a class="header" href="#python-api">Python API</a></h1>
+<p><code>ocas</code> Python 包（基于 PyO3）提供符号表达式、多项式、矩阵、系数域与数值求值。用 <code>pip install ocas</code> 安装。</p>
+<hr>
+<h2 id="表达式"><a class="header" href="#表达式">表达式</a></h2>
+<pre><code class="language-python">import ocas
+
+e = ocas.Expression("sin(x)^2 + cos(x)^2")
+print(e.simplify())          # 1
+print(e.diff("x"))           # 2*cos(x)*sin(x) - 2*sin(x)*cos(x)  (化简前)
+print(e.taylor("x", 0, 4))   # 在 0 处的 Taylor 展开
+
+# 运算符重载
+f = ocas.Expression("x^2") + ocas.Expression("2*x") + ocas.Expression("1")
+print(f == ocas.Expression("x^2 + 2*x + 1"))  # True
+</code></pre>
+<h2 id="多项式"><a class="header" href="#多项式">多项式</a></h2>
+<p><code>Polynomial</code> 封装稠密一元多项式。系数域由 <code>domain</code> 参数选择：<code>"integer"</code>（默认）、<code>"rational"</code> 或 <code>FiniteField</code> 实例。</p>
+<pre><code class="language-python"># 整数系数（默认）
+p = ocas.Polynomial([1, 2, 1])     # 1 + 2x + x^2
+print(p.coeffs())                   # ['1', '2', '1']
+print(p.degree())                   # 2
+print(p.eval(2))                    # '9'
+
+q = ocas.Polynomial([1, 1])         # 1 + x
+print((p * q).coeffs())             # ['1', '3', '3', '1']
+
+# GCD 与因式分解
+a = ocas.Polynomial([-1, 0, 1])     # x^2 - 1
+b = ocas.Polynomial([1, 1])         # x + 1
+print(a.gcd(b).coeffs())            # ['1', '1']
+
+for fac, mult in a.square_free_factorization():
+    print(fac.coeffs(), mult)
+
+# 有理系数：传入整数或 (分子, 分母) 元组
+r = ocas.Polynomial([(1, 2), 3], domain="rational")  # 1/2 + 3x
+print(r.coeffs())                   # ['1/2', '3']
+
+# 有限域
+gf5 = ocas.FiniteField(5)
+fq = ocas.Polynomial([1, 2, 1], domain=gf5)
+print(fq.eval(3))                   # '4'  (1 + 6 + 9 = 16 ≡ 4 mod 5)
+</code></pre>
+<p>系数以十进制<strong>字符串</strong>返回，以在 gmp/非 gmp 构建间保持任意精度；用 <code>int(...)</code> 转换为 Python 整数。有理数值以 <code>n/d</code> 形式表示。</p>
+<h2 id="矩阵"><a class="header" href="#矩阵">矩阵</a></h2>
+<pre><code class="language-python">m = ocas.Matrix([[1, 2], [3, 4]])
+print(m.nrows, m.ncols)             # 2 2
+print(m.shape())                    # (2, 2)
+print(m[0, 1])                      # '2'
+print(m.determinant())              # '-2'
+print(m.rank())                     # 2
+
+# 运算
+a = ocas.Matrix([[1, 2], [3, 5]])   # det = -1，整数逆存在
+inv = a.inverse()
+print((a @ inv).rows())             # [['1','0'],['0','1']]
+
+# 解 Ax = b
+A = ocas.Matrix([[2, 1], [1, 1]])
+print(A.solve([4, 3]))              # ['1', '2']
+</code></pre>
+<h2 id="系数域"><a class="header" href="#系数域">系数域</a></h2>
+<pre><code class="language-python">ocas.IntegerDomain()        # ℤ
+ocas.RationalDomain()       # ℚ
+ocas.FiniteField(7)         # GF(7)；模数必须是 ≥ 2 的素数
+</code></pre>
+<h2 id="数值求值"><a class="header" href="#数值求值">数值求值</a></h2>
+<pre><code class="language-python">ev = ocas.ExpressionEvaluator("x^2 + y", ["x", "y"])
+print(ev.evaluate([3.0, 1.0]))      # [10.0]
+print(ev.evaluate([2.0, 0.0]))      # [4.0]
+</code></pre>
+<h2 id="求解器"><a class="header" href="#求解器">求解器</a></h2>
+<pre><code class="language-python"># ℚ 与 ℤ 上的线性方程组
+print(ocas.solve_linear_rational([[1, 1], [1, -1]], [3, 1]))
+print(ocas.solve_linear_integer([[2, 1]], [3]))
+
+# 丢番图方程：a*x + b*y = c
+print(ocas.solve_diophantine(3, 5, 1))
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="cc-api"><a class="header" href="#cc-api">C/C++ API</a></h1>
+<p><code>ocas-c</code> crate 提供稳定的 C ABI（由 <code>cbindgen</code> 生成），覆盖表达式生命周期、微积分与化简，并在 <code>ocas-c/include/ocas.hpp</code> 提供 C++ RAII 包装。</p>
+<h2 id="构建"><a class="header" href="#构建">构建</a></h2>
+<pre><code class="language-bash">cargo build -p ocas-c --release
+</code></pre>
+<p>共享库与 <code>ocas.h</code> / <code>ocas.hpp</code> 头文件位于 <code>ocas-c/include/</code>。</p>
+<h2 id="c-示例"><a class="header" href="#c-示例">C 示例</a></h2>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+
+int main(void) {
+    ocas_error err;
+    ocas_expr* e = ocas_expr_parse("x^2 + 2*x + 1", &amp;err);
+    ocas_expr* d = ocas_expr_diff(e, "x", &amp;err);
+
+    char* s = ocas_expr_to_string(d, &amp;err);
+    printf("derivative: %s\n", s);   /* 2*x + 2 */
+
+    ocas_string_free(s);
+    ocas_expr_free(d);
+    ocas_expr_free(e);
+    return 0;
+}
+</code></pre>
+<h2 id="c-raii"><a class="header" href="#c-raii">C++ RAII</a></h2>
+<pre><code class="language-cpp">#include &lt;ocas.hpp&gt;
+
+int main() {
+    ocas::Expression e("x^2 + 2*x + 1");
+    auto d = e.diff("x");
+    std::cout &lt;&lt; d.to_string() &lt;&lt; std::endl;   // 2*x + 2
+    return 0;   // 自动清理
+}
+</code></pre>
+<p>C++ 包装将 oCAS 错误转换为 <code>ocas::Error</code> 异常，并通过 RAII 管理 arena 后端表达式，无需手动调用 <code>free</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="基准与性能对比"><a class="header" href="#基准与性能对比">基准与性能对比</a></h1>
+<p>oCAS 在 <code>ocas-tests/benches/</code> 中提供基于 criterion 的基准套件，以及面向 SymPy、SageMath、Symbolica 的跨语言对比工具。本章说明如何运行各项基准及其测量内容。</p>
+<hr>
+<h2 id="运行-ocas-基准"><a class="header" href="#运行-ocas-基准">运行 oCAS 基准</a></h2>
+<pre><code class="language-bash"># 所有基准
+cargo bench --workspace
+
+# 单项基准
+cargo bench --bench poly_gcd
+cargo bench --bench poly_factor
+cargo bench --bench groebner
+
+# 更快但精度较低的运行
+cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>基准</th><th>覆盖</th></tr>
+</thead>
+<tbody>
+<tr><td><code>arena</code></td><td>Arena 分配吞吐</td></tr>
+<tr><td><code>parse</code> / <code>normalize</code></td><td>表达式解析与规范化</td></tr>
+<tr><td><code>poly_dense</code> / <code>poly_sparse</code></td><td>多项式运算</td></tr>
+<tr><td><code>poly_gcd</code></td><td>一元多项式 GCD</td></tr>
+<tr><td><code>poly_factor</code></td><td>无平方因子分解</td></tr>
+<tr><td><code>groebner</code></td><td>Gröbner 基（cyclic-n 理想）</td></tr>
+<tr><td><code>calculus</code> / <code>rewrite</code></td><td>微分、Taylor、规则化简</td></tr>
+<tr><td><code>eval_interpreter</code> / <code>eval_jit</code> / <code>eval_simd</code></td><td>数值求值路径</td></tr>
+<tr><td><code>sympy_comparison</code></td><td>与 SymPy 直接对比</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="sympy-对比自动化"><a class="header" href="#sympy-对比自动化">SymPy 对比（自动化）</a></h2>
+<p><code>sympy_comparison</code> 基准通过 <code>uv</code> 管理的 Python 子进程（<code>scripts/bench_sympy.py</code>）驱动 SymPy，用 <code>iter_custom</code> 将耗时（纳秒）接入 criterion，使 oCAS 与 SymPy 在同一报告中并列展示。</p>
+<pre><code class="language-bash"># 需要 PATH 中有 `uv`；Python 环境会自动准备
+cargo bench --bench sympy_comparison
+</code></pre>
+<p>支持的任务：<code>parse</code>、<code>diff</code>、<code>expand</code>、<code>factor</code>、<code>gcd</code>、<code>series</code>。</p>
+<hr>
+<h2 id="sagemath-对比本地手动"><a class="header" href="#sagemath-对比本地手动">SageMath 对比（本地手动）</a></h2>
+<p>SageMath 安装体积过大，不适合进 CI，因此对比在本地通过 <code>sage</code> 解释器运行。该工具与 <code>bench_sympy.py</code> 的输出契约一致。</p>
+<pre><code class="language-bash"># 在 ocas-tests 目录下运行（需已安装 SageMath）
+sage scripts/bench_sage.py factor "x^30 - 1" 100
+</code></pre>
+<p>任务：<code>parse</code>、<code>diff</code>、<code>expand</code>、<code>factor</code>、<code>gcd</code>。注意 SageMath 用 <code>^</code>
+表示乘方（与 oCAS 相同），无需语法转换。</p>
+<hr>
+<h2 id="symbolica-对比本地手动"><a class="header" href="#symbolica-对比本地手动">Symbolica 对比（本地手动）</a></h2>
+<p><a href="https://github.com/symbolica-dev/symbolica">Symbolica</a> 是 oCAS 的主要性能参考。由于 Symbolica 采用 AGPL 类许可证且作为独立 Cargo workspace 发布，<strong>不会</strong>链接进 oCAS 构建。请从源码检出运行 Symbolica 自带的示例二进制，手动对比耗时。</p>
+<p>推荐对比矩阵（Symbolica 示例 → oCAS 基准）：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbolica 示例</th><th>oCAS 基准</th><th>工作负载</th></tr>
+</thead>
+<tbody>
+<tr><td><code>polynomial_gcd</code></td><td><code>poly_gcd</code></td><td>整数与有理多项式 GCD</td></tr>
+<tr><td><code>factorization</code></td><td><code>poly_factor</code></td><td><code>x^n - 1</code> 无平方/完整因式分解</td></tr>
+<tr><td><code>groebner_basis</code></td><td><code>groebner</code></td><td>cyclic-4 理想</td></tr>
+<tr><td><code>derivative</code></td><td><code>calculus</code></td><td>符号微分</td></tr>
+<tr><td><code>series</code></td><td><code>calculus</code></td><td>Taylor 展开</td></tr>
+</tbody>
+</table>
+</div>
+<pre><code class="language-bash"># 运行 Symbolica 示例（在 symbolica 源码根目录）
+cd ../symbolica
+cargo run --release --example polynomial_gcd
+
+# 再运行对应的 oCAS 基准
+cd ../ocas
+cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
+</code></pre>
+<hr>
+<h2 id="报告结果"><a class="header" href="#报告结果">报告结果</a></h2>
+<p>criterion 将 HTML 报告写入 <code>target/criterion/</code>。在浏览器打开
+<code>target/criterion/poly_gcd/index.html</code> 可查看分布、回归与并列对比。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="数值后端"><a class="header" href="#数值后端">数值后端</a></h1>
+<p>oCAS 默认提供纯 Rust 构建（使用 <code>num-bigint</code>/<code>num-rational</code>），并通过 feature flag 提供可选的高性能后端。默认构建仅使用 LGPL 兼容依赖；GPL 专属代码隔离在可选的 <code>ocas-gpl</code> crate 中。</p>
+<h2 id="功能开关"><a class="header" href="#功能开关">功能开关</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Crate</th><th>后端</th><th>许可证</th></tr>
+</thead>
+<tbody>
+<tr><td><code>gmp</code></td><td><code>ocas-core</code>、<code>ocas-domain</code></td><td>经 <code>rug</code> 的 GMP 整数/有理数</td><td>LGPL</td></tr>
+<tr><td><code>mpfr</code></td><td><code>ocas-domain</code></td><td>经 <code>rug</code> 的 MPFR 实数球</td><td>LGPL</td></tr>
+<tr><td><code>flint</code></td><td><code>ocas-poly</code></td><td>FLINT 3（仅 Linux/WSL）</td><td>LGPL</td></tr>
+<tr><td><code>jit</code></td><td><code>ocas-eval</code></td><td>Cranelift JIT 编译</td><td>Apache-2.0</td></tr>
+<tr><td><code>simd</code></td><td><code>ocas-eval</code></td><td>SIMD 向量化求值</td><td>MIT</td></tr>
+<tr><td><code>egg</code></td><td><code>ocas-rewrite</code></td><td>E-graph 等式饱和</td><td>MIT</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="启用后端"><a class="header" href="#启用后端">启用后端</a></h2>
+<pre><code class="language-bash"># GMP + MPFR 后端（Windows 上推荐通过 MSYS2 MINGW64）
+cargo build -p ocas --features gmp,mpfr
+
+# FLINT 后端（仅 Linux/WSL；需要系统 libflint）
+cargo build -p ocas --features gmp,mpfr,flint
+
+# JIT + SIMD 求值
+cargo build -p ocas --features jit,simd
+</code></pre>
+<p>Windows 上通过 MSYS2 安装 GMP/MPFR 的步骤见
+<a href="https://github.com/charleshzh/ocas/blob/main/docs/build-windows.md">docs/build-windows.md</a>。</p>
+<h2 id="gpl-后端"><a class="header" href="#gpl-后端">GPL 后端</a></h2>
+<p><code>ocas-gpl</code> crate（GPL-3.0-or-later 许可）为可选，从不包含在默认构建中。它承载无法在 LGPL 下发布的 GPL 专属算法。默认 oCAS 构建保持 LGPL 纯净。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="在-windows-上构建"><a class="header" href="#在-windows-上构建">在 Windows 上构建</a></h1>
+<p>Windows 推荐工具链为 MSYS2 MINGW64（GNU 目标），可为可选数值后端提供 GMP/MPFR。MSVC 构建适用于纯 Rust 默认（无后端）配置。</p>
+<h2 id="msys2-mingw64-配置"><a class="header" href="#msys2-mingw64-配置">MSYS2 MINGW64 配置</a></h2>
+<pre><code class="language-bash"># 在 MSYS2 MINGW64 shell 中
+pacman -S mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
+</code></pre>
+<p>然后带后端构建：</p>
+<pre><code class="language-bash">cargo build -p ocas --features gmp,mpfr
+</code></pre>
+<h2 id="msvc无后端"><a class="header" href="#msvc无后端">MSVC（无后端）</a></h2>
+<pre><code class="language-powershell">cargo build --target x86_64-pc-windows-msvc --no-default-features
+</code></pre>
+<blockquote>
+<p>由于上游 <code>flint3-sys</code> 的限制（仅支持 POSIX 类型），<code>flint</code> feature 在 Windows 上不可用。</p>
+</blockquote>
+<p>包含 PATH 配置与问题排查的完整分步指南，见仓库中的
+<a href="https://github.com/charleshzh/ocas/blob/main/docs/build-windows.md">docs/build-windows.md</a>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="贡献"><a class="header" href="#贡献">贡献</a></h1>
+<p>欢迎贡献！oCAS 在 <code>main</code> 主干上进行开发，使用短生命周期特性分支与 Pull Request。</p>
+<h2 id="开发环境"><a class="header" href="#开发环境">开发环境</a></h2>
+<ul>
+<li>Rust 1.89+（Edition 2024）</li>
+<li>C 编译器（MSVC、GCC 或 Clang）</li>
+<li>可选：用于后端特性的 GMP/MPFR/FLINT 系统库</li>
+</ul>
+<h2 id="质量门禁"><a class="header" href="#质量门禁">质量门禁</a></h2>
+<pre><code class="language-bash">cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
+cargo test --workspace --exclude ocas-py --features egg
+cargo deny check
+</code></pre>
+<h2 id="python-绑定"><a class="header" href="#python-绑定">Python 绑定</a></h2>
+<pre><code class="language-bash">cd ocas-py
+uv venv .venv
+uv pip install pytest maturin
+uv run maturin develop
+uv run python -m pytest ../ocas-tests/tests/python/ -v
+</code></pre>
+<h2 id="编码规范"><a class="header" href="#编码规范">编码规范</a></h2>
+<ul>
+<li>遵循 <a href="https://rust-lang.github.io/api-guidelines/">Rust API Guidelines</a>。</li>
+<li>提交前运行 <code>cargo fmt --all</code>。</li>
+<li>表达式树优先使用 arena 分配；避免逐节点 <code>Box</code>/<code>Rc</code>。</li>
+<li>错误类型使用 <code>thiserror</code>；用 <code>?</code> 传播。</li>
+<li>后端代码隐藏在 feature flag 后；GPL 代码只能放在 <code>ocas-gpl</code>。</li>
+<li>稳定版本的公共 API 必须包含 rustdoc 示例。</li>
+</ul>
+<p>完整约定、分层依赖规则与发布流程见仓库的 <code>CLAUDE.md</code> 与 <code>ARCHITECTURE_CN.md</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="外部参考"><a class="header" href="#外部参考">外部参考</a></h1>
+<ul>
+<li><a href="https://docs.rs/ocas">Rust API 文档（docs.rs）</a>：公共 Rust API 的自动生成
+参考文档，由已发布 crate 在启用所有 feature 时构建。</li>
+<li><a href="https://crates.io/crates/ocas">crates.io 注册页</a>：已发布版本、feature 标签
+与依赖图。</li>
+<li><a href="https://github.com/charleshzh/ocas">GitHub 仓库</a>：源代码、Issue 跟踪与贡献
+指南。</li>
+<li><a href="https://charleshzh.github.io/ocas/latest/">文档站点</a>：本书，由 GitHub Pages
+提供。每个发布 tag 下 <code>/ocas/v&lt;版本&gt;/</code> 存有对应的版本快照。</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-c22b7243.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../language-switcher.js"></script>
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
