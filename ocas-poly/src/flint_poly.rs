@@ -29,20 +29,29 @@ use ocas_domain::{Integer, IntegerDomain};
 ///
 /// This type is intentionally separate from [`DenseUnivariatePolynomial`] so
 /// that the pure-Rust API remains available when the `flint` feature is off.
-#[derive(Debug)]
 pub struct FlintUnivariatePolynomial {
     raw: fmpz_poly_t,
     domain: IntegerDomain,
 }
 
+impl std::fmt::Debug for FlintUnivariatePolynomial {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FlintUnivariatePolynomial")
+            .field("domain", &self.domain)
+            .finish_non_exhaustive()
+    }
+}
+
 impl FlintUnivariatePolynomial {
     /// Create the zero polynomial.
     pub fn new() -> Self {
-        let mut raw = MaybeUninit::uninit();
+        // SAFETY: fmpz_poly_t is a C array type; zeroed memory is a valid
+        // initial state for fmpz_poly_init.
+        let mut raw: fmpz_poly_t = unsafe { std::mem::zeroed() };
         unsafe {
             fmpz_poly_init(raw.as_mut_ptr());
             Self {
-                raw: raw.assume_init(),
+                raw,
                 domain: IntegerDomain,
             }
         }
@@ -153,10 +162,15 @@ fn integer_from_fmpz(z: &fmpz) -> Integer {
         // fmpz_get_str with a null buffer allocates a string using flint_malloc.
         let c_str = flint3_sys::fmpz_get_str(std::ptr::null_mut(), 10, z);
         let bytes = CStr::from_ptr(c_str).to_bytes();
+        let s = std::str::from_utf8(bytes)
+            .expect("FLINT produced a valid decimal integer string");
+        #[cfg(not(feature = "gmp"))]
         let value =
             BigInt::parse_bytes(bytes, 10).expect("FLINT produced a valid decimal integer string");
+        #[cfg(feature = "gmp")]
+        let value = rug::Integer::from_str(s).expect("FLINT produced a valid decimal integer string");
         flint3_sys::flint_free(c_str as *mut c_void);
-        Integer::from(value)
+        Integer::new(value)
     }
 }
 
