@@ -78,8 +78,25 @@ jobs:
           [[ -n "$versioned" ]] && copy_editions "$versioned"
 
           # Root-level files.
-          cp docs/book/en/book/html/404.html "$root/404.html"
+          # A minimal self-contained 404 (no external CSS) — the book's
+          # own 404.html references css/ that only exists inside en/ or
+          # zh/, so it breaks at the site root.
           touch "$root/.nojekyll"
+          printf '%s\n' \
+            '<!DOCTYPE html>' \
+            '<html lang="en">' \
+            '  <head>' \
+            '    <meta charset="utf-8">' \
+            '    <meta http-equiv="refresh" content="8; url=latest/en/">' \
+            '    <title>oCAS — Page Not Found</title>' \
+            '    <style>body{font-family:system-ui,sans-serif;max-width:40em;margin:4em auto;padding:0 1em;color:#333}a{color:#0974d9}</style>' \
+            '  </head>' \
+            '  <body>' \
+            '    <h1>404 — Page Not Found / 页面未找到</h1>' \
+            '    <p>The page you requested does not exist. You will be redirected to the documentation shortly.</p>' \
+            '    <p><a href="latest/en/">English documentation</a> · <a href="latest/zh/">中文文档</a></p>' \
+            '  </body>' \
+            '</html>' > "$root/404.html"
           # Root index redirects to the English latest book. Built with
           # printf (not a heredoc) because the unindented HTML lines would
           # terminate the YAML | block scalar that wraps this run script.

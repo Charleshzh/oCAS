@@ -38,6 +38,15 @@ exclude = [
   "edit-url-template",
   # docs.rs build badges sometimes rate-limit; tolerate 429.
   "img.shields.io",
+  # mdBook's 404.html uses href="/" as a root link; lychee cannot
+  # resolve root-relative links against a local file tree.
+  "^/$",
+  # GitHub Pages site does not exist until the first successful deploy.
+  # Remove this entry after the site goes live.
+  "charleshzh.github.io/ocas",
+  # The crate is not yet published to crates.io, so docs.rs returns 404.
+  # Remove this entry after `cargo publish`.
+  "docs.rs/ocas",
 ]
 
 # Exclude URLs from the loop (regex, applied to the URL string).
@@ -48,4 +57,8 @@ exclude_path = [
   # following links inside the staged site.
   "docs/book/en/book/",
   "docs/book/zh/book/",
+  # mdBook bundles font license .txt files (Open Sans, Source Code Pro)
+  # that contain http:// URLs we cannot control. They are not our content.
+  "fonts/OPEN-SANS-LICENSE",
+  "fonts/SOURCE-CODE-PRO-LICENSE",
 ]
