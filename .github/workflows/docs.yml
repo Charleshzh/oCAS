@@ -47,7 +47,7 @@ jobs:
       - name: Install system libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgmp-dev libmpfr-dev libflint-dev pkg-config
+          sudo apt-get install -y libgmp-dev libmpfr-dev libmpc-dev libflint-dev pkg-config
       - name: Build rustdoc (all features)
         run: cargo doc --no-deps --all-features -p ocas
       - name: Upload rustdoc artifact
