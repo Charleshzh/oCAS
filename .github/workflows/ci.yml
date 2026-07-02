@@ -109,6 +109,25 @@ jobs:
           gcc ocas-c/examples/expression.c -I ocas-c/include -L target/debug -locas_c -o /tmp/ocas_expression
           LD_LIBRARY_PATH=target/debug /tmp/ocas_expression
 
+  # Validate that the public Rust API documentation builds cleanly on every
+  # push/PR. Rust API reference is served from docs.rs (auto-built on
+  # crates.io publish), so this is a build check, not a deploy — broken
+  # intra-doc links would otherwise only surface at publish time.
+  rustdoc-build:
+    name: Rustdoc build
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D rustdoc::broken_intra_doc_links -D rustdoc::invalid_codeblock_attributes"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo doc (pure-Rust features)
+        # Use explicit pure-Rust features instead of --all-features, which
+        # would force-enable gmp-mpfr-sys's `mpc` feature and trigger a
+        # strict system MPC version check that fails on the runner.
+        run: cargo doc --no-deps --features egg,jit,simd -p ocas
+
   miri:
     name: Miri memory safety
     runs-on: ubuntu-latest
