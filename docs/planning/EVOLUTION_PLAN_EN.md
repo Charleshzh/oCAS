@@ -98,7 +98,35 @@ solvers.
 
 ---
 
-### 0.12.0 — Rational Polynomials & Resultants
+### 0.11.1 — Factorization Completion & Bindings
+
+Carries forward the items deferred from 0.11.0: bivariate ℤ factorization,
+Berlekamp validation, C binding scaffolding, and documentation polish. No new
+algorithms are introduced; the focus is on completing the factorization story
+and confirming the cross-language public API.
+
+**Deferred from 0.11.0**
+
+| Item | Reason for deferral | Deliverable in 0.11.1 |
+|---|---|---|
+| Berlekamp empirical validation | `berlekamp()` skeleton written but disabled (`p ≤ 0`) pending nullspace‑extraction fix for deg‑4+ factors. CZ handles all primes correctly. | Enable the `p ≤ 1000` dispatch after passing cyclic‑n regression. |
+| Bivariate factorization over ℤ (Wang Hensel) | Wang's multivariate Hensel lifting is the hardest single CAS algorithm in this release cycle. | Bivariate `factor()` on `SparseMultivariatePolynomial<IntegerDomain>` backed by the 0.11 heuristic GCD + Wang Hensel. |
+| Bivariate factorization over ℤ_p | The ℤ_p path (Bernardin Hensel) was scoped out of 0.11.0 together with the ℤ path. | Bivariate `factor()` on `SparseMultivariatePolynomial<FiniteField>`. |
+| C polynomial binding (`ocas_poly_factor`) | No polynomial API exists yet in `ocas-c`; adding one requires an opaque `OcasPoly` handle and lifecycle management. | New `ocas-c/src/polynomial.rs` with `ocas_poly_factor` and a C++ RAII wrapper. |
+| mdBook chapter `algorithms/factorization.md` | Deferred together with the document update sprint at the end of 0.11.0. | Bilingual chapter (EN + zh) with algorithm flow diagram, worked examples, and migration notes for SymPy/Symbolica users. |
+
+**Acceptance**
+
+- Berlekamp dispatch enabled and passing the existing 7‑test finite‑field suite
+  as well as the 9‑case SymPy cyclotomic cross‑check.
+- `x^100 - 1` over ℤ in < 50 ms in **release** mode (debug passes at ~0.67 s).
+- Bivariate ℤ factorization matches SymPy on `(x^2+y+x+1)(3x+y^2+4)` and
+  similar textbook cases.
+- `cargo test --workspace --exclude ocas-py` green; Python pytest extended
+  with bivariate factor cases.
+- mdBook chapter renders without warnings (`mdbook build`).
+
+---
 
 **Goal**: a `RationalPolynomial` type (numerator/denominator over a polynomial
 ring) plus partial fractions and resultants. Direct counterpart of Symbolica's

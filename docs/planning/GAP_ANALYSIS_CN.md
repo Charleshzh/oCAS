@@ -71,7 +71,7 @@ pytest、`mdbook build`。
 
 | 算法领域 | oCAS 现状 | 成熟度 |
 |---|---|---|
-| 多项式因式分解 | 仅 `square_free_factorization` + `is_square_free`；**无** Berlekamp/Zassenhaus/Hensel | 🔴 重大缺口 |
+| 多项式因式分解 | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p: Yun SFF → Cantor–Zassenhaus → Hensel lifting → Zassenhaus combination | 🟢 较完整 |
 | Gröbner 基 | 经典 Buchberger + minimize/auto-reduce；**无** F4/F5，无启发式 | 🟡 基础 |
 | 符号积分 | 启发式查表（幂/逆/sin/cos/exp/线性替换）；回退为 `Integral(...)`；**无** Risch | 🟡 基础 |
 | 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量） | 🟢 较完整 |
