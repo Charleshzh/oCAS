@@ -50,5 +50,9 @@ Thumbs.db
 *.profraw
 coverage/
 
+# Node.js dev tooling artifacts (local YAML validation, etc.)
+node_modules/
+package-lock.json
+
 # AI assistant context (repository-local, not shared)
 CLAUDE.md
