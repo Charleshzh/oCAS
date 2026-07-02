@@ -35,5 +35,5 @@ flint = ["dep:flint3-sys"]
 # supported on Windows.
 flint-system = ["dep:flint3-sys", "flint3-sys/use-system-libs"]
 # Pure-Rust GMP-backed integer/rational polynomial backend.
-# On Windows/MinGW this uses system GMP via `gmp-mpfr-sys/use-system-libs`.
-gmp = ["ocas-domain/gmp", "dep:rug"] 
+# On Windows/MinGW, also enable the top-level `system-libs` feature.
+gmp = ["ocas-domain/gmp", "dep:rug"]

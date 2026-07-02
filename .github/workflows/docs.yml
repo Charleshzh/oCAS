@@ -44,12 +44,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install system libraries
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgmp-dev libmpfr-dev libmpc-dev libflint-dev pkg-config
-      - name: Build rustdoc (all features)
-        run: cargo doc --no-deps --all-features -p ocas
+      - name: Build rustdoc
+        # Use explicit pure-Rust features instead of --all-features, which would
+        # force-enable gmp-mpfr-sys's `mpc` feature and trigger a strict system
+        # MPC version check that fails on the runner.
+        run: cargo doc --no-deps --features egg,jit,simd -p ocas
       - name: Upload rustdoc artifact
         uses: actions/upload-artifact@v4
         with:

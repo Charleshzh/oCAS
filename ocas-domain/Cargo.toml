@@ -21,20 +21,22 @@ num-rational = { workspace = true }
 num-complex = { workspace = true }
 
 # Optional GMP/MPFR backends (LGPL).
-# On Windows/MinGW the `gmp`/`mpfr` features enable `gmp-mpfr-sys/use-system-libs`,
-# which requires MSYS2 packages `mingw-w64-x86_64-gmp` and (for mpfr)
-# `mingw-w64-x86_64-mpfr`. On other platforms the default source build is used.
+# On Windows/MinGW, enable the `system-libs` feature to link against MSYS2
+# system libraries (packages `mingw-w64-x86_64-gmp` and
+# `mingw-w64-x86_64-mpfr`). On other platforms the bundled sources are
+# compiled by default, avoiding system-library version mismatches.
 rug = { version = "1.27", optional = true, default-features = false, features = ["integer", "rational", "float"] }
 gmp-mpfr-sys = { version = "1.7", optional = true, default-features = false, features = ["mpfr"] }
 
 [features]
 default = []
 # GMP-backed arbitrary-precision integers and rationals.
-# On Windows/MinGW this uses the system GMP library via `gmp-mpfr-sys/use-system-libs`.
-gmp = ["dep:rug", "dep:gmp-mpfr-sys", "gmp-mpfr-sys/use-system-libs"]
+gmp = ["dep:rug", "dep:gmp-mpfr-sys"]
 # MPFR-backed rigorous real balls.
-# On Windows/MinGW this uses the system GMP/MPFR libraries via `gmp-mpfr-sys/use-system-libs`.
-mpfr = ["dep:rug", "dep:gmp-mpfr-sys", "gmp-mpfr-sys/use-system-libs"]
+mpfr = ["dep:rug", "dep:gmp-mpfr-sys"]
+# Link against preinstalled system GMP/MPFR/MPC instead of compiling the
+# bundled sources. Required on Windows/MinGW; optional elsewhere.
+system-libs = ["gmp-mpfr-sys/use-system-libs"]
 
 [dev-dependencies]
 proptest = { workspace = true }

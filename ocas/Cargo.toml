@@ -34,6 +34,9 @@ gpl = ["dep:ocas-gpl"]
 egg = ["ocas-rewrite/egg"]
 jit = ["ocas-eval/jit"]
 simd = ["ocas-eval/simd"]
+# Link against preinstalled system GMP/MPFR/MPC instead of compiling the
+# bundled sources. Required on Windows/MinGW; optional elsewhere.
+system-libs = ["ocas-domain/system-libs"]
 
 [dev-dependencies]
 criterion = { workspace = true }
