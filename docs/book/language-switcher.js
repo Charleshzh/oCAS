@@ -1,14 +1,14 @@
-# Shared language switcher for the oCAS mdBook sites.
-#
-# Each language book (en/, zh/) includes this via `additional-js` in its
-# book.toml. It injects a "中文 / English" button into mdBook's top-right
-# button bar that swaps the `/en/` and `/zh/` path segments while keeping
-# the rest of the URL (version prefix, page, hash) intact.
-#
-# Deployed URL shapes this must handle:
-#   /ocas/latest/en/introduction.html
-#   /ocas/v0.10.0/zh/getting-started.html#rust
-#   /en/404.html            (local `mdbook serve`)
+// Shared language switcher for the oCAS mdBook sites.
+//
+// Each language book (en/, zh/) includes this via `additional-js` in its
+// book.toml. It injects a "中文 / English" button into mdBook's top-right
+// button bar that swaps the `/en/` and `/zh/` path segments while keeping
+// the rest of the URL (version prefix, page, hash) intact.
+//
+// Deployed URL shapes this must handle:
+//   /ocas/latest/en/introduction.html
+//   /ocas/v0.10.0/zh/getting-started.html#rust
+//   /en/404.html            (local `mdbook serve`)
 ;(function () {
   "use strict";
 

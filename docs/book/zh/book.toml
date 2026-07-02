@@ -9,7 +9,9 @@ build-dir = "book/html"
 
 [output.html]
 git-repository-url = "https://github.com/charleshzh/ocas"
-edit-url-template = "https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/{path}"
+# mdBook's {path} placeholder already includes the src/ prefix (e.g.
+# "src/introduction.md"), so edit-url-template must NOT repeat it.
+edit-url-template = "https://github.com/charleshzh/ocas/edit/main/docs/book/zh/{path}"
 # Language switcher shared with the English book.
 additional-js = ["../language-switcher.js"]
 additional-css = ["../language-switcher.css"]
