@@ -85,6 +85,12 @@ jobs:
             mkdir -p "${site_root}/${prefix}"
             cp -r docs/book/en/book/html/. "${site_root}/${prefix}/en/"
             cp -r docs/book/zh/book/html/. "${site_root}/${prefix}/zh/"
+            # mdBook copies additional-js/css to the output dir's parent
+            # (sibling of html/), so they are not captured by the `cp html/.`
+            # above. Place them at the version root so the en/ and zh/ pages
+            # can resolve ../language-switcher.{js,css}.
+            cp docs/book/language-switcher.js  "${site_root}/${prefix}/"
+            cp docs/book/language-switcher.css "${site_root}/${prefix}/"
           }
 
           stage_version latest
