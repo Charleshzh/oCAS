@@ -61,4 +61,8 @@ exclude_path = [
   # that contain http:// URLs we cannot control. They are not our content.
   "fonts/OPEN-SANS-LICENSE",
   "fonts/SOURCE-CODE-PRO-LICENSE",
+  # mdBook's 404.html uses href="/" (root-absolute) which lychee cannot
+  # resolve without a base URL. The 404 is a system fallback page — its
+  # links don't need validation.
+  "404.html",
 ]
