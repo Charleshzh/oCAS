@@ -22,6 +22,7 @@ use flint3_sys::{
 };
 
 use crate::dense::DenseUnivariatePolynomial;
+#[cfg(not(feature = "gmp"))]
 use num_bigint::BigInt;
 use ocas_domain::{Integer, IntegerDomain};
 
@@ -162,13 +163,13 @@ fn integer_from_fmpz(z: &fmpz) -> Integer {
         // fmpz_get_str with a null buffer allocates a string using flint_malloc.
         let c_str = flint3_sys::fmpz_get_str(std::ptr::null_mut(), 10, z);
         let bytes = CStr::from_ptr(c_str).to_bytes();
-        let s = std::str::from_utf8(bytes)
-            .expect("FLINT produced a valid decimal integer string");
+        let s = std::str::from_utf8(bytes).expect("FLINT produced a valid decimal integer string");
         #[cfg(not(feature = "gmp"))]
         let value =
             BigInt::parse_bytes(bytes, 10).expect("FLINT produced a valid decimal integer string");
         #[cfg(feature = "gmp")]
-        let value = rug::Integer::from_str(s).expect("FLINT produced a valid decimal integer string");
+        let value = rug::Integer::from_str_radix(s, 10)
+            .expect("FLINT produced a valid decimal integer string");
         flint3_sys::flint_free(c_str as *mut c_void);
         Integer::new(value)
     }
