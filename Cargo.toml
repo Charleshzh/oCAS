@@ -62,7 +62,7 @@ cranelift-frontend = "0.117"
 wide = "0.7"
 pyo3 = { version = "0.29", features = ["abi3-py310"] }
 cbindgen = "0.28"
-criterion = "0.5"
+criterion = "0.8"
 proptest = "1.6"
 
 [profile.release]
