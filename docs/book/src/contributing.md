@@ -45,9 +45,9 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 
 **English**
 
-See the repository's `CLAUDE.md` and `ARCHITECTURE.md` for the full
+See the repository's `CLAUDE.md` and `ARCHITECTURE_EN.md` for the full
 conventions, layered-dependency rules, and release process.
 
 **中文**
 
-完整约定、分层依赖规则与发布流程见仓库的 `CLAUDE.md` 与 `ARCHITECTURE.md`。
+完整约定、分层依赖规则与发布流程见仓库的 `CLAUDE.md` 与 `ARCHITECTURE_CN.md`。

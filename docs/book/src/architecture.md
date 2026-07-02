@@ -21,9 +21,9 @@ oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每
 
 **English**
 
-See [ARCHITECTURE.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE.md)
+See [ARCHITECTURE_EN.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_EN.md)
 in the repository for the full design document.
 
 **中文**
 
-完整设计文档见仓库中的 [ARCHITECTURE.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE.md)。
+完整设计文档见仓库中的 [ARCHITECTURE_CN.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_CN.md)。
