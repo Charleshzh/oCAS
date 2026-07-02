@@ -80,21 +80,23 @@ jobs:
           # Root-level files.
           cp docs/book/en/book/html/404.html "$root/404.html"
           touch "$root/.nojekyll"
-          cat > "$root/index.html" <<'HTML'
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; url=latest/en/">
-    <link rel="canonical" href="latest/en/">
-    <title>oCAS Documentation</title>
-  </head>
-  <body>
-    Redirecting to <a href="latest/en/">the latest oCAS documentation</a>…
-    (<a href="latest/zh/">中文</a>)
-  </body>
-</html>
-HTML
+          # Root index redirects to the English latest book. Built with
+          # printf (not a heredoc) because the unindented HTML lines would
+          # terminate the YAML | block scalar that wraps this run script.
+          printf '%s\n' \
+            '<!DOCTYPE html>' \
+            '<html lang="en">' \
+            '  <head>' \
+            '    <meta charset="utf-8">' \
+            '    <meta http-equiv="refresh" content="0; url=latest/en/">' \
+            '    <link rel="canonical" href="latest/en/">' \
+            '    <title>oCAS Documentation</title>' \
+            '  </head>' \
+            '  <body>' \
+            '    Redirecting to <a href="latest/en/">the latest oCAS documentation</a>…' \
+            '    (<a href="latest/zh/">中文</a>)' \
+            '  </body>' \
+            '</html>' > "$root/index.html"
 
           echo "root=$root"           >> "$GITHUB_OUTPUT"
           if [[ -n "$versioned" ]]; then
