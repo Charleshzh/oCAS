@@ -11,4 +11,4 @@ oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每
 | 1 数值后端 | `ocas-core` | GMP/FLINT 封装 |
 | 0 运行时 | `ocas-core` | arena、错误、线程池、FFI |
 
-完整设计文档见仓库中的 [ARCHITECTURE_CN.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_CN.md)。
+完整设计文档见仓库中的 [ARCHITECTURE_CN.md](https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_CN.md)。

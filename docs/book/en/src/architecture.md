@@ -13,5 +13,5 @@ cyclic dependencies are permitted.
 | 1 Numerical backend | `ocas-core` | GMP/FLINT encapsulation |
 | 0 Runtime | `ocas-core` | Arena, errors, thread pool, FFI |
 
-See [ARCHITECTURE_EN.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_EN.md)
+See [ARCHITECTURE_EN.md](https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_EN.md)
 in the repository for the full design document.

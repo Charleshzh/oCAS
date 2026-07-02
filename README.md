@@ -5,7 +5,7 @@
 [![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
 [![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
 
-> **Languages / 语言**: [English](README.md) · [中文](README_CN.md)
+> **Languages / 语言**: [English](README.md) · [中文](docs/README_CN.md)
 
 **oCAS** is a modern, high-performance computer algebra system written in Rust.
 It is designed to match or exceed the core performance of Symbolica and
@@ -17,7 +17,7 @@ SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 > [documentation](https://charleshzh.github.io/ocas/latest/en/)
 > ([中文](https://charleshzh.github.io/ocas/latest/zh/)),
 > [Rust API docs](https://docs.rs/ocas), and
-> [roadmap](ROADMAP_EN.md).
+> [roadmap](docs/planning/ROADMAP_EN.md).
 
 ---
 
@@ -84,7 +84,7 @@ embeddable, and license-clean symbolic computation engine.
 └─────────────────────────────────────────────────────────────┘
 ```
 
-See [ARCHITECTURE_EN.md](ARCHITECTURE_EN.md) for the full design.
+See [ARCHITECTURE_EN.md](docs/planning/ARCHITECTURE_EN.md) for the full design.
 
 ---
 
@@ -167,14 +167,14 @@ workloads:
 
 Benchmarks are under active development. See
 [ocas-tests/benches](ocas-tests/benches). For the gap analysis against
-Symbolica, SageMath, and SymPy, see [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md).
+Symbolica, SageMath, and SymPy, see [GAP_ANALYSIS_EN.md](docs/planning/GAP_ANALYSIS_EN.md).
 
 ---
 
 ## Roadmap
 
-See [ROADMAP_EN.md](ROADMAP_EN.md) for the versioned plan, and
-[EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md) for the fine-grained per-version
+See [ROADMAP_EN.md](docs/planning/ROADMAP_EN.md) for the versioned plan, and
+[EVOLUTION_PLAN_EN.md](docs/planning/EVOLUTION_PLAN_EN.md) for the fine-grained per-version
 evolution plan (Beta → 1.0).
 
 ---
@@ -195,7 +195,7 @@ under GPL terms.
 
 ## Contributing
 
-We welcome contributions. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
+We welcome contributions. Please read [CONTRIBUTING.md](docs/book/en/src/contributing.md) before
 opening a pull request.
 
 ---

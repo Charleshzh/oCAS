@@ -5,7 +5,7 @@
 [![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
 [![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
 
-> **语言**: [English](README.md) · [中文](README_CN.md)
+> **语言**: [English](../README.md) · [中文](README_CN.md)
 
 **oCAS** 是一个使用 Rust 编写的现代化高性能计算机代数系统。它的目标是在核心
 性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
@@ -16,7 +16,7 @@
 > [文档](https://charleshzh.github.io/ocas/latest/zh/)
 >（[English](https://charleshzh.github.io/ocas/latest/en/)）、
 > [Rust API 文档](https://docs.rs/ocas)与
-> [路线图](ROADMAP_CN.md)。
+> [路线图](planning/ROADMAP_CN.md)。
 
 ---
 
@@ -77,7 +77,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 └─────────────────────────────────────────────────────────────┘
 ```
 
-完整设计请参阅 [ARCHITECTURE_CN.md](ARCHITECTURE_CN.md)。
+完整设计请参阅 [ARCHITECTURE_CN.md](planning/ARCHITECTURE_CN.md)。
 
 ---
 
@@ -130,7 +130,7 @@ sudo apt-get install libgmp-dev libmpfr-dev libflint-dev
 brew install gmp mpfr flint
 ```
 
-Windows 用户请参考 [docs/build-windows.md](docs/build-windows.md)。
+Windows 用户请参考 [build-windows.md](build-windows.md)。
 
 ### 构建
 
@@ -157,22 +157,22 @@ oCAS 致力于在核心工作负载上与 Symbolica 和 SageMath 竞争性能：
 - 精确线性代数默认使用 **faer**，可选 **LinBox**。
 - JIT 求值通过 **Cranelift**。
 
-基准测试正在积极开发中，参见 [ocas-tests/benches](ocas-tests/benches)。与
-Symbolica、SageMath、SymPy 的差距分析见 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)。
+基准测试正在积极开发中，参见 [ocas-tests/benches](../ocas-tests/benches)。与
+Symbolica、SageMath、SymPy 的差距分析见 [GAP_ANALYSIS_CN.md](planning/GAP_ANALYSIS_CN.md)。
 
 ---
 
 ## 路线图
 
-版本化计划见 [ROADMAP_CN.md](ROADMAP_CN.md)，细粒度逐版本演进计划（Beta → 1.0）
-见 [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md)。
+版本化计划见 [ROADMAP_CN.md](planning/ROADMAP_CN.md)，细粒度逐版本演进计划（Beta → 1.0）
+见 [EVOLUTION_PLAN_CN.md](planning/EVOLUTION_PLAN_CN.md)。
 
 ---
 
 ## 许可证
 
 本项目采用 **GNU 宽通用公共许可证第 3 版或更新版本**（LGPL-3.0-or-later）。
-完整文本参见 [LICENSE](LICENSE)。
+完整文本参见 [LICENSE](../LICENSE)。
 
 ### 可选 GPL 后端
 
@@ -185,7 +185,7 @@ Symbolica、SageMath、SymPy 的差距分析见 [GAP_ANALYSIS_CN.md](GAP_ANALYSI
 ## 贡献
 
 我们欢迎贡献。在提交 Pull Request 之前，请先阅读
-[CONTRIBUTING.md](CONTRIBUTING.md)。
+[CONTRIBUTING.md](book/zh/src/contributing.md)。
 
 ---
 

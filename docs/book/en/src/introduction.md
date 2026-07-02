@@ -43,5 +43,5 @@ performance of Symbolica and SageMath while remaining free and open under the
 oCAS is currently at version **0.10.0 (Beta)**. The core symbolic engine,
 polynomial algebra, solvers, JIT evaluation, and tri-language bindings are
 feature-complete for a beta release. See the
-[roadmap](https://github.com/charleshzh/ocas/blob/main/ROADMAP_EN.md) for the
+[roadmap](https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md) for the
 path to stable 1.0.

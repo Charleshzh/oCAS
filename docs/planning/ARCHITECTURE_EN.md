@@ -336,7 +336,7 @@ cargo build -p ocas --features gmp,mpfr,flint
 
 ## See Also
 
-- [README.md](README.md)
+- [README.md](../../README.md)
 - [ROADMAP_EN.md](ROADMAP_EN.md)
 - [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CONTRIBUTING.md](../book/en/src/contributing.md)
