@@ -294,6 +294,7 @@ After 1.0, development will focus on:
 | 0.8.0 | Beta | Month 11 | JIT & evaluation |
 | 0.9.0 | Beta | Month 13 | Python & C/C++ bindings |
 | 0.10.0 | Beta | Month 14 | Feature freeze |
+| 0.11.0 | Beta | Month 15 | Polynomial factorization |
 | 1.0.0 | Stable | Month 16 | Stable release |
 
 ---

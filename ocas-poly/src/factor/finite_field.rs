@@ -394,9 +394,9 @@ pub fn berlekamp(f: &FpPoly) -> Vec<FpPoly> {
 
     // ── Q - I ──────────────────────────────────────────────────────
     let mut m = Vec::with_capacity(n * n);
-    for i in 0..n {
-        for j in 0..n {
-            let mut v = q[i][j].clone();
+    for (i, row) in q.iter().enumerate() {
+        for (j, v) in row.iter().enumerate() {
+            let mut v = v.clone();
             if i == j {
                 v = field.sub(&v, &one);
             }
@@ -560,7 +560,7 @@ pub fn factor_over_finite_field(f: &FpPoly) -> Vec<(FpPoly, usize)> {
         // Use Cantor–Zassenhaus for all primes. The Berlekamp path
         // (p ≤ 1000) is implemented but needs further validation
         // (TODO: fix nullspace extraction for degree-4+ factors).
-        let use_berlekamp = field.prime().to_u64().is_some_and(|p| p <= 0); // disabled pending validation
+        let use_berlekamp = false; // disabled pending validation
         let irr_factors = if use_berlekamp {
             berlekamp(&g)
         } else {

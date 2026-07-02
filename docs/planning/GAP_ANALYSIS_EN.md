@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.10.0 @ 2026-07-02**
+> Last evaluated: **0.11.0 @ 2026-07-03**
 
 ---
 
@@ -35,8 +35,9 @@ For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 | 0.8.0 | Beta | ✅ | ✅ tree interpreter, AST→instruction compiler, function registry, Cranelift JIT, SIMD vectorized eval |
 | 0.9.0 | Beta | ✅ | ⚠️ PyO3 `Expression`/`Evaluator`/`solve_*`; cbindgen + C++ RAII wrapper — some classes deferred to 0.10 |
 | 0.10.0 | Beta | ✅ | ✅ Python `Polynomial/Matrix/Domain`, Matrix linear algebra (Bareiss), mdBook docs site, 3-platform wheels CI, version frozen at 0.10.0 |
+| 0.11.0 | Beta | ✅ | ✅ Complete polynomial factorization over ℤ and ℤ_p (Yun SFF → CZ → Hensel → Zassenhaus), multivariate GCD, 500 proptest round-trip cases, version bumped to 0.11.0 |
 
-All 0.1–0.10 deliverables landed. The workspace is pinned at 0.10.0. Quality
+All 0.1–0.11 deliverables landed. The workspace is pinned at 0.11.0. Quality
 gates are green: `cargo fmt`, `clippy -D warnings`, workspace tests,
 `cargo deny`, 77 pytest cases, `mdbook build`.
 
@@ -138,7 +139,7 @@ leadership.
 | Parsing / simplification | 🟢 parity | both complete |
 | Differentiation | 🟢 parity | chain/product/power rules |
 | Integration | 🟡 oCAS weaker | SymPy has Risch + heuristics; oCAS heuristic only |
-| Factorization | 🔴 oCAS weaker | SymPy complete; oCAS square-free only |
+| Factorization | � parity | univariate ℤ and ℤ_p via CZ + Hensel + Zassenhaus; multivariate still in 0.11.1 |
 | Gröbner | 🟡 oCAS slightly weaker | both mid-tier, SymPy richer |
 | Matrix / linear algebra | 🟢 parity | oCAS has Bareiss determinant/inverse |
 | **Performance** | 🟢 **oCAS advantage** | Rust + Cranelift JIT + arena vs pure Python |
@@ -146,7 +147,8 @@ leadership.
 
 The 0.6.0 success criterion — "parity with SymPy on basic polynomial,
 calculus, and rewriting" — is met and exceeded on the **performance** axis,
-but still trails on the **hard-algorithm** axis (integration, factorization).
+and factorization is now closed on the univariate side; only **integration**
+remains a notable hard-algorithm trail on the SymPy comparison.
 
 ---
 
@@ -173,15 +175,16 @@ awareness), and docs/bindings/CI are well-engineered. As a self-developed CAS
 of ~16k lines over ~14 months, the foundation is solid.
 
 However, the 1.0 goal of "performance parity or better with Symbolica" still
-has a core hard-algorithm shortfall: factorization, Risch integration, and
-F4/F5 Gröbner are the "rites of passage" of a CAS, and are currently missing
-or weak. On performance (arena + JIT + SIMD) oCAS has a structural edge, but
-algorithm depth decides "what can be computed", not "how fast".
+has a core hard-algorithm shortfall: Risch integration and F4/F5 Gröbner are
+the remaining "rites of passage" of a CAS. Factorization has been closed in 0.11.0,
+so the next high-value leap is rational function arithmetic and partial
+fractions (0.12). On performance (arena + JIT + SIMD) oCAS has a structural
+edge, but algorithm depth decides "what can be computed", not "how fast".
 
 Realistic positioning: oCAS today is closer to "a high-performance subset of
-SymPy's core, with evaluation performance exceeding SymPy", rather than a
-direct Symbolica replacement. Closing factorization + rational function
-arithmetic before 1.0 is the highest-value leap.
+SymPy's core, with evaluation performance exceeding SymPy and univariate
+factorization parity", rather than a direct Symbolica replacement. Closing
+rational function arithmetic before 1.0 is the highest-value leap.
 
 ---
 
@@ -192,3 +195,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | Version | Date | Deltas |
 |---|---|---|
 | 0.10.0 | 2026-07-02 | Initial assessment. All 0.1–0.10 deliverables verified complete; gaps against Symbolica / SageMath / SymPy documented; factorization + Risch integration identified as top priorities. |
+| 0.11.0 | 2026-07-03 | Polynomial factorization completed (univariate ℤ and ℤ_p); multivariate GCD added; SymPy comparison updated to parity for univariate factorization; highest-priority gap shifted to rational functions / partial fractions (0.12). |

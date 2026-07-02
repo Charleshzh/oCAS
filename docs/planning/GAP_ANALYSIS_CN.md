@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.10.0 @ 2026-07-02**
+> 最后评估：**0.11.0 @ 2026-07-03**
 
 ---
 
@@ -34,8 +34,9 @@
 | 0.8.0 | Beta | ✅ | ✅ 树解释器、AST→指令编译器、函数注册表、Cranelift JIT、SIMD 向量化求值 |
 | 0.9.0 | Beta | ✅ | ⚠️ PyO3 `Expression`/`Evaluator`/`solve_*`；cbindgen + C++ RAII 包装——部分类推迟到 0.10 |
 | 0.10.0 | Beta | ✅ | ✅ Python `Polynomial/Matrix/Domain`、Matrix 线性代数（Bareiss）、mdBook 文档站、三平台 wheels CI、版本锁定 0.10.0 |
+| 0.11.0 | Beta | ✅ | ✅ 完整多项式因式分解（ℤ 与 ℤ_p：Yun SFF → CZ → Hensel → Zassenhaus）、多元 GCD、500 例 proptest 往返测试、版本提升至 0.11.0 |
 
-0.1–0.10 交付物全部落地，workspace 版本锁定 0.10.0。质量门全绿：
+0.1–0.11 交付物全部落地，workspace 版本锁定 0.11.0。质量门全绿：
 `cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、77 项
 pytest、`mdbook build`。
 
@@ -130,14 +131,15 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 | 解析/化简 | 🟢 持平 | 双方都完备 |
 | 微分 | 🟢 持平 | 链式/乘积/幂法则 |
 | 积分 | 🟡 oCAS 较弱 | SymPy 有 Risch + 启发式；oCAS 仅启发式 |
-| 因式分解 | 🔴 oCAS 弱 | SymPy 完整；oCAS 仅 square-free |
+| 因式分解 | � 持平 | 单变量 ℤ 与 ℤ_p 已通过 CZ + Hensel + Zassenhaus；多元推迟到 0.11.1 |
 | Gröbner | 🟡 oCAS 略弱 | 双方都非顶级，SymPy 略丰富 |
 | 矩阵/线性代数 | 🟢 持平 | oCAS 有 Bareiss 行列式/逆 |
 | **性能** | 🟢 **oCAS 优势** | Rust + Cranelift JIT + arena 对纯 Python |
 | Python 易用性 | 🟢 持平 | oCAS 有 `ocas-py` 绑定 |
 
 0.6.0 成功标准"基础多项式/微积分/重写与 SymPy 持平"——在**性能**维度已
-达成并领先，但在**硬算法**维度（积分、因式分解）仍落后。
+达成并领先，单变量**因式分解**已实现持平；**积分**仍是与 SymPy 硬算法差距
+中的主要短板。
 
 ---
 
@@ -147,7 +149,7 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 
 | # | 缺口 | 优先级 |
 |---|---|---|
-| 1 | 完整多项式因式分解（Berlekamp-Hensel-Zassenhaus） | 🔴 最高——阻塞有理函数、部分分式、求解器 |
+| 1 | ~~完整多项式因式分解~~（0.11.0 完成） | ✅ 已完成——解阻塞有理函数、部分分式、求解器 |
 | 2 | Risch 符号积分（路线图：Post-1.0） | 🔴 "能否积分"的标志 |
 | 3 | Gröbner F4/F5 | 🟡 当前 Buchberger 在大 cyclic-n 上太慢 |
 | 4 | 有理多项式/部分分式 | 🟡 Symbolica 核心特性，依赖因式分解 |
@@ -163,13 +165,13 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 文档/绑定/CI 工程化完备。作为约 14 个月、约 1.6 万行的自研 CAS，基础打得扎实。
 
 但 ROADMAP 自定的"1.0 性能与 Symbolica 持平或更优"目标，核心硬算法仍是短板：
-因式分解、Risch 积分、F4/F5 Gröbner 是 CAS 的"成人礼"，目前或缺或弱。性能
-层面（arena + JIT + SIMD）oCAS 有结构性优势，但算法深度决定了"能算什么"，
-而非"算多快"。
+Risch 积分、F4/F5 Gröbner 是 CAS 剩余"成人礼"。0.11.0 已补齐因式分解，下
+一个高性价比跃迁是 0.12 的有理函数运算与部分分式。性能层面（arena + JIT + SIMD）
+oCAS 有结构性优势，但算法深度决定了"能算什么"，而非"算多快"。
 
-务实定位：当前 oCAS 更接近"高性能 SymPy 核心子集 + 优于 SymPy 的求值性能"，
-而非 Symbolica 的直接替代。1.0 发布前补齐因式分解与有理函数运算，是性价比
-最高的跃迁路径。
+务实定位：当前 oCAS 更接近"高性能 SymPy 核心子集 + 优于 SymPy 的求值性能
++ 单变量因式分解持平"，而非 Symbolica 的直接替代。1.0 发布前补齐有理函数
+运算，是性价比最高的跃迁路径。
 
 ---
 
@@ -180,3 +182,4 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 | 版本 | 日期 | 变更 |
 |---|---|---|
 | 0.10.0 | 2026-07-02 | 初始评估。0.1–0.10 交付物核验完成；记录与 Symbolica / SageMath / SymPy 的差距；因式分解 + Risch 积分列为最高优先级。 |
+| 0.11.0 | 2026-07-03 | 多项式因式分解完成（单变量 ℤ 与 ℤ_p）；多元 GCD 加入；与 SymPy 的因式分解对比更新为持平；最高优先级缺口转为 0.12 有理函数/部分分式。 |

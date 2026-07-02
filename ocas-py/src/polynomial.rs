@@ -264,12 +264,11 @@ impl PyPolynomial {
                     multiplicity: m,
                 })
                 .collect(),
-            PolyErased::Rat(p) => {
+            PolyErased::Rat(_p) => {
                 return Err(PyValueError::new_err(
                     "factor is not implemented over the rationals; use the integer primitive part",
                 ));
             }
-            _ => unimplemented!(),
         };
         Ok(factors)
     }
