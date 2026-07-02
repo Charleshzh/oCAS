@@ -21,6 +21,7 @@ ocas-poly = { path = "../ocas-poly" }
 ocas-atom = { path = "../ocas-atom" }
 ocas-rewrite = { path = "../ocas-rewrite" }
 ocas-eval = { path = "../ocas-eval" }
+num-bigint = { workspace = true }
 proptest = { workspace = true }
 criterion = { workspace = true }
 

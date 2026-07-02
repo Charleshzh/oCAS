@@ -7,6 +7,7 @@ pub mod complex;
 pub mod domain;
 pub mod finite_field;
 pub mod integer;
+pub mod number_theory;
 pub mod rational;
 pub mod real_ball;
 

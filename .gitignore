@@ -56,3 +56,5 @@ package-lock.json
 
 # AI assistant context (repository-local, not shared)
 CLAUDE.md
+
+.venv-sympy/

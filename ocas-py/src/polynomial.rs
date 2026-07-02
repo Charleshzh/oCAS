@@ -238,6 +238,42 @@ impl PyPolynomial {
         }
     }
 
+    /// Return the list of irreducible factors with multiplicities.
+    ///
+    /// Over the integers each factor is primitive; over a finite field they
+    /// are monic.
+    fn factor(&self) -> PyResult<Vec<PyPolynomialFactor>> {
+        let factors: Vec<_> = match &self.inner {
+            PolyErased::Int(p) => p
+                .factor()
+                .into_iter()
+                .map(|(f, m)| PyPolynomialFactor {
+                    factor: PyPolynomial {
+                        inner: PolyErased::Int(f),
+                    },
+                    multiplicity: m,
+                })
+                .collect(),
+            PolyErased::Fq(p) => p
+                .factor()
+                .into_iter()
+                .map(|(f, m)| PyPolynomialFactor {
+                    factor: PyPolynomial {
+                        inner: PolyErased::Fq(f),
+                    },
+                    multiplicity: m,
+                })
+                .collect(),
+            PolyErased::Rat(p) => {
+                return Err(PyValueError::new_err(
+                    "factor is not implemented over the rationals; use the integer primitive part",
+                ));
+            }
+            _ => unimplemented!(),
+        };
+        Ok(factors)
+    }
+
     /// Return the square-free factorization as a list of `(factor, multiplicity)`.
     fn square_free_factorization(&self) -> PyResult<Vec<PyPolynomialFactor>> {
         let factors: Vec<_> = match &self.inner {

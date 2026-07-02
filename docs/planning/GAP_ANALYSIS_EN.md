@@ -74,7 +74,7 @@ source of the gap.
 
 | Algorithm Area | oCAS Status | Maturity |
 |---|---|---|
-| Polynomial factorization | `square_free_factorization` + `is_square_free` only; **no** Berlekamp/Zassenhaus/Hensel | 🔴 Major gap |
+| Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p: Yun SFF → Cantor–Zassenhaus → Hensel lifting → Zassenhaus combination | 🟢 Fairly complete |
 | Gröbner basis | Classic Buchberger + minimize/auto-reduce; **no** F4/F5, no heuristics | 🟡 Basic |
 | Symbolic integration | Heuristic table (power/inverse/sin/cos/exp/linear subst); falls back to `Integral(...)`; **no** Risch | 🟡 Basic |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate) | 🟢 Fairly complete |
@@ -93,7 +93,7 @@ early functional subset of Symbolica.
 
 | Capability | oCAS | Symbolica |
 |---|---|---|
-| Polynomial factorization | 🔴 square-free only | ✅ full (`factorization.rs`) |
+| Polynomial factorization | ✅ `factor()` over ℤ and ℤ_p (CZ + Hensel + Zassenhaus) | ✅ full (`factorization.rs`) |
 | Rational polynomials | 🟡 partial | ✅ `rational_polynomial.rs` |
 | Partial fractions | 🔴 none | ✅ `partial_fraction.rs` |
 | Rational reconstruction | 🔴 none | ✅ `rational_reconstruction.rs` |

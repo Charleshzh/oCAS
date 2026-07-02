@@ -358,9 +358,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0] - 2026-06-30
+## [0.11.0] - 2026-07-03
 
 ### Added / 新增
+
+- **Complete polynomial factorization over Z**: `factor()` on
+  `DenseUnivariatePolynomial<IntegerDomain>` (Yun → CZ mod p → Hensel → Zassenhaus).
+  Handles `x^100 - 1` into 9 cyclotomic factors. / **Z 上完整因式分解**
+- **Complete factorization over F_p**: `factor()` on
+  `DenseUnivariatePolynomial<FiniteField>` (Cantor–Zassenhaus DDF+EDF, char-p
+  Bernardin square-free). / **F_p 上完整因式分解**
+- **Number-theory primitives**: `ocas_domain::number_theory` — Miller–Rabin,
+  Chinese remainder, Legendre/Jacobi, Tonelli–Shanks, modular inverse. /
+  **数论原语**
+- **Multivariate GCD**: `heuristic_gcd` on `SparseMultivariatePolynomial`,
+  plus `content`/`primitive_part`/`eval`. / **多元 GCD**
+- **Python `Polynomial.factor()`** / **Proptest 500-case roundtrip** /
+  **Criterion benchmarks** (`poly_factor_z`, `poly_factor_fp`)
+
+---
 
 - Workspace with all 12 crates / 包含全部 12 个 crate 的工作空间
 - Cross-platform CI pipeline (fmt, clippy, test, backend test, bindings, Miri) /

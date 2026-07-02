@@ -1,15 +1,29 @@
 //! Polynomial factorization algorithms.
 //!
-//! Provides square-free factorization and a skeleton for full factorization
-//! over Z[x] and finite fields. Full factorization (Hensel lifting) is
-//! planned for a future release.
+//! This module groups square-free factorization with complete factorization
+//! over finite fields ([`finite_field`]) and, for lifting back to the integers,
+//! Hensel lifting ([`hensel`]).
+//!
+//! The top-level entry point for factoring a univariate polynomial over
+//! $\mathbb{Z}$ is [`DenseUnivariatePolynomial::factor`](crate::DenseUnivariatePolynomial::factor),
+//! and over a finite field
+//! [`factor_over_finite_field`](finite_field::factor_over_finite_field).
 
 use ocas_domain::EuclideanDomain;
+use ocas_domain::{FiniteField, IntegerDomain};
 
 use crate::dense::DenseUnivariatePolynomial;
 
+pub mod finite_field;
+pub mod hensel;
+
 /// Result of a square-free factorization: list of (factor, multiplicity) pairs.
 pub type SquareFreeFactors<D> = Vec<(DenseUnivariatePolynomial<D>, usize)>;
+
+/// Result of a complete factorization: list of (factor, multiplicity) pairs
+/// where each factor is irreducible (or, over the integers, primitive and
+/// irreducible over $\mathbb{Q}$).
+pub type Factors<D> = Vec<(DenseUnivariatePolynomial<D>, usize)>;
 
 impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
     /// Compute the square-free factorization of this polynomial.
@@ -88,6 +102,60 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
         let deriv = self.derivative();
         let g = self.gcd(&deriv);
         g.degree() == Some(0)
+    }
+}
+
+// ── factor() for integer polynomials ──────────────────────────────
+
+impl DenseUnivariatePolynomial<IntegerDomain> {
+    /// Completely factor this primitive integer polynomial into monic
+    /// irreducible factors with multiplicities.
+    ///
+    /// The input must be primitive (coefficient content = 1). Use
+    /// [`primitive_part`](crate::DenseUnivariatePolynomial::primitive_part)
+    /// to prepare an arbitrary integer polynomial before factoring.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::DenseUnivariatePolynomial;
+    ///
+    /// let d = IntegerDomain;
+    /// // x^2 - 1 = (x-1)(x+1)
+    /// let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    ///     Integer::from(-1), Integer::from(0), Integer::from(1),
+    /// ]);
+    /// let factors = p.factor();
+    /// assert_eq!(factors.len(), 2);
+    /// ```
+    pub fn factor(&self) -> Factors<IntegerDomain> {
+        hensel::factor_primitive(self)
+    }
+}
+
+// ── factor() for finite-field polynomials ─────────────────────────
+
+impl DenseUnivariatePolynomial<FiniteField> {
+    /// Completely factor this univariate polynomial over $\mathbb{F}_p$
+    /// into monic irreducible factors with multiplicities.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use num_bigint::BigInt;
+    /// use ocas_domain::{Domain, FiniteField};
+    /// use ocas_poly::DenseUnivariatePolynomial;
+    ///
+    /// let f = FiniteField::new(BigInt::from(5));
+    /// // x^2 - 1 over F_5
+    /// let p = DenseUnivariatePolynomial::from_coeffs(
+    ///     f.clone(), vec![f.element(4), f.element(0), f.element(1)]);
+    /// let factors = p.factor();
+    /// assert!(!factors.is_empty());
+    /// ```
+    pub fn factor(&self) -> Factors<FiniteField> {
+        finite_field::factor_over_finite_field(self)
     }
 }
 

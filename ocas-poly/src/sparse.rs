@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-use ocas_domain::Domain;
+use ocas_domain::{Domain, EuclideanDomain};
 use smallvec::SmallVec;
 
 /// A monomial ordering determines how terms are sorted and compared.
@@ -153,6 +153,17 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     /// Return whether this is the zero polynomial.
     pub fn is_zero(&self) -> bool {
         self.terms.is_empty()
+    }
+
+    /// Return a reference to the internal term map (exponent → coefficient).
+    pub fn terms_ref(&self) -> &HashMap<SmallVec<[usize; 4]>, D::Element> {
+        &self.terms
+    }
+
+    /// Set the coefficient of a monomial (public version of `set_term`).
+    /// Zero coefficients remove the term.
+    pub fn set_term_external(&mut self, exp: Vec<usize>, coeff: D::Element) {
+        self.set_term(exp, coeff);
     }
 
     /// Return the total degree, or `None` for the zero polynomial.
@@ -419,6 +430,136 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
         let term2 = other.mul_monomial(&m_g).mul_scalar(&lc_f);
 
         term1.sub(&term2)
+    }
+
+    // ------------------------------------------------------------------
+    //  Multivariate GCD support
+    // ------------------------------------------------------------------
+
+    /// Compute the content: the GCD of all coefficients.
+    ///
+    /// For the zero polynomial the content is zero.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::SparseMultivariatePolynomial;
+    /// use ocas_poly::Lex;
+    ///
+    /// let p = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+    ///     IntegerDomain, 1,
+    ///     vec![(vec![2], Integer::from(6)), (vec![1], Integer::from(9)), (vec![0], Integer::from(3))],
+    /// );
+    /// assert_eq!(p.content(), Integer::from(3));
+    /// ```
+    pub fn content(&self) -> D::Element
+    where
+        D: EuclideanDomain,
+    {
+        if self.is_zero() {
+            return self.domain.zero();
+        }
+        let mut g = self.domain.zero();
+        for c in self.terms.values() {
+            g = self.domain.gcd(&g, c);
+        }
+        g
+    }
+
+    /// Return the primitive part: `self / content`.
+    ///
+    /// The result has content 1 (or is zero).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::SparseMultivariatePolynomial;
+    /// use ocas_poly::Lex;
+    ///
+    /// let p = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+    ///     IntegerDomain, 1,
+    ///     vec![(vec![2], Integer::from(6)), (vec![0], Integer::from(3))],
+    /// );
+    /// let pp = p.primitive_part();
+    /// // After dividing by content=3: 2*x^2 + 1
+    /// assert_eq!(pp.coeff(&[2]), Integer::from(2));
+    /// assert_eq!(pp.coeff(&[0]), Integer::from(1));
+    /// ```
+    pub fn primitive_part(&self) -> Self
+    where
+        D: EuclideanDomain,
+    {
+        if self.is_zero() {
+            return self.clone();
+        }
+        let content = self.content();
+        if self.domain.is_one(&content) {
+            return self.clone();
+        }
+        let mut result = self.zero();
+        for (exp, c) in &self.terms {
+            let q = self.domain.div(c, &content).unwrap_or_else(|| c.clone());
+            result.terms.insert(exp.clone(), q);
+        }
+        result
+    }
+
+    /// Evaluate the polynomial by substituting `value` for variable `var_index`.
+    ///
+    /// Returns a polynomial in one fewer variable (all remaining variables
+    /// keep their relative order). If `var_index` is the only variable, the
+    /// result is a zero-variable (constant) polynomial.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::SparseMultivariatePolynomial;
+    /// use ocas_poly::Lex;
+    ///
+    /// let p = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+    ///     IntegerDomain, 2,
+    ///     vec![
+    ///         (vec![1, 1], Integer::from(1)), // x*y
+    ///         (vec![0, 1], Integer::from(2)), // 2*y
+    ///     ],
+    /// );
+    /// // Substitute x=3: result = 3*y + 2*y = 5*y
+    /// let r = p.eval(0, &Integer::from(3));
+    /// assert_eq!(r.coeff(&[1]), Integer::from(5));
+    /// ```
+    pub fn eval(&self, var_index: usize, value: &D::Element) -> Self {
+        let new_n_vars = self.n_vars.saturating_sub(1);
+        let mut result = Self::new(self.domain.clone(), new_n_vars);
+        for (exp, coeff) in &self.terms {
+            // Compute coefficient * value^exp[var_index].
+            let power = self.domain.pow(value, exp[var_index] as u64);
+            let new_coeff = self.domain.mul(coeff, &power);
+            if self.domain.is_zero(&new_coeff) {
+                continue;
+            }
+            // Build new exponent vector without var_index.
+            let mut new_exp = SmallVec::with_capacity(new_n_vars);
+            for i in 0..self.n_vars {
+                if i != var_index {
+                    new_exp.push(exp[i]);
+                }
+            }
+            let existing = result
+                .terms
+                .get(&new_exp)
+                .cloned()
+                .unwrap_or_else(|| self.domain.zero());
+            let sum = self.domain.add(&existing, &new_coeff);
+            if self.domain.is_zero(&sum) {
+                result.terms.remove(&new_exp);
+            } else {
+                result.terms.insert(new_exp, sum);
+            }
+        }
+        result
     }
 }
 

@@ -7,6 +7,7 @@ pub mod factor;
 pub mod gcd;
 pub mod groebner;
 pub mod matrix;
+pub mod multivariate_gcd;
 pub mod roots;
 pub mod sparse;
 
