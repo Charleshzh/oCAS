@@ -13,7 +13,9 @@
 
 > **状态**：Beta (0.10.0)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。详见
-> [文档](https://github.com/charleshzh/ocas/tree/main/ocas/docs/book)与
+> [文档](https://charleshzh.github.io/ocas/latest/zh/)
+>（[English](https://charleshzh.github.io/ocas/latest/en/)）、
+> [Rust API 文档](https://docs.rs/ocas)与
 > [路线图](ROADMAP_CN.md)。
 
 ---

@@ -1,0 +1,51 @@
+# lychee link-checker configuration.
+# Used by .github/workflows/docs.yml to validate all hyperlinks in the
+# rendered mdBook site. Docs: https://lychee.cli.rs/usage/config/
+
+# Whether to perform network requests or just parse files.
+offline = false
+
+# Require HTTPS for all external links (http:// is flagged).
+require_https = true
+
+# Fail the run if any link is broken.
+no_progress = true
+
+# Maximum number of redirects to follow.
+max_redirects = 10
+
+# Maximum number of concurrent network requests.
+max_concurrency = 16
+
+# Timeout per request (seconds).
+timeout = 20
+
+# Number of retry attempts for transient network errors.
+max_retries = 2
+
+# Accept these status codes as "OK" (e.g. GitHub anchors render as 404
+# sometimes but are valid).
+accept = [
+  "100..=399",
+  401, # private/auth-required pages (e.g. some edit URLs)
+]
+
+# Exclude patterns — these URLs are not reachable from CI or are templated.
+exclude = [
+  "localhost",
+  "127.0.0.1",
+  # edit-url-template is a literal placeholder in book.toml, not a URL.
+  "edit-url-template",
+  # docs.rs build badges sometimes rate-limit; tolerate 429.
+  "img.shields.io",
+]
+
+# Exclude URLs from the loop (regex, applied to the URL string).
+exclude_path = [
+  # The cargo registry cache under target/ is huge and out of scope.
+  "target/",
+  # mdBook rendered output is checked via the --root arg in CI, not by
+  # following links inside the staged site.
+  "docs/book/en/book/",
+  "docs/book/zh/book/",
+]

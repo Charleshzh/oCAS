@@ -1,0 +1,19 @@
+[book]
+title = "oCAS — 开源计算机代数系统"
+authors = ["Charles H. Zhong"]
+language = "zh"
+src = "src"
+
+[build]
+build-dir = "book/html"
+
+[output.html]
+git-repository-url = "https://github.com/charleshzh/ocas"
+edit-url-template = "https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/{path}"
+# Language switcher shared with the English book.
+additional-js = ["../language-switcher.js"]
+additional-css = ["../language-switcher.css"]
+
+[output.html.search]
+limit-results = 30
+use-boolean-and = true

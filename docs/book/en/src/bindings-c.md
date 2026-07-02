@@ -1,16 +1,10 @@
-# C/C++ API / C/C++ API
-
-**English**
+# C/C++ API
 
 The `ocas-c` crate provides a stable C ABI (generated with `cbindgen`) for
 expression lifecycle, calculus, and simplification, plus a C++ RAII wrapper
 in `ocas-c/include/ocas.hpp`.
 
-**中文**
-
-`ocas-c` crate 提供稳定的 C ABI（由 `cbindgen` 生成），覆盖表达式生命周期、微积分与化简，并在 `ocas-c/include/ocas.hpp` 提供 C++ RAII 包装。
-
-## Building / 构建
+## Building
 
 ```bash
 cargo build -p ocas-c --release
@@ -19,7 +13,7 @@ cargo build -p ocas-c --release
 The shared library and the `ocas.h` / `ocas.hpp` headers are placed under
 `ocas-c/include/`.
 
-## C example / C 示例
+## C example
 
 ```c
 #include <ocas.h>
@@ -39,7 +33,7 @@ int main(void) {
 }
 ```
 
-## C++ RAII / C++ RAII
+## C++ RAII
 
 ```cpp
 #include <ocas.hpp>
@@ -52,12 +46,6 @@ int main() {
 }
 ```
 
-**English**
-
 The C++ wrapper translates oCAS errors into `ocas::Error` exceptions and
 manages arena-backed expressions via RAII, so manual `free` calls are
 unnecessary.
-
-**中文**
-
-C++ 包装将 oCAS 错误转换为 `ocas::Error` 异常，并通过 RAII 管理 arena 后端表达式，无需手动调用 `free`。

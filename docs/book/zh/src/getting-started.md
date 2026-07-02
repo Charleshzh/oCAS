@@ -1,18 +1,12 @@
-# Getting Started / 快速上手
+# 快速上手
 
-## Installation / 安装
-
-**English**
-
-oCAS is available as a Rust crate, a Python package, and a C/C++ library.
-
-**中文**
+## 安装
 
 oCAS 提供 Rust crate、Python 包和 C/C++ 库三种形式。
 
 ### Rust
 
-Add to your `Cargo.toml`:
+在你的 `Cargo.toml` 中添加：
 
 ```toml
 [dependencies]
@@ -44,17 +38,17 @@ e = ocas.Expression("x^2 + 2*x + 1")
 print(e.diff("x"))          # 2*x + 2
 print(e.simplify())
 
-# Polynomials over the integers
+# 整数多项式
 p = ocas.Polynomial([1, 2, 1])    # 1 + 2x + x^2
 print(p.degree())                  # 2
 print(p.eval(2))                   # "9"
 
-# Matrices
+# 矩阵
 m = ocas.Matrix([[1, 2], [3, 4]])
 print(m.determinant())             # "-2"
 print((m @ m).rows())
 
-# Finite fields
+# 有限域
 gf5 = ocas.FiniteField(5)
 q = ocas.Polynomial([1, 2, 1], domain=gf5)
 print(q.eval(3))                   # "4"  (1 + 6 + 9 = 16 ≡ 4 mod 5)
@@ -62,8 +56,7 @@ print(q.eval(3))                   # "4"  (1 + 6 + 9 = 16 ≡ 4 mod 5)
 
 ### C/C++
 
-Build the C library and link against `libocas_c`. See the
-[C/C++ API](./bindings-c.md) chapter for details.
+构建 C 库并链接 `libocas_c`。详见 [C/C++ API](./bindings-c.md) 章节。
 
 ```c
 #include <ocas.h>
@@ -79,21 +72,7 @@ ocas_expr_free(e);
 
 ---
 
-## First Steps / 第一步
-
-**English**
-
-The most common entry points are:
-
-| Task | Rust | Python |
-|---|---|---|
-| Parse an expression | `parse(&ctx, "x+1")` | `ocas.Expression("x+1")` |
-| Differentiate | `diff(&ctx, e, x)` | `e.diff("x")` |
-| Simplify | `simplify(&ctx, e, &rules, n)` | `e.simplify()` |
-| Solve linear system | `solve_linear_rational(&a, &b)` | `ocas.solve_linear_rational(a, b)` |
-| Numeric evaluation | `ExpressionEvaluator::<f64>` | `ocas.ExpressionEvaluator` |
-
-**中文**
+## 第一步
 
 最常用的入口：
 

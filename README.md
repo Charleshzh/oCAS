@@ -14,8 +14,10 @@ SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 > **Status**: Beta (0.10.0). The full symbolic engine, polynomial algebra,
 > equation solvers, JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. See the
-> [documentation](https://github.com/charleshzh/ocas/tree/main/ocas/docs/book)
-> and [roadmap](ROADMAP_EN.md).
+> [documentation](https://charleshzh.github.io/ocas/latest/en/)
+> ([中文](https://charleshzh.github.io/ocas/latest/zh/)),
+> [Rust API docs](https://docs.rs/ocas), and
+> [roadmap](ROADMAP_EN.md).
 
 ---
 

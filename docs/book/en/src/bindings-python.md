@@ -1,18 +1,12 @@
-# Python API / Python API
-
-**English**
+# Python API
 
 The `ocas` Python package (built with PyO3) exposes symbolic expressions,
 polynomials, matrices, coefficient domains, and numeric evaluation. Install
 with `pip install ocas`.
 
-**中文**
-
-`ocas` Python 包（基于 PyO3）提供符号表达式、多项式、矩阵、系数域与数值求值。用 `pip install ocas` 安装。
-
 ---
 
-## Expression / 表达式
+## Expression
 
 ```python
 import ocas
@@ -27,17 +21,11 @@ f = ocas.Expression("x^2") + ocas.Expression("2*x") + ocas.Expression("1")
 print(f == ocas.Expression("x^2 + 2*x + 1"))  # True
 ```
 
-## Polynomial / 多项式
-
-**English**
+## Polynomial
 
 `Polynomial` wraps a dense univariate polynomial. The coefficient domain is
 selected by the `domain` argument: `"integer"` (default), `"rational"`, or a
 `FiniteField` instance.
-
-**中文**
-
-`Polynomial` 封装稠密一元多项式。系数域由 `domain` 参数选择：`"integer"`（默认）、`"rational"` 或 `FiniteField` 实例。
 
 ```python
 # Over the integers (default)
@@ -67,17 +55,11 @@ fq = ocas.Polynomial([1, 2, 1], domain=gf5)
 print(fq.eval(3))                   # '4'  (1 + 6 + 9 = 16 ≡ 4 mod 5)
 ```
 
-**English**
-
 Coefficient values are returned as decimal **strings** to preserve
 arbitrary precision across the gmp/non-gmp builds; wrap them in `int(...)`
 to obtain Python integers. Rational values are rendered as `n/d`.
 
-**中文**
-
-系数以十进制**字符串**返回，以在 gmp/非 gmp 构建间保持任意精度；用 `int(...)` 转换为 Python 整数。有理数值以 `n/d` 形式表示。
-
-## Matrix / 矩阵
+## Matrix
 
 ```python
 m = ocas.Matrix([[1, 2], [3, 4]])
@@ -97,7 +79,7 @@ A = ocas.Matrix([[2, 1], [1, 1]])
 print(A.solve([4, 3]))              # ['1', '2']
 ```
 
-## Domains / 系数域
+## Domains
 
 ```python
 ocas.IntegerDomain()        # ℤ
@@ -105,7 +87,7 @@ ocas.RationalDomain()       # ℚ
 ocas.FiniteField(7)         # GF(7); modulus must be a prime ≥ 2
 ```
 
-## Numeric evaluation / 数值求值
+## Numeric evaluation
 
 ```python
 ev = ocas.ExpressionEvaluator("x^2 + y", ["x", "y"])
@@ -113,7 +95,7 @@ print(ev.evaluate([3.0, 1.0]))      # [10.0]
 print(ev.evaluate([2.0, 0.0]))      # [4.0]
 ```
 
-## Solvers / 求解器
+## Solvers
 
 ```python
 # Linear systems over ℚ and ℤ

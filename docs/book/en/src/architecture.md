@@ -1,14 +1,8 @@
-# Architecture / 架构
-
-**English**
+# Architecture
 
 oCAS is organized as a Cargo workspace of 12 crates with strict downward
 layering. Each crate may only depend on lower-level crates; no reverse or
 cyclic dependencies are permitted.
-
-**中文**
-
-oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，不允许反向或循环依赖。
 
 | Level | crate | Responsibility |
 |---|---|---|
@@ -19,11 +13,5 @@ oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每
 | 1 Numerical backend | `ocas-core` | GMP/FLINT encapsulation |
 | 0 Runtime | `ocas-core` | Arena, errors, thread pool, FFI |
 
-**English**
-
 See [ARCHITECTURE_EN.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_EN.md)
 in the repository for the full design document.
-
-**中文**
-
-完整设计文档见仓库中的 [ARCHITECTURE_CN.md](https://github.com/charleshzh/ocas/blob/main/ARCHITECTURE_CN.md)。

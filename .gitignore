@@ -39,6 +39,8 @@ ocas-py/uv.lock
 # Documentation build
 target/doc/
 docs/book/html/
+docs/book/en/book/
+docs/book/zh/book/
 
 # OS
 .DS_Store

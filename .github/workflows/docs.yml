@@ -8,49 +8,132 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# `contents: write` is required by peaceiris/actions-gh-pages to push the
+# rendered site to the `gh-pages` branch.
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# Allow only one concurrent deployment.
+# Allow concurrent PR builds (link-check only); do not cancel a deploy.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: docs-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  # Build both language editions of the mdBook site (en + zh), each a fully
+  # independent book under docs/book/{en,zh}/. PRs only build + link-check
+  # (no deploy); pushes to `main` deploy under `/latest/{en,zh}/`; tags
+  # deploy under `/v<version>/{en,zh}/` and also refresh `/latest/`. Rust
+  # API docs are served from docs.rs (the authoritative source after
+  # crates.io publish), so this workflow does not build rustdoc — that
+  # role belongs to `ci.yml`'s `rustdoc-build` job.
   mdbook:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install mdBook
         uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: latest
-      - name: Build the book
-        run: mdbook build
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/book/html
-      - name: Deploy to GitHub Pages
-        if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
-        uses: actions/deploy-pages@v4
 
-  rustdoc:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Build rustdoc
-        # Use explicit pure-Rust features instead of --all-features, which would
-        # force-enable gmp-mpfr-sys's `mpc` feature and trigger a strict system
-        # MPC version check that fails on the runner.
-        run: cargo doc --no-deps --features egg,jit,simd -p ocas
-      - name: Upload rustdoc artifact
-        uses: actions/upload-artifact@v4
+      - name: Build English book
+        run: mdbook build docs/book/en
+
+      - name: Build Chinese book
+        run: mdbook build docs/book/zh
+
+      - name: Link-check both books (lychee)
+        uses: lycheeverse/lychee-action@v2
         with:
-          name: rustdoc
-          path: target/doc
+          args: >-
+            --config lychee.toml
+            "docs/book/en/book/html/**/*.html"
+            "docs/book/zh/book/html/**/*.html"
+          fail: true
+
+      # ------------------------------------------------------------------
+      # From here on, only deploy on push to main or a tag (not PRs).
+      # ------------------------------------------------------------------
+      - name: Compute versioned destination directory
+        id: dest
+        if: github.event_name != 'pull_request'
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            # v0.10.0 -> v0.10.0 (keep leading v for clarity in the URL)
+            echo "versioned=v${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "versioned=" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Site layout under gh-pages:
+      #   /index.html            redirect to /latest/en/
+      #   /404.html              root 404
+      #   /latest/en/...         latest main, English
+      #   /latest/zh/...         latest main, Chinese
+      #   /v0.10.0/en/...        tagged release, English
+      #   /v0.10.0/zh/...        tagged release, Chinese
+      - name: Stage site root
+        id: stage
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          site_root="$(mktemp -d)"
+          versioned="${{ steps.dest.outputs.versioned }}"
+
+          stage_version() {
+            local prefix="$1"   # "latest" or "vX.Y.Z"
+            mkdir -p "${site_root}/${prefix}"
+            cp -r docs/book/en/book/html/. "${site_root}/${prefix}/en/"
+            cp -r docs/book/zh/book/html/. "${site_root}/${prefix}/zh/"
+          }
+
+          stage_version latest
+          if [[ -n "${versioned}" ]]; then
+            stage_version "${versioned}"
+          fi
+
+          # Root-level 404 (English copy) and Jekyll bypass.
+          cp docs/book/en/book/html/404.html "${site_root}/404.html"
+          touch "${site_root}/.nojekyll"
+          # Root index redirects to the English latest book; a top-level
+          # language picker is unnecessary because each book has a switcher.
+          cat > "${site_root}/index.html" <<'HTML'
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0; url=latest/en/">
+    <link rel="canonical" href="latest/en/">
+    <title>oCAS Documentation</title>
+  </head>
+  <body>
+    Redirecting to <a href="latest/en/">the latest oCAS documentation</a>…
+    (<a href="latest/zh/">中文</a>)
+  </body>
+</html>
+HTML
+          echo "site_root=${site_root}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to gh-pages (main → latest)
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.stage.outputs.site_root }}
+          publish_branch: gh-pages
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'docs: deploy latest (${{ github.sha }})'
+
+      - name: Deploy to gh-pages (tag → v<version> + latest)
+        if: github.ref_type == 'tag'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.stage.outputs.site_root }}
+          publish_branch: gh-pages
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'docs: deploy ${{ github.ref_name }}'
