@@ -156,12 +156,11 @@ Ranked by impact × implementation cost, the hard problems on the road to 1.0.
 
 | # | Gap | Priority |
 |---|---|---|
-| 1 | Full polynomial factorization (Berlekamp-Hensel-Zassenhaus) | 🔴 highest — blocks rational functions, partial fractions, solvers |
-| 2 | Risch symbolic integration (roadmap: Post-1.0) | 🔴 hallmark of "can it integrate" |
-| 3 | Gröbner F4/F5 | 🟡 current Buchberger too slow on large cyclic-n |
-| 4 | Rational polynomials / partial fractions | 🟡 Symbolica core feature, depends on factorization |
-| 5 | Multi-output optimization / codegen | 🟡 JIT is f64 single-output; extend to multi-output/multi-precision |
-| 6 | ODE/PDE solvers (Post-1.0) | 🟢 high user expectation |
+| 1 | ~~Full polynomial factorization~~ (completed 0.11.0) | ✅ done — unblocks rational functions, partial fractions, solvers |
+| 2 | Risch symbolic integration (roadmap: 0.14) | 🔴 hallmark of "can it integrate" |
+| 3 | Gröbner F4/F5 (roadmap: 0.13) | 🟡 current Buchberger too slow on large cyclic-n |
+| 4 | Rational polynomials / partial fractions (roadmap: 0.12) | 🟡 Symbolica core feature, depends on factorization |
+| 5 | Multi-output optimization / codegen (roadmap: 0.15) | 🟡 JIT is f64 single-output; extend to multi-output/multi-precision |
 
 ---
 

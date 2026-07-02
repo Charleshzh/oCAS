@@ -90,7 +90,7 @@ Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 
 
 | 能力 | oCAS | Symbolica |
 |---|---|---|
-| 多项式因式分解 | 🔴 仅 square-free | ✅ 完整（`factorization.rs`） |
+| 多项式因式分解 | ✅ `factor()` over ℤ and ℤ_p (CZ + Hensel + Zassenhaus) | ✅ 完整（`factorization.rs`） |
 | 有理多项式 | 🟡 部分 | ✅ `rational_polynomial.rs` |
 | 部分分式 | 🔴 无 | ✅ `partial_fraction.rs` |
 | 有理重构 | 🔴 无 | ✅ `rational_reconstruction.rs` |
