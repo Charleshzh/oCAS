@@ -17,6 +17,7 @@
 - [Solvers](./solvers.md)
 - [Rewrite & Simplification](./rewrite.md)
 - [Evaluation & JIT](./evaluation.md)
+- [Factorization](./algorithms/factorization.md)
 
 # Performance & Quality
 

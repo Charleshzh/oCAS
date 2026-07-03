@@ -16,6 +16,7 @@ use crate::dense::DenseUnivariatePolynomial;
 
 pub mod finite_field;
 pub mod hensel;
+pub mod multivariate;
 
 /// Result of a square-free factorization: list of (factor, multiplicity) pairs.
 pub type SquareFreeFactors<D> = Vec<(DenseUnivariatePolynomial<D>, usize)>;

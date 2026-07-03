@@ -4,11 +4,16 @@
 //! `#[no_mangle] extern "C"` functions exactly as a C caller would.
 
 use ocas_c::{
-    OCAS_OK, ocas_error_clear, ocas_error_last_message, ocas_expr_clone, ocas_expr_diff,
-    ocas_expr_free, ocas_expr_integrate, ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify,
-    ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string, ocas_string_free, ocas_version,
+    OCAS_OK, OcasPolyFactorArray, ocas_error_clear, ocas_error_last_message, ocas_expr_clone,
+    ocas_expr_diff, ocas_expr_free, ocas_expr_integrate, ocas_expr_normalize, ocas_expr_parse,
+    ocas_expr_simplify, ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string,
+    ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree,
+    ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone,
+    ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free,
+    ocas_poly_z_to_string, ocas_string_free, ocas_version,
 };
 use std::ffi::{CStr, CString};
+use std::ptr;
 
 fn parse(s: &str) -> *mut ocas_c::expression::OcasExpr {
     let c = CString::new(s).unwrap();
@@ -173,4 +178,195 @@ fn substitute_replaces_variable() {
 fn string_free_on_null_is_safe() {
     // Passing NULL to ocas_string_free must be a no-op, not a crash.
     unsafe { ocas_string_free(std::ptr::null_mut()) };
+}
+
+// ------------------------------------------------------------------
+//  Polynomial C API tests
+// ------------------------------------------------------------------
+
+fn cstr(s: &str) -> CString {
+    CString::new(s).unwrap()
+}
+
+fn c_string_to_string(ptr: *mut std::ffi::c_char) -> String {
+    let s = unsafe { CStr::from_ptr(ptr) }.to_str().unwrap().to_string();
+    unsafe { ocas_string_free(ptr) };
+    s
+}
+
+// -- Integer polynomial (OcasPolyZ) --
+
+#[test]
+fn poly_z_create_and_to_string() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_z_create(cstr("x^2 + y + 1").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!p.is_null());
+    let mut err = 0;
+    let s_ptr = ocas_poly_z_to_string(p, &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!s_ptr.is_null());
+    let s = c_string_to_string(s_ptr);
+    // Output should contain the variables and coefficients.
+    assert!(s.contains('x') && s.contains('y'), "got: {s}");
+    ocas_poly_z_free(p);
+}
+
+#[test]
+fn poly_z_clone_is_independent() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_z_create(cstr("x + y").as_ptr(), &mut err);
+    assert!(!p.is_null());
+    let clone = ocas_poly_z_clone(p);
+    assert!(!clone.is_null());
+    assert_eq!(ocas_poly_z_degree(p), ocas_poly_z_degree(clone));
+    ocas_poly_z_free(p);
+    // Clone must survive freeing the original.
+    assert_eq!(ocas_poly_z_degree(clone), 1);
+    ocas_poly_z_free(clone);
+}
+
+#[test]
+fn poly_z_degree_returns_total_degree() {
+    let mut err: std::ffi::c_int = 0;
+    // x^2*y + 1 has total degree 3
+    let p = ocas_poly_z_create(cstr("x^2*y + 1").as_ptr(), &mut err);
+    assert!(!p.is_null());
+    assert_eq!(ocas_poly_z_degree(p), 3);
+    ocas_poly_z_free(p);
+}
+
+#[test]
+fn poly_z_factor_produces_factors() {
+    let mut err: std::ffi::c_int = 0;
+    // x^2 - 1 = (x-1)(x+1) as bivariate (no y dependence)
+    let p = ocas_poly_z_create(cstr("x^2 - 1").as_ptr(), &mut err);
+    assert!(!p.is_null());
+    let mut factors = OcasPolyFactorArray {
+        factors: ptr::null_mut(),
+        len: 0,
+    };
+    let rc = ocas_poly_z_factor(p, &mut factors, &mut err);
+    assert_eq!(rc, OCAS_OK);
+    assert!(factors.len >= 1, "expected at least 1 factor");
+    // Free each factor handle, then the array.
+    for i in 0..factors.len {
+        let f = unsafe { &*factors.factors.add(i) };
+        assert!(!f.poly.is_null());
+        ocas_poly_z_free(f.poly as *mut ocas_c::OcasPolyZ);
+    }
+    ocas_poly_factor_array_free(&mut factors);
+    ocas_poly_z_free(p);
+}
+
+#[test]
+fn poly_z_null_input_returns_null() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_z_create(ptr::null(), &mut err);
+    assert!(p.is_null());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn poly_z_invalid_parse_returns_null() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_z_create(cstr("@invalid!").as_ptr(), &mut err);
+    assert!(p.is_null());
+    let msg = ocas_error_last_message();
+    assert!(!msg.is_null());
+    ocas_error_clear();
+}
+
+#[test]
+fn poly_z_factor_null_poly_returns_error() {
+    let mut factors = OcasPolyFactorArray {
+        factors: ptr::null_mut(),
+        len: 0,
+    };
+    let mut err: std::ffi::c_int = 0;
+    let rc = ocas_poly_z_factor(ptr::null(), &mut factors, &mut err);
+    assert_ne!(rc, OCAS_OK);
+    ocas_error_clear();
+}
+
+// -- Finite-field polynomial (OcasPolyFp) --
+
+#[test]
+fn poly_fp_create_and_to_string() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_fp_create(cstr("x^2 + y + 1").as_ptr(), cstr("5").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!p.is_null());
+    let mut err = 0;
+    let s_ptr = ocas_poly_fp_to_string(p, &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!s_ptr.is_null());
+    let s = c_string_to_string(s_ptr);
+    assert!(s.contains('x') && s.contains('y'), "got: {s}");
+    ocas_poly_fp_free(p);
+}
+
+#[test]
+fn poly_fp_clone_is_independent() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_fp_create(cstr("x + y").as_ptr(), cstr("7").as_ptr(), &mut err);
+    assert!(!p.is_null());
+    let clone = ocas_poly_fp_clone(p);
+    assert!(!clone.is_null());
+    assert_eq!(ocas_poly_fp_degree(p), ocas_poly_fp_degree(clone));
+    ocas_poly_fp_free(p);
+    assert_eq!(ocas_poly_fp_degree(clone), 1);
+    ocas_poly_fp_free(clone);
+}
+
+#[test]
+fn poly_fp_factor_produces_factors() {
+    let mut err: std::ffi::c_int = 0;
+    // x^2 + y + 1 over F_5 — should factor or return as irreducible
+    let p = ocas_poly_fp_create(cstr("x^2 + y + 1").as_ptr(), cstr("5").as_ptr(), &mut err);
+    assert!(!p.is_null());
+    let mut factors = OcasPolyFactorArray {
+        factors: ptr::null_mut(),
+        len: 0,
+    };
+    let rc = ocas_poly_fp_factor(p, &mut factors, &mut err);
+    assert_eq!(rc, OCAS_OK);
+    assert!(factors.len >= 1);
+    for i in 0..factors.len {
+        let f = unsafe { &*factors.factors.add(i) };
+        assert!(!f.poly.is_null());
+        ocas_poly_fp_free(f.poly as *mut ocas_c::OcasPolyFp);
+    }
+    ocas_poly_factor_array_free(&mut factors);
+    ocas_poly_fp_free(p);
+}
+
+#[test]
+fn poly_fp_null_prime_returns_null() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_fp_create(cstr("x").as_ptr(), ptr::null(), &mut err);
+    assert!(p.is_null());
+    ocas_error_clear();
+}
+
+#[test]
+fn poly_fp_invalid_prime_returns_null() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_fp_create(cstr("x").as_ptr(), cstr("not_a_number").as_ptr(), &mut err);
+    assert!(p.is_null());
+    ocas_error_clear();
+}
+
+#[test]
+fn poly_fp_prime_too_small_returns_null() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_poly_fp_create(cstr("x").as_ptr(), cstr("1").as_ptr(), &mut err);
+    assert!(p.is_null());
+    ocas_error_clear();
+}
+
+#[test]
+fn poly_factor_array_free_on_null_is_safe() {
+    ocas_poly_factor_array_free(ptr::null_mut());
 }

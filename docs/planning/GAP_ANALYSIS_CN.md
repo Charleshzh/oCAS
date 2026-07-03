@@ -35,8 +35,9 @@
 | 0.9.0 | Beta | ✅ | ⚠️ PyO3 `Expression`/`Evaluator`/`solve_*`；cbindgen + C++ RAII 包装——部分类推迟到 0.10 |
 | 0.10.0 | Beta | ✅ | ✅ Python `Polynomial/Matrix/Domain`、Matrix 线性代数（Bareiss）、mdBook 文档站、三平台 wheels CI、版本锁定 0.10.0 |
 | 0.11.0 | Beta | ✅ | ✅ 完整多项式因式分解（ℤ 与 ℤ_p：Yun SFF → CZ → Hensel → Zassenhaus）、多元 GCD、500 例 proptest 往返测试、版本提升至 0.11.0 |
+| 0.11.1 | Beta | ✅ | ✅ 二元因式分解（ℤ 与 ℤ_p：关于 x 首一的 Wang Hensel）、稀疏多元 `factor()` 入口、C 多项式绑定、mdBook 因式分解章节、版本提升至 0.11.1 |
 
-0.1–0.11 交付物全部落地，workspace 版本锁定 0.11.0。质量门全绿：
+0.1–0.11.1 交付物全部落地，workspace 版本锁定 0.11.1。质量门全绿：
 `cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、77 项
 pytest、`mdbook build`。
 
@@ -72,7 +73,7 @@ pytest、`mdbook build`。
 
 | 算法领域 | oCAS 现状 | 成熟度 |
 |---|---|---|
-| 多项式因式分解 | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p: Yun SFF → Cantor–Zassenhaus → Hensel lifting → Zassenhaus combination | 🟢 较完整 |
+| 多项式因式分解 | `DenseUnivariatePolynomial` 上 ℤ 与 ℤ_p 的 `factor()`，以及 `SparseMultivariatePolynomial` 上二元 ℤ 与 ℤ_p 的 `factor()`（关于 x 首一的 Wang Hensel） | 🟢 较完整 |
 | Gröbner 基 | 经典 Buchberger + minimize/auto-reduce；**无** F4/F5，无启发式 | 🟡 基础 |
 | 符号积分 | 启发式查表（幂/逆/sin/cos/exp/线性替换）；回退为 `Integral(...)`；**无** Risch | 🟡 基础 |
 | 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量） | 🟢 较完整 |
@@ -91,7 +92,7 @@ Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 
 
 | 能力 | oCAS | Symbolica |
 |---|---|---|
-| 多项式因式分解 | ✅ `factor()` over ℤ and ℤ_p (CZ + Hensel + Zassenhaus) | ✅ 完整（`factorization.rs`） |
+| 多项式因式分解 | ✅ ℤ 与 ℤ_p 上 `factor()`（CZ + Hensel + Zassenhaus）；二元 ℤ 与 ℤ_p 上因式分解（关于 x 首一的 Wang Hensel） | ✅ 完整（`factorization.rs`） |
 | 有理多项式 | 🟡 部分 | ✅ `rational_polynomial.rs` |
 | 部分分式 | 🔴 无 | ✅ `partial_fraction.rs` |
 | 有理重构 | 🔴 无 | ✅ `rational_reconstruction.rs` |
@@ -149,7 +150,7 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 
 | # | 缺口 | 优先级 |
 |---|---|---|
-| 1 | ~~完整多项式因式分解~~（0.11.0 完成） | ✅ 已完成——解阻塞有理函数、部分分式、求解器 |
+| 1 | ~~完整多项式因式分解~~（0.11.0–0.11.1 完成） | ✅ 已完成——一元与二元（关于 x 首一）闭合，解阻塞有理函数、部分分式、求解器 |
 | 2 | Risch 符号积分（路线图：Post-1.0） | 🔴 "能否积分"的标志 |
 | 3 | Gröbner F4/F5 | 🟡 当前 Buchberger 在大 cyclic-n 上太慢 |
 | 4 | 有理多项式/部分分式 | 🟡 Symbolica 核心特性，依赖因式分解 |
@@ -165,13 +166,14 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 文档/绑定/CI 工程化完备。作为约 14 个月、约 1.6 万行的自研 CAS，基础打得扎实。
 
 但 ROADMAP 自定的"1.0 性能与 Symbolica 持平或更优"目标，核心硬算法仍是短板：
-Risch 积分、F4/F5 Gröbner 是 CAS 剩余"成人礼"。0.11.0 已补齐因式分解，下
-一个高性价比跃迁是 0.12 的有理函数运算与部分分式。性能层面（arena + JIT + SIMD）
-oCAS 有结构性优势，但算法深度决定了"能算什么"，而非"算多快"。
+Risch 积分、F4/F5 Gröbner 是 CAS 剩余"成人礼"。因式分解已通过 0.11.1 补齐
+（单变量与关于 x 首一的二元），下一个高性价比跃迁是 0.12 的有理函数运算与
+部分分式。性能层面（arena + JIT + SIMD）oCAS 有结构性优势，但算法深度决定
+了"能算什么"，而非"算多快"。
 
 务实定位：当前 oCAS 更接近"高性能 SymPy 核心子集 + 优于 SymPy 的求值性能
-+ 单变量因式分解持平"，而非 Symbolica 的直接替代。1.0 发布前补齐有理函数
-运算，是性价比最高的跃迁路径。
++ 因式分解（单变量与部分二元）持平"，而非 Symbolica 的直接替代。1.0 发布前
+补齐有理函数运算，是性价比最高的跃迁路径。
 
 ---
 
@@ -183,3 +185,4 @@ oCAS 有结构性优势，但算法深度决定了"能算什么"，而非"算多
 |---|---|---|
 | 0.10.0 | 2026-07-02 | 初始评估。0.1–0.10 交付物核验完成；记录与 Symbolica / SageMath / SymPy 的差距；因式分解 + Risch 积分列为最高优先级。 |
 | 0.11.0 | 2026-07-03 | 多项式因式分解完成（单变量 ℤ 与 ℤ_p）；多元 GCD 加入；与 SymPy 的因式分解对比更新为持平；最高优先级缺口转为 0.12 有理函数/部分分式。 |
+| 0.11.1 | 2026-07-04 | 新增二元 ℤ 与 ℤ_p 因式分解（关于 x 首一的 Wang Hensel）；稀疏多元 `factor()` 入口与 C 多项式绑定落地；新增 mdBook 因式分解章节；最高优先级缺口仍为 0.12 有理函数/部分分式。 |

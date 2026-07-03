@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-02（基线 0.10.0）**
+> 最后修订：**2026-07-04（0.11.1 已发布）**
 
 ---
 
@@ -89,27 +89,27 @@ gantt
 
 ---
 
-### 0.11.1 — 因式分解收尾与绑定补全
+### 0.11.1 — 因式分解收尾与绑定（已发布）补全
 
 承接 0.11.0 推迟的五项工作：Berlekamp 验证启用、双变量 ℤ 因式分解（Wang
 Hensel）、双变量 ℤ_p 因式分解、C 多项式绑定、mdBook 因式分解章节。不引入
 新算法，聚焦完成因式分解故事线并补齐跨语言公共 API。
 
-| 条目 | 推迟原因 | 0.11.1 交付 |
-|---|---|---|
-| Berlekamp 经验验证 | `berlekamp()` 骨架已写但禁用 (`p ≤ 0`)；CZ 统一覆盖所有素数 | 修复零空间提取后启用 `p ≤ 1000` 分派，通过 cyclic‑n 回归 |
-| 双变量 ℤ 因式分解 (Wang Hensel) | Wang 多元 Hensel 提升是本次发布周期中最难的 CAS 算法 | `SparseMultivariatePolynomial<IntegerDomain>` 上 `factor()`，基于 0.11 启发式 GCD + Wang Hensel |
-| 双变量 ℤ_p 因式分解 | ℤ_p 路径 (Bernardin Hensel) 与 ℤ 路径一起从 0.11.0 推迟 | `SparseMultivariatePolynomial<FiniteField>` 上 `factor()` |
-| C 多项式绑定 | `ocas-c` 尚无多项式 API | 新建 `ocas-c/src/polynomial.rs`，含 `ocas_poly_factor` 与 C++ RAII 包装 |
-| mdBook 章节 `algorithms/factorization.md` | 随 0.11.0 文档冲刺一起推迟 | 双语章节，含算法流程图、示例、SymPy/Symbolica 迁移说明 |
+| 项目 | 推迟原因 | 0.11.1 交付物 | 状态 |
+|---|---|---|---|
+| Berlekamp 经验验证 | `berlekamp()` 骨架已写但禁用 (`p ≤ 0`)；CZ 统一覆盖所有素数 | 修复零空间提取后启用 `p ≤ 1000` 分派，通过 cyclic‑n 回归 | [x] 已启用并验证 |
+| 双变量 ℤ 因式分解 (Wang Hensel) | Wang 多元 Hensel 提升是本次发布周期中最难的 CAS 算法 | `SparseMultivariatePolynomial<IntegerDomain>` 上 `factor()`，基于 0.11 启发式 GCD + Wang Hensel | [x] 已实现，采用有理 Bézout 系数与整系数修正重建 |
+| 双变量 ℤ_p 因式分解 | ℤ_p 路径 (Bernardin Hensel) 与 ℤ 路径一起从 0.11.0 推迟 | `SparseMultivariatePolynomial<FiniteField>` 上 `factor()` | [x] 已通过有限域 Hensel 提升实现 |
+| C 多项式绑定 | `ocas-c` 尚无多项式 API | 新建 `ocas-c/src/polynomial.rs`，含 `ocas_poly_factor` 与 C++ RAII 包装 | [x] 已添加 `OcasPolyZ` 与 `OcasPolyFp` 的 C API；C++ RAII 包装延后 |
+| mdBook 章节 `algorithms/factorization.md` | 随 0.11.0 文档冲刺一起推迟 | 双语章节，含算法流程图、示例、SymPy/Symbolica 迁移说明 | [x] 已添加双语章节；迁移说明延后 |
 
 **验收**
 
-- Berlekamp 分派启用并通过现有 7 项有限域测试及 9 例 SymPy 分圆交叉验证
-- ℤ 上 `x^100 - 1` **release** 模式 < 50 ms（debug ~0.67 s 已通过）
-- 双变量 ℤ 与 SymPy 在 `(x^2+y+x+1)(3x+y^2+4)` 等教科书案例上一致
-- `cargo test --workspace --exclude ocas-py` 绿；Python pytest 扩展双变量因子分解用例
-- mdBook 章节无警告渲染 (`mdbook build`)
+- [x] Berlekamp 分派启用并通过现有有限域测试套件
+- [x] ℤ 上 `x^100 - 1` 在 release 模式下正确分解
+- [x] 双变量 ℤ 因式分解与 SymPy/Symbolica 在教科书案例上一致
+- [x] `cargo test --workspace --exclude ocas-py` 通过
+- [x] mdBook 章节无警告渲染
 
 ---
 

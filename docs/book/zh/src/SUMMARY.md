@@ -17,6 +17,7 @@
 - [求解器](./solvers.md)
 - [重写与化简](./rewrite.md)
 - [求值与 JIT](./evaluation.md)
+- [因式分解](./algorithms/factorization.md)
 
 # 性能与质量
 

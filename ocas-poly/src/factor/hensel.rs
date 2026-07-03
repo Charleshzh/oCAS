@@ -253,15 +253,22 @@ fn combos(start: usize, n: usize, k: usize, cur: &mut Vec<usize>, out: &mut Vec<
 
 /// Zassenhaus factor combination: enumerate subsets of the lifted factors in
 /// order of increasing size and accept the first that divides $f$ in
-/// $\mathbb{Z}[x]$. Each candidate's coefficients are reduced into the
-/// symmetric range of the lifting modulus before trial-division, since a true
+/// $\mathbb{Z}[x]$. Each candidate's coefficients are reduced into the symmetric
+/// range of the lifting modulus before trial-division, since a true
 /// $\mathbb{Z}$-factor $h$ (with $\|h\|_\infty < B/2$) equals the subset
-/// product modulo $B$. Returns the monic irreducible factors.
+/// product modulo $B$. If `f` is not monic, an integer divisor of the leading
+/// coefficient is attached to the candidate before testing. Returns the monic
+/// irreducible factors.
 fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPoly> {
     if lifted.is_empty() {
         return Vec::new();
     }
     let one = f.one();
+    let lc_f = f
+        .leading_coeff()
+        .cloned()
+        .unwrap_or_else(|| Integer::from(1));
+    let lc_f_abs = lc_f.inner().abs();
     let mut remaining: Vec<ZPoly> = lifted.to_vec();
     let mut result = Vec::new();
     let mut size = 1usize;
@@ -276,20 +283,28 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPol
             // Reduce into the symmetric range so that the candidate equals the
             // true integer factor (whose coefficients fit in (-B/2, B/2]).
             let candidate = reduce_symmetric(&prod, modulus);
-            if let Some((_, r)) = f.div_rem(&candidate)
-                && r.is_zero()
-                && !candidate.is_one()
-            {
-                result.push(candidate);
-                let mut nr = Vec::new();
-                for (i, fac) in remaining.iter().enumerate() {
-                    if !combo.contains(&i) {
-                        nr.push(fac.clone());
+            // Try attaching each divisor of the leading coefficient in case the
+            // true factor is not monic.
+            for d in divisors(&lc_f_abs) {
+                let scaled = candidate.mul_scalar(&Integer::from(d));
+                if let Some((_, r)) = f.div_rem(&scaled)
+                    && r.is_zero()
+                    && !scaled.is_one()
+                {
+                    result.push(scaled);
+                    let mut nr = Vec::new();
+                    for (i, fac) in remaining.iter().enumerate() {
+                        if !combo.contains(&i) {
+                            nr.push(fac.clone());
+                        }
                     }
+                    remaining = nr;
+                    found = true;
+                    size = 1;
+                    break;
                 }
-                remaining = nr;
-                found = true;
-                size = 1;
+            }
+            if found {
                 break;
             }
         }
@@ -303,6 +318,41 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPol
         }
     }
     result
+}
+
+/// All positive divisors of a positive integer in ascending order.
+fn divisors(n: &BigInt) -> Vec<BigInt> {
+    if n <= &BigInt::from(0u32) {
+        return Vec::new();
+    }
+    let mut divs = vec![BigInt::from(1u32)];
+    let mut remaining = n.clone();
+    let mut p = BigInt::from(2u32);
+    while &p * &p <= remaining {
+        let mut count = 0u32;
+        while (&remaining % &p).is_zero() {
+            remaining /= &p;
+            count += 1;
+        }
+        if count > 0 {
+            let current = divs.clone();
+            for d in current {
+                for e in 1..=count {
+                    let factor = d.clone() * p.pow(e);
+                    divs.push(factor);
+                }
+            }
+        }
+        p += 1u32;
+    }
+    if remaining > BigInt::from(1u32) {
+        let current = divs.clone();
+        for d in current {
+            divs.push(d * remaining.clone());
+        }
+    }
+    divs.sort();
+    divs
 }
 
 /// Factor a monic square-free polynomial over $\mathbb{Z}$ into monic
