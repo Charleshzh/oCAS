@@ -8,6 +8,7 @@
 
 use rug::Integer as RugInteger;
 use rug::Rational as RugRational;
+use std::ops::{Add, Div, Mul, Rem, Sub};
 
 use crate::domain::{Domain, EuclideanDomain};
 use crate::integer::IntegerDomain;
