@@ -134,7 +134,10 @@ fn eval_univariate_x(p: &ZMPoly, value: &Integer) -> DenseUnivariatePolynomial<I
             .get(&x_deg)
             .cloned()
             .unwrap_or_else(|| Integer::from(0));
-        coeffs_map.insert(x_deg, Integer::from(existing.to_bigint() + new_coeff.to_bigint()));
+        coeffs_map.insert(
+            x_deg,
+            Integer::from(existing.to_bigint() + new_coeff.to_bigint()),
+        );
     }
     let max_deg = *coeffs_map.keys().max().unwrap_or(&0);
     let mut coeffs = vec![Integer::from(0); max_deg + 1];
