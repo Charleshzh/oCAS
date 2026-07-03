@@ -327,10 +327,10 @@ fn edf_split_char2(f: &FpPoly, d: usize, round: u64, idx: u64) -> Option<(FpPoly
 /// prime field $\mathbb{F}_p$.
 ///
 /// Constructs the Frobenius matrix $Q$ where row $i$ is the coefficient vector
-/// of $x^{ip} \bmod f$, then finds the nullspace of $Q - I$; each nontrivial
-/// nullspace vector yields a splitting via $\gcd(f, v - a)$ for $a \in
-/// \mathbb{F}_p$. Best suited to small primes where the matrix fits in memory
-/// and the brute-force $a$-loop is affordable.
+/// of $x^{ip} \bmod f$, then finds the nullspace of $Q^T - I$; each nontrivial
+/// nullspace vector $v$ satisfies $v^p \equiv v \pmod f$ and yields a splitting
+/// via $\gcd(f, v - a)$ for $a \in \mathbb{F}_p$. Best suited to small primes
+/// where the matrix fits in memory and the brute-force $a$-loop is affordable.
 ///
 /// Reference: Berlekamp (1970), "Factoring polynomials over finite fields".
 pub fn berlekamp(f: &FpPoly) -> Vec<FpPoly> {
@@ -343,157 +343,180 @@ pub fn berlekamp(f: &FpPoly) -> Vec<FpPoly> {
     }
     let field = f.domain().clone();
     let p = field.prime().clone();
-    let zero = field.zero();
-    let one = field.one();
 
-    // ── build Frobenius matrix Q, n×n ──────────────────────────────
-    // Q[i][j] = coefficient of x^j in x^{i·p} mod f.
-    // We compute xp = x^p mod f first, then row_i = (row_{i-1})^p mod f.
-    let x = x_var(&field);
-    let xp = poly_pow_mod(&x, &p, f); // x^p mod f (deg < n)
-    let mut q = Vec::with_capacity(n);
-    // Row 0: x^0 = 1, i.e. [1, 0, ..., 0].
-    let mut row0 = vec![zero.clone(); n];
-    row0[0] = field.one();
-    q.push(row0);
-    // Row 1: x^p mod f.
-    let mut row = xp.coeffs().to_vec(); // degree-ordered coefficients
-    row.resize(n, zero.clone());
-    q.push(row);
-    // Rows 2..n-1: multiply by xp (mod f) each step.
-    for i in 2..n {
-        let prev = q[i - 1].clone();
-        // Compute prev_poly · xp mod f.
-        // prev_poly = sum prev[j] x^j, xp = sum xp_coeffs[k] x^k.
-        // Product: sum_{j,k} prev[j]·xp_coeffs[k] · x^{j+k}. Reduce mod f.
-        let mut prod = vec![field.zero(); 2 * n];
-        for (j, cj) in prev.iter().enumerate() {
-            if field.is_zero(cj) {
-                continue;
-            }
-            for (k, ck) in q[1].iter().enumerate() {
-                if field.is_zero(ck) {
-                    continue;
-                }
-                let t = field.mul(cj, ck);
-                prod[j + k] = field.add(&prod[j + k], &t);
-            }
-        }
-        // Reduce modulo f.
-        let prod_poly = FpPoly::from_coeffs(field.clone(), prod.clone());
-        let (_q, r) = prod_poly.div_rem(f).unwrap_or_else(|| {
-            (
-                FpPoly::from_coeffs(field.clone(), vec![field.zero()]),
-                prod_poly.clone(),
-            )
-        });
-        let mut reduced = r.coeffs().to_vec();
-        reduced.resize(n, zero.clone());
-        q.push(reduced);
-    }
+    // Build the Frobenius matrix Q: Q[i][j] = coeff of x^j in x^{i*p} mod f.
+    let q = frobenius_matrix(f, n);
 
-    // ── Q - I ──────────────────────────────────────────────────────
-    let mut m = Vec::with_capacity(n * n);
-    for (i, row) in q.iter().enumerate() {
-        for (j, v) in row.iter().enumerate() {
-            let mut v = v.clone();
+    // Berlekamp's subalgebra consists of polynomials v with v^p ≡ v (mod f).
+    // In matrix form this is Q^T * v = v, i.e. (Q^T - I) * v = 0.
+    let mut a_data = Vec::with_capacity(n * n);
+    for i in 0..n {
+        for (j, q_row) in q.iter().enumerate().take(n) {
+            let mut val = q_row[i].clone();
             if i == j {
-                v = field.sub(&v, &one);
+                val = field.sub(&val, &field.one());
             }
-            m.push(v);
+            a_data.push(val);
         }
     }
-    // ── Gaussian elimination to reduced row echelon over F_p ───────
-    // We work on mutable copy since Matrix::row_echelon does fraction-free
-    // elimination which is fine for a field (just a bit of extra gcd work).
-    let mut re = Matrix::new(n, n, m.clone(), field.clone());
-    let rank = re.row_echelon(n);
-    // Build a basis of the nullspace. After row-echelon form:
-    // Each free column j (not a pivot) gives a basis vector with entry 1
-    // at column j, zero at other free columns, and values from the row
-    // for pivot columns.
-    let mut pivots = vec![false; n];
-    let mut pivot_col = vec![0usize; n]; // pivot_col[row] = col
-    let mut pi = 0;
-    for j in 0..n {
-        if pi >= rank {
-            break;
-        }
-        if !field.is_zero(&re[(pi, j)]) {
-            pivots[j] = true;
-            pivot_col[pi] = j;
-            pi += 1;
-        }
-    }
+    let a = Matrix::new(n, n, a_data, field.clone());
 
-    // For each non-zero non-constant nullspace vector, attempt to split.
+    let nullspace = nullspace_mod_p(&a, n);
+
+    // Use each non-constant nullspace vector to split the current factors.
     let mut factors = vec![monic(f)];
-    for j in 0..n {
-        if pivots[j] {
+    for v in nullspace {
+        if v.degree().unwrap_or(0) == 0 {
             continue;
         }
-        // Free column → build basis vector v (row-vector convention).
-        // v[j] = 1; for each pivot row r: v[pivot_col[r]] = -re[r,j]/re[r,pivot_col[r]].
-        let mut v = vec![zero.clone(); n];
-        v[j] = field.one();
-        for r in 0..rank {
-            let pc = pivot_col[r];
-            if pc >= j {
-                continue;
-            }
-            let pivot_val = re[(r, pc)].clone();
-            let free_val = re[(r, j)].clone();
-            // v[pc] = -free_val / pivot_val
-            if field.is_zero(&free_val) {
-                continue;
-            }
-            let t = field
-                .div(&free_val, &pivot_val)
-                .unwrap_or_else(|| field.zero());
-            v[pc] = field.neg(&t);
-        }
-        // Build polynomial from v.
-        let vpoly = FpPoly::from_coeffs(field.clone(), v);
-        if vpoly.is_zero() || vpoly.degree().unwrap_or(0) == 0 {
-            continue;
-        }
-        // For each a in F_p, compute gcd(f, v - a).
         let mut new_factors = Vec::new();
         for factor in &factors {
-            let df = factor.degree().unwrap_or(0);
-            if df <= 1 || df == n {
+            let deg = factor.degree().unwrap_or(0);
+            if deg <= 1 {
                 new_factors.push(factor.clone());
                 continue;
             }
-            let mut f_remaining = factor.clone();
-            for a in 0..p.to_u64().unwrap_or(1) {
-                let a_el = field.element(BigInt::from(a));
-                let va = vpoly.sub(&FpPoly::from_coeffs(field.clone(), vec![a_el]));
-                let g = f_remaining.gcd(&va);
-                let g = monic(&g);
+            let mut remaining = factor.clone();
+            let p_u64 = p.to_u64().unwrap_or(1);
+            for a_val in 0..p_u64 {
+                if remaining.degree().unwrap_or(0) <= 1 {
+                    break;
+                }
+                let a_el = field.element(BigInt::from(a_val));
+                let va = v.sub(&FpPoly::from_coeffs(field.clone(), vec![a_el]));
+                let g = monic(&remaining.gcd(&va));
                 let dg = g.degree().unwrap_or(0);
-                if dg > 0 && dg < f_remaining.degree().unwrap_or(0) {
-                    let f_over_g = f_remaining
-                        .div_rem(&g)
-                        .map(|(q, _)| monic(&q))
-                        .unwrap_or_else(|| f_remaining.zero());
+                if dg > 0 && dg < remaining.degree().unwrap_or(0) {
+                    let (q, _) = remaining.div_rem(&g).unwrap();
                     new_factors.push(g);
-                    f_remaining = f_over_g;
-                    if f_remaining.degree().unwrap_or(0) <= 1 {
-                        break;
-                    }
+                    remaining = monic(&q);
                 }
             }
-            if f_remaining.degree().unwrap_or(0) > 0 {
-                new_factors.push(monic(&f_remaining));
+            if remaining.degree().unwrap_or(0) > 0 {
+                new_factors.push(monic(&remaining));
             }
         }
         factors = new_factors;
     }
+
     factors
         .into_iter()
         .filter(|g| !g.is_zero() && !g.is_one())
         .collect()
+}
+
+/// Build the Frobenius matrix $Q$ for Berlekamp's algorithm, where
+/// $Q[i][j]$ is the coefficient of $x^j$ in $x^{ip} \bmod f$.
+fn frobenius_matrix(f: &FpPoly, n: usize) -> Vec<Vec<<FiniteField as Domain>::Element>> {
+    let field = f.domain().clone();
+    let p = field.prime().clone();
+    let zero = field.zero();
+    let x = x_var(&field);
+    let xp = poly_pow_mod(&x, &p, f); // x^p mod f (degree < n)
+
+    let mut q = Vec::with_capacity(n);
+    // Row 0: x^0 = 1.
+    let mut row0 = vec![zero.clone(); n];
+    row0[0] = field.one();
+    q.push(row0);
+    // Row 1: x^p mod f.
+    let mut row1 = xp.coeffs().to_vec();
+    row1.resize(n, zero.clone());
+    q.push(row1);
+    // Remaining rows via repeated multiplication by x^p mod f.
+    for i in 2..n {
+        let prev_poly = FpPoly::from_coeffs(field.clone(), q[i - 1].clone());
+        let prod = prev_poly.mul(&xp);
+        let (_, reduced) = prod.div_rem(f).unwrap_or_else(|| (prod.zero(), prod));
+        let mut r = reduced.coeffs().to_vec();
+        r.resize(n, zero.clone());
+        q.push(r);
+    }
+    q
+}
+
+/// Compute a basis of the right nullspace of an n×n matrix over $\mathbb{F}_p$
+/// by reducing it to reduced row echelon form. Returns the basis vectors as
+/// polynomials (coefficient vectors) in the standard monomial basis.
+fn nullspace_mod_p(a: &Matrix<FiniteField>, n: usize) -> Vec<FpPoly> {
+    let field = a.domain().clone();
+    let mut m = a.clone();
+
+    // Reduced row echelon form over F_p.
+    let mut pivot_col = vec![None; n]; // pivot_col[row] = column or None
+    let mut row = 0;
+    for col in 0..n {
+        if row >= n {
+            break;
+        }
+        // Find pivot.
+        let mut pivot = None;
+        for r in row..n {
+            if !field.is_zero(&m[(r, col)]) {
+                pivot = Some(r);
+                break;
+            }
+        }
+        let pivot_row = match pivot {
+            Some(r) => r,
+            None => continue,
+        };
+        m.swap_rows(row, pivot_row, col);
+
+        // Normalize pivot row.
+        let pivot_val = m[(row, col)].clone();
+        let inv = field.inv(&pivot_val).expect("pivot is nonzero");
+        for c in col..n {
+            m[(row, c)] = field.mul(&m[(row, c)], &inv);
+        }
+
+        // Eliminate above and below.
+        for r in 0..n {
+            if r == row {
+                continue;
+            }
+            if !field.is_zero(&m[(r, col)]) {
+                let factor = m[(r, col)].clone();
+                for c in col..n {
+                    let term = field.mul(&m[(row, c)], &factor);
+                    m[(r, c)] = field.sub(&m[(r, c)], &term);
+                }
+            }
+        }
+        pivot_col[row] = Some(col);
+        row += 1;
+    }
+
+    // Identify free columns and build basis vectors.
+    let mut is_pivot = vec![false; n];
+    for &pc in &pivot_col {
+        if let Some(c) = pc {
+            is_pivot[c] = true;
+        }
+    }
+
+    let mut basis = Vec::new();
+    for free_col in 0..n {
+        if is_pivot[free_col] {
+            continue;
+        }
+        let mut coeffs = vec![field.zero(); n];
+        coeffs[free_col] = field.one();
+        for r in 0..n {
+            if let Some(pc) = pivot_col[r] {
+                // x_pc + m[(r, free_col)] * x_free = 0 => x_pc = -m[(r, free_col)]
+                let val = m[(r, free_col)].clone();
+                if !field.is_zero(&val) {
+                    coeffs[pc] = field.neg(&val);
+                }
+            }
+        }
+        let poly = FpPoly::from_coeffs(field.clone(), coeffs);
+        if !poly.is_zero() {
+            basis.push(poly);
+        }
+    }
+    basis
 }
 
 /// Cantor–Zassenhaus factorization of a monic square-free polynomial.
@@ -557,10 +580,8 @@ pub fn factor_over_finite_field(f: &FpPoly) -> Vec<(FpPoly, usize)> {
         if g.degree().unwrap_or(0) == 0 {
             continue;
         }
-        // Use Cantor–Zassenhaus for all primes. The Berlekamp path
-        // (p ≤ 1000) is implemented but needs further validation
-        // (TODO: fix nullspace extraction for degree-4+ factors).
-        let use_berlekamp = false; // disabled pending validation
+        // For small primes use Berlekamp; otherwise Cantor-Zassenhaus.
+        let use_berlekamp = field.prime() <= &BigInt::from(1000u32);
         let irr_factors = if use_berlekamp {
             berlekamp(&g)
         } else {
@@ -851,5 +872,44 @@ mod tests {
             .map(|(_, m)| *m)
             .next();
         assert_eq!(m2, Some(3));
+    }
+
+    #[test]
+    fn berlekamp_agrees_with_cantor_zassenhaus() {
+        // Square-free monic polynomials over small primes; Berlekamp and
+        // Cantor-Zassenhaus should return the same multiset of irreducible
+        // factors.
+        let cases: &[(u64, &[i64])] = &[
+            (5, &[4, 0, 1]),       // x^2 - 1
+            (3, &[1, 0, 0, 0, 1]), // x^4 + 1
+            (5, &[2, 0, 1]),       // irreducible quadratic
+            (5, &[1, 0, 0, 0, 1]), // x^4 + 1 over F_5
+            (7, &[1, 1, 0, 1]),    // x^3 + x + 1
+        ];
+        for &(prime, coeffs) in cases {
+            let f = field(prime);
+            let poly = fpoly(&f, coeffs);
+            let b = berlekamp(&poly)
+                .into_iter()
+                .map(|g| monic(&g))
+                .collect::<Vec<_>>();
+            let c = cantor_zassenhaus(&poly)
+                .into_iter()
+                .map(|g| monic(&g))
+                .collect::<Vec<_>>();
+            assert_eq!(b.len(), c.len(), "p={prime}: factor count differs");
+            // Compare sorted coefficient lists as a proxy for multiset equality.
+            let mut b_sig: Vec<Vec<BigInt>> = b
+                .iter()
+                .map(|g| g.coeffs().iter().map(|e| e.value().clone()).collect())
+                .collect();
+            let mut c_sig: Vec<Vec<BigInt>> = c
+                .iter()
+                .map(|g| g.coeffs().iter().map(|e| e.value().clone()).collect())
+                .collect();
+            b_sig.sort();
+            c_sig.sort();
+            assert_eq!(b_sig, c_sig, "p={prime}: Berlekamp factors differ from CZ");
+        }
     }
 }

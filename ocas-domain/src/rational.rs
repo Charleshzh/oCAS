@@ -5,6 +5,8 @@
 //! implementation moves to `gmp_backend`.
 
 #[cfg(not(feature = "gmp"))]
+use num_bigint::BigInt;
+#[cfg(not(feature = "gmp"))]
 use num_rational::BigRational;
 #[cfg(not(feature = "gmp"))]
 use num_traits::{One, Zero};
@@ -49,6 +51,11 @@ impl Rational {
     /// Create a rational number from a numerator and denominator.
     pub fn new(numer: i64, denom: i64) -> Self {
         Self(BigRational::from_integer(numer.into()) / BigRational::from_integer(denom.into()))
+    }
+
+    /// Create a rational number from arbitrary-precision integers.
+    pub fn from_bigints(numer: BigInt, denom: BigInt) -> Self {
+        Self(BigRational::new(numer, denom))
     }
 
     /// Access the underlying `BigRational`.

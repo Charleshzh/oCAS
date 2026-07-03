@@ -8,8 +8,10 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-use ocas_domain::{Domain, EuclideanDomain};
+use ocas_domain::{Domain, EuclideanDomain, FiniteField, IntegerDomain};
 use smallvec::SmallVec;
+
+use crate::factor::multivariate::{bivariate_factor_fp, bivariate_factor_z};
 
 /// A monomial ordering determines how terms are sorted and compared.
 ///
@@ -560,6 +562,62 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
             }
         }
         result
+    }
+}
+
+// ------------------------------------------------------------------
+//  Factorization entry points for sparse multivariate polynomials
+// ------------------------------------------------------------------
+
+impl SparseMultivariatePolynomial<IntegerDomain, Lex> {
+    /// Factor this bivariate integer polynomial into irreducible factors with
+    /// multiplicities.
+    ///
+    /// The current implementation treats the polynomial as univariate in the
+    /// first variable $x$ with coefficients in $\mathbb{Z}[y]$ and uses
+    /// Wang's Hensel-lifting algorithm. It succeeds when the leading
+    /// coefficient in $x$ is an integer constant.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{Integer, IntegerDomain};
+    /// use ocas_poly::SparseMultivariatePolynomial;
+    /// use ocas_poly::Lex;
+    ///
+    /// // (x^2 + y + 1)(x + y + 2)
+    /// let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+    ///     IntegerDomain, 2,
+    ///     vec![
+    ///         (vec![3, 0], Integer::from(1)),
+    ///         (vec![2, 1], Integer::from(1)),
+    ///         (vec![2, 0], Integer::from(2)),
+    ///         (vec![1, 1], Integer::from(1)),
+    ///         (vec![1, 0], Integer::from(1)),
+    ///         (vec![0, 2], Integer::from(1)),
+    ///         (vec![0, 1], Integer::from(3)),
+    ///         (vec![0, 0], Integer::from(2)),
+    ///     ],
+    /// );
+    /// let factors = f.factor();
+    /// assert!(factors.len() >= 2);
+    /// ```
+    pub fn factor(&self) -> Vec<(Self, usize)> {
+        bivariate_factor_z(self, 0, 1)
+    }
+}
+
+impl SparseMultivariatePolynomial<FiniteField, Lex> {
+    /// Factor this bivariate polynomial over a prime finite field into
+    /// irreducible factors with multiplicities.
+    ///
+    /// The current implementation treats the polynomial as univariate in the
+    /// first variable $x$ with coefficients in $\mathbb{F}_p[y]$ and uses
+    /// Hensel lifting. It succeeds when the leading coefficient in $x$ is a
+    /// field constant and the polynomial is square-free (or the derivative in
+    /// $x$ is non-zero).
+    pub fn factor(&self) -> Vec<(Self, usize)> {
+        bivariate_factor_fp(self, 0, 1)
     }
 }
 
