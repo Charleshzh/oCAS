@@ -8,6 +8,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.11.1] - 2026-07-04
+
+### Added / 新增
+
+- **Bivariate integer polynomial factorization** (`ocas-poly`): monic-in-x
+  bivariate factorization over $\mathbb{Z}[x,y]$ using Wang's Hensel lifting,
+  with rational Bézout coefficients and integral correction reconstruction /
+  **二元整数多项式因式分解**：基于 Wang Hensel 提升，使用有理 Bézout 系数
+  与整系数修正重建
+- **Bivariate finite-field polynomial factorization** (`ocas-poly`):
+  monic-in-x bivariate factorization over $\mathbb{F}_p[x,y]$ using Hensel
+  lifting / **二元有限域多项式因式分解**：基于有限域上的 Hensel 提升
+- **Sparse multivariate `factor()` entry points** (`ocas-poly::sparse`):
+  `SparseMultivariatePolynomial<IntegerDomain, Lex>::factor` and
+  `SparseMultivariatePolynomial<FiniteField, Lex>::factor` /
+  **稀疏多元 `factor()` 入口**：支持整数域和有限域
+- **C/C++ polynomial bindings** (`ocas-c`): opaque `OcasPolyZ` and `OcasPolyFp`
+  handles, string-based creation, factorization, degree, string output, and
+  lifecycle functions / **C/C++ 多项式绑定**：不透明句柄、字符串创建、因式分解、
+  次数、字符串输出与生命周期函数
+- **mdBook factorization chapter** (`docs/book/{en,zh}/src/algorithms/factorization.md`):
+  documentation covering univariate and bivariate factorization over $\mathbb{Z}$
+  and $\mathbb{F}_p$, plus the C API / **mdBook 因式分解章节**：涵盖整数与有限域
+  上的一元、二元因式分解及 C API 文档
+- **Berlekamp algorithm enabled** for univariate factorization over prime finite
+  fields / **Berlekamp 算法启用**：用于素有限域上一元因式分解
+
+### Fixed / 修复
+
+- **Unlucky evaluation points in Wang Hensel lifting**: when a chosen
+  $y = \alpha$ produces a univariate factorization that is inconsistent with the
+  bivariate factorization, the implementation now tries additional candidates
+  and falls back to irreducible instead of panicking / **Wang Hensel 提升中的
+  不幸赋值点**：现在会尝试额外候选点，并回退为不可约而非 panic
+
+---
 ## [0.11.0] - 2026-07-03
 
 ### Added / 新增
