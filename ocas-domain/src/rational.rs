@@ -13,6 +13,8 @@ use num_traits::{One, Zero};
 
 #[cfg(not(feature = "gmp"))]
 use crate::domain::{Domain, EuclideanDomain};
+#[cfg(not(feature = "gmp"))]
+use crate::integer::Integer;
 
 /// The rational number domain.
 ///
@@ -61,6 +63,21 @@ impl Rational {
     /// Access the underlying `BigRational`.
     pub fn inner(&self) -> &BigRational {
         &self.0
+    }
+
+    /// Create a rational number from an integer (denominator = 1).
+    pub fn from_integer(n: Integer) -> Self {
+        Self(BigRational::from_integer(n.inner().clone()))
+    }
+
+    /// Numerator as an [`Integer`].
+    pub fn numer(&self) -> Integer {
+        Integer::from(self.0.numer().clone())
+    }
+
+    /// Denominator as an [`Integer`].
+    pub fn denom(&self) -> Integer {
+        Integer::from(self.0.denom().clone())
     }
 }
 

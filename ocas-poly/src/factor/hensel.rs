@@ -268,7 +268,7 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPol
         .leading_coeff()
         .cloned()
         .unwrap_or_else(|| Integer::from(1));
-    let lc_f_abs = lc_f.inner().abs();
+    let lc_f_abs = lc_f.to_bigint().abs();
     let mut remaining: Vec<ZPoly> = lifted.to_vec();
     let mut result = Vec::new();
     let mut size = 1usize;

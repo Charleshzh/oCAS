@@ -191,6 +191,11 @@ impl Integer {
         num_bigint::BigInt::from_str(&self.0.to_string())
             .expect("rug::Integer to BigInt conversion should never fail")
     }
+
+    /// Raise to a `u32` power.
+    pub fn pow_u32(&self, exp: u32) -> Self {
+        Integer(self.0.clone().pow(exp))
+    }
 }
 
 impl Rational {
@@ -202,6 +207,21 @@ impl Rational {
     /// Access the underlying [`rug::Rational`].
     pub fn inner(&self) -> &RugRational {
         &self.0
+    }
+
+    /// Create a rational number from an integer (denominator = 1).
+    pub fn from_integer(n: Integer) -> Self {
+        Self(RugRational::from(n.0))
+    }
+
+    /// Numerator as an [`Integer`].
+    pub fn numer(&self) -> Integer {
+        Integer(self.0.numer().clone())
+    }
+
+    /// Denominator as an [`Integer`].
+    pub fn denom(&self) -> Integer {
+        Integer(self.0.denom().clone())
     }
 }
 

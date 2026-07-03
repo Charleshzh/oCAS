@@ -98,10 +98,11 @@ fn univariate_times_y_minus_alpha_k(
             let mut exp = vec![0usize; n_vars];
             exp[x_var] = i;
             exp[y_var] = j;
-            let sign = if (k - j) % 2 == 0 { 1 } else { -1 };
-            let coeff = Integer::from(
-                BigInt::from(binomial(k, j)) * sign * alpha.inner().pow((k - j) as u32),
-            );
+            let sign = if (k - j) % 2 == 0 { 1i64 } else { -1i64 };
+            let binom = Integer::from(binomial(k, j) as i64);
+            let alpha_pow = alpha.pow_u32((k - j) as u32);
+            let sign_int = Integer::from(sign);
+            let coeff = IntegerDomain.mul(&IntegerDomain.mul(&binom, &sign_int), &alpha_pow);
             let prod = IntegerDomain.mul(c, &coeff);
             terms.push((exp, prod));
         }
@@ -453,16 +454,16 @@ fn divide_bivariate_by_gcd(a: &ZMPoly, b: &ZMPoly, x_var: usize, y_var: usize) -
         let a_eval = eval_to_univariate(a, y_var, &eval_point);
         let b_eval = eval_to_univariate(b, y_var, &eval_point);
         if b_eval.is_zero() || a_eval.is_zero() {
-            eval_point = Integer::from(eval_point.inner() + 1);
+            eval_point = IntegerDomain.add(&eval_point, &Integer::from(1));
             continue;
         }
         let (q, r) = a_eval.div_rem(&b_eval).unwrap();
         if !r.is_zero() {
-            eval_point = Integer::from(eval_point.inner() + 1);
+            eval_point = IntegerDomain.add(&eval_point, &Integer::from(1));
             continue;
         }
         images.push((eval_point.clone(), q));
-        eval_point = Integer::from(eval_point.inner() + 1);
+        eval_point = IntegerDomain.add(&eval_point, &Integer::from(1));
     }
 
     if images.len() < n_points {
@@ -519,25 +520,22 @@ fn lagrange_interpolate(points: &[(Integer, Integer)]) -> ZPoly {
     for i in 0..n {
         let (y_i, v_i) = &points[i];
         let mut numerator = ZPoly::from_coeffs(IntegerDomain, vec![Integer::from(1)]);
-        let mut denom = BigInt::one();
+        let mut denom = Integer::from(1);
         for (j, (y_j, _v_j)) in points.iter().enumerate().take(n) {
             if i == j {
                 continue;
             }
             let factor = ZPoly::from_coeffs(
                 IntegerDomain,
-                vec![Integer::from(-y_j.inner().clone()), Integer::from(1)],
+                vec![IntegerDomain.neg(y_j), Integer::from(1)],
             );
             numerator = numerator.mul(&factor);
-            denom *= y_i.inner() - y_j.inner();
+            denom = IntegerDomain.mul(&denom, &IntegerDomain.sub(y_i, y_j));
         }
-        let q = v_i.inner() / &denom;
-        debug_assert!(
-            &q * &denom == *v_i.inner(),
-            "lagrange_interpolate: non-exact division; \
-             v_i={v_i}, denom={denom}, quotient={q}"
-        );
-        result = result.add(&numerator.mul_scalar(&Integer::from(q)));
+        let q = IntegerDomain
+            .div(v_i, &denom)
+            .expect("lagrange_interpolate: non-exact division");
+        result = result.add(&numerator.mul_scalar(&q));
     }
     result
 }
@@ -547,7 +545,7 @@ fn zpoly_to_qpoly(f: &ZPoly) -> QPoly {
         RationalDomain,
         f.coeffs()
             .iter()
-            .map(|c| Rational::from_bigints(c.inner().clone(), BigInt::one()))
+            .map(|c| Rational::from_integer(c.clone()))
             .collect(),
     )
 }
@@ -555,12 +553,11 @@ fn zpoly_to_qpoly(f: &ZPoly) -> QPoly {
 fn qpoly_to_zpoly(f: &QPoly) -> Option<ZPoly> {
     let mut coeffs = Vec::new();
     for r in f.coeffs() {
-        let numer = r.inner().numer();
-        let denom = r.inner().denom();
-        if !denom.is_one() {
+        let d = r.denom();
+        if !IntegerDomain.is_one(&d) {
             return None;
         }
-        coeffs.push(Integer::from(numer.clone()));
+        coeffs.push(r.numer());
     }
     Some(ZPoly::from_coeffs(IntegerDomain, coeffs))
 }

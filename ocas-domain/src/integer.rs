@@ -61,6 +61,12 @@ impl Integer {
     pub fn to_bigint(&self) -> BigInt {
         self.0.clone()
     }
+
+    /// Raise to a `u32` power.
+    pub fn pow_u32(&self, exp: u32) -> Self {
+        use num_traits::Pow;
+        Integer(self.0.clone().pow(exp))
+    }
 }
 
 #[cfg(not(feature = "gmp"))]
