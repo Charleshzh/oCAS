@@ -60,10 +60,10 @@ pub use expression::{
     ocas_expr_taylor, ocas_expr_to_string, ocas_string_free,
 };
 pub use polynomial::{
-    OcasPolyFp, OcasPolyZ, ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create,
-    ocas_poly_fp_degree, ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string,
-    ocas_poly_z_clone, ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor,
-    ocas_poly_z_free, ocas_poly_z_to_string,
+    OcasPolyFactor, OcasPolyFactorArray, OcasPolyFp, OcasPolyZ, ocas_poly_factor_array_free,
+    ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor,
+    ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create,
+    ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string,
 };
 
 /// Return the oCAS version string.
