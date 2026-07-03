@@ -1,0 +1,12 @@
+[package]
+name = "symbolica_runner"
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+publish = false
+
+[dependencies]
+symbolica = { path = "../../../symbolica", default-features = false }
+
+[profile.release]
+opt-level = 3

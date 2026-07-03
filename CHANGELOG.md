@@ -8,6 +8,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.11.0] - 2026-07-03
+
+### Added / 新增
+
+- **Correctness comparison framework** (`ocas-tests/tests/correctness/`):
+  16 modules and 82 tests covering parse, normalize, rewrite, calculus,
+  evaluation, polynomial arithmetic, GCD, factorization, Gröbner bases,
+  finite fields, matrices, root isolation, and linear solvers / **正确性对比框架**：
+  16 个模块 82 个测试，覆盖解析、化简、重写、微积分、求值、多项式运算等
+- **SymPy reference harness** (`scripts/compare_sympy.py`): supports
+  `check`, `verify` (JSON via stdin), and `time` modes to compare oCAS
+  output against SymPy 1.14 / **SymPy 参考工具**：支持 check/verify/time 三种模式
+- **Symbolica comparison harness** (`scripts/compare_symbolica.py` and
+  `symbolica_runner/`): isolated Rust crate running Symbolica via subprocess,
+  keeping the AGPL dependency out of the main build / **Symbolica 对比工具**：
+  独立子进程调用，AGPL 不链入主构建
+- **Audit report generator** (`scripts/generate_audit_report.py`): runs
+  simple/medium and complex/very_complex tests separately and writes a
+  Markdown summary / **审计报告生成器**：分别运行不同难度测试并生成 Markdown
+- **Difficulty tier annotations**: `#[ignore]` marks complex and very complex
+  tests for manual/audit runs while simple+medium tests run in CI /
+  **难度分级**：complex/very_complex 测试标 `#[ignore]` 供手动审计运行
+
+### Changed / 变更
+
+- `bench_sympy.py` now delegates to `compare_sympy.py time` mode so timing
+  and correctness share the same SymPy task definitions /
+  `bench_sympy.py` 改为委托 `compare_sympy.py` 的 `time` 模式
+
+### Notes / 说明
+
+- All 82 correctness tests pass (`--include-ignored`) / 82 个正确性测试全部通过。
+- Two known gaps are documented in tests: `sin(x)^2 + cos(x)^2 -> 1` is not
+  handled by the default simplifier, and the real-root isolator finds 8 of
+  10 roots for the expanded Wilkinson n=10 polynomial /
+  已记录两个已知差距：默认化简器不处理 `sin²+cos²->1`；Wilkinson n=10
+  展开多项式实根隔离只找到 8 个根。
+
+---
 ## [0.10.0] - 2026-07-02
 
 ### Added / 新增
