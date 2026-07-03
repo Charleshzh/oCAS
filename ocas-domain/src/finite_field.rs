@@ -57,6 +57,14 @@ impl std::fmt::Display for FiniteFieldElement {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FiniteField {
     prime: BigInt,
+    /// Cached `prime - 2` for fast modular inversion via Fermat's little theorem.
+    prime_minus_two: BigInt,
+    /// GMP-backed prime for fast modular arithmetic (only with `gmp` feature).
+    #[cfg(feature = "gmp")]
+    prime_gmp: rug::Integer,
+    /// GMP-backed `prime - 2` for fast modular inversion (only with `gmp` feature).
+    #[cfg(feature = "gmp")]
+    prime_minus_two_gmp: rug::Integer,
 }
 
 impl FiniteField {
@@ -67,7 +75,31 @@ impl FiniteField {
     /// Panics in debug mode if `prime` is less than 2.
     pub fn new(prime: BigInt) -> Self {
         debug_assert!(prime > BigInt::one(), "modulus must be at least 2");
-        Self { prime }
+        let prime_minus_two = &prime - BigInt::one() - BigInt::one();
+        #[cfg(feature = "gmp")]
+        {
+            let (sign, bytes) = prime.to_bytes_le();
+            let mut prime_gmp = rug::Integer::from_digits(&bytes, rug::integer::Order::Lsf);
+            if sign == num_bigint::Sign::Minus {
+                prime_gmp = -prime_gmp;
+            }
+            let (sign2, bytes2) = prime_minus_two.to_bytes_le();
+            let mut pmt_gmp = rug::Integer::from_digits(&bytes2, rug::integer::Order::Lsf);
+            if sign2 == num_bigint::Sign::Minus {
+                pmt_gmp = -pmt_gmp;
+            }
+            Self {
+                prime,
+                prime_minus_two,
+                prime_gmp,
+                prime_minus_two_gmp: pmt_gmp,
+            }
+        }
+        #[cfg(not(feature = "gmp"))]
+        Self {
+            prime,
+            prime_minus_two,
+        }
     }
 
     /// Create a field element from an arbitrary integer.
@@ -88,6 +120,29 @@ impl FiniteField {
         FiniteFieldElement {
             value: value.mod_floor(&self.prime),
         }
+    }
+
+    /// Convert a `BigInt` to a `rug::Integer` using binary serialization.
+    #[cfg(feature = "gmp")]
+    fn bigint_to_rug(value: &BigInt) -> rug::Integer {
+        let (sign, bytes) = value.to_bytes_le();
+        let mut inner = rug::Integer::from_digits(&bytes, rug::integer::Order::Lsf);
+        if sign == num_bigint::Sign::Minus {
+            inner = -inner;
+        }
+        inner
+    }
+
+    /// Convert a `rug::Integer` back to `BigInt` using binary serialization.
+    #[cfg(feature = "gmp")]
+    fn rug_to_bigint(value: &rug::Integer) -> BigInt {
+        use num_bigint::Sign;
+        if *value == 0 {
+            return BigInt::ZERO;
+        }
+        let bytes = value.to_digits::<u8>(rug::integer::Order::Lsf);
+        let sign = if value.is_negative() { Sign::Minus } else { Sign::Plus };
+        BigInt::from_bytes_le(sign, &bytes)
     }
 }
 
@@ -127,12 +182,52 @@ impl Domain for FiniteField {
             return None;
         }
         // Fermat's little theorem: a^(p-2) ≡ a^(-1) (mod p) for prime p.
-        let exp = &self.prime - BigInt::one() - BigInt::one();
-        Some(self.normalize(a.value.modpow(&exp, &self.prime)))
+        #[cfg(feature = "gmp")]
+        {
+            let base = Self::bigint_to_rug(&a.value);
+            let result = base
+                .pow_mod(&self.prime_minus_two_gmp, &self.prime_gmp)
+                .expect("modpow: modulus must be positive");
+            Some(FiniteFieldElement {
+                value: Self::rug_to_bigint(&result),
+            })
+        }
+        #[cfg(not(feature = "gmp"))]
+        {
+            Some(self.normalize(a.value.modpow(&self.prime_minus_two, &self.prime)))
+        }
     }
 
     fn is_zero(&self, a: &Self::Element) -> bool {
         a.value.is_zero()
+    }
+
+    /// Modular exponentiation using `modpow`, much faster than the
+    /// default binary exponentiation for large exponents.
+    fn pow(&self, a: &Self::Element, n: u64) -> Self::Element {
+        if n == 0 {
+            return self.one();
+        }
+        if self.is_zero(a) {
+            return self.zero();
+        }
+        #[cfg(feature = "gmp")]
+        {
+            let base = Self::bigint_to_rug(&a.value);
+            let exp = rug::Integer::from(n);
+            let modulus = &self.prime_gmp;
+            let result = base
+                .pow_mod(&exp, modulus)
+                .expect("modpow: modulus must be positive");
+            FiniteFieldElement {
+                value: Self::rug_to_bigint(&result),
+            }
+        }
+        #[cfg(not(feature = "gmp"))]
+        {
+            let exp = BigInt::from(n);
+            self.normalize(a.value.modpow(&exp, &self.prime))
+        }
     }
 }
 

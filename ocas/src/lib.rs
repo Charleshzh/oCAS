@@ -13,6 +13,13 @@
 
 #![warn(missing_docs)]
 
+// Use mimalloc as the global allocator when the feature is enabled.
+// This can significantly speed up workloads with many small allocations
+// (e.g. polynomial arithmetic, expression tree construction).
+#[cfg(feature = "mimalloc")]
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 /// Convenience prelude that brings commonly used oCAS types and functions into scope.
 ///
 /// This is the recommended way to use oCAS in application code:

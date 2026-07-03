@@ -23,6 +23,7 @@ ocas-parse.workspace = true
 ocas-rewrite.workspace = true
 ocas-py = { workspace = true, optional = true }
 ocas-gpl = { workspace = true, optional = true }
+mimalloc = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -34,6 +35,7 @@ gpl = ["dep:ocas-gpl"]
 egg = ["ocas-rewrite/egg"]
 jit = ["ocas-eval/jit"]
 simd = ["ocas-eval/simd"]
+mimalloc = ["dep:mimalloc"]
 # Link against preinstalled system GMP/MPFR/MPC instead of compiling the
 # bundled sources. Required on Windows/MinGW; optional elsewhere.
 system-libs = ["ocas-domain/system-libs"]

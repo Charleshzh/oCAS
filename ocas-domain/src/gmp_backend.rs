@@ -167,11 +167,12 @@ impl From<i64> for Integer {
 
 impl From<num_bigint::BigInt> for Integer {
     fn from(value: num_bigint::BigInt) -> Self {
-        use std::str::FromStr;
-        Self(
-            rug::Integer::from_str(&value.to_string())
-                .expect("BigInt to rug::Integer conversion should never fail"),
-        )
+        let (sign, bytes) = value.to_bytes_le();
+        let mut inner = RugInteger::from_digits(&bytes, rug::integer::Order::Lsf);
+        if sign == num_bigint::Sign::Minus {
+            inner = -inner;
+        }
+        Self(inner)
     }
 }
 
@@ -187,10 +188,20 @@ impl Integer {
     }
 
     /// Convert to a `BigInt` regardless of the backend.
+    ///
+    /// Uses binary serialization for performance (avoids string conversion).
     pub fn to_bigint(&self) -> num_bigint::BigInt {
-        use std::str::FromStr;
-        num_bigint::BigInt::from_str(&self.0.to_string())
-            .expect("rug::Integer to BigInt conversion should never fail")
+        use num_bigint::Sign;
+        if self.0 == 0 {
+            return num_bigint::BigInt::ZERO;
+        }
+        let bytes = self.0.to_digits::<u8>(rug::integer::Order::Lsf);
+        let sign = if self.0.is_negative() {
+            Sign::Minus
+        } else {
+            Sign::Plus
+        };
+        num_bigint::BigInt::from_bytes_le(sign, &bytes)
     }
 
     /// Raise to a `u32` power.

@@ -22,3 +22,4 @@ pub use sparse::{
     Grevlex, Lex, MonomialOrder, SparseMultivariatePolynomial, monomial_are_coprime,
     monomial_divides, monomial_lcm,
 };
+pub use multivariate_gcd::{bivariate_gcd, gcd_modular, reduce_mod, lift_from_fp};

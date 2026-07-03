@@ -188,14 +188,32 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
         if self.is_zero() || other.is_zero() {
             return self.zero();
         }
-        let mut coeffs = vec![self.domain.zero(); self.coeffs.len() + other.coeffs.len() - 1];
+        let mut buf = Vec::new();
+        self.mul_into(other, &mut buf);
+        Self::from_coeffs(self.domain.clone(), buf)
+    }
+
+    /// Multiply two polynomials, reusing the provided buffer for the result.
+    ///
+    /// The buffer is cleared and resized as needed. This avoids repeated
+    /// heap allocation in hot loops (e.g. GCD, factorization).
+    ///
+    /// After the call, `buf` contains the coefficients of the product
+    /// (constant term first). If either polynomial is zero, `buf` is cleared.
+    pub fn mul_into(&self, other: &Self, buf: &mut Vec<D::Element>) {
+        if self.is_zero() || other.is_zero() {
+            buf.clear();
+            return;
+        }
+        let result_len = self.coeffs.len() + other.coeffs.len() - 1;
+        buf.clear();
+        buf.resize(result_len, self.domain.zero());
         for (i, a) in self.coeffs.iter().enumerate() {
             for (j, b) in other.coeffs.iter().enumerate() {
                 let prod = self.domain.mul(a, b);
-                coeffs[i + j] = self.domain.add(&coeffs[i + j], &prod);
+                buf[i + j] = self.domain.add(&buf[i + j], &prod);
             }
         }
-        Self::from_coeffs(self.domain.clone(), coeffs)
     }
 
     /// Evaluate the polynomial at `x` using Horner's method.
