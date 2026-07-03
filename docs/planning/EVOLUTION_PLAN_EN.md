@@ -37,15 +37,16 @@ gantt
     dateFormat YYYY-MM
     section Beta Hard-Algebra
     0.11 Factorization        :b11, 2026-08, 3M
-    0.12 Rational+Resultant   :b12, after b11, 2M
+    0.11.2 Compute Accel Infra :b112, after b11, 1M
+    0.12 Rational+Resultant+FFT :b12, after b112, 2M
     0.13 Groebner F4          :b13, after b12, 3M
     section 1.0 RC
     0.14 Risch Integration    :r14, after b13, 3M
-    0.15 Perf+MultiJIT        :r15, after r14, 2M
+    0.15 Perf+JIT+MemOpt      :r15, after r14, 2M
     section Stable
     1.0.0 Freeze+Docs         :s10, after r15, 2M
     section Post-1.0
-    ODE/PDE, GPL, GPU         :p1, after s10, 6M
+    FLINT, LLVM, SIMD, GPU    :p1, after s10, 6M
 ```
 
 ---
@@ -125,6 +126,49 @@ and confirming the cross-language public API.
 
 ---
 
+### 0.11.2 — Compute Acceleration Infrastructure
+
+**Goal**: close the performance gap with Symbolica `numerica`, providing full
+GMP speed + memory optimization + modern GCD algorithms for all subsequent
+0.12+ algorithm versions. Priorities determined by the competitor acceleration
+strategy survey (FLINT, Symbolica, SageMath, Mathematica, Maple).
+
+**Functionality**
+
+| Item | Reference (until exceeded) | oCAS landing |
+|---|---|---|
+| GMP backend completion: `ShrAssign`, compound assignment, `FiniteField` routed through `Integer` | Symbolica `numerica/src/domains/backend/integer.rs` | `ocas-domain::gmp_backend` |
+| `to_bigint()` using binary serialization (replacing string conversion) | — | `gmp_backend.rs` |
+| `mimalloc` global allocator | Symbolica `lib.rs:265` | `ocas` crate |
+| Small-integer SOO: `enum { Small(i64), Large(Box<GmpInteger>) }` | FLINT `fmpz_t`; Symbolica coefficient encoding | `ocas-domain::integer` |
+| Modular multivariate GCD (`gcd_shape_modular`) | Symbolica `poly/gcd.rs` | `ocas-poly::gcd::modular` |
+| Dense multiplication `thread_local` buffer | Symbolica `poly/polynomial.rs:27` | `ocas-poly::dense` |
+
+**Performance KPI**
+
+- Integer add/sub/mul (small values ≤64-bit): ≥3× faster than 0.11.1 (SOO avoids heap allocation).
+- `gcd(x^50-1, x^30-1)` over ℤ: ≥10× faster than 0.11.1 naive GCD.
+- Full stack: `cargo test --workspace --features gmp` passes.
+
+**Documentation**
+
+- mdBook `performance/backend.md` comparing `num-bigint` vs `rug` backends.
+- Competitor acceleration strategy survey archived at `docs/planning/ACCELERATION_RESEARCH.md`.
+
+**Acceptance**
+
+- No regression on all 0.11.1 tests.
+- SOO Integer proptest with 1000 cases.
+- Modular GCD agrees with naive GCD (500 random cases).
+- Criterion benchmarks: small-integer arithmetic, large-integer GCD, `modpow`.
+
+**Risks**
+
+- SOO changes `Integer` internal representation → need comprehensive audit of all `inner()` call sites.
+- `FiniteField` switching from raw `BigInt` to `Integer` → may affect serialization formats.
+
+---
+
 **Goal**: a `RationalPolynomial` type (numerator/denominator over a polynomial
 ring) plus partial fractions and resultants. Direct counterpart of Symbolica's
 `rational_polynomial.rs`, `partial_fraction.rs`, `resultant.rs`.
@@ -138,11 +182,13 @@ ring) plus partial fractions and resultants. Direct counterpart of Symbolica's
 | Partial fraction decomposition | Symbolica `partial_fraction.rs`; relies on 0.11 factor | `ocas-calc::partial_fraction` |
 | Sylvester resultant | Symbolica `poly/resultant.rs` | `ocas-poly::resultant` |
 | Rational reconstruction (int from mod images) | Symbolica `rational_reconstruction.rs` | `ocas-poly::rational_reconstruction` |
+| Layered polynomial multiplication: Schoolbook → Karatsuba → FFT | FLINT 3 SSA; Symbolica dense mul | `ocas-poly::mul::fft` |
 
 **Performance KPI**
 
 - Partial-fraction a degree-20/degree-6 rational function in < 30 ms.
 - Resultant of two degree-15 polys in < 20 ms (parity with the Symbolica example).
+- Multiply two degree-500 ℤ[x] polynomials: ≥5× faster than 0.11.2 Schoolbook.
 
 **Documentation**
 
@@ -242,8 +288,11 @@ Rust + arena + JIT stack should start *exceeding* competitors.
 | Common-subexpression elimination in JIT | Symbolica `optimize.rs` | `ocas-eval::optimize::cse` |
 | Streaming evaluation API (chunked input) | Symbolica `streaming.rs` | new `ocas-eval::streaming` |
 | Mixed-precision (f32/f64) codegen | — | extend `Instruction` types |
+| Unified arena allocation for expression nodes | Symbolica Workspace; Maple tiered regions | extend `ocas-core::arena` |
+| Thread-local object pool (RecycledAtom pattern) | Symbolica `state.rs:1271` | `ocas-atom::workspace` |
+| `ahash` replacing default HashMap | Symbolica `ahash` | `ocas-core` |
 
-- (Modular GCD / sparse interpolation for poly speed — uses 0.11 infra.)
+- (Modular GCD / sparse interpolation for poly speed — uses 0.11.2 infra.)
 
 **Performance KPI**
 
@@ -314,6 +363,7 @@ when an item is met or beaten.
 | Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🔴 gap (0.12) |
 | Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 basic (0.13) |
 | GCD (modular) | Symbolica `poly/gcd.rs` | — | 🟡 basic |
+| GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🔴 gap (0.11.2) |
 | Integration (Risch) | Bronstein book; SymPy Risch | — | 🔴 gap (0.14) |
 | Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟡 single-output (0.15) |
 | Streaming | Symbolica `streaming.rs` | — | 🔴 gap (0.15) |
@@ -321,6 +371,9 @@ when an item is met or beaten.
 | Tensors/dual | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 gap (post-1.0) |
 | Numerical integration | Symbolica `numerical_integration.rs` | QUADPACK | 🔴 gap (post-1.0) |
 | Domains (big int) | FLINT/GMP via `rug` | — | 🟢 via backend |
+| Domains (big int SOO) | FLINT `fmpz_t`; Symbolica coefficient encoding | — | 🔴 gap (0.11.2) |
+| FFT polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🔴 gap (0.12) |
+| Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🔴 gap (0.11.2 + 0.15) |
 | ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🔴 gap (post-1.0) |
 
 ---
@@ -336,3 +389,4 @@ Refresh this plan:
 | Version | Date | Changes |
 |---|---|---|
 | 0.10.0 | 2026-07-02 | Initial plan created from the GAP_ANALYSIS 0.10.0 snapshot. Phases A–D defined; 0.11–1.0.0 + Post-1.0 scheduled. |
+| 0.11.2 | 2026-07-04 | New 0.11.2 compute acceleration infrastructure version based on competitor acceleration survey (FLINT/Symbolica/SageMath/Mathematica/Maple). Gantt updated; 0.12 augmented with FFT multiplication; 0.15 augmented with Arena/pool/ahash; 4 rows added to competitor index. |
