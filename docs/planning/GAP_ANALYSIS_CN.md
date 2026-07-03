@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.11.0 @ 2026-07-03**
+> 最后评估：**0.11.1 @ 2026-07-03**
 
 ---
 
@@ -49,19 +49,19 @@ pytest、`mdbook build`。
 
 | Crate | 文件数 | 行数 |
 |---|---|---|
-| ocas-poly | 9 | ~3,200 |
+| ocas-poly | 10 | ~4,250 |
 | ocas-eval | 11 | ~2,525 |
 | ocas-domain | 9 | ~2,115 |
 | ocas-rewrite | 7 | ~1,719 |
 | ocas-py | 7 | ~1,546 |
 | ocas-calc | 7 | ~1,393 |
-| ocas-c | 3 | ~894 |
+| ocas-c | 4 | ~1,550 |
 | ocas-core | 5 | ~1,150 |
 | ocas-atom | 2 | ~864 |
 | ocas-parse | 3 | ~565 |
 | ocas (prelude) | 1 | ~113 |
 | ocas-gpl | 1 | 1（占位） |
-| **src 合计** | **64** | **~16k** |
+| **src 合计** | **66** | **~18k** |
 
 `ocas-gpl` 为占位；GPL 专属后端属 Post-1.0 工作，符合路线图。
 

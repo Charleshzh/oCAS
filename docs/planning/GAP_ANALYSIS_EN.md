@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.11.0 @ 2026-07-03**
+> Last evaluated: **0.11.1 @ 2026-07-03**
 
 ---
 
@@ -50,19 +50,19 @@ Snapshot of `src/` Rust lines (excluding tests and benches).
 
 | Crate | Files | Lines |
 |---|---|---|
-| ocas-poly | 9 | ~3,200 |
+| ocas-poly | 10 | ~4,250 |
 | ocas-eval | 11 | ~2,525 |
 | ocas-domain | 9 | ~2,115 |
 | ocas-rewrite | 7 | ~1,719 |
 | ocas-py | 7 | ~1,546 |
 | ocas-calc | 7 | ~1,393 |
-| ocas-c | 3 | ~894 |
+| ocas-c | 4 | ~1,550 |
 | ocas-core | 5 | ~1,150 |
 | ocas-atom | 2 | ~864 |
 | ocas-parse | 3 | ~565 |
 | ocas (prelude) | 1 | ~113 |
 | ocas-gpl | 1 | 1 (placeholder) |
-| **Total src** | **64** | **~16k** |
+| **Total src** | **66** | **~18k** |
 
 `ocas-gpl` is a placeholder; GPL-exclusive backends are Post-1.0 work, in line
 with the roadmap.

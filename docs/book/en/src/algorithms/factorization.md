@@ -195,7 +195,8 @@ printing or freeing it.
 
 - Multivariate factorization with more than two variables is not yet supported.
 - Non-monic bivariate polynomials in the chosen main variable are not handled
-by the current Wang Hensel implementation.
+by the current Wang Hensel implementation
+(tracked as [#13](https://github.com/Charleshzh/oCAS/issues/13)).
 - The evaluation-point search is bounded to a small range; very sparse or highly
 specialized polynomials may need an extended range in the future.
 
