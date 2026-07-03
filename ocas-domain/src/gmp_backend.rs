@@ -209,10 +209,10 @@ impl Integer {
         )
     }
 
-    /// Floor modulo: result `r` satisfies `0 ≤ r < |modulus|`.
+    /// Floor modulo: result `r` satisfies `0 ≤ r < |modulus|` for positive modulus.
     pub fn mod_floor(&self, modulus: &Integer) -> Integer {
-        use rug::ops::DivRounding;
-        Integer(self.0.clone().mod_floor(modulus.0.clone()))
+        let r = self.clone() % modulus.clone();
+        if r.is_negative() { r + modulus } else { r }
     }
 
     /// Division with remainder: `(quotient, remainder)`.
