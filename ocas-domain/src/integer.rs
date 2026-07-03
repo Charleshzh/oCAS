@@ -159,6 +159,7 @@ impl From<BigInt> for Integer {
 // These allow `number_theory.rs` and factorization code to use `Integer`
 // directly instead of reaching through `.inner()`.
 // ---------------------------------------------------------------------------
+#[cfg(not(feature = "gmp"))]
 macro_rules! impl_int_op_owned {
     ($trait:ident, $method:ident, $op:tt) => {
         impl $trait for Integer {
@@ -188,18 +189,25 @@ macro_rules! impl_int_op_owned {
     };
 }
 
+#[cfg(not(feature = "gmp"))]
 impl_int_op_owned!(Add, add, +);
+#[cfg(not(feature = "gmp"))]
 impl_int_op_owned!(Sub, sub, -);
+#[cfg(not(feature = "gmp"))]
 impl_int_op_owned!(Mul, mul, *);
+#[cfg(not(feature = "gmp"))]
 impl_int_op_owned!(Div, div, /);
+#[cfg(not(feature = "gmp"))]
 impl_int_op_owned!(Rem, rem, %);
 
+#[cfg(not(feature = "gmp"))]
 impl std::ops::Neg for Integer {
     type Output = Integer;
     fn neg(self) -> Integer {
         Integer(-self.0)
     }
 }
+#[cfg(not(feature = "gmp"))]
 impl std::ops::Neg for &Integer {
     type Output = Integer;
     fn neg(self) -> Integer {
@@ -207,17 +215,20 @@ impl std::ops::Neg for &Integer {
     }
 }
 
+#[cfg(not(feature = "gmp"))]
 impl std::ops::ShrAssign<u32> for Integer {
     fn shr_assign(&mut self, shift: u32) {
         self.0 >>= shift;
     }
 }
+#[cfg(not(feature = "gmp"))]
 impl std::ops::Shr<u32> for Integer {
     type Output = Integer;
     fn shr(self, shift: u32) -> Integer {
         Integer(self.0 >> shift)
     }
 }
+#[cfg(not(feature = "gmp"))]
 impl std::ops::Shr<u32> for &Integer {
     type Output = Integer;
     fn shr(self, shift: u32) -> Integer {
@@ -225,21 +236,25 @@ impl std::ops::Shr<u32> for &Integer {
     }
 }
 
+#[cfg(not(feature = "gmp"))]
 impl std::ops::AddAssign<&Integer> for Integer {
     fn add_assign(&mut self, rhs: &Integer) {
         self.0 += &rhs.0;
     }
 }
+#[cfg(not(feature = "gmp"))]
 impl std::ops::SubAssign<&Integer> for Integer {
     fn sub_assign(&mut self, rhs: &Integer) {
         self.0 -= &rhs.0;
     }
 }
+#[cfg(not(feature = "gmp"))]
 impl std::ops::MulAssign<&Integer> for Integer {
     fn mul_assign(&mut self, rhs: &Integer) {
         self.0 *= &rhs.0;
     }
 }
+#[cfg(not(feature = "gmp"))]
 impl std::ops::DivAssign<&Integer> for Integer {
     fn div_assign(&mut self, rhs: &Integer) {
         self.0 /= &rhs.0;
