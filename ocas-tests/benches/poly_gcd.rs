@@ -6,6 +6,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use ocas_domain::{Integer, IntegerDomain};
 use ocas_poly::DenseUnivariatePolynomial;
+use ocas_poly::multivariate_gcd::{bivariate_gcd, gcd_modular};
+use ocas_poly::sparse::Lex;
+use ocas_poly::SparseMultivariatePolynomial;
 use std::hint::black_box;
 
 fn build_poly(coeffs: &[i64]) -> DenseUnivariatePolynomial<IntegerDomain> {
@@ -61,5 +64,51 @@ fn poly_gcd(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, poly_gcd);
+/// Benchmark bivariate GCD over ℤ: heuristic vs modular approach.
+fn bivariate_gcd_bench(c: &mut Criterion) {
+    let mut group = c.benchmark_group("bivariate_gcd");
+
+    // (x+y)(x+1) and (x+y)(x+2) — shared factor x+y
+    let domain = IntegerDomain;
+    type ZMPoly = SparseMultivariatePolynomial<IntegerDomain, Lex>;
+
+    let a: ZMPoly = SparseMultivariatePolynomial::from_terms(
+        domain,
+        2,
+        vec![
+            (vec![2, 0], Integer::from(1)),
+            (vec![1, 1], Integer::from(1)),
+            (vec![1, 0], Integer::from(1)),
+            (vec![0, 1], Integer::from(1)),
+        ],
+    );
+    let b: ZMPoly = SparseMultivariatePolynomial::from_terms(
+        domain,
+        2,
+        vec![
+            (vec![2, 0], Integer::from(1)),
+            (vec![1, 1], Integer::from(1)),
+            (vec![1, 0], Integer::from(2)),
+            (vec![0, 1], Integer::from(2)),
+        ],
+    );
+
+    group.bench_function("heuristic_bivariate", |bench| {
+        bench.iter(|| {
+            let g = bivariate_gcd(black_box(&a), black_box(&b));
+            black_box(g);
+        });
+    });
+
+    group.bench_function("modular_bivariate", |bench| {
+        bench.iter(|| {
+            let g = gcd_modular(black_box(&a), black_box(&b));
+            black_box(g);
+        });
+    });
+
+    group.finish();
+}
+
+criterion_group!(benches, poly_gcd, bivariate_gcd_bench);
 criterion_main!(benches);

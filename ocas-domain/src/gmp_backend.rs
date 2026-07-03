@@ -28,75 +28,12 @@ enum IntegerInner {
 }
 
 impl IntegerInner {
-    /// Convert to a rug::Integer reference, promoting Small → Large if needed.
-    ///
-    /// # Safety (promotion)
-    /// Promotion is monotonic (Small → Large, never reverse) and preserves
-    /// the logical value, so the returned reference is always valid.
-    fn as_rug(&self) -> &RugInteger {
-        match self {
-            IntegerInner::Small(v) => {
-                // Promote in-place. We use unsafe to mutate through &self
-                // because promotion is idempotent and value-preserving.
-                // SAFETY: we write a valid Large variant before returning
-                // a reference into it. No other code can observe the
-                // intermediate state because this is a single-threaded
-                // operation on a local borrow.
-                unsafe {
-                    let self_mut = &mut *(self as *const Self as *mut Self);
-                    let rug_val = RugInteger::from(*v);
-                    *self_mut = IntegerInner::Large(Box::new(rug_val));
-                    match self_mut {
-                        IntegerInner::Large(r) => &**(r),
-                        _ => unreachable!(),
-                    }
-                }
-            }
-            IntegerInner::Large(r) => r,
-        }
-    }
-
-    /// Consume self and return a `RugInteger`, avoiding allocation for Small values
-    /// that are immediately needed as rug (e.g. `Rational::from_integer`).
+    /// Consume self and return a `RugInteger`, avoiding allocation for Small values.
+    #[allow(dead_code)]
     fn into_rug(self) -> RugInteger {
         match self {
             IntegerInner::Small(v) => RugInteger::from(v),
             IntegerInner::Large(r) => *r,
-        }
-    }
-}
-
-// Custom PartialEq/Eq/PartialOrd/Ord/Hash that compare by mathematical value.
-impl PartialEq for IntegerInner {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (IntegerInner::Small(a), IntegerInner::Small(b)) => a == b,
-            _ => self.as_rug() == other.as_rug(),
-        }
-    }
-}
-impl Eq for IntegerInner {}
-
-impl PartialOrd for IntegerInner {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for IntegerInner {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match (self, other) {
-            (IntegerInner::Small(a), IntegerInner::Small(b)) => a.cmp(b),
-            _ => self.as_rug().cmp(other.as_rug()),
-        }
-    }
-}
-
-impl std::hash::Hash for IntegerInner {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            IntegerInner::Small(v) => v.hash(state),
-            IntegerInner::Large(r) => r.hash(state),
         }
     }
 }
@@ -112,8 +49,64 @@ impl std::hash::Hash for IntegerInner {
 ///
 /// This mirrors FLINT's `fmpz_t` strategy: most CAS coefficients are
 /// small, so avoiding heap allocation gives a significant speedup.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Integer(IntegerInner);
+pub struct Integer {
+    inner: std::cell::UnsafeCell<IntegerInner>,
+}
+
+impl Integer {
+    fn inner_ref(&self) -> &IntegerInner {
+        unsafe { &*self.inner.get() }
+    }
+    fn as_rug(&self) -> &RugInteger {
+        unsafe {
+            let ptr = self.inner.get();
+            match &*ptr {
+                IntegerInner::Small(v) => {
+                    *ptr = IntegerInner::Large(Box::new(RugInteger::from(*v)));
+                    match &*ptr { IntegerInner::Large(r) => &**(r), _ => unreachable!() }
+                }
+                IntegerInner::Large(r) => &**(r),
+            }
+        }
+    }
+}
+
+impl Clone for Integer {
+    fn clone(&self) -> Self {
+        Integer { inner: std::cell::UnsafeCell::new(self.inner_ref().clone()) }
+    }
+}
+impl std::fmt::Debug for Integer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { self.inner_ref().fmt(f) }
+}
+impl PartialEq for Integer {
+    fn eq(&self, other: &Self) -> bool {
+        match (self.inner_ref(), other.inner_ref()) {
+            (IntegerInner::Small(a), IntegerInner::Small(b)) => a == b,
+            _ => self.as_rug() == other.as_rug(),
+        }
+    }
+}
+impl Eq for Integer {}
+impl PartialOrd for Integer {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
+}
+impl Ord for Integer {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self.inner_ref(), other.inner_ref()) {
+            (IntegerInner::Small(a), IntegerInner::Small(b)) => a.cmp(b),
+            _ => self.as_rug().cmp(other.as_rug()),
+        }
+    }
+}
+impl std::hash::Hash for Integer {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self.inner_ref() {
+            IntegerInner::Small(v) => v.hash(state),
+            IntegerInner::Large(r) => r.hash(state),
+        }
+    }
+}
 
 /// Arbitrary-precision rational number backed by `rug::Rational`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -125,7 +118,7 @@ pub struct Rational(RugRational);
 
 impl std::fmt::Display for Integer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => write!(f, "{}", v),
             IntegerInner::Large(r) => write!(f, "{}", r),
         }
@@ -170,14 +163,14 @@ impl Domain for IntegerDomain {
     }
 
     fn div(&self, a: &Self::Element, b: &Self::Element) -> Option<Self::Element> {
-        match (&a.0, &b.0) {
+        match (a.inner_ref(), b.inner_ref()) {
             (IntegerInner::Small(av), IntegerInner::Small(bv)) => {
                 if *bv == 0 { return None; }
                 if *av % *bv == 0 { Some(Integer::from_small(*av / *bv)) } else { None }
             }
             _ => {
                 let (ar, br) = (a.as_rug(), b.as_rug());
-                if br == 0 { return None; }
+                if *br == 0 { return None; }
                 let (q, r) = ar.clone().div_rem(br.clone());
                 if r == 0 { Some(Integer::from_large(q)) } else { None }
             }
@@ -185,7 +178,7 @@ impl Domain for IntegerDomain {
     }
 
     fn inv(&self, a: &Self::Element) -> Option<Self::Element> {
-        match &a.0 {
+        match a.inner_ref() {
             IntegerInner::Small(1) => Some(self.one()),
             IntegerInner::Small(-1) => Some(Integer::from_small(-1)),
             IntegerInner::Small(_) => None,
@@ -204,7 +197,7 @@ impl EuclideanDomain for IntegerDomain {
         a: &Self::Element,
         b: &Self::Element,
     ) -> Option<(Self::Element, Self::Element)> {
-        match (&a.0, &b.0) {
+        match (a.inner_ref(), b.inner_ref()) {
             (IntegerInner::Small(av), IntegerInner::Small(bv)) => {
                 if *bv == 0 { return None; }
                 let q = *av / *bv; // truncating division
@@ -306,6 +299,7 @@ impl From<i64> for Integer {
 
 impl From<num_bigint::BigInt> for Integer {
     fn from(value: num_bigint::BigInt) -> Self {
+        use num_traits::ToPrimitive;
         // Try i64 first.
         if let Some(v) = value.to_i64() {
             return Integer::from_small(v);
@@ -326,12 +320,12 @@ impl From<num_bigint::BigInt> for Integer {
 impl Integer {
     /// Create a Small-variant Integer.
     fn from_small(v: i64) -> Self {
-        Integer(IntegerInner::Small(v))
+        Integer { inner: std::cell::UnsafeCell::new(IntegerInner::Small(v)) }
     }
 
     /// Create a Large-variant Integer from a `RugInteger`.
-    fn from_large(r: RugInteger) -> Self {
-        Integer(IntegerInner::Large(Box::new(r)))
+    fn from_large(r: impl Into<RugInteger>) -> Self {
+        Integer { inner: std::cell::UnsafeCell::new(IntegerInner::Large(Box::new(r.into()))) }
     }
 
     /// Create an integer from a machine integer or another `Into<RugInteger>`.
@@ -347,18 +341,13 @@ impl Integer {
     ///
     /// For Small values, this promotes to Large in-place (one-time cost).
     pub fn inner(&self) -> &RugInteger {
-        self.0.as_rug()
-    }
-
-    /// Get the rug representation without promotion (for internal use).
-    fn as_rug(&self) -> &RugInteger {
-        self.0.as_rug()
+        self.as_rug()
     }
 
     /// Try to extract the value as `i64`. Returns `None` for Large values
     /// that don't fit.
     pub fn to_i64(&self) -> Option<i64> {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => Some(*v),
             IntegerInner::Large(r) => r.to_i64(),
         }
@@ -369,12 +358,14 @@ impl Integer {
     /// Uses binary serialization for performance (avoids string conversion).
     /// Small values convert directly via `BigInt::from(i64)`.
     pub fn to_bigint(&self) -> num_bigint::BigInt {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => num_bigint::BigInt::from(*v),
             IntegerInner::Large(r) => {
                 use num_bigint::Sign;
                 if **r == 0 { return num_bigint::BigInt::ZERO; }
-                let bytes = r.to_digits::<u8>(rug::integer::Order::Lsf);
+                let num_bytes = r.significant_digits::<u8>();
+                let mut bytes = vec![0u8; num_bytes];
+                r.write_digits(&mut bytes, rug::integer::Order::Lsf);
                 let sign = if r.is_negative() { Sign::Minus } else { Sign::Plus };
                 num_bigint::BigInt::from_bytes_le(sign, &bytes)
             }
@@ -384,19 +375,17 @@ impl Integer {
     /// Raise to a `u32` power.
     pub fn pow_u32(&self, exp: u32) -> Self {
         use rug::ops::Pow;
-        // For small base and small exponent, try i64 fast path.
-        if let IntegerInner::Small(v) = self.0 {
-            if exp <= 63 {
-                // i64 can represent up to 2^63 - 1.
-                let result = v.wrapping_pow(exp);
-                // Check if wrapping produced a correct result by verifying
-                // via rug only if the value looks suspicious.
-                if exp == 0 { return Integer::from_small(1); }
-                if *v == 0 { return Integer::from_small(0); }
-                if *v == 1 { return Integer::from_small(1); }
-                if *v == -1 {
-                    return if exp % 2 == 0 { Integer::from_small(1) } else { Integer::from_small(-1) };
-                }
+        // Small fast path for common cases.
+        if let IntegerInner::Small(v) = self.inner_ref() {
+            if exp == 0 { return Integer::from_small(1); }
+            if *v == 0 { return Integer::from_small(0); }
+            if *v == 1 { return Integer::from_small(1); }
+            if *v == -1 {
+                return if exp % 2 == 0 { Integer::from_small(1) } else { Integer::from_small(-1) };
+            }
+        }
+        Integer::from_large(self.as_rug().clone().pow(exp))
+    }
                 // For other cases, use rug to be safe.
             }
         }
@@ -421,7 +410,7 @@ impl Integer {
 
     /// Division with remainder: `(quotient, remainder)`.
     pub fn div_rem(&self, other: &Integer) -> (Integer, Integer) {
-        match (&self.0, &other.0) {
+        match (self.inner_ref(), other.inner_ref()) {
             (IntegerInner::Small(a), IntegerInner::Small(b)) if *b != 0 => {
                 let q = *a / *b; // truncating division
                 let r = *a - q * *b;
@@ -436,7 +425,7 @@ impl Integer {
 
     /// Returns `true` if the value is even.
     pub fn is_even(&self) -> bool {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => v & 1 == 0,
             IntegerInner::Large(r) => r.is_even(),
         }
@@ -444,7 +433,7 @@ impl Integer {
 
     /// Returns `true` if the value is negative.
     pub fn is_negative(&self) -> bool {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => *v < 0,
             IntegerInner::Large(r) => r.is_negative(),
         }
@@ -452,17 +441,17 @@ impl Integer {
 
     /// Returns `true` if the value is zero.
     pub fn is_zero(&self) -> bool {
-        matches!(&self.0, IntegerInner::Small(0))
+        matches!(self.inner_ref(), IntegerInner::Small(0))
     }
 
     /// Returns `true` if the value is one.
     pub fn is_one(&self) -> bool {
-        matches!(&self.0, IntegerInner::Small(1))
+        matches!(self.inner_ref(), IntegerInner::Small(1))
     }
 
     /// Absolute value.
     pub fn abs(&self) -> Integer {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => {
                 match v.checked_neg() {
                     Some(neg) if *v >= 0 => Integer::from_small(neg),
@@ -476,7 +465,7 @@ impl Integer {
 
     /// Integer square root (floor).
     pub fn sqrt(&self) -> Integer {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) if *v >= 0 => {
                 Integer::from_small((*v as f64).sqrt() as i64)
             }
@@ -489,7 +478,7 @@ impl Integer {
     // -----------------------------------------------------------------------
 
     fn add_ref(&self, rhs: &Self) -> Self {
-        match (&self.0, &rhs.0) {
+        match (self.inner_ref(), rhs.inner_ref()) {
             (IntegerInner::Small(a), IntegerInner::Small(b)) => {
                 match a.checked_add(*b) {
                     Some(r) => Integer::from_small(r),
@@ -501,7 +490,7 @@ impl Integer {
     }
 
     fn sub_ref(&self, rhs: &Self) -> Self {
-        match (&self.0, &rhs.0) {
+        match (self.inner_ref(), rhs.inner_ref()) {
             (IntegerInner::Small(a), IntegerInner::Small(b)) => {
                 match a.checked_sub(*b) {
                     Some(r) => Integer::from_small(r),
@@ -513,7 +502,7 @@ impl Integer {
     }
 
     fn mul_ref(&self, rhs: &Self) -> Self {
-        match (&self.0, &rhs.0) {
+        match (self.inner_ref(), rhs.inner_ref()) {
             (IntegerInner::Small(a), IntegerInner::Small(b)) => {
                 match a.checked_mul(*b) {
                     Some(r) => Integer::from_small(r),
@@ -525,7 +514,7 @@ impl Integer {
     }
 
     fn neg_ref(&self) -> Self {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => {
                 match v.checked_neg() {
                     Some(r) => Integer::from_small(r),
@@ -627,7 +616,7 @@ impl Rem<&Integer> for &Integer {
 
 impl Integer {
     fn div_owned(&self, rhs: &Self) -> Self {
-        match (&self.0, &rhs.0) {
+        match (self.inner_ref(), rhs.inner_ref()) {
             (IntegerInner::Small(a), IntegerInner::Small(b)) if *b != 0 => {
                 Integer::from_small(*a / *b)
             }
@@ -636,7 +625,7 @@ impl Integer {
     }
 
     fn rem_owned(&self, rhs: &Self) -> Self {
-        match (&self.0, &rhs.0) {
+        match (self.inner_ref(), rhs.inner_ref()) {
             (IntegerInner::Small(a), IntegerInner::Small(b)) if *b != 0 => {
                 Integer::from_small(*a % *b)
             }
@@ -660,15 +649,15 @@ impl std::ops::Neg for &Integer {
 
 impl std::ops::ShrAssign<u32> for Integer {
     fn shr_assign(&mut self, shift: u32) {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => {
                 let shifted = *v >> shift;
-                self.0 = IntegerInner::Small(shifted);
+                unsafe { *self.inner.get() = IntegerInner::Small(shifted); }
             }
             IntegerInner::Large(r) => {
                 let mut r = r.clone();
                 *r >>= shift;
-                self.0 = IntegerInner::Large(r);
+                unsafe { *self.inner.get() = IntegerInner::Large(r); }
             }
         }
     }
@@ -676,16 +665,16 @@ impl std::ops::ShrAssign<u32> for Integer {
 impl std::ops::Shr<u32> for Integer {
     type Output = Integer;
     fn shr(self, shift: u32) -> Integer {
-        match self.0 {
-            IntegerInner::Small(v) => Integer::from_small(v >> shift),
-            IntegerInner::Large(r) => Integer::from_large(&*r >> shift),
+        match self.inner_ref() {
+            IntegerInner::Small(v) => Integer::from_small(*v >> shift),
+            IntegerInner::Large(r) => Integer::from_large(&**r >> shift),
         }
     }
 }
 impl std::ops::Shr<u32> for &Integer {
     type Output = Integer;
     fn shr(self, shift: u32) -> Integer {
-        match &self.0 {
+        match self.inner_ref() {
             IntegerInner::Small(v) => Integer::from_small(*v >> shift),
             IntegerInner::Large(r) => Integer::from_large(&**r >> shift),
         }
@@ -734,7 +723,7 @@ impl Rational {
 
     /// Create a rational number from an integer (denominator = 1).
     pub fn from_integer(n: Integer) -> Self {
-        Self(RugRational::from(n.0.into_rug()))
+        Self(RugRational::from(n.as_rug().clone()))
     }
 
     /// Numerator as an [`Integer`].
@@ -760,10 +749,10 @@ mod tests {
     fn integer_small_fast_path() {
         let a = Integer::from(3i64);
         let b = Integer::from(5i64);
-        assert!(matches!(a.0, IntegerInner::Small(3)));
-        assert!(matches!(b.0, IntegerInner::Small(5)));
+        assert!(matches!(a.inner_ref(), IntegerInner::Small(3)));
+        assert!(matches!(b.inner_ref(), IntegerInner::Small(5)));
         let c = &a + &b;
-        assert!(matches!(c.0, IntegerInner::Small(8)));
+        assert!(matches!(c.inner_ref(), IntegerInner::Small(8)));
     }
 
     #[test]

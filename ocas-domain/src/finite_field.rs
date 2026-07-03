@@ -140,7 +140,9 @@ impl FiniteField {
         if *value == 0 {
             return BigInt::ZERO;
         }
-        let bytes = value.to_digits::<u8>(rug::integer::Order::Lsf);
+        let num_bytes = value.significant_digits::<u8>();
+        let mut bytes = vec![0u8; num_bytes];
+        value.write_digits(&mut bytes, rug::integer::Order::Lsf);
         let sign = if value.is_negative() {
             Sign::Minus
         } else {
