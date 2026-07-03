@@ -56,6 +56,11 @@ impl Integer {
     pub fn inner(&self) -> &BigInt {
         &self.0
     }
+
+    /// Convert to a `BigInt` regardless of the backend.
+    pub fn to_bigint(&self) -> BigInt {
+        self.0.clone()
+    }
 }
 
 #[cfg(not(feature = "gmp"))]

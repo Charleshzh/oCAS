@@ -164,6 +164,16 @@ impl From<i64> for Integer {
     }
 }
 
+impl From<num_bigint::BigInt> for Integer {
+    fn from(value: num_bigint::BigInt) -> Self {
+        use std::str::FromStr;
+        Self(
+            rug::Integer::from_str(&value.to_string())
+                .expect("BigInt to rug::Integer conversion should never fail"),
+        )
+    }
+}
+
 impl Integer {
     /// Create an integer from a machine integer or another `Into<RugInteger>`.
     pub fn new<T: Into<RugInteger>>(value: T) -> Self {
@@ -173,6 +183,13 @@ impl Integer {
     /// Access the underlying [`rug::Integer`].
     pub fn inner(&self) -> &RugInteger {
         &self.0
+    }
+
+    /// Convert to a `BigInt` regardless of the backend.
+    pub fn to_bigint(&self) -> num_bigint::BigInt {
+        use std::str::FromStr;
+        num_bigint::BigInt::from_str(&self.0.to_string())
+            .expect("rug::Integer to BigInt conversion should never fail")
     }
 }
 

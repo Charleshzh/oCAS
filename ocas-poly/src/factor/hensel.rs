@@ -32,7 +32,7 @@ fn to_finite_field(f: &ZPoly, p: &BigInt) -> FpPoly {
     let coeffs = f
         .coeffs()
         .iter()
-        .map(|c| field.element(c.inner().clone()))
+        .map(|c| field.element(c.to_bigint()))
         .collect();
     FpPoly::from_coeffs(field, coeffs)
 }
@@ -72,7 +72,7 @@ pub(crate) fn mignotte_bound(f: &ZPoly) -> BigInt {
     let n = f.degree().unwrap_or(0);
     let mut sum_sq = BigInt::zero();
     for c in f.coeffs() {
-        let v = c.inner().abs();
+        let v = c.to_bigint().abs();
         sum_sq += &v * &v;
     }
     let norm = sum_sq.sqrt() + BigInt::one();
@@ -150,9 +150,9 @@ fn hensel_lift_pair(
         // e must be divisible by m coefficientwise.
         let mut e_over_m = Vec::new();
         for c in e.coeffs() {
-            let v = c.inner();
-            if (v % &m).is_zero() {
-                e_over_m.push(Integer::from(v / &m));
+            let v = c.to_bigint();
+            if (&v % &m).is_zero() {
+                e_over_m.push(Integer::from(&v / &m));
             } else {
                 return None;
             }
@@ -223,7 +223,10 @@ fn reduce_symmetric(f: &ZPoly, modulus: &BigInt) -> ZPoly {
     let coeffs = f
         .coeffs()
         .iter()
-        .map(|c| Integer::from(number_theory::symmetric_mod(c.inner(), modulus)))
+        .map(|c| {
+            let c_bigint = c.to_bigint();
+            Integer::from(number_theory::symmetric_mod(&c_bigint, modulus))
+        })
         .collect();
     ZPoly::from_coeffs(IntegerDomain, coeffs)
 }
@@ -313,7 +316,7 @@ pub fn factor_square_free_monic(f: &ZPoly) -> Vec<ZPoly> {
     }
     let bound = mignotte_bound(f);
     let two_bound = BigInt::from(2u32) * &bound;
-    let lc = f.leading_coeff().unwrap().inner().abs();
+    let lc = f.leading_coeff().unwrap().to_bigint().abs();
 
     let mut prime_count = 0usize;
     for p in number_theory::primes_from(&BigInt::from(2u32)) {
@@ -365,7 +368,7 @@ pub fn factor_primitive(f: &ZPoly) -> Vec<(ZPoly, usize)> {
         // Normalize sign so the factor is monic-ish: if leading coeff is
         // negative, negate the polynomial (absorbed into the content/sign).
         let lc = g.leading_coeff().cloned().unwrap();
-        let sign = if lc.inner().is_negative() {
+        let sign = if lc.to_bigint().is_negative() {
             Integer::from(-1i64)
         } else {
             Integer::from(1i64)

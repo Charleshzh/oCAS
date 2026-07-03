@@ -64,16 +64,16 @@ pub fn bivariate_gcd(a: &ZMPoly, b: &ZMPoly) -> Option<ZMPoly> {
         let a_eval = eval_univariate_x(a, &eval_point);
         let b_eval = eval_univariate_x(b, &eval_point);
         if a_eval.is_zero() || b_eval.is_zero() {
-            eval_point = Integer::from(eval_point.inner() + 1);
+            eval_point = Integer::from(eval_point.to_bigint() + 1);
             continue;
         }
         let g_eval = a_eval.gcd(&b_eval);
         if g_eval.is_zero() {
-            eval_point = Integer::from(eval_point.inner() + 1);
+            eval_point = Integer::from(eval_point.to_bigint() + 1);
             continue;
         }
         images.push((eval_point.clone(), g_eval));
-        eval_point = Integer::from(eval_point.inner() + 1);
+        eval_point = Integer::from(eval_point.to_bigint() + 1);
     }
 
     if images.is_empty() {
@@ -134,7 +134,7 @@ fn eval_univariate_x(p: &ZMPoly, value: &Integer) -> DenseUnivariatePolynomial<I
             .get(&x_deg)
             .cloned()
             .unwrap_or_else(|| Integer::from(0));
-        coeffs_map.insert(x_deg, Integer::from(existing.inner() + new_coeff.inner()));
+        coeffs_map.insert(x_deg, Integer::from(existing.to_bigint() + new_coeff.to_bigint()));
     }
     let max_deg = *coeffs_map.keys().max().unwrap_or(&0);
     let mut coeffs = vec![Integer::from(0); max_deg + 1];
@@ -227,8 +227,8 @@ fn lagrange_interpolate(points: &[(Integer, Integer)], max_deg: usize) -> Option
     let mut coeffs: Vec<(BigInt, BigInt)> = vec![(BigInt::zero(), BigInt::one()); n];
 
     for i in 0..n {
-        let xi = points[i].0.inner().clone();
-        let yi = points[i].1.inner().clone();
+        let xi = points[i].0.to_bigint();
+        let yi = points[i].1.to_bigint();
 
         // denominator = product of (x_i - x_j) for j != i
         let mut denom = BigInt::one();
@@ -236,7 +236,7 @@ fn lagrange_interpolate(points: &[(Integer, Integer)], max_deg: usize) -> Option
             if j == i {
                 continue;
             }
-            let xj = xj_val.inner();
+            let xj = xj_val.to_bigint();
             denom *= xi.clone() - xj;
         }
         if denom.is_zero() {
@@ -251,7 +251,7 @@ fn lagrange_interpolate(points: &[(Integer, Integer)], max_deg: usize) -> Option
             if j == i {
                 continue;
             }
-            let neg_xj = -(xj_val.inner());
+            let neg_xj = -(xj_val.to_bigint());
             // Multiply basis by (x - x_j):
             let mut new_basis = vec![BigInt::zero(); basis.len() + 1];
             for k in 0..basis.len() {
