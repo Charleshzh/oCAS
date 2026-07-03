@@ -193,7 +193,7 @@ fn interpolate_gcd(
         // Interpolate via Lagrange interpolation to get the y-polynomial.
         if let Some(y_poly) = lagrange_interpolate(&data, deg_y_bound) {
             for (y_deg, y_coeff) in y_poly.iter().enumerate() {
-                if y_coeff.inner().is_zero() {
+                if y_coeff.is_zero() {
                     continue;
                 }
                 let mut exp = vec![0usize; n_vars];
@@ -325,7 +325,7 @@ impl UnivariateGcdExt for DenseUnivariatePolynomial<IntegerDomain> {
         // Wrap into a bivariate polynomial (y degree 0).
         let mut result = ZMPoly::new(IntegerDomain, 2);
         for (i, c) in g.coeffs().iter().enumerate() {
-            if !c.inner().is_zero() {
+            if !c.is_zero() {
                 result.set_term_external(vec![i, 0], c.clone());
             }
         }
@@ -366,7 +366,7 @@ pub fn lift_from_fp(p: &FpMPoly) -> ZMPoly {
         } else {
             Integer::from(v.clone())
         };
-        if !lifted.inner().is_zero() {
+        if !lifted.is_zero() {
             result.set_term_external(exp.to_vec(), lifted);
         }
     }

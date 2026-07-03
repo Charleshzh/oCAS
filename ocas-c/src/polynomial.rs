@@ -15,7 +15,6 @@ use std::ffi::{CStr, CString, c_char, c_int, c_void};
 use std::ptr;
 
 use num_bigint::BigInt;
-use num_traits::One;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 use ocas_core::arena::Arena;
 use ocas_domain::{Domain, FiniteField, Integer, IntegerDomain};
@@ -221,7 +220,7 @@ fn poly_to_string_z(poly: &ZMPoly) -> String {
     let mut parts = Vec::new();
     for (exp, coeff) in sorted.iter().rev() {
         let mut s = String::new();
-        if coeff.inner().is_one() && exp.iter().any(|&e| e > 0) {
+        if coeff.is_one() && exp.iter().any(|&e| e > 0) {
             // omit coefficient 1 for non-constant terms
         } else if coeff.inner() == &BigInt::from(-1) && exp.iter().any(|&e| e > 0) {
             s.push('-');

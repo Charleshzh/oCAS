@@ -13,7 +13,7 @@
 //! Algorithm"; Geddes, Czapor, Labahn, *Algorithms for Computer Algebra*.
 
 use num_bigint::BigInt;
-use num_traits::{One, Signed};
+use num_traits::One;
 use ocas_domain::{
     Domain, FiniteField, FiniteFieldElement, Integer, IntegerDomain, Rational, RationalDomain,
 };
@@ -181,7 +181,7 @@ fn monic_zpoly(f: &ZPoly) -> ZPoly {
         return f.clone();
     }
     let lc = f.leading_coeff().cloned().unwrap();
-    if lc.inner().is_negative() {
+    if lc.is_negative() {
         f.mul_scalar(&Integer::from(-1))
     } else {
         f.clone()

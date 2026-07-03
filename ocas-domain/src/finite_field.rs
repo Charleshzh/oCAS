@@ -141,7 +141,11 @@ impl FiniteField {
             return BigInt::ZERO;
         }
         let bytes = value.to_digits::<u8>(rug::integer::Order::Lsf);
-        let sign = if value.is_negative() { Sign::Minus } else { Sign::Plus };
+        let sign = if value.is_negative() {
+            Sign::Minus
+        } else {
+            Sign::Plus
+        };
         BigInt::from_bytes_le(sign, &bytes)
     }
 }
