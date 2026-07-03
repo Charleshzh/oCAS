@@ -36,8 +36,9 @@ For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 | 0.9.0 | Beta | ✅ | ⚠️ PyO3 `Expression`/`Evaluator`/`solve_*`; cbindgen + C++ RAII wrapper — some classes deferred to 0.10 |
 | 0.10.0 | Beta | ✅ | ✅ Python `Polynomial/Matrix/Domain`, Matrix linear algebra (Bareiss), mdBook docs site, 3-platform wheels CI, version frozen at 0.10.0 |
 | 0.11.0 | Beta | ✅ | ✅ Complete polynomial factorization over ℤ and ℤ_p (Yun SFF → CZ → Hensel → Zassenhaus), multivariate GCD, 500 proptest round-trip cases, version bumped to 0.11.0 |
+| 0.11.1 | Beta | ✅ | ✅ Bivariate factorization over ℤ and ℤ_p (monic-in-x Wang Hensel), sparse multivariate `factor()` entry points, C polynomial bindings, mdBook factorization chapter, version bumped to 0.11.1 |
 
-All 0.1–0.11 deliverables landed. The workspace is pinned at 0.11.0. Quality
+All 0.1–0.11.1 deliverables landed. The workspace is pinned at 0.11.1. Quality
 gates are green: `cargo fmt`, `clippy -D warnings`, workspace tests,
 `cargo deny`, 77 pytest cases, `mdbook build`.
 
@@ -75,7 +76,7 @@ source of the gap.
 
 | Algorithm Area | oCAS Status | Maturity |
 |---|---|---|
-| Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p: Yun SFF → Cantor–Zassenhaus → Hensel lifting → Zassenhaus combination | 🟢 Fairly complete |
+| Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p, plus bivariate `factor()` on `SparseMultivariatePolynomial` over ℤ and ℤ_p (monic-in-x Wang Hensel) | 🟢 Fairly complete |
 | Gröbner basis | Classic Buchberger + minimize/auto-reduce; **no** F4/F5, no heuristics | 🟡 Basic |
 | Symbolic integration | Heuristic table (power/inverse/sin/cos/exp/linear subst); falls back to `Integral(...)`; **no** Risch | 🟡 Basic |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate) | 🟢 Fairly complete |
@@ -94,7 +95,7 @@ early functional subset of Symbolica.
 
 | Capability | oCAS | Symbolica |
 |---|---|---|
-| Polynomial factorization | ✅ `factor()` over ℤ and ℤ_p (CZ + Hensel + Zassenhaus) | ✅ full (`factorization.rs`) |
+| Polynomial factorization | ✅ `factor()` over ℤ and ℤ_p (CZ + Hensel + Zassenhaus); bivariate factorization over ℤ and ℤ_p (Wang Hensel, monic-in-x) | ✅ full (`factorization.rs`) |
 | Rational polynomials | 🟡 partial | ✅ `rational_polynomial.rs` |
 | Partial fractions | 🔴 none | ✅ `partial_fraction.rs` |
 | Rational reconstruction | 🔴 none | ✅ `rational_reconstruction.rs` |
@@ -158,7 +159,7 @@ Ranked by impact × implementation cost, the hard problems on the road to 1.0.
 
 | # | Gap | Priority |
 |---|---|---|
-| 1 | ~~Full polynomial factorization~~ (completed 0.11.0) | ✅ done — unblocks rational functions, partial fractions, solvers |
+| 1 | ~~Full polynomial factorization~~ (completed 0.11.0–0.11.1) | ✅ done — univariate and bivariate (monic-in-x) closed; unblocks rational functions, partial fractions, solvers |
 | 2 | Risch symbolic integration (roadmap: 0.14) | 🔴 hallmark of "can it integrate" |
 | 3 | Gröbner F4/F5 (roadmap: 0.13) | 🟡 current Buchberger too slow on large cyclic-n |
 | 4 | Rational polynomials / partial fractions (roadmap: 0.12) | 🟡 Symbolica core feature, depends on factorization |
@@ -176,9 +177,9 @@ of ~16k lines over ~14 months, the foundation is solid.
 
 However, the 1.0 goal of "performance parity or better with Symbolica" still
 has a core hard-algorithm shortfall: Risch integration and F4/F5 Gröbner are
-the remaining "rites of passage" of a CAS. Factorization has been closed in 0.11.0,
-so the next high-value leap is rational function arithmetic and partial
-fractions (0.12). On performance (arena + JIT + SIMD) oCAS has a structural
+the remaining "rites of passage" of a CAS. Factorization has been closed through
+0.11.1 (univariate and bivariate monic-in-x), so the next high-value leap is
+rational function arithmetic and partial fractions (0.12). On performance (arena + JIT + SIMD) oCAS has a structural
 edge, but algorithm depth decides "what can be computed", not "how fast".
 
 Realistic positioning: oCAS today is closer to "a high-performance subset of
@@ -196,3 +197,4 @@ Record every refresh here (version, date, evaluator, deltas).
 |---|---|---|
 | 0.10.0 | 2026-07-02 | Initial assessment. All 0.1–0.10 deliverables verified complete; gaps against Symbolica / SageMath / SymPy documented; factorization + Risch integration identified as top priorities. |
 | 0.11.0 | 2026-07-03 | Polynomial factorization completed (univariate ℤ and ℤ_p); multivariate GCD added; SymPy comparison updated to parity for univariate factorization; highest-priority gap shifted to rational functions / partial fractions (0.12). |
+| 0.11.1 | 2026-07-04 | Bivariate factorization over ℤ and ℤ_p (monic-in-x Wang Hensel) added; sparse multivariate `factor()` entry points and C polynomial bindings landed; mdBook factorization chapter added; highest-priority gap remains rational functions / partial fractions (0.12). |

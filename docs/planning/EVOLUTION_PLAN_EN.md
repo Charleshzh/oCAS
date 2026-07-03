@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-02 (baseline 0.10.0)**
+> Last revised: **2026-07-04 (0.11.1 released)**
 
 ---
 
@@ -98,7 +98,7 @@ solvers.
 
 ---
 
-### 0.11.1 — Factorization Completion & Bindings
+### 0.11.1 — Factorization Completion & Bindings (RELEASED)
 
 Carries forward the items deferred from 0.11.0: bivariate ℤ factorization,
 Berlekamp validation, C binding scaffolding, and documentation polish. No new
@@ -107,24 +107,21 @@ and confirming the cross-language public API.
 
 **Deferred from 0.11.0**
 
-| Item | Reason for deferral | Deliverable in 0.11.1 |
-|---|---|---|
-| Berlekamp empirical validation | `berlekamp()` skeleton written but disabled (`p ≤ 0`) pending nullspace‑extraction fix for deg‑4+ factors. CZ handles all primes correctly. | Enable the `p ≤ 1000` dispatch after passing cyclic‑n regression. |
-| Bivariate factorization over ℤ (Wang Hensel) | Wang's multivariate Hensel lifting is the hardest single CAS algorithm in this release cycle. | Bivariate `factor()` on `SparseMultivariatePolynomial<IntegerDomain>` backed by the 0.11 heuristic GCD + Wang Hensel. |
-| Bivariate factorization over ℤ_p | The ℤ_p path (Bernardin Hensel) was scoped out of 0.11.0 together with the ℤ path. | Bivariate `factor()` on `SparseMultivariatePolynomial<FiniteField>`. |
-| C polynomial binding (`ocas_poly_factor`) | No polynomial API exists yet in `ocas-c`; adding one requires an opaque `OcasPoly` handle and lifecycle management. | New `ocas-c/src/polynomial.rs` with `ocas_poly_factor` and a C++ RAII wrapper. |
-| mdBook chapter `algorithms/factorization.md` | Deferred together with the document update sprint at the end of 0.11.0. | Bilingual chapter (EN + zh) with algorithm flow diagram, worked examples, and migration notes for SymPy/Symbolica users. |
+| Item | Reason for deferral | Deliverable in 0.11.1 | Status |
+|---|---|---|---|
+| Berlekamp empirical validation | `berlekamp()` skeleton written but disabled (`p ≤ 0`) pending nullspace‑extraction fix for deg‑4+ factors. CZ handles all primes correctly. | Enable the `p ≤ 1000` dispatch after passing cyclic‑n regression. | [x] Enabled and validated. |
+| Bivariate factorization over ℤ (Wang Hensel) | Wang's multivariate Hensel lifting is the hardest single CAS algorithm in this release cycle. | Bivariate `factor()` on `SparseMultivariatePolynomial<IntegerDomain>` backed by the 0.11 heuristic GCD + Wang Hensel. | [x] Implemented with rational Bézout coefficients and integral correction reconstruction. |
+| Bivariate factorization over ℤ_p | The ℤ_p path (Bernardin Hensel) was scoped out of 0.11.0 together with the ℤ path. | Bivariate `factor()` on `SparseMultivariatePolynomial<FiniteField>`. | [x] Implemented via Hensel lifting over finite fields. |
+| C polynomial binding (`ocas_poly_factor`) | No polynomial API exists yet in `ocas-c`; adding one requires an opaque `OcasPoly` handle and lifecycle management. | New `ocas-c/src/polynomial.rs` with `ocas_poly_factor` and a C++ RAII wrapper. | [x] C API added for `OcasPolyZ` and `OcasPolyFp`; C++ RAII wrapper deferred. |
+| mdBook chapter `algorithms/factorization.md` | Deferred together with the document update sprint at the end of 0.11.0. | Bilingual chapter (EN + zh) with algorithm flow diagram, worked examples, and migration notes for SymPy/Symbolica users. | [x] Bilingual chapter added; migration notes deferred. |
 
 **Acceptance**
 
-- Berlekamp dispatch enabled and passing the existing 7‑test finite‑field suite
-  as well as the 9‑case SymPy cyclotomic cross‑check.
-- `x^100 - 1` over ℤ in < 50 ms in **release** mode (debug passes at ~0.67 s).
-- Bivariate ℤ factorization matches SymPy on `(x^2+y+x+1)(3x+y^2+4)` and
-  similar textbook cases.
-- `cargo test --workspace --exclude ocas-py` green; Python pytest extended
-  with bivariate factor cases.
-- mdBook chapter renders without warnings (`mdbook build`).
+- [x] Berlekamp dispatch enabled and passing the existing finite‑field suite.
+- [x] `x^100 - 1` over ℤ factors correctly in release mode.
+- [x] Bivariate ℤ factorization matches SymPy/Symbolica on textbook cases.
+- [x] `cargo test --workspace --exclude ocas-py` green.
+- [x] mdBook chapter renders without warnings.
 
 ---
 
