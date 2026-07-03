@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-104fa799.js";
+            window.path_to_searchindex_js = "searchindex-b9327217.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-6b1b38b3.js"></script>
+        <script src="toc-b4bbd6d2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -212,21 +212,30 @@ language bindings, with strict downward dependencies.</li>
 <li><strong>Multiple coefficient domains</strong> — arbitrary-precision integers, rationals,
 finite fields, real balls, and complex numbers.</li>
 <li><strong>Polynomial algebra</strong> — dense/sparse multivariate polynomials, GCD,
-square-free factorization, Gröbner bases (Buchberger).</li>
+multivariate GCD, factorization (Hensel lifting), square-free factorization,
+Gröbner bases (Buchberger), root isolation.</li>
 <li><strong>Symbolic calculus</strong> — differentiation, Taylor series, heuristic
-integration.</li>
-<li><strong>JIT evaluation</strong> — Cranelift backend and SIMD-vectorized evaluation.</li>
+integration, expression substitution.</li>
+<li><strong>Linear algebra</strong> — matrices with Bareiss determinant, rank, inverse,
+transpose, trace, and linear system solving.</li>
+<li><strong>Equation solvers</strong> — linear systems (ℚ, ℤ), Diophantine equations,
+polynomial systems via Gröbner bases.</li>
+<li><strong>JIT evaluation</strong> — Cranelift backend and SIMD-vectorized batch evaluation.</li>
+<li><strong>Rewrite &amp; simplification</strong> — pattern matching with wildcards, rule-based
+fixed-point simplification, optional egg e-graph equality saturation.</li>
 <li><strong>Tri-language bindings</strong> — Rust, Python (PyO3), and C/C++ (cbindgen).</li>
+<li><strong>Correctness framework</strong> — 82 automated cross-validation tests against
+SymPy, SageMath, and Symbolica across 16 modules.</li>
 <li><strong>Optional numerical backends</strong> — GMP/MPFR/FLINT behind feature flags,
 isolated GPL backends in <code>ocas-gpl</code>.</li>
 </ul>
 <hr>
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.10.0 (Beta)</strong>. The core symbolic engine,
-polynomial algebra, solvers, JIT evaluation, and tri-language bindings are
-feature-complete for a beta release. See the
-<a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a> for the
-path to stable 1.0.</p>
+<p>oCAS is currently at version <strong>0.11.0 (Beta)</strong>. The core symbolic engine,
+polynomial algebra, solvers, JIT evaluation, tri-language bindings, and
+correctness comparison framework are feature-complete for a beta release. See
+the <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>
+for the path to stable 1.0.</p>
 
                     </main>
 

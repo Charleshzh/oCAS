@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-104fa799.js";
+            window.path_to_searchindex_js = "searchindex-b9327217.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-6b1b38b3.js"></script>
+        <script src="toc-b4bbd6d2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -238,6 +238,8 @@ print(m.shape())                    # (2, 2)
 print(m[0, 1])                      # '2'
 print(m.determinant())              # '-2'
 print(m.rank())                     # 2
+print(m.transpose().rows())         # [['1', '3'], ['2', '4']]
+print(m.trace())                    # '5'
 
 # Arithmetic
 a = ocas.Matrix([[1, 2], [3, 5]])   # det = -1, integer inverse exists

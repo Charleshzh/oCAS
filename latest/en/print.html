@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-104fa799.js";
+            window.path_to_searchindex_js = "searchindex-b9327217.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-6b1b38b3.js"></script>
+        <script src="toc-b4bbd6d2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -210,21 +210,30 @@ language bindings, with strict downward dependencies.</li>
 <li><strong>Multiple coefficient domains</strong> — arbitrary-precision integers, rationals,
 finite fields, real balls, and complex numbers.</li>
 <li><strong>Polynomial algebra</strong> — dense/sparse multivariate polynomials, GCD,
-square-free factorization, Gröbner bases (Buchberger).</li>
+multivariate GCD, factorization (Hensel lifting), square-free factorization,
+Gröbner bases (Buchberger), root isolation.</li>
 <li><strong>Symbolic calculus</strong> — differentiation, Taylor series, heuristic
-integration.</li>
-<li><strong>JIT evaluation</strong> — Cranelift backend and SIMD-vectorized evaluation.</li>
+integration, expression substitution.</li>
+<li><strong>Linear algebra</strong> — matrices with Bareiss determinant, rank, inverse,
+transpose, trace, and linear system solving.</li>
+<li><strong>Equation solvers</strong> — linear systems (ℚ, ℤ), Diophantine equations,
+polynomial systems via Gröbner bases.</li>
+<li><strong>JIT evaluation</strong> — Cranelift backend and SIMD-vectorized batch evaluation.</li>
+<li><strong>Rewrite &amp; simplification</strong> — pattern matching with wildcards, rule-based
+fixed-point simplification, optional egg e-graph equality saturation.</li>
 <li><strong>Tri-language bindings</strong> — Rust, Python (PyO3), and C/C++ (cbindgen).</li>
+<li><strong>Correctness framework</strong> — 82 automated cross-validation tests against
+SymPy, SageMath, and Symbolica across 16 modules.</li>
 <li><strong>Optional numerical backends</strong> — GMP/MPFR/FLINT behind feature flags,
 isolated GPL backends in <code>ocas-gpl</code>.</li>
 </ul>
 <hr>
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.10.0 (Beta)</strong>. The core symbolic engine,
-polynomial algebra, solvers, JIT evaluation, and tri-language bindings are
-feature-complete for a beta release. See the
-<a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a> for the
-path to stable 1.0.</p>
+<p>oCAS is currently at version <strong>0.11.0 (Beta)</strong>. The core symbolic engine,
+polynomial algebra, solvers, JIT evaluation, tri-language bindings, and
+correctness comparison framework are feature-complete for a beta release. See
+the <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>
+for the path to stable 1.0.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
@@ -232,7 +241,7 @@ path to stable 1.0.</p>
 <h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
 <p>Add to your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[dependencies]
-ocas = "0.10"
+ocas = "0.11"
 </code></pre>
 <pre class="playground"><code class="language-rust">use ocas::prelude::*;
 
@@ -299,7 +308,8 @@ ocas_expr_free(e);
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="architecture"><a class="header" href="#architecture">Architecture</a></h1>
-<p>oCAS is organized as a Cargo workspace of 12 crates with strict downward
+<p>oCAS is organized as a Cargo workspace of 12 public crates (plus
+<code>ocas-tests</code> for integration tests and benchmarks) with strict downward
 layering. Each crate may only depend on lower-level crates; no reverse or
 cyclic dependencies are permitted.</p>
 <div class="table-wrapper">
@@ -317,6 +327,16 @@ cyclic dependencies are permitted.</p>
 </tbody>
 </table>
 </div>
+<h2 id="notable-modules"><a class="header" href="#notable-modules">Notable modules</a></h2>
+<p><strong><code>ocas-poly::factor</code></strong> — Polynomial factorization using Hensel lifting and
+finite-field techniques. Supports square-free decomposition and full
+factorization over the integers and rationals.</p>
+<p><strong><code>ocas-poly::groebner</code></strong> — Gröbner basis computation (Buchberger algorithm)
+with configurable monomial orders (Lex, Grevlex).</p>
+<p><strong><code>ocas-poly::roots</code></strong> — Real root isolation for univariate polynomials.</p>
+<p><strong><code>ocas-tests::correctness</code></strong> — Cross-validation framework with 82 tests
+across 16 mathematical modules, comparing oCAS results against SymPy,
+SageMath, and Symbolica.</p>
 <p>See <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_EN.md">ARCHITECTURE_EN.md</a>
 in the repository for the full design document.</p>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -377,6 +397,8 @@ print(m.shape())                    # (2, 2)
 print(m[0, 1])                      # '2'
 print(m.determinant())              # '-2'
 print(m.rank())                     # 2
+print(m.transpose().rows())         # [['1', '3'], ['2', '4']]
+print(m.trace())                    # '5'
 
 # Arithmetic
 a = ocas.Matrix([[1, 2], [3, 5]])   # det = -1, integer inverse exists
@@ -446,6 +468,614 @@ int main() {
 manages arena-backed expressions via RAII, so manual <code>free</code> calls are
 unnecessary.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rust-api"><a class="header" href="#rust-api">Rust API</a></h1>
+<p>This chapter covers the Rust API of oCAS. All examples assume:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+<span class="boring">}</span></code></pre>
+<p>Import <code>ocas = "0.11"</code> in your <code>Cargo.toml</code>.</p>
+<hr>
+<h2 id="expressions"><a class="header" href="#expressions">Expressions</a></h2>
+<p>The core of oCAS is the <code>Atom</code> expression tree, managed by an arena allocator.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// Building expressions manually
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), ctx.mul(&amp;[ctx.num(3), x]), ctx.num(1)]);
+
+// Parsing from strings
+let e = parse(&amp;ctx, "sin(x)^2 + cos(x)^2").unwrap();
+println!("{}", e);                       // sin(x)^2 + cos(x)^2
+<span class="boring">}</span></code></pre>
+<p><code>Atom</code> is a cheaply-copyable handle (<code>Copy + Clone</code>). The arena owns all nodes
+and deallocates them in one pass when dropped.</p>
+<hr>
+<h2 id="domains-1"><a class="header" href="#domains-1">Domains</a></h2>
+<p>oCAS supports multiple coefficient domains via the <code>Domain</code> and
+<code>EuclideanDomain</code> traits.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Pure-Rust big integers and rationals (default build)
+let a = Integer::from(42);
+let b = Integer::from(18);
+let g = IntegerDomain.gcd(&amp;a, &amp;b);       // 6
+
+// Rational numbers
+let r = Rational::new(Integer::from(1), Integer::from(3));
+println!("{}", r);                       // 1/3
+
+// Finite fields
+let gf7 = FiniteField::new(7);
+let fe = FiniteFieldElement::new(Integer::from(3), &amp;gf7);
+let inv = gf7.inv(&amp;fe).unwrap();
+println!("{}", inv);                     // 5  (3·5 ≡ 1 mod 7)
+
+// Real ball arithmetic (requires `mpfr` feature)
+let ball = RealBallDomain.from_f64(1.0 / 3.0);
+println!("{}", ball);                    // ~3.33333e-1 ± ε
+
+// Complex numbers
+let z = Complex::new(RealBallDomain.from_f64(1.0), RealBallDomain.from_f64(2.0));
+println!("{}", z);                       // (1.0 + 2.0i)
+<span class="boring">}</span></code></pre>
+<p><strong><code>Assumptions</code></strong> let you declare properties on symbols:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut assumptions = Assumptions::new();
+assumptions.add("x", Assumption::Positive);
+assumptions.add("n", Assumption::Integer);
+assert!(assumptions.is_positive("x"));
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="polynomials"><a class="header" href="#polynomials">Polynomials</a></h2>
+<h3 id="dense-univariate"><a class="header" href="#dense-univariate">Dense univariate</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// x^2 + 3x + 2 over the integers
+let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(2), Integer::from(3), Integer::from(1)],
+);
+println!("{}", p);                       // x^2 + 3*x + 2
+
+// Evaluation
+let val = p.evaluate(&amp;Integer::from(5), &amp;IntegerDomain);
+println!("{}", val);                     // 42
+
+// GCD
+let q = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(1), Integer::from(1)],  // x + 1
+);
+let g = p.gcd(&amp;q, &amp;IntegerDomain);
+println!("{}", g);                       // x + 1
+<span class="boring">}</span></code></pre>
+<h3 id="sparse-multivariate"><a class="header" href="#sparse-multivariate">Sparse multivariate</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut terms = BTreeMap::new();
+terms.insert(vec![1, 1], Integer::from(1));   // x*y
+terms.insert(vec![2, 0], Integer::from(1));   // x^2
+terms.insert(vec![0, 2], Integer::from(1));   // y^2
+let sp = SparseMultivariatePolynomial::new(IntegerDomain, terms, Lex);
+println!("{}", sp);                      // x^2 + x*y + y^2 (lex order)
+<span class="boring">}</span></code></pre>
+<p>Available monomial orders: <code>Lex</code> (lexicographic), <code>Grevlex</code> (graded reverse lex).</p>
+<h3 id="factorization"><a class="header" href="#factorization">Factorization</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Square-free factorization
+let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(-4), Integer::from(0), Integer::from(1)],  // x^2 - 4
+);
+for (factor, multiplicity) in p.square_free_factorization(&amp;IntegerDomain) {
+    println!("({})^ {}", factor, multiplicity);
+}
+// (x - 2)^1
+// (x + 2)^1
+<span class="boring">}</span></code></pre>
+<p>For full factorization over integers and rationals, use the <code>factor</code> module
+(Hensel lifting + finite-field methods).</p>
+<h3 id="gröbner-bases"><a class="header" href="#gröbner-bases">Gröbner bases</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = ctx.var("x");
+let y = ctx.var("y");
+let polys = vec![
+    SparseMultivariatePolynomial::from_coeffs(IntegerDomain, /* ... */),
+    // ...
+];
+let basis: GroebnerBasis&lt;Integer&gt; = buchberger(&amp;polys, &amp;IntegerDomain, Grevlex);
+for p in basis.polynomials() {
+    println!("{}", p);
+}
+<span class="boring">}</span></code></pre>
+<h3 id="root-isolation"><a class="header" href="#root-isolation">Root isolation</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(-1), Integer::from(0), Integer::from(1)],  // x^2 - 1
+);
+for interval in p.real_root_intervals(&amp;IntegerDomain) {
+    println!("root in [{}, {}]", interval.left(), interval.right());
+}
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="matrices"><a class="header" href="#matrices">Matrices</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let m = Matrix::new(IntegerDomain, 2, 2, &amp;[
+    Integer::from(1), Integer::from(2),
+    Integer::from(3), Integer::from(4),
+]);
+
+println!("{}", m.determinant());         // -2
+println!("{}", m.rank());                // 2
+println!("{}", m.trace());               // 5
+
+// Transpose
+let mt = m.transpose();
+assert_eq!(mt[(0, 1)], Integer::from(3));
+
+// Matrix multiplication
+let m2 = Matrix::new(IntegerDomain, 2, 2, &amp;[
+    Integer::from(2), Integer::from(0),
+    Integer::from(0), Integer::from(2),
+]);
+let prod = m.matmul(&amp;m2, &amp;IntegerDomain);
+
+// Solve linear system over ℚ
+let a = Matrix::new(RationalDomain, 2, 2, &amp;[
+    Rational::from(2), Rational::from(1),
+    Rational::from(1), Rational::from(1),
+]);
+let b = vec![Rational::from(4), Rational::from(3)];
+let x = a.solve(&amp;b, &amp;RationalDomain).unwrap();
+// x = [1, 2]
+<span class="boring">}</span></code></pre>
+<p>The determinant uses Bareiss’s fraction-free algorithm. <code>inverse()</code> returns
+the exact inverse when the determinant is invertible in the domain.</p>
+<hr>
+<h2 id="calculus"><a class="header" href="#calculus">Calculus</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = ctx.var("x");
+let f = ctx.mul(&amp;[ctx.num(2), ctx.pow(x, ctx.num(3))]);
+
+// Differentiation
+let df = diff(&amp;ctx, f, Symbol::new("x"));
+println!("{}", df);                      // 6*x^2
+
+// Taylor expansion
+let t = taylor(&amp;ctx, f, Symbol::new("x"), ctx.num(0), 5);
+println!("{}", t);                       // 2*x^3 (exact for this polynomial)
+
+// Substitution
+let g = substitute(&amp;ctx, f, x, ctx.add(&amp;[x, ctx.num(1)]));
+println!("{}", g);                       // 2*(x + 1)^3
+
+// Integration (heuristic)
+let fi = integrate(&amp;ctx, f, Symbol::new("x"));
+println!("{}", fi);                      // 1/2*x^4
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="parsing--printing"><a class="header" href="#parsing--printing">Parsing &amp; Printing</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Parsing from string
+let e = parse(&amp;ctx, "x^2 + 2*x + 1").unwrap();
+
+// Display formatting produces infix notation
+println!("{}", e);                       // x^2 + 2*x + 1
+
+// Normalization (flattens Add/Mul, sorts terms, removes identities)
+let normalized = normalize(&amp;ctx, e);
+println!("{}", normalized);              // x^2 + 2*x + 1 (already canonical)
+<span class="boring">}</span></code></pre>
+<p>The parser supports standard mathematical notation: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>,
+parentheses, function calls (<code>sin</code>, <code>cos</code>, <code>exp</code>, <code>log</code>, <code>sqrt</code>), and
+arbitrary-precision integers.</p>
+<hr>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li><a href="#solvers-1">Solvers</a> — linear systems, Diophantine equations, polynomial systems</li>
+<li><a href="#rewrite--simplification">Rewrite &amp; Simplification</a> — pattern matching, rule-based simplification</li>
+<li><a href="#evaluation--jit">Evaluation &amp; JIT</a> — numeric evaluation paths and performance</li>
+<li><a href="#correctness">Correctness</a> — cross-validation framework</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="solvers-1"><a class="header" href="#solvers-1">Solvers</a></h1>
+<p>oCAS provides solvers for linear systems, Diophantine equations, and
+polynomial systems. This chapter covers the available solvers and their usage.</p>
+<hr>
+<h2 id="linear-systems-over-ℚ"><a class="header" href="#linear-systems-over-ℚ">Linear systems over ℚ</a></h2>
+<p><code>solve_linear_rational</code> solves an $n \times n$ system $Ax = b$ over the
+rational numbers. Input coefficients are <code>i64</code> values; the solution is
+returned as <code>(numerator, denominator)</code> pairs.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = vec![vec![2, 1], vec![1, -1]];
+let b = vec![5, 1];
+let x = solve_linear_rational(&amp;a, &amp;b).unwrap();
+// x = [(2, 1), (1, 1)]  → 2, 1
+<span class="boring">}</span></code></pre>
+<p>Errors: <code>EmptySystem</code>, <code>NonSquare</code>, <code>Inconsistent</code>, <code>Underdetermined { rank }</code>.</p>
+<p>Python:</p>
+<pre><code class="language-python">print(ocas.solve_linear_rational([[2, 1], [1, -1]], [5, 1]))
+# [(2, 1), (1, 1)]
+</code></pre>
+<hr>
+<h2 id="linear-systems-over-ℤ"><a class="header" href="#linear-systems-over-ℤ">Linear systems over ℤ</a></h2>
+<p><code>solve_linear_integer</code> finds integer solutions to $Ax = b$. It returns an
+error if no integer solution exists.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 2x + y = 3
+let a = vec![vec![2, 1]];
+let b = vec![3];
+let x = solve_linear_integer(&amp;a, &amp;b).unwrap();
+// x = [1, 1]  (2·1 + 1·1 = 3)
+<span class="boring">}</span></code></pre>
+<p>Errors include <code>ResultNotInDomain</code> when the solution involves fractions.</p>
+<hr>
+<h2 id="diophantine-equations"><a class="header" href="#diophantine-equations">Diophantine equations</a></h2>
+<p><code>solve_diophantine</code> solves the linear Diophantine equation
+$a \cdot x + b \cdot y = c$ for integer $x, y$.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let sol = solve_diophantine(3, 5, 1).unwrap();
+// sol = DiophantineSolution { x0: 2, y0: -1, x_step: 5, y_step: -3 }
+<span class="boring">}</span></code></pre>
+<p>The result gives a particular solution $(x_0, y_0)$ and step values.
+The general solution is:</p>
+<p>$$
+\begin{aligned}
+x &amp;= x_0 + x_{step} \cdot t \
+y &amp;= y_0 + y_{step} \cdot t
+\end{aligned}
+$$</p>
+<p>for any integer $t$.</p>
+<hr>
+<h2 id="polynomial-systems-via-gröbner-bases"><a class="header" href="#polynomial-systems-via-gröbner-bases">Polynomial systems (via Gröbner bases)</a></h2>
+<p><code>solve_polynomial_system</code> solves systems of polynomial equations by computing
+a Gröbner basis and then performing back-substitution. It uses the Buchberger
+algorithm with configurable monomial order.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// x + y = 0, x*y - 1 = 0  →  x + y = 0, y^2 + 1 = 0
+let eq1 = parse(&amp;ctx, "x + y").unwrap();
+let eq2 = parse(&amp;ctx, "x*y - 1").unwrap();
+let sol = solve_polynomial_system(&amp;ctx, &amp;[eq1, eq2], &amp;[Symbol::new("x"), Symbol::new("y")]);
+<span class="boring">}</span></code></pre>
+<p>The result is a simplified polynomial system in triangular form, which can
+be solved by back-substitution.</p>
+<hr>
+<h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
+<p>All solvers return <code>Result&lt;T, SolveError&gt;</code>. Common error variants:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Error</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>EmptySystem</code></td><td>No equations provided</td></tr>
+<tr><td><code>NonLinear</code></td><td>System is not linear in the requested variables</td></tr>
+<tr><td><code>NonSquare</code></td><td>Number of equations ≠ number of unknowns</td></tr>
+<tr><td><code>Inconsistent</code></td><td>No solution exists</td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td>Infinitely many solutions</td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td>Solution contains fractions when integers are required</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="#rust-api">Rust API</a> — domain types and polynomial operations</li>
+<li><a href="#rewrite--simplification">Rewrite &amp; Simplification</a> — simplifying solved expressions</li>
+<li><a href="#benchmarks--comparison">Performance</a> — Gröbner basis benchmark results</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rewrite--simplification"><a class="header" href="#rewrite--simplification">Rewrite &amp; Simplification</a></h1>
+<p>oCAS provides a pattern-matching engine and a rule-based simplifier for
+symbolic expressions. This chapter covers the core concepts and APIs.</p>
+<hr>
+<h2 id="patterns"><a class="header" href="#patterns">Patterns</a></h2>
+<p>A <code>Pattern</code> describes an expression structure with wildcards. Three wildcard
+levels are available, triggered by the wildcard name suffix:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Level</th><th>Name suffix</th><th>Matches</th></tr>
+</thead>
+<tbody>
+<tr><td><code>WildcardLevel::Single</code></td><td><code>_</code> (e.g. <code>x_</code>)</td><td>Any single sub-expression</td></tr>
+<tr><td><code>WildcardLevel::Sequence</code></td><td><code>__</code> (e.g. <code>__x</code>)</td><td>One or more operands in an ordered list</td></tr>
+<tr><td><code>WildcardLevel::NullSequence</code></td><td><code>___</code> (e.g. <code>___x</code>)</td><td>Zero or more operands in an ordered list</td></tr>
+</tbody>
+</table>
+</div>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// Pattern: x + y_  where y_ matches any single sub-expression
+let x = ctx.var("x");
+let pat = Pattern::Add(vec![
+    Pattern::Literal(x),
+    Pattern::Wildcard(Symbol::new("y_"), WildcardLevel::Single),
+]);
+
+// Match: x + 5  →  binds y_ to 5
+let e = parse(&amp;ctx, "x + 5").unwrap();
+let bindings = match_pattern(pat, e).unwrap();
+match bindings.get(Symbol::new("y_")).unwrap() {
+    MatchValue::Single(v) =&gt; assert_eq!(v.to_string(), "5"),
+    _ =&gt; {}
+}
+<span class="boring">}</span></code></pre>
+<p>Within <code>Add</code> and <code>Mul</code>, matching is <strong>associative and commutative</strong>:
+arguments are sorted and matched in a canonical order.</p>
+<hr>
+<h2 id="match--bindings"><a class="header" href="#match--bindings">Match &amp; Bindings</a></h2>
+<p><code>match_pattern</code> returns <code>Result&lt;Bindings, MatchError&gt;</code>. <code>Bindings</code> maps
+wildcard <code>Symbol</code> names to matched values.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Pattern: a_ + b_ + ___rest  — capture two terms and the rest
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("a_"), WildcardLevel::Single),
+    Pattern::Wildcard(Symbol::new("b_"), WildcardLevel::Single),
+    Pattern::Wildcard(Symbol::new("___rest"), WildcardLevel::NullSequence),
+]);
+
+let e = parse(&amp;ctx, "x + y + z + 5").unwrap();
+let bindings = match_pattern(pat, e).unwrap();
+
+// Bindings use MatchValue::Single(atom) or MatchValue::Sequence(slice)
+use ocas_rewrite::MatchValue;
+match bindings.get(Symbol::new("a_")).unwrap() {
+    MatchValue::Single(a) =&gt; println!("a = {}", a),  // e.g. "x" or "5"
+    _ =&gt; {}
+}
+<span class="boring">}</span></code></pre>
+<p><code>MatchError</code> variants:</p>
+<ul>
+<li><code>NoMatch</code> — pattern does not match</li>
+<li><code>InconsistentBinding</code> — same wildcard name bound to different values</li>
+</ul>
+<hr>
+<h2 id="rules"><a class="header" href="#rules">Rules</a></h2>
+<p>A <code>Rule</code> pairs a pattern with a replacement closure that receives the
+match bindings and the arena context.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::rules::default_rules;
+
+// Built-in rule set
+let rules = default_rules(&amp;ctx, &amp;());
+
+// Custom rule: x_ + 0 → x_
+let custom_pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("x_"), WildcardLevel::Single),
+    Pattern::Literal(ctx.num(0)),
+]);
+let custom_rule = Rule::new(custom_pat, |bindings, _ctx| {
+    match bindings.get(Symbol::new("x_")).unwrap() {
+        MatchValue::Single(x) =&gt; *x,
+        _ =&gt; unreachable!(),
+    }
+});
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="simplification"><a class="header" href="#simplification">Simplification</a></h2>
+<p><code>simplify()</code> applies a rule set repeatedly until a fixed point (or max
+iterations) is reached.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let e = parse(&amp;ctx, "x + 0 + y*0 + z*1").unwrap();
+let rules = default_rules(&amp;ctx, &amp;());
+let simplified = simplify(&amp;ctx, e, &amp;rules, 20);
+println!("{}", simplified);  // x + z
+<span class="boring">}</span></code></pre>
+<p>The default rule set handles:</p>
+<ul>
+<li><strong>Identity removal</strong>: <code>x + 0 → x</code>, <code>x * 1 → x</code>, <code>x * 0 → 0</code></li>
+<li><strong>Constant folding</strong>: <code>2 + 3 → 5</code>, <code>2 * 3 → 6</code></li>
+<li><strong>Power simplifications</strong>: <code>x^0 → 1</code>, <code>x^1 → x</code>, <code>0^x → 0</code>, <code>1^x → 1</code></li>
+<li><strong>Arithmetic on numbers</strong>: <code>2*3 + 4*5 → 26</code></li>
+</ul>
+<hr>
+<h2 id="bottom-up-transformation"><a class="header" href="#bottom-up-transformation">Bottom-up transformation</a></h2>
+<p><code>transform()</code> walks the expression tree bottom-up, applying a function to
+each node. This is useful for custom traversals that do not fit the
+pattern-matching model.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Replace every variable "x" with "t"
+let replacer = |_ctx: &amp;AtomArena, atom: Atom| {
+    if let AtomNode::Var(sym) = _ctx.get(atom) {
+        if sym.as_str() == "x" {
+            return _ctx.var("t");
+        }
+    }
+    atom
+};
+
+let e = parse(&amp;ctx, "x^2 + x + 1").unwrap();
+let result = transform(&amp;ctx, e, &amp;replacer);
+println!("{}", result);  // t^2 + t + 1
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="e-graph-simplification-egg-feature"><a class="header" href="#e-graph-simplification-egg-feature">E-graph simplification (egg feature)</a></h2>
+<p>With the <code>egg</code> feature enabled, oCAS can use equality saturation for more
+powerful simplifications that rule-based rewriting alone cannot achieve.</p>
+<pre><code class="language-bash">cargo build -p ocas --features egg
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Requires `egg` feature
+#[cfg(feature = "egg")]
+{
+    use ocas_rewrite::egraph::egg_simplify;
+    let e = parse(&amp;ctx, "sin(x)^2 + cos(x)^2").unwrap();
+    let result = egg_simplify(&amp;ctx, e).unwrap();
+    println!("{}", result);  // 1
+}
+<span class="boring">}</span></code></pre>
+<p>The e-graph approach explores multiple equivalent forms simultaneously,
+combining rewrites via congruence closure. This handles trigonometric
+identities and algebraic equalities that require multiple rewrite steps
+in a specific order.</p>
+<hr>
+<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
+<p>The default rule-based simplifier intentionally keeps things predictable:</p>
+<ul>
+<li>Does <strong>not</strong> handle <code>sin(x)^2 + cos(x)^2 → 1</code> (requires the <code>egg</code> feature)</li>
+<li>Does <strong>not</strong> perform full polynomial expansion by default</li>
+<li>Does <strong>not</strong> apply trigonometric or logarithmic identities</li>
+</ul>
+<p>For advanced simplification, enable the <code>egg</code> feature or write custom rules.</p>
+<hr>
+<h2 id="see-also-1"><a class="header" href="#see-also-1">See also</a></h2>
+<ul>
+<li><a href="#rust-api">Rust API</a> — building expressions and patterns from Rust</li>
+<li><a href="#evaluation--jit">Evaluation &amp; JIT</a> — numeric evaluation after simplification</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="evaluation--jit"><a class="header" href="#evaluation--jit">Evaluation &amp; JIT</a></h1>
+<p>oCAS provides three paths for numeric evaluation of symbolic expressions:
+an interpreter (stack VM), a Cranelift JIT compiler, and a SIMD-vectorized
+batch evaluator. This chapter explains each path and when to use it.</p>
+<hr>
+<h2 id="stack-vm-interpreter"><a class="header" href="#stack-vm-interpreter">Stack VM interpreter</a></h2>
+<p>The default evaluation path. <code>ExpressionEvaluator</code> compiles an <code>Atom</code>
+expression tree into a sequence of stack-machine instructions, then
+executes them on a flat operand stack.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// Parse and compile
+let e = parse(&amp;ctx, "x^2 + y").unwrap();
+let ev = ExpressionEvaluator::&lt;f64&gt;::compile(e).unwrap();
+
+// Evaluate with parameter values
+let result = ev.evaluate(&amp;[3.0, 1.0]).unwrap();  // [10.0]
+let result = ev.evaluate(&amp;[2.0, 0.0]).unwrap();  // [4.0]
+<span class="boring">}</span></code></pre>
+<p>The compiler automatically detects free variables, assigns them parameter
+slots in sorted order, and optimizes the instruction sequence (constant
+folding, copy-chain removal).</p>
+<p>Python:</p>
+<pre><code class="language-python">ev = ocas.ExpressionEvaluator("x^2 + y", ["x", "y"])
+print(ev.evaluate([3.0, 1.0]))  # [10.0]
+print(ev.evaluate([2.0, 0.0]))  # [4.0]
+</code></pre>
+<hr>
+<h2 id="cranelift-jit"><a class="header" href="#cranelift-jit">Cranelift JIT</a></h2>
+<p>With the <code>jit</code> feature, oCAS compiles expressions to native machine code
+via Cranelift. This is ideal for repeatedly evaluating the same expression
+with different inputs — amortizing the compilation cost over many calls.</p>
+<pre><code class="language-bash">cargo build -p ocas --features jit
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+{
+    use ocas::prelude::*;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "sin(x) * cos(y)").unwrap();
+
+    let mut engine = JitEngine::new();
+    let compiled = engine.compile::&lt;f64, _&gt;(e).unwrap();
+    let result = compiled.call(&amp;[0.5, 1.0]);  // ~0.2590
+}
+<span class="boring">}</span></code></pre>
+<p>The JIT path translates the same IR used by the interpreter into native
+x86-64 or aarch64 code. For expressions evaluated thousands of times, this
+can yield a 10–50× speedup over the interpreter.</p>
+<hr>
+<h2 id="simd-batch-evaluation"><a class="header" href="#simd-batch-evaluation">SIMD batch evaluation</a></h2>
+<p>The <code>simd</code> feature enables vectorized evaluation using <code>wide::f64x4</code>,
+computing four inputs simultaneously with SIMD instructions.</p>
+<pre><code class="language-bash">cargo build -p ocas --features simd
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+{
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "x^2 + y").unwrap();
+
+    let ev = VectorEvaluator::&lt;f64&gt;::compile(e).unwrap();
+    let results = ev.evaluate_batch(&amp;[
+        vec![1.0, 0.0],   // 1^2 + 0 = 1
+        vec![2.0, 1.0],   // 2^2 + 1 = 5
+        vec![3.0, 2.0],   // 3^2 + 2 = 11
+        vec![0.0, 5.0],   // 0^2 + 5 = 5
+    ]).unwrap();
+    // results = [1.0, 5.0, 11.0, 5.0]
+}
+<span class="boring">}</span></code></pre>
+<p>SIMD evaluation processes batches of four parameter sets in parallel,
+ideal for parameter sweeps, plotting, and Monte Carlo workloads.</p>
+<hr>
+<h2 id="comparison"><a class="header" href="#comparison">Comparison</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Path</th><th>Feature</th><th>Latency</th><th>Throughput</th><th>Best for</th></tr>
+</thead>
+<tbody>
+<tr><td>Interpreter</td><td>(default)</td><td>Low (no compile overhead)</td><td>Medium</td><td>Single-shot, interactive use</td></tr>
+<tr><td>JIT</td><td><code>jit</code></td><td>High (compile) + Low (run)</td><td>High</td><td>Repeated evaluation of same expression</td></tr>
+<tr><td>SIMD</td><td><code>simd</code></td><td>Low–Medium</td><td>Very High (4×)</td><td>Batch evaluation, parameter sweeps</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="when-to-use-each"><a class="header" href="#when-to-use-each">When to use each</a></h3>
+<ul>
+<li><strong>Interpreter</strong>: Interactive REPL sessions, one-off evaluations, Python API.</li>
+<li><strong>JIT</strong>: Repetitive numeric evaluation (root-finding iterations, optimization loops).</li>
+<li><strong>SIMD</strong>: Batching many inputs (plotting, sensitivity analysis, ML pipelines).</li>
+</ul>
+<hr>
+<h2 id="user-defined-functions"><a class="header" href="#user-defined-functions">User-defined functions</a></h2>
+<p><code>FunctionMap</code> allows registering custom Rust functions callable from
+evaluated expressions.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut fns = FunctionMap::&lt;f64&gt;::new();
+fns.insert("f", |args: &amp;[f64]| args[0].sin() * args[1].cos());
+
+let e = parse(&amp;ctx, "f(x, y)").unwrap();
+let ev = ExpressionEvaluator::&lt;f64&gt;::compile_with(e, fns).unwrap();
+let result = ev.evaluate(&amp;[0.5, 1.0]).unwrap();
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="see-also-2"><a class="header" href="#see-also-2">See also</a></h2>
+<ul>
+<li><a href="#rust-api">Rust API</a> — building expressions for evaluation</li>
+<li><a href="#benchmarks--comparison">Performance</a> — benchmark results across all three paths</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="benchmarks--comparison"><a class="header" href="#benchmarks--comparison">Benchmarks &amp; Comparison</a></h1>
 <p>oCAS ships a <a href="https://bheisler.github.io/criterion.rs/">criterion</a>-based
 benchmark suite in <code>ocas-tests/benches/</code>, plus cross-language comparison
@@ -460,6 +1090,8 @@ cargo bench --workspace
 cargo bench --bench poly_gcd
 cargo bench --bench poly_factor
 cargo bench --bench groebner
+cargo bench --bench poly_multivariate_gcd
+cargo bench --bench roots
 
 # Faster, less precise runs
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
@@ -474,7 +1106,10 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 <tr><td><code>parse</code> / <code>normalize</code></td><td>Expression parsing and normalization</td></tr>
 <tr><td><code>poly_dense</code> / <code>poly_sparse</code></td><td>Polynomial arithmetic</td></tr>
 <tr><td><code>poly_gcd</code></td><td>Univariate polynomial GCD</td></tr>
+<tr><td><code>poly_multivariate_gcd</code></td><td>Multivariate polynomial GCD</td></tr>
 <tr><td><code>poly_factor</code></td><td>Square-free factorization</td></tr>
+<tr><td><code>hensel_factor</code></td><td>Hensel-lifting full factorization</td></tr>
+<tr><td><code>roots</code></td><td>Real root isolation</td></tr>
 <tr><td><code>groebner</code></td><td>Gröbner bases (cyclic-n ideals)</td></tr>
 <tr><td><code>calculus</code> / <code>rewrite</code></td><td>Differentiation, Taylor, rule-based simplification</td></tr>
 <tr><td><code>eval_interpreter</code> / <code>eval_jit</code> / <code>eval_simd</code></td><td>Numeric evaluation paths</td></tr>
@@ -485,7 +1120,7 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 <hr>
 <h2 id="sympy-comparison-automated"><a class="header" href="#sympy-comparison-automated">SymPy comparison (automated)</a></h2>
 <p>The <code>sympy_comparison</code> benchmark drives SymPy through a <code>uv</code>-managed Python
-subprocess (<code>scripts/bench_sympy.py</code>) and feeds the elapsed nanoseconds into
+subprocess (<code>scripts/compare_sympy.py</code>) and feeds the elapsed nanoseconds into
 criterion via <code>iter_custom</code>, so oCAS and SymPy appear side-by-side in the same
 report.</p>
 <pre><code class="language-bash"># Requires `uv` on PATH; the Python env is provisioned automatically.
@@ -532,10 +1167,140 @@ cd ../ocas
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 </code></pre>
 <hr>
+<h2 id="correctness-comparison"><a class="header" href="#correctness-comparison">Correctness comparison</a></h2>
+<p>Beyond performance, oCAS ships a correctness cross-validation framework in
+<code>ocas-tests/tests/correctness/</code>. It runs 82 automated tests across 16
+mathematical modules, comparing oCAS results against SymPy, SageMath, and
+Symbolica. See the <a href="#correctness">Correctness</a> chapter for details.</p>
+<hr>
 <h2 id="reporting-results"><a class="header" href="#reporting-results">Reporting results</a></h2>
 <p>criterion writes HTML reports to <code>target/criterion/</code>. Open
 <code>target/criterion/poly_gcd/index.html</code> in a browser to inspect distributions,
 regressions, and side-by-side comparisons.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="correctness"><a class="header" href="#correctness">Correctness</a></h1>
+<p>oCAS includes an automated correctness cross-validation framework that
+compares results against three reference systems: SymPy, SageMath, and
+Symbolica. This chapter describes the framework, how to run it, and its
+current known limitations.</p>
+<hr>
+<h2 id="framework-overview"><a class="header" href="#framework-overview">Framework overview</a></h2>
+<p>The correctness suite lives in <code>ocas-tests/tests/correctness/</code> and contains
+<strong>82 tests across 16 mathematical modules</strong>. Each test:</p>
+<ol>
+<li>Generates an input (expression, polynomial, system of equations, etc.)</li>
+<li>Computes a result using oCAS</li>
+<li>Computes the equivalent result using a reference system</li>
+<li>Asserts that both results are semantically equal</li>
+</ol>
+<p>The modules cover the full breadth of oCAS functionality:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Module</th><th>Tests</th><th>Covers</th></tr>
+</thead>
+<tbody>
+<tr><td><code>algebra</code></td><td>8</td><td>Simplification, identity laws</td></tr>
+<tr><td><code>calculus_diff</code></td><td>7</td><td>Symbolic differentiation</td></tr>
+<tr><td><code>calculus_int</code></td><td>5</td><td>Heuristic integration</td></tr>
+<tr><td><code>calculus_series</code></td><td>4</td><td>Taylor series expansion</td></tr>
+<tr><td><code>domain_integer</code></td><td>5</td><td>Integer arithmetic, GCD</td></tr>
+<tr><td><code>domain_rational</code></td><td>4</td><td>Rational arithmetic</td></tr>
+<tr><td><code>domain_finite_field</code></td><td>3</td><td>Finite field arithmetic</td></tr>
+<tr><td><code>evaluation</code></td><td>6</td><td>Numeric evaluation</td></tr>
+<tr><td><code>groebner</code></td><td>4</td><td>Gröbner basis computation</td></tr>
+<tr><td><code>linear_algebra</code></td><td>6</td><td>Matrix operations, linear solving</td></tr>
+<tr><td><code>parsing</code></td><td>5</td><td>Expression parsing and printing</td></tr>
+<tr><td><code>poly_dense</code></td><td>5</td><td>Dense polynomial arithmetic</td></tr>
+<tr><td><code>poly_factor</code></td><td>4</td><td>Square-free and full factorization</td></tr>
+<tr><td><code>poly_gcd</code></td><td>5</td><td>Polynomial GCD</td></tr>
+<tr><td><code>poly_sparse</code></td><td>5</td><td>Sparse multivariate arithmetic</td></tr>
+<tr><td><code>solvers</code></td><td>6</td><td>Linear and Diophantine solvers</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="difficulty-tiers"><a class="header" href="#difficulty-tiers">Difficulty tiers</a></h2>
+<p>Tests are classified by difficulty to help target debugging effort:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Tier</th><th>Description</th><th>Count</th></tr>
+</thead>
+<tbody>
+<tr><td>Trivial</td><td>Basic sanity checks (e.g. <code>x + 0 = x</code>)</td><td>~20</td></tr>
+<tr><td>Easy</td><td>Single-step operations (e.g. <code>d/dx x^3</code>)</td><td>~30</td></tr>
+<tr><td>Medium</td><td>Multi-step or moderate complexity</td><td>~20</td></tr>
+<tr><td>Hard</td><td>Large expressions, edge cases</td><td>~8</td></tr>
+<tr><td>Extreme</td><td>Known to exercise limitations</td><td>~4</td></tr>
+</tbody>
+</table>
+</div>
+<p>Extreme-tier tests are expected to <strong>fail</strong> and track known gaps
+(e.g., Wilkinson polynomial root-finding: 8 of 10 real roots found).</p>
+<hr>
+<h2 id="running-the-tests"><a class="header" href="#running-the-tests">Running the tests</a></h2>
+<pre><code class="language-bash"># Run all correctness tests
+cargo test -p ocas-tests --test correctness
+
+# Run a specific module
+cargo test -p ocas-tests --test correctness algebra
+
+# Run with verbose output to inspect failures
+cargo test -p ocas-tests --test correctness -- --nocapture
+</code></pre>
+<p>The tests require no external dependencies — all reference computations
+use SymPy through a <code>uv</code>-managed Python subprocess that provisions itself
+automatically.</p>
+<hr>
+<h2 id="comparison-harnesses"><a class="header" href="#comparison-harnesses">Comparison harnesses</a></h2>
+<p>Separate scripts provide manual cross-checking against SageMath and Symbolica
+for deeper investigation:</p>
+<pre><code class="language-bash"># SageMath (requires `sage` installed locally)
+cd ocas-tests
+sage scripts/bench_sage.py factor "x^30 - 1" 100
+
+# Symbolica (requires Symbolica source checkout)
+cd ../symbolica
+cargo run --release --example factorization
+</code></pre>
+<p>These harnesses were used to validate the automated test suite during
+development and are maintained for manual regression testing.</p>
+<hr>
+<h2 id="audit-report"><a class="header" href="#audit-report">Audit report</a></h2>
+<p>Running the full suite generates <code>correctness_report.md</code> with a per-module
+summary of pass/fail counts and annotations for known limitations.</p>
+<pre><code class="language-bash">cargo test -p ocas-tests --test correctness -- --generate-report
+</code></pre>
+<p>The report includes:</p>
+<ul>
+<li>Pass/fail counts per module</li>
+<li>List of failing tests with expected vs actual results</li>
+<li>Difficulty-tier breakdown</li>
+<li>Annotated known gaps with links to tracking issues</li>
+</ul>
+<hr>
+<h2 id="known-limitations"><a class="header" href="#known-limitations">Known limitations</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Issue</th><th>Module</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td>Wilkinson n=10: only 8 of 10 real roots found</td><td><code>poly_sparse</code> / roots</td><td>Under investigation</td></tr>
+<tr><td><code>sin(x)^2 + cos(x)^2 → 1</code> requires <code>egg</code> feature</td><td><code>algebra</code></td><td>Works with <code>egg</code> feature</td></tr>
+<tr><td>Some heuristic integrals not yet implemented</td><td><code>calculus_int</code></td><td>Expanding in 0.12</td></tr>
+<tr><td>Polynomial factorization limited to Z[x]</td><td><code>poly_factor</code></td><td>Q[x] planned for 0.12</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="see-also-3"><a class="header" href="#see-also-3">See also</a></h2>
+<ul>
+<li><a href="#benchmarks--comparison">Performance</a> — benchmark suite details</li>
+<li><a href="#rust-api">Rust API</a> — core types used in tests</li>
+<li><a href="#contributing">Contributing</a> — how to add new correctness tests</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="numerical-backends"><a class="header" href="#numerical-backends">Numerical Backends</a></h1>
 <p>oCAS ships a pure-Rust default build (using <code>num-bigint</code>/<code>num-rational</code>) and

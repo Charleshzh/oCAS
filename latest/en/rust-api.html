@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Introduction - oCAS — open Computer Algebra System</title>
+        <title>Rust API - oCAS — open Computer Algebra System</title>
 
 
         <!-- Custom HTML head -->
@@ -147,7 +147,7 @@
                         <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/introduction.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/rust-api.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -181,68 +181,240 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>oCAS (open Computer Algebra System) is a modern, high-performance computer
-algebra system written in Rust. It aims to match or exceed the core
-performance of Symbolica and SageMath while remaining free and open under the
-<strong>LGPL-3.0-or-later</strong> license.</p>
+                        <h1 id="rust-api"><a class="header" href="#rust-api">Rust API</a></h1>
+<p>This chapter covers the Rust API of oCAS. All examples assume:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+<span class="boring">}</span></code></pre>
+<p>Import <code>ocas = "0.11"</code> in your <code>Cargo.toml</code>.</p>
 <hr>
-<h2 id="why-ocas"><a class="header" href="#why-ocas">Why oCAS?</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Feature</th><th>oCAS</th><th>Symbolica</th><th>SymPy</th><th>SageMath</th></tr>
-</thead>
-<tbody>
-<tr><td>Language</td><td>Rust</td><td>Rust</td><td>Python</td><td>Python/Cython</td></tr>
-<tr><td>License</td><td>LGPL-3.0+</td><td>Proprietary / source-available</td><td>BSD</td><td>GPL</td></tr>
-<tr><td>Native speed</td><td>✅</td><td>✅</td><td>❌</td><td>⚠️</td></tr>
-<tr><td>Rust API</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
-<tr><td>Python API</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td>C/C++ API</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
-<tr><td>No GPL contamination</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
-</tbody>
-</table>
-</div>
+<h2 id="expressions"><a class="header" href="#expressions">Expressions</a></h2>
+<p>The core of oCAS is the <code>Atom</code> expression tree, managed by an arena allocator.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// Building expressions manually
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), ctx.mul(&amp;[ctx.num(3), x]), ctx.num(1)]);
+
+// Parsing from strings
+let e = parse(&amp;ctx, "sin(x)^2 + cos(x)^2").unwrap();
+println!("{}", e);                       // sin(x)^2 + cos(x)^2
+<span class="boring">}</span></code></pre>
+<p><code>Atom</code> is a cheaply-copyable handle (<code>Copy + Clone</code>). The arena owns all nodes
+and deallocates them in one pass when dropped.</p>
 <hr>
-<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<h2 id="domains"><a class="header" href="#domains">Domains</a></h2>
+<p>oCAS supports multiple coefficient domains via the <code>Domain</code> and
+<code>EuclideanDomain</code> traits.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Pure-Rust big integers and rationals (default build)
+let a = Integer::from(42);
+let b = Integer::from(18);
+let g = IntegerDomain.gcd(&amp;a, &amp;b);       // 6
+
+// Rational numbers
+let r = Rational::new(Integer::from(1), Integer::from(3));
+println!("{}", r);                       // 1/3
+
+// Finite fields
+let gf7 = FiniteField::new(7);
+let fe = FiniteFieldElement::new(Integer::from(3), &amp;gf7);
+let inv = gf7.inv(&amp;fe).unwrap();
+println!("{}", inv);                     // 5  (3·5 ≡ 1 mod 7)
+
+// Real ball arithmetic (requires `mpfr` feature)
+let ball = RealBallDomain.from_f64(1.0 / 3.0);
+println!("{}", ball);                    // ~3.33333e-1 ± ε
+
+// Complex numbers
+let z = Complex::new(RealBallDomain.from_f64(1.0), RealBallDomain.from_f64(2.0));
+println!("{}", z);                       // (1.0 + 2.0i)
+<span class="boring">}</span></code></pre>
+<p><strong><code>Assumptions</code></strong> let you declare properties on symbols:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut assumptions = Assumptions::new();
+assumptions.add("x", Assumption::Positive);
+assumptions.add("n", Assumption::Integer);
+assert!(assumptions.is_positive("x"));
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="polynomials"><a class="header" href="#polynomials">Polynomials</a></h2>
+<h3 id="dense-univariate"><a class="header" href="#dense-univariate">Dense univariate</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// x^2 + 3x + 2 over the integers
+let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(2), Integer::from(3), Integer::from(1)],
+);
+println!("{}", p);                       // x^2 + 3*x + 2
+
+// Evaluation
+let val = p.evaluate(&amp;Integer::from(5), &amp;IntegerDomain);
+println!("{}", val);                     // 42
+
+// GCD
+let q = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(1), Integer::from(1)],  // x + 1
+);
+let g = p.gcd(&amp;q, &amp;IntegerDomain);
+println!("{}", g);                       // x + 1
+<span class="boring">}</span></code></pre>
+<h3 id="sparse-multivariate"><a class="header" href="#sparse-multivariate">Sparse multivariate</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut terms = BTreeMap::new();
+terms.insert(vec![1, 1], Integer::from(1));   // x*y
+terms.insert(vec![2, 0], Integer::from(1));   // x^2
+terms.insert(vec![0, 2], Integer::from(1));   // y^2
+let sp = SparseMultivariatePolynomial::new(IntegerDomain, terms, Lex);
+println!("{}", sp);                      // x^2 + x*y + y^2 (lex order)
+<span class="boring">}</span></code></pre>
+<p>Available monomial orders: <code>Lex</code> (lexicographic), <code>Grevlex</code> (graded reverse lex).</p>
+<h3 id="factorization"><a class="header" href="#factorization">Factorization</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Square-free factorization
+let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(-4), Integer::from(0), Integer::from(1)],  // x^2 - 4
+);
+for (factor, multiplicity) in p.square_free_factorization(&amp;IntegerDomain) {
+    println!("({})^ {}", factor, multiplicity);
+}
+// (x - 2)^1
+// (x + 2)^1
+<span class="boring">}</span></code></pre>
+<p>For full factorization over integers and rationals, use the <code>factor</code> module
+(Hensel lifting + finite-field methods).</p>
+<h3 id="gröbner-bases"><a class="header" href="#gröbner-bases">Gröbner bases</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = ctx.var("x");
+let y = ctx.var("y");
+let polys = vec![
+    SparseMultivariatePolynomial::from_coeffs(IntegerDomain, /* ... */),
+    // ...
+];
+let basis: GroebnerBasis&lt;Integer&gt; = buchberger(&amp;polys, &amp;IntegerDomain, Grevlex);
+for p in basis.polynomials() {
+    println!("{}", p);
+}
+<span class="boring">}</span></code></pre>
+<h3 id="root-isolation"><a class="header" href="#root-isolation">Root isolation</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(-1), Integer::from(0), Integer::from(1)],  // x^2 - 1
+);
+for interval in p.real_root_intervals(&amp;IntegerDomain) {
+    println!("root in [{}, {}]", interval.left(), interval.right());
+}
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="matrices"><a class="header" href="#matrices">Matrices</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let m = Matrix::new(IntegerDomain, 2, 2, &amp;[
+    Integer::from(1), Integer::from(2),
+    Integer::from(3), Integer::from(4),
+]);
+
+println!("{}", m.determinant());         // -2
+println!("{}", m.rank());                // 2
+println!("{}", m.trace());               // 5
+
+// Transpose
+let mt = m.transpose();
+assert_eq!(mt[(0, 1)], Integer::from(3));
+
+// Matrix multiplication
+let m2 = Matrix::new(IntegerDomain, 2, 2, &amp;[
+    Integer::from(2), Integer::from(0),
+    Integer::from(0), Integer::from(2),
+]);
+let prod = m.matmul(&amp;m2, &amp;IntegerDomain);
+
+// Solve linear system over ℚ
+let a = Matrix::new(RationalDomain, 2, 2, &amp;[
+    Rational::from(2), Rational::from(1),
+    Rational::from(1), Rational::from(1),
+]);
+let b = vec![Rational::from(4), Rational::from(3)];
+let x = a.solve(&amp;b, &amp;RationalDomain).unwrap();
+// x = [1, 2]
+<span class="boring">}</span></code></pre>
+<p>The determinant uses Bareiss’s fraction-free algorithm. <code>inverse()</code> returns
+the exact inverse when the determinant is invertible in the domain.</p>
+<hr>
+<h2 id="calculus"><a class="header" href="#calculus">Calculus</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = ctx.var("x");
+let f = ctx.mul(&amp;[ctx.num(2), ctx.pow(x, ctx.num(3))]);
+
+// Differentiation
+let df = diff(&amp;ctx, f, Symbol::new("x"));
+println!("{}", df);                      // 6*x^2
+
+// Taylor expansion
+let t = taylor(&amp;ctx, f, Symbol::new("x"), ctx.num(0), 5);
+println!("{}", t);                       // 2*x^3 (exact for this polynomial)
+
+// Substitution
+let g = substitute(&amp;ctx, f, x, ctx.add(&amp;[x, ctx.num(1)]));
+println!("{}", g);                       // 2*(x + 1)^3
+
+// Integration (heuristic)
+let fi = integrate(&amp;ctx, f, Symbol::new("x"));
+println!("{}", fi);                      // 1/2*x^4
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="parsing--printing"><a class="header" href="#parsing--printing">Parsing &amp; Printing</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Parsing from string
+let e = parse(&amp;ctx, "x^2 + 2*x + 1").unwrap();
+
+// Display formatting produces infix notation
+println!("{}", e);                       // x^2 + 2*x + 1
+
+// Normalization (flattens Add/Mul, sorts terms, removes identities)
+let normalized = normalize(&amp;ctx, e);
+println!("{}", normalized);              // x^2 + 2*x + 1 (already canonical)
+<span class="boring">}</span></code></pre>
+<p>The parser supports standard mathematical notation: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>,
+parentheses, function calls (<code>sin</code>, <code>cos</code>, <code>exp</code>, <code>log</code>, <code>sqrt</code>), and
+arbitrary-precision integers.</p>
+<hr>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
 <ul>
-<li><strong>Layered Rust architecture</strong> — 12 crates from the arena runtime up to
-language bindings, with strict downward dependencies.</li>
-<li><strong>Multiple coefficient domains</strong> — arbitrary-precision integers, rationals,
-finite fields, real balls, and complex numbers.</li>
-<li><strong>Polynomial algebra</strong> — dense/sparse multivariate polynomials, GCD,
-multivariate GCD, factorization (Hensel lifting), square-free factorization,
-Gröbner bases (Buchberger), root isolation.</li>
-<li><strong>Symbolic calculus</strong> — differentiation, Taylor series, heuristic
-integration, expression substitution.</li>
-<li><strong>Linear algebra</strong> — matrices with Bareiss determinant, rank, inverse,
-transpose, trace, and linear system solving.</li>
-<li><strong>Equation solvers</strong> — linear systems (ℚ, ℤ), Diophantine equations,
-polynomial systems via Gröbner bases.</li>
-<li><strong>JIT evaluation</strong> — Cranelift backend and SIMD-vectorized batch evaluation.</li>
-<li><strong>Rewrite &amp; simplification</strong> — pattern matching with wildcards, rule-based
-fixed-point simplification, optional egg e-graph equality saturation.</li>
-<li><strong>Tri-language bindings</strong> — Rust, Python (PyO3), and C/C++ (cbindgen).</li>
-<li><strong>Correctness framework</strong> — 82 automated cross-validation tests against
-SymPy, SageMath, and Symbolica across 16 modules.</li>
-<li><strong>Optional numerical backends</strong> — GMP/MPFR/FLINT behind feature flags,
-isolated GPL backends in <code>ocas-gpl</code>.</li>
+<li><a href="./solvers.html">Solvers</a> — linear systems, Diophantine equations, polynomial systems</li>
+<li><a href="./rewrite.html">Rewrite &amp; Simplification</a> — pattern matching, rule-based simplification</li>
+<li><a href="./evaluation.html">Evaluation &amp; JIT</a> — numeric evaluation paths and performance</li>
+<li><a href="./correctness.html">Correctness</a> — cross-validation framework</li>
 </ul>
-<hr>
-<h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.11.0 (Beta)</strong>. The core symbolic engine,
-polynomial algebra, solvers, JIT evaluation, tri-language bindings, and
-correctness comparison framework are feature-complete for a beta release. See
-the <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>
-for the path to stable 1.0.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="bindings-c.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="getting-started.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="solvers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -252,8 +424,11 @@ for the path to stable 1.0.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="bindings-c.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="getting-started.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="solvers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

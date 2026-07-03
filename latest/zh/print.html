@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-189bf316.js";
+            window.path_to_searchindex_js = "searchindex-79abacc1.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-25f49014.js"></script>
+        <script src="toc-1e639325.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -204,15 +204,19 @@
 <ul>
 <li><strong>分层 Rust 架构</strong> —— 从 arena 运行时到语言绑定的 12 个 crate，依赖严格向下。</li>
 <li><strong>多种系数域</strong> —— 任意精度整数、有理数、有限域、实数球、复数。</li>
-<li><strong>多项式代数</strong> —— 稠密/稀疏多元多项式、GCD、无平方因子分解、Gröbner 基（Buchberger）。</li>
-<li><strong>符号微积分</strong> —— 微分、Taylor 级数、启发式积分。</li>
-<li><strong>JIT 求值</strong> —— Cranelift 后端与 SIMD 向量化求值。</li>
+<li><strong>多项式代数</strong> —— 稠密/稀疏多元多项式、GCD、多元 GCD、因式分解（Hensel 提升）、无平方因子分解、Gröbner 基（Buchberger）、根隔离。</li>
+<li><strong>符号微积分</strong> —— 微分、Taylor 级数、启发式积分、表达式替换。</li>
+<li><strong>线性代数</strong> —— 矩阵 Bareiss 行列式、秩、逆、转置、迹、线性方程组求解。</li>
+<li><strong>方程求解器</strong> —— 线性方程组（ℚ、ℤ）、丢番图方程、基于 Gröbner 基的多项式系统。</li>
+<li><strong>JIT 求值</strong> —— Cranelift 后端与 SIMD 向量化批量求值。</li>
+<li><strong>重写与化简</strong> —— 通配符模式匹配、基于规则的不动点化简、可选 egg e-graph 等式饱和。</li>
 <li><strong>三语言绑定</strong> —— Rust、Python（PyO3）、C/C++（cbindgen）。</li>
+<li><strong>正确性框架</strong> —— 82 项自动化交叉验证测试，覆盖 SymPy、SageMath、Symbolica，横跨 16 个模块。</li>
 <li><strong>可选数值后端</strong> —— GMP/MPFR/FLINT 隐藏在 feature flag 后，GPL 后端隔离在 <code>ocas-gpl</code>。</li>
 </ul>
 <hr>
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.10.0（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值与三语言绑定已达到 Beta 功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.11.0（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值、三语言绑定与正确性对比框架已达到 Beta 功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
@@ -221,7 +225,7 @@
 <h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
 <p>在你的 <code>Cargo.toml</code> 中添加：</p>
 <pre><code class="language-toml">[dependencies]
-ocas = "0.10"
+ocas = "0.11"
 </code></pre>
 <pre class="playground"><code class="language-rust">use ocas::prelude::*;
 
@@ -287,7 +291,9 @@ ocas_expr_free(e);
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="架构"><a class="header" href="#架构">架构</a></h1>
-<p>oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，不允许反向或循环依赖。</p>
+<p>oCAS 由 12 个公共 crate（外加用于集成测试与基准测试的 <code>ocas-tests</code>）
+组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，
+不允许反向或循环依赖。</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -303,6 +309,12 @@ ocas_expr_free(e);
 </tbody>
 </table>
 </div>
+<h2 id="重点模块"><a class="header" href="#重点模块">重点模块</a></h2>
+<p><strong><code>ocas-poly::factor</code></strong> — 多项式因式分解，使用 Hensel 提升与有限域技术。
+支持无平方因子分解以及整数域与有理数域上的完全因式分解。</p>
+<p><strong><code>ocas-poly::groebner</code></strong> — Gröbner 基计算（Buchberger 算法），支持可配置的单项式序（Lex、Grevlex）。</p>
+<p><strong><code>ocas-poly::roots</code></strong> — 单变量多项式实根隔离。</p>
+<p><strong><code>ocas-tests::correctness</code></strong> — 交叉验证框架，包含 82 项测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica 进行对比。</p>
 <p>完整设计文档见仓库中的 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_CN.md">ARCHITECTURE_CN.md</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="python-api"><a class="header" href="#python-api">Python API</a></h1>
@@ -356,6 +368,8 @@ print(m.shape())                    # (2, 2)
 print(m[0, 1])                      # '2'
 print(m.determinant())              # '-2'
 print(m.rank())                     # 2
+print(m.transpose().rows())         # [['1', '3'], ['2', '4']]
+print(m.trace())                    # '5'
 
 # 运算
 a = ocas.Matrix([[1, 2], [3, 5]])   # det = -1，整数逆存在
@@ -420,6 +434,580 @@ int main() {
 </code></pre>
 <p>C++ 包装将 oCAS 错误转换为 <code>ocas::Error</code> 异常，并通过 RAII 管理 arena 后端表达式，无需手动调用 <code>free</code>。</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rust-api"><a class="header" href="#rust-api">Rust API</a></h1>
+<p>本章介绍 oCAS 的 Rust API。所有示例均假设：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+<span class="boring">}</span></code></pre>
+<p>在 <code>Cargo.toml</code> 中添加 <code>ocas = "0.11"</code>。</p>
+<hr>
+<h2 id="表达式-1"><a class="header" href="#表达式-1">表达式</a></h2>
+<p>oCAS 的核心是由 arena 分配器管理的 <code>Atom</code> 表达式树。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// 手动构建表达式
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), ctx.mul(&amp;[ctx.num(3), x]), ctx.num(1)]);
+
+// 从字符串解析
+let e = parse(&amp;ctx, "sin(x)^2 + cos(x)^2").unwrap();
+println!("{}", e);                       // sin(x)^2 + cos(x)^2
+<span class="boring">}</span></code></pre>
+<p><code>Atom</code> 是可廉价复制的句柄（<code>Copy + Clone</code>）。arena 持有所有节点，在 drop 时一次性释放。</p>
+<hr>
+<h2 id="系数域-1"><a class="header" href="#系数域-1">系数域</a></h2>
+<p>oCAS 通过 <code>Domain</code> 与 <code>EuclideanDomain</code> trait 支持多种系数域。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 纯 Rust 大整数与有理数（默认构建）
+let a = Integer::from(42);
+let b = Integer::from(18);
+let g = IntegerDomain.gcd(&amp;a, &amp;b);       // 6
+
+// 有理数
+let r = Rational::new(Integer::from(1), Integer::from(3));
+println!("{}", r);                       // 1/3
+
+// 有限域
+let gf7 = FiniteField::new(7);
+let fe = FiniteFieldElement::new(Integer::from(3), &amp;gf7);
+let inv = gf7.inv(&amp;fe).unwrap();
+println!("{}", inv);                     // 5  (3·5 ≡ 1 mod 7)
+
+// 实数球算术（需 `mpfr` feature）
+let ball = RealBallDomain.from_f64(1.0 / 3.0);
+println!("{}", ball);                    // ~3.33333e-1 ± ε
+
+// 复数
+let z = Complex::new(RealBallDomain.from_f64(1.0), RealBallDomain.from_f64(2.0));
+println!("{}", z);                       // (1.0 + 2.0i)
+<span class="boring">}</span></code></pre>
+<p><strong><code>Assumptions</code></strong> 允许声明符号属性：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut assumptions = Assumptions::new();
+assumptions.add("x", Assumption::Positive);
+assumptions.add("n", Assumption::Integer);
+assert!(assumptions.is_positive("x"));
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="多项式-1"><a class="header" href="#多项式-1">多项式</a></h2>
+<h3 id="稠密一元多项式"><a class="header" href="#稠密一元多项式">稠密一元多项式</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// x^2 + 3x + 2 在整数域
+let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(2), Integer::from(3), Integer::from(1)],
+);
+println!("{}", p);                       // x^2 + 3*x + 2
+
+// 求值
+let val = p.evaluate(&amp;Integer::from(5), &amp;IntegerDomain);
+println!("{}", val);                     // 42
+
+// GCD
+let q = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(1), Integer::from(1)],  // x + 1
+);
+let g = p.gcd(&amp;q, &amp;IntegerDomain);
+println!("{}", g);                       // x + 1
+<span class="boring">}</span></code></pre>
+<h3 id="稀疏多元多项式"><a class="header" href="#稀疏多元多项式">稀疏多元多项式</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut terms = BTreeMap::new();
+terms.insert(vec![1, 1], Integer::from(1));   // x*y
+terms.insert(vec![2, 0], Integer::from(1));   // x^2
+terms.insert(vec![0, 2], Integer::from(1));   // y^2
+let sp = SparseMultivariatePolynomial::new(IntegerDomain, terms, Lex);
+println!("{}", sp);                      // x^2 + x*y + y^2（lex 序）
+<span class="boring">}</span></code></pre>
+<p>可用单项式序：<code>Lex</code>（字典序）、<code>Grevlex</code>（分次反字典序）。</p>
+<h3 id="因式分解"><a class="header" href="#因式分解">因式分解</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 无平方因子分解
+let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(-4), Integer::from(0), Integer::from(1)],  // x^2 - 4
+);
+for (factor, multiplicity) in p.square_free_factorization(&amp;IntegerDomain) {
+    println!("({})^ {}", factor, multiplicity);
+}
+// (x - 2)^1
+// (x + 2)^1
+<span class="boring">}</span></code></pre>
+<p>对于整数域与有理数域上的完全因式分解，请使用 <code>factor</code> 模块（Hensel 提升 + 有限域方法）。</p>
+<h3 id="gröbner-基"><a class="header" href="#gröbner-基">Gröbner 基</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = ctx.var("x");
+let y = ctx.var("y");
+let polys = vec![
+    SparseMultivariatePolynomial::from_coeffs(IntegerDomain, /* ... */),
+    // ...
+];
+let basis: GroebnerBasis&lt;Integer&gt; = buchberger(&amp;polys, &amp;IntegerDomain, Grevlex);
+for p in basis.polynomials() {
+    println!("{}", p);
+}
+<span class="boring">}</span></code></pre>
+<h3 id="根隔离"><a class="header" href="#根隔离">根隔离</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let p = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    &amp;[Integer::from(-1), Integer::from(0), Integer::from(1)],  // x^2 - 1
+);
+for interval in p.real_root_intervals(&amp;IntegerDomain) {
+    println!("根在 [{}, {}]", interval.left(), interval.right());
+}
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="矩阵-1"><a class="header" href="#矩阵-1">矩阵</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let m = Matrix::new(IntegerDomain, 2, 2, &amp;[
+    Integer::from(1), Integer::from(2),
+    Integer::from(3), Integer::from(4),
+]);
+
+println!("{}", m.determinant());         // -2
+println!("{}", m.rank());                // 2
+println!("{}", m.trace());               // 5
+
+// 转置
+let mt = m.transpose();
+assert_eq!(mt[(0, 1)], Integer::from(3));
+
+// 矩阵乘法
+let m2 = Matrix::new(IntegerDomain, 2, 2, &amp;[
+    Integer::from(2), Integer::from(0),
+    Integer::from(0), Integer::from(2),
+]);
+let prod = m.matmul(&amp;m2, &amp;IntegerDomain);
+
+// 在 ℚ 上解线性方程组
+let a = Matrix::new(RationalDomain, 2, 2, &amp;[
+    Rational::from(2), Rational::from(1),
+    Rational::from(1), Rational::from(1),
+]);
+let b = vec![Rational::from(4), Rational::from(3)];
+let x = a.solve(&amp;b, &amp;RationalDomain).unwrap();
+// x = [1, 2]
+<span class="boring">}</span></code></pre>
+<p>行列式使用 Bareiss 无分数算法。当行列式在域中可逆时，<code>inverse()</code> 返回精确逆。</p>
+<hr>
+<h2 id="微积分"><a class="header" href="#微积分">微积分</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = ctx.var("x");
+let f = ctx.mul(&amp;[ctx.num(2), ctx.pow(x, ctx.num(3))]);
+
+// 微分
+let df = diff(&amp;ctx, f, Symbol::new("x"));
+println!("{}", df);                      // 6*x^2
+
+// Taylor 展开
+let t = taylor(&amp;ctx, f, Symbol::new("x"), ctx.num(0), 5);
+println!("{}", t);                       // 2*x^3（对本多项式是精确的）
+
+// 替换
+let g = substitute(&amp;ctx, f, x, ctx.add(&amp;[x, ctx.num(1)]));
+println!("{}", g);                       // 2*(x + 1)^3
+
+// 积分（启发式）
+let fi = integrate(&amp;ctx, f, Symbol::new("x"));
+println!("{}", fi);                      // 1/2*x^4
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="解析与输出"><a class="header" href="#解析与输出">解析与输出</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 从字符串解析
+let e = parse(&amp;ctx, "x^2 + 2*x + 1").unwrap();
+
+// Display 格式化输出中缀表达式
+println!("{}", e);                       // x^2 + 2*x + 1
+
+// 规范化（展平 Add/Mul、排序项、移除恒等元素）
+let normalized = normalize(&amp;ctx, e);
+println!("{}", normalized);              // x^2 + 2*x + 1（已是规范形式）
+<span class="boring">}</span></code></pre>
+<p>解析器支持标准数学符号：<code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>、<code>^</code>、括号、函数调用（<code>sin</code>、<code>cos</code>、<code>exp</code>、<code>log</code>、<code>sqrt</code>）及任意精度整数。</p>
+<hr>
+<h2 id="下一步"><a class="header" href="#下一步">下一步</a></h2>
+<ul>
+<li><a href="#求解器-1">求解器</a> — 线性方程组、丢番图方程、多项式系统</li>
+<li><a href="#重写与化简">重写与化简</a> — 模式匹配、基于规则的化简</li>
+<li><a href="#求值与-jit">求值与 JIT</a> — 数值求值路径与性能</li>
+<li><a href="#正确性">正确性</a> — 交叉验证框架</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="求解器-1"><a class="header" href="#求解器-1">求解器</a></h1>
+<p>oCAS 提供线性方程组、丢番图方程与多项式系统的求解器。本章介绍所有可用求解器及其用法。</p>
+<hr>
+<h2 id="ℚ-上的线性方程组"><a class="header" href="#ℚ-上的线性方程组">ℚ 上的线性方程组</a></h2>
+<p><code>solve_linear_rational</code> 在有理数域上求解 $n \times n$ 系统 $Ax = b$。
+输入系数为 <code>i64</code> 值；解以 <code>(分子, 分母)</code> 对返回。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = vec![vec![2, 1], vec![1, -1]];
+let b = vec![5, 1];
+let x = solve_linear_rational(&amp;a, &amp;b).unwrap();
+// x = [(2, 1), (1, 1)]  → 2, 1
+<span class="boring">}</span></code></pre>
+<p>错误：<code>EmptySystem</code>、<code>NonSquare</code>、<code>Inconsistent</code>、<code>Underdetermined { rank }</code>。</p>
+<p>Python：</p>
+<pre><code class="language-python">print(ocas.solve_linear_rational([[2, 1], [1, -1]], [5, 1]))
+# [(2, 1), (1, 1)]
+</code></pre>
+<hr>
+<h2 id="ℤ-上的线性方程组"><a class="header" href="#ℤ-上的线性方程组">ℤ 上的线性方程组</a></h2>
+<p><code>solve_linear_integer</code> 求 $Ax = b$ 的整数解。若无整数解则返回错误。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 2x + y = 3
+let a = vec![vec![2, 1]];
+let b = vec![3];
+let x = solve_linear_integer(&amp;a, &amp;b).unwrap();
+// x = [1, 1]  (2·1 + 1·1 = 3)
+<span class="boring">}</span></code></pre>
+<p>当解含分数时返回 <code>ResultNotInDomain</code> 错误。</p>
+<hr>
+<h2 id="丢番图方程"><a class="header" href="#丢番图方程">丢番图方程</a></h2>
+<p><code>solve_diophantine</code> 求解线性丢番图方程 $a \cdot x + b \cdot y = c$ 的整数解 $x, y$。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let sol = solve_diophantine(3, 5, 1).unwrap();
+// sol = DiophantineSolution { x0: 2, y0: -1, x_step: 5, y_step: -3 }
+<span class="boring">}</span></code></pre>
+<p>结果给出特解 $(x_0, y_0)$ 和步长值。通解为：</p>
+<p>$$
+\begin{aligned}
+x &amp;= x_0 + x_{step} \cdot t \
+y &amp;= y_0 + y_{step} \cdot t
+\end{aligned}
+$$</p>
+<p>其中 $t$ 为任意整数。</p>
+<hr>
+<h2 id="多项式系统基于-gröbner-基"><a class="header" href="#多项式系统基于-gröbner-基">多项式系统（基于 Gröbner 基）</a></h2>
+<p><code>solve_polynomial_system</code> 首先计算 Gröbner 基，然后进行回代，求解多项式方程组。
+它使用 Buchberger 算法，支持可配置的单项式序。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// x + y = 0, x*y - 1 = 0  →  x + y = 0, y^2 + 1 = 0
+let eq1 = parse(&amp;ctx, "x + y").unwrap();
+let eq2 = parse(&amp;ctx, "x*y - 1").unwrap();
+let sol = solve_polynomial_system(&amp;ctx, &amp;[eq1, eq2], &amp;[Symbol::new("x"), Symbol::new("y")]);
+<span class="boring">}</span></code></pre>
+<p>结果为三角形多项式系统，可通过回代求解。</p>
+<hr>
+<h2 id="错误"><a class="header" href="#错误">错误</a></h2>
+<p>所有求解器返回 <code>Result&lt;T, SolveError&gt;</code>。常见错误变体：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>错误</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><code>EmptySystem</code></td><td>未提供方程</td></tr>
+<tr><td><code>NonLinear</code></td><td>系统对请求变量非线程</td></tr>
+<tr><td><code>NonSquare</code></td><td>方程数与未知数个数不匹配</td></tr>
+<tr><td><code>Inconsistent</code></td><td>无解</td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td>无穷多解</td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td>解含分数但要求整数</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="#rust-api">Rust API</a> — 系数域类型与多项式操作</li>
+<li><a href="#重写与化简">重写与化简</a> — 化简求解结果</li>
+<li><a href="#基准与性能对比">基准与性能对比</a> — Gröbner 基基准结果</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="重写与化简"><a class="header" href="#重写与化简">重写与化简</a></h1>
+<p>oCAS 提供模式匹配引擎和基于规则的表达简化器。本章介绍核心概念与 API。</p>
+<hr>
+<h2 id="模式"><a class="header" href="#模式">模式</a></h2>
+<p><code>Pattern</code> 用通配符描述表达式结构。通配符名称后缀决定匹配级别：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>级别</th><th>名称后缀</th><th>匹配</th></tr>
+</thead>
+<tbody>
+<tr><td><code>WildcardLevel::Single</code></td><td><code>_</code>（如 <code>x_</code>）</td><td>任意单个子表达式</td></tr>
+<tr><td><code>WildcardLevel::Sequence</code></td><td><code>__</code>（如 <code>__x</code>）</td><td>有序列表中的一个或多个操作数</td></tr>
+<tr><td><code>WildcardLevel::NullSequence</code></td><td><code>___</code>（如 <code>___x</code>）</td><td>有序列表中的零个或多个操作数</td></tr>
+</tbody>
+</table>
+</div>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// 模式：x + y_  其中 y_ 匹配任意单个子表达式
+let x = ctx.var("x");
+let pat = Pattern::Add(vec![
+    Pattern::Literal(x),
+    Pattern::Wildcard(Symbol::new("y_"), WildcardLevel::Single),
+]);
+
+// 匹配：x + 5  →  将 y_ 绑定到 5
+let e = parse(&amp;ctx, "x + 5").unwrap();
+let bindings = match_pattern(pat, e).unwrap();
+match bindings.get(Symbol::new("y_")).unwrap() {
+    MatchValue::Single(v) =&gt; assert_eq!(v.to_string(), "5"),
+    _ =&gt; {}
+}
+<span class="boring">}</span></code></pre>
+<p>在 <code>Add</code> 和 <code>Mul</code> 内部，匹配是<strong>结合可交换</strong>的：参数被排序并按规范顺序匹配。</p>
+<hr>
+<h2 id="匹配与绑定"><a class="header" href="#匹配与绑定">匹配与绑定</a></h2>
+<p><code>match_pattern</code> 返回 <code>Result&lt;Bindings, MatchError&gt;</code>。<code>Bindings</code> 将通配符 <code>Symbol</code> 名称映射到匹配值。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 模式：a_ + b_ + ___rest — 捕获两项及剩余部分
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("a_"), WildcardLevel::Single),
+    Pattern::Wildcard(Symbol::new("b_"), WildcardLevel::Single),
+    Pattern::Wildcard(Symbol::new("___rest"), WildcardLevel::NullSequence),
+]);
+
+let e = parse(&amp;ctx, "x + y + z + 5").unwrap();
+let bindings = match_pattern(pat, e).unwrap();
+
+// 绑定使用 MatchValue::Single(atom) 或 MatchValue::Sequence(slice)
+use ocas_rewrite::MatchValue;
+match bindings.get(Symbol::new("a_")).unwrap() {
+    MatchValue::Single(a) =&gt; println!("a = {}", a),  // 例如 "x" 或 "5"
+    _ =&gt; {}
+}
+<span class="boring">}</span></code></pre>
+<p><code>MatchError</code> 变体：</p>
+<ul>
+<li><code>NoMatch</code> — 模式不匹配</li>
+<li><code>InconsistentBinding</code> — 同一通配符名称绑定到不同值</li>
+</ul>
+<hr>
+<h2 id="规则"><a class="header" href="#规则">规则</a></h2>
+<p><code>Rule</code> 将模式与替换闭包配对，闭包接收匹配绑定和 arena 上下文。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::rules::default_rules;
+
+// 内置规则集
+let rules = default_rules(&amp;ctx, &amp;());
+
+// 自定义规则：x_ + 0 → x_
+let custom_pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("x_"), WildcardLevel::Single),
+    Pattern::Literal(ctx.num(0)),
+]);
+let custom_rule = Rule::new(custom_pat, |bindings, _ctx| {
+    match bindings.get(Symbol::new("x_")).unwrap() {
+        MatchValue::Single(x) =&gt; *x,
+        _ =&gt; unreachable!(),
+    }
+});
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="化简"><a class="header" href="#化简">化简</a></h2>
+<p><code>simplify()</code> 反复应用规则集，直到不动点（或达到最大迭代次数）。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let e = parse(&amp;ctx, "x + 0 + y*0 + z*1").unwrap();
+let rules = default_rules(&amp;ctx, &amp;());
+let simplified = simplify(&amp;ctx, e, &amp;rules, 20);
+println!("{}", simplified);  // x + z
+<span class="boring">}</span></code></pre>
+<p>默认规则集处理：</p>
+<ul>
+<li><strong>恒等元移除</strong>：<code>x + 0 → x</code>、<code>x * 1 → x</code>、<code>x * 0 → 0</code></li>
+<li><strong>常量折叠</strong>：<code>2 + 3 → 5</code>、<code>2 * 3 → 6</code></li>
+<li><strong>幂化简</strong>：<code>x^0 → 1</code>、<code>x^1 → x</code>、<code>0^x → 0</code>、<code>1^x → 1</code></li>
+<li><strong>数字运算</strong>：<code>2*3 + 4*5 → 26</code></li>
+</ul>
+<hr>
+<h2 id="自底向上变换"><a class="header" href="#自底向上变换">自底向上变换</a></h2>
+<p><code>transform()</code> 自底向上遍历表达式树，对每个节点应用函数。适用于不适合模式匹配模型的自定义遍历。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 将每个变量 "x" 替换为 "t"
+let replacer = |_ctx: &amp;AtomArena, atom: Atom| {
+    if let AtomNode::Var(sym) = _ctx.get(atom) {
+        if sym.as_str() == "x" {
+            return _ctx.var("t");
+        }
+    }
+    atom
+};
+
+let e = parse(&amp;ctx, "x^2 + x + 1").unwrap();
+let result = transform(&amp;ctx, e, &amp;replacer);
+println!("{}", result);  // t^2 + t + 1
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="e-graph-化简egg-feature"><a class="header" href="#e-graph-化简egg-feature">E-graph 化简（egg feature）</a></h2>
+<p>启用 <code>egg</code> feature 后，oCAS 可使用等式饱和进行更强大的化简，这是纯规则重写无法实现的。</p>
+<pre><code class="language-bash">cargo build -p ocas --features egg
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 需要 `egg` feature
+#[cfg(feature = "egg")]
+{
+    use ocas_rewrite::egraph::egg_simplify;
+    let e = parse(&amp;ctx, "sin(x)^2 + cos(x)^2").unwrap();
+    let result = egg_simplify(&amp;ctx, e).unwrap();
+    println!("{}", result);  // 1
+}
+<span class="boring">}</span></code></pre>
+<p>E-graph 方法同时探索多种等价形式，通过同余闭包组合重写。可处理需要特定多步
+重写顺序的三角恒等式和代数恒等式。</p>
+<hr>
+<h2 id="局限性"><a class="header" href="#局限性">局限性</a></h2>
+<p>默认基于规则的化简器有意保持可预测性：</p>
+<ul>
+<li><strong>不</strong>处理 <code>sin(x)^2 + cos(x)^2 → 1</code>（需 <code>egg</code> feature）</li>
+<li>默认<strong>不</strong>执行完全多项式展开</li>
+<li><strong>不</strong>应用三角恒等式或对数恒等式</li>
+</ul>
+<p>如需高级化简，请启用 <code>egg</code> feature 或编写自定义规则。</p>
+<hr>
+<h2 id="参见-1"><a class="header" href="#参见-1">参见</a></h2>
+<ul>
+<li><a href="#rust-api">Rust API</a> — 从 Rust 构建表达式与模式</li>
+<li><a href="#求值与-jit">求值与 JIT</a> — 化简后的数值求值</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="求值与-jit"><a class="header" href="#求值与-jit">求值与 JIT</a></h1>
+<p>oCAS 为符号表达式的数值求值提供三条路径：解释器（栈 VM）、Cranelift JIT 编译器和 SIMD 向量化批量求值器。
+本章解释每条路径及何时使用。</p>
+<hr>
+<h2 id="栈-vm-解释器"><a class="header" href="#栈-vm-解释器">栈 VM 解释器</a></h2>
+<p>默认求值路径。<code>ExpressionEvaluator</code> 将 <code>Atom</code> 表达式树编译为栈机指令序列，然后在扁平操作数栈上执行。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// 解析并编译
+let e = parse(&amp;ctx, "x^2 + y").unwrap();
+let ev = ExpressionEvaluator::&lt;f64&gt;::compile(e).unwrap();
+
+// 用参数值求值
+let result = ev.evaluate(&amp;[3.0, 1.0]).unwrap();  // [10.0]
+let result = ev.evaluate(&amp;[2.0, 0.0]).unwrap();  // [4.0]
+<span class="boring">}</span></code></pre>
+<p>编译器自动检测自由变量，按排序顺序分配参数槽，并优化指令序列（常量折叠、拷贝链消除）。</p>
+<p>Python：</p>
+<pre><code class="language-python">ev = ocas.ExpressionEvaluator("x^2 + y", ["x", "y"])
+print(ev.evaluate([3.0, 1.0]))  # [10.0]
+print(ev.evaluate([2.0, 0.0]))  # [4.0]
+</code></pre>
+<hr>
+<h2 id="cranelift-jit"><a class="header" href="#cranelift-jit">Cranelift JIT</a></h2>
+<p>启用 <code>jit</code> feature 后，oCAS 通过 Cranelift 将表达式编译为本机机器码。
+这适用于使用不同输入重复求值同一表达式 —— 将编译开销分摊到多次调用。</p>
+<pre><code class="language-bash">cargo build -p ocas --features jit
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+{
+    use ocas::prelude::*;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "sin(x) * cos(y)").unwrap();
+
+    let mut engine = JitEngine::new();
+    let compiled = engine.compile::&lt;f64, _&gt;(e).unwrap();
+    let result = compiled.call(&amp;[0.5, 1.0]);  // ~0.2590
+}
+<span class="boring">}</span></code></pre>
+<p>JIT 路径将解释器使用的同一 IR 翻译为本机 x86-64 或 aarch64 代码。对于需要数千次求值的表达式，
+可比解释器快 10–50 倍。</p>
+<hr>
+<h2 id="simd-批量求值"><a class="header" href="#simd-批量求值">SIMD 批量求值</a></h2>
+<p><code>simd</code> feature 使用 <code>wide::f64x4</code> 启用向量化求值，通过 SIMD 指令同时计算四个输入。</p>
+<pre><code class="language-bash">cargo build -p ocas --features simd
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+{
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "x^2 + y").unwrap();
+
+    let ev = VectorEvaluator::&lt;f64&gt;::compile(e).unwrap();
+    let results = ev.evaluate_batch(&amp;[
+        vec![1.0, 0.0],   // 1^2 + 0 = 1
+        vec![2.0, 1.0],   // 2^2 + 1 = 5
+        vec![3.0, 2.0],   // 3^2 + 2 = 11
+        vec![0.0, 5.0],   // 0^2 + 5 = 5
+    ]).unwrap();
+    // results = [1.0, 5.0, 11.0, 5.0]
+}
+<span class="boring">}</span></code></pre>
+<p>SIMD 求值并行处理四组参数，适用于参数扫描、绘图和 Monte Carlo 工作负载。</p>
+<hr>
+<h2 id="对比"><a class="header" href="#对比">对比</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>路径</th><th>Feature</th><th>延迟</th><th>吞吐</th><th>最适合</th></tr>
+</thead>
+<tbody>
+<tr><td>解释器</td><td>（默认）</td><td>低（无编译开销）</td><td>中</td><td>单次求值、交互使用</td></tr>
+<tr><td>JIT</td><td><code>jit</code></td><td>高（编译）+ 低（运行）</td><td>高</td><td>同一表达式的重复求值</td></tr>
+<tr><td>SIMD</td><td><code>simd</code></td><td>低–中</td><td>极高（4×）</td><td>批量求值、参数扫描</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="使用建议"><a class="header" href="#使用建议">使用建议</a></h3>
+<ul>
+<li><strong>解释器</strong>：交互式 REPL 会话、一次性求值、Python API。</li>
+<li><strong>JIT</strong>：重复数值求值（求根迭代、优化循环）。</li>
+<li><strong>SIMD</strong>：大量输入的批量处理（绘图、灵敏度分析、ML 管道）。</li>
+</ul>
+<hr>
+<h2 id="用户自定义函数"><a class="header" href="#用户自定义函数">用户自定义函数</a></h2>
+<p><code>FunctionMap</code> 允许注册自定义 Rust 函数，使其可在求值表达式中调用。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut fns = FunctionMap::&lt;f64&gt;::new();
+fns.insert("f", |args: &amp;[f64]| args[0].sin() * args[1].cos());
+
+let e = parse(&amp;ctx, "f(x, y)").unwrap();
+let ev = ExpressionEvaluator::&lt;f64&gt;::compile_with(e, fns).unwrap();
+let result = ev.evaluate(&amp;[0.5, 1.0]).unwrap();
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="参见-2"><a class="header" href="#参见-2">参见</a></h2>
+<ul>
+<li><a href="#rust-api">Rust API</a> — 构建用于求值的表达式</li>
+<li><a href="#基准与性能对比">基准与性能对比</a> — 三条路径的基准结果</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="基准与性能对比"><a class="header" href="#基准与性能对比">基准与性能对比</a></h1>
 <p>oCAS 在 <code>ocas-tests/benches/</code> 中提供基于 criterion 的基准套件，以及面向 SymPy、SageMath、Symbolica 的跨语言对比工具。本章说明如何运行各项基准及其测量内容。</p>
 <hr>
@@ -431,6 +1019,8 @@ cargo bench --workspace
 cargo bench --bench poly_gcd
 cargo bench --bench poly_factor
 cargo bench --bench groebner
+cargo bench --bench poly_multivariate_gcd
+cargo bench --bench roots
 
 # 更快但精度较低的运行
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
@@ -445,7 +1035,10 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 <tr><td><code>parse</code> / <code>normalize</code></td><td>表达式解析与规范化</td></tr>
 <tr><td><code>poly_dense</code> / <code>poly_sparse</code></td><td>多项式运算</td></tr>
 <tr><td><code>poly_gcd</code></td><td>一元多项式 GCD</td></tr>
+<tr><td><code>poly_multivariate_gcd</code></td><td>多元多项式 GCD</td></tr>
 <tr><td><code>poly_factor</code></td><td>无平方因子分解</td></tr>
+<tr><td><code>hensel_factor</code></td><td>Hensel 提升完全因式分解</td></tr>
+<tr><td><code>roots</code></td><td>实根隔离</td></tr>
 <tr><td><code>groebner</code></td><td>Gröbner 基（cyclic-n 理想）</td></tr>
 <tr><td><code>calculus</code> / <code>rewrite</code></td><td>微分、Taylor、规则化简</td></tr>
 <tr><td><code>eval_interpreter</code> / <code>eval_jit</code> / <code>eval_simd</code></td><td>数值求值路径</td></tr>
@@ -455,7 +1048,7 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 </div>
 <hr>
 <h2 id="sympy-对比自动化"><a class="header" href="#sympy-对比自动化">SymPy 对比（自动化）</a></h2>
-<p><code>sympy_comparison</code> 基准通过 <code>uv</code> 管理的 Python 子进程（<code>scripts/bench_sympy.py</code>）驱动 SymPy，用 <code>iter_custom</code> 将耗时（纳秒）接入 criterion，使 oCAS 与 SymPy 在同一报告中并列展示。</p>
+<p><code>sympy_comparison</code> 基准通过 <code>uv</code> 管理的 Python 子进程（<code>scripts/compare_sympy.py</code>）驱动 SymPy，用 <code>iter_custom</code> 将耗时（纳秒）接入 criterion，使 oCAS 与 SymPy 在同一报告中并列展示。</p>
 <pre><code class="language-bash"># 需要 PATH 中有 `uv`；Python 环境会自动准备
 cargo bench --bench sympy_comparison
 </code></pre>
@@ -495,9 +1088,129 @@ cd ../ocas
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 </code></pre>
 <hr>
+<h2 id="正确性对比"><a class="header" href="#正确性对比">正确性对比</a></h2>
+<p>除性能外，oCAS 还在 <code>ocas-tests/tests/correctness/</code> 中提供了正确性交叉验证框架。
+它运行 82 项自动化测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica
+进行对比。详见<a href="#正确性">正确性</a>章节。</p>
+<hr>
 <h2 id="报告结果"><a class="header" href="#报告结果">报告结果</a></h2>
 <p>criterion 将 HTML 报告写入 <code>target/criterion/</code>。在浏览器打开
 <code>target/criterion/poly_gcd/index.html</code> 可查看分布、回归与并列对比。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="正确性"><a class="header" href="#正确性">正确性</a></h1>
+<p>oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统进行对比：SymPy、SageMath 和 Symbolica。
+本章介绍该框架、如何运行及其当前已知限制。</p>
+<hr>
+<h2 id="框架概述"><a class="header" href="#框架概述">框架概述</a></h2>
+<p>正确性套件位于 <code>ocas-tests/tests/correctness/</code>，包含 <strong>82 项测试，覆盖 16 个数学模块</strong>。每项测试：</p>
+<ol>
+<li>生成输入（表达式、多项式、方程组等）</li>
+<li>使用 oCAS 计算结果</li>
+<li>使用参考系统计算等价结果</li>
+<li>断言两者语义相等</li>
+</ol>
+<p>模块覆盖 oCAS 的全部功能：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>模块</th><th>测试数</th><th>覆盖</th></tr>
+</thead>
+<tbody>
+<tr><td><code>algebra</code></td><td>8</td><td>化简、恒等律</td></tr>
+<tr><td><code>calculus_diff</code></td><td>7</td><td>符号微分</td></tr>
+<tr><td><code>calculus_int</code></td><td>5</td><td>启发式积分</td></tr>
+<tr><td><code>calculus_series</code></td><td>4</td><td>Taylor 级数展开</td></tr>
+<tr><td><code>domain_integer</code></td><td>5</td><td>整数运算、GCD</td></tr>
+<tr><td><code>domain_rational</code></td><td>4</td><td>有理数运算</td></tr>
+<tr><td><code>domain_finite_field</code></td><td>3</td><td>有限域运算</td></tr>
+<tr><td><code>evaluation</code></td><td>6</td><td>数值求值</td></tr>
+<tr><td><code>groebner</code></td><td>4</td><td>Gröbner 基计算</td></tr>
+<tr><td><code>linear_algebra</code></td><td>6</td><td>矩阵运算、线性求解</td></tr>
+<tr><td><code>parsing</code></td><td>5</td><td>表达式解析与输出</td></tr>
+<tr><td><code>poly_dense</code></td><td>5</td><td>稠密多项式运算</td></tr>
+<tr><td><code>poly_factor</code></td><td>4</td><td>无平方因子与完全因式分解</td></tr>
+<tr><td><code>poly_gcd</code></td><td>5</td><td>多项式 GCD</td></tr>
+<tr><td><code>poly_sparse</code></td><td>5</td><td>稀疏多元多项式运算</td></tr>
+<tr><td><code>solvers</code></td><td>6</td><td>线性与丢番图求解器</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="难度分级"><a class="header" href="#难度分级">难度分级</a></h2>
+<p>测试按难度分类，便于定位调试目标：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>级别</th><th>描述</th><th>数量</th></tr>
+</thead>
+<tbody>
+<tr><td>Trivial</td><td>基本健全性检查（如 <code>x + 0 = x</code>）</td><td>~20</td></tr>
+<tr><td>Easy</td><td>单步操作（如 <code>d/dx x^3</code>）</td><td>~30</td></tr>
+<tr><td>Medium</td><td>多步或中等复杂度</td><td>~20</td></tr>
+<tr><td>Hard</td><td>大型表达式、边界情况</td><td>~8</td></tr>
+<tr><td>Extreme</td><td>已知会触及限制</td><td>~4</td></tr>
+</tbody>
+</table>
+</div>
+<p>Extreme 级测试<strong>预期失败</strong>，用于记录已知差距（如 Wilkinson 多项式求根：10 个实根中仅找到 8 个）。</p>
+<hr>
+<h2 id="运行测试"><a class="header" href="#运行测试">运行测试</a></h2>
+<pre><code class="language-bash"># 运行全部正确性测试
+cargo test -p ocas-tests --test correctness
+
+# 运行特定模块
+cargo test -p ocas-tests --test correctness algebra
+
+# 详细输出以检查失败
+cargo test -p ocas-tests --test correctness -- --nocapture
+</code></pre>
+<p>测试无需外部依赖 —— 所有参考计算通过 <code>uv</code> 管理的 Python 子进程使用 SymPy，子进程自动自举。</p>
+<hr>
+<h2 id="对比工具"><a class="header" href="#对比工具">对比工具</a></h2>
+<p>独立脚本提供针对 SageMath 和 Symbolica 的手动交叉检查，用于深入调查：</p>
+<pre><code class="language-bash"># SageMath（需本地安装 `sage`）
+cd ocas-tests
+sage scripts/bench_sage.py factor "x^30 - 1" 100
+
+# Symbolica（需 Symbolica 源码检出）
+cd ../symbolica
+cargo run --release --example factorization
+</code></pre>
+<p>这些工具在开发期间用于验证自动化测试套件，并维护用于手动回归测试。</p>
+<hr>
+<h2 id="审计报告"><a class="header" href="#审计报告">审计报告</a></h2>
+<p>运行完整套件可生成 <code>correctness_report.md</code>，包含每个模块的通过/失败统计及已知限制注释。</p>
+<pre><code class="language-bash">cargo test -p ocas-tests --test correctness -- --generate-report
+</code></pre>
+<p>报告包含：</p>
+<ul>
+<li>每个模块的通过/失败计数</li>
+<li>失败测试列表及预期与实际结果对比</li>
+<li>难度级别分解</li>
+<li>已知差距注释及跟踪 issue 链接</li>
+</ul>
+<hr>
+<h2 id="已知限制"><a class="header" href="#已知限制">已知限制</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>问题</th><th>模块</th><th>状态</th></tr>
+</thead>
+<tbody>
+<tr><td>Wilkinson n=10：10 个实根中仅找到 8 个</td><td><code>poly_sparse</code> / roots</td><td>调查中</td></tr>
+<tr><td><code>sin(x)^2 + cos(x)^2 → 1</code> 需要 <code>egg</code> feature</td><td><code>algebra</code></td><td>启用 <code>egg</code> feature 后正常</td></tr>
+<tr><td>部分启发式积分尚未实现</td><td><code>calculus_int</code></td><td>0.12 中扩展</td></tr>
+<tr><td>多项式因式分解限于 Z[x]</td><td><code>poly_factor</code></td><td>Q[x] 计划在 0.12</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="参见-3"><a class="header" href="#参见-3">参见</a></h2>
+<ul>
+<li><a href="#基准与性能对比">基准与性能对比</a> — 基准套件详情</li>
+<li><a href="#rust-api">Rust API</a> — 测试中使用的核心类型</li>
+<li><a href="#贡献">贡献</a> — 如何添加新的正确性测试</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="数值后端"><a class="header" href="#数值后端">数值后端</a></h1>
 <p>oCAS 默认提供纯 Rust 构建（使用 <code>num-bigint</code>/<code>num-rational</code>），并通过 feature flag 提供可选的高性能后端。默认构建仅使用 LGPL 兼容依赖；GPL 专属代码隔离在可选的 <code>ocas-gpl</code> crate 中。</p>

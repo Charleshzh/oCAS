@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-189bf316.js";
+            window.path_to_searchindex_js = "searchindex-79abacc1.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-25f49014.js"></script>
+        <script src="toc-1e639325.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,7 +182,9 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="架构"><a class="header" href="#架构">架构</a></h1>
-<p>oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，不允许反向或循环依赖。</p>
+<p>oCAS 由 12 个公共 crate（外加用于集成测试与基准测试的 <code>ocas-tests</code>）
+组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，
+不允许反向或循环依赖。</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -198,6 +200,12 @@
 </tbody>
 </table>
 </div>
+<h2 id="重点模块"><a class="header" href="#重点模块">重点模块</a></h2>
+<p><strong><code>ocas-poly::factor</code></strong> — 多项式因式分解，使用 Hensel 提升与有限域技术。
+支持无平方因子分解以及整数域与有理数域上的完全因式分解。</p>
+<p><strong><code>ocas-poly::groebner</code></strong> — Gröbner 基计算（Buchberger 算法），支持可配置的单项式序（Lex、Grevlex）。</p>
+<p><strong><code>ocas-poly::roots</code></strong> — 单变量多项式实根隔离。</p>
+<p><strong><code>ocas-tests::correctness</code></strong> — 交叉验证框架，包含 82 项测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica 进行对比。</p>
 <p>完整设计文档见仓库中的 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_CN.md">ARCHITECTURE_CN.md</a>。</p>
 
                     </main>

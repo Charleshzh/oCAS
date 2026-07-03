@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-189bf316.js";
+            window.path_to_searchindex_js = "searchindex-79abacc1.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-25f49014.js"></script>
+        <script src="toc-1e639325.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -206,15 +206,19 @@
 <ul>
 <li><strong>分层 Rust 架构</strong> —— 从 arena 运行时到语言绑定的 12 个 crate，依赖严格向下。</li>
 <li><strong>多种系数域</strong> —— 任意精度整数、有理数、有限域、实数球、复数。</li>
-<li><strong>多项式代数</strong> —— 稠密/稀疏多元多项式、GCD、无平方因子分解、Gröbner 基（Buchberger）。</li>
-<li><strong>符号微积分</strong> —— 微分、Taylor 级数、启发式积分。</li>
-<li><strong>JIT 求值</strong> —— Cranelift 后端与 SIMD 向量化求值。</li>
+<li><strong>多项式代数</strong> —— 稠密/稀疏多元多项式、GCD、多元 GCD、因式分解（Hensel 提升）、无平方因子分解、Gröbner 基（Buchberger）、根隔离。</li>
+<li><strong>符号微积分</strong> —— 微分、Taylor 级数、启发式积分、表达式替换。</li>
+<li><strong>线性代数</strong> —— 矩阵 Bareiss 行列式、秩、逆、转置、迹、线性方程组求解。</li>
+<li><strong>方程求解器</strong> —— 线性方程组（ℚ、ℤ）、丢番图方程、基于 Gröbner 基的多项式系统。</li>
+<li><strong>JIT 求值</strong> —— Cranelift 后端与 SIMD 向量化批量求值。</li>
+<li><strong>重写与化简</strong> —— 通配符模式匹配、基于规则的不动点化简、可选 egg e-graph 等式饱和。</li>
 <li><strong>三语言绑定</strong> —— Rust、Python（PyO3）、C/C++（cbindgen）。</li>
+<li><strong>正确性框架</strong> —— 82 项自动化交叉验证测试，覆盖 SymPy、SageMath、Symbolica，横跨 16 个模块。</li>
 <li><strong>可选数值后端</strong> —— GMP/MPFR/FLINT 隐藏在 feature flag 后，GPL 后端隔离在 <code>ocas-gpl</code>。</li>
 </ul>
 <hr>
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.10.0（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值与三语言绑定已达到 Beta 功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.11.0（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值、三语言绑定与正确性对比框架已达到 Beta 功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 
                     </main>

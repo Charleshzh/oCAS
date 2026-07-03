@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-104fa799.js";
+            window.path_to_searchindex_js = "searchindex-b9327217.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-6b1b38b3.js"></script>
+        <script src="toc-b4bbd6d2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -182,7 +182,8 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="architecture"><a class="header" href="#architecture">Architecture</a></h1>
-<p>oCAS is organized as a Cargo workspace of 12 crates with strict downward
+<p>oCAS is organized as a Cargo workspace of 12 public crates (plus
+<code>ocas-tests</code> for integration tests and benchmarks) with strict downward
 layering. Each crate may only depend on lower-level crates; no reverse or
 cyclic dependencies are permitted.</p>
 <div class="table-wrapper">
@@ -200,6 +201,16 @@ cyclic dependencies are permitted.</p>
 </tbody>
 </table>
 </div>
+<h2 id="notable-modules"><a class="header" href="#notable-modules">Notable modules</a></h2>
+<p><strong><code>ocas-poly::factor</code></strong> — Polynomial factorization using Hensel lifting and
+finite-field techniques. Supports square-free decomposition and full
+factorization over the integers and rationals.</p>
+<p><strong><code>ocas-poly::groebner</code></strong> — Gröbner basis computation (Buchberger algorithm)
+with configurable monomial orders (Lex, Grevlex).</p>
+<p><strong><code>ocas-poly::roots</code></strong> — Real root isolation for univariate polynomials.</p>
+<p><strong><code>ocas-tests::correctness</code></strong> — Cross-validation framework with 82 tests
+across 16 mathematical modules, comparing oCAS results against SymPy,
+SageMath, and Symbolica.</p>
 <p>See <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_EN.md">ARCHITECTURE_EN.md</a>
 in the repository for the full design document.</p>
 

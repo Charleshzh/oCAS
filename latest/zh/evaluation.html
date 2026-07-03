@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Introduction - oCAS — open Computer Algebra System</title>
+        <title>求值与 JIT - oCAS — 开源计算机代数系统</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b9327217.js";
+            window.path_to_searchindex_js = "searchindex-79abacc1.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-b4bbd6d2.js"></script>
+        <script src="toc-1e639325.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -138,7 +138,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -147,7 +147,7 @@
                         <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/introduction.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/evaluation.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -181,68 +181,126 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>oCAS (open Computer Algebra System) is a modern, high-performance computer
-algebra system written in Rust. It aims to match or exceed the core
-performance of Symbolica and SageMath while remaining free and open under the
-<strong>LGPL-3.0-or-later</strong> license.</p>
+                        <h1 id="求值与-jit"><a class="header" href="#求值与-jit">求值与 JIT</a></h1>
+<p>oCAS 为符号表达式的数值求值提供三条路径：解释器（栈 VM）、Cranelift JIT 编译器和 SIMD 向量化批量求值器。
+本章解释每条路径及何时使用。</p>
 <hr>
-<h2 id="why-ocas"><a class="header" href="#why-ocas">Why oCAS?</a></h2>
+<h2 id="栈-vm-解释器"><a class="header" href="#栈-vm-解释器">栈 VM 解释器</a></h2>
+<p>默认求值路径。<code>ExpressionEvaluator</code> 将 <code>Atom</code> 表达式树编译为栈机指令序列，然后在扁平操作数栈上执行。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// 解析并编译
+let e = parse(&amp;ctx, "x^2 + y").unwrap();
+let ev = ExpressionEvaluator::&lt;f64&gt;::compile(e).unwrap();
+
+// 用参数值求值
+let result = ev.evaluate(&amp;[3.0, 1.0]).unwrap();  // [10.0]
+let result = ev.evaluate(&amp;[2.0, 0.0]).unwrap();  // [4.0]
+<span class="boring">}</span></code></pre>
+<p>编译器自动检测自由变量，按排序顺序分配参数槽，并优化指令序列（常量折叠、拷贝链消除）。</p>
+<p>Python：</p>
+<pre><code class="language-python">ev = ocas.ExpressionEvaluator("x^2 + y", ["x", "y"])
+print(ev.evaluate([3.0, 1.0]))  # [10.0]
+print(ev.evaluate([2.0, 0.0]))  # [4.0]
+</code></pre>
+<hr>
+<h2 id="cranelift-jit"><a class="header" href="#cranelift-jit">Cranelift JIT</a></h2>
+<p>启用 <code>jit</code> feature 后，oCAS 通过 Cranelift 将表达式编译为本机机器码。
+这适用于使用不同输入重复求值同一表达式 —— 将编译开销分摊到多次调用。</p>
+<pre><code class="language-bash">cargo build -p ocas --features jit
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+{
+    use ocas::prelude::*;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "sin(x) * cos(y)").unwrap();
+
+    let mut engine = JitEngine::new();
+    let compiled = engine.compile::&lt;f64, _&gt;(e).unwrap();
+    let result = compiled.call(&amp;[0.5, 1.0]);  // ~0.2590
+}
+<span class="boring">}</span></code></pre>
+<p>JIT 路径将解释器使用的同一 IR 翻译为本机 x86-64 或 aarch64 代码。对于需要数千次求值的表达式，
+可比解释器快 10–50 倍。</p>
+<hr>
+<h2 id="simd-批量求值"><a class="header" href="#simd-批量求值">SIMD 批量求值</a></h2>
+<p><code>simd</code> feature 使用 <code>wide::f64x4</code> 启用向量化求值，通过 SIMD 指令同时计算四个输入。</p>
+<pre><code class="language-bash">cargo build -p ocas --features simd
+</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+{
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+    let e = parse(&amp;ctx, "x^2 + y").unwrap();
+
+    let ev = VectorEvaluator::&lt;f64&gt;::compile(e).unwrap();
+    let results = ev.evaluate_batch(&amp;[
+        vec![1.0, 0.0],   // 1^2 + 0 = 1
+        vec![2.0, 1.0],   // 2^2 + 1 = 5
+        vec![3.0, 2.0],   // 3^2 + 2 = 11
+        vec![0.0, 5.0],   // 0^2 + 5 = 5
+    ]).unwrap();
+    // results = [1.0, 5.0, 11.0, 5.0]
+}
+<span class="boring">}</span></code></pre>
+<p>SIMD 求值并行处理四组参数，适用于参数扫描、绘图和 Monte Carlo 工作负载。</p>
+<hr>
+<h2 id="对比"><a class="header" href="#对比">对比</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Feature</th><th>oCAS</th><th>Symbolica</th><th>SymPy</th><th>SageMath</th></tr>
+<tr><th>路径</th><th>Feature</th><th>延迟</th><th>吞吐</th><th>最适合</th></tr>
 </thead>
 <tbody>
-<tr><td>Language</td><td>Rust</td><td>Rust</td><td>Python</td><td>Python/Cython</td></tr>
-<tr><td>License</td><td>LGPL-3.0+</td><td>Proprietary / source-available</td><td>BSD</td><td>GPL</td></tr>
-<tr><td>Native speed</td><td>✅</td><td>✅</td><td>❌</td><td>⚠️</td></tr>
-<tr><td>Rust API</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
-<tr><td>Python API</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td>C/C++ API</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
-<tr><td>No GPL contamination</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+<tr><td>解释器</td><td>（默认）</td><td>低（无编译开销）</td><td>中</td><td>单次求值、交互使用</td></tr>
+<tr><td>JIT</td><td><code>jit</code></td><td>高（编译）+ 低（运行）</td><td>高</td><td>同一表达式的重复求值</td></tr>
+<tr><td>SIMD</td><td><code>simd</code></td><td>低–中</td><td>极高（4×）</td><td>批量求值、参数扫描</td></tr>
 </tbody>
 </table>
 </div>
-<hr>
-<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<h3 id="使用建议"><a class="header" href="#使用建议">使用建议</a></h3>
 <ul>
-<li><strong>Layered Rust architecture</strong> — 12 crates from the arena runtime up to
-language bindings, with strict downward dependencies.</li>
-<li><strong>Multiple coefficient domains</strong> — arbitrary-precision integers, rationals,
-finite fields, real balls, and complex numbers.</li>
-<li><strong>Polynomial algebra</strong> — dense/sparse multivariate polynomials, GCD,
-multivariate GCD, factorization (Hensel lifting), square-free factorization,
-Gröbner bases (Buchberger), root isolation.</li>
-<li><strong>Symbolic calculus</strong> — differentiation, Taylor series, heuristic
-integration, expression substitution.</li>
-<li><strong>Linear algebra</strong> — matrices with Bareiss determinant, rank, inverse,
-transpose, trace, and linear system solving.</li>
-<li><strong>Equation solvers</strong> — linear systems (ℚ, ℤ), Diophantine equations,
-polynomial systems via Gröbner bases.</li>
-<li><strong>JIT evaluation</strong> — Cranelift backend and SIMD-vectorized batch evaluation.</li>
-<li><strong>Rewrite &amp; simplification</strong> — pattern matching with wildcards, rule-based
-fixed-point simplification, optional egg e-graph equality saturation.</li>
-<li><strong>Tri-language bindings</strong> — Rust, Python (PyO3), and C/C++ (cbindgen).</li>
-<li><strong>Correctness framework</strong> — 82 automated cross-validation tests against
-SymPy, SageMath, and Symbolica across 16 modules.</li>
-<li><strong>Optional numerical backends</strong> — GMP/MPFR/FLINT behind feature flags,
-isolated GPL backends in <code>ocas-gpl</code>.</li>
+<li><strong>解释器</strong>：交互式 REPL 会话、一次性求值、Python API。</li>
+<li><strong>JIT</strong>：重复数值求值（求根迭代、优化循环）。</li>
+<li><strong>SIMD</strong>：大量输入的批量处理（绘图、灵敏度分析、ML 管道）。</li>
 </ul>
 <hr>
-<h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.11.0 (Beta)</strong>. The core symbolic engine,
-polynomial algebra, solvers, JIT evaluation, tri-language bindings, and
-correctness comparison framework are feature-complete for a beta release. See
-the <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>
-for the path to stable 1.0.</p>
+<h2 id="用户自定义函数"><a class="header" href="#用户自定义函数">用户自定义函数</a></h2>
+<p><code>FunctionMap</code> 允许注册自定义 Rust 函数，使其可在求值表达式中调用。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut fns = FunctionMap::&lt;f64&gt;::new();
+fns.insert("f", |args: &amp;[f64]| args[0].sin() * args[1].cos());
+
+let e = parse(&amp;ctx, "f(x, y)").unwrap();
+let ev = ExpressionEvaluator::&lt;f64&gt;::compile_with(e, fns).unwrap();
+let result = ev.evaluate(&amp;[0.5, 1.0]).unwrap();
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./rust-api.html">Rust API</a> — 构建用于求值的表达式</li>
+<li><a href="./performance.html">基准与性能对比</a> — 三条路径的基准结果</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="rewrite.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="getting-started.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="performance.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -252,8 +310,11 @@ for the path to stable 1.0.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="rewrite.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="getting-started.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="performance.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
