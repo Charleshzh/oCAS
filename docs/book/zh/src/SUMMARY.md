@@ -10,10 +10,18 @@
 
 - [Python API](./bindings-python.md)
 - [C/C++ API](./bindings-c.md)
+- [Rust API](./rust-api.md)
 
-# 性能
+# 高级主题
+
+- [求解器](./solvers.md)
+- [重写与化简](./rewrite.md)
+- [求值与 JIT](./evaluation.md)
+
+# 性能与质量
 
 - [基准与性能对比](./performance.md)
+- [正确性](./correctness.md)
 
 # 参考
 

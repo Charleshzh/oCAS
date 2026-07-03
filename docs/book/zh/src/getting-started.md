@@ -10,7 +10,7 @@ oCAS 提供 Rust crate、Python 包和 C/C++ 库三种形式。
 
 ```toml
 [dependencies]
-ocas = "0.10"
+ocas = "0.11"
 ```
 
 ```rust

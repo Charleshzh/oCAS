@@ -14,6 +14,8 @@ cargo bench --workspace
 cargo bench --bench poly_gcd
 cargo bench --bench poly_factor
 cargo bench --bench groebner
+cargo bench --bench poly_multivariate_gcd
+cargo bench --bench roots
 
 # 更快但精度较低的运行
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
@@ -25,7 +27,10 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 | `parse` / `normalize` | 表达式解析与规范化 |
 | `poly_dense` / `poly_sparse` | 多项式运算 |
 | `poly_gcd` | 一元多项式 GCD |
+| `poly_multivariate_gcd` | 多元多项式 GCD |
 | `poly_factor` | 无平方因子分解 |
+| `hensel_factor` | Hensel 提升完全因式分解 |
+| `roots` | 实根隔离 |
 | `groebner` | Gröbner 基（cyclic-n 理想） |
 | `calculus` / `rewrite` | 微分、Taylor、规则化简 |
 | `eval_interpreter` / `eval_jit` / `eval_simd` | 数值求值路径 |
@@ -35,7 +40,7 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 
 ## SymPy 对比（自动化）
 
-`sympy_comparison` 基准通过 `uv` 管理的 Python 子进程（`scripts/bench_sympy.py`）驱动 SymPy，用 `iter_custom` 将耗时（纳秒）接入 criterion，使 oCAS 与 SymPy 在同一报告中并列展示。
+`sympy_comparison` 基准通过 `uv` 管理的 Python 子进程（`scripts/compare_sympy.py`）驱动 SymPy，用 `iter_custom` 将耗时（纳秒）接入 criterion，使 oCAS 与 SymPy 在同一报告中并列展示。
 
 ```bash
 # 需要 PATH 中有 `uv`；Python 环境会自动准备
@@ -83,6 +88,14 @@ cargo run --release --example polynomial_gcd
 cd ../ocas
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 ```
+
+---
+
+## 正确性对比
+
+除性能外，oCAS 还在 `ocas-tests/tests/correctness/` 中提供了正确性交叉验证框架。
+它运行 82 项自动化测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica
+进行对比。详见[正确性](./correctness.md)章节。
 
 ---
 

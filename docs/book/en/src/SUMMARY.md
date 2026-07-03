@@ -10,10 +10,18 @@
 
 - [Python API](./bindings-python.md)
 - [C/C++ API](./bindings-c.md)
+- [Rust API](./rust-api.md)
 
-# Performance
+# Advanced Topics
+
+- [Solvers](./solvers.md)
+- [Rewrite & Simplification](./rewrite.md)
+- [Evaluation & JIT](./evaluation.md)
+
+# Performance & Quality
 
 - [Benchmarks & Comparison](./performance.md)
+- [Correctness](./correctness.md)
 
 # Reference
 

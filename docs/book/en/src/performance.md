@@ -17,6 +17,8 @@ cargo bench --workspace
 cargo bench --bench poly_gcd
 cargo bench --bench poly_factor
 cargo bench --bench groebner
+cargo bench --bench poly_multivariate_gcd
+cargo bench --bench roots
 
 # Faster, less precise runs
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
@@ -28,7 +30,10 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 | `parse` / `normalize` | Expression parsing and normalization |
 | `poly_dense` / `poly_sparse` | Polynomial arithmetic |
 | `poly_gcd` | Univariate polynomial GCD |
+| `poly_multivariate_gcd` | Multivariate polynomial GCD |
 | `poly_factor` | Square-free factorization |
+| `hensel_factor` | Hensel-lifting full factorization |
+| `roots` | Real root isolation |
 | `groebner` | Gröbner bases (cyclic-n ideals) |
 | `calculus` / `rewrite` | Differentiation, Taylor, rule-based simplification |
 | `eval_interpreter` / `eval_jit` / `eval_simd` | Numeric evaluation paths |
@@ -39,7 +44,7 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 ## SymPy comparison (automated)
 
 The `sympy_comparison` benchmark drives SymPy through a `uv`-managed Python
-subprocess (`scripts/bench_sympy.py`) and feeds the elapsed nanoseconds into
+subprocess (`scripts/compare_sympy.py`) and feeds the elapsed nanoseconds into
 criterion via `iter_custom`, so oCAS and SymPy appear side-by-side in the same
 report.
 
@@ -94,6 +99,15 @@ cargo run --release --example polynomial_gcd
 cd ../ocas
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 ```
+
+---
+
+## Correctness comparison
+
+Beyond performance, oCAS ships a correctness cross-validation framework in
+`ocas-tests/tests/correctness/`. It runs 82 automated tests across 16
+mathematical modules, comparing oCAS results against SymPy, SageMath, and
+Symbolica. See the [Correctness](./correctness.md) chapter for details.
 
 ---
 

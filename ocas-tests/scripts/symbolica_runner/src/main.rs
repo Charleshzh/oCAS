@@ -40,7 +40,9 @@ fn run(task: &str, expr: &str) -> Result<String, String> {
         }
         "series" => {
             let a = parse!(expr);
-            let s = a.series(x, 0, 10).map_err(|e| format!("series error: {:?}", e))?;
+            let s = a
+                .series(x, 0, 10)
+                .map_err(|e| format!("series error: {:?}", e))?;
             Ok(format!("{}", s))
         }
         _ => Err(format!("unknown task: {}", task)),

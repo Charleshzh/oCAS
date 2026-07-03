@@ -1,6 +1,8 @@
 # 架构
 
-oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，不允许反向或循环依赖。
+oCAS 由 12 个公共 crate（外加用于集成测试与基准测试的 `ocas-tests`）
+组成的 Cargo workspace，层间依赖严格向下。每个 crate 只能依赖更底层的 crate，
+不允许反向或循环依赖。
 
 | 层级 | crate | 职责 |
 |---|---|---|
@@ -10,5 +12,16 @@ oCAS 由 12 个 crate 组成的 Cargo workspace，层间依赖严格向下。每
 | 2 代数核 | `ocas-domain`、`ocas-poly` | 域、多项式、数论 |
 | 1 数值后端 | `ocas-core` | GMP/FLINT 封装 |
 | 0 运行时 | `ocas-core` | arena、错误、线程池、FFI |
+
+## 重点模块
+
+**`ocas-poly::factor`** — 多项式因式分解，使用 Hensel 提升与有限域技术。
+支持无平方因子分解以及整数域与有理数域上的完全因式分解。
+
+**`ocas-poly::groebner`** — Gröbner 基计算（Buchberger 算法），支持可配置的单项式序（Lex、Grevlex）。
+
+**`ocas-poly::roots`** — 单变量多项式实根隔离。
+
+**`ocas-tests::correctness`** — 交叉验证框架，包含 82 项测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica 进行对比。
 
 完整设计文档见仓库中的 [ARCHITECTURE_CN.md](https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_CN.md)。

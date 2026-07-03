@@ -62,6 +62,8 @@ print(m.shape())                    # (2, 2)
 print(m[0, 1])                      # '2'
 print(m.determinant())              # '-2'
 print(m.rank())                     # 2
+print(m.transpose().rows())         # [['1', '3'], ['2', '4']]
+print(m.trace())                    # '5'
 
 # 运算
 a = ocas.Matrix([[1, 2], [3, 5]])   # det = -1，整数逆存在
