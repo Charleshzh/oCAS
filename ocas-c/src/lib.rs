@@ -44,6 +44,7 @@
 
 pub mod error;
 pub mod expression;
+pub mod polynomial;
 
 use std::ffi::c_char;
 
@@ -57,6 +58,12 @@ pub use expression::{
     OcasExpr, ocas_expr_clone, ocas_expr_diff, ocas_expr_free, ocas_expr_integrate,
     ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify, ocas_expr_substitute,
     ocas_expr_taylor, ocas_expr_to_string, ocas_string_free,
+};
+pub use polynomial::{
+    OcasPolyFp, OcasPolyZ, ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create,
+    ocas_poly_fp_degree, ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string,
+    ocas_poly_z_clone, ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor,
+    ocas_poly_z_free, ocas_poly_z_to_string,
 };
 
 /// Return the oCAS version string.

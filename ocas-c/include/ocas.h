@@ -56,6 +56,54 @@ struct ocas_OcasExpr {
   uint8_t _private[0];
 };
 
+/**
+ * Opaque handle for a bivariate integer polynomial.
+ */
+struct ocas_OcasPolyZ {
+  uint8_t _private[0];
+};
+
+/**
+ * A factor returned by [`ocas_poly_z_factor`] or [`ocas_poly_fp_factor`].
+ *
+ * The `poly` pointer is a generic `void*`; the caller must cast it to the
+ * appropriate concrete type depending on which factorization function was
+ * used (`OcasPolyZ*` for Z, `OcasPolyFp*` for Fp). Each returned polynomial
+ * handle must be freed with the corresponding type-specific free function.
+ */
+struct ocas_OcasPolyFactor {
+  /**
+   * The polynomial factor. The actual type is determined by the caller.
+   */
+  void *poly;
+  /**
+   * Multiplicity of the factor.
+   */
+  size_t multiplicity;
+};
+
+/**
+ * An array of factors returned by [`ocas_poly_z_factor`] or
+ * [`ocas_poly_fp_factor`]. Free with [`ocas_poly_factor_array_free`].
+ */
+struct ocas_OcasPolyFactorArray {
+  /**
+   * Pointer to the first factor. May be `NULL` if `len == 0`.
+   */
+  struct ocas_OcasPolyFactor *factors;
+  /**
+   * Number of factors in the array.
+   */
+  size_t len;
+};
+
+/**
+ * Opaque handle for a bivariate polynomial over a prime finite field.
+ */
+struct ocas_OcasPolyFp {
+  uint8_t _private[0];
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -210,6 +258,97 @@ struct ocas_OcasExpr *ocas_expr_substitute(const struct ocas_OcasExpr *handle,
                                            const char *var,
                                            const struct ocas_OcasExpr *replacement,
                                            int *err_out);
+
+/**
+ * Create a bivariate integer polynomial from a string expression.
+ *
+ * The input may contain the variables `x` and `y`, integer coefficients,
+ * addition, multiplication, and non-negative integer powers.
+ *
+ * Returns an opaque handle, or `NULL` on parse failure. On failure the
+ * error message can be read with [`ocas_error_last_message`].
+ */
+struct ocas_OcasPolyZ *ocas_poly_z_create(const char *input, int *err);
+
+/**
+ * Free a polynomial handle created with [`ocas_poly_z_create`].
+ */
+void ocas_poly_z_free(struct ocas_OcasPolyZ *poly);
+
+/**
+ * Clone a polynomial handle. Returns a new handle that must be freed.
+ */
+struct ocas_OcasPolyZ *ocas_poly_z_clone(const struct ocas_OcasPolyZ *poly);
+
+/**
+ * Return the total degree of the polynomial, or `0` for the zero polynomial.
+ */
+size_t ocas_poly_z_degree(const struct ocas_OcasPolyZ *poly);
+
+/**
+ * Return a heap-allocated string representation of the polynomial.
+ * The caller must release the returned string with [`ocas_string_free`].
+ */
+char *ocas_poly_z_to_string(const struct ocas_OcasPolyZ *poly, int *err);
+
+/**
+ * Factor a bivariate integer polynomial.
+ *
+ * On success, `out` is filled with a heap-allocated array of factors and
+ * multiplicities. The caller must release it with
+ * [`ocas_poly_factor_array_free`]. On failure `out` is unchanged and the
+ * error message can be queried with [`ocas_error_last_message`].
+ */
+int ocas_poly_z_factor(const struct ocas_OcasPolyZ *poly,
+                       struct ocas_OcasPolyFactorArray *out,
+                       int *err);
+
+/**
+ * Create a bivariate polynomial over the prime field `F_p` from a string.
+ *
+ * `prime` is the field modulus (must be prime). Coefficients in the string
+ * are reduced modulo `p`.
+ */
+struct ocas_OcasPolyFp *ocas_poly_fp_create(const char *input, const char *prime, int *err);
+
+/**
+ * Free a finite-field polynomial handle.
+ */
+void ocas_poly_fp_free(struct ocas_OcasPolyFp *poly);
+
+/**
+ * Clone a finite-field polynomial handle.
+ */
+struct ocas_OcasPolyFp *ocas_poly_fp_clone(const struct ocas_OcasPolyFp *poly);
+
+/**
+ * Return the total degree of the finite-field polynomial.
+ */
+size_t ocas_poly_fp_degree(const struct ocas_OcasPolyFp *poly);
+
+/**
+ * Return a heap-allocated string representation of the finite-field
+ * polynomial. The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_poly_fp_to_string(const struct ocas_OcasPolyFp *poly, int *err);
+
+/**
+ * Factor a bivariate polynomial over a prime finite field.
+ */
+int ocas_poly_fp_factor(const struct ocas_OcasPolyFp *poly,
+                        struct ocas_OcasPolyFactorArray *out,
+                        int *err);
+
+/**
+ * Free a factor array returned by [`ocas_poly_z_factor`] or
+ * [`ocas_poly_fp_factor`].
+ *
+ * This frees the array structure and the `OcasPolyFactor` objects themselves,
+ * but *not* the individual polynomial handles. The caller must free each
+ * returned polynomial factor with the appropriate type-specific free function
+ * (e.g. [`ocas_poly_z_free`] or [`ocas_poly_fp_free`]).
+ */
+void ocas_poly_factor_array_free(struct ocas_OcasPolyFactorArray *arr);
 
 #ifdef __cplusplus
 }  // extern "C"
