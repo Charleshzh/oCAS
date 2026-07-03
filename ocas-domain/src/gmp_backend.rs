@@ -195,6 +195,7 @@ impl Integer {
 
     /// Raise to a `u32` power.
     pub fn pow_u32(&self, exp: u32) -> Self {
+        use rug::ops::Pow;
         Integer(self.0.clone().pow(exp))
     }
 
@@ -210,12 +211,13 @@ impl Integer {
 
     /// Floor modulo: result `r` satisfies `0 ≤ r < |modulus|`.
     pub fn mod_floor(&self, modulus: &Integer) -> Integer {
-        Integer(self.0.clone().mod_floor(&modulus.0))
+        use rug::ops::DivRounding;
+        Integer(self.0.clone().mod_floor(modulus.0.clone()))
     }
 
     /// Division with remainder: `(quotient, remainder)`.
     pub fn div_rem(&self, other: &Integer) -> (Integer, Integer) {
-        let (q, r) = self.0.div_rem_ref(&other.0);
+        let (q, r) = self.0.clone().div_rem(other.0.clone());
         (Integer(q), Integer(r))
     }
 
@@ -252,6 +254,8 @@ impl Integer {
 
 // ---------------------------------------------------------------------------
 // Arithmetic operators — forward to the inner rug::Integer.
+// Note: rug's &Integer op &Integer returns incomplete types, so we clone
+// to always use owned arithmetic.
 // ---------------------------------------------------------------------------
 
 macro_rules! impl_gmp_int_op_owned {
@@ -265,19 +269,19 @@ macro_rules! impl_gmp_int_op_owned {
         impl $trait<&Integer> for Integer {
             type Output = Integer;
             fn $method(self, rhs: &Integer) -> Integer {
-                Integer(self.0 $op &rhs.0)
+                Integer(self.0 $op rhs.0.clone())
             }
         }
         impl $trait<Integer> for &Integer {
             type Output = Integer;
             fn $method(self, rhs: Integer) -> Integer {
-                Integer(&self.0 $op rhs.0)
+                Integer(self.0.clone() $op rhs.0)
             }
         }
         impl $trait<&Integer> for &Integer {
             type Output = Integer;
             fn $method(self, rhs: &Integer) -> Integer {
-                Integer(&self.0 $op &rhs.0)
+                Integer(self.0.clone() $op rhs.0.clone())
             }
         }
     };
@@ -316,7 +320,7 @@ impl std::ops::Shr<u32> for Integer {
 impl std::ops::Shr<u32> for &Integer {
     type Output = Integer;
     fn shr(self, shift: u32) -> Integer {
-        Integer(&self.0 >> shift)
+        Integer(self.0.clone() >> shift)
     }
 }
 
