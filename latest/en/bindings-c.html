@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-aa040217.js";
+            window.path_to_searchindex_js = "searchindex-4564c646.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-d71ebc20.js"></script>
@@ -220,6 +220,74 @@ int main() {
 <p>The C++ wrapper translates oCAS errors into <code>ocas::Error</code> exceptions and
 manages arena-backed expressions via RAII, so manual <code>free</code> calls are
 unnecessary.</p>
+<h2 id="polynomial-api"><a class="header" href="#polynomial-api">Polynomial API</a></h2>
+<p>Since 0.11.1, <code>ocas-c</code> exposes bivariate polynomial objects as opaque
+handles with factorization support over $\mathbb{Z}$ and $\mathbb{F}_p$.</p>
+<h3 id="integer-polynomials-ocaspolyz"><a class="header" href="#integer-polynomials-ocaspolyz">Integer polynomials (<code>OcasPolyZ</code>)</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    int err;
+    // Create a bivariate integer polynomial from a string.
+    OcasPolyZ* p = ocas_poly_z_create("x^2 + y + 1", &amp;err);
+
+    // Query total degree.
+    printf("degree: %zu\n", ocas_poly_z_degree(p));
+
+    // Factor into irreducible components.
+    OcasPolyFactorArray factors;
+    ocas_poly_z_factor(p, &amp;factors, &amp;err);
+
+    for (size_t i = 0; i &lt; factors.len; i++) {
+        OcasPolyZ* fi = (OcasPolyZ*)factors.factors[i].poly;
+        char* s = ocas_poly_z_to_string(fi, &amp;err);
+        printf("  factor %zu: %s (mult %zu)\n", i, s,
+               factors.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_poly_z_free(fi);
+    }
+    ocas_poly_factor_array_free(&amp;factors);
+    ocas_poly_z_free(p);
+    return 0;
+}
+</code></pre>
+<h3 id="finite-field-polynomials-ocaspolyfp"><a class="header" href="#finite-field-polynomials-ocaspolyfp">Finite-field polynomials (<code>OcasPolyFp</code>)</a></h3>
+<pre><code class="language-c">// Create a polynomial over F_5 and factor it.
+OcasPolyFp* p = ocas_poly_fp_create("x^2 + y + 1", "5", &amp;err);
+
+OcasPolyFactorArray factors;
+ocas_poly_fp_factor(p, &amp;factors, &amp;err);
+
+for (size_t i = 0; i &lt; factors.len; i++) {
+    OcasPolyFp* fi = (OcasPolyFp*)factors.factors[i].poly;
+    char* s = ocas_poly_fp_to_string(fi, &amp;err);
+    printf("  factor %zu: %s\n", i, s);
+    ocas_string_free(s);
+    ocas_poly_fp_free(fi);
+}
+ocas_poly_factor_array_free(&amp;factors);
+ocas_poly_fp_free(p);
+</code></pre>
+<h3 id="lifecycle"><a class="header" href="#lifecycle">Lifecycle</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Function</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ocas_poly_z_create</code> / <code>ocas_poly_fp_create</code></td><td>Create from string</td></tr>
+<tr><td><code>ocas_poly_z_clone</code> / <code>ocas_poly_fp_clone</code></td><td>Deep copy</td></tr>
+<tr><td><code>ocas_poly_z_degree</code> / <code>ocas_poly_fp_degree</code></td><td>Total degree</td></tr>
+<tr><td><code>ocas_poly_z_to_string</code> / <code>ocas_poly_fp_to_string</code></td><td>Heap-allocated string (caller frees)</td></tr>
+<tr><td><code>ocas_poly_z_factor</code> / <code>ocas_poly_fp_factor</code></td><td>Factor into irreducible components</td></tr>
+<tr><td><code>ocas_poly_z_free</code> / <code>ocas_poly_fp_free</code></td><td>Release handle</td></tr>
+<tr><td><code>ocas_poly_factor_array_free</code></td><td>Release factor array</td></tr>
+</tbody>
+</table>
+</div>
+<p>All polynomial functions are safe to call (no <code>unsafe</code> required). Passing
+<code>NULL</code> to any function sets the error code and returns <code>NULL</code> / error.</p>
 
                     </main>
 

@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-0f6eda9a.js";
+            window.path_to_searchindex_js = "searchindex-275a38ee.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-10a08c6f.js"></script>
@@ -216,7 +216,7 @@
 </ul>
 <hr>
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.11.0（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值、三语言绑定与正确性对比框架已达到 Beta 功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.11.1（Beta）</strong>。核心符号引擎、多项式代数、求解器、JIT 求值、三语言绑定与正确性对比框架已达到 Beta 功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
@@ -433,6 +433,72 @@ int main() {
 }
 </code></pre>
 <p>C++ 包装将 oCAS 错误转换为 <code>ocas::Error</code> 异常，并通过 RAII 管理 arena 后端表达式，无需手动调用 <code>free</code>。</p>
+<h2 id="多项式-api"><a class="header" href="#多项式-api">多项式 API</a></h2>
+<p>自 0.11.1 起，<code>ocas-c</code> 将二元多项式对象暴露为不透明句柄，支持 $\mathbb{Z}$ 和 $\mathbb{F}_p$ 上的因式分解。</p>
+<h3 id="整数多项式ocaspolyz"><a class="header" href="#整数多项式ocaspolyz">整数多项式（<code>OcasPolyZ</code>）</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    int err;
+    // 从字符串创建二元整数多项式。
+    OcasPolyZ* p = ocas_poly_z_create("x^2 + y + 1", &amp;err);
+
+    // 查询总次数。
+    printf("degree: %zu\n", ocas_poly_z_degree(p));
+
+    // 因式分解为不可约因子。
+    OcasPolyFactorArray factors;
+    ocas_poly_z_factor(p, &amp;factors, &amp;err);
+
+    for (size_t i = 0; i &lt; factors.len; i++) {
+        OcasPolyZ* fi = (OcasPolyZ*)factors.factors[i].poly;
+        char* s = ocas_poly_z_to_string(fi, &amp;err);
+        printf("  factor %zu: %s (mult %zu)\n", i, s,
+               factors.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_poly_z_free(fi);
+    }
+    ocas_poly_factor_array_free(&amp;factors);
+    ocas_poly_z_free(p);
+    return 0;
+}
+</code></pre>
+<h3 id="有限域多项式ocaspolyfp"><a class="header" href="#有限域多项式ocaspolyfp">有限域多项式（<code>OcasPolyFp</code>）</a></h3>
+<pre><code class="language-c">// 在 F_5 上创建多项式并因式分解。
+OcasPolyFp* p = ocas_poly_fp_create("x^2 + y + 1", "5", &amp;err);
+
+OcasPolyFactorArray factors;
+ocas_poly_fp_factor(p, &amp;factors, &amp;err);
+
+for (size_t i = 0; i &lt; factors.len; i++) {
+    OcasPolyFp* fi = (OcasPolyFp*)factors.factors[i].poly;
+    char* s = ocas_poly_fp_to_string(fi, &amp;err);
+    printf("  factor %zu: %s\n", i, s);
+    ocas_string_free(s);
+    ocas_poly_fp_free(fi);
+}
+ocas_poly_factor_array_free(&amp;factors);
+ocas_poly_fp_free(p);
+</code></pre>
+<h3 id="生命周期"><a class="header" href="#生命周期">生命周期</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>函数</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ocas_poly_z_create</code> / <code>ocas_poly_fp_create</code></td><td>从字符串创建</td></tr>
+<tr><td><code>ocas_poly_z_clone</code> / <code>ocas_poly_fp_clone</code></td><td>深拷贝</td></tr>
+<tr><td><code>ocas_poly_z_degree</code> / <code>ocas_poly_fp_degree</code></td><td>总次数</td></tr>
+<tr><td><code>ocas_poly_z_to_string</code> / <code>ocas_poly_fp_to_string</code></td><td>堆分配字符串（调用者释放）</td></tr>
+<tr><td><code>ocas_poly_z_factor</code> / <code>ocas_poly_fp_factor</code></td><td>因式分解为不可约因子</td></tr>
+<tr><td><code>ocas_poly_z_free</code> / <code>ocas_poly_fp_free</code></td><td>释放句柄</td></tr>
+<tr><td><code>ocas_poly_factor_array_free</code></td><td>释放因子数组</td></tr>
+</tbody>
+</table>
+</div>
+<p>所有多项式函数均可安全调用（无需 <code>unsafe</code>）。传入 <code>NULL</code> 会设置错误码并返回 <code>NULL</code> / 错误。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust-api"><a class="header" href="#rust-api">Rust API</a></h1>
 <p>本章介绍 oCAS 的 Rust API。所有示例均假设：</p>
@@ -1157,7 +1223,8 @@ int main(void) {
 <h2 id="限制与未来工作"><a class="header" href="#限制与未来工作">限制与未来工作</a></h2>
 <ul>
 <li>尚不支持多于两个变量的多元因式分解。</li>
-<li>当前 Wang Hensel 实现不处理关于主变量非首一的二元多项式。</li>
+<li>当前 Wang Hensel 实现不处理关于主变量非首一的二元多项式
+（<a href="https://github.com/Charleshzh/oCAS/issues/13">#13</a>）。</li>
 <li>赋值点搜索范围较小；对于非常稀疏或高度特殊的多项式，未来可能需要扩大搜索范围。</li>
 </ul>
 <p>这些限制已在项目路线图中跟踪，并会随着代数内核的成熟逐步解除。</p>
