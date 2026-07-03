@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-79abacc1.js";
+            window.path_to_searchindex_js = "searchindex-0f6eda9a.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1e639325.js"></script>
+        <script src="toc-10a08c6f.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1007,6 +1007,160 @@ let result = ev.evaluate(&amp;[0.5, 1.0]).unwrap();
 <li><a href="#rust-api">Rust API</a> — 构建用于求值的表达式</li>
 <li><a href="#基准与性能对比">基准与性能对比</a> — 三条路径的基准结果</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="多项式因式分解"><a class="header" href="#多项式因式分解">多项式因式分解</a></h1>
+<p>oCAS 实现了整数和素有限域上一元与二元多项式的因式分解。本章介绍相关算法、适用范围以及公共 API。</p>
+<hr>
+<h2 id="适用范围"><a class="header" href="#适用范围">适用范围</a></h2>
+<p>当前支持的因式分解包括：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>域</th><th>多项式</th><th>算法</th></tr>
+</thead>
+<tbody>
+<tr><td>$\mathbb{Z}[x]$</td><td>一元</td><td>无平方分解、Berlekamp–Zassenhaus、Hensel 提升</td></tr>
+<tr><td>$\mathbb{F}_p[x]$</td><td>一元</td><td>无平方分解、Berlekamp</td></tr>
+<tr><td>$\mathbb{Z}[x,y]$</td><td>二元（关于 $x$ 首一）</td><td>Wang Hensel 提升</td></tr>
+<tr><td>$\mathbb{F}_p[x,y]$</td><td>二元（关于 $x$ 首一）</td><td>有限域上的 Hensel 提升</td></tr>
+</tbody>
+</table>
+</div>
+<p>多于两个变量的多元因式分解尚未实现。当前 Hensel 提升实现不支持关于主变量非首一的二元多项式，这类输入暂时被视为不可约。</p>
+<hr>
+<h2 id="有限域上的一元因式分解"><a class="header" href="#有限域上的一元因式分解">有限域上的一元因式分解</a></h2>
+<p>对于素域 $\mathbb{F}_p$，oCAS 使用 <strong>Berlekamp 算法</strong>。首先将多项式化为无平方形式，然后计算 Frobenius 矩阵 $Q - I$ 的核空间。核空间的每个基向量通过与非平凡元素的 gcd 给出因子分解。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{FiniteField, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let p = FiniteField::new(Integer::from(101));
+let f = DenseUnivariatePolynomial::&lt;FiniteField&gt;::from_coeffs(p.clone(), vec![
+    p.element(1), // 常数项
+    p.element(0),
+    p.element(1), // x^2
+]);
+let factors = f.factor();
+<span class="boring">}</span></code></pre>
+<p>返回结果是 <code>(因子, 重数)</code> 的列表。经过无平方分解后，有限域上的重数总是 1。</p>
+<hr>
+<h2 id="整数上的一元因式分解"><a class="header" href="#整数上的一元因式分解">整数上的一元因式分解</a></h2>
+<p>对于 $\mathbb{Z}[x]$，oCAS 将<strong>无平方分解</strong>与 <strong>Berlekamp–Zassenhaus 型 Hensel 提升</strong>结合使用：</p>
+<ol>
+<li>计算内容并约化为本原多项式。</li>
+<li>计算无平方分解。</li>
+<li>选取一个小素数 $p$，使得模 $p$ 约化后仍无平方且次数与原多项式相同。</li>
+<li>使用 Berlekamp 在模 $p$ 下分解。</li>
+<li>通过 Hensel 提升将模 $p$ 因子提升为 $\mathbb{Z}[x]$ 上的因子。</li>
+</ol>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::IntegerDomain;
+use ocas_poly::DenseUnivariatePolynomial;
+
+let f = DenseUnivariatePolynomial::&lt;IntegerDomain&gt;::from_coeffs(
+    IntegerDomain,
+    vec![1.into(), 0.into(), 1.into()], // x^2 + 1
+);
+let factors = f.factor();
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="整数上的二元因式分解"><a class="header" href="#整数上的二元因式分解">整数上的二元因式分解</a></h2>
+<p><code>ocas-poly</code> 使用 <strong>Wang Hensel 提升</strong> 对 $\mathbb{Z}[x,y]$ 上的二元多项式进行因式分解，假设多项式关于 $x$ 首一。</p>
+<p>算法流程：</p>
+<ol>
+<li>选取赋值点 $y = \alpha$，使得一元像 $f(x, \alpha)$ 无平方且不可约因子数最少。</li>
+<li>在 $\mathbb{Z}[x]$ 上分解该一元像。</li>
+<li>通过修正 $f$ 在 $y = \alpha$ 处的 Taylor 系数，将一元因子提升回二元因子。</li>
+</ol>
+<p>修正步骤使用一元因子的有理 Bézout 系数，然后通过整数除法重建整系数修正项。如果重建失败（余式非整）或提升后的乘积与原多项式不符，实现会尝试下一个候选赋值点，最终回退为将该多项式视为不可约。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::IntegerDomain;
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::sparse::Lex;
+
+type MPoly = SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt;;
+
+let domain = IntegerDomain;
+let f = MPoly::from_terms(domain, 2, vec![
+    (vec![3, 0], 1.into()),  // x^3
+    (vec![2, 1], 1.into()),  // x^2*y
+    (vec![2, 0], 2.into()),  // 2*x^2
+    (vec![1, 1], 1.into()),  // x*y
+    (vec![1, 0], 1.into()),  // x
+    (vec![0, 2], 1.into()),  // y^2
+    (vec![0, 1], 3.into()),  // 3*y
+    (vec![0, 0], 2.into()),  // 2
+]);
+
+let factors = f.factor();
+// factors 包含 (x^2 + y + 1, 1) 和 (x + y + 2, 1)
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="有限域上的二元因式分解"><a class="header" href="#有限域上的二元因式分解">有限域上的二元因式分解</a></h2>
+<p>在 $\mathbb{F}_p[x,y]$ 上，使用相同的 Hensel 提升框架，但所有运算直接在有限域中进行。Bézout 系数通过有限域上的 gcd 计算，所有修正项都保持在域中，因此无需整系数重建。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::FiniteField;
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::sparse::Lex;
+
+let domain = FiniteField::new(101.into());
+type FpPoly = SparseMultivariatePolynomial&lt;FiniteField, Lex&gt;;
+
+let f = FpPoly::from_terms(domain.clone(), 2, vec![
+    (vec![2, 0], 1.into()), // x^2
+    (vec![0, 1], 1.into()), // y
+    (vec![0, 0], 1.into()), // 1
+]);
+let factors = f.factor();
+<span class="boring">}</span></code></pre>
+<hr>
+<h2 id="cc-多项式-api"><a class="header" href="#cc-多项式-api">C/C++ 多项式 API</a></h2>
+<p>C 绑定为二元整数和有限域多项式提供不透明句柄。多项式可通过 ASCII 字符串创建、因式分解、打印和释放。</p>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    int err = 0;
+    OcasPolyZ *f = ocas_poly_z_create("x^2 + y + 1", &amp;err);
+    if (f == NULL) {
+        fprintf(stderr, "parse error: %s\n", ocas_error_last_message());
+        return 1;
+    }
+
+    OcasPolyFactorArray factors = {0};
+    int rc = ocas_poly_z_factor(f, &amp;factors, &amp;err);
+    if (rc != OCAS_OK) {
+        fprintf(stderr, "factor error: %s\n", ocas_error_last_message());
+        ocas_poly_z_free(f);
+        return 1;
+    }
+
+    printf("factors: %zu\n", factors.len);
+    for (size_t i = 0; i &lt; factors.len; ++i) {
+        OcasPolyZ *factor = (OcasPolyZ *)factors.factors[i].poly;
+        char *s = ocas_poly_z_to_string(factor, &amp;err);
+        printf("  %s^%zu\n", s, factors.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_poly_z_free(factor);
+    }
+    ocas_poly_factor_array_free(&amp;factors);
+    ocas_poly_z_free(f);
+    return 0;
+}
+</code></pre>
+<p>有限域版本使用 <code>OcasPolyFp</code>、<code>ocas_poly_fp_create</code> 和 <code>ocas_poly_fp_factor</code>。因子数组中存储的是 <code>void*</code> 多项式句柄，调用者必须先将其转换为正确的具体类型，再进行打印或释放。</p>
+<hr>
+<h2 id="限制与未来工作"><a class="header" href="#限制与未来工作">限制与未来工作</a></h2>
+<ul>
+<li>尚不支持多于两个变量的多元因式分解。</li>
+<li>当前 Wang Hensel 实现不处理关于主变量非首一的二元多项式。</li>
+<li>赋值点搜索范围较小；对于非常稀疏或高度特殊的多项式，未来可能需要扩大搜索范围。</li>
+</ul>
+<p>这些限制已在项目路线图中跟踪，并会随着代数内核的成熟逐步解除。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="基准与性能对比"><a class="header" href="#基准与性能对比">基准与性能对比</a></h1>
 <p>oCAS 在 <code>ocas-tests/benches/</code> 中提供基于 criterion 的基准套件，以及面向 SymPy、SageMath、Symbolica 的跨语言对比工具。本章说明如何运行各项基准及其测量内容。</p>
