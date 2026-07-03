@@ -10,6 +10,8 @@ use num_bigint::BigInt;
 use num_integer::Integer as _;
 #[cfg(not(feature = "gmp"))]
 use num_traits::{One, Zero};
+#[cfg(not(feature = "gmp"))]
+use std::ops::{Add, Div, Mul, Rem, Sub};
 
 #[cfg(not(feature = "gmp"))]
 use crate::domain::{Domain, EuclideanDomain};
@@ -42,7 +44,7 @@ pub struct IntegerDomain;
 /// assert_eq!(a.inner().to_string(), "42");
 /// assert_eq!(b.inner().to_string(), "100");
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Integer(BigInt);
 
 #[cfg(not(feature = "gmp"))]
@@ -149,6 +151,160 @@ impl From<i64> for Integer {
 impl From<BigInt> for Integer {
     fn from(value: BigInt) -> Self {
         Self(value)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Arithmetic operators — forward to the inner BigInt.
+// These allow `number_theory.rs` and factorization code to use `Integer`
+// directly instead of reaching through `.inner()`.
+// ---------------------------------------------------------------------------
+macro_rules! impl_int_op_owned {
+    ($trait:ident, $method:ident, $op:tt) => {
+        impl $trait for Integer {
+            type Output = Integer;
+            fn $method(self, rhs: Integer) -> Integer {
+                Integer(self.0 $op rhs.0)
+            }
+        }
+        impl $trait<&Integer> for Integer {
+            type Output = Integer;
+            fn $method(self, rhs: &Integer) -> Integer {
+                Integer(self.0 $op &rhs.0)
+            }
+        }
+        impl $trait<Integer> for &Integer {
+            type Output = Integer;
+            fn $method(self, rhs: Integer) -> Integer {
+                Integer(&self.0 $op rhs.0)
+            }
+        }
+        impl $trait<&Integer> for &Integer {
+            type Output = Integer;
+            fn $method(self, rhs: &Integer) -> Integer {
+                Integer(&self.0 $op &rhs.0)
+            }
+        }
+    };
+}
+
+impl_int_op_owned!(Add, add, +);
+impl_int_op_owned!(Sub, sub, -);
+impl_int_op_owned!(Mul, mul, *);
+impl_int_op_owned!(Div, div, /);
+impl_int_op_owned!(Rem, rem, %);
+
+impl std::ops::Neg for Integer {
+    type Output = Integer;
+    fn neg(self) -> Integer {
+        Integer(-self.0)
+    }
+}
+impl std::ops::Neg for &Integer {
+    type Output = Integer;
+    fn neg(self) -> Integer {
+        Integer(-self.0.clone())
+    }
+}
+
+impl std::ops::ShrAssign<u32> for Integer {
+    fn shr_assign(&mut self, shift: u32) {
+        self.0 >>= shift;
+    }
+}
+impl std::ops::Shr<u32> for Integer {
+    type Output = Integer;
+    fn shr(self, shift: u32) -> Integer {
+        Integer(self.0 >> shift)
+    }
+}
+impl std::ops::Shr<u32> for &Integer {
+    type Output = Integer;
+    fn shr(self, shift: u32) -> Integer {
+        Integer(&self.0 >> shift)
+    }
+}
+
+impl std::ops::AddAssign<&Integer> for Integer {
+    fn add_assign(&mut self, rhs: &Integer) {
+        self.0 += &rhs.0;
+    }
+}
+impl std::ops::SubAssign<&Integer> for Integer {
+    fn sub_assign(&mut self, rhs: &Integer) {
+        self.0 -= &rhs.0;
+    }
+}
+impl std::ops::MulAssign<&Integer> for Integer {
+    fn mul_assign(&mut self, rhs: &Integer) {
+        self.0 *= &rhs.0;
+    }
+}
+impl std::ops::DivAssign<&Integer> for Integer {
+    fn div_assign(&mut self, rhs: &Integer) {
+        self.0 /= &rhs.0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Number-theory helper methods on Integer.
+// These replace the old `BigInt`-based APIs and enable `number_theory.rs`
+// to work with `Integer` directly.
+// ---------------------------------------------------------------------------
+
+#[cfg(not(feature = "gmp"))]
+impl Integer {
+    /// Modular exponentiation: `self^exp mod modulus`.
+    pub fn modpow(&self, exp: &Integer, modulus: &Integer) -> Integer {
+        Integer(self.0.modpow(&exp.0, &modulus.0))
+    }
+
+    /// Floor modulo: result `r` satisfies `0 ≤ r < |modulus|`.
+    pub fn mod_floor(&self, modulus: &Integer) -> Integer {
+        use num_integer::Integer as _;
+        Integer(self.0.mod_floor(&modulus.0))
+    }
+
+    /// Division with remainder: `(quotient, remainder)`.
+    pub fn div_rem(&self, other: &Integer) -> (Integer, Integer) {
+        use num_integer::Integer as _;
+        let (q, r) = self.0.div_rem(&other.0);
+        (Integer(q), Integer(r))
+    }
+
+    /// Returns `true` if the value is even.
+    pub fn is_even(&self) -> bool {
+        use num_integer::Integer as _;
+        self.0.is_even()
+    }
+
+    /// Returns `true` if the value is negative.
+    pub fn is_negative(&self) -> bool {
+        use num_traits::Signed;
+        self.0.is_negative()
+    }
+
+    /// Returns `true` if the value is zero.
+    pub fn is_zero(&self) -> bool {
+        use num_traits::Zero;
+        self.0.is_zero()
+    }
+
+    /// Returns `true` if the value is one.
+    pub fn is_one(&self) -> bool {
+        use num_traits::One;
+        self.0.is_one()
+    }
+
+    /// Absolute value.
+    pub fn abs(&self) -> Integer {
+        use num_traits::Signed;
+        Integer(self.0.abs())
+    }
+
+    /// Integer square root (floor).
+    pub fn sqrt(&self) -> Integer {
+        Integer(self.0.sqrt())
     }
 }
 

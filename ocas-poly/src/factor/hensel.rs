@@ -15,8 +15,6 @@
 //! References: Zassenhaus (1969); Geddes, Czapor, Labahn, *Algorithms for
 //! Computer Algebra*; Knuth, TAOCP vol. 2 §4.6.2.
 
-use num_bigint::BigInt;
-use num_traits::{One, Signed, Zero};
 use ocas_domain::{Domain, FiniteField, Integer, IntegerDomain, number_theory};
 
 use crate::dense::DenseUnivariatePolynomial;
@@ -27,8 +25,8 @@ pub type ZPoly = DenseUnivariatePolynomial<IntegerDomain>;
 
 /// Convert a $\mathbb{Z}[x]$ polynomial to $\mathbb{F}_p[x]$ by reducing each
 /// coefficient modulo $p$.
-fn to_finite_field(f: &ZPoly, p: &BigInt) -> FpPoly {
-    let field = FiniteField::new(p.clone());
+fn to_finite_field(f: &ZPoly, p: &Integer) -> FpPoly {
+    let field = FiniteField::new(p.to_bigint());
     let coeffs = f
         .coeffs()
         .iter()
@@ -42,10 +40,14 @@ fn to_finite_field(f: &ZPoly, p: &BigInt) -> FpPoly {
 fn from_finite_field_symmetric(g: &FpPoly) -> ZPoly {
     let domain = IntegerDomain;
     let p = g.domain().prime();
+    let p_int = Integer::from(p.clone());
     let coeffs = g
         .coeffs()
         .iter()
-        .map(|c| Integer::from(number_theory::symmetric_mod(c.value(), p)))
+        .map(|c| {
+            let c_int = Integer::from(c.value().clone());
+            number_theory::symmetric_mod(&c_int, &p_int)
+        })
         .collect();
     ZPoly::from_coeffs(domain, coeffs)
 }
@@ -68,15 +70,15 @@ fn monic_fp(f: &FpPoly) -> FpPoly {
 ///
 /// For a degree-$n$ polynomial $f$ with coefficient 2-norm $\|f\|_2$, every
 /// factor $g$ satisfies $\|g\|_\infty \le 2^n \|f\|_2$.
-pub(crate) fn mignotte_bound(f: &ZPoly) -> BigInt {
+pub(crate) fn mignotte_bound(f: &ZPoly) -> Integer {
     let n = f.degree().unwrap_or(0);
-    let mut sum_sq = BigInt::zero();
+    let mut sum_sq = Integer::from(0);
     for c in f.coeffs() {
-        let v = c.to_bigint().abs();
-        sum_sq += &v * &v;
+        let v = c.abs();
+        sum_sq += &(&v * &v);
     }
-    let norm = sum_sq.sqrt() + BigInt::one();
-    (BigInt::one() << n) * norm
+    let norm = sum_sq.sqrt() + &Integer::from(1);
+    &Integer::from(2).pow_u32(n as u32) * &norm
 }
 
 /// Bézout coefficients over $\mathbb{F}_p$ for coprime `g`, `h`: returns
@@ -124,8 +126,8 @@ fn hensel_lift_pair(
     f: &ZPoly,
     g0: &FpPoly,
     h0: &FpPoly,
-    p: &BigInt,
-    bound: &BigInt,
+    p: &Integer,
+    bound: &Integer,
 ) -> Option<(ZPoly, ZPoly)> {
     // Bézout coefficient t for h0 in 1 = s·g0 + t·h0 (mod p); only t is used.
     let (s, t) = bezout_mod_p(g0, h0);
@@ -150,9 +152,9 @@ fn hensel_lift_pair(
         // e must be divisible by m coefficientwise.
         let mut e_over_m = Vec::new();
         for c in e.coeffs() {
-            let v = c.to_bigint();
-            if (&v % &m).is_zero() {
-                e_over_m.push(Integer::from(&v / &m));
+            let (q, r) = c.div_rem(&m);
+            if r.is_zero() {
+                e_over_m.push(q);
             } else {
                 return None;
             }
@@ -175,7 +177,7 @@ fn hensel_lift_pair(
         );
         let dg_z = from_finite_field_symmetric(&dg);
         let dh_z = from_finite_field_symmetric(&dh);
-        let m_int = Integer::from(m.clone());
+        let m_int = m.clone();
         g = g.add(&dg_z.mul_scalar(&m_int));
         h = h.add(&dh_z.mul_scalar(&m_int));
         m *= p;
@@ -193,8 +195,8 @@ fn hensel_lift_pair(
 fn hensel_lift_multi(
     f: &ZPoly,
     factors: &[FpPoly],
-    p: &BigInt,
-    bound: &BigInt,
+    p: &Integer,
+    bound: &Integer,
 ) -> Option<Vec<ZPoly>> {
     if factors.len() <= 1 {
         return Some(vec![f.clone()]);
@@ -219,14 +221,11 @@ fn hensel_lift_multi(
 /// Reduce each coefficient of a $\mathbb{Z}[x]$ polynomial into the symmetric
 /// range $(-M/2, M/2]$ modulo $M$. Used after Hensel lifting to recover the
 /// true integer factors from their modular images.
-fn reduce_symmetric(f: &ZPoly, modulus: &BigInt) -> ZPoly {
+fn reduce_symmetric(f: &ZPoly, modulus: &Integer) -> ZPoly {
     let coeffs = f
         .coeffs()
         .iter()
-        .map(|c| {
-            let c_bigint = c.to_bigint();
-            Integer::from(number_theory::symmetric_mod(&c_bigint, modulus))
-        })
+        .map(|c| number_theory::symmetric_mod(c, modulus))
         .collect();
     ZPoly::from_coeffs(IntegerDomain, coeffs)
 }
@@ -259,7 +258,7 @@ fn combos(start: usize, n: usize, k: usize, cur: &mut Vec<usize>, out: &mut Vec<
 /// product modulo $B$. If `f` is not monic, an integer divisor of the leading
 /// coefficient is attached to the candidate before testing. Returns the monic
 /// irreducible factors.
-fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPoly> {
+fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &Integer) -> Vec<ZPoly> {
     if lifted.is_empty() {
         return Vec::new();
     }
@@ -268,7 +267,7 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPol
         .leading_coeff()
         .cloned()
         .unwrap_or_else(|| Integer::from(1));
-    let lc_f_abs = lc_f.to_bigint().abs();
+    let lc_f_abs = lc_f.abs();
     let mut remaining: Vec<ZPoly> = lifted.to_vec();
     let mut result = Vec::new();
     let mut size = 1usize;
@@ -286,7 +285,7 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPol
             // Try attaching each divisor of the leading coefficient in case the
             // true factor is not monic.
             for d in divisors(&lc_f_abs) {
-                let scaled = candidate.mul_scalar(&Integer::from(d));
+                let scaled = candidate.mul_scalar(&d);
                 if let Some((_, r)) = f.div_rem(&scaled)
                     && r.is_zero()
                     && !scaled.is_one()
@@ -321,13 +320,13 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &BigInt) -> Vec<ZPol
 }
 
 /// All positive divisors of a positive integer in ascending order.
-fn divisors(n: &BigInt) -> Vec<BigInt> {
-    if n <= &BigInt::from(0u32) {
+fn divisors(n: &Integer) -> Vec<Integer> {
+    if n <= &Integer::from(0) {
         return Vec::new();
     }
-    let mut divs = vec![BigInt::from(1u32)];
+    let mut divs = vec![Integer::from(1)];
     let mut remaining = n.clone();
-    let mut p = BigInt::from(2u32);
+    let mut p = Integer::from(2);
     while &p * &p <= remaining {
         let mut count = 0u32;
         while (&remaining % &p).is_zero() {
@@ -338,17 +337,17 @@ fn divisors(n: &BigInt) -> Vec<BigInt> {
             let current = divs.clone();
             for d in current {
                 for e in 1..=count {
-                    let factor = d.clone() * p.pow(e);
+                    let factor = &d * &p.pow_u32(e);
                     divs.push(factor);
                 }
             }
         }
-        p += 1u32;
+        p += &Integer::from(1);
     }
-    if remaining > BigInt::from(1u32) {
+    if remaining > Integer::from(1) {
         let current = divs.clone();
         for d in current {
-            divs.push(d * remaining.clone());
+            divs.push(&d * &remaining);
         }
     }
     divs.sort();
@@ -365,11 +364,11 @@ pub fn factor_square_free_monic(f: &ZPoly) -> Vec<ZPoly> {
         return vec![f.clone()];
     }
     let bound = mignotte_bound(f);
-    let two_bound = BigInt::from(2u32) * &bound;
-    let lc = f.leading_coeff().unwrap().to_bigint().abs();
+    let two_bound = &Integer::from(2) * &bound;
+    let lc = f.leading_coeff().unwrap().abs();
 
     let mut prime_count = 0usize;
-    for p in number_theory::primes_from(&BigInt::from(2u32)) {
+    for p in number_theory::primes_from(&Integer::from(2)) {
         prime_count += 1;
         if prime_count > 30 {
             break;
@@ -386,12 +385,9 @@ pub fn factor_square_free_monic(f: &ZPoly) -> Vec<ZPoly> {
         if factors_p.len() <= 1 {
             return vec![f.clone()]; // irreducible over Z
         }
-        // Lifting modulus B = p^k with B >= 2·Mignotte bound; using a power of
-        // p (rather than the raw bound) keeps the symmetric reduction
-        // mod-p-compatible, which the peeling loop relies on.
         let mut lift_mod = p.clone();
         while lift_mod <= two_bound {
-            lift_mod *= &p.clone();
+            lift_mod *= &p;
         }
         if let Some(lifted) = hensel_lift_multi(f, &factors_p, &p, &lift_mod) {
             let irreducibles = zassenhaus_combine(f, &lifted, &lift_mod);
@@ -418,7 +414,7 @@ pub fn factor_primitive(f: &ZPoly) -> Vec<(ZPoly, usize)> {
         // Normalize sign so the factor is monic-ish: if leading coeff is
         // negative, negate the polynomial (absorbed into the content/sign).
         let lc = g.leading_coeff().cloned().unwrap();
-        let sign = if lc.to_bigint().is_negative() {
+        let sign = if lc.is_negative() {
             Integer::from(-1i64)
         } else {
             Integer::from(1i64)
@@ -506,7 +502,7 @@ mod tests {
         // True bound = 2^2 * sqrt(2) ≈ 5.66; conservative integer version
         // rounds up and is therefore >= 6.
         assert!(
-            b >= BigInt::from(6) && b <= BigInt::from(10),
+            b >= Integer::from(6) && b <= Integer::from(10),
             "mignotte(x^2+1) = {b}, expected ~6-10"
         );
     }

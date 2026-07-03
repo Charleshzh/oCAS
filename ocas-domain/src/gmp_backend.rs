@@ -14,7 +14,7 @@ use crate::integer::IntegerDomain;
 use crate::rational::RationalDomain;
 
 /// Arbitrary-precision integer backed by `rug::Integer`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Integer(RugInteger);
 
 /// Arbitrary-precision rational number backed by `rug::Rational`.
@@ -195,6 +195,148 @@ impl Integer {
     /// Raise to a `u32` power.
     pub fn pow_u32(&self, exp: u32) -> Self {
         Integer(self.0.clone().pow(exp))
+    }
+
+    /// Modular exponentiation: `self^exp mod modulus`.
+    pub fn modpow(&self, exp: &Integer, modulus: &Integer) -> Integer {
+        Integer(
+            self.0
+                .clone()
+                .pow_mod(&exp.0, &modulus.0)
+                .expect("modpow: modulus must be positive"),
+        )
+    }
+
+    /// Floor modulo: result `r` satisfies `0 ≤ r < |modulus|`.
+    pub fn mod_floor(&self, modulus: &Integer) -> Integer {
+        Integer(self.0.clone().mod_floor(&modulus.0))
+    }
+
+    /// Division with remainder: `(quotient, remainder)`.
+    pub fn div_rem(&self, other: &Integer) -> (Integer, Integer) {
+        let (q, r) = self.0.div_rem_ref(&other.0);
+        (Integer(q), Integer(r))
+    }
+
+    /// Returns `true` if the value is even.
+    pub fn is_even(&self) -> bool {
+        self.0.is_even()
+    }
+
+    /// Returns `true` if the value is negative.
+    pub fn is_negative(&self) -> bool {
+        self.0.is_negative()
+    }
+
+    /// Returns `true` if the value is zero.
+    pub fn is_zero(&self) -> bool {
+        self.0 == 0
+    }
+
+    /// Returns `true` if the value is one.
+    pub fn is_one(&self) -> bool {
+        self.0 == 1
+    }
+
+    /// Absolute value.
+    pub fn abs(&self) -> Integer {
+        Integer(self.0.clone().abs())
+    }
+
+    /// Integer square root (floor).
+    pub fn sqrt(&self) -> Integer {
+        Integer(self.0.clone().sqrt())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Arithmetic operators — forward to the inner rug::Integer.
+// ---------------------------------------------------------------------------
+
+macro_rules! impl_gmp_int_op_owned {
+    ($trait:ident, $method:ident, $op:tt) => {
+        impl $trait for Integer {
+            type Output = Integer;
+            fn $method(self, rhs: Integer) -> Integer {
+                Integer(self.0 $op rhs.0)
+            }
+        }
+        impl $trait<&Integer> for Integer {
+            type Output = Integer;
+            fn $method(self, rhs: &Integer) -> Integer {
+                Integer(self.0 $op &rhs.0)
+            }
+        }
+        impl $trait<Integer> for &Integer {
+            type Output = Integer;
+            fn $method(self, rhs: Integer) -> Integer {
+                Integer(&self.0 $op rhs.0)
+            }
+        }
+        impl $trait<&Integer> for &Integer {
+            type Output = Integer;
+            fn $method(self, rhs: &Integer) -> Integer {
+                Integer(&self.0 $op &rhs.0)
+            }
+        }
+    };
+}
+
+impl_gmp_int_op_owned!(Add, add, +);
+impl_gmp_int_op_owned!(Sub, sub, -);
+impl_gmp_int_op_owned!(Mul, mul, *);
+impl_gmp_int_op_owned!(Div, div, /);
+impl_gmp_int_op_owned!(Rem, rem, %);
+
+impl std::ops::Neg for Integer {
+    type Output = Integer;
+    fn neg(self) -> Integer {
+        Integer(-self.0)
+    }
+}
+impl std::ops::Neg for &Integer {
+    type Output = Integer;
+    fn neg(self) -> Integer {
+        Integer(-self.0.clone())
+    }
+}
+
+impl std::ops::ShrAssign<u32> for Integer {
+    fn shr_assign(&mut self, shift: u32) {
+        self.0 >>= shift;
+    }
+}
+impl std::ops::Shr<u32> for Integer {
+    type Output = Integer;
+    fn shr(self, shift: u32) -> Integer {
+        Integer(self.0 >> shift)
+    }
+}
+impl std::ops::Shr<u32> for &Integer {
+    type Output = Integer;
+    fn shr(self, shift: u32) -> Integer {
+        Integer(&self.0 >> shift)
+    }
+}
+
+impl std::ops::AddAssign<&Integer> for Integer {
+    fn add_assign(&mut self, rhs: &Integer) {
+        self.0 += &rhs.0;
+    }
+}
+impl std::ops::SubAssign<&Integer> for Integer {
+    fn sub_assign(&mut self, rhs: &Integer) {
+        self.0 -= &rhs.0;
+    }
+}
+impl std::ops::MulAssign<&Integer> for Integer {
+    fn mul_assign(&mut self, rhs: &Integer) {
+        self.0 *= &rhs.0;
+    }
+}
+impl std::ops::DivAssign<&Integer> for Integer {
+    fn div_assign(&mut self, rhs: &Integer) {
+        self.0 /= &rhs.0;
     }
 }
 
