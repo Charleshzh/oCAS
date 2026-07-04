@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-275a38ee.js";
+            window.path_to_searchindex_js = "searchindex-e9bcace5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-10a08c6f.js"></script>
+        <script src="toc-59070e71.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1228,6 +1228,187 @@ int main(void) {
 <li>赋值点搜索范围较小；对于非常稀疏或高度特殊的多项式，未来可能需要扩大搜索范围。</li>
 </ul>
 <p>这些限制已在项目路线图中跟踪，并会随着代数内核的成熟逐步解除。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="有理函数结式与部分分式"><a class="header" href="#有理函数结式与部分分式">有理函数、结式与部分分式</a></h1>
+<p>oCAS 提供完整的有理函数运算、结式计算和部分分式分解栈，支持任何欧几里得域。
+这些功能在 0.12.0 版本中添加，弥补了与 Symbolica 的 <code>rational_polynomial.rs</code>、
+<code>resultant.rs</code> 和 <code>partial_fraction.rs</code> 的差距。</p>
+<hr>
+<h2 id="有理多项式"><a class="header" href="#有理多项式">有理多项式</a></h2>
+<p><code>RationalPolynomial&lt;D, O&gt;</code> 表示多项式环分式域中的元素——即 $\frac{p}{q}$，
+其中 $p$ 和 $q$ 是域 <code>D</code> 上的多元多项式。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::{RationalPolynomial, SparseMultivariatePolynomial, Lex};
+
+// 创建多项式：x + 1 和 x - 1
+let x_plus_1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![0], Integer::from(1)), (vec![1], Integer::from(1))],
+);
+let x_minus_1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![0], Integer::from(-1)), (vec![1], Integer::from(1))],
+);
+
+// (x+1) / (x-1)
+let rat = RationalPolynomial::from_num_den(x_plus_1, x_minus_1);
+<span class="boring">}</span></code></pre>
+<h3 id="规范化"><a class="header" href="#规范化">规范化</a></h3>
+<p>通过 <code>from_num_den</code> 构造时，分数自动约简为规范形式：</p>
+<ol>
+<li>分子分母的 GCD 被约去。</li>
+<li>分母的首项系数被归一化（有序域为正，有限域为 1）。</li>
+</ol>
+<h3 id="算术运算"><a class="header" href="#算术运算">算术运算</a></h3>
+<p>支持所有标准运算：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>运算</th><th>方法</th><th>策略</th></tr>
+</thead>
+<tbody>
+<tr><td>加法</td><td><code>a.add(&amp;b)</code></td><td>交叉相乘，然后规范化</td></tr>
+<tr><td>减法</td><td><code>a.sub(&amp;b)</code></td><td>通过取反 + 加法</td></tr>
+<tr><td>乘法</td><td><code>a.mul(&amp;b)</code></td><td>交叉消去 GCD，然后相乘</td></tr>
+<tr><td>除法</td><td><code>a.div(&amp;b)</code></td><td>通过逆元 + 乘法</td></tr>
+<tr><td>取反</td><td><code>a.neg()</code></td><td>取反分子</td></tr>
+<tr><td>逆元</td><td><code>a.inv()</code></td><td>交换分子分母</td></tr>
+<tr><td>幂</td><td><code>a.pow(n)</code></td><td>快速幂</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="结式"><a class="header" href="#结式">结式</a></h2>
+<p>两个多项式 $a$ 和 $b$ 的结式是一个标量，当且仅当 $a$ 和 $b$ 有公共根
+（或等价地，有非平凡 GCD）时为零。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// Res(x^2 + 1, (x+1)^2) = 4
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(0), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(4));
+<span class="boring">}</span></code></pre>
+<h3 id="算法brown-prs"><a class="header" href="#算法brown-prs">算法：Brown PRS</a></h3>
+<p>oCAS 使用 <strong>Brown 多项式余式序列</strong>算法，避免构造完整的 Sylvester 矩阵。
+该算法跟踪首项系数和次数差，用基本定理公式从 PRS 计算结式。</p>
+<p>对于两个 15 次多项式，结式在 20ms 内完成。</p>
+<hr>
+<h2 id="部分分式"><a class="header" href="#部分分式">部分分式</a></h2>
+<p>给定真分式 $\frac{p(x)}{q(x)}$（其中 $\deg(p) &lt; \deg(q)$），
+部分分式分解将其表示为更简单分式的和。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::apart;
+
+let d = RationalDomain;
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1), Rational::new(-1, 1),
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+// poly_part 为 None（真分式）
+// terms 包含分解后的分式
+<span class="boring">}</span></code></pre>
+<h3 id="算法"><a class="header" href="#算法">算法</a></h3>
+<p>分解步骤：</p>
+<ol>
+<li><strong>多项式除法</strong>：若 $\deg(p) \geq \deg(q)$，通过 <code>div_rem</code> 提取整式部分。</li>
+<li><strong>无平方分解</strong>：将分母分解为无平方因子 $f_i^{e_i}$。</li>
+<li><strong>Diophantine CRT</strong>：对多个因子，求解多项式中国剩余定理以拆分分式。</li>
+<li><strong>p-adic 展开</strong>：对重因子（$e_i &gt; 1$），对分子做 p-adic 展开得到各项。</li>
+</ol>
+<p><code>together</code> 函数执行逆操作，将各项合并回单个有理函数。</p>
+<hr>
+<h2 id="辅助方法"><a class="header" href="#辅助方法">辅助方法</a></h2>
+<p>为支持这些算法，<code>DenseUnivariatePolynomial</code> 新增了以下方法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td><code>extended_gcd_poly(&amp;self, other)</code></td><td>扩展 GCD：返回 <code>(g, s, t)</code> 使得 $s \cdot a + t \cdot b = g$</td></tr>
+<tr><td><code>diophantine(polys, b)</code></td><td>多项式 CRT 求解器</td></tr>
+<tr><td><code>p_adic_expansion(&amp;self, p)</code></td><td>重复除法展开</td></tr>
+<tr><td><code>pow(n)</code></td><td>多项式幂（快速幂）</td></tr>
+<tr><td><code>lcoeff()</code></td><td>首项系数（便捷）</td></tr>
+<tr><td><code>constant()</code></td><td>常数项（便捷）</td></tr>
+<tr><td><code>mul_coeff(c)</code> / <code>div_coeff(c)</code></td><td>标量乘/除所有系数</td></tr>
+<tr><td><code>content()</code></td><td>系数的 GCD（现为 public）</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>SparseMultivariatePolynomial</code> 新增：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td><code>div_exact(&amp;self, divisor)</code></td><td>精确多项式除法（无余数）</td></tr>
+<tr><td><code>degree_in(var_index)</code></td><td>指定变量的次数</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="有理重构"><a class="header" href="#有理重构">有理重构</a></h2>
+<p><code>rational_reconstruction</code> 函数从模表示恢复有理数 $\frac{n}{d}$：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::rational_reconstruction::rational_reconstruction;
+
+// 3/7 mod 101: 7^{-1} mod 101 = 29, 所以 a = 3 * 29 mod 101 = 87
+let m = Integer::from(101);
+let a = Integer::from(87);
+let result = rational_reconstruction(&amp;a, &amp;m);
+assert!(result.is_some());
+<span class="boring">}</span></code></pre>
+<p>使用扩展 Euclidean 算法（连分数方法），适用于需要将结果提升回 $\mathbb{Q}$
+的模方法算法。</p>
+<hr>
+<h2 id="karatsuba-乘法"><a class="header" href="#karatsuba-乘法">Karatsuba 乘法</a></h2>
+<p>稠密多项式乘法现在对 32 个或更多系数的多项式使用 <strong>Karatsuba 算法</strong>。
+这将乘法复杂度从 $O(n^2)$ 降低到 $O(n^{1.585})$。</p>
+<p>阈值（32）通过经验选择——低于此大小时，Karatsuba 额外加减法的开销超过
+减少乘法次数的收益。</p>
+<p>对于两个 500 次 $\mathbb{Z}$ 上的多项式，Karatsuba 比之前的 schoolbook
+实现有显著加速。</p>
+<hr>
+<h2 id="sympy-迁移"><a class="header" href="#sympy-迁移">SymPy 迁移</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>SymPy</th><th>oCAS</th></tr>
+</thead>
+<tbody>
+<tr><td><code>sp.apart(expr, x)</code></td><td><code>apart(&amp;num, &amp;den)</code></td></tr>
+<tr><td><code>sp.together(expr)</code></td><td><code>together(poly_part, &amp;terms)</code></td></tr>
+<tr><td><code>sp.resultant(a, b, x)</code></td><td><code>a.resultant(&amp;b)</code></td></tr>
+<tr><td><code>sp.Rational(n, d)</code></td><td><code>Rational::new(n, d)</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="限制"><a class="header" href="#限制">限制</a></h2>
+<ul>
+<li>部分分式分解目前使用无平方分解，适用于任何 <code>EuclideanDomain</code>。
+完全分解为不可约因子需要 <code>IntegerDomain</code> 或 <code>FiniteField</code>。</li>
+<li>多元部分分式（<code>apart_multivariate</code>）推迟到 0.13+，需要 Gröbner F4。</li>
+<li>FFT/NTT 乘法推迟到未来版本。</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="基准与性能对比"><a class="header" href="#基准与性能对比">基准与性能对比</a></h1>
 <p>oCAS 在 <code>ocas-tests/benches/</code> 中提供基于 criterion 的基准套件，以及面向 SymPy、SageMath、Symbolica 的跨语言对比工具。本章说明如何运行各项基准及其测量内容。</p>

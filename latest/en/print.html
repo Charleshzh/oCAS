@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-4564c646.js";
+            window.path_to_searchindex_js = "searchindex-617a8171.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-d71ebc20.js"></script>
+        <script src="toc-05cd13fe.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1328,6 +1328,205 @@ specialized polynomials may need an extended range in the future.</li>
 </ul>
 <p>These limitations are tracked in the project roadmap and will be lifted as the
 algebra kernel matures.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rational-functions-resultants--partial-fractions"><a class="header" href="#rational-functions-resultants--partial-fractions">Rational Functions, Resultants &amp; Partial Fractions</a></h1>
+<p>oCAS provides a complete stack for rational function arithmetic, resultant
+computation, and partial fraction decomposition over any Euclidean domain.
+These capabilities were added in version 0.12.0, closing the gap with
+Symbolica’s <code>rational_polynomial.rs</code>, <code>resultant.rs</code>, and
+<code>partial_fraction.rs</code>.</p>
+<hr>
+<h2 id="rational-polynomials"><a class="header" href="#rational-polynomials">Rational Polynomials</a></h2>
+<p>A <code>RationalPolynomial&lt;D, O&gt;</code> represents an element of the fraction field of a
+polynomial ring — that is, a ratio $\frac{p}{q}$ where $p$ and $q$ are
+multivariate polynomials over a domain <code>D</code>.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::{RationalPolynomial, SparseMultivariatePolynomial, Lex};
+
+// Create polynomials: x + 1 and x - 1
+let x_plus_1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![0], Integer::from(1)), (vec![1], Integer::from(1))],
+);
+let x_minus_1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![0], Integer::from(-1)), (vec![1], Integer::from(1))],
+);
+
+// (x+1) / (x-1)
+let rat = RationalPolynomial::from_num_den(x_plus_1, x_minus_1);
+<span class="boring">}</span></code></pre>
+<h3 id="canonicalization"><a class="header" href="#canonicalization">Canonicalization</a></h3>
+<p>When constructed via <code>from_num_den</code>, the fraction is automatically reduced to
+canonical form:</p>
+<ol>
+<li>The GCD of numerator and denominator is divided out.</li>
+<li>The leading coefficient of the denominator is normalized (positive for
+ordered domains, 1 for finite fields).</li>
+</ol>
+<h3 id="arithmetic"><a class="header" href="#arithmetic">Arithmetic</a></h3>
+<p>All standard operations are supported:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Operation</th><th>Method</th><th>Strategy</th></tr>
+</thead>
+<tbody>
+<tr><td>Addition</td><td><code>a.add(&amp;b)</code></td><td>Cross-multiply, then canonicalize</td></tr>
+<tr><td>Subtraction</td><td><code>a.sub(&amp;b)</code></td><td>Via negation + addition</td></tr>
+<tr><td>Multiplication</td><td><code>a.mul(&amp;b)</code></td><td>Cross-cancel GCDs, then multiply</td></tr>
+<tr><td>Division</td><td><code>a.div(&amp;b)</code></td><td>Via inverse + multiplication</td></tr>
+<tr><td>Negation</td><td><code>a.neg()</code></td><td>Negate numerator</td></tr>
+<tr><td>Inverse</td><td><code>a.inv()</code></td><td>Swap numerator/denominator</td></tr>
+<tr><td>Power</td><td><code>a.pow(n)</code></td><td>Repeated squaring</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="resultants"><a class="header" href="#resultants">Resultants</a></h2>
+<p>The resultant of two polynomials $a$ and $b$ is a scalar that is zero if and
+only if $a$ and $b$ share a common root (or equivalently, a non-trivial GCD).</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// Res(x^2 + 1, (x+1)^2) = 4
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(0), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(4));
+<span class="boring">}</span></code></pre>
+<h3 id="algorithm-browns-prs"><a class="header" href="#algorithm-browns-prs">Algorithm: Brown’s PRS</a></h3>
+<p>oCAS uses <strong>Brown’s Polynomial Remainder Sequence</strong> algorithm, which avoids
+constructing the full Sylvester matrix. The algorithm tracks leading
+coefficients and degree differences to compute the resultant from the PRS
+using the fundamental theorem formula.</p>
+<p>For two polynomials of degree 15, the resultant completes in under 20 ms.</p>
+<hr>
+<h2 id="partial-fractions"><a class="header" href="#partial-fractions">Partial Fractions</a></h2>
+<p>Given a proper fraction $\frac{p(x)}{q(x)}$ (where $\deg(p) &lt; \deg(q)$),
+the partial fraction decomposition expresses it as a sum of simpler fractions.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::apart;
+
+let d = RationalDomain;
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1), Rational::new(-1, 1),
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+// poly_part is None (proper fraction)
+// terms contains the decomposed fractions
+<span class="boring">}</span></code></pre>
+<h3 id="algorithm"><a class="header" href="#algorithm">Algorithm</a></h3>
+<p>The decomposition proceeds in steps:</p>
+<ol>
+<li><strong>Polynomial division</strong>: If $\deg(p) \geq \deg(q)$, extract the polynomial
+part via <code>div_rem</code>.</li>
+<li><strong>Square-free factorization</strong>: Decompose the denominator into square-free
+factors $f_i^{e_i}$.</li>
+<li><strong>Diophantine CRT</strong>: For multiple factors, solve the polynomial Chinese
+Remainder Theorem to split the fraction.</li>
+<li><strong>p-adic expansion</strong>: For repeated factors ($e_i &gt; 1$), expand the
+numerator with respect to each factor to get individual terms.</li>
+</ol>
+<p>The <code>together</code> function reverses the decomposition, combining terms back into
+a single rational function.</p>
+<hr>
+<h2 id="helper-methods"><a class="header" href="#helper-methods">Helper Methods</a></h2>
+<p>Several new methods were added to <code>DenseUnivariatePolynomial</code> to support
+these algorithms:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>extended_gcd_poly(&amp;self, other)</code></td><td>Extended GCD: returns <code>(g, s, t)</code> with $s \cdot a + t \cdot b = g$</td></tr>
+<tr><td><code>diophantine(polys, b)</code></td><td>Polynomial CRT solver</td></tr>
+<tr><td><code>p_adic_expansion(&amp;self, p)</code></td><td>Repeated division expansion</td></tr>
+<tr><td><code>pow(n)</code></td><td>Polynomial power by repeated squaring</td></tr>
+<tr><td><code>lcoeff()</code></td><td>Leading coefficient (convenience)</td></tr>
+<tr><td><code>constant()</code></td><td>Constant term (convenience)</td></tr>
+<tr><td><code>mul_coeff(c)</code> / <code>div_coeff(c)</code></td><td>Scalar multiply/divide all coefficients</td></tr>
+<tr><td><code>content()</code></td><td>GCD of all coefficients (now public)</td></tr>
+</tbody>
+</table>
+</div>
+<p>For <code>SparseMultivariatePolynomial</code>:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>div_exact(&amp;self, divisor)</code></td><td>Exact polynomial division (no remainder)</td></tr>
+<tr><td><code>degree_in(var_index)</code></td><td>Degree in a specific variable</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="rational-reconstruction"><a class="header" href="#rational-reconstruction">Rational Reconstruction</a></h2>
+<p>The <code>rational_reconstruction</code> function recovers a rational number $\frac{n}{d}$
+from its modular image $a \equiv \frac{n}{d} \pmod{m}$:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::rational_reconstruction::rational_reconstruction;
+
+// 3/7 mod 101: 7^{-1} mod 101 = 29, so a = 3 * 29 mod 101 = 87
+let m = Integer::from(101);
+let a = Integer::from(87);
+let result = rational_reconstruction(&amp;a, &amp;m);
+assert!(result.is_some());
+<span class="boring">}</span></code></pre>
+<p>This uses the extended Euclidean algorithm (continued fraction approach) and
+is useful for modular algorithms that need to lift results back to $\mathbb{Q}$.</p>
+<hr>
+<h2 id="karatsuba-multiplication"><a class="header" href="#karatsuba-multiplication">Karatsuba Multiplication</a></h2>
+<p>Dense polynomial multiplication now uses <strong>Karatsuba’s algorithm</strong> for
+polynomials with 32 or more coefficients. This reduces the multiplication
+complexity from $O(n^2)$ to $O(n^{1.585})$.</p>
+<p>The threshold (32) was chosen empirically — below this size, the overhead of
+Karatsuba’s extra additions and subtractions outweighs the savings from fewer
+multiplications.</p>
+<p>For two degree-500 polynomials over $\mathbb{Z}$, Karatsuba provides a
+significant speedup over the previous schoolbook implementation.</p>
+<hr>
+<h2 id="sympy-migration"><a class="header" href="#sympy-migration">SymPy Migration</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>SymPy</th><th>oCAS</th></tr>
+</thead>
+<tbody>
+<tr><td><code>sp.apart(expr, x)</code></td><td><code>apart(&amp;num, &amp;den)</code></td></tr>
+<tr><td><code>sp.together(expr)</code></td><td><code>together(poly_part, &amp;terms)</code></td></tr>
+<tr><td><code>sp.resultant(a, b, x)</code></td><td><code>a.resultant(&amp;b)</code></td></tr>
+<tr><td><code>sp.Rational(n, d)</code></td><td><code>Rational::new(n, d)</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="limitations-1"><a class="header" href="#limitations-1">Limitations</a></h2>
+<ul>
+<li>Partial fraction decomposition currently works over any <code>EuclideanDomain</code>
+using square-free factorization. Full factorization into irreducibles
+requires <code>IntegerDomain</code> or <code>FiniteField</code>.</li>
+<li>Multivariate partial fractions (<code>apart_multivariate</code>) are deferred to 0.13+
+as they require Gröbner F4.</li>
+<li>FFT/NTT multiplication is deferred to a future version.</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="benchmarks--comparison"><a class="header" href="#benchmarks--comparison">Benchmarks &amp; Comparison</a></h1>
 <p>oCAS ships a <a href="https://bheisler.github.io/criterion.rs/">criterion</a>-based

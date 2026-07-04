@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light sidebar-visible" dir="ltr">
+<html lang="zh" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>C/C++ API - oCAS — open Computer Algebra System</title>
+        <title>有理函数与结式 - oCAS — 开源计算机代数系统</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-0392ca55.css">
-        <link rel="stylesheet" href="css/chrome-fc474251.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../css/general-0392ca55.css">
+        <link rel="stylesheet" href="../css/chrome-fc474251.css">
+        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../language-switcher.css">
+        <link rel="stylesheet" href="../../language-switcher.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-617a8171.js";
+            window.path_to_searchindex_js = "../searchindex-e9bcace5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-05cd13fe.js"></script>
+        <script src="../toc-59070e71.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -138,16 +138,16 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/bindings-c.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/algorithms/rational-functions.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -181,123 +181,196 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="cc-api"><a class="header" href="#cc-api">C/C++ API</a></h1>
-<p>The <code>ocas-c</code> crate provides a stable C ABI (generated with <code>cbindgen</code>) for
-expression lifecycle, calculus, and simplification, plus a C++ RAII wrapper
-in <code>ocas-c/include/ocas.hpp</code>.</p>
-<h2 id="building"><a class="header" href="#building">Building</a></h2>
-<pre><code class="language-bash">cargo build -p ocas-c --release
-</code></pre>
-<p>The shared library and the <code>ocas.h</code> / <code>ocas.hpp</code> headers are placed under
-<code>ocas-c/include/</code>.</p>
-<h2 id="c-example"><a class="header" href="#c-example">C example</a></h2>
-<pre><code class="language-c">#include &lt;ocas.h&gt;
+                        <h1 id="有理函数结式与部分分式"><a class="header" href="#有理函数结式与部分分式">有理函数、结式与部分分式</a></h1>
+<p>oCAS 提供完整的有理函数运算、结式计算和部分分式分解栈，支持任何欧几里得域。
+这些功能在 0.12.0 版本中添加，弥补了与 Symbolica 的 <code>rational_polynomial.rs</code>、
+<code>resultant.rs</code> 和 <code>partial_fraction.rs</code> 的差距。</p>
+<hr>
+<h2 id="有理多项式"><a class="header" href="#有理多项式">有理多项式</a></h2>
+<p><code>RationalPolynomial&lt;D, O&gt;</code> 表示多项式环分式域中的元素——即 $\frac{p}{q}$，
+其中 $p$ 和 $q$ 是域 <code>D</code> 上的多元多项式。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::{RationalPolynomial, SparseMultivariatePolynomial, Lex};
 
-int main(void) {
-    ocas_error err;
-    ocas_expr* e = ocas_expr_parse("x^2 + 2*x + 1", &amp;err);
-    ocas_expr* d = ocas_expr_diff(e, "x", &amp;err);
+// 创建多项式：x + 1 和 x - 1
+let x_plus_1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![0], Integer::from(1)), (vec![1], Integer::from(1))],
+);
+let x_minus_1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![0], Integer::from(-1)), (vec![1], Integer::from(1))],
+);
 
-    char* s = ocas_expr_to_string(d, &amp;err);
-    printf("derivative: %s\n", s);   /* 2*x + 2 */
-
-    ocas_string_free(s);
-    ocas_expr_free(d);
-    ocas_expr_free(e);
-    return 0;
-}
-</code></pre>
-<h2 id="c-raii"><a class="header" href="#c-raii">C++ RAII</a></h2>
-<pre><code class="language-cpp">#include &lt;ocas.hpp&gt;
-
-int main() {
-    ocas::Expression e("x^2 + 2*x + 1");
-    auto d = e.diff("x");
-    std::cout &lt;&lt; d.to_string() &lt;&lt; std::endl;   // 2*x + 2
-    return 0;   // automatic cleanup
-}
-</code></pre>
-<p>The C++ wrapper translates oCAS errors into <code>ocas::Error</code> exceptions and
-manages arena-backed expressions via RAII, so manual <code>free</code> calls are
-unnecessary.</p>
-<h2 id="polynomial-api"><a class="header" href="#polynomial-api">Polynomial API</a></h2>
-<p>Since 0.11.1, <code>ocas-c</code> exposes bivariate polynomial objects as opaque
-handles with factorization support over $\mathbb{Z}$ and $\mathbb{F}_p$.</p>
-<h3 id="integer-polynomials-ocaspolyz"><a class="header" href="#integer-polynomials-ocaspolyz">Integer polynomials (<code>OcasPolyZ</code>)</a></h3>
-<pre><code class="language-c">#include &lt;ocas.h&gt;
-#include &lt;stdio.h&gt;
-
-int main(void) {
-    int err;
-    // Create a bivariate integer polynomial from a string.
-    OcasPolyZ* p = ocas_poly_z_create("x^2 + y + 1", &amp;err);
-
-    // Query total degree.
-    printf("degree: %zu\n", ocas_poly_z_degree(p));
-
-    // Factor into irreducible components.
-    OcasPolyFactorArray factors;
-    ocas_poly_z_factor(p, &amp;factors, &amp;err);
-
-    for (size_t i = 0; i &lt; factors.len; i++) {
-        OcasPolyZ* fi = (OcasPolyZ*)factors.factors[i].poly;
-        char* s = ocas_poly_z_to_string(fi, &amp;err);
-        printf("  factor %zu: %s (mult %zu)\n", i, s,
-               factors.factors[i].multiplicity);
-        ocas_string_free(s);
-        ocas_poly_z_free(fi);
-    }
-    ocas_poly_factor_array_free(&amp;factors);
-    ocas_poly_z_free(p);
-    return 0;
-}
-</code></pre>
-<h3 id="finite-field-polynomials-ocaspolyfp"><a class="header" href="#finite-field-polynomials-ocaspolyfp">Finite-field polynomials (<code>OcasPolyFp</code>)</a></h3>
-<pre><code class="language-c">// Create a polynomial over F_5 and factor it.
-OcasPolyFp* p = ocas_poly_fp_create("x^2 + y + 1", "5", &amp;err);
-
-OcasPolyFactorArray factors;
-ocas_poly_fp_factor(p, &amp;factors, &amp;err);
-
-for (size_t i = 0; i &lt; factors.len; i++) {
-    OcasPolyFp* fi = (OcasPolyFp*)factors.factors[i].poly;
-    char* s = ocas_poly_fp_to_string(fi, &amp;err);
-    printf("  factor %zu: %s\n", i, s);
-    ocas_string_free(s);
-    ocas_poly_fp_free(fi);
-}
-ocas_poly_factor_array_free(&amp;factors);
-ocas_poly_fp_free(p);
-</code></pre>
-<h3 id="lifecycle"><a class="header" href="#lifecycle">Lifecycle</a></h3>
+// (x+1) / (x-1)
+let rat = RationalPolynomial::from_num_den(x_plus_1, x_minus_1);
+<span class="boring">}</span></code></pre>
+<h3 id="规范化"><a class="header" href="#规范化">规范化</a></h3>
+<p>通过 <code>from_num_den</code> 构造时，分数自动约简为规范形式：</p>
+<ol>
+<li>分子分母的 GCD 被约去。</li>
+<li>分母的首项系数被归一化（有序域为正，有限域为 1）。</li>
+</ol>
+<h3 id="算术运算"><a class="header" href="#算术运算">算术运算</a></h3>
+<p>支持所有标准运算：</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Purpose</th></tr>
+<tr><th>运算</th><th>方法</th><th>策略</th></tr>
 </thead>
 <tbody>
-<tr><td><code>ocas_poly_z_create</code> / <code>ocas_poly_fp_create</code></td><td>Create from string</td></tr>
-<tr><td><code>ocas_poly_z_clone</code> / <code>ocas_poly_fp_clone</code></td><td>Deep copy</td></tr>
-<tr><td><code>ocas_poly_z_degree</code> / <code>ocas_poly_fp_degree</code></td><td>Total degree</td></tr>
-<tr><td><code>ocas_poly_z_to_string</code> / <code>ocas_poly_fp_to_string</code></td><td>Heap-allocated string (caller frees)</td></tr>
-<tr><td><code>ocas_poly_z_factor</code> / <code>ocas_poly_fp_factor</code></td><td>Factor into irreducible components</td></tr>
-<tr><td><code>ocas_poly_z_free</code> / <code>ocas_poly_fp_free</code></td><td>Release handle</td></tr>
-<tr><td><code>ocas_poly_factor_array_free</code></td><td>Release factor array</td></tr>
+<tr><td>加法</td><td><code>a.add(&amp;b)</code></td><td>交叉相乘，然后规范化</td></tr>
+<tr><td>减法</td><td><code>a.sub(&amp;b)</code></td><td>通过取反 + 加法</td></tr>
+<tr><td>乘法</td><td><code>a.mul(&amp;b)</code></td><td>交叉消去 GCD，然后相乘</td></tr>
+<tr><td>除法</td><td><code>a.div(&amp;b)</code></td><td>通过逆元 + 乘法</td></tr>
+<tr><td>取反</td><td><code>a.neg()</code></td><td>取反分子</td></tr>
+<tr><td>逆元</td><td><code>a.inv()</code></td><td>交换分子分母</td></tr>
+<tr><td>幂</td><td><code>a.pow(n)</code></td><td>快速幂</td></tr>
 </tbody>
 </table>
 </div>
-<p>All polynomial functions are safe to call (no <code>unsafe</code> required). Passing
-<code>NULL</code> to any function sets the error code and returns <code>NULL</code> / error.</p>
+<hr>
+<h2 id="结式"><a class="header" href="#结式">结式</a></h2>
+<p>两个多项式 $a$ 和 $b$ 的结式是一个标量，当且仅当 $a$ 和 $b$ 有公共根
+（或等价地，有非平凡 GCD）时为零。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// Res(x^2 + 1, (x+1)^2) = 4
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(0), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(4));
+<span class="boring">}</span></code></pre>
+<h3 id="算法brown-prs"><a class="header" href="#算法brown-prs">算法：Brown PRS</a></h3>
+<p>oCAS 使用 <strong>Brown 多项式余式序列</strong>算法，避免构造完整的 Sylvester 矩阵。
+该算法跟踪首项系数和次数差，用基本定理公式从 PRS 计算结式。</p>
+<p>对于两个 15 次多项式，结式在 20ms 内完成。</p>
+<hr>
+<h2 id="部分分式"><a class="header" href="#部分分式">部分分式</a></h2>
+<p>给定真分式 $\frac{p(x)}{q(x)}$（其中 $\deg(p) &lt; \deg(q)$），
+部分分式分解将其表示为更简单分式的和。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::apart;
+
+let d = RationalDomain;
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1), Rational::new(-1, 1),
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+// poly_part 为 None（真分式）
+// terms 包含分解后的分式
+<span class="boring">}</span></code></pre>
+<h3 id="算法"><a class="header" href="#算法">算法</a></h3>
+<p>分解步骤：</p>
+<ol>
+<li><strong>多项式除法</strong>：若 $\deg(p) \geq \deg(q)$，通过 <code>div_rem</code> 提取整式部分。</li>
+<li><strong>无平方分解</strong>：将分母分解为无平方因子 $f_i^{e_i}$。</li>
+<li><strong>Diophantine CRT</strong>：对多个因子，求解多项式中国剩余定理以拆分分式。</li>
+<li><strong>p-adic 展开</strong>：对重因子（$e_i &gt; 1$），对分子做 p-adic 展开得到各项。</li>
+</ol>
+<p><code>together</code> 函数执行逆操作，将各项合并回单个有理函数。</p>
+<hr>
+<h2 id="辅助方法"><a class="header" href="#辅助方法">辅助方法</a></h2>
+<p>为支持这些算法，<code>DenseUnivariatePolynomial</code> 新增了以下方法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td><code>extended_gcd_poly(&amp;self, other)</code></td><td>扩展 GCD：返回 <code>(g, s, t)</code> 使得 $s \cdot a + t \cdot b = g$</td></tr>
+<tr><td><code>diophantine(polys, b)</code></td><td>多项式 CRT 求解器</td></tr>
+<tr><td><code>p_adic_expansion(&amp;self, p)</code></td><td>重复除法展开</td></tr>
+<tr><td><code>pow(n)</code></td><td>多项式幂（快速幂）</td></tr>
+<tr><td><code>lcoeff()</code></td><td>首项系数（便捷）</td></tr>
+<tr><td><code>constant()</code></td><td>常数项（便捷）</td></tr>
+<tr><td><code>mul_coeff(c)</code> / <code>div_coeff(c)</code></td><td>标量乘/除所有系数</td></tr>
+<tr><td><code>content()</code></td><td>系数的 GCD（现为 public）</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>SparseMultivariatePolynomial</code> 新增：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td><code>div_exact(&amp;self, divisor)</code></td><td>精确多项式除法（无余数）</td></tr>
+<tr><td><code>degree_in(var_index)</code></td><td>指定变量的次数</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="有理重构"><a class="header" href="#有理重构">有理重构</a></h2>
+<p><code>rational_reconstruction</code> 函数从模表示恢复有理数 $\frac{n}{d}$：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::rational_reconstruction::rational_reconstruction;
+
+// 3/7 mod 101: 7^{-1} mod 101 = 29, 所以 a = 3 * 29 mod 101 = 87
+let m = Integer::from(101);
+let a = Integer::from(87);
+let result = rational_reconstruction(&amp;a, &amp;m);
+assert!(result.is_some());
+<span class="boring">}</span></code></pre>
+<p>使用扩展 Euclidean 算法（连分数方法），适用于需要将结果提升回 $\mathbb{Q}$
+的模方法算法。</p>
+<hr>
+<h2 id="karatsuba-乘法"><a class="header" href="#karatsuba-乘法">Karatsuba 乘法</a></h2>
+<p>稠密多项式乘法现在对 32 个或更多系数的多项式使用 <strong>Karatsuba 算法</strong>。
+这将乘法复杂度从 $O(n^2)$ 降低到 $O(n^{1.585})$。</p>
+<p>阈值（32）通过经验选择——低于此大小时，Karatsuba 额外加减法的开销超过
+减少乘法次数的收益。</p>
+<p>对于两个 500 次 $\mathbb{Z}$ 上的多项式，Karatsuba 比之前的 schoolbook
+实现有显著加速。</p>
+<hr>
+<h2 id="sympy-迁移"><a class="header" href="#sympy-迁移">SymPy 迁移</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>SymPy</th><th>oCAS</th></tr>
+</thead>
+<tbody>
+<tr><td><code>sp.apart(expr, x)</code></td><td><code>apart(&amp;num, &amp;den)</code></td></tr>
+<tr><td><code>sp.together(expr)</code></td><td><code>together(poly_part, &amp;terms)</code></td></tr>
+<tr><td><code>sp.resultant(a, b, x)</code></td><td><code>a.resultant(&amp;b)</code></td></tr>
+<tr><td><code>sp.Rational(n, d)</code></td><td><code>Rational::new(n, d)</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="限制"><a class="header" href="#限制">限制</a></h2>
+<ul>
+<li>部分分式分解目前使用无平方分解，适用于任何 <code>EuclideanDomain</code>。
+完全分解为不可约因子需要 <code>IntegerDomain</code> 或 <code>FiniteField</code>。</li>
+<li>多元部分分式（<code>apart_multivariate</code>）推迟到 0.13+，需要 Gröbner F4。</li>
+<li>FFT/NTT 乘法推迟到未来版本。</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="bindings-python.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../algorithms/factorization.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="rust-api.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../performance.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -307,11 +380,11 @@ ocas_poly_fp_free(p);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="bindings-python.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../algorithms/factorization.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="rust-api.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../performance.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -331,16 +404,16 @@ ocas_poly_fp_free(p);
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-09f2665d.js"></script>
+        <script src="../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../mark-09e88c2c.min.js"></script>
+        <script src="../searcher-09f2665d.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-c22b7243.js"></script>
+        <script src="../clipboard-1626706a.min.js"></script>
+        <script src="../highlight-abc7f01d.js"></script>
+        <script src="../book-c22b7243.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../language-switcher.js"></script>
+        <script src="../../language-switcher.js"></script>
 
 
 
