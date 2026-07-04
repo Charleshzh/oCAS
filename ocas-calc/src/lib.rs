@@ -13,6 +13,7 @@
 
 pub mod derivative;
 pub mod integral;
+pub mod partial_fraction;
 pub mod series;
 pub mod solve;
 
@@ -21,6 +22,7 @@ mod rules;
 
 pub use derivative::diff;
 pub use integral::integrate;
+pub use partial_fraction::apart;
 pub use series::{substitute, taylor};
 
 #[cfg(test)]
