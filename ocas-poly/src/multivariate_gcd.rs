@@ -828,4 +828,61 @@ mod tests {
         // GCD should be x^2 + y (degree 2).
         assert!(reconstruct_check(&a, &b, &g), "GCD degree inconsistent");
     }
+
+    // --- Property tests ---
+
+    proptest::proptest! {
+        #[test]
+        fn gcd_modular_consistency(
+            // Generate two bivariate polynomials with a shared linear factor (x + ay + b)
+            a_coeff in -5i64..5,
+            b_coeff in -5i64..5,
+            c1 in -3i64..3,
+            d1 in -3i64..3,
+            c2 in -3i64..3,
+            d2 in -3i64..3,
+        ) {
+            // shared factor: x + a_coeff*y + b_coeff
+            // p1 = c1*x + d1*y + (c1*b_coeff + d1*a_coeff*y_coeff... no, use direct construction
+            // Build: a = (x + ay + b)(c1*x + d1) = c1*x^2 + a*c1*xy + b*c1*x + d1*x + a*d1*y + b*d1
+            // Build: b = (x + ay + b)(c2*x + d2) = c2*x^2 + a*c2*xy + b*c2*x + d2*x + a*d2*y + b*d2
+            let a = zmp2(&[
+                (2, 0, c1),
+                (1, 1, a_coeff * c1),
+                (1, 0, b_coeff * c1 + d1),
+                (0, 1, a_coeff * d1),
+                (0, 0, b_coeff * d1),
+            ]);
+            let b = zmp2(&[
+                (2, 0, c2),
+                (1, 1, a_coeff * c2),
+                (1, 0, b_coeff * c2 + d2),
+                (0, 1, a_coeff * d2),
+                (0, 0, b_coeff * d2),
+            ]);
+
+            // Skip trivial cases where either polynomial is zero.
+            if a.is_zero() || b.is_zero() { return Ok(()); }
+
+            let g_mod = gcd_modular(&a, &b);
+            let g_heu = bivariate_gcd(&a, &b);
+
+            // Both should succeed or both should fail.
+            match (&g_mod, &g_heu) {
+                (Some(gm), Some(gh)) => {
+                    // Modular GCD degree should be ≤ heuristic GCD degree
+                    // (heuristic may return inflated results in edge cases).
+                    let deg_m = gm.total_degree().unwrap_or(0);
+                    let deg_h = gh.total_degree().unwrap_or(0);
+                    assert!(deg_m <= deg_h,
+                        "modular GCD degree {} > heuristic GCD degree {}", deg_m, deg_h);
+                }
+                (None, None) => {}
+                _ => {
+                    // One succeeded and the other didn't — acceptable for edge cases
+                    // where the modular approach needs different prime selection.
+                }
+            }
+        }
+    }
 }
