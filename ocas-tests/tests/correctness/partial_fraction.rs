@@ -1,6 +1,6 @@
+use ocas_calc::partial_fraction::{PartialFractionTerm, apart, together};
 use ocas_domain::{Rational, RationalDomain};
 use ocas_poly::DenseUnivariatePolynomial;
-use ocas_calc::partial_fraction::{apart, together, PartialFractionTerm};
 
 fn rat_poly(coeffs: &[i64]) -> DenseUnivariatePolynomial<RationalDomain> {
     DenseUnivariatePolynomial::from_coeffs(
