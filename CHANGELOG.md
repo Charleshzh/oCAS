@@ -8,6 +8,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.11.2] - 2026-07-04
+
+### Added / 新增
+
+- **Small-integer optimization (SOO) for `Integer`** (`ocas-domain`): values
+  fitting in `i64` are stored on the stack in an `enum { Small(i64),
+  Large(Box<rug::Integer>) }` with `UnsafeCell`-based lazy promotion,
+  avoiding heap allocation for the common case. Arithmetic uses
+  `i64::checked_add/sub/mul` with overflow fallback to GMP /
+  **小整数 SOO 优化**：fit i64 的值栈分配，算术走 i64 快速路径，溢出回退 GMP
+- **`to_i64()` method** on `Integer` (both GMP and non-GMP backends): extracts
+  the value as `Option<i64>`, replacing the `.inner().try_into()` pattern /
+  **`to_i64()` 方法**：替代 `.inner().try_into()` 模式
+- **GMP backend binary serialization** (`ocas-domain`): `to_bigint()` and
+  `From<BigInt>` use `write_digits`/`from_digits` instead of string conversion /
+  **GMP 后端二进制序列化**：`to_bigint()` 和 `From<BigInt>` 使用二进制而非字符串
+- **FiniteField optimization** (`ocas-domain`): cached `prime_minus_two` for
+  fast `inv()` via Fermat's little theorem; `pow()` overrides default with
+  `modpow`; GMP path caches `rug::Integer` versions for `pow_mod` /
+  **有限域优化**：缓存 `prime-2` 加速求逆；`pow()` 使用 `modpow`；GMP 路径
+  缓存 `rug::Integer` 版本
+- **mimalloc global allocator** (`ocas` crate): optional `mimalloc` feature
+  flag configures `mimalloc::MiMalloc` as `#[global_allocator]` /
+  **mimalloc 全局分配器**：可选 `mimalloc` feature 配置全局分配器
+- **Dense polynomial `mul_into()` buffer reuse** (`ocas-poly`):
+  `DenseUnivariatePolynomial::mul_into(&self, other, buf)` writes into a
+  caller-provided buffer, avoiding repeated allocation in hot loops /
+  **稠密多项式 `mul_into()` 缓冲区复用**：热路径可复用缓冲区避免重复分配
+- **Modular multivariate GCD** (`ocas-poly`): `gcd_modular(a, b)` reduces
+  polynomials mod a prime, computes GCD in $\mathbb{F}_p$ via
+  evaluation-interpolation, and lifts back to $\mathbb{Z}$ /
+  **模方法多变量 GCD**：`gcd_modular` 在 $\mathbb{F}_p$ 中计算 GCD 后提升回 $\mathbb{Z}$
+- **SOO benchmarks** (`ocas-tests/benches/gmp_integer.rs`): small/large
+  add/mul/to_bigint/is_zero benchmarks for Integer /
+  **SOO 基准**：小整数/大整数 add/mul/to_bigint/is_zero 基准
+- **Modular GCD benchmark** (`ocas-tests/benches/poly_gcd.rs`): heuristic
+  vs modular bivariate GCD comparison /
+  **模方法 GCD 基准**：启发式 vs 模方法二元 GCD 对比
+
+### Changed / 变更
+
+- **Migrated all `.inner()` calls** across oCAS codebase to direct methods
+  (`to_i64()`, `numer()`, `denom()`, `to_string()`, `Display`) /
+  **迁移所有 `.inner()` 调用**为直接方法调用
+- **rug 1.30 API compatibility**: `to_digits` → `write_digits`,
+  `from_digits` via `impl Into<RugInteger>`, `ShrAssign` uses `unsafe`
+  `UnsafeCell::get()` for sound mutation /
+  **rug 1.30 API 适配**：`to_digits` → `write_digits` 等
+
+---
 ## [0.11.1] - 2026-07-04
 
 ### Added / 新增
