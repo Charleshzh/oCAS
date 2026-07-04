@@ -18,6 +18,7 @@
 - [Rewrite & Simplification](./rewrite.md)
 - [Evaluation & JIT](./evaluation.md)
 - [Factorization](./algorithms/factorization.md)
+- [Rational Functions & Resultants](./algorithms/rational-functions.md)
 
 # Performance & Quality
 
