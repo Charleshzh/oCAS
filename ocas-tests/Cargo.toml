@@ -19,6 +19,7 @@ ocas-core = { path = "../ocas-core" }
 ocas-domain = { path = "../ocas-domain" }
 ocas-poly = { path = "../ocas-poly" }
 ocas-atom = { path = "../ocas-atom" }
+ocas-calc = { path = "../ocas-calc" }
 ocas-rewrite = { path = "../ocas-rewrite" }
 ocas-eval = { path = "../ocas-eval" }
 num-bigint = { workspace = true }
