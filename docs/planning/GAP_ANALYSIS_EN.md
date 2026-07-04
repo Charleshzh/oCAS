@@ -162,30 +162,30 @@ Ranked by impact × implementation cost, the hard problems on the road to 1.0.
 | 1 | ~~Full polynomial factorization~~ (completed 0.11.0–0.11.1) | ✅ done — univariate and bivariate (monic-in-x) closed; unblocks rational functions, partial fractions, solvers |
 | 2 | Risch symbolic integration (roadmap: 0.14) | 🔴 hallmark of "can it integrate" |
 | 3 | Gröbner F4/F5 (roadmap: 0.13) | 🟡 current Buchberger too slow on large cyclic-n |
-| 4 | Rational polynomials / partial fractions (roadmap: 0.12) | 🟡 Symbolica core feature, depends on factorization |
+| 4 | ~~Rational polynomials / partial fractions~~ (completed 0.12) | ✅ done — `RationalPolynomial` type + partial fractions + resultant + Karatsuba multiplication; parity with Symbolica for rational functions |
 | 5 | Multi-output optimization / codegen (roadmap: 0.15) | 🟡 JIT is f64 single-output; extend to multi-output/multi-precision |
 
 ---
 
 ## 6. Overall Assessment
 
-Execution quality of 0.1 → 0.10 is high: every roadmap deliverable shipped,
+Execution quality of 0.1 → 0.12 is high: every roadmap deliverable shipped,
 the layered architecture is clean (no cycles), the 12-crate workspace is
 strictly layered, quality gates are strict (`-D warnings` + deny + Miri
-awareness), and docs/bindings/CI are well-engineered. As a self-developed CAS
-of ~16k lines over ~14 months, the foundation is solid.
+awareness), and docs/bindings/CI are well-engineered.
 
-However, the 1.0 goal of "performance parity or better with Symbolica" still
-has a core hard-algorithm shortfall: Risch integration and F4/F5 Gröbner are
-the remaining "rites of passage" of a CAS. Factorization has been closed through
-0.11.1 (univariate and bivariate monic-in-x), so the next high-value leap is
-rational function arithmetic and partial fractions (0.12). On performance (arena + JIT + SIMD) oCAS has a structural
-edge, but algorithm depth decides "what can be computed", not "how fast".
+0.12 completed the rational function stack (`RationalPolynomial` type +
+arithmetic + partial fractions + resultant + Karatsuba multiplication +
+rational reconstruction), closing the three 🔴 gaps marked in this analysis.
+oCAS now has parity with Symbolica for rational functions (univariate level).
+
+Remaining hard algorithms: Risch integration (0.14) and Gröbner F4 (0.13) are
+the last two "rites of passage" before 1.0.
 
 Realistic positioning: oCAS today is closer to "a high-performance subset of
-SymPy's core, with evaluation performance exceeding SymPy and univariate
-factorization parity", rather than a direct Symbolica replacement. Closing
-rational function arithmetic before 1.0 is the highest-value leap.
+SymPy's core, with evaluation performance exceeding SymPy and parity in
+factorization and rational functions, plus Karatsuba acceleration". Closing
+F4 and Risch before 1.0 is the highest-value path forward.
 
 ---
 
@@ -198,3 +198,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.10.0 | 2026-07-02 | Initial assessment. All 0.1–0.10 deliverables verified complete; gaps against Symbolica / SageMath / SymPy documented; factorization + Risch integration identified as top priorities. |
 | 0.11.0 | 2026-07-03 | Polynomial factorization completed (univariate ℤ and ℤ_p); multivariate GCD added; SymPy comparison updated to parity for univariate factorization; highest-priority gap shifted to rational functions / partial fractions (0.12). |
 | 0.11.1 | 2026-07-04 | Bivariate factorization over ℤ and ℤ_p (monic-in-x Wang Hensel) added; sparse multivariate `factor()` entry points and C polynomial bindings landed; mdBook factorization chapter added; highest-priority gap remains rational functions / partial fractions (0.12). |
+| 0.12.0 | 2026-07-04 | Rational function stack completed (`RationalPolynomial` + partial fractions + Brown PRS resultant + Karatsuba multiplication + rational reconstruction); parity with Symbolica for rational functions; highest-priority gap shifted to Gröbner F4 (0.13) and Risch integration (0.14). |
