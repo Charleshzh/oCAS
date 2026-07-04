@@ -5,8 +5,6 @@
 
 use std::fmt;
 
-use num_traits::ToPrimitive;
-
 use ocas_domain::{IntegerDomain, RationalDomain};
 use ocas_poly::matrix::{Matrix, MatrixError};
 
@@ -118,8 +116,8 @@ pub fn solve_linear_rational(a: &[Vec<i64>], b: &[i64]) -> Result<Vec<(i64, i64)
     Ok(solution
         .into_iter()
         .map(|r| {
-            let numer = r.inner().numer().to_i64().unwrap_or(0);
-            let denom = r.inner().denom().to_i64().unwrap_or(1);
+            let numer = r.numer().to_i64().unwrap_or(0);
+            let denom = r.denom().to_i64().unwrap_or(1);
             (numer, denom)
         })
         .collect())
@@ -172,8 +170,7 @@ pub fn solve_linear_integer(a: &[Vec<i64>], b: &[i64]) -> Result<Vec<i64>, Solve
         .into_iter()
         .map(|r| {
             // Integer::from produces BigInt; convert back to i64.
-            // This panics if the value doesn't fit in i64.
-            r.inner().try_into().unwrap_or(0)
+            r.to_i64().unwrap_or(0)
         })
         .collect())
 }
@@ -221,9 +218,9 @@ pub fn solve_diophantine(a: i64, b: i64, c: i64) -> Option<DiophantineSolution> 
     let bi = Integer::from(b);
 
     let (g, x, y) = d.extended_gcd(&ai, &bi);
-    let g_val: i64 = g.inner().try_into().ok()?;
-    let x_val: i64 = x.inner().try_into().ok()?;
-    let y_val: i64 = y.inner().try_into().ok()?;
+    let g_val: i64 = g.to_i64()?;
+    let x_val: i64 = x.to_i64()?;
+    let y_val: i64 = y.to_i64()?;
 
     // Check if g divides c.
     if c % g_val != 0 {
@@ -300,8 +297,8 @@ pub fn solve_polynomial_system(
             p.sorted_terms()
                 .into_iter()
                 .map(|(exp, coeff)| {
-                    let numer = coeff.inner().numer().to_i64().unwrap_or(0);
-                    let _denom = coeff.inner().denom().to_i64().unwrap_or(1);
+                    let numer = coeff.numer().to_i64().unwrap_or(0);
+                    let _denom = coeff.denom().to_i64().unwrap_or(1);
                     (numer, exp.to_vec())
                 })
                 .collect()

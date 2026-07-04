@@ -6,9 +6,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use ocas_domain::{Integer, IntegerDomain};
 use ocas_poly::DenseUnivariatePolynomial;
+use ocas_poly::SparseMultivariatePolynomial;
 use ocas_poly::multivariate_gcd::{bivariate_gcd, gcd_modular};
 use ocas_poly::sparse::Lex;
-use ocas_poly::SparseMultivariatePolynomial;
 use std::hint::black_box;
 
 fn build_poly(coeffs: &[i64]) -> DenseUnivariatePolynomial<IntegerDomain> {

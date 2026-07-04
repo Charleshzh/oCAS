@@ -147,7 +147,7 @@ impl Drop for FlintUnivariatePolynomial {
 }
 
 fn fmpz_from_integer(i: &Integer) -> fmpz {
-    let s = i.inner().to_string();
+    let s = i.to_string();
     let c_str = CString::new(s).expect("BigInt decimal string contains null byte");
     unsafe {
         let mut z = MaybeUninit::<fmpz>::uninit();

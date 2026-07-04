@@ -63,7 +63,10 @@ impl Integer {
             match &*ptr {
                 IntegerInner::Small(v) => {
                     *ptr = IntegerInner::Large(Box::new(RugInteger::from(*v)));
-                    match &*ptr { IntegerInner::Large(r) => &**(r), _ => unreachable!() }
+                    match &*ptr {
+                        IntegerInner::Large(r) => &**(r),
+                        _ => unreachable!(),
+                    }
                 }
                 IntegerInner::Large(r) => &**(r),
             }
@@ -73,11 +76,15 @@ impl Integer {
 
 impl Clone for Integer {
     fn clone(&self) -> Self {
-        Integer { inner: std::cell::UnsafeCell::new(self.inner_ref().clone()) }
+        Integer {
+            inner: std::cell::UnsafeCell::new(self.inner_ref().clone()),
+        }
     }
 }
 impl std::fmt::Debug for Integer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { self.inner_ref().fmt(f) }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.inner_ref().fmt(f)
+    }
 }
 impl PartialEq for Integer {
     fn eq(&self, other: &Self) -> bool {
@@ -89,7 +96,9 @@ impl PartialEq for Integer {
 }
 impl Eq for Integer {}
 impl PartialOrd for Integer {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 impl Ord for Integer {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
@@ -165,14 +174,26 @@ impl Domain for IntegerDomain {
     fn div(&self, a: &Self::Element, b: &Self::Element) -> Option<Self::Element> {
         match (a.inner_ref(), b.inner_ref()) {
             (IntegerInner::Small(av), IntegerInner::Small(bv)) => {
-                if *bv == 0 { return None; }
-                if *av % *bv == 0 { Some(Integer::from_small(*av / *bv)) } else { None }
+                if *bv == 0 {
+                    return None;
+                }
+                if *av % *bv == 0 {
+                    Some(Integer::from_small(*av / *bv))
+                } else {
+                    None
+                }
             }
             _ => {
                 let (ar, br) = (a.as_rug(), b.as_rug());
-                if *br == 0 { return None; }
+                if *br == 0 {
+                    return None;
+                }
                 let (q, r) = ar.clone().div_rem(br.clone());
-                if r == 0 { Some(Integer::from_large(q)) } else { None }
+                if r == 0 {
+                    Some(Integer::from_large(q))
+                } else {
+                    None
+                }
             }
         }
     }
@@ -183,9 +204,13 @@ impl Domain for IntegerDomain {
             IntegerInner::Small(-1) => Some(Integer::from_small(-1)),
             IntegerInner::Small(_) => None,
             IntegerInner::Large(r) => {
-                if **r == 1 { Some(self.one()) }
-                else if **r == -1 { Some(Integer::from_small(-1)) }
-                else { None }
+                if **r == 1 {
+                    Some(self.one())
+                } else if **r == -1 {
+                    Some(Integer::from_small(-1))
+                } else {
+                    None
+                }
             }
         }
     }
@@ -199,14 +224,18 @@ impl EuclideanDomain for IntegerDomain {
     ) -> Option<(Self::Element, Self::Element)> {
         match (a.inner_ref(), b.inner_ref()) {
             (IntegerInner::Small(av), IntegerInner::Small(bv)) => {
-                if *bv == 0 { return None; }
+                if *bv == 0 {
+                    return None;
+                }
                 let q = *av / *bv; // truncating division
                 let r = *av - q * *bv;
                 Some((Integer::from_small(q), Integer::from_small(r)))
             }
             _ => {
                 let (ar, br) = (a.as_rug(), b.as_rug());
-                if br == &RugInteger::from(0) { return None; }
+                if br == &RugInteger::from(0) {
+                    return None;
+                }
                 let (q, r) = ar.clone().div_rem(br.clone());
                 Some((Integer::from_large(q), Integer::from_large(r)))
             }
@@ -320,12 +349,16 @@ impl From<num_bigint::BigInt> for Integer {
 impl Integer {
     /// Create a Small-variant Integer.
     fn from_small(v: i64) -> Self {
-        Integer { inner: std::cell::UnsafeCell::new(IntegerInner::Small(v)) }
+        Integer {
+            inner: std::cell::UnsafeCell::new(IntegerInner::Small(v)),
+        }
     }
 
     /// Create a Large-variant Integer from a `RugInteger`.
     fn from_large(r: impl Into<RugInteger>) -> Self {
-        Integer { inner: std::cell::UnsafeCell::new(IntegerInner::Large(Box::new(r.into()))) }
+        Integer {
+            inner: std::cell::UnsafeCell::new(IntegerInner::Large(Box::new(r.into()))),
+        }
     }
 
     /// Create an integer from a machine integer or another `Into<RugInteger>`.
@@ -362,11 +395,17 @@ impl Integer {
             IntegerInner::Small(v) => num_bigint::BigInt::from(*v),
             IntegerInner::Large(r) => {
                 use num_bigint::Sign;
-                if **r == 0 { return num_bigint::BigInt::ZERO; }
+                if **r == 0 {
+                    return num_bigint::BigInt::ZERO;
+                }
                 let num_bytes = r.significant_digits::<u8>();
                 let mut bytes = vec![0u8; num_bytes];
                 r.write_digits(&mut bytes, rug::integer::Order::Lsf);
-                let sign = if r.is_negative() { Sign::Minus } else { Sign::Plus };
+                let sign = if r.is_negative() {
+                    Sign::Minus
+                } else {
+                    Sign::Plus
+                };
                 num_bigint::BigInt::from_bytes_le(sign, &bytes)
             }
         }
@@ -377,16 +416,21 @@ impl Integer {
         use rug::ops::Pow;
         // Small fast path for common cases.
         if let IntegerInner::Small(v) = self.inner_ref() {
-            if exp == 0 { return Integer::from_small(1); }
-            if *v == 0 { return Integer::from_small(0); }
-            if *v == 1 { return Integer::from_small(1); }
-            if *v == -1 {
-                return if exp % 2 == 0 { Integer::from_small(1) } else { Integer::from_small(-1) };
+            if exp == 0 {
+                return Integer::from_small(1);
             }
-        }
-        Integer::from_large(self.as_rug().clone().pow(exp))
-    }
-                // For other cases, use rug to be safe.
+            if *v == 0 {
+                return Integer::from_small(0);
+            }
+            if *v == 1 {
+                return Integer::from_small(1);
+            }
+            if *v == -1 {
+                return if exp % 2 == 0 {
+                    Integer::from_small(1)
+                } else {
+                    Integer::from_small(-1)
+                };
             }
         }
         Integer::from_large(self.as_rug().clone().pow(exp))
@@ -452,13 +496,11 @@ impl Integer {
     /// Absolute value.
     pub fn abs(&self) -> Integer {
         match self.inner_ref() {
-            IntegerInner::Small(v) => {
-                match v.checked_neg() {
-                    Some(neg) if *v >= 0 => Integer::from_small(neg),
-                    _ if *v < 0 => Integer::from_small(-*v),
-                    _ => Integer::from_large(self.as_rug().clone().abs()),
-                }
-            }
+            IntegerInner::Small(v) => match v.checked_neg() {
+                Some(neg) if *v >= 0 => Integer::from_small(neg),
+                _ if *v < 0 => Integer::from_small(-*v),
+                _ => Integer::from_large(self.as_rug().clone().abs()),
+            },
             IntegerInner::Large(r) => Integer::from_large(r.clone().abs()),
         }
     }
@@ -466,9 +508,7 @@ impl Integer {
     /// Integer square root (floor).
     pub fn sqrt(&self) -> Integer {
         match self.inner_ref() {
-            IntegerInner::Small(v) if *v >= 0 => {
-                Integer::from_small((*v as f64).sqrt() as i64)
-            }
+            IntegerInner::Small(v) if *v >= 0 => Integer::from_small((*v as f64).sqrt() as i64),
             _ => Integer::from_large(self.as_rug().clone().sqrt()),
         }
     }
@@ -479,48 +519,40 @@ impl Integer {
 
     fn add_ref(&self, rhs: &Self) -> Self {
         match (self.inner_ref(), rhs.inner_ref()) {
-            (IntegerInner::Small(a), IntegerInner::Small(b)) => {
-                match a.checked_add(*b) {
-                    Some(r) => Integer::from_small(r),
-                    None => Integer::from_large(RugInteger::from(*a) + RugInteger::from(*b)),
-                }
-            }
+            (IntegerInner::Small(a), IntegerInner::Small(b)) => match a.checked_add(*b) {
+                Some(r) => Integer::from_small(r),
+                None => Integer::from_large(RugInteger::from(*a) + RugInteger::from(*b)),
+            },
             _ => Integer::from_large(self.as_rug() + rhs.as_rug()),
         }
     }
 
     fn sub_ref(&self, rhs: &Self) -> Self {
         match (self.inner_ref(), rhs.inner_ref()) {
-            (IntegerInner::Small(a), IntegerInner::Small(b)) => {
-                match a.checked_sub(*b) {
-                    Some(r) => Integer::from_small(r),
-                    None => Integer::from_large(RugInteger::from(*a) - RugInteger::from(*b)),
-                }
-            }
+            (IntegerInner::Small(a), IntegerInner::Small(b)) => match a.checked_sub(*b) {
+                Some(r) => Integer::from_small(r),
+                None => Integer::from_large(RugInteger::from(*a) - RugInteger::from(*b)),
+            },
             _ => Integer::from_large(self.as_rug() - rhs.as_rug()),
         }
     }
 
     fn mul_ref(&self, rhs: &Self) -> Self {
         match (self.inner_ref(), rhs.inner_ref()) {
-            (IntegerInner::Small(a), IntegerInner::Small(b)) => {
-                match a.checked_mul(*b) {
-                    Some(r) => Integer::from_small(r),
-                    None => Integer::from_large(RugInteger::from(*a) * RugInteger::from(*b)),
-                }
-            }
+            (IntegerInner::Small(a), IntegerInner::Small(b)) => match a.checked_mul(*b) {
+                Some(r) => Integer::from_small(r),
+                None => Integer::from_large(RugInteger::from(*a) * RugInteger::from(*b)),
+            },
             _ => Integer::from_large(self.as_rug() * rhs.as_rug()),
         }
     }
 
     fn neg_ref(&self) -> Self {
         match self.inner_ref() {
-            IntegerInner::Small(v) => {
-                match v.checked_neg() {
-                    Some(r) => Integer::from_small(r),
-                    None => Integer::from_large(-self.as_rug()),
-                }
-            }
+            IntegerInner::Small(v) => match v.checked_neg() {
+                Some(r) => Integer::from_small(r),
+                None => Integer::from_large(-self.as_rug()),
+            },
             IntegerInner::Large(r) => Integer::from_large(-&**r),
         }
     }
@@ -652,12 +684,16 @@ impl std::ops::ShrAssign<u32> for Integer {
         match self.inner_ref() {
             IntegerInner::Small(v) => {
                 let shifted = *v >> shift;
-                unsafe { *self.inner.get() = IntegerInner::Small(shifted); }
+                unsafe {
+                    *self.inner.get() = IntegerInner::Small(shifted);
+                }
             }
             IntegerInner::Large(r) => {
                 let mut r = r.clone();
                 *r >>= shift;
-                unsafe { *self.inner.get() = IntegerInner::Large(r); }
+                unsafe {
+                    *self.inner.get() = IntegerInner::Large(r);
+                }
             }
         }
     }

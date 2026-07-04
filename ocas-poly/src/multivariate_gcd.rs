@@ -13,7 +13,9 @@
 
 use num_bigint::BigInt;
 use num_traits::{One, Signed, Zero};
-use ocas_domain::{Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer, IntegerDomain};
+use ocas_domain::{
+    Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer, IntegerDomain,
+};
 
 use crate::dense::DenseUnivariatePolynomial;
 use crate::sparse::{Lex, SparseMultivariatePolynomial};
@@ -517,10 +519,7 @@ fn fp_interpolate_gcd(
         let data: Vec<(usize, FiniteFieldElement)> = images
             .iter()
             .map(|(y_val, g)| {
-                let c = g
-                    .coeff(i)
-                    .cloned()
-                    .unwrap_or_else(|| field.zero());
+                let c = g.coeff(i).cloned().unwrap_or_else(|| field.zero());
                 (*y_val, c)
             })
             .collect();

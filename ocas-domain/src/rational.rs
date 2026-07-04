@@ -67,7 +67,7 @@ impl Rational {
 
     /// Create a rational number from an integer (denominator = 1).
     pub fn from_integer(n: Integer) -> Self {
-        Self(BigRational::from_integer(n.inner().clone()))
+        Self(BigRational::from_integer(n.to_bigint()))
     }
 
     /// Numerator as an [`Integer`].

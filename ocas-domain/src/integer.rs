@@ -41,8 +41,8 @@ pub struct IntegerDomain;
 ///
 /// let a = Integer::from(42);
 /// let b = Integer::new(100);
-/// assert_eq!(a.inner().to_string(), "42");
-/// assert_eq!(b.inner().to_string(), "100");
+/// assert_eq!(a.to_string(), "42");
+/// assert_eq!(b.to_string(), "100");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Integer(BigInt);
@@ -62,6 +62,12 @@ impl Integer {
     /// Convert to a `BigInt` regardless of the backend.
     pub fn to_bigint(&self) -> BigInt {
         self.0.clone()
+    }
+
+    /// Try to extract the value as `i64`. Returns `None` if it doesn't fit.
+    pub fn to_i64(&self) -> Option<i64> {
+        use num_traits::ToPrimitive;
+        self.0.to_i64()
     }
 
     /// Raise to a `u32` power.

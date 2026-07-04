@@ -56,8 +56,8 @@ fn dense_polynomial_from_rational_domain() {
     );
     let c = a.mul(&b);
     assert_eq!(c.degree(), Some(3));
-    assert_eq!(c.coeff(0).unwrap().inner().numer(), &1.into());
-    assert_eq!(c.coeff(1).unwrap().inner().numer(), &3.into());
-    assert_eq!(c.coeff(2).unwrap().inner().numer(), &3.into());
-    assert_eq!(c.coeff(3).unwrap().inner().numer(), &1.into());
+    assert_eq!(c.coeff(0).unwrap().numer(), Integer::from(1));
+    assert_eq!(c.coeff(1).unwrap().numer(), Integer::from(3));
+    assert_eq!(c.coeff(2).unwrap().numer(), Integer::from(3));
+    assert_eq!(c.coeff(3).unwrap().numer(), Integer::from(1));
 }
