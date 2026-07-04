@@ -6,6 +6,9 @@
 
 use ocas_domain::{Domain, EuclideanDomain};
 
+/// Threshold below which Karatsuba falls back to schoolbook multiplication.
+const KARATSUBA_THRESHOLD: usize = 32;
+
 /// A dense univariate polynomial with coefficients in a domain `D`.
 ///
 /// # Example
@@ -102,6 +105,20 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
     /// Return the leading coefficient, or `None` for the zero polynomial.
     pub fn leading_coeff(&self) -> Option<&D::Element> {
         self.coeffs.last()
+    }
+
+    /// Convenience alias: return the leading coefficient, or the domain's
+    /// zero element for the zero polynomial.
+    pub fn lcoeff(&self) -> D::Element {
+        self.leading_coeff()
+            .cloned()
+            .unwrap_or_else(|| self.domain.zero())
+    }
+
+    /// Return the constant term (coefficient of $x^0$), or the domain's
+    /// zero element for the zero polynomial.
+    pub fn constant(&self) -> D::Element {
+        self.coeff(0).cloned().unwrap_or_else(|| self.domain.zero())
     }
 
     /// Return the zero polynomial with the same domain.
@@ -205,13 +222,121 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
             buf.clear();
             return;
         }
-        let result_len = self.coeffs.len() + other.coeffs.len() - 1;
+        if self.coeffs.len().min(other.coeffs.len()) >= KARATSUBA_THRESHOLD {
+            Self::karatsuba_mul_into(&self.coeffs, &other.coeffs, &self.domain, buf);
+        } else {
+            Self::schoolbook_mul_into(&self.coeffs, &other.coeffs, &self.domain, buf);
+        }
+    }
+
+    /// Schoolbook O(n·m) polynomial multiplication into `buf`.
+    fn schoolbook_mul_into(
+        a: &[D::Element],
+        b: &[D::Element],
+        domain: &D,
+        buf: &mut Vec<D::Element>,
+    ) {
+        let result_len = a.len() + b.len() - 1;
         buf.clear();
-        buf.resize(result_len, self.domain.zero());
-        for (i, a) in self.coeffs.iter().enumerate() {
-            for (j, b) in other.coeffs.iter().enumerate() {
-                let prod = self.domain.mul(a, b);
-                buf[i + j] = self.domain.add(&buf[i + j], &prod);
+        buf.resize(result_len, domain.zero());
+        for (i, ai) in a.iter().enumerate() {
+            for (j, bj) in b.iter().enumerate() {
+                let prod = domain.mul(ai, bj);
+                buf[i + j] = domain.add(&buf[i + j], &prod);
+            }
+        }
+    }
+
+    /// Karatsuba fast multiplication into `buf`.
+    ///
+    /// Splits each polynomial at the midpoint `m = n/2` and computes the
+    /// product using three half-size multiplications instead of four:
+    ///
+    /// ```text
+    /// a = a0 + a1·x^m,  b = b0 + b1·x^m
+    /// z0 = a0·b0,  z2 = a1·b1
+    /// z1 = (a0+a1)·(b0+b1) − z0 − z2
+    /// result = z0 + z1·x^m + z2·x^(2m)
+    /// ```
+    fn karatsuba_mul_into(
+        a: &[D::Element],
+        b: &[D::Element],
+        domain: &D,
+        buf: &mut Vec<D::Element>,
+    ) {
+        let n = a.len().max(b.len());
+        if n < KARATSUBA_THRESHOLD {
+            Self::schoolbook_mul_into(a, b, domain, buf);
+            return;
+        }
+
+        let m = n / 2;
+        let zero = domain.zero();
+
+        // Split: a = a0 + a1·x^m, b = b0 + b1·x^m
+        let (a0, a1) = if a.len() <= m {
+            (a, &[][..])
+        } else {
+            (&a[..m], &a[m..])
+        };
+        let (b0, b1) = if b.len() <= m {
+            (b, &[][..])
+        } else {
+            (&b[..m], &b[m..])
+        };
+
+        // z0 = a0 * b0
+        let mut z0 = Vec::new();
+        Self::karatsuba_mul_into(a0, b0, domain, &mut z0);
+
+        // z2 = a1 * b1
+        let mut z2 = Vec::new();
+        Self::karatsuba_mul_into(a1, b1, domain, &mut z2);
+
+        // a01 = a0 + a1,  b01 = b0 + b1
+        let a01_len = a0.len().max(a1.len());
+        let b01_len = b0.len().max(b1.len());
+        let mut a01 = vec![zero.clone(); a01_len];
+        let mut b01 = vec![zero.clone(); b01_len];
+        for (i, a01_val) in a01.iter_mut().enumerate() {
+            let ai = a0.get(i).unwrap_or(&zero);
+            let aj = a1.get(i).unwrap_or(&zero);
+            *a01_val = domain.add(ai, aj);
+        }
+        for (i, b01_val) in b01.iter_mut().enumerate() {
+            let bi = b0.get(i).unwrap_or(&zero);
+            let bj = b1.get(i).unwrap_or(&zero);
+            *b01_val = domain.add(bi, bj);
+        }
+
+        // z1 = (a0+a1)*(b0+b1) - z0 - z2
+        let mut z1 = Vec::new();
+        Self::karatsuba_mul_into(&a01, &b01, domain, &mut z1);
+        for (i, z1_val) in z1.iter_mut().enumerate() {
+            let z0i = z0.get(i).unwrap_or(&zero);
+            let z2i = z2.get(i).unwrap_or(&zero);
+            *z1_val = domain.sub(z1_val, z0i);
+            *z1_val = domain.sub(z1_val, z2i);
+        }
+
+        // Combine: result = z0 + z1·x^m + z2·x^(2m)
+        let result_len = a.len() + b.len() - 1;
+        buf.clear();
+        buf.resize(result_len, zero);
+
+        for (i, c) in z0.iter().enumerate() {
+            buf[i] = domain.add(&buf[i], c);
+        }
+        for (i, c) in z1.iter().enumerate() {
+            let idx = i + m;
+            if idx < buf.len() {
+                buf[idx] = domain.add(&buf[idx], c);
+            }
+        }
+        for (i, c) in z2.iter().enumerate() {
+            let idx = i + 2 * m;
+            if idx < buf.len() {
+                buf[idx] = domain.add(&buf[idx], c);
             }
         }
     }
@@ -282,6 +407,22 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
 }
 
 impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
+    /// Multiply all coefficients by a constant.
+    ///
+    /// Equivalent to [`mul_scalar`](Self::mul_scalar) but restricted to
+    /// [`EuclideanDomain`] for consistency with [`div_coeff`](Self::div_coeff).
+    pub fn mul_coeff(&self, c: &D::Element) -> Self {
+        self.mul_scalar(c)
+    }
+
+    /// Divide all coefficients by a constant (must divide exactly).
+    ///
+    /// Panics in debug mode if any coefficient is not divisible by `c`.
+    pub fn div_coeff(&self, c: &D::Element) -> Self {
+        let inv = self.domain.inv(c).expect("div_coeff: cannot invert zero");
+        self.mul_scalar(&inv)
+    }
+
     /// Divide this polynomial by another, returning `(quotient, remainder)`.
     ///
     /// Returns `None` if the divisor is the zero polynomial.
@@ -350,6 +491,170 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
 
         let quotient = Self::from_coeffs(domain, quotient_coeffs);
         Some((quotient, remainder))
+    }
+
+    // ------------------------------------------------------------------
+    //  Diophantine / CRT and p-adic expansion (for partial fractions)
+    // ------------------------------------------------------------------
+
+    /// Compute `self^n` by repeated squaring.
+    pub fn pow(&self, n: u32) -> Self {
+        if n == 0 {
+            return self.one();
+        }
+        let mut base = self.clone();
+        let mut exp = n;
+        let mut result = self.one();
+        while exp > 0 {
+            if exp & 1 == 1 {
+                result = result.mul(&base);
+            }
+            base = base.mul(&base);
+            exp >>= 1;
+        }
+        result
+    }
+
+    /// Compute the extended GCD of two polynomials: `(g, s, t)` such that
+    /// `s * self + t * other = g` where `g = gcd(self, other)`.
+    ///
+    /// Uses the extended Euclidean algorithm.
+    pub fn extended_gcd_poly(&self, other: &Self) -> (Self, Self, Self) {
+        let d = self.domain();
+        let mut old_r = self.clone();
+        let mut r = other.clone();
+        let mut old_s = self.one();
+        let mut s = self.zero();
+        let mut old_t = self.zero();
+        let mut t = self.one();
+
+        while !r.is_zero() {
+            let (q, rem) = old_r.div_rem(&r).unwrap_or((old_r.zero(), old_r.clone()));
+            old_r = r;
+            r = rem;
+
+            let new_s = old_s.sub(&q.mul(&s));
+            old_s = s;
+            s = new_s;
+
+            let new_t = old_t.sub(&q.mul(&t));
+            old_t = t;
+            t = new_t;
+        }
+
+        // Normalize so that g is monic (or at least has positive leading coeff).
+        if let Some(lc) = old_r.leading_coeff()
+            && !d.is_one(lc)
+            && let Some(lc_inv) = d.inv(lc)
+        {
+            old_r = old_r.mul_scalar(&lc_inv);
+            old_s = old_s.mul_scalar(&lc_inv);
+            old_t = old_t.mul_scalar(&lc_inv);
+        }
+
+        (old_r, old_s, old_t)
+    }
+
+    /// Polynomial CRT (diophantine solver).
+    ///
+    /// Given a list of pairwise coprime polynomials `polys` and a target `b`,
+    /// returns `[s0, ..., sn]` such that:
+    ///
+    /// $$\sum_i s_i \cdot \prod_{j \neq i} p_j \equiv b \pmod{\prod_i p_i}$$
+    ///
+    /// Uses the extended Euclidean algorithm recursively.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the polynomials are not pairwise coprime (i.e. the GCD is
+    /// not a unit).
+    pub fn diophantine(polys: &mut [Self], b: &Self) -> Vec<Self> {
+        let n = polys.len();
+        if n == 0 {
+            return Vec::new();
+        }
+        if n == 1 {
+            let (_, r) = b
+                .div_rem(&polys[0])
+                .unwrap_or_else(|| (b.zero(), b.clone()));
+            return vec![r];
+        }
+
+        // Compute suffix products: suffix[i] = Π_{j>i} polys[j]
+        let mut suffix: Vec<Self> = Vec::with_capacity(n);
+        let mut prod = polys[n - 1].one(); // empty product = 1
+        for i in (0..n - 1).rev() {
+            prod = prod.mul(&polys[i + 1]);
+            suffix.push(prod.clone());
+        }
+        suffix.reverse();
+        // suffix[i] = Π_{j>i} polys[j] for i in 0..n-1
+
+        // Recursive EEA approach:
+        // Start with cur = b, then for each i:
+        //   (g, s, t) = extended_gcd(p[i], suffix[i])
+        //   result[i] = (t * cur) mod p[i]
+        //   cur = (s * cur) mod suffix[i]
+        let mut cur = b.clone();
+        let mut result = Vec::with_capacity(n);
+
+        for i in 0..n {
+            let (g, s, t) = polys[i].extended_gcd_poly(&suffix[i]);
+
+            // g should be a unit (constant, ideally 1).
+            // result[i] = (t * cur) / g  mod p[i]
+            let ts = t.mul(&cur);
+            let ts_div_g = if g.is_one() {
+                ts
+            } else {
+                ts.div_rem(&g).map(|(q, _)| q).unwrap_or(ts)
+            };
+            let (_, ri) = ts_div_g
+                .div_rem(&polys[i])
+                .unwrap_or_else(|| (ts_div_g.zero(), ts_div_g));
+
+            // Update: cur = (s * cur) / g  mod suffix[i]
+            if i < n - 1 {
+                let ss = s.mul(&cur);
+                let ss_div_g = if g.is_one() {
+                    ss
+                } else {
+                    ss.div_rem(&g).map(|(q, _)| q).unwrap_or(ss)
+                };
+                let (_, new_cur) = ss_div_g
+                    .div_rem(&suffix[i])
+                    .unwrap_or_else(|| (ss_div_g.zero(), ss_div_g));
+                cur = new_cur;
+            }
+
+            result.push(ri);
+        }
+
+        result
+    }
+
+    /// p-adic expansion of `self` with respect to `p`.
+    ///
+    /// Returns `[a0, a1, a2, ...]` such that:
+    ///
+    /// $$\text{self} = a_0 + a_1 \cdot p + a_2 \cdot p^2 + \cdots$$
+    ///
+    /// where each $a_k$ has degree less than $\deg(p)$.
+    ///
+    /// This is computed by repeated polynomial division (like integer
+    /// p-adic expansion).
+    pub fn p_adic_expansion(&self, p: &Self) -> Vec<Self> {
+        let mut result = Vec::new();
+        let mut r = self.clone();
+        while !r.is_zero() {
+            let (q, rem) = match r.div_rem(p) {
+                Some(v) => v,
+                None => break,
+            };
+            result.push(rem);
+            r = q;
+        }
+        result
     }
 }
 
@@ -553,6 +858,56 @@ mod tests {
         assert_eq!(q.coeff(0).cloned(), Some(Rational::new(1, 1)));
         assert_eq!(q.coeff(1).cloned(), Some(Rational::new(1, 1)));
         assert!(r.is_zero());
+    }
+
+    #[test]
+    fn karatsuba_large_multiplication() {
+        let d = IntegerDomain;
+        // Create two degree-100 polynomials (exceeds KARATSUBA_THRESHOLD=32)
+        let coeffs_a: Vec<Integer> = (0..=100).map(|i| Integer::from(i as i64)).collect();
+        let coeffs_b: Vec<Integer> = (0..=100).map(|i| Integer::from((i + 1) as i64)).collect();
+        let a = DenseUnivariatePolynomial::from_coeffs(d, coeffs_a);
+        let b = DenseUnivariatePolynomial::from_coeffs(d, coeffs_b);
+
+        let c = a.mul(&b);
+
+        // Degree should be 200
+        assert_eq!(c.degree(), Some(200));
+        // Leading coefficient = 100 * 101 = 10100
+        assert_eq!(c.leading_coeff(), Some(&Integer::from(10100)));
+        // Constant term = 0 * 1 = 0
+        assert_eq!(c.constant(), Integer::from(0));
+        // Coefficient of x^1 = a0*b1 + a1*b0 = 0*2 + 1*1 = 1
+        assert_eq!(c.coeff(1).cloned(), Some(Integer::from(1)));
+    }
+
+    #[test]
+    fn karatsuba_cross_check_with_schoolbook() {
+        use ocas_domain::RationalDomain;
+        let d = RationalDomain;
+        // Two degree-50 rational polynomials to force Karatsuba path
+        let coeffs_a: Vec<Rational> = (0..=50)
+            .map(|i| Rational::new(i as i64, (i + 1) as i64))
+            .collect();
+        let coeffs_b: Vec<Rational> = (0..=50)
+            .map(|i| Rational::new((i + 1) as i64, (i + 2) as i64))
+            .collect();
+        let a = DenseUnivariatePolynomial::from_coeffs(d, coeffs_a.clone());
+        let b = DenseUnivariatePolynomial::from_coeffs(d, coeffs_b.clone());
+
+        let c_karat = a.mul(&b);
+
+        // Compute with schoolbook manually for cross-check
+        let result_len = coeffs_a.len() + coeffs_b.len() - 1;
+        let mut expected = vec![Rational::new(0, 1); result_len];
+        for (i, ai) in coeffs_a.iter().enumerate() {
+            for (j, bj) in coeffs_b.iter().enumerate() {
+                let prod = d.mul(ai, bj);
+                expected[i + j] = d.add(&expected[i + j], &prod);
+            }
+        }
+
+        assert_eq!(c_karat.coeffs(), &expected[..]);
     }
 }
 

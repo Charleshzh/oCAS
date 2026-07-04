@@ -8,6 +8,9 @@ pub mod gcd;
 pub mod groebner;
 pub mod matrix;
 pub mod multivariate_gcd;
+pub mod rational;
+pub mod rational_reconstruction;
+pub mod resultant;
 pub mod roots;
 pub mod sparse;
 
@@ -18,6 +21,7 @@ pub use dense::DenseUnivariatePolynomial;
 pub use groebner::{GroebnerBasis, buchberger};
 pub use matrix::{Matrix, MatrixError};
 pub use multivariate_gcd::{bivariate_gcd, gcd_modular, lift_from_fp, reduce_mod};
+pub use rational::RationalPolynomial;
 pub use roots::RootInterval;
 pub use sparse::{
     Grevlex, Lex, MonomialOrder, SparseMultivariatePolynomial, monomial_are_coprime,

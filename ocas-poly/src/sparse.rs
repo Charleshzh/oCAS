@@ -508,6 +508,102 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
         result
     }
 
+    /// Divide this polynomial by another, assuming the division is exact
+    /// (no remainder).
+    ///
+    /// Each term of `self` is divided by the corresponding factor from
+    /// `divisor`. This is used in rational-function canonicalization where
+    /// the GCD is known to divide both numerator and denominator.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the division is not exact.
+    pub fn div_exact(&self, divisor: &Self) -> Self {
+        if divisor.n_terms() <= 1 {
+            // Check if divisor is constant 1 (or zero).
+            let const_val = divisor.coeff(&vec![0; divisor.n_vars]);
+            if self.domain.is_one(&const_val) {
+                return self.clone();
+            }
+        }
+        let (quot, rem) = self.div_rem_sparse(divisor);
+        debug_assert!(rem.is_zero(), "div_exact: division had non-zero remainder");
+        quot
+    }
+
+    /// Sparse polynomial long division returning (quotient, remainder).
+    fn div_rem_sparse(&self, divisor: &Self) -> (Self, Self) {
+        if divisor.is_zero() {
+            panic!("division by zero polynomial");
+        }
+        let (_, div_lm) = match divisor.leading_term() {
+            Some(t) => (t.0.clone(), t.1.clone()),
+            None => return (self.zero(), self.clone()),
+        };
+        let div_lc = div_lm;
+        let div_exp = divisor.leading_monomial().unwrap().clone();
+
+        let mut remainder = self.clone();
+        let mut quotient = self.zero();
+
+        while !remainder.is_zero() {
+            let (rem_exp, rem_lc) = match remainder.leading_term() {
+                Some(t) => (t.0.clone(), t.1.clone()),
+                None => break,
+            };
+            // Check if leading monomial of divisor divides leading monomial of remainder.
+            if !monomial_divides(&div_exp, &rem_exp) {
+                break;
+            }
+            let q_coeff = match self.domain.div(&rem_lc, &div_lc) {
+                Some(q) => q,
+                None => break,
+            };
+            let q_exp: SmallVec<[usize; 4]> = rem_exp
+                .iter()
+                .zip(div_exp.iter())
+                .map(|(a, b)| a - b)
+                .collect();
+            // quotient += q_coeff * x^q_exp
+            let existing = quotient
+                .terms
+                .get(&q_exp)
+                .cloned()
+                .unwrap_or_else(|| self.domain.zero());
+            let sum = self.domain.add(&existing, &q_coeff);
+            if self.domain.is_zero(&sum) {
+                quotient.terms.remove(&q_exp);
+            } else {
+                quotient.terms.insert(q_exp, sum);
+            }
+            // remainder -= q_coeff * x^q_exp * divisor
+            let scaled = divisor.mul_monomial(
+                &remainder
+                    .leading_monomial()
+                    .unwrap()
+                    .iter()
+                    .zip(div_exp.iter())
+                    .map(|(a, b)| a - b)
+                    .collect::<SmallVec<[usize; 4]>>(),
+            );
+            let scaled = scaled.mul_scalar(&q_coeff);
+            remainder = remainder.sub(&scaled);
+        }
+        (quotient, remainder)
+    }
+
+    /// Return the degree of this polynomial in the given variable.
+    ///
+    /// Returns 0 for the zero polynomial (by convention) or if the variable
+    /// does not appear.
+    pub fn degree_in(&self, var_index: usize) -> usize {
+        self.terms
+            .keys()
+            .map(|e| e.get(var_index).copied().unwrap_or(0))
+            .max()
+            .unwrap_or(0)
+    }
+
     /// Evaluate the polynomial by substituting `value` for variable `var_index`.
     ///
     /// Returns a polynomial in one fewer variable (all remaining variables

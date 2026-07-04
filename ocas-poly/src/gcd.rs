@@ -111,7 +111,9 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
     }
 
     /// Compute the content of this polynomial: the GCD of all its coefficients.
-    fn content(&self) -> D::Element {
+    ///
+    /// For the zero polynomial the content is zero.
+    pub fn content(&self) -> D::Element {
         if self.is_zero() {
             return self.domain().zero();
         }
