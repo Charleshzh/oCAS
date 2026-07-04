@@ -11,7 +11,7 @@
 性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
 保持自由与开放。
 
-> **状态**：Beta (0.10.0)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
+> **状态**：Beta (0.11.2)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。详见
 > [文档](https://charleshzh.github.io/ocas/latest/zh/)
 >（[English](https://charleshzh.github.io/ocas/latest/en/)）、
@@ -50,6 +50,8 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 - **数值求值**：任意精度浮点、区间算术、数值积分。
 - **JIT 编译**：将重复表达式编译为 Cranelift 或 LLVM 原生代码。
 - **多语言绑定**：基于同一代码库提供 Rust、Python 与 C/C++ 接口。
+- **优化整数算术**：SOO（小对象优化）将 fit i64 的值栈分配，大值回退 GMP。
+- **模方法多变量 GCD**：通过模素数约化与重构计算 $\mathbb{Z}[x,y]$ 上的 GCD。
 
 ---
 

@@ -11,7 +11,7 @@
 It is designed to match or exceed the core performance of Symbolica and
 SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Beta (0.11.1). The full symbolic engine, polynomial algebra,
+> **Status**: Beta (0.11.2). The full symbolic engine, polynomial algebra,
 > equation solvers, JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. See the
 > [documentation](https://charleshzh.github.io/ocas/latest/en/)
@@ -58,6 +58,10 @@ embeddable, and license-clean symbolic computation engine.
 - **JIT compilation**: compile repeated expressions to native code with
   Cranelift or LLVM.
 - **Multi-language bindings**: Rust, Python, and C/C++ from a single codebase.
+- **Optimized integer arithmetic**: SOO (small-object optimization) stores
+  values fitting in `i64` on the stack with GMP fallback for large values.
+- **Modular multivariate GCD**: compute GCD over $\mathbb{Z}[x,y]$ via
+  reduction mod prime and reconstruction.
 
 ---
 

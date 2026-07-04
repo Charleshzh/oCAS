@@ -296,7 +296,8 @@ After 1.0, development will focus on:
 | 0.10.0 | Beta | Month 14 | Feature freeze |
 | 0.11.0 | Beta | Month 15 | Polynomial factorization (univariate) |
 | 0.11.1 | Beta | Month 15 | Polynomial factorization (bivariate + bindings + docs) |
-| 1.0.0 | Stable | Month 16 | Stable release |
+| 0.11.2 | Beta | Month 16 | Computation acceleration (SOO Integer, mimalloc, modular GCD) |
+| 1.0.0 | Stable | Month 17 | Stable release |
 
 ---
 

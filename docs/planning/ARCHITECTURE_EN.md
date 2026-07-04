@@ -39,7 +39,7 @@ graph TD
 | Crate | Layer | Responsibility |
 |---|---|---|
 | `ocas-core` | 0 + 1 | Arena allocator, unified errors, thread pool, FFI glue, backend wrappers |
-| `ocas-domain` | 2 | Algebraic domains: integers, rationals, finite fields, algebraic numbers, real balls, complex numbers |
+| `ocas-domain` | 2 | Algebraic domains: integers (SOO small-integer optimization), rationals, finite fields, algebraic numbers, real balls, complex numbers |
 | `ocas-poly` | 2 | Dense and sparse polynomial representations, GCD, factorization, Gröbner bases, series |
 | `ocas-atom` | 3 | Expression tree (`Atom`), normalization, transformers, pattern matching, e-graph integration |
 | `ocas-rewrite` | 3 | Pattern matching, rewriting, rule-based simplification |
