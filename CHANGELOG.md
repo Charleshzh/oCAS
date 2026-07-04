@@ -8,6 +8,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.12.0] - 2026-07-04
+
+### Added / 新增
+
+- **`RationalPolynomial<D, O>` type** (`ocas-poly`): rational function type
+  with numerator/denominator as `SparseMultivariatePolynomial`, GCD-based
+  canonicalization, and arithmetic (`add`, `sub`, `mul`, `div`, `neg`,
+  `inv`, `pow`) / **有理多项式类型**：分子/分母表示 + GCD 规范化 + 四则运算
+- **Brown PRS resultant** (`ocas-poly`): `DenseUnivariatePolynomial::resultant()`
+  computes the resultant of two polynomials using Brown's Polynomial Remainder
+  Sequence algorithm / **Brown PRS 结式**：多项式结式计算
+- **Karatsuba multiplication** (`ocas-poly`): `DenseUnivariatePolynomial::mul_into`
+  now uses Karatsuba fast multiplication (threshold=32) for large polynomials,
+  replacing pure schoolbook O(n·m) / **Karatsuba 快乘法**：大次数多项式乘法加速
+- **Polynomial extended GCD** (`ocas-poly`): `DenseUnivariatePolynomial::extended_gcd_poly()`
+  returns `(g, s, t)` such that `s·self + t·other = g` / **多项式扩展 GCD**
+- **Diophantine CRT** (`ocas-poly`): `DenseUnivariatePolynomial::diophantine()`
+  solves the polynomial Chinese Remainder Theorem / **多项式 CRT 求解器**
+- **p-adic expansion** (`ocas-poly`): `DenseUnivariatePolynomial::p_adic_expansion()`
+  decomposes a polynomial with respect to another / **p-adic 展开**
+- **Polynomial `pow()`** (`ocas-poly`): `DenseUnivariatePolynomial::pow(n)` by
+  repeated squaring / **多项式幂运算**
+- **Partial fraction decomposition** (`ocas-calc`): `apart()` decomposes a
+  rational function into simpler fractions; `together()` combines them back /
+  **部分分式分解**：`apart()` 分解 + `together()` 合并
+- **Rational reconstruction** (`ocas-poly`): `rational_reconstruction(a, m)`
+  recovers `(n, d)` from `a ≡ n/d (mod m)` using the extended Euclidean
+  algorithm / **有理重构**：从模表示恢复有理数
+- **Sparse polynomial helpers** (`ocas-poly`): `div_exact()`, `degree_in()`,
+  `div_rem_sparse()` on `SparseMultivariatePolynomial` / **稀疏多项式辅助方法**
+- **Dense polynomial helpers** (`ocas-poly`): `lcoeff()`, `constant()`,
+  `mul_coeff()`, `div_coeff()`, public `content()` / **稠密多项式辅助方法**
+- **Prelude expansion** (`ocas`): `RationalPolynomial` and `apart` now
+  available via `use ocas::prelude::*` / **Prelude 扩展**：新增有理多项式和部分分式
+
+### Changed / 变更
+
+- **Dense polynomial multiplication** now routes through Karatsuba for
+  polynomials with ≥32 coefficients / **稠密多项式乘法**改为 Karatsuba 路由
+
+---
+
 ## [0.11.2] - 2026-07-04
 
 ### Added / 新增

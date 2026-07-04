@@ -37,11 +37,11 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// The prelude contains the following groups of items:
 ///
 /// - **Expression trees**: [`Atom`], [`AtomArena`], [`AtomNode`], [`Symbol`], [`normalize`]
-/// - **Calculus**: [`diff`], [`integrate`], [`taylor`], [`substitute`]
+/// - **Calculus**: [`diff`], [`integrate`], [`taylor`], [`substitute`], [`apart`]
 /// - **Solving**: [`solve_linear_rational`], [`solve_linear_integer`], [`solve_diophantine`]
 /// - **Parsing**: [`parse`], [`ParseError`]
 /// - **Polynomials**: [`DenseUnivariatePolynomial`], [`SparseMultivariatePolynomial`],
-///   [`MonomialOrder`], [`Lex`], [`Grevlex`]
+///   [`RationalPolynomial`], [`MonomialOrder`], [`Lex`], [`Grevlex`]
 /// - **Domains**: [`Integer`], [`Rational`], [`RealBall`], [`Complex`], [`FiniteField`],
 ///   [`Domain`], [`EuclideanDomain`]
 /// - **Rewriting**: [`Pattern`], [`Rule`], [`match_pattern`], [`simplify()`], [`transform`],
@@ -58,7 +58,7 @@ pub mod prelude {
         self, DiophantineSolution, SolveError, solve_diophantine, solve_linear_integer,
         solve_linear_rational, solve_polynomial_system,
     };
-    pub use ocas_calc::{diff, integrate, substitute, taylor};
+    pub use ocas_calc::{apart, diff, integrate, substitute, taylor};
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
     pub use ocas_domain::{
@@ -77,8 +77,8 @@ pub mod prelude {
     pub use ocas_parse::{ParseError, parse};
     pub use ocas_poly::{
         DenseUnivariatePolynomial, Grevlex, GroebnerBasis, Lex, Matrix, MatrixError, MonomialOrder,
-        RootInterval, SparseMultivariatePolynomial, buchberger, monomial_are_coprime,
-        monomial_divides, monomial_lcm,
+        RationalPolynomial, RootInterval, SparseMultivariatePolynomial, buchberger,
+        monomial_are_coprime, monomial_divides, monomial_lcm,
     };
     pub use ocas_rewrite::{
         Bindings, MatchError, Pattern, Rule, WildcardLevel, match_pattern, simplify, transform,
