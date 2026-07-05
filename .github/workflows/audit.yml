@@ -12,6 +12,9 @@ on:
       - '**/Cargo.toml'
       - '**/Cargo.lock'
 
+permissions:
+  issues: write
+
 jobs:
   audit:
     name: Audit

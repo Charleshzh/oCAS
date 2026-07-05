@@ -16,6 +16,11 @@ feature-depth = 1
 
 [advisories]
 yanked = "warn"
+ignore = [
+    # paste crate is unmaintained (archived by dtolnay), pulled in transitively
+    # via pulp → ocas-eval. No security vulnerability; only unmaintained status.
+    "RUSTSEC-2024-0436",
+]
 
 
 [licenses]
