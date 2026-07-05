@@ -39,14 +39,15 @@ gantt
     0.11 Factorization        :b11, 2026-08, 3M
     0.11.2 Compute Accel Infra :b112, after b11, 1M
     0.12 Rational+Resultant+FFT :b12, after b112, 2M
-    0.13 Groebner F4          :b13, after b12, 3M
+    0.12.1 Compute-Accel Libraries :b121, after b12, 2M
+    0.13 Groebner F4          :b13, after b121, 3M
     section 1.0 RC
     0.14 Risch Integration    :r14, after b13, 3M
     0.15 Perf+JIT+MemOpt      :r15, after r14, 2M
     section Stable
     1.0.0 Freeze+Docs         :s10, after r15, 2M
     section Post-1.0
-    FLINT, LLVM, SIMD, GPU    :p1, after s10, 6M
+    LLVM, GPU, dense SIMD     :p1, after s10, 6M
 ```
 
 ---
@@ -200,6 +201,66 @@ ring) plus partial fractions and resultants. Direct counterpart of Symbolica's
 
 - SymPy `apart`/`together` regression parity.
 - Resultant matches determinant-of-Sylvester on random tests.
+
+---
+
+### 0.12.1 — Compute Acceleration Libraries
+
+**Goal**: integrate validated, third-party Rust/FFI libraries for the
+functional gaps between the rational-function stack (0.12) and Gröbner F4
+(0.13), without introducing new algorithm verticals. This is a pure
+performance/infrastructure release. Big-integer backends (`malachite`,
+`dashu`, etc.) are intentionally excluded from this version; they remain part
+of the 0.11.2 acceleration infrastructure work.
+
+**Functionality**
+
+| Item | Library | License | oCAS landing |
+|---|---|---|---|
+| Dense polynomial FFT multiplication over ℤ_p | `ark-poly` | MIT/Apache-2.0 | `ocas-poly::mul::ntt` |
+| Sparse polynomial fast evaluation | `fast_polynomial` | MIT | `ocas-eval::poly_eval` (f64 dense path) |
+| Sparse Macaulay matrix storage for F4 | `sprs` | MIT/Apache-2.0 | `ocas-poly::groebner::matrix` |
+| Dense linear algebra for numeric tests | `faer` | MIT | `ocas-tests::verify` for solver parity |
+| Numerical root-finding verification | `roots` | BSD-2-Clause | `ocas-tests::verify` for root isolation |
+| Numerical quadrature verification | `quadrature` | BSD-2-Clause | `ocas-tests::verify` for `integrate` |
+| Generic SIMD dispatch for expression evaluation | `pulp` | MIT | `ocas-eval::simd` (AVX2/AVX-512/NEON) |
+| Finite-field / ring abstractions reference | `feanor-math` | MIT | read-only reference, not a dependency |
+
+**Performance KPI**
+
+- Multiply two degree-1,024 ℤ_p[x] polynomials via NTT: ≥3× faster than
+  schoolbook (measured against `ocas-poly` reference).
+- Dense `f64` polynomial evaluation: ≥2× faster than interpreter loop
+  (Estrin's scheme via `fast_polynomial`).
+- F4 prototype matrix build stores cyclic-6 Macaulay matrix with < 2 GB
+  resident memory using `sprs`.
+- SIMD evaluation path works on x86-64 (AVX2), x86-64-v4 (AVX-512), and
+  AArch64 (NEON) in CI.
+
+**Documentation**
+
+- New mdBook chapter `performance/acceleration-libraries.md` listing the
+  selected libraries, their licenses, and their feature gates.
+- Migration note: this version does **not** change public API; all additions
+  are behind optional features (`pulp`, `ark-poly`, `sprs`, `faer`).
+
+**Acceptance**
+
+- `cargo test --workspace --exclude ocas-py` passes with all acceleration
+  features disabled.
+- Each optional library compiles and passes a dedicated smoke test with
+  its feature flag enabled.
+- `cargo deny check` passes for all new dependencies (no GPL-incompatible
+  licenses in default build).
+- Feature-matrix added to `Cargo.toml` comments: `pulp`, `ark-poly`, `sprs`,
+  `faer`, `fast-poly`, `verify-roots`, `verify-quadrature`.
+
+**Risks**
+
+- `faer` is floating-point only; it cannot be used for exact Gröbner-basis
+  computations. Use it only for numerical verification and solver parity.
+- `sprs` uses a different sparse format than the one planned for F4; a thin
+  adapter may be required before it can replace the internal F4 matrix.
 
 ---
 
