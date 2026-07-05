@@ -670,6 +670,74 @@ impl<D: Domain> DenseUnivariatePolynomial<D> {
     }
 }
 
+/// NTT-accelerated multiplication for `FiniteField` polynomials.
+///
+/// When the `ntt` feature is enabled and the prime is NTT-friendly,
+/// large polynomial multiplications are performed using the Number
+/// Theoretic Transform in $O(n \log n)$ instead of Karatsuba's
+/// $O(n^{1.585})$.
+#[cfg(feature = "ntt")]
+impl DenseUnivariatePolynomial<ocas_domain::FiniteField> {
+    /// Multiply two `FiniteField` polynomials, preferring NTT when possible.
+    ///
+    /// Falls back to the generic Karatsuba/Schoolbook path when:
+    /// - The degree is below [`NTT_THRESHOLD`]
+    /// - The prime does not have a suitable root of unity
+    /// - The prime is too large for `u64` representation
+    pub fn mul_ntt(&self, other: &Self, buf: &mut Vec<ocas_domain::FiniteFieldElement>) {
+        if self.is_zero() || other.is_zero() {
+            buf.clear();
+            return;
+        }
+
+        // Try NTT multiplication
+        let prime = self.domain.prime();
+        if let Some(result) = crate::ntt::try_ntt_mul_fp(
+            &self
+                .coeffs
+                .iter()
+                .map(|c| c.value().clone())
+                .collect::<Vec<_>>(),
+            &other
+                .coeffs
+                .iter()
+                .map(|c| c.value().clone())
+                .collect::<Vec<_>>(),
+            prime,
+        ) {
+            buf.clear();
+            buf.extend(result.into_iter().map(|v| self.domain.element(v)));
+            return;
+        }
+
+        // Fallback to generic Karatsuba/Schoolbook
+        if self.coeffs.len().min(other.coeffs.len()) >= KARATSUBA_THRESHOLD {
+            Self::karatsuba_mul_into(&self.coeffs, &other.coeffs, &self.domain, buf);
+        } else {
+            Self::schoolbook_mul_into(&self.coeffs, &other.coeffs, &self.domain, buf);
+        }
+    }
+
+    /// Returns `true` if NTT multiplication would be used for this pair.
+    pub fn would_use_ntt(&self, other: &Self) -> bool {
+        let prime = self.domain.prime();
+        crate::ntt::try_ntt_mul_fp(
+            &self
+                .coeffs
+                .iter()
+                .map(|c| c.value().clone())
+                .collect::<Vec<_>>(),
+            &other
+                .coeffs
+                .iter()
+                .map(|c| c.value().clone())
+                .collect::<Vec<_>>(),
+            prime,
+        )
+        .is_some()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

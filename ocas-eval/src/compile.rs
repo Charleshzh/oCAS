@@ -238,10 +238,11 @@ impl<'a, T: EvaluationDomain> CompileContext<'a, T> {
                 if is_builtin(name) && args.len() == 1 {
                     let arg_slot = self.compile_node(&args[0])?;
                     let dst = self.alloc_temp();
-                    let sym = ocas_atom::Symbol::new(name);
-                    self.instructions.push(Instr::BuiltinFun {
+                    let op = crate::instruction::BuiltinOp::from_name(name)
+                        .expect("is_builtin guarantees known name");
+                    self.instructions.push(Instr::BuiltinOp {
                         dst,
-                        name: sym,
+                        op,
                         src: arg_slot,
                     });
                     Ok(dst)

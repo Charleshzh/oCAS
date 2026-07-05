@@ -154,19 +154,20 @@ fn build_ir(
                 let result = call_libm(&mut builder, module, "pow", &[base_val, exp_val])?;
                 slots.insert(*dst, result);
             }
-            Instr::BuiltinFun { dst, name, src } => {
+            Instr::BuiltinOp { dst, op, src } => {
+                use crate::instruction::BuiltinOp;
                 let src_val = slots[src];
-                let fn_name = match name.as_str().to_lowercase().as_str() {
-                    "sin" => "sin",
-                    "cos" => "cos",
-                    "tan" => "tan",
-                    "exp" => "exp",
-                    "log" => "log",
-                    "sqrt" => "sqrt",
-                    "abs" => "fabs",
+                let fn_name = match op {
+                    BuiltinOp::Sin => "sin",
+                    BuiltinOp::Cos => "cos",
+                    BuiltinOp::Tan => "tan",
+                    BuiltinOp::Exp => "exp",
+                    BuiltinOp::Log => "log",
+                    BuiltinOp::Sqrt => "sqrt",
+                    BuiltinOp::Abs => "fabs",
                     _ => {
-                        return Err(EvaluationError::FunctionNotFound {
-                            name: name.as_str().to_string(),
+                        return Err(EvaluationError::UnsupportedOperation {
+                            message: format!("JIT does not support builtin op {op:?}"),
                         });
                     }
                 };
@@ -266,10 +267,9 @@ mod tests {
     #[test]
     #[ignore = "JIT calling convention needs platform-specific tuning"]
     fn jit_builtin_sin() {
-        let name = ocas_atom::Symbol::new("sin");
-        let instructions = vec![Instr::BuiltinFun {
+        let instructions = vec![Instr::BuiltinOp {
             dst: 1,
-            name,
+            op: crate::instruction::BuiltinOp::Sin,
             src: 0,
         }];
         let func = JitEngine::compile(&instructions, 1, 1).unwrap();

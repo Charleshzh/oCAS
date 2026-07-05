@@ -144,8 +144,20 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
                     let result = stack[*base].powf_ref(&stack[*exp])?;
                     stack[*dst] = result;
                 }
-                Instr::BuiltinFun { dst, name, src } => {
-                    let result = T::resolve_builtin(name.as_str(), &stack[*src])?;
+                Instr::BuiltinOp { dst, op, src } => {
+                    let name = match op {
+                        crate::instruction::BuiltinOp::Sin => "sin",
+                        crate::instruction::BuiltinOp::Cos => "cos",
+                        crate::instruction::BuiltinOp::Tan => "tan",
+                        crate::instruction::BuiltinOp::Sec => "sec",
+                        crate::instruction::BuiltinOp::Csc => "csc",
+                        crate::instruction::BuiltinOp::Cot => "cot",
+                        crate::instruction::BuiltinOp::Exp => "exp",
+                        crate::instruction::BuiltinOp::Log => "log",
+                        crate::instruction::BuiltinOp::Sqrt => "sqrt",
+                        crate::instruction::BuiltinOp::Abs => "abs",
+                    };
+                    let result = T::resolve_builtin(name, &stack[*src])?;
                     stack[*dst] = result;
                 }
                 Instr::ExternalFun { dst, fn_idx, srcs } => {
@@ -173,6 +185,39 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
             .collect();
 
         Ok(results)
+    }
+}
+
+/// SIMD batch evaluation support.
+#[cfg(feature = "simd")]
+impl ExpressionEvaluator<f64> {
+    /// Compile this evaluator into a [`VectorEvaluator`] for batch SIMD evaluation.
+    ///
+    /// The resulting evaluator processes multiple input values simultaneously
+    /// using the best available SIMD width (SSE2/AVX2/AVX-512).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`EvaluationError::UnsupportedOperation`] if the expression
+    /// contains external functions, which are not supported in SIMD mode.
+    pub fn compile_vector_evaluator(&self) -> Result<crate::simd::VectorEvaluator> {
+        // Check for unsupported instructions
+        for instr in &self.instructions {
+            if let Instr::ExternalFun { .. } = instr {
+                return Err(EvaluationError::UnsupportedOperation {
+                    message: "external functions not supported in SIMD mode".into(),
+                });
+            }
+        }
+
+        Ok(crate::simd::VectorEvaluator::new(
+            self.instructions.clone(),
+            self.param_count,
+            self.const_count,
+            self.stack_size,
+            self.result_indices.clone(),
+            self.constants.clone(),
+        ))
     }
 }
 
@@ -234,9 +279,9 @@ mod tests {
     #[test]
     fn builtin_sin() {
         // Evaluate: sin(x)
-        let instructions = vec![Instr::BuiltinFun {
+        let instructions = vec![Instr::BuiltinOp {
             dst: 1,
-            name: ocas_atom::Symbol::new("sin"),
+            op: crate::instruction::BuiltinOp::Sin,
             src: 0,
         }];
         let eval = ExpressionEvaluator::new(instructions, 1, 0, 2, vec![1], vec![]);

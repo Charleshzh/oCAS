@@ -22,6 +22,54 @@
 
 use ocas_atom::Symbol;
 
+/// Pre-resolved builtin function operation.
+///
+/// Used by the SIMD evaluator to avoid string matching on the hot path.
+/// The compiler converts `Symbol` names to `BuiltinOp` variants once at
+/// compile time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BuiltinOp {
+    /// $\sin(x)$
+    Sin,
+    /// $\cos(x)$
+    Cos,
+    /// $\tan(x)$
+    Tan,
+    /// $\sec(x) = 1/\cos(x)$
+    Sec,
+    /// $\csc(x) = 1/\sin(x)$
+    Csc,
+    /// $\cot(x) = 1/\tan(x)$
+    Cot,
+    /// $e^x$
+    Exp,
+    /// $\ln(x)$
+    Log,
+    /// $\sqrt{x}$
+    Sqrt,
+    /// $|x|$
+    Abs,
+}
+
+impl BuiltinOp {
+    /// Try to parse a builtin operation name (case-insensitive).
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name.to_lowercase().as_str() {
+            "sin" => Some(Self::Sin),
+            "cos" => Some(Self::Cos),
+            "tan" => Some(Self::Tan),
+            "sec" => Some(Self::Sec),
+            "csc" => Some(Self::Csc),
+            "cot" => Some(Self::Cot),
+            "exp" => Some(Self::Exp),
+            "log" | "ln" => Some(Self::Log),
+            "sqrt" => Some(Self::Sqrt),
+            "abs" => Some(Self::Abs),
+            _ => None,
+        }
+    }
+}
+
 /// A named slot in the evaluator stack.
 ///
 /// Used by the public [`Instruction`] type to refer to stack positions
@@ -74,9 +122,9 @@ pub enum Instr {
     /// `stack[dst] = stack[base]^stack[exp]` (floating-point exponent)
     Powf { dst: usize, base: usize, exp: usize },
     /// `stack[dst] = builtin(stack[src])`
-    BuiltinFun {
+    BuiltinOp {
         dst: usize,
-        name: Symbol,
+        op: BuiltinOp,
         src: usize,
     },
     /// `stack[dst] = fns[fn_idx](&stack[srcs[0]..])`
@@ -97,7 +145,7 @@ impl Instr {
             | Instr::Mul { dst, .. }
             | Instr::Pow { dst, .. }
             | Instr::Powf { dst, .. }
-            | Instr::BuiltinFun { dst, .. }
+            | Instr::BuiltinOp { dst, .. }
             | Instr::ExternalFun { dst, .. }
             | Instr::Copy { dst, .. } => *dst,
         }
@@ -123,9 +171,9 @@ mod tests {
         };
         assert_eq!(add.dst(), 5);
 
-        let fun = Instr::BuiltinFun {
+        let fun = Instr::BuiltinOp {
             dst: 3,
-            name: Symbol::new("sin"),
+            op: BuiltinOp::Sin,
             src: 2,
         };
         assert_eq!(fun.dst(), 3);

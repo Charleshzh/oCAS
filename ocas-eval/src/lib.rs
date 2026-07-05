@@ -50,6 +50,9 @@ pub mod jit;
 #[cfg(feature = "simd")]
 pub mod simd;
 
+#[cfg(feature = "fast-poly")]
+pub mod poly_eval;
+
 pub use compile::{compile_atom, compile_atom_with, compile_tree, compile_tree_with};
 pub use domain::{EvaluationDomain, PowfExtension};
 pub use error::EvaluationError;

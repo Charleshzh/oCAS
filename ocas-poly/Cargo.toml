@@ -22,6 +22,7 @@ hashbrown = { workspace = true }
 smallvec = { workspace = true }
 flint3-sys = { version = "3.5", optional = true }
 rug = { version = "1.27", optional = true, default-features = false, features = ["integer", "rational"] }
+sprs = { workspace = true, optional = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
@@ -38,3 +39,8 @@ flint-system = ["dep:flint3-sys", "flint3-sys/use-system-libs"]
 # Pure-Rust GMP-backed integer/rational polynomial backend.
 # On Windows/MinGW, also enable the top-level `system-libs` feature.
 gmp = ["ocas-domain/gmp", "dep:rug"]
+# NTT-based fast polynomial multiplication over ℤ_p (self-implemented, no
+# external dependency). Only activates for NTT-friendly primes.
+ntt = []
+# Sparse matrix backend via `sprs` for F4 Macaulay matrix storage (0.13 prep).
+sprs = ["dep:sprs"]

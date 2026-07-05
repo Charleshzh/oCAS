@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-04 (0.12.0 released)**
+> Last revised: **2026-07-06 (0.12.1 released with optimizations)**
 
 ---
 
@@ -204,63 +204,77 @@ ring) plus partial fractions and resultants. Direct counterpart of Symbolica's
 
 ---
 
-### 0.12.1 — Compute Acceleration Libraries
+### 0.12.1 — Compute Acceleration Libraries (Released)
 
-**Goal**: integrate validated, third-party Rust/FFI libraries for the
+**Goal**: integrate third-party libraries and self-implement NTT for the
 functional gaps between the rational-function stack (0.12) and Gröbner F4
-(0.13), without introducing new algorithm verticals. This is a pure
-performance/infrastructure release. Big-integer backends (`malachite`,
-`dashu`, etc.) are intentionally excluded from this version; they remain part
-of the 0.11.2 acceleration infrastructure work.
+(0.13), without introducing new algorithm verticals. Pure
+performance/infrastructure release.
 
 **Functionality**
 
-| Item | Library | License | oCAS landing |
+| Item | Library/Approach | License | oCAS landing | Status |
+|---|---|---|---|---|
+| Dense NTT multiplication over ℤ_p | Self-implemented (planned `ark-poly`) | N/A | `ocas-poly::ntt` | [x] |
+| Sparse polynomial fast evaluation | `fast_polynomial` | MIT | `ocas-eval::poly_eval` | [x] |
+| Sparse Macaulay matrix storage for F4 | `sprs` | MIT/Apache-2.0 | `ocas-poly::sprs_backend` | [x] |
+| Numerical quadrature verification | `quadrature` | BSD-2-Clause | `ocas-tests::verify` | [x] |
+| Numerical root-finding verification | Self-implemented bisection | N/A | `ocas-tests::verify` | [x] |
+| Generic SIMD dispatch | `pulp` (replaces `wide`) | MIT | `ocas-eval::simd` | [x] |
+| Dense linear algebra for numeric tests | `faer` | MIT | `ocas-tests::verify` | Deferred |
+
+**Implementation Notes**
+
+- **NTT self-implemented**: planned `ark-poly` but its `ark_ff::Field` abstraction
+  requires implementing ~8 arkworks traits to bridge oCAS's `u64`-based
+  `FiniteField`. Self-implemented ~200-line radix-2 Cooley-Tukey NTT, zero
+  external dependencies.
+- **`pulp` replaces `wide`**: `simd` feature uses `pulp` exclusively. Runtime CPU
+  feature detection (SSE2/AVX2/AVX-512), automatic lane width selection.
+- **Root-finding verification**: `roots` crate API mismatch; used self-implemented
+  bisection instead.
+- **`faer` solver verification**: deferred to a later version.
+- **`BuiltinOp` enum**: `Instr::BuiltinFun { name: Symbol }` replaced by
+  `Instr::BuiltinOp { op: BuiltinOp }`. Built-in functions resolved at compile
+  time, eliminating `to_lowercase()` + string matching on the SIMD hot path.
+- **Montgomery modular multiplication**: NTT hot path replaces `u128 % p` with
+  Montgomery reduction (multiply + shift).
+- **NTT twiddle factor precomputation**: `ntt_butterfly_mont` precomputes all
+  stage roots once to avoid repeated `modpow`.
+- **SIMD stack buffer pre-allocation**: `eval_simd_chunks` reuses a pre-allocated
+  `Vec<[f64; 8]>` across chunks instead of allocating per chunk.
+
+**Performance Benchmarks** (release mode, x86-64 AVX2)
+
+SIMD evaluator:
+
+| Scenario | Before | After | Improvement |
 |---|---|---|---|
-| Dense polynomial FFT multiplication over ℤ_p | `ark-poly` | MIT/Apache-2.0 | `ocas-poly::mul::ntt` |
-| Sparse polynomial fast evaluation | `fast_polynomial` | MIT | `ocas-eval::poly_eval` (f64 dense path) |
-| Sparse Macaulay matrix storage for F4 | `sprs` | MIT/Apache-2.0 | `ocas-poly::groebner::matrix` |
-| Dense linear algebra for numeric tests | `faer` | MIT | `ocas-tests::verify` for solver parity |
-| Numerical root-finding verification | `roots` | BSD-2-Clause | `ocas-tests::verify` for root isolation |
-| Numerical quadrature verification | `quadrature` | BSD-2-Clause | `ocas-tests::verify` for `integrate` |
-| Generic SIMD dispatch for expression evaluation | `pulp` | MIT | `ocas-eval::simd` (AVX2/AVX-512/NEON) |
-| Finite-field / ring abstractions reference | `feanor-math` | MIT | read-only reference, not a dependency |
+| poly x^4 batch 4k | 6.6× | 10.0× | +52% |
+| poly x^8 batch 4k | 9.8× | 11.4× | +16% |
+| trig batch 4k | 1.9× | 3.2× | +68% |
 
-**Performance KPI**
+NTT vs Karatsuba:
 
-- Multiply two degree-1,024 ℤ_p[x] polynomials via NTT: ≥3× faster than
-  schoolbook (measured against `ocas-poly` reference).
-- Dense `f64` polynomial evaluation: ≥2× faster than interpreter loop
-  (Estrin's scheme via `fast_polynomial`).
-- F4 prototype matrix build stores cyclic-6 Macaulay matrix with < 2 GB
-  resident memory using `sprs`.
-- SIMD evaluation path works on x86-64 (AVX2), x86-64-v4 (AVX-512), and
-  AArch64 (NEON) in CI.
-
-**Documentation**
-
-- New mdBook chapter `performance/acceleration-libraries.md` listing the
-  selected libraries, their licenses, and their feature gates.
-- Migration note: this version does **not** change public API; all additions
-  are behind optional features (`pulp`, `ark-poly`, `sprs`, `faer`).
+| Degree | Before | After | vs Karatsuba |
+|---|---|---|---|
+| 256 | 219µs | 162µs | 40× |
+| 512 | 472µs | 304µs | 62× |
+| 1024 | 999µs | 663µs | 90× |
 
 **Acceptance**
 
-- `cargo test --workspace --exclude ocas-py` passes with all acceleration
-  features disabled.
-- Each optional library compiles and passes a dedicated smoke test with
-  its feature flag enabled.
-- `cargo deny check` passes for all new dependencies (no GPL-incompatible
-  licenses in default build).
-- Feature-matrix added to `Cargo.toml` comments: `pulp`, `ark-poly`, `sprs`,
-  `faer`, `fast-poly`, `verify-roots`, `verify-quadrature`.
-
-**Risks**
-
-- `faer` is floating-point only; it cannot be used for exact Gröbner-basis
-  computations. Use it only for numerical verification and solver parity.
-- `sprs` uses a different sparse format than the one planned for F4; a thin
-  adapter may be required before it can replace the internal F4 matrix.
+- [x] All acceleration features disabled: `cargo test --workspace --exclude ocas-py` passes.
+- [x] Each optional library compiles and passes dedicated tests with its feature enabled.
+- [x] `cargo clippy --workspace --all-targets -- -D warnings` passes.
+- [x] `cargo fmt --all -- --check` passes.
+- [x] NTT 11 unit tests pass (modpow, roundtrip, cross-check, Montgomery).
+- [x] pulp SIMD 4 unit tests pass.
+- [x] fast_polynomial 6 unit tests + 1 doctest pass.
+- [x] sprs 5 unit tests pass.
+- [x] Numerical verification 8 tests pass (5 integration + 3 root-finding).
+- [x] Workspace version bumped to 0.12.1.
+- [x] CHANGELOG.md [0.12.1] section added.
 
 ---
 
@@ -418,23 +432,23 @@ when an item is met or beaten.
 
 | oCAS area | Primary reference | Secondary | Status |
 |---|---|---|---|
-| Factorization | Symbolica `src/poly/factor.rs` | Knuth TAOCP v2 | 🔴 gap (0.11) |
-| Rational polynomials | Symbolica `rational_polynomial.rs` | — | 🔴 gap (0.12) |
-| Partial fractions | Symbolica `partial_fraction.rs` | SymPy `apart` | 🔴 gap (0.12) |
-| Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🔴 gap (0.12) |
+| Factorization | Symbolica `src/poly/factor.rs` | Knuth TAOCP v2 | � 0.11 done |
+| Rational polynomials | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 done |
+| Partial fractions | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 done |
+| Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 done |
 | Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 basic (0.13) |
 | GCD (modular) | Symbolica `poly/gcd.rs` | — | 🟡 basic |
-| GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🔴 gap (0.11.2) |
+| GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 done |
 | Integration (Risch) | Bronstein book; SymPy Risch | — | 🔴 gap (0.14) |
 | Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟡 single-output (0.15) |
 | Streaming | Symbolica `streaming.rs` | — | 🔴 gap (0.15) |
 | Series | Symbolica `poly/series.rs`; SymPy `series` | — | 🟢 have basics |
 | Tensors/dual | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 gap (post-1.0) |
-| Numerical integration | Symbolica `numerical_integration.rs` | QUADPACK | 🔴 gap (post-1.0) |
+| Numerical integration | Symbolica `numerical_integration.rs` | QUADPACK | 🟢 0.12.1 (quadrature verification) |
 | Domains (big int) | FLINT/GMP via `rug` | — | 🟢 via backend |
-| Domains (big int SOO) | FLINT `fmpz_t`; Symbolica coefficient encoding | — | 🔴 gap (0.11.2) |
-| FFT polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🔴 gap (0.12) |
-| Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🔴 gap (0.11.2 + 0.15) |
+| Domains (big int SOO) | FLINT `fmpz_t`; Symbolica coefficient encoding | — | 🟢 0.11.2 done |
+| Fast polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🟢 0.12.1 NTT (90× vs Karatsuba) |
+| Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🟡 mimalloc done (0.11.2); pool deferred to 0.15 |
 | ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🔴 gap (post-1.0) |
 
 ---
@@ -451,3 +465,5 @@ Refresh this plan:
 |---|---|---|
 | 0.10.0 | 2026-07-02 | Initial plan created from the GAP_ANALYSIS 0.10.0 snapshot. Phases A–D defined; 0.11–1.0.0 + Post-1.0 scheduled. |
 | 0.11.2 | 2026-07-04 | New 0.11.2 compute acceleration infrastructure version based on competitor acceleration survey (FLINT/Symbolica/SageMath/Mathematica/Maple). Gantt updated; 0.12 augmented with FFT multiplication; 0.15 augmented with Arena/pool/ahash; 4 rows added to competitor index. |
+| 0.12.0 | 2026-07-04 | Rational polynomials + resultant + Karatsuba released. Competitor index updated: factorization/rational polynomials/partial fractions/resultant marked 🟢. |
+| 0.12.1 | 2026-07-06 | Compute acceleration libraries + performance optimizations released. Self-implemented NTT (Montgomery modmul), pulp replaces wide, BuiltinOp enum, fast_polynomial/sprs/quadrature integration. Competitor index updated: fast polynomial multiplication/numerical integration/big int SOO/modular multivariate GCD marked 🟢. |

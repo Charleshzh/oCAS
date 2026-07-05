@@ -25,12 +25,19 @@ ocas-eval = { path = "../ocas-eval" }
 num-bigint = { workspace = true }
 proptest = { workspace = true }
 criterion = { workspace = true }
+quadrature = { workspace = true, optional = true }
 
 [features]
 default = []
 gmp = ["ocas-core/gmp"]
 jit = ["ocas-eval/jit"]
 simd = ["ocas-eval/simd"]
+ntt = ["ocas-poly/ntt"]
+sprs = ["ocas-poly/sprs"]
+pulp = ["ocas-eval/pulp"]
+fast-poly = ["ocas-eval/fast-poly"]
+verify-roots = []
+verify-quadrature = ["dep:quadrature"]
 
 [[bench]]
 name = "arena"
@@ -92,3 +99,18 @@ harness = false
 [[bench]]
 name = "rewrite"
 harness = false
+
+[[bench]]
+name = "ntt_poly_mul"
+harness = false
+required-features = ["ntt"]
+
+[[bench]]
+name = "eval_estrin"
+harness = false
+required-features = ["fast-poly"]
+
+[[bench]]
+name = "eval_pulp"
+harness = false
+required-features = ["simd"]

@@ -17,6 +17,12 @@ pub mod sparse;
 #[cfg(feature = "flint")]
 pub mod flint_poly;
 
+#[cfg(feature = "ntt")]
+pub mod ntt;
+
+#[cfg(feature = "sprs")]
+pub mod sprs_backend;
+
 pub use dense::DenseUnivariatePolynomial;
 pub use groebner::{GroebnerBasis, buchberger};
 pub use matrix::{Matrix, MatrixError};

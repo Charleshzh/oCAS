@@ -141,7 +141,7 @@ fn instr_srcs(instr: &Instr) -> Vec<usize> {
         Instr::Mul { srcs, .. } => srcs.clone(),
         Instr::Pow { base, .. } => vec![*base],
         Instr::Powf { base, exp, .. } => vec![*base, *exp],
-        Instr::BuiltinFun { src, .. } => vec![*src],
+        Instr::BuiltinOp { src, .. } => vec![*src],
         Instr::ExternalFun { srcs, .. } => srcs.clone(),
         Instr::Copy { src, .. } => vec![*src],
     }
@@ -158,7 +158,7 @@ enum InstrKey {
     Mul(Vec<usize>),
     Pow(usize, i64),
     Powf(usize, usize),
-    BuiltinFun(String, usize),
+    BuiltinOp(crate::instruction::BuiltinOp, usize),
     Copy(usize),
 }
 
@@ -169,9 +169,7 @@ impl InstrKey {
             Instr::Mul { srcs, .. } => Some(InstrKey::Mul(srcs.clone())),
             Instr::Pow { base, exp, .. } => Some(InstrKey::Pow(*base, *exp)),
             Instr::Powf { base, exp, .. } => Some(InstrKey::Powf(*base, *exp)),
-            Instr::BuiltinFun { name, src, .. } => {
-                Some(InstrKey::BuiltinFun(name.as_str().to_string(), *src))
-            }
+            Instr::BuiltinOp { op, src, .. } => Some(InstrKey::BuiltinOp(*op, *src)),
             Instr::Copy { src, .. } => Some(InstrKey::Copy(*src)),
             // ExternalFun is not CSE'd (may have side effects)
             Instr::ExternalFun { .. } => None,

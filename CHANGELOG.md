@@ -8,6 +8,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.12.1] - 2026-07-06
+
+### Added / 新增
+
+- **Self-implemented NTT** (`ocas-poly`): Number Theoretic Transform for fast
+  polynomial multiplication over ℤ_p in $O(n \log n)$. Radix-2 Cooley-Tukey
+  with bit-reversal permutation. `DenseUnivariatePolynomial<FiniteField>::mul_ntt()`
+  automatically selects NTT for degree ≥ 256 on NTT-friendly primes / **自研
+  NTT**：ℤ_p 上快速多项式乘法，radix-2 Cooley-Tukey，degree ≥ 256 时自动启用
+- **`pulp` SIMD dispatch** (`ocas-eval`): replaced `wide` with `pulp` for
+  portable SIMD. Runtime CPU feature detection (SSE2/AVX2/AVX-512) with
+  automatic lane width selection / **`pulp` SIMD 分派**：替换 `wide`，运行时
+  CPU 特性检测，自动选择 SIMD 宽度
+- **Estrin polynomial evaluation** (`ocas-eval`): `eval_estrin()` and
+  `eval_estrin_batch()` via `fast_polynomial` crate for ILP-accelerated
+  polynomial evaluation. Feature `fast-poly` / **Estrin 多项式求值**：通过
+  `fast_polynomial` 利用指令级并行加速
+- **Sparse matrix backend** (`ocas-poly`): `SprsMacaulayMatrix` adapter using
+  `sprs` crate for F4 Macaulay matrix storage. Feature `sprs` / **稀疏矩阵后端**：
+  使用 `sprs` 的 F4 Macaulay 矩阵适配器
+- **Numerical verification** (`ocas-tests`): integration verification via
+  `quadrature` crate (feature `verify-quadrature`); root-finding verification
+  via bisection (feature `verify-roots`) / **数值验证**：`quadrature` 积分验证
+  + 二分法求根验证
+- **Feature matrix**: `ntt`, `sprs`, `pulp` (replaces `simd`'s `wide`),
+  `fast-poly`, `verify-roots`, `verify-quadrature` / **Feature 矩阵**
+
+### Changed / 变更
+
+- **`simd` feature** now uses `pulp` instead of `wide`. The `wide` dependency
+  has been removed from the workspace / **`simd` feature** 改用 `pulp` 替代 `wide`
+- **`BuiltinOp` enum** (`ocas-eval`): `Instr::BuiltinFun { name: Symbol }` replaced
+  by `Instr::BuiltinOp { op: BuiltinOp }`. Built-in functions are resolved at compile
+  time, eliminating `to_lowercase()` + string matching on the SIMD hot path.
+  SIMD trig throughput improved ~68% (1.9× → 3.2× on batch-4k) / **`BuiltinOp` 枚举**：
+  内置函数编译时预分派，消除 SIMD 热路径上的字符串匹配，trig 吞吐提升 ~68%
+- **SIMD stack buffer pre-allocation** (`ocas-eval`): `eval_simd_chunks` reuses a
+  pre-allocated `Vec<[f64; 8]>` across chunks instead of allocating per chunk.
+  SIMD poly throughput improved ~52% (6.6× → 10.0× on batch-4k) / **SIMD 栈缓冲区
+  预分配**：chunk 间复用预分配缓冲区，poly 吞吐提升 ~52%
+- **Montgomery modular multiplication** (`ocas-poly`): NTT hot path replaces
+  `u128 % p` with Montgomery reduction (multiply + shift). NTT degree-1024
+  throughput improved ~34% (999µs → 663µs, 90× vs Karatsuba) / **Montgomery 模乘**：
+  NTT 热路径用 Montgomery 约减替代 128-bit 除法，degree-1024 提速 ~34%
+- **NTT twiddle factor precomputation** (`ocas-poly`): `ntt_butterfly_mont`
+  precomputes all stage roots once to avoid repeated `modpow` / **NTT 旋转因子
+  预计算**：预计算所有层旋转因子，避免重复 modpow
+
+---
+
 ## [0.12.0] - 2026-07-04
 
 ### Added / 新增

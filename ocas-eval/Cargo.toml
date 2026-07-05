@@ -22,9 +22,11 @@ cranelift-module = { workspace = true, optional = true }
 cranelift-jit = { workspace = true, optional = true }
 cranelift-codegen = { workspace = true, optional = true }
 cranelift-frontend = { workspace = true, optional = true }
-wide = { workspace = true, optional = true }
+pulp = { workspace = true, optional = true }
+fast_polynomial = { workspace = true, optional = true }
 
 [features]
 default = []
 jit = ["cranelift", "cranelift-module", "cranelift-jit", "cranelift-codegen", "cranelift-frontend"]
-simd = ["wide"]
+simd = ["pulp"]
+fast-poly = ["dep:fast_polynomial"]
