@@ -50,6 +50,9 @@ fast-poly = ["ocas-eval/fast-poly"]
 criterion = { workspace = true }
 
 [package.metadata.docs.rs]
-all-features = true
+# docs.rs sandbox does not ship system GMP/MPFR/FLINT headers, so avoid
+# backend features that require native C libraries. See docs/build-windows.md
+# for local builds with full feature coverage.
+features = ["egg", "jit", "simd", "ntt", "sprs", "fast-poly"]
 rustdoc-args = ["--cfg", "docsrs"]
 

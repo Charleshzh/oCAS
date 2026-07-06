@@ -17,6 +17,10 @@
 >（[English](https://charleshzh.github.io/ocas/latest/en/)）、
 > [Rust API 文档](https://docs.rs/ocas)与
 > [路线图](planning/ROADMAP_CN.md)。
+>
+> **docs.rs 说明**：托管的 Rust API 文档仅使用可移植特性构建（不包含系统
+> GMP/MPFR/FLINT 后端）。如需查看包含后端特性的完整 API，请本地构建：
+> `cargo doc -p ocas --features gmp,mpfr,flint --no-deps`。
 
 ---
 

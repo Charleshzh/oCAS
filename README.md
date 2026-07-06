@@ -18,6 +18,11 @@ SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 > ([中文](https://charleshzh.github.io/ocas/latest/zh/)),
 > [Rust API docs](https://docs.rs/ocas), and
 > [roadmap](docs/planning/ROADMAP_EN.md).
+>
+> **Note on docs.rs**: The hosted Rust API docs are built with portable
+> features only (no system GMP/MPFR/FLINT backends). To browse the full API
+> including backend features, build the documentation locally with
+> `cargo doc -p ocas --features gmp,mpfr,flint --no-deps`.
 
 ---
 
