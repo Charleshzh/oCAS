@@ -39,11 +39,11 @@ mimalloc = ["dep:mimalloc"]
 # Link against preinstalled system GMP/MPFR/MPC instead of compiling the
 # bundled sources. Required on Windows/MinGW; optional elsewhere.
 system-libs = ["ocas-domain/system-libs"]
-# NTT-based fast polynomial multiplication over ℤ_p (0.12.1).
+# NTT-based fast polynomial multiplication over ℤ_p (0.13.0).
 ntt = ["ocas-poly/ntt"]
-# Sparse matrix backend for F4 prep (0.12.1).
+# Sparse matrix backend for F4 prep (0.13.0).
 sprs = ["ocas-poly/sprs"]
-# fast_polynomial Estrin evaluation (0.12.1).
+# fast_polynomial Estrin evaluation (0.13.0).
 fast-poly = ["ocas-eval/fast-poly"]
 
 [dev-dependencies]
@@ -52,3 +52,4 @@ criterion = { workspace = true }
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+

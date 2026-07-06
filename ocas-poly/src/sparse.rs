@@ -61,6 +61,36 @@ impl MonomialOrder for Grevlex {
     }
 }
 
+/// Graded lexicographic ordering: first by total degree descending,
+/// then lexicographic.
+///
+/// Grlex is sometimes preferred over grevlex in Gröbner basis computations
+/// because it can lead to smaller intermediate matrices in the F4 algorithm.
+///
+/// # Example
+///
+/// ```
+/// use ocas_poly::sparse::{Grlex, MonomialOrder};
+///
+/// let a = [2, 0]; // x^2, degree 2
+/// let b = [1, 1]; // x*y, degree 2
+/// let c = [0, 3]; // y^3, degree 3
+/// // c has highest degree, so it comes first
+/// assert_eq!(Grlex::cmp(&c, &a), std::cmp::Ordering::Less);
+/// // a and b have same degree; a > b lexicographically
+/// assert_eq!(Grlex::cmp(&a, &b), std::cmp::Ordering::Greater);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Grlex;
+
+impl MonomialOrder for Grlex {
+    fn cmp(lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+        let deg_lhs: usize = lhs.iter().sum();
+        let deg_rhs: usize = rhs.iter().sum();
+        deg_rhs.cmp(&deg_lhs).then_with(|| lhs.cmp(rhs))
+    }
+}
+
 /// A sparse multivariate polynomial with coefficients in a domain `D` and
 /// monomial ordering `O`.
 ///
@@ -372,7 +402,7 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
             .filter_map(|g| g.leading_term().map(|(e, c)| (g, e.clone(), c.clone())))
             .collect();
 
-        let max_iter = 200;
+        let max_iter = 10000;
 
         for _ in 0..max_iter {
             if remainder.is_zero() {
@@ -602,6 +632,86 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
             .map(|e| e.get(var_index).copied().unwrap_or(0))
             .max()
             .unwrap_or(0)
+    }
+
+    // ------------------------------------------------------------------
+    //  F4 / Gröbner support helpers
+    // ------------------------------------------------------------------
+
+    /// Return the exponent vector of the leading monomial, or `None` for zero.
+    ///
+    /// This is an alias for [`leading_monomial`](Self::leading_monomial) that
+    /// matches the Symbolica naming convention used in the F4 algorithm.
+    #[inline]
+    pub fn max_exp(&self) -> Option<&SmallVec<[usize; 4]>> {
+        self.leading_monomial()
+    }
+
+    /// Return the leading coefficient, or `None` for zero.
+    ///
+    /// This is an alias for [`leading_coeff`](Self::leading_coeff) that
+    /// matches the Symbolica naming convention used in the F4 algorithm.
+    #[inline]
+    pub fn max_coeff(&self) -> Option<&D::Element> {
+        self.leading_coeff()
+    }
+
+    /// Iterate over all exponent vectors in sorted order (descending by
+    /// the monomial ordering).
+    ///
+    /// The F4 algorithm uses this to enumerate every monomial in a
+    /// polynomial for symbolic preprocessing.
+    pub fn exponents_iter(&self) -> impl Iterator<Item = &SmallVec<[usize; 4]>> {
+        let mut sorted: Vec<_> = self.terms.keys().collect();
+        sorted.sort_by(|a, b| O::cmp(a, b));
+        sorted.into_iter()
+    }
+
+    /// Divide every term by the leading coefficient, making the polynomial
+    /// monic. Returns `false` if the polynomial is zero or the leading
+    /// coefficient has no inverse.
+    pub fn make_monic_inplace(&mut self) -> bool {
+        if self.is_zero() {
+            return false;
+        }
+        let lc = self.leading_coeff().cloned().unwrap();
+        match self.domain.inv(&lc) {
+            Some(inv_lc) => {
+                for coeff in self.terms.values_mut() {
+                    *coeff = self.domain.mul(coeff, &inv_lc);
+                }
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Create a zero polynomial with the same domain and variable count.
+    ///
+    /// This is identical to [`zero`](Self::zero) but named to match the
+    /// Symbolica convention used in F4 code.
+    #[inline]
+    pub fn zero_with_capacity(&self, _cap: usize) -> Self {
+        self.zero()
+    }
+
+    /// Append a single monomial term `coeff * x^exp`.
+    ///
+    /// If the monomial already exists, the coefficients are summed.
+    /// Zero coefficients remove the term.
+    pub fn append_monomial(&mut self, coeff: D::Element, exp: &[usize]) {
+        let key = Self::normalize_exp(exp, self.n_vars);
+        let existing = self
+            .terms
+            .get(&key)
+            .cloned()
+            .unwrap_or_else(|| self.domain.zero());
+        let sum = self.domain.add(&existing, &coeff);
+        if self.domain.is_zero(&sum) {
+            self.terms.remove(&key);
+        } else {
+            self.terms.insert(key, sum);
+        }
     }
 
     /// Evaluate the polynomial by substituting `value` for variable `var_index`.

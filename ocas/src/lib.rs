@@ -41,7 +41,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// - **Solving**: [`solve_linear_rational`], [`solve_linear_integer`], [`solve_diophantine`]
 /// - **Parsing**: [`parse`], [`ParseError`]
 /// - **Polynomials**: [`DenseUnivariatePolynomial`], [`SparseMultivariatePolynomial`],
-///   [`RationalPolynomial`], [`MonomialOrder`], [`Lex`], [`Grevlex`]
+///   [`RationalPolynomial`], [`MonomialOrder`], [`Lex`], [`Grevlex`], [`Grlex`]
 /// - **Domains**: [`Integer`], [`Rational`], [`RealBall`], [`Complex`], [`FiniteField`],
 ///   [`Domain`], [`EuclideanDomain`]
 /// - **Rewriting**: [`Pattern`], [`Rule`], [`match_pattern`], [`simplify()`], [`transform`],
@@ -76,9 +76,9 @@ pub mod prelude {
     };
     pub use ocas_parse::{ParseError, parse};
     pub use ocas_poly::{
-        DenseUnivariatePolynomial, Grevlex, GroebnerBasis, Lex, Matrix, MatrixError, MonomialOrder,
-        RationalPolynomial, RootInterval, SparseMultivariatePolynomial, buchberger,
-        monomial_are_coprime, monomial_divides, monomial_lcm,
+        DenseUnivariatePolynomial, Grevlex, Grlex, GroebnerBasis, Lex, Matrix, MatrixError,
+        MonomialOrder, RationalPolynomial, RootInterval, SparseMultivariatePolynomial, buchberger,
+        f4, monomial_are_coprime, monomial_divides, monomial_lcm,
     };
     pub use ocas_rewrite::{
         Bindings, MatchError, Pattern, Rule, WildcardLevel, match_pattern, simplify, transform,

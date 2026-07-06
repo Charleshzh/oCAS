@@ -116,6 +116,34 @@ impl FiniteField {
         &self.prime
     }
 
+    /// Return the field modulus as `u64`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the prime does not fit in a `u64`.
+    pub fn prime_u64(&self) -> u64 {
+        self.prime.to_u64_digits().1[0]
+    }
+
+    /// Convert a field element to `i64` in `[0, p)`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the prime does not fit in a `u64`.
+    pub fn to_i64(&self, a: &FiniteFieldElement) -> i64 {
+        let (_, digits) = a.value.to_u64_digits();
+        if digits.is_empty() {
+            0
+        } else {
+            digits[0] as i64
+        }
+    }
+
+    /// Create a field element from an `i64` (reduced mod p).
+    pub fn from_i64(&self, val: i64) -> FiniteFieldElement {
+        self.element(BigInt::from(val))
+    }
+
     fn normalize(&self, value: BigInt) -> FiniteFieldElement {
         FiniteFieldElement {
             value: value.mod_floor(&self.prime),

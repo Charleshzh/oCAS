@@ -77,7 +77,7 @@ source of the gap.
 | Algorithm Area | oCAS Status | Maturity |
 |---|---|---|
 | Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p, plus bivariate `factor()` on `SparseMultivariatePolynomial` over ℤ and ℤ_p (monic-in-x Wang Hensel) | 🟢 Fairly complete |
-| Gröbner basis | Classic Buchberger + minimize/auto-reduce; **no** F4/F5, no heuristics | 🟡 Basic |
+| Gröbner basis | F4 matrix algorithm (Faugère 1999) + Gebauer-Moeller + simplification cache + ℤ_p fast path | 🟢 F4 complete |
 | Symbolic integration | Heuristic table (power/inverse/sin/cos/exp/linear subst); falls back to `Integral(...)`; **no** Risch | 🟡 Basic |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate) | 🟢 Fairly complete |
 | Polynomial GCD | GCD + primitive part; no modular GCD / EEA optimization | 🟡 Usable |
@@ -103,7 +103,7 @@ early functional subset of Symbolica.
 | Streaming API | 🔴 none | ✅ `streaming.rs` |
 | Tensors / dual numbers | 🔴 none | ✅ `tensors.rs` / `dual.rs` |
 | Optimization / codegen | 🟡 JIT, f64 only | ✅ `optimize.rs` / multi-output |
-| Gröbner basis | 🟡 Buchberger | ✅ industrial grade |
+| Gröbner basis | � F4 complete | ✅ industrial grade |
 
 Symbolica's core strengths — industrial factorization, rational function
 arithmetic, multi-output optimization, streaming — are largely absent in oCAS.
@@ -161,7 +161,7 @@ Ranked by impact × implementation cost, the hard problems on the road to 1.0.
 |---|---|---|
 | 1 | ~~Full polynomial factorization~~ (completed 0.11.0–0.11.1) | ✅ done — univariate and bivariate (monic-in-x) closed; unblocks rational functions, partial fractions, solvers |
 | 2 | Risch symbolic integration (roadmap: 0.14) | 🔴 hallmark of "can it integrate" |
-| 3 | Gröbner F4/F5 (roadmap: 0.13) | 🟡 current Buchberger too slow on large cyclic-n |
+| 3 | Gröbner F4/F5 (roadmap: 0.13) | � F4 core complete (0.13.0), F5 deferred |
 | 4 | ~~Rational polynomials / partial fractions~~ (completed 0.12) | ✅ done — `RationalPolynomial` type + partial fractions + resultant + Karatsuba multiplication; parity with Symbolica for rational functions |
 | 5 | Multi-output optimization / codegen (roadmap: 0.15) | 🟡 JIT is f64 single-output; extend to multi-output/multi-precision |
 
@@ -199,3 +199,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.11.0 | 2026-07-03 | Polynomial factorization completed (univariate ℤ and ℤ_p); multivariate GCD added; SymPy comparison updated to parity for univariate factorization; highest-priority gap shifted to rational functions / partial fractions (0.12). |
 | 0.11.1 | 2026-07-04 | Bivariate factorization over ℤ and ℤ_p (monic-in-x Wang Hensel) added; sparse multivariate `factor()` entry points and C polynomial bindings landed; mdBook factorization chapter added; highest-priority gap remains rational functions / partial fractions (0.12). |
 | 0.12.0 | 2026-07-04 | Rational function stack completed (`RationalPolynomial` + partial fractions + Brown PRS resultant + Karatsuba multiplication + rational reconstruction); parity with Symbolica for rational functions; highest-priority gap shifted to Gröbner F4 (0.13) and Risch integration (0.14). |
+| 0.13.0 | 2026-07-06 | Gröbner F4 matrix algorithm completed (Faugère 1999); Gebauer-Moeller pair filtering + simplification cache + ℤ_p fast path; `minimize()` bug fix; Gröbner upgraded from 🟡 to 🟢; highest-priority gap shifted to Risch integration (0.14). |

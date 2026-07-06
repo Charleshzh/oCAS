@@ -64,6 +64,26 @@ pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
         *a == self.one()
     }
 
+    /// In-place multiply: `*a *= b`.
+    ///
+    /// The default implementation creates a new element via [`mul`](Self::mul).
+    /// Domains with in-place arithmetic (e.g. finite fields backed by GMP)
+    /// may override this for better performance in hot loops such as the
+    /// F4 row-reduction step.
+    fn mul_assign(&self, a: &mut Self::Element, b: &Self::Element) {
+        *a = self.mul(a, b);
+    }
+
+    /// Fused subtract-multiply: `*a -= b * c`.
+    ///
+    /// Equivalent to `*a = self.sub(a, &self.mul(b, c))` but potentially
+    /// faster when the domain can avoid an intermediate allocation.
+    /// Used extensively in the F4 echelonize step.
+    fn sub_mul_assign(&self, a: &mut Self::Element, b: &Self::Element, c: &Self::Element) {
+        let bc = self.mul(b, c);
+        *a = self.sub(a, &bc);
+    }
+
     /// Return `a` raised to the non-negative integer power `n`.
     ///
     /// The default implementation uses binary exponentiation. Domains that

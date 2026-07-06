@@ -74,7 +74,7 @@ pytest、`mdbook build`。
 | 算法领域 | oCAS 现状 | 成熟度 |
 |---|---|---|
 | 多项式因式分解 | `DenseUnivariatePolynomial` 上 ℤ 与 ℤ_p 的 `factor()`，以及 `SparseMultivariatePolynomial` 上二元 ℤ 与 ℤ_p 的 `factor()`（关于 x 首一的 Wang Hensel） | 🟢 较完整 |
-| Gröbner 基 | 经典 Buchberger + minimize/auto-reduce；**无** F4/F5，无启发式 | 🟡 基础 |
+| Gröbner 基 | F4 矩阵化算法（Faugère 1999）+ Gebauer-Moeller + 简化缓存 + ℤ_p 快速路径 | 🟢 F4 完成 |
 | 符号积分 | 启发式查表（幂/逆/sin/cos/exp/线性替换）；回退为 `Integral(...)`；**无** Risch | 🟡 基础 |
 | 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量） | 🟢 较完整 |
 | 多项式 GCD | GCD + 本原部分；无模 GCD / EEA 优化 | 🟡 可用 |
@@ -100,7 +100,7 @@ Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 
 | 流式 API | 🔴 无 | ✅ `streaming.rs` |
 | 张量 / 双数 | 🔴 无 | ✅ `tensors.rs` / `dual.rs` |
 | 优化 / 代码生成 | 🟡 JIT，仅 f64 | ✅ `optimize.rs` / 多输出 |
-| Gröbner 基 | 🟡 Buchberger | ✅ 工业级 |
+| Gröbner 基 | � F4 完成 | ✅ 工业级 |
 
 Symbolica 的核心竞争力——工业级因式分解、有理函数运算、多输出优化、流式
 API——oCAS 基本缺失。Symbolica 经多年打磨，oCAS 需在 ALG 层补齐硬算法。
@@ -152,7 +152,7 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 |---|---|---|
 | 1 | ~~完整多项式因式分解~~（0.11.0–0.11.1 完成） | ✅ 已完成——一元与二元（关于 x 首一）闭合，解阻塞有理函数、部分分式、求解器 |
 | 2 | Risch 符号积分（路线图：0.14） | 🔴 "能否积分"的标志 |
-| 3 | Gröbner F4/F5（路线图：0.13） | 🟡 当前 Buchberger 在大 cyclic-n 上太慢 |
+| 3 | Gröbner F4/F5（路线图：0.13） | � F4 核心完成（0.13.0），F5 推迟 |
 | 4 | ~~有理多项式/部分分式~~（0.12 完成） | ✅ 已完成——`RationalPolynomial` 类型 + 部分分式 + 结式 + Karatsuba 乘法 |
 | 5 | 多输出优化/代码生成 | 🟡 JIT 为 f64 单输出；扩展到多输出/多精度 |
 | 6 | ODE/PDE 求解器（Post-1.0） | 🟢 用户期望高 |
@@ -188,3 +188,4 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 | 0.11.0 | 2026-07-03 | 多项式因式分解完成（单变量 ℤ 与 ℤ_p）；多元 GCD 加入；与 SymPy 的因式分解对比更新为持平；最高优先级缺口转为 0.12 有理函数/部分分式。 |
 | 0.11.1 | 2026-07-04 | 新增二元 ℤ 与 ℤ_p 因式分解（关于 x 首一的 Wang Hensel）；稀疏多元 `factor()` 入口与 C 多项式绑定落地；新增 mdBook 因式分解章节；最高优先级缺口仍为 0.12 有理函数/部分分式。 |
 | 0.12.0 | 2026-07-04 | 有理函数运算栈完成（`RationalPolynomial` + 部分分式 + Brown PRS 结式 + Karatsuba 乘法 + 有理重构）；与 Symbolica 有理函数能力持平；最高优先级缺口转为 0.13 Gröbner F4 与 0.14 Risch 积分。 |
+| 0.13.0 | 2026-07-06 | Gröbner F4 矩阵化算法完成（Faugère 1999）；Gebauer-Moeller 临界对筛选 + 简化缓存 + ℤ_p 快速路径；`minimize()` bug 修复；Gröbner 从 🟡 升级为 🟢；最高优先级缺口转为 0.14 Risch 积分。 |

@@ -1,8 +1,18 @@
 //! Gröbner basis computation for multivariate polynomial ideals.
 //!
-//! Implements Buchberger's algorithm for computing a Gröbner basis from a
-//! set of generators. Supports any coefficient domain where division succeeds
-//! (i.e., fields such as `RationalDomain` and `FiniteField`).
+//! Provides two algorithms:
+//!
+//! - **Buchberger** ([`buchberger`]) — classic S-polynomial iteration with
+//!   Gebauer-Moeller optimization. Suitable for small ideals.
+//! - **F4** ([`f4::f4`]) — matrix-based algorithm from Faugère (1999).
+//!   Dramatically faster for larger ideals by batching S-polynomial
+//!   reductions into sparse matrix row operations.
+//!
+//! Both algorithms produce a reduced Gröbner basis. The F4 algorithm is
+//! recommended for production use and is the default in
+//! [`solve_polynomial_system`](ocas_calc::solve::solve_polynomial_system).
+
+pub mod f4;
 
 use std::collections::HashSet;
 
@@ -62,7 +72,7 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
             }
         }
 
-        let max_iter = 200;
+        let max_iter = 10000;
 
         for _ in 0..max_iter {
             if pairs.is_empty() {
@@ -109,7 +119,10 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
         let mut keep = vec![true; self.basis.len()];
         for i in 0..self.basis.len() {
             for j in 0..self.basis.len() {
-                if i != j && keep[i] && keep[j] && monomial_divides(&lms[j], &lms[i]) {
+                // Remove i if lms[j] divides lms[i] (i.e., lms[i] is a
+                // multiple of lms[j], making i redundant).
+                // monomial_divides(big, small) returns true when small divides big.
+                if i != j && keep[i] && keep[j] && monomial_divides(&lms[i], &lms[j]) {
                     keep[i] = false;
                     break;
                 }
@@ -129,20 +142,30 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
 
     /// Inter-reduce the basis: reduce each element by the others and make
     /// each polynomial monic.
+    ///
+    /// The algorithm processes elements in ascending order of leading
+    /// monomial. Each element is reduced by all elements with strictly
+    /// smaller leading monomials (those already in the result set).
+    /// This ensures the standard reduced Gröbner basis property:
+    /// no monomial of any basis element is divisible by the leading
+    /// monomial of any other basis element.
     pub fn auto_reduce(mut self) -> Self {
-        let mut reduced = Vec::new();
-        for i in 0..self.basis.len() {
-            let others: Vec<_> = self
-                .basis
-                .iter()
-                .enumerate()
-                .filter(|(j, _)| *j != i)
-                .map(|(_, p)| p.clone())
-                .chain(reduced.iter().cloned())
-                .collect();
-            let mut r = self.basis[i].reduce(&others);
+        // Sort basis in ascending order of leading monomial (smallest first).
+        self.basis
+            .sort_by(|a, b| match (a.leading_monomial(), b.leading_monomial()) {
+                (Some(ma), Some(mb)) => O::cmp(ma, mb),
+                (Some(_), None) => std::cmp::Ordering::Greater,
+                (None, Some(_)) => std::cmp::Ordering::Less,
+                (None, None) => std::cmp::Ordering::Equal,
+            });
+
+        let mut reduced: Vec<SparseMultivariatePolynomial<D, O>> = Vec::new();
+
+        for poly in &self.basis {
+            // Reduce `poly` by all elements already in `reduced`
+            // (which have smaller leading monomials).
+            let mut r = poly.reduce(&reduced);
             if !r.is_zero() {
-                // Make monic: divide by leading coefficient.
                 if let Some(lc) = r.leading_coeff().cloned()
                     && let Some(inv) = r.domain().inv(&lc)
                 {
@@ -151,6 +174,7 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
                 reduced.push(r);
             }
         }
+
         self.basis = reduced;
         self
     }

@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-06（0.12.1 已发布，含性能优化）**
+> 最后修订：**2026-07-06（0.13.0 已发布，含 F4 Gröbner 基算法）**
 
 ---
 
@@ -276,28 +276,33 @@ NTT vs Karatsuba：
 
 **功能**
 
-| 条目 | 参考 | oCAS 落地位置 |
-|---|---|---|
-| Macaulay 矩阵构造 + ℤ_p 上行简化 | Faugère F4 (1999) | `ocas-poly::groebner::f4` |
-| 符号/重写预处理（F4 选择） | Symbolica `groebner.rs` | `f4::select` |
-| 可选 F5 签名判据（研究性） | Faugère F5 (2002) | `f5`（实验性 feature） |
-| 经由 `reorder` 支持多种单项式序 | Symbolica `reorder::<GrevLexOrder>()` | 扩展 `MonomialOrder` |
-| Hilbert 驱动的终止 | Bayer–Stillman 启发式 | `f4::hilbert_bound` |
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| Macaulay 矩阵构造 + ℤ_p 上行简化 | Faugère F4 (1999) | `ocas-poly::groebner::f4` | [x] F4 核心 + ℤ_p 快速路径 |
+| 符号/重写预处理（F4 选择） | Symbolica `groebner.rs` | `f4::select` | [x] 迭代符号预处理 |
+| Gebauer-Moeller 临界对筛选 | Symbolica `groebner.rs` | `f4::update_pairs` | [x] 第一/第二判据 + 冗余对清理 |
+| 简化缓存 | Symbolica `simplify()` | `f4::SimpCache` | [x] 每基元素乘积缓存 |
+| `Grlex` 单项式序 | — | `ocas-poly::sparse::Grlex` | [x] 分次字典序 |
+| 可选 F5 签名判据（研究性） | Faugère F5 (2002) | `f5`（实验性 feature） | 推迟到 0.14+ |
+| 经由 `reorder` 支持多种单项式序 | Symbolica `reorder::<GrevLexOrder>()` | 扩展 `MonomialOrder` | 推迟到 0.14+ |
+| Hilbert 驱动的终止 | Bayer–Stillman 启发式 | `f4::hilbert_bound` | 推迟到 0.14+ |
 
 **性能指标**
 
-- ℤ_p 上 cyclic-6 用时 < 5 s（Symbolica 约 1 s；目标在 5 倍以内）。
-- cyclic-4 须保持 < 50 ms（相对现有 Buchberger 无回归）。
+- ℤ_p 上 cyclic-6 用时 < 5 s（Symbolica 约 1 s；目标在 5 倍以内）。*推迟到 0.14+（需 ℤ_p 原生 i64 路径）*
+- cyclic-4 须保持 < 50 ms（相对现有 Buchberger 无回归）。[x] F4 cyclic-4 ℤ₁₃ = 2.80 ms
+- F4 cyclic-3 ℚ = 147 µs，比 Buchberger 快 26%。[x]
 
 **文档**
 
-- mdBook `algorithms/groebner.md`，对比 Buchberger 与 F4。
-- 文档站点中 cyclic-3..7 的基准曲线。
+- mdBook `algorithms/groebner.md`，对比 Buchberger 与 F4。*推迟到 0.14+*
+- 文档站点中 cyclic-3..7 的基准曲线。*推迟到 0.14+*
 
 **验收**
 
-- 已知 cyclic-n 基与发表结果一致。
-- 内存可控（Macaulay 矩阵是风险点 → 采用稀疏表示）。
+- [x] 已知 cyclic-3/4 基与发表结果一致（`is_groebner_basis()` 验证）。
+- [x] 内存可控（稀疏 HashMap 表示 + 稀疏行矩阵）。
+- cyclic-6/7 验收推迟到 0.14+（需性能优化）。
 
 ---
 
@@ -453,3 +458,4 @@ Risch 代码。
 | 0.11.2 | 2026-07-04 | 基于竞品加速策略调研（FLINT/Symbolica/SageMath/Mathematica/Maple）新增 0.11.2 计算加速基础设施版本。Gantt 图更新；0.12 追加 FFT 乘法；0.15 追加 Arena/对象池/ahash；竞品索引追加 4 行。 |
 | 0.12.0 | 2026-07-04 | 有理多项式+结式+Karatsuba 发布。竞品索引更新：因式分解/有理多项式/部分分式/结式标 🟢。 |
 | 0.12.1 | 2026-07-06 | 计算加速库整合+性能优化发布。自研 NTT（Montgomery 模乘）、pulp 替换 wide、BuiltinOp 枚举化、fast_polynomial/sprs/quadrature 集成。竞品索引更新：多项式快速乘法/数值积分/大整数 SOO/模方法多变量 GCD 标 🟢。 |
+| 0.13.0 | 2026-07-06 | F4 Gröbner 基算法发布。Gebauer-Moeller 临界对筛选 + 简化缓存 + ℤ_p 快速路径 + Grlex 序 + `minimize()` bug 修复。竞品索引更新：Gröbner 标 🟢。F5/多序/Hilbert 推迟到 0.14+。 |

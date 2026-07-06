@@ -8,6 +8,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+
+## [0.13.0] - 2026-07-06
+
+### Added / 新增
+
+- **F4 Gröbner basis algorithm** (`ocas-poly`): Matrix-based F4 algorithm from
+  Faugère (1999) replacing sequential Buchberger for batched S-polynomial
+  reductions. Entry point: `ocas_poly::groebner::f4::f4()`. Supports any
+  `Domain` with specialized ℤ_p fast path using `i64` arithmetic /
+  **F4 Gröbner 基算法**：基于 Faugère 1999 论文的矩阵化 F4 算法，批量处理
+  S-多项式约化。入口：`ocas_poly::groebner::f4::f4()`，支持任意域，ℤ_p 专用
+  快速路径
+- **Gebauer-Moeller pair filtering** (`ocas-poly`): `CriticalPair` struct with
+  precomputed `lcm`/`degree`. `update_pairs()` implements first criterion
+  (coprime skip), second criterion (lcm minimality), and redundant pair cleanup /
+  **Gebauer-Moeller 临界对筛选**：预计算 lcm/degree，第一判据（互素跳过）、
+  第二判据（lcm 最小性）、冗余对清理
+- **Simplification cache** (`ocas-poly`): `SimpCache` per-basis-element cache
+  for `basis[i].mul_monomial(diff)` products, avoiding redundant computation
+  in symbolic preprocessing / **简化缓存**：每个基元素的乘积缓存，避免符号
+  预处理中的重复计算
+- **`Grlex` monomial ordering** (`ocas-poly`): Graded lexicographic order
+  alongside existing `Lex` and `Grevlex` / **`Grlex` 单项式序**：分次字典序
+- **`Domain` trait extensions** (`ocas-domain`): `mul_assign()` and
+  `sub_mul_assign()` default methods for in-place arithmetic /
+  **`Domain` trait 扩展**：原地乘法和减乘融合操作
+- **`FiniteField` utilities** (`ocas-domain`): `prime_u64()`, `to_i64()`,
+  `from_i64()` for ℤ_p fast path conversion / **`FiniteField` 工具方法**
+
+### Performance / 性能
+
+- F4 cyclic-3 ℚ: **147 µs** (was 308 µs, **-52%**), now faster than Buchberger
+- F4 cyclic-4 ℚ: **2.13 ms** (was 3.99 ms, **-47%**)
+- F4 cyclic-3 ℤ₁₃: **276 µs** (was 582 µs, **-53%**)
+- F4 cyclic-4 ℤ₁₃: **2.80 ms** (was 6.19 ms, **-55%**)
+- F4 cyclic-3 ℤ₁₀₁: **270 µs** (was 517 µs, **-48%**)
+- F4 cyclic-4 ℤ₁₀₁: **2.89 ms** (was 4.87 ms, **-41%**)
+
+### Fixed / 修复
+
+- **`minimize()` bug** (`ocas-poly`): `monomial_divides` arguments were
+  swapped (`&lms[j], &lms[i]` instead of `&lms[i], &lms[j]`), preventing
+  redundant LM removal. This was the root cause of incorrect Gröbner basis
+  output / **`minimize()` bug**：`monomial_divides` 参数顺序错误，导致冗余
+  首项未被移除
+- **`auto_reduce()` direction** (`ocas-poly`): Now processes elements in
+  ascending LM order and reduces only by smaller-LM elements, matching the
+  standard reduced Gröbner basis algorithm / **`auto_reduce()` 方向**：按
+  升序处理，只用更小首项约化
+- **`reduce()` iteration limit** (`ocas-poly`): Increased from 200 to 10000
+  for complex ideals / **`reduce()` 迭代上限**：从 200 提升到 10000
+- **cyclic-4 test** (`ocas-tests`): Fixed incomplete generator set (was missing
+  `abc+bcd+cda+dab` and `abcd-1`) / **cyclic-4 测试**：修复不完整的生成元集合
+
+---
+
 ## [0.12.1] - 2026-07-06
 
 ### Added / 新增

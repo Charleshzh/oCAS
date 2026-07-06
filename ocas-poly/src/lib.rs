@@ -24,12 +24,12 @@ pub mod ntt;
 pub mod sprs_backend;
 
 pub use dense::DenseUnivariatePolynomial;
-pub use groebner::{GroebnerBasis, buchberger};
+pub use groebner::{GroebnerBasis, buchberger, f4};
 pub use matrix::{Matrix, MatrixError};
 pub use multivariate_gcd::{bivariate_gcd, gcd_modular, lift_from_fp, reduce_mod};
 pub use rational::RationalPolynomial;
 pub use roots::RootInterval;
 pub use sparse::{
-    Grevlex, Lex, MonomialOrder, SparseMultivariatePolynomial, monomial_are_coprime,
+    Grevlex, Grlex, Lex, MonomialOrder, SparseMultivariatePolynomial, monomial_are_coprime,
     monomial_divides, monomial_lcm,
 };

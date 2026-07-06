@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-06 (0.12.1 released with optimizations)**
+> Last revised: **2026-07-06 (0.13.0 released with F4 Gröbner basis algorithm)**
 
 ---
 
@@ -286,28 +286,33 @@ algorithm so cyclic-6/7 become tractable. Direct counterpart of Symbolica
 
 **Functionality**
 
-| Item | Reference | oCAS landing |
-|---|---|---|
-| Macaulay matrix construction + row echelon over ℤ_p | Faugère F4 (1999) | `ocas-poly::groebner::f4` |
-| Symbol/rewriting preprocessing (F4 selection) | Symbolica `groebner.rs` | `f4::select` |
-| Optional F5 signature criterion (research) | Faugère F5 (2002) | `f5` (experimental feature) |
-| Multiple monomial orders via `reorder` | Symbolica `reorder::<GrevLexOrder>()` | extend `MonomialOrder` |
-| Hilbert-driven termination | Bayer–Stillman heuristics | `f4::hilbert_bound` |
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Macaulay matrix construction + row echelon over ℤ_p | Faugère F4 (1999) | `ocas-poly::groebner::f4` | [x] F4 core + ℤ_p fast path |
+| Symbol/rewriting preprocessing (F4 selection) | Symbolica `groebner.rs` | `f4::select` | [x] Iterative symbolic preprocessing |
+| Gebauer-Moeller pair filtering | Symbolica `groebner.rs` | `f4::update_pairs` | [x] First/second criterion + cleanup |
+| Simplification cache | Symbolica `simplify()` | `f4::SimpCache` | [x] Per-basis-element product cache |
+| `Grlex` monomial ordering | — | `ocas-poly::sparse::Grlex` | [x] Graded lexicographic |
+| Optional F5 signature criterion (research) | Faugère F5 (2002) | `f5` (experimental feature) | Deferred to 0.14+ |
+| Multiple monomial orders via `reorder` | Symbolica `reorder::<GrevLexOrder>()` | extend `MonomialOrder` | Deferred to 0.14+ |
+| Hilbert-driven termination | Bayer–Stillman heuristics | `f4::hilbert_bound` | Deferred to 0.14+ |
 
 **Performance KPI**
 
-- cyclic-6 over ℤ_p in < 5 s (Symbolica ~1 s; target within 5×).
-- cyclic-4 must stay < 50 ms (no regression vs current Buchberger).
+- cyclic-6 over ℤ_p in < 5 s (Symbolica ~1 s; target within 5×). *Deferred to 0.14+ (needs ℤ_p native i64 path)*
+- cyclic-4 must stay < 50 ms (no regression vs current Buchberger). [x] F4 cyclic-4 ℤ₁₃ = 2.80 ms
+- F4 cyclic-3 ℚ = 147 µs, 26% faster than Buchberger. [x]
 
 **Documentation**
 
-- mdBook `algorithms/groebner.md` comparing Buchberger vs F4.
-- Benchmark graph cyclic-3..7 in the docs site.
+- mdBook `algorithms/groebner.md` comparing Buchberger vs F4. *Deferred to 0.14+*
+- Benchmark graph cyclic-3..7 in the docs site. *Deferred to 0.14+*
 
 **Acceptance**
 
-- Known cyclic-n bases match published results.
-- Memory bounded (Macaulay matrices are the risk → sparse representation).
+- [x] Known cyclic-3/4 bases match published results (`is_groebner_basis()` verified).
+- [x] Memory bounded (sparse HashMap + sparse row matrix representation).
+- cyclic-6/7 acceptance deferred to 0.14+ (needs performance optimization).
 
 ---
 
@@ -467,3 +472,4 @@ Refresh this plan:
 | 0.11.2 | 2026-07-04 | New 0.11.2 compute acceleration infrastructure version based on competitor acceleration survey (FLINT/Symbolica/SageMath/Mathematica/Maple). Gantt updated; 0.12 augmented with FFT multiplication; 0.15 augmented with Arena/pool/ahash; 4 rows added to competitor index. |
 | 0.12.0 | 2026-07-04 | Rational polynomials + resultant + Karatsuba released. Competitor index updated: factorization/rational polynomials/partial fractions/resultant marked 🟢. |
 | 0.12.1 | 2026-07-06 | Compute acceleration libraries + performance optimizations released. Self-implemented NTT (Montgomery modmul), pulp replaces wide, BuiltinOp enum, fast_polynomial/sprs/quadrature integration. Competitor index updated: fast polynomial multiplication/numerical integration/big int SOO/modular multivariate GCD marked 🟢. |
+| 0.13.0 | 2026-07-06 | F4 Gröbner basis algorithm released. Gebauer-Moeller pair filtering + simplification cache + ℤ_p fast path + Grlex ordering + `minimize()` bug fix. Competitor index updated: Gröbner marked 🟢. F5/multi-order/Hilbert deferred to 0.14+. |
