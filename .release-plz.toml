@@ -20,36 +20,13 @@ pr_labels = ["release"]
 
 # crates.io rate-limits new crates to 5 per day. To publish all workspace
 # crates, release them in batches by temporarily setting publish=false below.
-# Batch 1 (today): ocas-core, ocas-domain, ocas-poly, ocas-atom, ocas-parse
-# Batch 2 (24h):    ocas-rewrite, ocas-calc, ocas-eval, ocas-gpl, ocas
-# Batch 3 (48h):    ocas-c, ocas-py
+# Batch 1 (done): ocas-core, ocas-domain, ocas-poly, ocas-atom, ocas-parse
+# Batch 2 (now):   ocas-rewrite, ocas-calc, ocas-eval, ocas-gpl, ocas
+# Batch 3 (24h):  ocas-c, ocas-py
 
-# === Batch 2/3: temporarily skipped to respect crates.io new-crate rate limit ===
-[[package]]
-name = "ocas-rewrite"
-publish = false
-
-[[package]]
-name = "ocas-calc"
-publish = false
-
-[[package]]
-name = "ocas-eval"
-publish = false
-
-[[package]]
-name = "ocas"
-publish = false
-
+# === Batch 3: temporarily skipped to respect crates.io new-crate rate limit ===
 [[package]]
 name = "ocas-c"
-publish = false
-
-# ocas-gpl is an optional GPL backend and is not published to crates.io.
-# Note: if the top-level `ocas` crate is ever published to crates.io, this
-# crate must also be published because `ocas` optionally depends on it.
-[[package]]
-name = "ocas-gpl"
 publish = false
 
 # ocas-py is a Python extension module (cdylib) and is published to PyPI, not crates.io.
