@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.1](https://github.com/Charleshzh/oCAS/compare/ocas-v0.13.0...ocas-v0.13.1) - 2026-07-06
+
+### Fixed
+
+- *(docs)* avoid system C library dependencies on docs.rs
+
 ## [0.13.0] - 2026-07-06
 
 ### Added / 新增
