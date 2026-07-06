@@ -8,9 +8,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# `contents: write` lets peaceiris/actions-gh-pages push to the gh-pages branch.
+# Required for GitHub Pages workflow deployment.
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 # Do not cancel an in-flight deploy; PR builds run to completion but never deploy.
 concurrency:
@@ -18,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  mdbook:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -132,17 +134,26 @@ jobs:
           fail: true
 
       # ──────────────────────────────────────────────────────────────
-      # 4. Deploy — single step; PRs skip. keep_files preserves older
-      #    version snapshots across deploys.
+      # 4. Upload staged site as a Pages artifact (deployed separately).
       # ──────────────────────────────────────────────────────────────
-      - name: Deploy to gh-pages
+      - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ steps.stage.outputs.root }}
-          publish_branch: gh-pages
-          keep_files: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'docs: deploy ${{ steps.stage.outputs.label }}'
+          path: ${{ steps.stage.outputs.root }}
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
