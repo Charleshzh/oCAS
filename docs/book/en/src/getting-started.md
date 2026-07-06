@@ -10,7 +10,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ocas = "0.11"
+ocas = "0.13"
 ```
 
 ```rust

@@ -186,5 +186,5 @@ assert!(result.is_some());
 
 - 部分分式分解目前使用无平方分解，适用于任何 `EuclideanDomain`。
   完全分解为不可约因子需要 `IntegerDomain` 或 `FiniteField`。
-- 多元部分分式（`apart_multivariate`）推迟到 0.13+，需要 Gröbner F4。
-- FFT/NTT 乘法推迟到未来版本。
+- 多元部分分式（`apart_multivariate`）推迟到未来版本。
+- FFT/NTT 乘法自 0.12.1 起通过 `ntt` 特性提供。

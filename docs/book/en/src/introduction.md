@@ -49,7 +49,7 @@ performance of Symbolica and SageMath while remaining free and open under the
 
 ## Project Status
 
-oCAS is currently at version **0.11.1 (Beta)**. The core symbolic engine,
+oCAS is currently at version **0.13.0 (Beta)**. The core symbolic engine,
 polynomial algebra, solvers, JIT evaluation, tri-language bindings, and
 correctness comparison framework are feature-complete for a beta release. See
 the [roadmap](https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md)

@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.11.1 @ 2026-07-03**
+> 最后评估：**0.13.0 @ 2026-07-06**
 
 ---
 
@@ -36,10 +36,13 @@
 | 0.10.0 | Beta | ✅ | ✅ Python `Polynomial/Matrix/Domain`、Matrix 线性代数（Bareiss）、mdBook 文档站、三平台 wheels CI、版本锁定 0.10.0 |
 | 0.11.0 | Beta | ✅ | ✅ 完整多项式因式分解（ℤ 与 ℤ_p：Yun SFF → CZ → Hensel → Zassenhaus）、多元 GCD、500 例 proptest 往返测试、版本提升至 0.11.0 |
 | 0.11.1 | Beta | ✅ | ✅ 二元因式分解（ℤ 与 ℤ_p：关于 x 首一的 Wang Hensel）、稀疏多元 `factor()` 入口、C 多项式绑定、mdBook 因式分解章节、版本提升至 0.11.1 |
+| 0.12.0 | Beta | ✅ | ✅ 有理多项式 `RationalPolynomial<D,O>`、Brown PRS 结式、Karatsuba 快乘、扩展 GCD、多项式 CRT/丢番图、p-adic 展开、部分分式分解、有理重构、版本提升至 0.12.0 |
+| 0.12.1 | Beta | ✅ | ✅ 自研 ℤ_p 上 NTT、`pulp` SIMD 分派、Estrin 多项式求值、F4 稀疏矩阵后端、数值验证特性、版本提升至 0.12.1 |
+| 0.13.0 | Beta | ✅ | ✅ F4 Gröbner 基算法（含 Gebauer-Moeller 临界对筛选与简化缓存）、`Grlex` 单项式序、`Domain` trait 扩展、`FiniteField` ℤ_p 快速路径工具、版本提升至 0.13.0 |
 
-0.1–0.11.1 交付物全部落地，workspace 版本锁定 0.11.1。质量门全绿：
-`cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、77 项
-pytest、`mdbook build`。
+0.1–0.13.0 交付物全部落地，workspace 版本锁定 0.13.0。质量门全绿：
+`cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、pytest、
+`mdbook build`。
 
 ---
 
@@ -93,9 +96,9 @@ Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 
 | 能力 | oCAS | Symbolica |
 |---|---|---|
 | 多项式因式分解 | ✅ ℤ 与 ℤ_p 上 `factor()`（CZ + Hensel + Zassenhaus）；二元 ℤ 与 ℤ_p 上因式分解（关于 x 首一的 Wang Hensel） | ✅ 完整（`factorization.rs`） |
-| 有理多项式 | 🟡 部分 | ✅ `rational_polynomial.rs` |
-| 部分分式 | 🔴 无 | ✅ `partial_fraction.rs` |
-| 有理重构 | 🔴 无 | ✅ `rational_reconstruction.rs` |
+| 有理多项式 | ✅ 含 GCD 规范化的 `RationalPolynomial<D,O>` | ✅ `rational_polynomial.rs` |
+| 部分分式 | ✅ 任意 `EuclideanDomain` 上的 `apart()` / `together()` | ✅ `partial_fraction.rs` |
+| 有理重构 | ✅ 基于扩展欧几里得的 `rational_reconstruction(a, m)` | ✅ `rational_reconstruction.rs` |
 | 数值积分 | 🔴 无 | ✅ `numerical_integration.rs` |
 | 流式 API | 🔴 无 | ✅ `streaming.rs` |
 | 张量 / 双数 | 🔴 无 | ✅ `tensors.rs` / `dual.rs` |

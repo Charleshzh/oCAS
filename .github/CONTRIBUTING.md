@@ -98,7 +98,7 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    ```bash
    cargo fmt --check
    cargo clippy --workspace -- -D warnings
-   cargo test --workspace
+   cargo test --workspace --exclude ocas-py
    ```
 4. 使用清晰的提交信息：
    ```

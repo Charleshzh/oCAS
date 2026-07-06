@@ -6,7 +6,7 @@ This chapter covers the Rust API of oCAS. All examples assume:
 use ocas::prelude::*;
 ```
 
-Import `ocas = "0.11"` in your `Cargo.toml`.
+Import `ocas = "0.13"` in your `Cargo.toml`.
 
 ---
 

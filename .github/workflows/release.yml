@@ -1,0 +1,99 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  extract-version:
+    name: Extract version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: extract-version
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${{ needs.extract-version.outputs.version }}"
+          # Extract the section for this version, stopping at the next version header.
+          NOTES=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+          # Trim leading and trailing blank lines.
+          NOTES=$(echo "$NOTES" | sed -e '/./,$!d' | tac | sed -e '/./,$!d' | tac)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: ${{ contains(needs.extract-version.outputs.version, '-') }}
+
+  build-c-bindings:
+    name: Build and upload C bindings
+    runs-on: ubuntu-latest
+    needs: [extract-version, release]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build C bindings
+        run: cargo build -p ocas-c --release
+
+      - name: Package C bindings
+        id: package
+        run: |
+          VERSION="${{ needs.extract-version.outputs.version }}"
+          ARTIFACT="ocas-c-${VERSION}-x86_64-unknown-linux-gnu"
+          mkdir -p "$ARTIFACT"
+          cp target/release/libocas_c.so target/release/libocas_c.a "$ARTIFACT/" || true
+          cp ocas-c/include/ocas.h ocas-c/include/ocas.hpp "$ARTIFACT/"
+          tar czf "${ARTIFACT}.tar.gz" "$ARTIFACT"
+          echo "artifact=${ARTIFACT}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - name: Upload C bindings to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.package.outputs.artifact }}
+
+  publish-dry-run:
+    name: Dry-run publish ocas
+    runs-on: ubuntu-latest
+    needs: extract-version
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Dry-run publish
+        run: cargo publish --dry-run -p ocas
+
+  wheels:
+    name: Build and publish wheels
+    needs: release
+    uses: ./.github/workflows/wheels.yml
+    secrets: inherit

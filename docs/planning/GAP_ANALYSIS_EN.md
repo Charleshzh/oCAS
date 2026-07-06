@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.11.1 @ 2026-07-03**
+> Last evaluated: **0.13.0 @ 2026-07-06**
 
 ---
 
@@ -37,10 +37,13 @@ For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 | 0.10.0 | Beta | ✅ | ✅ Python `Polynomial/Matrix/Domain`, Matrix linear algebra (Bareiss), mdBook docs site, 3-platform wheels CI, version frozen at 0.10.0 |
 | 0.11.0 | Beta | ✅ | ✅ Complete polynomial factorization over ℤ and ℤ_p (Yun SFF → CZ → Hensel → Zassenhaus), multivariate GCD, 500 proptest round-trip cases, version bumped to 0.11.0 |
 | 0.11.1 | Beta | ✅ | ✅ Bivariate factorization over ℤ and ℤ_p (monic-in-x Wang Hensel), sparse multivariate `factor()` entry points, C polynomial bindings, mdBook factorization chapter, version bumped to 0.11.1 |
+| 0.12.0 | Beta | ✅ | ✅ Rational polynomial `RationalPolynomial<D,O>`, Brown PRS resultant, Karatsuba multiplication, extended GCD, polynomial CRT/Diophantine, p-adic expansion, partial fraction decomposition, rational reconstruction, version bumped to 0.12.0 |
+| 0.12.1 | Beta | ✅ | ✅ Self-implemented NTT over ℤ_p, `pulp` SIMD dispatch, Estrin polynomial evaluation, sparse matrix backend for F4, numerical verification features, version bumped to 0.12.1 |
+| 0.13.0 | Beta | ✅ | ✅ F4 Gröbner basis algorithm with Gebauer-Moeller pair filtering and simplification cache, `Grlex` ordering, `Domain` trait extensions, `FiniteField` ℤ_p fast-path utilities, version bumped to 0.13.0 |
 
-All 0.1–0.11.1 deliverables landed. The workspace is pinned at 0.11.1. Quality
+All 0.1–0.13.0 deliverables landed. The workspace is pinned at 0.13.0. Quality
 gates are green: `cargo fmt`, `clippy -D warnings`, workspace tests,
-`cargo deny`, 77 pytest cases, `mdbook build`.
+`cargo deny`, pytest cases, `mdbook build`.
 
 ---
 
@@ -96,9 +99,9 @@ early functional subset of Symbolica.
 | Capability | oCAS | Symbolica |
 |---|---|---|
 | Polynomial factorization | ✅ `factor()` over ℤ and ℤ_p (CZ + Hensel + Zassenhaus); bivariate factorization over ℤ and ℤ_p (Wang Hensel, monic-in-x) | ✅ full (`factorization.rs`) |
-| Rational polynomials | 🟡 partial | ✅ `rational_polynomial.rs` |
-| Partial fractions | 🔴 none | ✅ `partial_fraction.rs` |
-| Rational reconstruction | 🔴 none | ✅ `rational_reconstruction.rs` |
+| Rational polynomials | ✅ `RationalPolynomial<D,O>` with GCD canonicalization | ✅ `rational_polynomial.rs` |
+| Partial fractions | ✅ `apart()` / `together()` over Euclidean domains | ✅ `partial_fraction.rs` |
+| Rational reconstruction | ✅ `rational_reconstruction(a, m)` via extended Euclidean | ✅ `rational_reconstruction.rs` |
 | Numerical integration | 🔴 none | ✅ `numerical_integration.rs` |
 | Streaming API | 🔴 none | ✅ `streaming.rs` |
 | Tensors / dual numbers | 🔴 none | ✅ `tensors.rs` / `dual.rs` |

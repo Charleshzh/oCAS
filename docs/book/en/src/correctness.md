@@ -119,8 +119,8 @@ The report includes:
 |---|---|---|
 | Wilkinson n=10: only 8 of 10 real roots found | `poly_sparse` / roots | Under investigation |
 | `sin(x)^2 + cos(x)^2 → 1` requires `egg` feature | `algebra` | Works with `egg` feature |
-| Some heuristic integrals not yet implemented | `calculus_int` | Expanding in 0.12 |
-| Polynomial factorization limited to Z[x] | `poly_factor` | Q[x] planned for 0.12 |
+| Some heuristic integrals not yet implemented | `calculus_int` | Expanding in 0.14 (Risch) |
+| Polynomial factorization limited to Z[x] | `poly_factor` | Q[x] not yet supported |
 
 ---
 

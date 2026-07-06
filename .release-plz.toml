@@ -1,0 +1,34 @@
+[workspace]
+# Path to the workspace changelog. release-plz updates this single file.
+changelog_path = "CHANGELOG.md"
+# Keep the root CHANGELOG.md up to date.
+changelog_update = true
+# Enable automatic GitHub releases.
+git_release_enable = true
+# Create a production release (not a draft).
+git_release_type = "prod"
+# Publish to crates.io.
+publish = true
+# Do not publish if the working directory has uncommitted changes.
+publish_allow_dirty = false
+# Timeout for each `cargo publish` invocation.
+publish_timeout = "10m"
+# Release PR is not a draft.
+pr_draft = false
+# Labels to attach to the release PR.
+pr_labels = ["release"]
+
+# ocas-gpl is an optional GPL backend and is not published to crates.io.
+[[package]]
+name = "ocas-gpl"
+publish = false
+
+# ocas-py is a Python extension module (cdylib) and is published to PyPI, not crates.io.
+[[package]]
+name = "ocas-py"
+publish = false
+
+# ocas-tests is an internal integration/benchmark crate.
+[[package]]
+name = "ocas-tests"
+publish = false

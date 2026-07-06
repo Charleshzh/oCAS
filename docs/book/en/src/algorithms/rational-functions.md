@@ -203,6 +203,5 @@ significant speedup over the previous schoolbook implementation.
 - Partial fraction decomposition currently works over any `EuclideanDomain`
   using square-free factorization. Full factorization into irreducibles
   requires `IntegerDomain` or `FiniteField`.
-- Multivariate partial fractions (`apart_multivariate`) are deferred to 0.13+
-  as they require Gröbner F4.
-- FFT/NTT multiplication is deferred to a future version.
+- Multivariate partial fractions (`apart_multivariate`) are deferred to a future version.
+- FFT/NTT multiplication is available since 0.12.1 via the `ntt` feature.

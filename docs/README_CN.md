@@ -11,7 +11,7 @@
 性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
 保持自由与开放。
 
-> **状态**：Beta (0.11.2)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
+> **状态**：Beta (0.13.0)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。详见
 > [文档](https://charleshzh.github.io/ocas/latest/zh/)
 >（[English](https://charleshzh.github.io/ocas/latest/en/)）、
@@ -89,7 +89,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 
 ```toml
 [dependencies]
-ocas = "0.4"
+ocas = "0.13"
 ```
 
 ```rust

@@ -6,7 +6,7 @@
 use ocas::prelude::*;
 ```
 
-在 `Cargo.toml` 中添加 `ocas = "0.11"`。
+在 `Cargo.toml` 中添加 `ocas = "0.13"`。
 
 ---
 
