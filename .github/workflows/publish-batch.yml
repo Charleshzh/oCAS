@@ -12,6 +12,7 @@ on:
           - ocas-calc
           - ocas-eval
           - ocas-gpl
+          - ocas-py
           - ocas
           - ocas-c
 
