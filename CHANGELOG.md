@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.1] - 2026-07-06
+
+### Fixed / 修复
+
+- **docs.rs build**: avoid system C library dependencies in documentation
+  builds. The hosted docs are now built with portable features only (no
+  `gmp`, `mpfr`, `flint`, `python`, `gpl`). Users who need the full backend API
+  docs can build locally with `cargo doc -p ocas --features gmp,mpfr,flint
+  --no-deps` / **docs.rs 文档构建**：避免在文档构建中依赖系统 C 库。托管文档
+  现在仅使用可移植特性构建（不含 `gmp`、`mpfr`、`flint`、`python`、
+  `gpl`）。需要完整后端 API 文档的用户可本地运行 `cargo doc -p ocas
+  --features gmp,mpfr,flint --no-deps`。
+
+---
+
 ## [0.13.0] - 2026-07-06
 
 ### Added / 新增
@@ -179,7 +194,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   缓存 `rug::Integer` 版本
 - **mimalloc global allocator** (`ocas` crate): optional `mimalloc` feature
   flag configures `mimalloc::MiMalloc` as `#[global_allocator]` /
-  **mimalloc 全局分配器**：可选 `mimalloc` feature 配置全局分配器
+  **mimalloc 全局分配器**：可选 `mimalloc` 特性配置全局分配器
 - **Dense polynomial `mul_into()` buffer reuse** (`ocas-poly`):
   `DenseUnivariatePolynomial::mul_into(&self, other, buf)` writes into a
   caller-provided buffer, avoiding repeated allocation in hot loops /
@@ -680,5 +695,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `gmp` feature is not supported on Windows MSVC because `rug` cannot
   build GMP in that environment. Use MSYS2/MINGW64 or Linux/macOS instead.
 
-- `gmp` feature 在 Windows MSVC 上不受支持，因为 `rug` 无法在该环境下构建
+- `gmp` 特性在 Windows MSVC 上不受支持，因为 `rug` 无法在该环境下构建
   GMP。请改用 MSYS2/MINGW64 或 Linux/macOS。

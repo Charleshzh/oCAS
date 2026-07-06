@@ -11,7 +11,7 @@
 It is designed to match or exceed the core performance of Symbolica and
 SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Beta (0.13.0). The full symbolic engine, polynomial algebra,
+> **Status**: Beta (0.13.1). The full symbolic engine, polynomial algebra,
 > equation solvers, JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. See the
 > [documentation](https://charleshzh.github.io/ocas/latest/en/)
