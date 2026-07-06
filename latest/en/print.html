@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-617a8171.js";
+            window.path_to_searchindex_js = "searchindex-c79783ee.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-05cd13fe.js"></script>
@@ -229,7 +229,7 @@ isolated GPL backends in <code>ocas-gpl</code>.</li>
 </ul>
 <hr>
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.11.1 (Beta)</strong>. The core symbolic engine,
+<p>oCAS is currently at version <strong>0.13.0 (Beta)</strong>. The core symbolic engine,
 polynomial algebra, solvers, JIT evaluation, tri-language bindings, and
 correctness comparison framework are feature-complete for a beta release. See
 the <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>
@@ -241,7 +241,7 @@ for the path to stable 1.0.</p>
 <h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
 <p>Add to your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[dependencies]
-ocas = "0.11"
+ocas = "0.13"
 </code></pre>
 <pre class="playground"><code class="language-rust">use ocas::prelude::*;
 
@@ -542,7 +542,7 @@ ocas_poly_fp_free(p);
 </span><span class="boring">fn main() {
 </span>use ocas::prelude::*;
 <span class="boring">}</span></code></pre>
-<p>Import <code>ocas = "0.11"</code> in your <code>Cargo.toml</code>.</p>
+<p>Import <code>ocas = "0.13"</code> in your <code>Cargo.toml</code>.</p>
 <hr>
 <h2 id="expressions"><a class="header" href="#expressions">Expressions</a></h2>
 <p>The core of oCAS is the <code>Atom</code> expression tree, managed by an arena allocator.</p>
@@ -1523,9 +1523,8 @@ significant speedup over the previous schoolbook implementation.</p>
 <li>Partial fraction decomposition currently works over any <code>EuclideanDomain</code>
 using square-free factorization. Full factorization into irreducibles
 requires <code>IntegerDomain</code> or <code>FiniteField</code>.</li>
-<li>Multivariate partial fractions (<code>apart_multivariate</code>) are deferred to 0.13+
-as they require Gröbner F4.</li>
-<li>FFT/NTT multiplication is deferred to a future version.</li>
+<li>Multivariate partial fractions (<code>apart_multivariate</code>) are deferred to a future version.</li>
+<li>FFT/NTT multiplication is available since 0.12.1 via the <code>ntt</code> feature.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="benchmarks--comparison"><a class="header" href="#benchmarks--comparison">Benchmarks &amp; Comparison</a></h1>
@@ -1741,8 +1740,8 @@ summary of pass/fail counts and annotations for known limitations.</p>
 <tbody>
 <tr><td>Wilkinson n=10: only 8 of 10 real roots found</td><td><code>poly_sparse</code> / roots</td><td>Under investigation</td></tr>
 <tr><td><code>sin(x)^2 + cos(x)^2 → 1</code> requires <code>egg</code> feature</td><td><code>algebra</code></td><td>Works with <code>egg</code> feature</td></tr>
-<tr><td>Some heuristic integrals not yet implemented</td><td><code>calculus_int</code></td><td>Expanding in 0.12</td></tr>
-<tr><td>Polynomial factorization limited to Z[x]</td><td><code>poly_factor</code></td><td>Q[x] planned for 0.12</td></tr>
+<tr><td>Some heuristic integrals not yet implemented</td><td><code>calculus_int</code></td><td>Expanding in 0.14 (Risch)</td></tr>
+<tr><td>Polynomial factorization limited to Z[x]</td><td><code>poly_factor</code></td><td>Q[x] not yet supported</td></tr>
 </tbody>
 </table>
 </div>
