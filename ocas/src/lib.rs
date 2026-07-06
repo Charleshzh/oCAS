@@ -41,7 +41,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// - **Solving**: [`solve_linear_rational`], [`solve_linear_integer`], [`solve_diophantine`]
 /// - **Parsing**: [`parse`], [`ParseError`]
 /// - **Polynomials**: [`DenseUnivariatePolynomial`], [`SparseMultivariatePolynomial`],
-///   [`RationalPolynomial`], [`MonomialOrder`], [`Lex`], [`Grevlex`], [`Grlex`]
+///   [`RationalPolynomial`], [`MonomialOrder`], [`Lex`], [`Grevlex`], `Grlex`
 /// - **Domains**: [`Integer`], [`Rational`], [`RealBall`], [`Complex`], [`FiniteField`],
 ///   [`Domain`], [`EuclideanDomain`]
 /// - **Rewriting**: [`Pattern`], [`Rule`], [`match_pattern`], [`simplify()`], [`transform`],

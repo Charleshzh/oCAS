@@ -93,7 +93,8 @@ fn cyclic_fp(n: usize, p: u32) -> Vec<SparseMultivariatePolynomial<FiniteField, 
 /// Buchberger on cyclic-n over ℚ (only cyclic-3; cyclic-4 is too slow).
 fn bench_buchberger_cyclic_q(c: &mut Criterion) {
     let mut group = c.benchmark_group("buchberger_cyclic_q");
-    for n in [3] {
+    {
+        let n = 3;
         let ideal = cyclic_q(n);
         group.bench_with_input(format!("cyclic_{n}"), &n, |bench, _| {
             bench.iter(|| {
