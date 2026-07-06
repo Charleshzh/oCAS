@@ -18,21 +18,10 @@ pr_draft = false
 # Labels to attach to the release PR.
 pr_labels = ["release"]
 
-# crates.io rate-limits new crates to 5 per day. To publish all workspace
-# crates, release them in batches by temporarily setting publish=false below.
-# Batch 1 (done): ocas-core, ocas-domain, ocas-poly, ocas-atom, ocas-parse
-# Batch 2 (now):   ocas-rewrite, ocas-calc, ocas-eval, ocas-gpl, ocas
-# Batch 3 (24h):  ocas-c, ocas-py
-
-# === Batch 3: temporarily skipped to respect crates.io new-crate rate limit ===
-[[package]]
-name = "ocas-c"
-publish = false
-
-# ocas-py is a Python extension module (cdylib) and is published to PyPI, not crates.io.
-[[package]]
-name = "ocas-py"
-publish = false
+# crates.io new-crate rate limit note: if you ever need to publish many
+# new crates at once, release-plz will hit crates.io's 5 new crates/day limit.
+# Use a temporary publish=false override per package in that case, or publish
+# manually in batches via `.github/workflows/publish-batch.yml`.
 
 # ocas-tests is an internal integration/benchmark crate.
 [[package]]
