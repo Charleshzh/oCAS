@@ -1,6 +1,6 @@
 [project]
 name = "ocas-tests"
-version = "0.6.0"
+version = "0.13.1"
 description = "Python scripts for oCAS comparison benchmarks"
 requires-python = ">=3.10"
 dependencies = ["sympy>=1.12"]

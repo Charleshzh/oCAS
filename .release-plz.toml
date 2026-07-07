@@ -3,8 +3,9 @@
 changelog_path = "CHANGELOG.md"
 # Keep the root CHANGELOG.md up to date.
 changelog_update = true
-# Enable automatic GitHub releases.
-git_release_enable = true
+# Disable automatic GitHub releases here; the release.yml workflow uploads
+# artifacts to the Release that release-plz prepares.
+git_release_enable = false
 # Create a production release (not a draft).
 git_release_type = "prod"
 # Publish to crates.io.
