@@ -31,7 +31,7 @@ jobs:
         run: |
           TAG_VERSION="${{ steps.version.outputs.version }}"
           WS_VERSION="${{ steps.workspace-version.outputs.workspace-version }}"
-          if [ "$TAG_VERSION" != "$WS_VERSION" ]; then
+          if [ "$TAG_VERSION" != "$WS_VERSION" ] && [[ "$TAG_VERSION" != "$WS_VERSION"-* ]]; then
             echo "Tag version $TAG_VERSION does not match workspace version $WS_VERSION"
             exit 1
           fi
