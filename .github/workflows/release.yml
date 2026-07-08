@@ -76,14 +76,6 @@ jobs:
             target: x86_64-pc-windows-msvc
             lib_so: ocas_c.dll
             lib_a: ocas_c.lib
-          - os: macos-13
-            target: x86_64-apple-darwin
-            lib_so: libocas_c.dylib
-            lib_a: libocas_c.a
-          - os: macos-14
-            target: aarch64-apple-darwin
-            lib_so: libocas_c.dylib
-            lib_a: libocas_c.a
 
     steps:
       - uses: actions/checkout@v4
