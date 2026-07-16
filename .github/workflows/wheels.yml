@@ -26,12 +26,15 @@ jobs:
             manylinux: "2_28"
           - os: windows-latest
             target: x86_64
-          # macOS: macos-13 is the Intel (x86_64) image, macos-latest is Apple
-          # Silicon (aarch64).
-          - os: macos-13
-            target: x86_64
+          # macOS: free Intel runners (macos-13) have very limited capacity and
+          # queue indefinitely on the free tier. Build BOTH the Apple-Silicon
+          # (aarch64) and Intel (x86_64) wheels on the always-available
+          # macos-latest image by cross-compiling the Intel wheel via
+          # Rosetta/rustup target `x86_64-apple-darwin`.
           - os: macos-latest
             target: aarch64
+          - os: macos-latest
+            target: x86_64
 
     steps:
       - uses: actions/checkout@v4
