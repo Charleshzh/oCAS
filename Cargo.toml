@@ -41,7 +41,7 @@ ocas = { path = "ocas", version = "0.13.1" }
 ocas-py = { path = "ocas-py", version = "0.13.1" }
 ocas-c = { path = "ocas-c", version = "0.13.1" }
 ocas-gpl = { path = "ocas-gpl", version = "0.13.1" }
-num-bigint = "0.4"
+num-bigint = "0.5"
 num-rational = "0.4"
 num-traits = "0.2"
 num-integer = "0.1"
