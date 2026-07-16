@@ -8,6 +8,18 @@ updates:
     labels:
       - dependencies
       - rust
+    groups:
+      # The cranelift crates must stay in lockstep; bumping them individually
+      # breaks the build.
+      cranelift:
+        patterns:
+          - "cranelift*"
+      # Patch updates of any other crate are batched into one PR.
+      patch:
+        update-types:
+          - "patch"
+        exclude-patterns:
+          - "cranelift*"
 
   - package-ecosystem: github-actions
     directory: /
@@ -17,3 +29,9 @@ updates:
     labels:
       - dependencies
       - github-actions
+    groups:
+      # Actions from the actions/* org are released together; one PR per week
+      # instead of one PR per action.
+      actions:
+        patterns:
+          - "*"
