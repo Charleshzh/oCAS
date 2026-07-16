@@ -20,7 +20,7 @@ hashbrown = { workspace = true }
 smallvec = { workspace = true }
 
 # Optional equality saturation backend.
-egg = { version = "0.10", optional = true }
+egg = { version = "0.11", optional = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
