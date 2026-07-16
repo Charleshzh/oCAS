@@ -100,8 +100,13 @@ jobs:
         run: cargo test -p ocas --features gmp,mpfr,flint
       - name: Run tests with backend + NTT/sparse/fast-polynomial features
         run: cargo test -p ocas --features gmp,mpfr,flint,ntt,sprs,fast-poly
-      - name: Run tests with backend + mimalloc/system-libs features
-        run: cargo test -p ocas --features gmp,mpfr,flint,mimalloc,system-libs
+      # NOTE: `system-libs` is dropped from CI. gmp-mpfr-sys 1.7.1 requires
+      # system MPC >= 1.4.1, but Ubuntu 24.04 ships libmpc 1.3.1, so the
+      # system-MPC probe always fails. system-libs is an optional opt-in
+      # backend; users on newer distros enable it manually. `mimalloc` (pure
+      # Rust) is still tested here.
+      - name: Run tests with backend + mimalloc features
+        run: cargo test -p ocas --features gmp,mpfr,flint,mimalloc
       - name: Test ocas-eval with JIT feature
         run: cargo test -p ocas-eval --features jit
       - name: Test ocas-eval with SIMD feature
