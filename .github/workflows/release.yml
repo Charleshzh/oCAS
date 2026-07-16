@@ -129,11 +129,11 @@ jobs:
         with:
           files: ${{ steps.package.outputs.artifact }}
 
-  wheels:
-    name: Build and publish wheels
-    needs: [extract-version, publish-dry-run]
-    uses: ./.github/workflows/wheels.yml
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+  # NOTE: Python wheels are NOT built here. wheels.yml has its own
+  # `on: push: tags: v*` trigger and runs independently. Publishing to
+  # PyPI/TestPyPI must NOT go through a reusable-workflow call: PyPI
+  # trusted publishing is not officially supported for reusable workflows,
+  # and the OIDC token's `workflow_ref` claim then points at this caller
+  # (release.yml) instead of wheels.yml, which makes the registered
+  # publisher (wheels.yml) mismatch and the exchange fail with
+  # `invalid-publisher`.
