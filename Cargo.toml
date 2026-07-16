@@ -48,7 +48,7 @@ num-integer = "0.1"
 num-complex = "0.4"
 inkwell = "0.5"
 rayon = "1.10"
-hashbrown = "0.15"
+hashbrown = "0.17"
 smallvec = "1.14"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
