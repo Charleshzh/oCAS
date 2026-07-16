@@ -16,84 +16,110 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Extract version from tag
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
-  release:
-    name: Create GitHub Release
+      - name: Read workspace version
+        id: workspace-version
+        run: |
+          WS_VERSION=$(grep -E '^version\s*=' Cargo.toml | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "workspace-version=$WS_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag version matches workspace version
+        run: |
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          WS_VERSION="${{ steps.workspace-version.outputs.workspace-version }}"
+          if [ "$TAG_VERSION" != "$WS_VERSION" ] && [[ "$TAG_VERSION" != "$WS_VERSION"-* ]]; then
+            echo "Tag version $TAG_VERSION does not match workspace version $WS_VERSION"
+            exit 1
+          fi
+
+  publish-dry-run:
+    name: Dry-run publish all crates
     runs-on: ubuntu-latest
     needs: extract-version
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Extract release notes from CHANGELOG
-        id: notes
+      - name: Install Python development headers
         run: |
-          VERSION="${{ needs.extract-version.outputs.version }}"
-          # Extract the section for this version, stopping at the next version header.
-          NOTES=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
-          # Trim leading and trailing blank lines.
-          NOTES=$(echo "$NOTES" | sed -e '/./,$!d' | tac | sed -e '/./,$!d' | tac)
-          {
-            echo "notes<<EOF"
-            echo "$NOTES"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          sudo apt-get update
+          sudo apt-get install -y python3-dev
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          body: ${{ steps.notes.outputs.notes }}
-          draft: false
-          prerelease: ${{ contains(needs.extract-version.outputs.version, '-') }}
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@1.89.0
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Dry-run publish workspace crates
+        run: |
+          for crate in ocas-core ocas-domain ocas-poly ocas-atom ocas-rewrite ocas-calc ocas-eval ocas-parse ocas ocas-c ocas-py ocas-gpl; do
+            echo "=== Dry-run $crate ==="
+            cargo publish --dry-run -p "$crate" || exit 1
+          done
 
   build-c-bindings:
-    name: Build and upload C bindings
-    runs-on: ubuntu-latest
-    needs: [extract-version, release]
+    name: Build C bindings (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    needs: [extract-version, publish-dry-run]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            lib_so: libocas_c.so
+            lib_a: libocas_c.a
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            lib_so: ocas_c.dll
+            lib_a: ocas_c.lib
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.89.0
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
 
       - name: Build C bindings
-        run: cargo build -p ocas-c --release
+        run: cargo build -p ocas-c --release --target ${{ matrix.target }}
 
       - name: Package C bindings
         id: package
+        shell: bash
         run: |
           VERSION="${{ needs.extract-version.outputs.version }}"
-          ARTIFACT="ocas-c-${VERSION}-x86_64-unknown-linux-gnu"
+          ARTIFACT="ocas-c-${VERSION}-${{ matrix.target }}"
           mkdir -p "$ARTIFACT"
-          cp target/release/libocas_c.so target/release/libocas_c.a "$ARTIFACT/" || true
-          cp ocas-c/include/ocas.h ocas-c/include/ocas.hpp "$ARTIFACT/"
-          tar czf "${ARTIFACT}.tar.gz" "$ARTIFACT"
-          echo "artifact=${ARTIFACT}.tar.gz" >> "$GITHUB_OUTPUT"
+          cp "target/${{ matrix.target }}/release/${{ matrix.lib_so }}" "$ARTIFACT/" || true
+          cp "target/${{ matrix.target }}/release/${{ matrix.lib_a }}" "$ARTIFACT/" || true
+          # On Windows the import library may be named ocas_c.dll.lib.
+          cp "target/${{ matrix.target }}/release/ocas_c.dll.lib" "$ARTIFACT/" || true
+          cp ocas-c/include/ocas.h ocas-c/include/ocas.hpp "$ARTIFACT/" || true
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a "${ARTIFACT}.zip" "$ARTIFACT"
+            echo "artifact=${ARTIFACT}.zip" >> "$GITHUB_OUTPUT"
+          else
+            tar czf "${ARTIFACT}.tar.gz" "$ARTIFACT"
+            echo "artifact=${ARTIFACT}.tar.gz" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload C bindings to release
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.package.outputs.artifact }}
 
-  publish-dry-run:
-    name: Dry-run publish ocas
-    runs-on: ubuntu-latest
-    needs: extract-version
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Dry-run publish
-        run: cargo publish --dry-run -p ocas
-
   wheels:
     name: Build and publish wheels
-    needs: release
+    needs: [extract-version, publish-dry-run]
     uses: ./.github/workflows/wheels.yml
     secrets: inherit
+    permissions:
+      id-token: write
+      contents: read

@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
@@ -20,9 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
+      - uses: dtolnay/rust-toolchain@1.89.0
       - run: cargo fmt --all -- --check
 
   clippy:
@@ -30,11 +31,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
+      - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
+
+  clippy-all-features:
+    name: Clippy (all pure-Rust features)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-targets --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc,system-libs --exclude ocas-py -- -D warnings
 
   test:
     name: Test (${{ matrix.os }})
@@ -45,10 +53,19 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
       # ocas-py uses pyo3/extension-module and cannot be tested as a standalone binary.
       - run: cargo test --workspace --exclude ocas-py --features egg
+
+  test-all-features:
+    name: Test all pure-Rust features
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace --exclude ocas-py --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc,system-libs
 
   test-full:
     name: Test with LGPL backends
@@ -69,12 +86,16 @@ jobs:
           pkg-config --modversion mpfr || echo "MPFR NOT FOUND"
           echo "=== cmake ==="
           which cmake || echo "cmake NOT FOUND"
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
       - name: Build with backend features
         run: cargo build -p ocas --features gmp,mpfr,flint
       - name: Run tests with backend features
         run: cargo test -p ocas --features gmp,mpfr,flint
+      - name: Run tests with backend + NTT/sparse/fast-polynomial features
+        run: cargo test -p ocas --features gmp,mpfr,flint,ntt,sprs,fast-poly
+      - name: Run tests with backend + mimalloc/system-libs features
+        run: cargo test -p ocas --features gmp,mpfr,flint,mimalloc,system-libs
       - name: Test ocas-eval with JIT feature
         run: cargo test -p ocas-eval --features jit
       - name: Test ocas-eval with SIMD feature
@@ -85,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-python@v5
         with:
@@ -96,6 +117,8 @@ jobs:
           sudo apt-get install -y python3-dev
       - name: Build C bindings
         run: cargo build -p ocas-c
+      - name: Check Python bindings compile
+        run: cargo check -p ocas-py
       - name: Build Python bindings
         run: cargo build -p ocas-py
       - name: Install maturin and pytest
@@ -120,13 +143,13 @@ jobs:
       RUSTDOCFLAGS: "-D rustdoc::broken_intra_doc_links -D rustdoc::invalid_codeblock_attributes"
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
       - name: cargo doc (pure-Rust features)
         # Use explicit pure-Rust features instead of --all-features, which
         # would force-enable gmp-mpfr-sys's `mpc` feature and trigger a
         # strict system MPC version check that fails on the runner.
-        run: cargo doc --no-deps --features egg,jit,simd -p ocas
+        run: cargo doc --no-deps --features egg,jit,simd,ntt,sprs,fast-poly -p ocas
 
   miri:
     name: Miri memory safety
