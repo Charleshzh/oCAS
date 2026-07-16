@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Pin a recent toolchain: audit-check compiles the latest cargo-audit,
+      # whose deps (e.g. kstring 2.x) require Rust >= 1.96. Without this the
+      # default toolchain is too old and the audit job fails to build.
+      - uses: dtolnay/rust-toolchain@stable
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
