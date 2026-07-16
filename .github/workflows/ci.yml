@@ -79,7 +79,9 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgmp-dev libmpfr-dev cmake pkg-config m4
+          # libmpc-dev is required by the `system-libs` feature, which probes
+          # for the system MPC library in addition to GMP/MPFR.
+          sudo apt-get install -y libgmp-dev libmpfr-dev libmpc-dev cmake pkg-config m4
       - name: Verify GMP/MPFR/pkg-config
         run: |
           echo "=== pkg-config ==="
