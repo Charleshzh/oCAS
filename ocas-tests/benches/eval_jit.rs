@@ -4,9 +4,6 @@
 //! against the scalar interpreter. Enabled with the `jit` feature.
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use ocas::prelude::*;
-use ocas_atom::AtomArena;
-use ocas_core::arena::Arena;
 use ocas_eval::instruction::Instr;
 use ocas_eval::jit::JitEngine;
 use std::hint::black_box;
@@ -21,7 +18,7 @@ fn bench_jit_compile(c: &mut Criterion) {
     c.bench_function("jit_compile_add", |b| {
         b.iter(|| {
             let func = JitEngine::compile(black_box(&instructions), 2, 1);
-            black_box(func);
+            let _ = black_box(func);
         });
     });
 }

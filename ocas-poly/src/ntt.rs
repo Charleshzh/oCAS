@@ -546,7 +546,7 @@ mod tests {
     fn try_ntt_mul_fp_unfriendly_prime_returns_none() {
         // p = 1000000007 — (p-1) = 2 * 500000003, only 2^1 factor
         let n = NTT_THRESHOLD + 1;
-        let a: Vec<BigInt> = (0..n).map(|i| BigInt::from(i)).collect();
+        let a: Vec<BigInt> = (0..n).map(BigInt::from).collect();
         let b: Vec<BigInt> = (0..n).map(|i| BigInt::from(i % 10)).collect();
         let prime = BigInt::from(1_000_000_007u64);
         // Transform length would be next_power_of_two(2n-1) which needs > 2^1
