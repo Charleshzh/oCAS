@@ -22,16 +22,16 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - run: cargo fmt --all -- --check
 
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
 
@@ -39,8 +39,8 @@ jobs:
     name: Clippy (all pure-Rust features)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --workspace --all-targets --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc,system-libs --exclude ocas-py -- -D warnings
 
@@ -52,8 +52,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
       # ocas-py uses pyo3/extension-module and cannot be tested as a standalone binary.
       - run: cargo test --workspace --exclude ocas-py --features egg
@@ -62,8 +62,8 @@ jobs:
     name: Test all pure-Rust features
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --workspace --exclude ocas-py --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc,system-libs
 
@@ -71,7 +71,7 @@ jobs:
     name: Test with LGPL backends
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -86,7 +86,7 @@ jobs:
           pkg-config --modversion mpfr || echo "MPFR NOT FOUND"
           echo "=== cmake ==="
           which cmake || echo "cmake NOT FOUND"
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
       - name: Build with backend features
         run: cargo build -p ocas --features gmp,mpfr,flint
@@ -105,10 +105,10 @@ jobs:
     name: Build language bindings
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install Python development headers
@@ -142,8 +142,8 @@ jobs:
     env:
       RUSTDOCFLAGS: "-D rustdoc::broken_intra_doc_links -D rustdoc::invalid_codeblock_attributes"
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.100.0
       - uses: Swatinem/rust-cache@v2
       - name: cargo doc (pure-Rust features)
         # Use explicit pure-Rust features instead of --all-features, which
@@ -155,7 +155,7 @@ jobs:
     name: Miri memory safety
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: miri
