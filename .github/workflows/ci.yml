@@ -42,7 +42,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --workspace --all-targets --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc,system-libs --exclude ocas-py -- -D warnings
+      # NOTE: `system-libs` is intentionally excluded here — it requires the
+      # system GMP/MPFR libraries, which the pure-Rust job does not install.
+      # It is exercised in the `test-full` job that installs libgmp/libmpfr.
+      - run: cargo clippy --workspace --all-targets --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc --exclude ocas-py -- -D warnings
 
   test:
     name: Test (${{ matrix.os }})
@@ -65,7 +68,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.89.0
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --workspace --exclude ocas-py --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc,system-libs
+      # `system-libs` excluded (needs system GMP/MPFR); covered by test-full.
+      - run: cargo test --workspace --exclude ocas-py --features egg,jit,simd,ntt,sprs,fast-poly,mimalloc
 
   test-full:
     name: Test with LGPL backends
