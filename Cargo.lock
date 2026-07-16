@@ -631,6 +631,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
+name = "foldhash"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
+
+[[package]]
 name = "futures-core"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -717,7 +723,7 @@ checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 dependencies = [
  "allocator-api2",
  "equivalent",
- "foldhash",
+ "foldhash 0.1.5",
 ]
 
 [[package]]
@@ -725,6 +731,11 @@ name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
+dependencies = [
+ "allocator-api2",
+ "equivalent",
+ "foldhash 0.2.0",
+]
 
 [[package]]
 name = "heck"
@@ -1020,7 +1031,7 @@ dependencies = [
 name = "ocas-atom"
 version = "0.13.1"
 dependencies = [
- "hashbrown 0.15.5",
+ "hashbrown 0.17.1",
  "ocas-core",
  "ocas-domain",
  "proptest",
@@ -1127,7 +1138,7 @@ name = "ocas-poly"
 version = "0.13.1"
 dependencies = [
  "flint3-sys",
- "hashbrown 0.15.5",
+ "hashbrown 0.17.1",
  "num-bigint",
  "num-rational",
  "num-traits",
@@ -1160,7 +1171,7 @@ name = "ocas-rewrite"
 version = "0.13.1"
 dependencies = [
  "egg",
- "hashbrown 0.15.5",
+ "hashbrown 0.17.1",
  "ocas-atom",
  "ocas-core",
  "ocas-parse",
@@ -1781,7 +1792,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f19bffd69fb182e684d14e3c71d04c0ef33d1641ac0b9e81c712c734e83703bc"
 dependencies = [
  "crossbeam-utils",
- "foldhash",
+ "foldhash 0.1.5",
  "hashbrown 0.15.5",
 ]
 
