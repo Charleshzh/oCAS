@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.2](https://github.com/Charleshzh/oCAS/compare/ocas-poly-v0.13.1...ocas-poly-v0.13.2) - 2026-07-16
+
+### Fixed
+
+- *(ci)* clean clippy --all-targets and drop system-libs from pure-Rust jobs ([#32](https://github.com/Charleshzh/oCAS/pull/32))
+
 ## [0.13.1] - 2026-07-06
 
 ### Fixed / 修复
