@@ -4,6 +4,7 @@
 [![Rust](https://img.shields.io/badge/Rust-1.89%2B-orange.svg)](https://www.rust-lang.org)
 [![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
 [![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
+[![PyPI](https://img.shields.io/pypi/v/ocas.svg)](https://pypi.org/project/ocas/)
 
 > **语言**: [English](../README.md) · [中文](README_CN.md)
 
@@ -11,8 +12,9 @@
 性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
 保持自由与开放。
 
-> **状态**：Beta (0.13.1)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
-> 求值与三语言绑定（Rust、Python、C/C++）已功能完备。详见
+> **状态**：Beta (0.13.2)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
+> 求值与三语言绑定（Rust、Python、C/C++）已功能完备。`pip install ocas`
+> 已在 PyPI 上线。详见
 > [文档](https://charleshzh.github.io/ocas/latest/zh/)
 >（[English](https://charleshzh.github.io/ocas/latest/en/)）、
 > [Rust API 文档](https://docs.rs/ocas)与

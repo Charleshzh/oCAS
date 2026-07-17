@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-06（0.13.0 已发布，含 F4 Gröbner 基算法）**
+> 最后修订：**2026-07-18（0.13.2 已发布，`pip install ocas` 上线 PyPI）**
 
 ---
 
