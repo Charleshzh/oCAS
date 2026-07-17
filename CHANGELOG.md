@@ -9,11 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.13.2](https://github.com/Charleshzh/oCAS/compare/ocas-poly-v0.13.1...ocas-poly-v0.13.2) - 2026-07-16
+## [0.13.2] - 2026-07-18
 
-### Fixed
+### Added / 新增
 
-- *(ci)* clean clippy --all-targets and drop system-libs from pure-Rust jobs ([#32](https://github.com/Charleshzh/oCAS/pull/32))
+- **PyPI 发布**（`ocas-py`）：`pip install ocas` 正式上线。通过 OIDC trusted
+  publishing 发布，覆盖 5 个平台 wheel（macOS x86_64/arm64、Linux
+  x86_64/aarch64、Windows x86_64）+ sdist / **PyPI 发布**：`pip install ocas`
+  正式上线，OIDC trusted publishing，5 平台 wheel + sdist
+- **macOS wheels**：补齐三平台 wheel 覆盖（0.9.0 路线图承诺），macOS Intel
+  wheel 在 Apple Silicon runner 上交叉编译产出 / **macOS wheels**：补齐三平台
+  覆盖，Intel wheel 经交叉编译产出
+
+### Fixed / 修复
+
+- **CI lint**：清理 `clippy --all-targets`（含 bench/test 目标）下的冗余闭包与
+  未使用 import；纯 Rust CI job 移除 `system-libs` 特性（需系统 MPC ≥ 1.4.1，
+  Ubuntu 24.04 仅有 1.3.1）/ **CI lint**：清理 `--all-targets` lint；纯 Rust job
+  移除 `system-libs`
+- **Security audit**：固定 stable 工具链（cargo-audit 依赖需 Rust ≥ 1.96）/
+  **安全审计**：固定 stable 工具链
+- **ocas-c 发布**：build.rs 改为写入 `OUT_DIR` 而非源目录，修复 `cargo publish`
+  "Source directory was modified by build.rs" 错误 / **ocas-c 发布**：build.rs
+  写入 `OUT_DIR`
+- **Trusted publishing**：移除 `release.yml` 对 `wheels.yml` 的 reusable
+  workflow 调用（PyPI trusted publishing 不支持 reusable workflow，OIDC
+  `workflow_ref` 会错位导致 `invalid-publisher`）/ **Trusted publishing**：
+  移除 reusable workflow 调用
+- **Release tag 校验**：预发布 tag 允许 base 版本 ≥ workspace 版本 /
+  **Release tag 校验**：放宽预发布 tag
+
+### Changed / 变更
+
+- **依赖升级**：cranelift 0.117→0.127（锁步组）、chumsky 0.10→0.13、logos
+  0.15→0.16、cbindgen 0.28→0.29、criterion 0.5→0.8、hashbrown 0.15→0.17、
+  flint3-sys 3.5→3.6、egg 0.10→0.11 / **依赖升级**：cranelift、chumsky、logos、
+  cbindgen、criterion、hashbrown、flint3-sys、egg
+- **安全修复**：crossbeam-epoch 0.9.18→0.9.20（RUSTSEC-2026-0204，`fmt::Pointer`
+  无效指针解引用）/ **安全修复**：crossbeam-epoch（RUSTSEC-2026-0204）
+- **dependabot 降噪**：cranelift 锁步组 + patch/actions 批量组；忽略
+  dtolnay/rust-toolchain 误升级 / **dependabot 降噪**：分组 + 忽略误升级
 
 ## [0.13.1] - 2026-07-06
 

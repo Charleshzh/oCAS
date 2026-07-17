@@ -299,6 +299,8 @@ After 1.0, development will focus on:
 | 0.11.2 | Beta | Month 16 | Computation acceleration (SOO Integer, mimalloc, modular GCD) |
 | 0.12.0 | Beta | Month 17 | Rational polynomials + resultant + partial fractions + Karatsuba + rational reconstruction |
 | 0.13.0 | Beta | Month 19 | Gröbner F4 matrix algorithm |
+| 0.13.1 | Beta | Month 19 | docs.rs build fix |
+| 0.13.2 | Beta | Month 19 | PyPI release (`pip install ocas`) + dependency upgrades + CI hardening |
 | 0.14.0 | 1.0 Candidate | Month 22 | Risch symbolic integration |
 | 0.15.0 | 1.0 Candidate | Month 24 | Performance + JIT + memory optimization |
 | 1.0.0 | Stable | Month 26 | Stable release |

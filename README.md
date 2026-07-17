@@ -4,6 +4,7 @@
 [![Rust](https://img.shields.io/badge/Rust-1.89%2B-orange.svg)](https://www.rust-lang.org)
 [![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
 [![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
+[![PyPI](https://img.shields.io/pypi/v/ocas.svg)](https://pypi.org/project/ocas/)
 
 > **Languages / 语言**: [English](README.md) · [中文](docs/README_CN.md)
 
@@ -11,9 +12,10 @@
 It is designed to match or exceed the core performance of Symbolica and
 SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Beta (0.13.1). The full symbolic engine, polynomial algebra,
+> **Status**: Beta (0.13.2). The full symbolic engine, polynomial algebra,
 > equation solvers, JIT/SIMD evaluation, and tri-language bindings (Rust,
-> Python, C/C++) are feature-complete. See the
+> Python, C/C++) are feature-complete. `pip install ocas` is available on PyPI.
+> See the
 > [documentation](https://charleshzh.github.io/ocas/latest/en/)
 > ([中文](https://charleshzh.github.io/ocas/latest/zh/)),
 > [Rust API docs](https://docs.rs/ocas), and
