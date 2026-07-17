@@ -988,7 +988,7 @@ dependencies = [
 
 [[package]]
 name = "ocas"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "criterion",
  "mimalloc",
@@ -1006,7 +1006,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-atom"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "hashbrown 0.17.1",
  "ocas-core",
@@ -1017,7 +1017,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-c"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "cbindgen",
  "num-bigint",
@@ -1033,7 +1033,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-calc"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "num-integer",
  "num-traits",
@@ -1047,7 +1047,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-core"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "num-bigint",
  "proptest",
@@ -1059,7 +1059,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-domain"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "gmp-mpfr-sys",
  "num-bigint",
@@ -1074,7 +1074,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-eval"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "cranelift",
  "cranelift-codegen",
@@ -1091,7 +1091,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-gpl"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "ocas-core",
  "ocas-domain",
@@ -1100,7 +1100,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-parse"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "chumsky",
  "logos",
@@ -1112,7 +1112,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-poly"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "flint3-sys",
  "hashbrown 0.17.1",
@@ -1129,7 +1129,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-py"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "num-bigint",
  "ocas-atom",
@@ -1145,7 +1145,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-rewrite"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "egg",
  "hashbrown 0.17.1",
@@ -1158,7 +1158,7 @@ dependencies = [
 
 [[package]]
 name = "ocas-tests"
-version = "0.13.2"
+version = "0.13.3"
 dependencies = [
  "criterion",
  "num-bigint",
