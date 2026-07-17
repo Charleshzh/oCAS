@@ -3,7 +3,15 @@ use std::path::PathBuf;
 
 fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let output = PathBuf::from(&crate_dir).join("include").join("ocas.h");
+
+    // Write the generated header into OUT_DIR, never into the source tree.
+    // `cargo publish` verifies the packaged tarball is not modified by the
+    // build script; writing into `include/` (the source dir) aborts publish
+    // with "Source directory was modified by build.rs". The committed
+    // `include/ocas.h` is the canonical copy shipped in the package; OUT_DIR
+    // is only for building from source.
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let output = out_dir.join("ocas.h");
 
     cbindgen::Builder::new()
         .with_crate(&crate_dir)
