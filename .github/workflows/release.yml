@@ -69,10 +69,23 @@ jobs:
 
       - name: Dry-run publish workspace crates
         run: |
+          # Crates may already exist on crates.io when this runs (the real
+          # publish is handled by release-plz on main). A dry-run failure due
+          # to "already exists" is not a packaging problem, so we only fail
+          # on errors that are NOT the already-exists warning.
+          failed=0
           for crate in ocas-core ocas-domain ocas-poly ocas-atom ocas-rewrite ocas-calc ocas-eval ocas-parse ocas ocas-c ocas-py ocas-gpl; do
             echo "=== Dry-run $crate ==="
-            cargo publish --dry-run -p "$crate" || exit 1
+            out=$(cargo publish --dry-run -p "$crate" 2>&1) || {
+              if echo "$out" | grep -q "already exists on crates.io"; then
+                echo "(skip) $crate already published"
+              else
+                echo "$out"
+                failed=1
+              fi
+            }
           done
+          exit $failed
 
   build-c-bindings:
     name: Build C bindings (${{ matrix.target }})
