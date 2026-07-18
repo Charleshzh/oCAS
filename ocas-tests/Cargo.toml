@@ -97,6 +97,10 @@ name = "calculus"
 harness = false
 
 [[bench]]
+name = "integrate"
+harness = false
+
+[[bench]]
 name = "rewrite"
 harness = false
 

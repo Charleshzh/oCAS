@@ -19,6 +19,8 @@
 - [求值与 JIT](./evaluation.md)
 - [因式分解](./algorithms/factorization.md)
 - [有理函数与结式](./algorithms/rational-functions.md)
+- [Gröbner 基](./algorithms/groebner.md)
+- [符号积分](./algorithms/integration.md)
 
 # 性能与质量
 

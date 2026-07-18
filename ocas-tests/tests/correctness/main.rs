@@ -223,6 +223,7 @@ mod calculus;
 mod evaluation;
 mod finite_field;
 mod groebner;
+mod integral_risch;
 mod linear_solve;
 mod matrix;
 mod normalize;

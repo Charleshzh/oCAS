@@ -81,7 +81,7 @@ source of the gap.
 |---|---|---|
 | Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p, plus bivariate `factor()` on `SparseMultivariatePolynomial` over ℤ and ℤ_p (monic-in-x Wang Hensel) | 🟢 Fairly complete |
 | Gröbner basis | F4 matrix algorithm (Faugère 1999) + Gebauer-Moeller + simplification cache + ℤ_p fast path | 🟢 F4 complete |
-| Symbolic integration | Heuristic table (power/inverse/sin/cos/exp/linear subst); falls back to `Integral(...)`; **no** Risch | 🟡 Basic |
+| Symbolic integration | Risch (elementary transcendental towers + RDE polynomial fragment) + rational-function Hermite + trig exp(I·x) + special-function table (erf/Ei/Si/Ci/Fresnel); falls back to `Integral(...)` | 🟢 Risch done |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate) | 🟢 Fairly complete |
 | Polynomial GCD | GCD + primitive part; no modular GCD / EEA optimization | 🟡 Usable |
 | Linear solving | Rational/integer linear systems + bivariate Diophantine (`ax+by=c`) | 🟡 Usable, limited scale |
@@ -182,13 +182,16 @@ arithmetic + partial fractions + resultant + Karatsuba multiplication +
 rational reconstruction), closing the three 🔴 gaps marked in this analysis.
 oCAS now has parity with Symbolica for rational functions (univariate level).
 
-Remaining hard algorithms: Risch integration (0.14) and Gröbner F4 (0.13) are
-the last two "rites of passage" before 1.0.
+0.13 and 0.14 completed the last two "rites of passage" before 1.0: Gröbner
+F4 (0.13) and Risch symbolic integration (0.14). Risch covers elementary
+transcendental towers (log/exp) + rational-function Hermite + trigonometric
+exp(I·x) + a special-function table (erf/Ei/Si/Ci/Fresnel); the 0.11.0 known
+gap `exp(-x²)→erf` is closed.
 
-Realistic positioning: oCAS today is closer to "a high-performance subset of
-SymPy's core, with evaluation performance exceeding SymPy and parity in
-factorization and rational functions, plus Karatsuba acceleration". Closing
-F4 and Risch before 1.0 is the highest-value path forward.
+Realistic positioning: oCAS today is "a high-performance SymPy core, with
+Risch symbolic integration, parity in factorization and rational functions,
+Gröbner F4, and Karatsuba acceleration". The remaining pre-1.0 focus is 0.15
+performance / multi-output JIT / streaming.
 
 ---
 
@@ -205,3 +208,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.13.0 | 2026-07-06 | Gröbner F4 matrix algorithm completed (Faugère 1999); Gebauer-Moeller pair filtering + simplification cache + ℤ_p fast path; `minimize()` bug fix; Gröbner upgraded from 🟡 to 🟢; highest-priority gap shifted to Risch integration (0.14). |
 | 0.13.1 | 2026-07-17 | Patch release: docs.rs builds now use portable features only (no gmp/mpfr/flint/python/gpl), restoring hosted documentation; no algorithm changes, gap conclusions unchanged from 0.13.0. |
 | 0.13.2 | 2026-07-18 | Engineering & distribution milestone: `pip install ocas` live on PyPI (5 platform wheels + sdist, incl. both macOS archs); OIDC trusted publishing pipeline established; crossbeam-epoch RUSTSEC-2026-0204 fixed; cranelift/chumsky/logos/cbindgen/criterion/hashbrown/flint3-sys/egg upgraded; no algorithm changes, gap conclusions unchanged. |
+| 0.14.0 | 2026-07-18 | Risch symbolic integration completed (elementary transcendental towers + RDE polynomial fragment); rational-function integration (Hermite + logarithmic part); special-function table (erf/Ei/Si/Ci/Fresnel) closing the 0.11.0 known gap `exp(-x²)→erf`; trigonometric exp(I·x) + realify; Gröbner wrap-up (FGLM zero-dimensional conversion + experimental F5 + Hilbert bounds + reorder); parser `-x^2` precedence fix; symbolic integration upgraded from 🟡 to 🟢; highest-priority gap shifted to 0.15 performance / multi-output JIT. |

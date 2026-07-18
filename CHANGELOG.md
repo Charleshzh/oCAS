@@ -9,6 +9,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.14.0] - 2026-07-18
+
+### Added / 新增
+
+- **Risch 符号积分**（`ocas-calc`）：初等超越塔上的递归积分器
+  （Bronstein 第 5 章）。Hermite 约化、对数导数恒等式、primitive 待定
+  系数、hyperexponential Risch 微分方程（第 6 章多项式片段）。入口
+  `integrate()` 管线第三层 / **Risch symbolic integration**: recursive
+  integrator over elementary transcendental towers (Bronstein ch. 5).
+  Hermite reduction, log-derivative identity, primitive undetermined
+  coefficients, hyperexponential RDE (ch. 6 polynomial fragment)
+- **有理函数积分**（`ocas-calc::integral::rational`）：Hermite 约化 +
+  对数部分（`c·f'/f`、二次配方 log/atan、Rothstein–Trager 插值 +
+  ℤ 因式分解）/ **Rational-function integration**: Hermite reduction +
+  logarithmic part (log-derivative identity, completing the square,
+  Rothstein–Trager)
+- **特殊函数积分表**（`ocas-calc::integral::special`）：非初等积分的
+  闭式端点——`exp(-x²)→erf`、`exp(c·x²)→erf/erfi`、`exp(x)/x→Ei`、
+  `sin(x)/x→Si`、`cos(x)/x→Ci`、`sinh/cosh→Shi/Chi`、
+  `sin(x²)/cos(x²)→fresnels/fresnelc`（Meijer-G 端点，替代完整管线）/
+  **Special-function antiderivatives**: closed-form endpoints for
+  non-elementary integrals (erf/erfi/Ei/Si/Ci/Shi/Chi/Fresnel)
+- **三角积分**（`ocas-calc::integral::trig`）：sin/cos/tan/cot/sec/csc
+  重写为 `exp(I·x)` 后 Risch 积分，共轭对数对合并回实 log/atan /
+  **Trigonometric integration**: rewrite to exp(I·x), Risch, realify
+- **FGLM 换序**（`ocas-poly::groebner::fglm`）：零维理想 Gröbner 基
+  换序（BFS 阶梯 + 高斯消元），远快于重跑 F4 / **FGLM order
+  conversion** for zero-dimensional ideals
+- **F5 签名判据**（`ocas-poly::groebner::f5`，实验性）/ **F5 signature
+  criterion** (experimental)
+- **Hilbert 界**（`ocas-poly::groebner::hilbert`）：单项式理想 Hilbert
+  分子 + 正则性界 / **Hilbert bounds** for monomial ideals
+- **`GroebnerBasis::reorder`**（`ocas-poly`）：换单项式序（简单路径，
+  重跑 F4）/ **monomial-order conversion** (re-run F4)
+- **mdBook 章节**：`algorithms/groebner.md` 与 `algorithms/integration.md`
+  （中英双语）/ **mdBook chapters**: groebner.md + integration.md (en/zh)
+
+### Fixed / 修复
+
+- **解析器优先级**（`ocas-parse`）：`-x^2` 现在正确解析为 `-(x^2)`
+  （幂优先于负号），而非 `(-x)^2` / **parser precedence**: `-x^2` now
+  parses as `-(x^2)`, not `(-x)^2`
+- **`RationalPolynomial::canonicalize`**（`ocas-poly`）：单变量情形现在
+  执行真实多项式 GCD 约分（此前仅系数 content 约分），修复非规范形 /
+  **canonicalize**: exact polynomial GCD reduction for univariate
+- **0.11.0 已知差距**：`exp(-x²)→erf` 经特殊函数表闭合 /
+  **0.11.0 known gap**: `exp(-x²)→erf` closed
+
+### Changed / 变更
+
+- **`KElem` 自动约分**（`ocas-calc::tower::elem`）：比例/单项式约分
+  消除垃圾分母（`t/t`），Risch 塔算术规范化 / **KElem auto-reduction**:
+  ratio/monomial cancellation
+- **积分管线**：`integrate()` = 启发式 → 有理 → Risch → 三角 → 特殊
+  函数 → `Integral(...)` / **integration pipeline**: heuristic → rational
+  → Risch → trig → special → unevaluated
+- **测试**：correctness 套件新增 `integral_risch.rs`（15 项，与 SymPy
+  对比）；积分基准 `benches/integrate.rs` / **tests**: integral_risch
+  correctness suite (15 SymPy-checked) + integrate benchmark
+
+---
+
 ## [0.13.2] - 2026-07-18
 
 ### Added / 新增

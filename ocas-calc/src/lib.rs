@@ -11,11 +11,13 @@
 
 #![warn(missing_docs)]
 
+pub mod complex;
 pub mod derivative;
 pub mod integral;
 pub mod partial_fraction;
 pub mod series;
 pub mod solve;
+pub mod tower;
 
 mod pattern_alloc;
 mod rules;

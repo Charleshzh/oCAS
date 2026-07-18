@@ -12,6 +12,7 @@ use std::sync::{Mutex, OnceLock};
 use ocas_core::arena::Arena;
 
 pub mod normalize;
+pub mod walk;
 
 /// An interned symbolic name (variable, function, or constant).
 ///

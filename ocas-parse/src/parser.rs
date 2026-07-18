@@ -133,26 +133,21 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
         Ok(left)
     }
 
-    // factor -> unary (^ factor)?
+    // factor -> primary (^ factor)? with a leading minus binding looser
+    // than exponentiation: -x^2 = -(x^2).
     fn factor(&mut self) -> Result<Atom<'a>, ParseError> {
-        let base = self.unary()?;
+        if self.current() == Some(Token::Minus) {
+            self.advance();
+            let operand = self.factor()?;
+            return Ok(self.ctx.mul(&[self.ctx.num(-1), operand]));
+        }
+        let base = self.primary()?;
         if self.current() == Some(Token::Caret) {
             self.advance();
             let exp = self.factor()?;
             Ok(self.ctx.pow(base, exp))
         } else {
             Ok(base)
-        }
-    }
-
-    // unary -> - unary | primary
-    fn unary(&mut self) -> Result<Atom<'a>, ParseError> {
-        if self.current() == Some(Token::Minus) {
-            self.advance();
-            let operand = self.unary()?;
-            Ok(self.ctx.mul(&[self.ctx.num(-1), operand]))
-        } else {
-            self.primary()
         }
     }
 

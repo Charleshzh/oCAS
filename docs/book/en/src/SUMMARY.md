@@ -19,6 +19,8 @@
 - [Evaluation & JIT](./evaluation.md)
 - [Factorization](./algorithms/factorization.md)
 - [Rational Functions & Resultants](./algorithms/rational-functions.md)
+- [Gröbner Bases](./algorithms/groebner.md)
+- [Symbolic Integration](./algorithms/integration.md)
 
 # Performance & Quality
 

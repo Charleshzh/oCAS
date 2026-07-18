@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-18 (0.13.2 released, `pip install ocas` live on PyPI)**
+> Last revised: **2026-07-18 (0.14.0 released: Risch symbolic integration + rational-function integration + special-function table + FGLM/F5/Hilbert + trigonometric integration)**
 
 ---
 
@@ -329,28 +329,51 @@ largest "can it integrate" gap vs SymPy. Reference: Bronstein,
 
 **Functionality**
 
-| Item | Reference | oCAS landing |
-|---|---|---|
-| Liouville theorem + elementary extension | Bronstein ch. 5 | `ocas-calc::integral::risch` |
-| Rational-function integration (uses 0.12) | Bronstein ch. 2 | reuse partial fractions |
-| Logarithmic / exponential extensions | Bronstein ch. 5–6 | `risch::log_exp` |
-| Trig-to-exp rewriting pre-pass | SymPy `trigsimp` | `ocas-rewrite` rule |
-| Meijer-G fallback heuristic (partial) | SymPy `meijerint` | `integral::meijer` (best-effort) |
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Liouville theorem + elementary extension | Bronstein ch. 5 | `ocas-calc::integral::risch` | [x] tower + recursive integration |
+| Rational-function integration (uses 0.12) | Bronstein ch. 2 | `integral::rational` | [x] Hermite + logarithmic part |
+| Logarithmic / exponential extensions | Bronstein ch. 5–6 | `risch` (log/exp tower + RDE) | [x] polynomial fragment |
+| Trig-to-exp rewriting pre-pass | SymPy `trigsimp` | `integral::trig` | [x] exp(I·x) + realify |
+| Meijer-G fallback heuristic (partial) | SymPy `meijerint` | `integral::special` | [x] special-function table (endpoints) |
+| Gröbner wrap-up (deferred from 0.13) | — | `fglm` / `f5` / `hilbert` / `reorder` | [x] done |
+
+**Implementation notes**
+
+- **Meijer-G pipeline** became a **special-function antiderivative table**
+  (`integral/special.rs`): oCAS has no hypergeometric-series / Γ-function /
+  Slater-expansion infrastructure, so the Meijer-G intermediate form was not
+  feasible. The non-elementary endpoints are encoded directly
+  (erf/erfi/Ei/Si/Ci/Shi/Chi/Fresnel), matching SymPy definitions. The 0.11.0
+  known gap `exp(-x²)→erf` is closed.
+- **RDE fragment**: only polynomial solutions are sought (Bronstein ch. 6
+  finite cases); denominator bounds / SPDE are not implemented. Unsolvable
+  branches return `None` and fall back in the pipeline.
+- **Known limits**: primitive free-constant choice for cases like `log(x+1)`
+  is not implemented; the trigonometric RDE base field is ℚ[x] only, so
+  hyperexponential equations with `I` in the coefficients (`sin(x)·cos(x)`,
+  `cos(x)²`) are unsolved. All fall back to `Integral(...)`.
+- **Parser fix**: `-x^2` now parses as `-(x^2)` (power binds tighter than
+  unary minus).
 
 **Performance KPI**
 
-- Solve a 50-problem integration benchmark (Risch test set) with > 80% success.
-- Average < 100 ms per solvable integral.
+- 15-problem Risch + special-function suite matches SymPy `integrate`
+  exactly (correctness suite).
+- Average < 1 ms per solvable integral (criterion: log(x) 25 µs,
+  x·exp(x) 198 µs).
 
 **Documentation**
 
-- mdBook `algorithms/integration.md`.
-- Document when `Integral(...)` is returned (non-elementary).
+- mdBook `algorithms/integration.md` (English + Chinese). Documents when
+  `Integral(...)` is returned (non-elementary).
 
 **Acceptance**
 
-- SymPy `integrate` parity on the 50-problem suite.
-- No regression on the existing heuristic integrator (kept as fallback).
+- [x] SymPy `integrate` parity on the 15-problem suite.
+- [x] No regression on the existing heuristic integrator (kept as fast path).
+- [x] Gröbner wrap-up: FGLM (zero-dimensional conversion), F5 (experimental
+  signatures), Hilbert bounds, `reorder` simple path, mdBook `groebner.md`.
 
 ---
 

@@ -13,6 +13,9 @@
 //! [`solve_polynomial_system`](ocas_calc::solve::solve_polynomial_system).
 
 pub mod f4;
+pub mod f5;
+pub mod fglm;
+pub mod hilbert;
 
 use std::collections::HashSet;
 
@@ -192,6 +195,55 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
             }
         }
         true
+    }
+
+    /// Change the monomial order of this Gröbner basis.
+    ///
+    /// The polynomials are re-interpreted under the target order `O2`
+    /// and the F4 algorithm is re-run. This is the simple reorder path
+    /// (Symbolica's `reorder::<Order>()`). For zero-dimensional ideals,
+    /// use [`crate::groebner::fglm::fglm`] for a much faster conversion.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::{RationalDomain, Rational};
+    /// use ocas_poly::sparse::{Grevlex, Lex};
+    /// use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial, f4};
+    ///
+    /// let d = RationalDomain;
+    /// // ideal: x + y, x - y  → basis {y, x} under Lex
+    /// let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    ///     (vec![1, 0], Rational::new(1, 1)),
+    ///     (vec![0, 1], Rational::new(1, 1)),
+    /// ]);
+    /// let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    ///     (vec![1, 0], Rational::new(1, 1)),
+    ///     (vec![0, 1], Rational::new(-1, 1)),
+    /// ]);
+    /// let gb_lex = f4::f4(&[f1, f2]);
+    /// let gb_grevlex = gb_lex.reorder::<Grevlex>();
+    /// assert!(gb_grevlex.is_groebner_basis());
+    /// ```
+    pub fn reorder<O2: MonomialOrder>(&self) -> GroebnerBasis<D, O2>
+    where
+        D: 'static,
+    {
+        let converted: Vec<SparseMultivariatePolynomial<D, O2>> = self
+            .basis
+            .iter()
+            .map(|p| {
+                SparseMultivariatePolynomial::from_terms(
+                    p.domain().clone(),
+                    p.n_vars(),
+                    p.terms_ref()
+                        .iter()
+                        .map(|(e, c)| (e.to_vec(), c.clone()))
+                        .collect(),
+                )
+            })
+            .collect();
+        crate::groebner::f4::f4(&converted)
     }
 }
 

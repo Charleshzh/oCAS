@@ -203,6 +203,22 @@ impl<D: EuclideanDomain, O: MonomialOrder> RationalPolynomial<D, O> {
             self.denominator = self.denominator.div_scalar(&coeff_gcd);
         }
 
+        // Step 1.5: exact polynomial GCD reduction for univariate
+        // polynomials, via the dense Euclidean algorithm (generic over any
+        // EuclideanDomain).
+        if self.numerator.n_vars() == 1 {
+            let num_d = sparse_to_dense_uni(&self.numerator);
+            let den_d = sparse_to_dense_uni(&self.denominator);
+            let g = num_d.gcd(&den_d);
+            if g.degree().unwrap_or(0) > 0
+                && let (Some((nq, r1)), Some((dq, r2))) = (num_d.div_rem(&g), den_d.div_rem(&g))
+            {
+                debug_assert!(r1.is_zero() && r2.is_zero());
+                self.numerator = dense_to_sparse_uni(&nq);
+                self.denominator = dense_to_sparse_uni(&dq);
+            }
+        }
+
         // Step 2: Normalize leading coefficient of denominator.
         // For IntegerDomain/RationalDomain: ensure positive leading coefficient.
         // For FiniteField: ensure leading coefficient is 1.
@@ -312,6 +328,37 @@ impl<D: EuclideanDomain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
             .expect("div_scalar: cannot invert zero");
         self.mul_scalar(&inv)
     }
+}
+
+// ------------------------------------------------------------------
+//  Univariate conversion helpers (for exact GCD canonicalization)
+// ------------------------------------------------------------------
+
+/// Convert a univariate sparse polynomial to dense form.
+fn sparse_to_dense_uni<D: EuclideanDomain, O: MonomialOrder>(
+    p: &SparseMultivariatePolynomial<D, O>,
+) -> crate::DenseUnivariatePolynomial<D> {
+    debug_assert_eq!(p.n_vars(), 1);
+    let deg = p.degree_in(0);
+    let mut coeffs = vec![p.domain().zero(); deg + 1];
+    for (exp, coeff) in p.terms_ref() {
+        coeffs[exp[0]] = coeff.clone();
+    }
+    crate::DenseUnivariatePolynomial::from_coeffs(p.domain().clone(), coeffs)
+}
+
+/// Convert a dense polynomial to univariate sparse form.
+fn dense_to_sparse_uni<D: EuclideanDomain, O: MonomialOrder>(
+    p: &crate::DenseUnivariatePolynomial<D>,
+) -> SparseMultivariatePolynomial<D, O> {
+    let terms = p
+        .coeffs()
+        .iter()
+        .enumerate()
+        .filter(|&(_, c)| !p.domain().is_zero(c))
+        .map(|(i, c)| (vec![i], c.clone()))
+        .collect();
+    SparseMultivariatePolynomial::from_terms(p.domain().clone(), 1, terms)
 }
 
 // ------------------------------------------------------------------

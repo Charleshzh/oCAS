@@ -131,6 +131,7 @@ fn diff_function<'a>(
         "sqrt" => ctx.pow(ctx.mul(&[ctx.num(2), ctx.fun("sqrt", &[u])]), ctx.num(-1)),
         "tan" => ctx.pow(ctx.fun("sec", &[u]), ctx.num(2)),
         "sec" => ctx.mul(&[ctx.fun("sec", &[u]), ctx.fun("tan", &[u])]),
+        "atan" => ctx.pow(ctx.add(&[ctx.num(1), ctx.pow(u, ctx.num(2))]), ctx.num(-1)),
         _ => {
             // Unknown function: return an unevaluated Derivative form.
             return ctx.fun(
@@ -215,6 +216,16 @@ mod tests {
         let expr = ctx.fun("sqrt", &[x]);
         let result = diff(&ctx, expr, Symbol::new("x"));
         assert_eq!(result.to_string(), "(2*(sqrt(x)))^-1");
+    }
+
+    #[test]
+    fn diff_atan() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let expr = ctx.fun("atan", &[x]);
+        let result = diff(&ctx, expr, Symbol::new("x"));
+        assert_eq!(result.to_string(), "(1 + (x^2))^-1");
     }
 
     #[test]

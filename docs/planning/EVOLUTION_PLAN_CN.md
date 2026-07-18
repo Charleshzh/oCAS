@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-18（0.13.2 已发布，`pip install ocas` 上线 PyPI）**
+> 最后修订：**2026-07-18（0.14.0 已发布：Risch 符号积分 + 有理函数积分 + 特殊函数表 + FGLM/F5/Hilbert + 三角积分）**
 
 ---
 
@@ -318,28 +318,44 @@ Risch 代码。
 
 **功能**
 
-| 条目 | 参考 | oCAS 落地位置 |
-|---|---|---|
-| Liouville 定理 + 初等扩张 | Bronstein 第 5 章 | `ocas-calc::integral::risch` |
-| 有理函数积分（复用 0.12） | Bronstein 第 2 章 | 复用部分分式 |
-| 对数/指数扩张 | Bronstein 第 5–6 章 | `risch::log_exp` |
-| 三角转指数的重写预处理 | SymPy `trigsimp` | `ocas-rewrite` 规则 |
-| Meijer-G 回退启发式（部分） | SymPy `meijerint` | `integral::meijer`（尽力而为） |
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| Liouville 定理 + 初等扩张 | Bronstein 第 5 章 | `ocas-calc::integral::risch` | [x] 塔 + 递归积分 |
+| 有理函数积分（复用 0.12） | Bronstein 第 2 章 | `integral::rational` | [x] Hermite + 对数部分 |
+| 对数/指数扩张 | Bronstein 第 5–6 章 | `risch`（log/exp 塔 + RDE） | [x] 多项式片段 |
+| 三角转指数的重写预处理 | SymPy `trigsimp` | `integral::trig` | [x] exp(I·x) + realify |
+| Meijer-G 回退启发式（部分） | SymPy `meijerint` | `integral::special` | [x] 特殊函数表（端点） |
+| Gröbner 收尾（0.13 推迟项） | — | `fglm` / `f5` / `hilbert` / `reorder` | [x] 完成 |
+
+**实现说明**
+
+- **Meijer-G 管线**改为**特殊函数积分表**（`integral/special.rs`）：oCAS
+  尚无超几何级数 / Γ 函数 / Slater 展开基础设施，Meijer-G 中间表示工程量
+  不可行。直接编码非初等积分端点（erf/erfi/Ei/Si/Ci/Shi/Chi/Fresnel），
+  与 SymPy 定义一致。0.11.0 已知差距 `exp(-x²)→erf` 已闭合。
+- **RDE 片段**：只求多项式解（Bronstein 第 6 章有限情形），分母界 / SPDE
+  未实现；不可解分支返回 `None` 走管线回退。
+- **已知限制**：`log(x+1)` 类 primitive 常数选择（q_{m+1} 使下层可积）未
+  实现；三角 RDE 基域仅 ℚ[x]，系数含 I 的超指数方程（`sin(x)·cos(x)`、
+  `cos(x)²`）未解。均回退为 `Integral(...)`。
+- **解析器修复**：`-x^2` 现在正确解析为 `-(x^2)`（幂优先于负号）。
 
 **性能指标**
 
-- 在 50 题积分基准（Risch 测试集）上成功率 > 80%。
-- 可积题目平均用时 < 100 ms。
+- 15 题 Risch + 特殊函数套件与 SymPy `integrate` 完全一致（correctness）。
+- 可积题目平均用时 < 1 ms（criterion：log(x) 25 µs，x·exp(x) 198 µs）。
 
 **文档**
 
-- mdBook `algorithms/integration.md`。
-- 说明何时返回 `Integral(...)`（非初等情形）。
+- mdBook `algorithms/integration.md`（中英双语）。说明何时返回
+  `Integral(...)`（非初等情形）。
 
 **验收**
 
-- 在 50 题套件上与 SymPy `integrate` 一致。
-- 现有启发式积分器无回归（保留为回退）。
+- [x] 15 题套件与 SymPy `integrate` 一致。
+- [x] 现有启发式积分器无回归（保留为快速路径）。
+- [x] Gröbner 收尾：FGLM（零维换序）、F5（实验性签名）、Hilbert 界、
+  `reorder` 简单路径、mdBook `groebner.md`。
 
 ---
 

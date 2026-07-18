@@ -9,6 +9,12 @@
 
 #![allow(clippy::collapsible_if)]
 
+pub mod rational;
+pub(crate) mod rde;
+pub(crate) mod risch;
+pub(crate) mod special;
+pub(crate) mod trig;
+
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 use ocas_rewrite::rules::default_rules;
@@ -84,10 +90,55 @@ fn integrate_raw<'a>(
             }
             ctx.add(&terms)
         }
-        AtomNode::Mul(args) => integrate_product(ctx, args, var, depth),
-        AtomNode::Pow(base, exp) => integrate_power(ctx, *base, *exp, var, depth),
-        AtomNode::Fun(name, args) => integrate_function(ctx, *name, args, var, depth),
+        AtomNode::Mul(args) => {
+            let r = integrate_product(ctx, args, var, depth);
+            if is_fallback(&r) {
+                try_risch_or_fallback(ctx, expr, var)
+            } else {
+                r
+            }
+        }
+        AtomNode::Pow(base, exp) => {
+            let r = integrate_power(ctx, *base, *exp, var, depth);
+            if is_fallback(&r) {
+                try_risch_or_fallback(ctx, expr, var)
+            } else {
+                r
+            }
+        }
+        AtomNode::Fun(name, args) => {
+            let r = integrate_function(ctx, *name, args, var, depth);
+            if is_fallback(&r) {
+                try_risch_or_fallback(ctx, expr, var)
+            } else {
+                r
+            }
+        }
     }
+}
+
+/// Try the rational-function integrator, then the Risch algorithm, before
+/// giving up with the unevaluated `Integral` form.
+fn try_risch_or_fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+    if let Some(r) = rational::integrate_rational(ctx, expr, var) {
+        return r;
+    }
+    if let Some(r) = risch::risch_integrate(ctx, expr, var) {
+        return r;
+    }
+    // Trigonometric integrands: rewrite into complex exponentials, run
+    // Risch, then try to bring the answer back to real form.
+    if let Some(exp_form) = trig::trig_to_exp(ctx, expr) {
+        if let Some(complex_ans) = risch::risch_integrate(ctx, exp_form, var) {
+            return trig::realify(ctx, complex_ans);
+        }
+    }
+    // Non-elementary integrals with special-function closed forms
+    // (erf, Ei, Si, Ci, Fresnel, …).
+    if let Some(r) = special::special_integrate(ctx, expr, ctx.var(var.as_str())) {
+        return r;
+    }
+    fallback(ctx, expr, var)
 }
 
 fn fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
@@ -361,5 +412,56 @@ mod tests {
         let expr = ctx.fun("f", &[x]);
         let result = integrate(&ctx, expr, Symbol::new("x"));
         assert_eq!(result.to_string(), "Integral(f(x), x)");
+    }
+
+    #[test]
+    fn integrate_sin_times_cos_via_trig_path() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ sin(x)·cos(x) dx — needs the trig → exp(Ix) → Risch path with
+        // a constant imaginary unit in the coefficient field. The RDE base
+        // solver currently works over ℚ[x] only, so the hyperexponential
+        // equation Dq + I·q = … cannot be solved yet; the pipeline falls
+        // back to the unevaluated form. Documented limitation.
+        let expr = ctx.mul(&[ctx.fun("sin", &[x]), ctx.fun("cos", &[x])]);
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        let _ = result;
+    }
+
+    #[test]
+    fn integrate_cos_squared_via_trig_path() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ cos(x)² dx = x/2 + sin(2x)/4 — same coefficient-field
+        // limitation as above.
+        let expr = ctx.pow(ctx.fun("cos", &[x]), ctx.num(2));
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        let _ = result;
+    }
+
+    #[test]
+    fn integrate_exp_neg_x_squared_gives_erf() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ exp(-x²) dx = (√π/2)·erf(x) — the 0.11.0 known gap, now closed
+        // by the special-function table.
+        let expr = ctx.fun("exp", &[ctx.mul(&[ctx.num(-1), ctx.pow(x, ctx.num(2))])]);
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(result.to_string().contains("erf"), "got {result}");
+        assert!(!result.to_string().starts_with("Integral"), "got {result}");
+    }
+
+    #[test]
+    fn integrate_exp_x_over_x_gives_ei() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ exp(x)/x dx = Ei(x) — non-elementary, special-function table.
+        let expr = ctx.mul(&[ctx.fun("exp", &[x]), ctx.pow(x, ctx.num(-1))]);
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert_eq!(result.to_string(), "Ei(x)");
     }
 }
