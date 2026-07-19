@@ -5,10 +5,9 @@
 //! The key idea: replace sequential S-polynomial reductions with batched
 //! sparse-matrix row operations (Gaussian elimination over the coefficient field).
 
-use std::collections::HashMap;
-
 use smallvec::SmallVec;
 
+use ocas_core::FastHashMap as HashMap;
 use ocas_domain::{Domain, FiniteField};
 
 use super::GroebnerBasis;
@@ -24,12 +23,31 @@ struct CriticalPair {
     degree: usize,
 }
 
+/// Minimal interface the F4 driver needs from a basis polynomial.
+///
+/// Implemented by both [`SparseMultivariatePolynomial`] (generic path)
+/// and [`FpPoly`] (native ℤ_p fast path), so pair management and the
+/// simplification cache are shared between the two pipelines.
+trait BasisPoly: Clone {
+    fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>>;
+    fn n_vars(&self) -> usize;
+    fn mul_monomial(&self, exp: &[usize]) -> Self;
+}
+
+impl<D: Domain, O: MonomialOrder> BasisPoly for SparseMultivariatePolynomial<D, O> {
+    fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>> {
+        SparseMultivariatePolynomial::leading_monomial(self)
+    }
+    fn n_vars(&self) -> usize {
+        SparseMultivariatePolynomial::n_vars(self)
+    }
+    fn mul_monomial(&self, exp: &[usize]) -> Self {
+        SparseMultivariatePolynomial::mul_monomial(self, exp)
+    }
+}
+
 impl CriticalPair {
-    fn new<D: Domain, O: MonomialOrder>(
-        basis: &[SparseMultivariatePolynomial<D, O>],
-        i: usize,
-        j: usize,
-    ) -> Option<Self> {
+    fn new<P: BasisPoly>(basis: &[P], i: usize, j: usize) -> Option<Self> {
         let lm_i = basis[i].leading_monomial()?;
         let lm_j = basis[j].leading_monomial()?;
         let lcm = monomial_lcm(lm_i, lm_j);
@@ -44,7 +62,7 @@ impl CriticalPair {
 }
 
 /// Cache entry: (exponent_diff, cached_polynomial).
-type SimpCache<D, O> = Vec<(SmallVec<[usize; 4]>, SparseMultivariatePolynomial<D, O>)>;
+type SimpCache<P> = Vec<(SmallVec<[usize; 4]>, P)>;
 
 /// Tracks a monomial's state during symbolic preprocessing.
 #[derive(Debug, Clone)]
@@ -91,6 +109,14 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         return GroebnerBasis { basis: vec![] };
     }
 
+    // ℤ_p fast path: run the entire F4 pipeline on native i64 residues,
+    // converting to/from the BigInt-backed domain only at the boundaries.
+    if std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>() {
+        let domain_ptr = ideal[0].domain() as *const D;
+        let ff = unsafe { &*domain_ptr.cast::<FiniteField>() };
+        return f4_fp(ideal, ff.prime_u64() as i64);
+    }
+
     // Filter zeros and make monic.
     let mut basis: Vec<SparseMultivariatePolynomial<D, O>> =
         ideal.iter().filter(|p| !p.is_zero()).cloned().collect();
@@ -120,29 +146,17 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         }
     }
 
-    // Check if we can use ℤ_p fast path.
-    let use_fp = std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>();
-    let prime_i64 = if use_fp {
-        let domain_ptr = basis[0].domain() as *const D;
-        let ff = unsafe { &*domain_ptr.cast::<FiniteField>() };
-        ff.prime_u64() as i64
-    } else {
-        0
-    };
-
     // Reusable buffers.
     // MonomialData tracks whether a monomial has been processed during
     // symbolic preprocessing (present=true means "already handled").
-    let mut all_monomials: HashMap<SmallVec<[usize; 4]>, MonomialData> = HashMap::new();
+    let mut all_monomials: HashMap<SmallVec<[usize; 4]>, MonomialData> = HashMap::default();
     let mut monomial_list: Vec<SmallVec<[usize; 4]>> = Vec::new();
     let mut matrix: Vec<Vec<(D::Element, usize)>> = Vec::new();
-    let mut fp_matrix: Vec<Vec<(i64, usize)>> = Vec::new();
     let mut pivots: Vec<Option<usize>> = Vec::new();
-    let mut fp_buffer: Vec<i64> = Vec::new();
 
     // Simplification cache: for each basis element, a list of
     // (exponent_diff, cached_poly) to avoid recomputing products.
-    let mut simplifications: Vec<SimpCache<D, O>> = basis
+    let mut simplifications: Vec<SimpCache<SparseMultivariatePolynomial<D, O>>> = basis
         .iter()
         .map(|p| {
             let zero_exp = SmallVec::from_elem(0, p.n_vars());
@@ -310,34 +324,7 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         }
 
         // --- Row echelon form ---
-        if use_fp {
-            fp_matrix.clear();
-            fp_matrix.resize(matrix.len(), vec![]);
-            for (row_idx, row) in matrix.iter().enumerate() {
-                for (coeff, col) in row {
-                    let c = domain_to_i64_fp::<D>(coeff, prime_i64);
-                    if c != 0 {
-                        fp_matrix[row_idx].push((c, *col));
-                    }
-                }
-            }
-            echelonize_fp(
-                &mut fp_matrix,
-                ncols,
-                prime_i64,
-                &mut pivots,
-                &mut fp_buffer,
-            );
-            matrix.clear();
-            matrix.resize(fp_matrix.len(), vec![]);
-            for (row_idx, row) in fp_matrix.iter().enumerate() {
-                for &(c, col) in row {
-                    matrix[row_idx].push((i64_to_domain_fp(basis[0].domain(), c, prime_i64), col));
-                }
-            }
-        } else {
-            echelonize_generic(&mut matrix, ncols, basis[0].domain(), &mut pivots);
-        }
+        echelonize_generic(&mut matrix, ncols, basis[0].domain(), &mut pivots);
 
         // --- Extract new polynomials from reduced rows ---
         for row in &matrix {
@@ -390,11 +377,11 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
 ///
 /// Reference: Symbolica groebner.rs L475-545; Becker-Weispfenning
 /// "A Computational Approach to Commutative Algebra".
-fn update_pairs<D: Domain, O: MonomialOrder>(
-    basis: &mut Vec<SparseMultivariatePolynomial<D, O>>,
+fn update_pairs<P: BasisPoly>(
+    basis: &mut Vec<P>,
     pairs: &mut Vec<CriticalPair>,
-    simplifications: &mut Vec<SimpCache<D, O>>,
-    new_poly: SparseMultivariatePolynomial<D, O>,
+    simplifications: &mut Vec<SimpCache<P>>,
+    new_poly: P,
 ) {
     let new_lm = match new_poly.leading_monomial() {
         Some(m) => m.clone(),
@@ -516,11 +503,7 @@ fn add_poly_to_matrix<D: Domain, O: MonomialOrder>(
 /// `basis_poly * x^diff` and cache it.
 ///
 /// Reference: Symbolica groebner.rs L167-185.
-fn get_simplified<D: Domain, O: MonomialOrder>(
-    cache: &SimpCache<D, O>,
-    diff: &[usize],
-    basis_poly: &SparseMultivariatePolynomial<D, O>,
-) -> SparseMultivariatePolynomial<D, O> {
+fn get_simplified<P: BasisPoly>(cache: &SimpCache<P>, diff: &[usize], basis_poly: &P) -> P {
     // Check exact match first.
     for (cached_diff, cached_poly) in cache.iter().rev() {
         if cached_diff.as_slice() == diff {
@@ -540,6 +523,528 @@ fn get_simplified<D: Domain, O: MonomialOrder>(
     }
     // Fallback: compute directly.
     basis_poly.mul_monomial(diff)
+}
+
+// =========================================================================
+//  Native ℤ_p pipeline (FpPoly)
+// =========================================================================
+
+/// Reduce `a` into `[0, p)`.
+#[inline]
+fn norm_mod(a: i64, p: i64) -> i64 {
+    let r = a % p;
+    if r < 0 { r + p } else { r }
+}
+
+/// A native ℤ_p polynomial for the F4 fast path.
+///
+/// Terms are stored as a `Vec` sorted by **descending** monomial order
+/// (leading term first) with coefficients in `[0, p)`. All arithmetic is
+/// `i64` modular arithmetic — no `BigInt` is touched inside the pipeline.
+/// Requires `p < 2^31` so that products of two residues fit in `i64`
+/// (the same assumption `echelonize_fp` already makes with its `p²`
+/// slack).
+#[derive(Debug, Clone)]
+struct FpPoly {
+    /// Terms sorted descending by monomial order; coeffs in `[0, p)`.
+    terms: Vec<(SmallVec<[usize; 4]>, i64)>,
+    n_vars: usize,
+}
+
+impl FpPoly {
+    fn zero(n_vars: usize) -> Self {
+        Self {
+            terms: Vec::new(),
+            n_vars,
+        }
+    }
+
+    fn is_zero(&self) -> bool {
+        self.terms.is_empty()
+    }
+
+    fn n_terms(&self) -> usize {
+        self.terms.len()
+    }
+
+    /// Convert a domain polynomial to native residues (one-time cost at
+    /// the pipeline boundary).
+    fn from_domain<D: Domain + 'static, O: MonomialOrder>(
+        p: &SparseMultivariatePolynomial<D, O>,
+        prime: i64,
+    ) -> Self {
+        let mut terms: Vec<(SmallVec<[usize; 4]>, i64)> = Vec::with_capacity(p.n_terms());
+        // sorted_terms ascending → rev gives descending (leading first).
+        for (exp, coeff) in p.sorted_terms().iter().rev() {
+            let c = norm_mod(domain_to_i64_fp::<D>(coeff, prime), prime);
+            if c != 0 {
+                terms.push(((*exp).clone(), c));
+            }
+        }
+        Self {
+            terms,
+            n_vars: p.n_vars(),
+        }
+    }
+
+    /// Convert back to the BigInt-backed domain (one-time cost per
+    /// surviving basis element and at the end of the pipeline).
+    fn to_domain<D: Domain + 'static, O: MonomialOrder>(
+        &self,
+        domain: &D,
+        prime: i64,
+    ) -> SparseMultivariatePolynomial<D, O> {
+        let mut poly = SparseMultivariatePolynomial::new(domain.clone(), self.n_vars);
+        for (exp, c) in &self.terms {
+            poly.append_monomial(i64_to_domain_fp::<D>(domain, *c, prime), exp);
+        }
+        poly
+    }
+}
+
+impl BasisPoly for FpPoly {
+    fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>> {
+        self.terms.first().map(|t| &t.0)
+    }
+    fn n_vars(&self) -> usize {
+        self.n_vars
+    }
+    fn mul_monomial(&self, exp: &[usize]) -> Self {
+        Self {
+            terms: self
+                .terms
+                .iter()
+                .map(|(e, c)| {
+                    (
+                        e.iter()
+                            .zip(exp.iter())
+                            .map(|(a, b)| a + b)
+                            .collect::<SmallVec<[usize; 4]>>(),
+                        *c,
+                    )
+                })
+                .collect(),
+            n_vars: self.n_vars,
+        }
+    }
+}
+
+/// Make an `FpPoly` monic (scale by the modular inverse of the leading
+/// coefficient).
+fn monic_fp(p: &mut FpPoly, prime: i64) {
+    if let Some(&(_, lc)) = p.terms.first()
+        && lc != 1
+    {
+        let inv = mod_inv(lc, prime);
+        for (_, c) in &mut p.terms {
+            *c = norm_mod(*c * inv, prime);
+        }
+    }
+}
+
+/// Compute `a - factor·x^qm·g` over ℤ_p.
+///
+/// Merges two descending-sorted term lists in one pass. Adding the same
+/// `qm` to every exponent of `g` preserves its sort order for any
+/// admissible monomial order.
+fn sub_scaled_fp<O: MonomialOrder>(
+    a: &FpPoly,
+    g: &FpPoly,
+    qm: &[usize],
+    factor: i64,
+    prime: i64,
+) -> FpPoly {
+    let mut out: Vec<(SmallVec<[usize; 4]>, i64)> =
+        Vec::with_capacity(a.terms.len() + g.terms.len());
+    let mut i = 0;
+    let mut j = 0;
+    while i < a.terms.len() || j < g.terms.len() {
+        if i >= a.terms.len() {
+            let ge: SmallVec<[usize; 4]> = g.terms[j]
+                .0
+                .iter()
+                .zip(qm.iter())
+                .map(|(x, y)| x + y)
+                .collect();
+            let t = norm_mod(factor * g.terms[j].1, prime);
+            if t != 0 {
+                out.push((ge, prime - t));
+            }
+            j += 1;
+            continue;
+        }
+        if j >= g.terms.len() {
+            out.push(a.terms[i].clone());
+            i += 1;
+            continue;
+        }
+        let ge: SmallVec<[usize; 4]> = g.terms[j]
+            .0
+            .iter()
+            .zip(qm.iter())
+            .map(|(x, y)| x + y)
+            .collect();
+        match O::cmp(&a.terms[i].0, &ge) {
+            std::cmp::Ordering::Greater => {
+                out.push(a.terms[i].clone());
+                i += 1;
+            }
+            std::cmp::Ordering::Less => {
+                let t = norm_mod(factor * g.terms[j].1, prime);
+                if t != 0 {
+                    out.push((ge, prime - t));
+                }
+                j += 1;
+            }
+            std::cmp::Ordering::Equal => {
+                let v = norm_mod(a.terms[i].1 - norm_mod(factor * g.terms[j].1, prime), prime);
+                if v != 0 {
+                    out.push((a.terms[i].0.clone(), v));
+                }
+                i += 1;
+                j += 1;
+            }
+        }
+    }
+    FpPoly {
+        terms: out,
+        n_vars: a.n_vars,
+    }
+}
+
+/// Multivariate division over ℤ_p: reduce `poly` by the (monic) basis.
+///
+/// Mirrors [`SparseMultivariatePolynomial::reduce`] with `i64` residues.
+fn reduce_fp<O: MonomialOrder>(poly: &FpPoly, basis: &[FpPoly], prime: i64) -> FpPoly {
+    let mut remainder = poly.clone();
+    let mut result: Vec<(SmallVec<[usize; 4]>, i64)> = Vec::new();
+
+    // Termination: each iteration either strictly lowers the remainder's
+    // leading monomial (admissible orders are well-founded) or moves one
+    // term into the result, so this loop always terminates.
+    while let Some((rm_e, rm_c)) = remainder.terms.first() {
+        let rm = rm_e.clone();
+        let rc = *rm_c;
+        let mut reduced = false;
+        for g in basis {
+            let Some((glm, _)) = g.terms.first() else {
+                continue;
+            };
+            if monomial_divides(&rm, glm) {
+                let qm: SmallVec<[usize; 4]> =
+                    rm.iter().zip(glm.iter()).map(|(a, b)| a - b).collect();
+                // g is monic ⇒ quotient coeff = rc.
+                remainder = sub_scaled_fp::<O>(&remainder, g, &qm, rc, prime);
+                reduced = true;
+                break;
+            }
+        }
+        if !reduced {
+            result.push((rm, rc));
+            remainder.terms.remove(0);
+        }
+    }
+    FpPoly {
+        terms: result,
+        n_vars: poly.n_vars,
+    }
+}
+
+/// Register an `FpPoly` as a matrix row, tracking new monomials.
+fn add_poly_to_matrix_fp(
+    poly: &FpPoly,
+    matrix: &mut Vec<Vec<(i64, usize)>>,
+    monomial_map: &mut HashMap<SmallVec<[usize; 4]>, MonomialData>,
+    monomial_list: &mut Vec<SmallVec<[usize; 4]>>,
+) {
+    let mut row: Vec<(i64, usize)> = Vec::with_capacity(poly.terms.len());
+    for (exp, coeff) in &poly.terms {
+        monomial_map.entry(exp.clone()).or_insert_with(|| {
+            let idx = monomial_list.len();
+            monomial_list.push(exp.clone());
+            MonomialData {
+                present: false,
+                column: idx,
+            }
+        });
+        let md = monomial_map.get(exp).unwrap();
+        row.push((*coeff, md.column));
+    }
+    if !row.is_empty() {
+        matrix.push(row);
+    }
+}
+
+/// Native ℤ_p F4: the full F4 pipeline on `i64` residues.
+///
+/// Structurally identical to the generic [`f4`] loop, but every
+/// polynomial operation (S-polynomials, symbolic preprocessing, row
+/// echelon, tail reduction) runs on [`FpPoly`] — `BigInt` conversions
+/// happen only when reading the input and emitting surviving basis
+/// elements.
+#[allow(clippy::too_many_lines)]
+fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
+    ideal: &[SparseMultivariatePolynomial<D, O>],
+    prime: i64,
+) -> GroebnerBasis<D, O> {
+    let n_vars = ideal[0].n_vars();
+
+    // Filter zeros, convert to native residues, and make monic.
+    let mut basis: Vec<FpPoly> = ideal
+        .iter()
+        .filter(|p| !p.is_zero())
+        .map(|p| FpPoly::from_domain(p, prime))
+        .collect();
+    for p in &mut basis {
+        monic_fp(p, prime);
+    }
+    if basis.is_empty() {
+        return GroebnerBasis { basis: vec![] };
+    }
+
+    // Build initial critical pairs with Gebauer-Moeller filtering.
+    let mut pairs: Vec<CriticalPair> = Vec::new();
+    for i in 0..basis.len() {
+        for j in (i + 1)..basis.len() {
+            if let Some(cp) = CriticalPair::new(&basis, i, j) {
+                let lm_i = basis[i].leading_monomial().unwrap();
+                let lm_j = basis[j].leading_monomial().unwrap();
+                let is_coprime = lm_i
+                    .iter()
+                    .zip(lm_j.iter())
+                    .all(|(a, b)| *a == 0 || *b == 0);
+                if !is_coprime {
+                    pairs.push(cp);
+                }
+            }
+        }
+    }
+
+    let mut all_monomials: HashMap<SmallVec<[usize; 4]>, MonomialData> = HashMap::default();
+    let mut monomial_list: Vec<SmallVec<[usize; 4]>> = Vec::new();
+    let mut matrix: Vec<Vec<(i64, usize)>> = Vec::new();
+    let mut pivots: Vec<Option<usize>> = Vec::new();
+    let mut fp_buffer: Vec<i64> = Vec::new();
+
+    let mut simplifications: Vec<SimpCache<FpPoly>> = basis
+        .iter()
+        .map(|p| {
+            let zero_exp = SmallVec::from_elem(0, p.n_vars());
+            vec![(zero_exp, p.clone())]
+        })
+        .collect();
+
+    let zero_diff: SmallVec<[usize; 4]> = SmallVec::from_elem(0, n_vars);
+
+    // Optional section timing for performance diagnosis (OCAS_F4_STATS=1).
+    let stats = std::env::var("OCAS_F4_STATS").is_ok();
+    let mut rounds = 0usize;
+    let mut added = 0usize;
+    let mut t_build = std::time::Duration::ZERO;
+    let mut t_pre = std::time::Duration::ZERO;
+    let mut t_ech = std::time::Duration::ZERO;
+    let mut t_ext = std::time::Duration::ZERO;
+
+    while !pairs.is_empty() {
+        rounds += 1;
+        let t0 = std::time::Instant::now();
+        // --- Selection: find minimum lcm degree ---
+        let min_deg = pairs.iter().map(|cp| cp.degree).min().unwrap();
+
+        let selected: Vec<CriticalPair> = pairs
+            .iter()
+            .filter(|cp| cp.degree == min_deg)
+            .cloned()
+            .collect();
+
+        let sel_set: std::collections::HashSet<(usize, usize)> =
+            selected.iter().map(|cp| (cp.idx1, cp.idx2)).collect();
+        pairs.retain(|cp| !sel_set.contains(&(cp.idx1, cp.idx2)));
+
+        if selected.is_empty() {
+            continue;
+        }
+
+        // --- Build matrix rows from selected pairs ---
+        all_monomials.clear();
+        monomial_list.clear();
+        matrix.clear();
+
+        for cp in &selected {
+            let i = cp.idx1;
+            let j = cp.idx2;
+            let lm_i = basis[i].leading_monomial().unwrap();
+            let lm_j = basis[j].leading_monomial().unwrap();
+            let lcm_exp = &cp.lcm;
+
+            let diff_i: SmallVec<[usize; 4]> = lcm_exp
+                .iter()
+                .zip(lm_i.iter())
+                .map(|(&a, b)| a - b)
+                .collect();
+            let diff_j: SmallVec<[usize; 4]> = lcm_exp
+                .iter()
+                .zip(lm_j.iter())
+                .map(|(&a, b)| a - b)
+                .collect();
+
+            let fi_mult = basis[i].mul_monomial(&diff_i);
+            let fj_mult = basis[j].mul_monomial(&diff_j);
+
+            // S-polynomial (monic basis ⇒ lc = 1).
+            let s_poly = sub_scaled_fp::<O>(&fi_mult, &fj_mult, &zero_diff, 1, prime);
+
+            if !s_poly.is_zero() {
+                add_poly_to_matrix_fp(&s_poly, &mut matrix, &mut all_monomials, &mut monomial_list);
+            }
+        }
+
+        if matrix.is_empty() {
+            continue;
+        }
+
+        t_build += t0.elapsed();
+        let t1 = std::time::Instant::now();
+
+        // --- Iterative symbolic preprocessing ---
+        let mut i = 0;
+        while i < matrix.len() {
+            let mut new_monomials: Vec<SmallVec<[usize; 4]>> = Vec::new();
+            for (exp, md) in all_monomials.iter() {
+                if !md.present {
+                    new_monomials.push(exp.clone());
+                }
+            }
+
+            if new_monomials.is_empty() {
+                break;
+            }
+
+            for exp in &new_monomials {
+                if let Some(md) = all_monomials.get_mut(exp) {
+                    md.present = true;
+                }
+            }
+
+            for exp in &new_monomials {
+                let mut best: Option<usize> = None;
+                for (bi, bp) in basis.iter().enumerate() {
+                    if let Some(blm) = bp.leading_monomial()
+                        && monomial_divides(exp, blm)
+                    {
+                        match best {
+                            Some(b) if basis[b].n_terms() <= bp.n_terms() => {}
+                            _ => best = Some(bi),
+                        }
+                    }
+                }
+                if let Some(bi) = best {
+                    let blm = basis[bi].leading_monomial().unwrap();
+                    let diff: SmallVec<[usize; 4]> =
+                        exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
+                    let reducer = get_simplified(&simplifications[bi], &diff, &basis[bi]);
+                    add_poly_to_matrix_fp(
+                        &reducer,
+                        &mut matrix,
+                        &mut all_monomials,
+                        &mut monomial_list,
+                    );
+                }
+            }
+
+            i += 1;
+        }
+
+        if matrix.is_empty() || monomial_list.is_empty() {
+            continue;
+        }
+
+        t_pre += t1.elapsed();
+        let t2 = std::time::Instant::now();
+
+        let ncols = monomial_list.len();
+
+        // --- Sort columns: descending monomial order ---
+        let mut col_order: Vec<usize> = (0..ncols).collect();
+        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[a], &monomial_list[b]));
+
+        let mut col_inv = vec![0usize; ncols];
+        for (new_col, &old_col) in col_order.iter().enumerate() {
+            col_inv[old_col] = new_col;
+        }
+
+        for row in &mut matrix {
+            for (_, col) in row.iter_mut() {
+                *col = col_inv[*col];
+            }
+        }
+
+        let mut sorted_monomials: Vec<SmallVec<[usize; 4]>> = vec![SmallVec::new(); ncols];
+        for (new_col, &old_col) in col_order.iter().enumerate() {
+            sorted_monomials[new_col] = monomial_list[old_col].clone();
+        }
+
+        // --- Row echelon form (native i64) ---
+        echelonize_fp(&mut matrix, ncols, prime, &mut pivots, &mut fp_buffer);
+
+        t_ech += t2.elapsed();
+        let t3 = std::time::Instant::now();
+
+        // --- Extract new polynomials from reduced rows ---
+        for row in &matrix {
+            if row.is_empty() {
+                continue;
+            }
+            let mut poly = FpPoly::zero(n_vars);
+            for &(c, col) in row {
+                let v = norm_mod(c, prime);
+                if v != 0 {
+                    poly.terms.push((sorted_monomials[col].clone(), v));
+                }
+            }
+            if poly.is_zero() {
+                continue;
+            }
+
+            // Reduce by existing basis to get a minimal representative.
+            let reduced = reduce_fp::<O>(&poly, &basis, prime);
+            if reduced.is_zero() {
+                continue;
+            }
+            poly = reduced;
+            monic_fp(&mut poly, prime);
+
+            let new_lm = poly.leading_monomial().unwrap().clone();
+
+            // Skip if a polynomial with this leading monomial already exists.
+            if basis.iter().any(|bp| {
+                bp.leading_monomial()
+                    .is_some_and(|blm| blm.as_slice() == new_lm.as_slice())
+            }) {
+                continue;
+            }
+
+            update_pairs(&mut basis, &mut pairs, &mut simplifications, poly);
+            added += 1;
+        }
+
+        t_ext += t3.elapsed();
+    }
+
+    if stats {
+        eprintln!(
+            "f4_fp stats: rounds={rounds} added={added} | build={t_build:.2?} pre={t_pre:.2?} echelon={t_ech:.2?} extract={t_ext:.2?}"
+        );
+    }
+
+    // Convert back to the domain representation and post-process with the
+    // shared minimize/inter-reduce pipeline.
+    let domain = ideal[0].domain().clone();
+    let basis_d: Vec<SparseMultivariatePolynomial<D, O>> = basis
+        .iter()
+        .map(|p| p.to_domain::<D, O>(&domain, prime))
+        .collect();
+    GroebnerBasis { basis: basis_d }.minimize().auto_reduce()
 }
 
 // =========================================================================
@@ -956,6 +1461,45 @@ mod tests {
         let gb = f4(&[f1, f2, f3]);
         assert!(!gb.basis.is_empty());
         assert!(gb.is_groebner_basis());
+    }
+
+    #[test]
+    fn f4_cyclic_3_fp13_matches_q() {
+        let field = FiniteField::new(BigInt::from(13u32));
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            field.clone(),
+            3,
+            vec![
+                (vec![1, 0, 0], field.element(1)),
+                (vec![0, 1, 0], field.element(1)),
+                (vec![0, 0, 1], field.element(1)),
+            ],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            field.clone(),
+            3,
+            vec![
+                (vec![1, 1, 0], field.element(1)),
+                (vec![0, 1, 1], field.element(1)),
+                (vec![1, 0, 1], field.element(1)),
+            ],
+        );
+        let f3 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            field.clone(),
+            3,
+            vec![
+                (vec![1, 1, 1], field.element(1)),
+                (vec![0, 0, 0], field.element(12)),
+            ],
+        );
+        let gb = f4(&[f1, f2, f3]);
+        assert!(!gb.basis.is_empty());
+        assert!(gb.is_groebner_basis());
+        // cyclic-3 (zero-dim, degree 6) has a reduced Gröbner basis with
+        // exactly 3 elements over any field of characteristic ≠ 2, 3.
+        // This is the definitive regression test for the extraction LM
+        // pre-skip: if it collapses the ideal, the basis shrinks.
+        assert_eq!(gb.basis.len(), 3);
     }
 
     #[test]
