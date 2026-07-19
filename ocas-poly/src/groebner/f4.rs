@@ -8,6 +8,7 @@
 use smallvec::SmallVec;
 
 use ocas_core::FastHashMap as HashMap;
+use ocas_core::FastHashSet as HashSet;
 use ocas_domain::{Domain, FiniteField};
 
 use super::GroebnerBasis;
@@ -118,32 +119,22 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
     }
 
     // Filter zeros and make monic.
-    let mut basis: Vec<SparseMultivariatePolynomial<D, O>> =
+    let mut initial: Vec<SparseMultivariatePolynomial<D, O>> =
         ideal.iter().filter(|p| !p.is_zero()).cloned().collect();
-    for p in &mut basis {
+    for p in &mut initial {
         make_monic(p);
     }
-    if basis.is_empty() {
-        return GroebnerBasis { basis };
+    if initial.is_empty() {
+        return GroebnerBasis { basis: vec![] };
     }
 
-    // Build initial critical pairs with Gebauer-Moeller filtering.
+    // Feed generators one at a time so that initial critical pairs go
+    // through the same Gebauer–Moeller filtering (as Symbolica does).
+    let mut basis: Vec<SparseMultivariatePolynomial<D, O>> = Vec::new();
     let mut pairs: Vec<CriticalPair> = Vec::new();
-    for i in 0..basis.len() {
-        for j in (i + 1)..basis.len() {
-            if let Some(cp) = CriticalPair::new(&basis, i, j) {
-                // First criterion: skip coprime pairs.
-                let lm_i = basis[i].leading_monomial().unwrap();
-                let lm_j = basis[j].leading_monomial().unwrap();
-                let is_coprime = lm_i
-                    .iter()
-                    .zip(lm_j.iter())
-                    .all(|(a, b)| *a == 0 || *b == 0);
-                if !is_coprime {
-                    pairs.push(cp);
-                }
-            }
-        }
+    let mut simplifications: Vec<SimpCache<SparseMultivariatePolynomial<D, O>>> = Vec::new();
+    for p in initial {
+        update_pairs(&mut basis, &mut pairs, &mut simplifications, p);
     }
 
     // Reusable buffers.
@@ -153,16 +144,13 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
     let mut monomial_list: Vec<SmallVec<[usize; 4]>> = Vec::new();
     let mut matrix: Vec<Vec<(D::Element, usize)>> = Vec::new();
     let mut pivots: Vec<Option<usize>> = Vec::new();
-
-    // Simplification cache: for each basis element, a list of
-    // (exponent_diff, cached_poly) to avoid recomputing products.
-    let mut simplifications: Vec<SimpCache<SparseMultivariatePolynomial<D, O>>> = basis
-        .iter()
-        .map(|p| {
-            let zero_exp = SmallVec::from_elem(0, p.n_vars());
-            vec![(zero_exp, p.clone())]
-        })
-        .collect();
+    // Head monomials of every input row of the current matrix (basis
+    // multiples). The extraction step adds a reduced row to the basis
+    // only when its leading monomial is NOT in this set.
+    let mut input_heads: HashSet<SmallVec<[usize; 4]>> = HashSet::default();
+    // Deduplication of (basis index, exponent diff) pairs within one
+    // matrix construction.
+    let mut seen_rows: HashSet<(usize, SmallVec<[usize; 4]>)> = HashSet::default();
 
     while !pairs.is_empty() {
         // --- Selection: find minimum lcm degree ---
@@ -188,6 +176,8 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         all_monomials.clear();
         monomial_list.clear();
         matrix.clear();
+        input_heads.clear();
+        seen_rows.clear();
 
         for cp in &selected {
             let i = cp.idx1;
@@ -208,14 +198,17 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
                 .map(|(&a, b)| a - b)
                 .collect();
 
-            let fi_mult = basis[i].mul_monomial(&diff_i);
-            let fj_mult = basis[j].mul_monomial(&diff_j);
-
-            // S-polynomial (monic basis ⇒ lc = 1).
-            let s_poly = fi_mult.sub(&fj_mult);
-
-            if !s_poly.is_zero() {
-                add_poly_to_matrix(&s_poly, &mut matrix, &mut all_monomials, &mut monomial_list);
+            // Classic F4: add BOTH multiples as separate rows (never the
+            // precomputed difference). Every input row is then a basis
+            // multiple, so its head monomial lies in the basis LM ideal —
+            // the invariant the extraction criterion relies on.
+            // Reference: Symbolica groebner.rs, pair selection loop.
+            input_heads.insert(lcm_exp.clone());
+            for (idx, diff) in [(i, &diff_i), (j, &diff_j)] {
+                if seen_rows.insert((idx, diff.clone())) {
+                    let mult = get_simplified(&simplifications[idx], diff, &basis[idx]);
+                    add_poly_to_matrix(&mult, &mut matrix, &mut all_monomials, &mut monomial_list);
+                }
             }
         }
 
@@ -281,6 +274,9 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
                     let diff: SmallVec<[usize; 4]> =
                         exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
                     let reducer = get_simplified(&simplifications[bi], &diff, &basis[bi]);
+                    // The reducer's head is exactly `exp` — record it as an
+                    // input head for the extraction criterion.
+                    input_heads.insert(exp.clone());
                     // Add reducer row to matrix, registering any new monomials.
                     add_poly_to_matrix(
                         &reducer,
@@ -300,9 +296,17 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
 
         let ncols = monomial_list.len();
 
-        // --- Sort columns: descending monomial order ---
+        // --- Sort columns: DESCENDING monomial order ---
+        //
+        // Column 0 must be the leading (greatest) monomial: rows store the
+        // leading term first, `sort_rows` orders rows by first column, and
+        // the elimination scan processes columns 0..ncols. Sorting columns
+        // ascending instead would put pivots on TRAILING terms and break
+        // the entire echelon step (this was the root cause of the
+        // extraction blowup: the echelon form was decorative and all real
+        // work fell back to polynomial division).
         let mut col_order: Vec<usize> = (0..ncols).collect();
-        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[a], &monomial_list[b]));
+        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[b], &monomial_list[a]));
 
         // Build inverse column map: old_col → new_col.
         let mut col_inv = vec![0usize; ncols];
@@ -327,25 +331,30 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         echelonize_generic(&mut matrix, ncols, basis[0].domain(), &mut pivots);
 
         // --- Extract new polynomials from reduced rows ---
+        //
+        // Symbolica/Faugère criterion: a reduced row joins the basis only
+        // when its leading monomial differs from every input row's head.
+        // Every input row is a basis multiple, so "row LM == some input
+        // head" means the LM already lies in the basis LM ideal and the
+        // row carries no new information. Crucially, NO reduction of the
+        // extracted polynomial against the basis is needed — rows of the
+        // echelonized matrix are already fully inter-reduced, and tail
+        // reduction is deferred to the final auto_reduce pass. This
+        // eliminates the dominant cost of the old pipeline (extraction was
+        // 99.98% of runtime on cyclic-5).
         for row in &matrix {
             if row.is_empty() {
+                continue;
+            }
+            let row_lm = &sorted_monomials[row[0].1];
+            if input_heads.contains(row_lm) {
                 continue;
             }
             let mut poly = basis[0].zero();
             for (coeff, col) in row.iter().rev() {
                 poly.append_monomial(coeff.clone(), &sorted_monomials[*col]);
             }
-            make_monic(&mut poly);
             if poly.is_zero() {
-                continue;
-            }
-
-            // Reduce by existing basis to get a minimal representative.
-            let reduced = poly.reduce(&basis);
-            if !reduced.is_zero() {
-                poly = reduced;
-                make_monic(&mut poly);
-            } else {
                 continue;
             }
 
@@ -398,67 +407,76 @@ fn update_pairs<P: BasisPoly>(
         basis[new_idx].clone(),
     )]);
 
-    // Generate new pairs with existing basis elements.
-    let mut new_pairs: Vec<(CriticalPair, bool)> = Vec::new();
-    for i in 0..new_idx {
-        if let Some(cp) = CriticalPair::new(basis, i, new_idx) {
-            // First criterion: skip coprime pairs (disjoint LMs).
-            let lm_b = basis[i].leading_monomial().unwrap();
-            let is_coprime = lm_b
-                .iter()
-                .zip(new_lm.iter())
-                .all(|(a, b)| *a == 0 || *b == 0);
-            if !is_coprime {
-                new_pairs.push((cp, true));
-            }
-        }
-    }
+    let is_disjoint = |cp: &CriticalPair| {
+        let a = basis[cp.idx1].leading_monomial().unwrap();
+        let b = basis[cp.idx2].leading_monomial().unwrap();
+        a.iter().zip(b.iter()).all(|(x, y)| *x == 0 || *y == 0)
+    };
 
-    // Second criterion (Gebauer-Moeller): among new pairs, keep only those
-    // whose lcm is minimal — no other new pair has a strictly smaller lcm.
+    // Generate ALL new pairs. Coprime pairs participate in the dominance
+    // computation below (their lcm can dominate other pairs) but are
+    // never kept themselves (product criterion).
+    let mut new_pairs: Vec<(CriticalPair, bool)> = (0..new_idx)
+        .filter_map(|i| CriticalPair::new(basis, i, new_idx))
+        .map(|cp| {
+            let disjoint = is_disjoint(&cp);
+            (cp, disjoint)
+        })
+        .collect();
+
+    // Gebauer–Moeller chain criterion (sequential elimination): pair i is
+    // redundant when another still-live pair j has lcm(j) dividing lcm(i)
+    // (equality included — the later duplicate is dropped). Self-exclusion
+    // works by clearing the flag before evaluation.
+    // Reference: Symbolica groebner.rs `update`; Becker–Weispfenning.
     for i in 0..new_pairs.len() {
-        if !new_pairs[i].1 {
-            continue;
-        }
-        let dominated = new_pairs.iter().enumerate().any(|(j, (pj, kj))| {
-            if !*kj || i == j {
-                return false;
-            }
-            // Check if lcm[j] strictly divides lcm[i].
-            new_pairs[i]
-                .0
-                .lcm
-                .iter()
-                .zip(pj.lcm.iter())
-                .all(|(a, b)| a >= b)
-                && new_pairs[i]
-                    .0
-                    .lcm
-                    .iter()
-                    .zip(pj.lcm.iter())
-                    .any(|(a, b)| a > b)
-        });
-        if dominated {
-            new_pairs[i].1 = false;
-        }
+        new_pairs[i].1 = false;
+        let disjoint = is_disjoint(&new_pairs[i].0);
+        let survive = disjoint
+            || new_pairs.iter().all(|p2| {
+                !p2.1
+                    || new_pairs[i]
+                        .0
+                        .lcm
+                        .iter()
+                        .zip(p2.0.lcm.iter())
+                        .any(|(a, b)| a < b)
+            });
+        new_pairs[i].1 = survive;
     }
+    let kept: Vec<CriticalPair> = new_pairs
+        .into_iter()
+        .filter(|(cp, k)| *k && !is_disjoint(cp))
+        .map(|(cp, _)| cp)
+        .collect();
 
-    // Clean existing pairs: remove pairs made redundant by the new polynomial.
-    // A pair is redundant if the new polynomial's LM divides the pair's lcm
-    // in a way that makes the old pair no longer needed.
+    // Gebauer–Moeller update criterion for existing pairs: drop {i,j} only
+    // when new_lm divides lcm(i,j) AND both lcm(i,new) and lcm(j,new) are
+    // strictly smaller than lcm(i,j). The earlier implementation checked
+    // only strict divisibility, which incorrectly removed pairs whose
+    // lcm is reproduced by (i, new) — dropping S-polynomials that are
+    // required for completeness (cyclic-5 failed is_groebner_basis).
     pairs.retain(|cp| {
-        // Keep pair if new_lm does NOT strictly divide its lcm.
-        let dominated = cp.lcm.iter().zip(new_lm.iter()).all(|(a, b)| a >= b)
-            && cp.lcm.iter().zip(new_lm.iter()).any(|(a, b)| a > b);
-        !dominated
+        let new_divides = cp.lcm.iter().zip(new_lm.iter()).all(|(a, b)| a >= b);
+        if !new_divides {
+            return true;
+        }
+        let lm1 = basis[cp.idx1].leading_monomial().unwrap();
+        let lm2 = basis[cp.idx2].leading_monomial().unwrap();
+        let same1 = lm1
+            .iter()
+            .zip(new_lm.iter())
+            .zip(cp.lcm.iter())
+            .all(|((a, b), c)| (*a).max(*b) == *c);
+        let same2 = lm2
+            .iter()
+            .zip(new_lm.iter())
+            .zip(cp.lcm.iter())
+            .all(|((a, b), c)| (*a).max(*b) == *c);
+        same1 || same2
     });
 
-    // Add non-redundant new pairs.
-    for (cp, keep) in new_pairs {
-        if keep {
-            pairs.push(cp);
-        }
-    }
+    pairs.extend(kept);
 
     // NOTE: Do NOT remove basis elements here — it invalidates pair indices.
     // The minimize() post-processing step handles LM-divisible removal.
@@ -642,114 +660,6 @@ fn monic_fp(p: &mut FpPoly, prime: i64) {
     }
 }
 
-/// Compute `a - factor·x^qm·g` over ℤ_p.
-///
-/// Merges two descending-sorted term lists in one pass. Adding the same
-/// `qm` to every exponent of `g` preserves its sort order for any
-/// admissible monomial order.
-fn sub_scaled_fp<O: MonomialOrder>(
-    a: &FpPoly,
-    g: &FpPoly,
-    qm: &[usize],
-    factor: i64,
-    prime: i64,
-) -> FpPoly {
-    let mut out: Vec<(SmallVec<[usize; 4]>, i64)> =
-        Vec::with_capacity(a.terms.len() + g.terms.len());
-    let mut i = 0;
-    let mut j = 0;
-    while i < a.terms.len() || j < g.terms.len() {
-        if i >= a.terms.len() {
-            let ge: SmallVec<[usize; 4]> = g.terms[j]
-                .0
-                .iter()
-                .zip(qm.iter())
-                .map(|(x, y)| x + y)
-                .collect();
-            let t = norm_mod(factor * g.terms[j].1, prime);
-            if t != 0 {
-                out.push((ge, prime - t));
-            }
-            j += 1;
-            continue;
-        }
-        if j >= g.terms.len() {
-            out.push(a.terms[i].clone());
-            i += 1;
-            continue;
-        }
-        let ge: SmallVec<[usize; 4]> = g.terms[j]
-            .0
-            .iter()
-            .zip(qm.iter())
-            .map(|(x, y)| x + y)
-            .collect();
-        match O::cmp(&a.terms[i].0, &ge) {
-            std::cmp::Ordering::Greater => {
-                out.push(a.terms[i].clone());
-                i += 1;
-            }
-            std::cmp::Ordering::Less => {
-                let t = norm_mod(factor * g.terms[j].1, prime);
-                if t != 0 {
-                    out.push((ge, prime - t));
-                }
-                j += 1;
-            }
-            std::cmp::Ordering::Equal => {
-                let v = norm_mod(a.terms[i].1 - norm_mod(factor * g.terms[j].1, prime), prime);
-                if v != 0 {
-                    out.push((a.terms[i].0.clone(), v));
-                }
-                i += 1;
-                j += 1;
-            }
-        }
-    }
-    FpPoly {
-        terms: out,
-        n_vars: a.n_vars,
-    }
-}
-
-/// Multivariate division over ℤ_p: reduce `poly` by the (monic) basis.
-///
-/// Mirrors [`SparseMultivariatePolynomial::reduce`] with `i64` residues.
-fn reduce_fp<O: MonomialOrder>(poly: &FpPoly, basis: &[FpPoly], prime: i64) -> FpPoly {
-    let mut remainder = poly.clone();
-    let mut result: Vec<(SmallVec<[usize; 4]>, i64)> = Vec::new();
-
-    // Termination: each iteration either strictly lowers the remainder's
-    // leading monomial (admissible orders are well-founded) or moves one
-    // term into the result, so this loop always terminates.
-    while let Some((rm_e, rm_c)) = remainder.terms.first() {
-        let rm = rm_e.clone();
-        let rc = *rm_c;
-        let mut reduced = false;
-        for g in basis {
-            let Some((glm, _)) = g.terms.first() else {
-                continue;
-            };
-            if monomial_divides(&rm, glm) {
-                let qm: SmallVec<[usize; 4]> =
-                    rm.iter().zip(glm.iter()).map(|(a, b)| a - b).collect();
-                // g is monic ⇒ quotient coeff = rc.
-                remainder = sub_scaled_fp::<O>(&remainder, g, &qm, rc, prime);
-                reduced = true;
-                break;
-            }
-        }
-        if !reduced {
-            result.push((rm, rc));
-            remainder.terms.remove(0);
-        }
-    }
-    FpPoly {
-        terms: result,
-        n_vars: poly.n_vars,
-    }
-}
-
 /// Register an `FpPoly` as a matrix row, tracking new monomials.
 fn add_poly_to_matrix_fp(
     poly: &FpPoly,
@@ -790,34 +700,24 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
     let n_vars = ideal[0].n_vars();
 
     // Filter zeros, convert to native residues, and make monic.
-    let mut basis: Vec<FpPoly> = ideal
+    let mut initial: Vec<FpPoly> = ideal
         .iter()
         .filter(|p| !p.is_zero())
         .map(|p| FpPoly::from_domain(p, prime))
         .collect();
-    for p in &mut basis {
+    for p in &mut initial {
         monic_fp(p, prime);
     }
-    if basis.is_empty() {
+    if initial.is_empty() {
         return GroebnerBasis { basis: vec![] };
     }
 
-    // Build initial critical pairs with Gebauer-Moeller filtering.
+    // Feed generators one at a time (same GM filtering as the generic path).
+    let mut basis: Vec<FpPoly> = Vec::new();
     let mut pairs: Vec<CriticalPair> = Vec::new();
-    for i in 0..basis.len() {
-        for j in (i + 1)..basis.len() {
-            if let Some(cp) = CriticalPair::new(&basis, i, j) {
-                let lm_i = basis[i].leading_monomial().unwrap();
-                let lm_j = basis[j].leading_monomial().unwrap();
-                let is_coprime = lm_i
-                    .iter()
-                    .zip(lm_j.iter())
-                    .all(|(a, b)| *a == 0 || *b == 0);
-                if !is_coprime {
-                    pairs.push(cp);
-                }
-            }
-        }
+    let mut simplifications: Vec<SimpCache<FpPoly>> = Vec::new();
+    for p in initial {
+        update_pairs(&mut basis, &mut pairs, &mut simplifications, p);
     }
 
     let mut all_monomials: HashMap<SmallVec<[usize; 4]>, MonomialData> = HashMap::default();
@@ -825,16 +725,10 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
     let mut matrix: Vec<Vec<(i64, usize)>> = Vec::new();
     let mut pivots: Vec<Option<usize>> = Vec::new();
     let mut fp_buffer: Vec<i64> = Vec::new();
-
-    let mut simplifications: Vec<SimpCache<FpPoly>> = basis
-        .iter()
-        .map(|p| {
-            let zero_exp = SmallVec::from_elem(0, p.n_vars());
-            vec![(zero_exp, p.clone())]
-        })
-        .collect();
-
-    let zero_diff: SmallVec<[usize; 4]> = SmallVec::from_elem(0, n_vars);
+    // Head monomials of every input row of the current matrix (basis
+    // multiples). See the generic path for the extraction invariant.
+    let mut input_heads: HashSet<SmallVec<[usize; 4]>> = HashSet::default();
+    let mut seen_rows: HashSet<(usize, SmallVec<[usize; 4]>)> = HashSet::default();
 
     // Optional section timing for performance diagnosis (OCAS_F4_STATS=1).
     let stats = std::env::var("OCAS_F4_STATS").is_ok();
@@ -869,6 +763,8 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
         all_monomials.clear();
         monomial_list.clear();
         matrix.clear();
+        input_heads.clear();
+        seen_rows.clear();
 
         for cp in &selected {
             let i = cp.idx1;
@@ -888,14 +784,19 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
                 .map(|(&a, b)| a - b)
                 .collect();
 
-            let fi_mult = basis[i].mul_monomial(&diff_i);
-            let fj_mult = basis[j].mul_monomial(&diff_j);
-
-            // S-polynomial (monic basis ⇒ lc = 1).
-            let s_poly = sub_scaled_fp::<O>(&fi_mult, &fj_mult, &zero_diff, 1, prime);
-
-            if !s_poly.is_zero() {
-                add_poly_to_matrix_fp(&s_poly, &mut matrix, &mut all_monomials, &mut monomial_list);
+            // Classic F4: add BOTH multiples as separate rows (see the
+            // generic path for why the difference is never precomputed).
+            input_heads.insert(lcm_exp.clone());
+            for (idx, diff) in [(i, &diff_i), (j, &diff_j)] {
+                if seen_rows.insert((idx, diff.clone())) {
+                    let mult = get_simplified(&simplifications[idx], diff, &basis[idx]);
+                    add_poly_to_matrix_fp(
+                        &mult,
+                        &mut matrix,
+                        &mut all_monomials,
+                        &mut monomial_list,
+                    );
+                }
             }
         }
 
@@ -943,6 +844,7 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
                     let diff: SmallVec<[usize; 4]> =
                         exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
                     let reducer = get_simplified(&simplifications[bi], &diff, &basis[bi]);
+                    input_heads.insert(exp.clone());
                     add_poly_to_matrix_fp(
                         &reducer,
                         &mut matrix,
@@ -964,9 +866,10 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
 
         let ncols = monomial_list.len();
 
-        // --- Sort columns: descending monomial order ---
+        // --- Sort columns: DESCENDING monomial order ---
+        // (See the generic path for why descending order is essential.)
         let mut col_order: Vec<usize> = (0..ncols).collect();
-        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[a], &monomial_list[b]));
+        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[b], &monomial_list[a]));
 
         let mut col_inv = vec![0usize; ncols];
         for (new_col, &old_col) in col_order.iter().enumerate() {
@@ -991,8 +894,16 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
         let t3 = std::time::Instant::now();
 
         // --- Extract new polynomials from reduced rows ---
+        //
+        // Same Symbolica/Faugère criterion as the generic path: add a row
+        // only when its leading monomial differs from every input row's
+        // head; NO reduction against the basis is performed here.
         for row in &matrix {
             if row.is_empty() {
+                continue;
+            }
+            let row_lm = &sorted_monomials[row[0].1];
+            if input_heads.contains(row_lm) {
                 continue;
             }
             let mut poly = FpPoly::zero(n_vars);
@@ -1005,14 +916,6 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
             if poly.is_zero() {
                 continue;
             }
-
-            // Reduce by existing basis to get a minimal representative.
-            let reduced = reduce_fp::<O>(&poly, &basis, prime);
-            if reduced.is_zero() {
-                continue;
-            }
-            poly = reduced;
-            monic_fp(&mut poly, prime);
 
             let new_lm = poly.leading_monomial().unwrap().clone();
 
@@ -1151,8 +1054,12 @@ fn echelonize_fp(
             }
         }
 
-        // Write back if not already written as new pivot.
-        if matrix[r].is_empty() || matrix[r][0].1 != first_col {
+        // Write back the eliminated row — but only when it was NOT already
+        // written as a new pivot mid-scan (in that case the buffer is
+        // drained and the row in the matrix is already final). A row whose
+        // first column is unchanged still holds its ORIGINAL terms and
+        // must be replaced by the buffer contents (possibly empty).
+        if matrix[r][0].1 == first_col {
             matrix[r].clear();
             for (col, val) in buffer.iter_mut().enumerate() {
                 let v = *val % p;
@@ -1273,8 +1180,12 @@ fn echelonize_generic<D: Domain>(
             }
         }
 
-        // Write back if not already written as new pivot.
-        if matrix[r].is_empty() || matrix[r][0].1 != first_col {
+        // Write back the eliminated row — but only when it was NOT already
+        // written as a new pivot mid-scan (in that case the buffer is
+        // drained and the row in the matrix is already final). A row whose
+        // first column is unchanged still holds its ORIGINAL terms and
+        // must be replaced by the buffer contents (possibly empty).
+        if matrix[r][0].1 == first_col {
             matrix[r].clear();
             for (col, val) in buffer.iter_mut().enumerate() {
                 if !domain.is_zero(val) {
