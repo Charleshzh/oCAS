@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.1] - 2026-07-20
+
+### Fixed / 修复
+
+- **F4 矩阵列序**（`ocas-poly::groebner::f4`）：列改按单项式**降序**排列
+  ——此前为升序，导致高斯消元在尾项上建主元，echelon 形同虚设，全部
+  约化工作退化为多项式除法（F4 实为 Buchberger）/ **F4 matrix column
+  order**: columns are now sorted in *descending* monomial order — they
+  were ascending, so elimination pivoted on trailing terms and the echelon
+  step was decorative (F4 was effectively Buchberger)
+- **echelon 回写条件**：被消元行未写回、新主元行被清空的反向条件已修正 /
+  **echelon write-back condition**: eliminated rows were never written back
+  and new pivot rows were emptied — the inverted condition is fixed
+- **Gebauer–Moeller 判据**（`update_pairs`）：移植 Symbolica 的正确实现
+  ——旧实现对 lcm(i,new) == lcm(i,j) 的配对误删，cyclic-5 上基不完整 /
+  **Gebauer–Moeller criteria**: ported Symbolica's correct `update` — the
+  old version dropped pairs whose lcm is reproduced by (i, new), producing
+  incomplete bases on cyclic-5
+- **F4 提取判据**：S 部分改以两个独立倍式入行（经典 F4 形式），提取仅当
+  行首项不在输入行首项集合时加入，**不再做基约化** / **F4 extraction**:
+  S-parts enter as two separate multiples (classic F4); a row joins the
+  basis only when its LM differs from every input row head — no basis
+  reduction during extraction
+
+### Performance / 性能
+
+- **cyclic-5 ℤ₁₃：2609 s → 31 ms（≈85 000×）**，且首次通过
+  `is_groebner_basis` 验证 / **cyclic-5 over ℤ₁₃: 2609 s → 31 ms
+  (≈85,000×)**, passing `is_groebner_basis` for the first time
+- cyclic-6/7 现为可解（见 `ocas-tests/tests/groebner_timing.rs`）/
+  cyclic-6/7 are now tractable
+
+---
+
 ## [0.15.0] - 2026-07-20
 
 ### Added / 新增
