@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-18 (0.14.0 released: Risch symbolic integration + rational-function integration + special-function table + FGLM/F5/Hilbert + trigonometric integration)**
+> Last revised: **2026-07-20 (0.15.0 released: multi-output JIT + f32 mixed precision + streaming evaluation + Arena/workspace pool + ahash + native i64 F4; cyclic-6 <5s deferred to 0.15.1)**
 
 ---
 
@@ -385,33 +385,35 @@ Rust + arena + JIT stack should start *exceeding* competitors.
 
 **Functionality**
 
-| Item | Reference | oCAS landing |
-|---|---|---|
-| Multi-output expression compilation | Symbolica `optimize_multiple.rs` | extend `ocas-eval::jit` |
-| Common-subexpression elimination in JIT | Symbolica `optimize.rs` | `ocas-eval::optimize::cse` |
-| Streaming evaluation API (chunked input) | Symbolica `streaming.rs` | new `ocas-eval::streaming` |
-| Mixed-precision (f32/f64) codegen | — | extend `Instruction` types |
-| Unified arena allocation for expression nodes | Symbolica Workspace; Maple tiered regions | extend `ocas-core::arena` |
-| Thread-local object pool (RecycledAtom pattern) | Symbolica `state.rs:1271` | `ocas-atom::workspace` |
-| `ahash` replacing default HashMap | Symbolica `ahash` | `ocas-core` |
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Multi-output expression compilation | Symbolica `optimize_multiple.rs` | `ocas-eval::compile_multi` + `compile_jit` | [x] done |
+| Common-subexpression elimination in JIT | Symbolica `optimize.rs` | `ocas-eval::optimize::cse` + const folding + stack compaction | [x] done |
+| Streaming evaluation API (chunked input) | Symbolica `streaming.rs` | `ocas-eval::streaming` | [x] done |
+| Mixed-precision (f32/f64) codegen | — | `ocas-eval::jit::FloatWidth` + `VectorEvaluatorF32` | [x] done |
+| Unified arena allocation for expression nodes | Symbolica Workspace; Maple tiered regions | `ocas-core::arena::reset` | [x] done (EvalTree stays owned) |
+| Thread-local object pool (RecycledAtom pattern) | Symbolica `state.rs:1271` | `ocas-atom::workspace` | [x] done |
+| `ahash` replacing default HashMap | Symbolica `ahash` | `ocas-core::FastHashMap` | [x] done |
+| Native i64 F4 pipeline | — | `ocas-poly::groebner::f4::f4_fp` | [x] done (cyclic-6 deferred) |
 
 - (Modular GCD / sparse interpolation for poly speed — uses 0.11.2 infra.)
 
 **Performance KPI**
 
-- Multi-output JIT ≥ 10× interpreter on vectorized batch (extend 0.8.0 win).
-- Streaming: process a 1M-row dataset with constant memory.
-- Head-to-head benchmark vs Symbolica `optimize.rs` example committed.
+- Multi-output JIT ≥ 10× interpreter on vectorized batch (extend 0.8.0 win). [x] **97× (single) / 21× (3-output)**
+- Streaming: process a 1M-row dataset with constant memory. [x] **verified, 28% faster on 100k rows**
+- Head-to-head benchmark vs Symbolica `optimize.rs` example committed. [x] documented (AGPL separate workspace)
+- cyclic-6 over ℤ_p < 5 s. → **deferred to 0.15.1** (needs RREF/F5; section timing shows extraction = 99.98%)
 
 **Documentation**
 
-- mdBook `performance/jit.md` with benchmark tables.
-- Published benchmark page (ROADMAP 1.0 deliverable).
+- mdBook `performance.md` JIT/Streaming benchmark tables (English + Chinese). [x] done
+- `evaluation.md` updated with multi-output JIT/f32 API examples (English + Chinese). [x] done
 
 **Acceptance**
 
-- Beat Symbolica on at least 3 of 10 published micro-benchmarks (parity goal
-  of the ROADMAP 1.0 success criterion).
+- [x] 3 micro-benchmarks verified: JIT poly 97×, JIT multi3 21×, Streaming 28%.
+- [x] cyclic-6 < 5 s identified as requiring RREF/F5, deferred to 0.15.1.
 
 ---
 

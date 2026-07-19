@@ -9,6 +9,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.0] - 2026-07-20
+
+### Added / 新增
+
+- **多输出 JIT**（`ocas-eval::jit`）：`ExpressionEvaluator::compile_jit`
+  支持任意多输出；`JitCompiledFunction::call_into` 零分配调用；整数幂
+  经平方幂链内联（|exp| ≤ 16），常量在编译期内联 / **Multi-output
+  JIT**: `compile_jit` supports any number of outputs; `call_into` for
+  allocation-free calls; integer powers inlined via exponentiation by
+  squaring (|exp| ≤ 16); constants embedded at compile time
+- **f32 混合精度**（`ocas-eval`）：`JitCompiledF32`/`compile_jit_f32`（libm
+  `*f` 符号）与 `VectorEvaluatorF32`/`compile_vector_evaluator_f32`
+  （16 lane）/ **f32 mixed precision**: `JitCompiledF32`/`compile_jit_f32`
+  (libm `*f` symbols) and `VectorEvaluatorF32`/`compile_vector_evaluator_f32`
+  (16 lanes)
+- **流式求值 API**（`ocas-eval::streaming`）：`StreamingEvaluator` 分块
+  输入 + 复用栈缓冲，百万行内存恒定 / **Streaming evaluation**:
+  `StreamingEvaluator` with chunked input and reused stack, constant
+  memory over million-row streams
+- **多输出编译**（`ocas-eval::compile`）：`compile_atoms_multi` /
+  `compile_trees_multi` / `ExpressionEvaluator::compile_multi`，跨输出
+  共享 CSE 与常量表 / **Multi-output compilation** sharing CSE and
+  constant tables across outputs
+- **常量折叠与栈压缩**（`ocas-eval`）：`EvalTree::fold_constants`（树级
+  代数恒等式 + 常量求值）、DCE 后栈压缩消除空洞 / **Constant folding
+  & stack compaction**: tree-level identities + DCE stack compaction
+- **栈复用**（`ocas-eval::evaluator`）：`evaluate_with_stack` 复用调用方
+  缓冲，消除每次求值的堆分配 / **Stack reuse**: `evaluate_with_stack`
+  reuses caller buffers, eliminating per-evaluation heap allocation
+- **Arena reset + workspace 池**（`ocas-core`/`ocas-atom`）：
+  `Arena::reset()` 保留首块复用；`ocas-atom::workspace` 线程本地
+  Arena 池（RecycledAtom 模式）/ **`Arena::reset()`** (keep first chunk)
+  and a thread-local workspace pool (RecycledAtom pattern)
+- **ahash 哈希**（`ocas-core`）：`FastHashMap`/`FastHashSet` 别名替换
+  热点 std HashMap（sparse terms、F4 列映射、hash-consing、CSE）/
+  **ahash**: `FastHashMap`/`FastHashSet` replacing std HashMap on hot paths
+- **原生 i64 F4 管线**（`ocas-poly::groebner::f4`）：ℤ_p 上全程 i64
+  残基运算（`FpPoly`），消除 BigInt 往返；`OCAS_F4_STATS` 分段插装 /
+  **Native i64 F4 pipeline**: full `i64` residue arithmetic over ℤ_p
+  (`FpPoly`), eliminating BigInt round-trips; `OCAS_F4_STATS` section timing
+
+### Fixed / 修复
+
+- **JIT 调用约定**（`ocas-eval::jit`）：Windows 上改用 target 默认调用
+  约定（`default_call_conv()`），取消 `#[ignore]` 测试 / **JIT calling
+  convention**: use target-default call conv on Windows, un-ignore tests
+- **JIT 多输出写回**：`result_indices` 确定性映射替代 HashMap 顺序
+  遍历 / **Multi-output writeback**: deterministic `result_indices`
+  mapping instead of HashMap iteration order
+- **Arena 对齐**：`Chunk::try_alloc` 对齐检查修复（超对齐分配独占
+  chunk）/ **Arena alignment**: `Chunk::try_alloc` alignment check
+  (over-aligned allocations get their own chunk)
+
+### Performance / 性能
+
+- JIT 求值：多项式 1000 次调用 221 µs → 2.27 µs（**97×**），三输出
+  479 µs → 22.4 µs（**21×**）/ **JIT**: 97×/21× over interpreter
+- 流式：100k 行 23.4 ms → 16.8 ms（**28%↑**）/ **Streaming**: 28% faster
+- F4 瓶颈定位：extract 占 2608 s/2609 s（99.98%），echelon 仅 12.87 ms
+  ——cyclic-6 < 5 s 目标需 RREF/F5，推迟到 0.15.1 / **F4 bottleneck**:
+  extraction dominates (99.98%); cyclic-6 < 5 s deferred to 0.15.1
+
+### Changed / 变更
+
+- `VectorEvaluator::evaluate` 返回 `Vec<Vec<f64>>`（多输出，API 破坏
+  变更）/ `VectorEvaluator::evaluate` now returns `Vec<Vec<f64>>`
+  (breaking change for multi-output support)
+- workspace 版本 0.14.0 → 0.15.0
+
+---
+
 ## [0.14.0] - 2026-07-18
 
 ### Added / 新增

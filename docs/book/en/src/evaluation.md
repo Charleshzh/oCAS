@@ -58,22 +58,54 @@ cargo build -p ocas --features jit
     let ctx = AtomArena::new(&arena);
     let e = parse(&ctx, "sin(x) * cos(y)").unwrap();
 
-    let mut engine = JitEngine::new();
-    let compiled = engine.compile::<f64, _>(e).unwrap();
+    let ev: ExpressionEvaluator<f64> = ExpressionEvaluator::compile(e).unwrap();
+    let compiled = ev.compile_jit().unwrap();
     let result = compiled.call(&[0.5, 1.0]);  // ~0.2590
 }
 ```
 
 The JIT path translates the same IR used by the interpreter into native
 x86-64 or aarch64 code. For expressions evaluated thousands of times, this
-can yield a 10–50× speedup over the interpreter.
+yields up to **97×** speedup over the interpreter (see
+[Benchmarks](./performance.md#jit--evaluation)).
+
+### Multi-output JIT
+
+`compile_multi` compiles several expressions into one evaluator, sharing
+common subexpressions across outputs; `call_into` writes results into a
+caller-provided buffer (zero allocation per call).
+
+```rust
+#[cfg(feature = "jit")]
+{
+    use ocas::prelude::*;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let e1 = parse(&ctx, "sin(x) + 1").unwrap();
+    let e2 = parse(&ctx, "sin(x) * 2").unwrap();
+
+    let ev: ExpressionEvaluator<f64> =
+        ExpressionEvaluator::compile_multi(&[e1, e2]).unwrap();
+    let compiled = ev.compile_jit().unwrap();
+    let mut out = [0.0f64; 2];
+    compiled.call_into(&[1.0], &mut out);
+}
+```
+
+### f32 mixed precision
+
+`compile_jit_f32` generates single-precision code (libm `*f` symbols);
+`compile_vector_evaluator_f32` doubles the SIMD lane count on the same
+hardware. Use when f32 accuracy suffices.
 
 ---
 
 ## SIMD batch evaluation
 
-The `simd` feature enables vectorized evaluation using `wide::f64x4`,
-computing four inputs simultaneously with SIMD instructions.
+The `simd` feature enables vectorized evaluation using `pulp`, computing
+multiple inputs simultaneously with runtime-detected SIMD width (SSE2/AVX2/
+AVX-512).
 
 ```bash
 cargo build -p ocas --features simd

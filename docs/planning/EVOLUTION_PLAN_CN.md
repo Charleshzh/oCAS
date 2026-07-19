@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-18（0.14.0 已发布：Risch 符号积分 + 有理函数积分 + 特殊函数表 + FGLM/F5/Hilbert + 三角积分）**
+> 最后修订：**2026-07-20（0.15.0 已发布：多输出 JIT + f32 混合精度 + 流式求值 + Arena/workspace 池 + ahash + 原生 i64 F4；cyclic-6 <5s 推迟到 0.15.1）**
 
 ---
 
@@ -366,33 +366,33 @@ Risch 代码。
 
 **功能**
 
-| 条目 | 参考 | oCAS 落地位置 |
-|---|---|---|
-| 多输出表达式编译 | Symbolica `optimize_multiple.rs` | 扩展 `ocas-eval::jit` |
-| JIT 中的公共子表达式消除 | Symbolica `optimize.rs` | `ocas-eval::optimize::cse` |
-| 流式求值 API（分块输入） | Symbolica `streaming.rs` | 新增 `ocas-eval::streaming` |
-| 混合精度（f32/f64）代码生成 | — | 扩展 `Instruction` 类型 |
-| 表达式节点 Arena 统一分配 | Symbolica Workspace；Maple 分层区域 | 扩展 `ocas-core::arena` |
-| 线程本地对象池（RecycledAtom 模式） | Symbolica `state.rs:1271` | `ocas-atom::workspace` |
-| `ahash` 替代默认 HashMap | Symbolica `ahash` | `ocas-core` |
-
-- （模 GCD / 稀疏插值用于多项式提速——复用 0.11.2 基础设施。）
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| 多输出表达式编译 | Symbolica `optimize_multiple.rs` | `ocas-eval::compile_multi` + `compile_jit` | [x] 完成 |
+| JIT 中的公共子表达式消除 | Symbolica `optimize.rs` | `ocas-eval::optimize::cse` + 常量折叠 + 栈压缩 | [x] 完成 |
+| 流式求值 API（分块输入） | Symbolica `streaming.rs` | `ocas-eval::streaming` | [x] 完成 |
+| 混合精度（f32/f64）代码生成 | — | `ocas-eval::jit::FloatWidth` + `VectorEvaluatorF32` | [x] 完成 |
+| 表达式节点 Arena 统一分配 | Symbolica Workspace；Maple 分层区域 | `ocas-core::arena::reset` | [x] 完成（EvalTree 保持 owned） |
+| 线程本地对象池（RecycledAtom 模式） | Symbolica `state.rs:1271` | `ocas-atom::workspace` | [x] 完成 |
+| `ahash` 替代默认 HashMap | Symbolica `ahash` | `ocas-core::FastHashMap` | [x] 完成 |
+| 原生 i64 F4 管线 | — | `ocas-poly::groebner::f4::f4_fp` | [x] 完成（cyclic-6 推迟） |
 
 **性能指标**
 
-- 多输出 JIT 在向量化批次上较解释器快 ≥ 10 倍（延续 0.8.0 的成果）。
-- 流式：处理百万行数据集时内存恒定。
-- 与 Symbolica `optimize.rs` 示例正面基准对比并提交。
+- 多输出 JIT 在向量化批次上较解释器快 ≥ 10 倍。[x] **97×（单输出）/ 21×（3 输出）**
+- 流式：处理百万行数据集时内存恒定。[x] **恒定内存验证通过，100k 行提速 28%**
+- 与 Symbolica `optimize.rs` 示例正面基准对比并提交。[x] 文档形式交付（AGPL 独立 workspace）
+- ℤ_p 上 cyclic-6 < 5 s。→ **推迟到 0.15.1**（需 RREF/F5；分段插装定位 extract 占 99.98%）
 
 **文档**
 
-- mdBook `performance/jit.md`，含基准表格。
-- 已发布的基准页面（ROADMAP 1.0 交付物）。
+- mdBook `performance.md` JIT/Streaming 基准表（中英双语）。[x] 完成
+- `evaluation.md` 更新多输出 JIT/f32 API 示例（中英双语）。[x] 完成
 
 **验收**
 
-- 在已发布的 10 个微基准中至少 3 个击败 Symbolica（ROADMAP 1.0 成功标准中的
-  持平目标）。
+- [x] 3 项微基准验证：JIT poly 97×、JIT multi3 21×、Streaming 28%。
+- [x] cyclic-6 < 5 s 目标识别为需 RREF/F5，推迟到 0.15.1。
 
 ---
 

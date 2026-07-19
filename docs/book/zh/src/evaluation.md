@@ -52,20 +52,49 @@ cargo build -p ocas --features jit
     let ctx = AtomArena::new(&arena);
     let e = parse(&ctx, "sin(x) * cos(y)").unwrap();
 
-    let mut engine = JitEngine::new();
-    let compiled = engine.compile::<f64, _>(e).unwrap();
+    let ev: ExpressionEvaluator<f64> = ExpressionEvaluator::compile(e).unwrap();
+    let compiled = ev.compile_jit().unwrap();
     let result = compiled.call(&[0.5, 1.0]);  // ~0.2590
 }
 ```
 
 JIT 路径将解释器使用的同一 IR 翻译为本机 x86-64 或 aarch64 代码。对于需要数千次求值的表达式，
-可比解释器快 10–50 倍。
+最高可比解释器快 **97 倍**（见[基准](./performance.md#jit--evaluation)）。
+
+### 多输出 JIT
+
+`compile_multi` 将多个表达式编译为一个求值器，跨输出共享公共子表达式；`call_into` 将结果写入
+调用方提供的缓冲（每次调用零分配）。
+
+```rust
+#[cfg(feature = "jit")]
+{
+    use ocas::prelude::*;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let e1 = parse(&ctx, "sin(x) + 1").unwrap();
+    let e2 = parse(&ctx, "sin(x) * 2").unwrap();
+
+    let ev: ExpressionEvaluator<f64> =
+        ExpressionEvaluator::compile_multi(&[e1, e2]).unwrap();
+    let compiled = ev.compile_jit().unwrap();
+    let mut out = [0.0f64; 2];
+    compiled.call_into(&[1.0], &mut out);
+}
+```
+
+### f32 混合精度
+
+`compile_jit_f32` 生成单精度代码（libm `*f` 符号）；`compile_vector_evaluator_f32` 在同一硬件上将
+SIMD 通道数翻倍。当 f32 精度足够时使用。
 
 ---
 
 ## SIMD 批量求值
 
-`simd` feature 使用 `wide::f64x4` 启用向量化求值，通过 SIMD 指令同时计算四个输入。
+`simd` feature 使用 `pulp` 启用向量化求值，通过运行时检测的 SIMD 宽度（SSE2/AVX2/AVX-512）同时
+计算多个输入。
 
 ```bash
 cargo build -p ocas --features simd

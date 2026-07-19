@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.13.2 @ 2026-07-18**
+> 最后评估：**0.15.0 @ 2026-07-20**
 
 ---
 
@@ -39,8 +39,10 @@
 | 0.12.0 | Beta | ✅ | ✅ 有理多项式 `RationalPolynomial<D,O>`、Brown PRS 结式、Karatsuba 快乘、扩展 GCD、多项式 CRT/丢番图、p-adic 展开、部分分式分解、有理重构、版本提升至 0.12.0 |
 | 0.12.1 | Beta | ✅ | ✅ 自研 ℤ_p 上 NTT、`pulp` SIMD 分派、Estrin 多项式求值、F4 稀疏矩阵后端、数值验证特性、版本提升至 0.12.1 |
 | 0.13.0 | Beta | ✅ | ✅ F4 Gröbner 基算法（含 Gebauer-Moeller 临界对筛选与简化缓存）、`Grlex` 单项式序、`Domain` trait 扩展、`FiniteField` ℤ_p 快速路径工具、版本提升至 0.13.0 |
+| 0.14.0 | 1.0 候选 | ✅ | ✅ Risch 符号积分（Hermite 约化、对数导数恒等式、primitive 待定系数、hyperexponential RDE）、有理函数积分（Hermite + Rothstein–Trager）、特殊函数表（erf/Ei/Si/Ci/Fresnel）、三角积分（exp(I·x) + realify）、FGLM/F5/Hilbert、`reorder`、mdBook 双章节 |
+| 0.15.0 | 1.0 候选 | ✅ | ✅ 多输出 JIT（97×/21×）、f32 混合精度（JIT + SIMD 16 lane）、流式求值（百万行恒定内存）、常量折叠 + 栈压缩、Arena reset + workspace 池、ahash 热点替换、原生 i64 F4 管线；cyclic-6 <5s 推迟到 0.15.1（需 RREF/F5） |
 
-0.1–0.13.0 交付物全部落地，workspace 版本锁定 0.13.0。质量门全绿：
+0.1–0.15.0 交付物全部落地，workspace 版本锁定 0.15.0。质量门全绿：
 `cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、pytest、
 `mdbook build`。
 
@@ -100,10 +102,10 @@ Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 
 | 部分分式 | ✅ 任意 `EuclideanDomain` 上的 `apart()` / `together()` | ✅ `partial_fraction.rs` |
 | 有理重构 | ✅ 基于扩展欧几里得的 `rational_reconstruction(a, m)` | ✅ `rational_reconstruction.rs` |
 | 数值积分 | 🔴 无 | ✅ `numerical_integration.rs` |
-| 流式 API | 🔴 无 | ✅ `streaming.rs` |
+| 流式 API | ✅ `streaming.rs`（`StreamingEvaluator`：分块输入 + 复用栈，百万行恒定内存） | ✅ `streaming.rs` |
 | 张量 / 双数 | 🔴 无 | ✅ `tensors.rs` / `dual.rs` |
-| 优化 / 代码生成 | 🟡 JIT，仅 f64 | ✅ `optimize.rs` / 多输出 |
-| Gröbner 基 | � F4 完成 | ✅ 工业级 |
+| 优化 / 代码生成 | ✅ 多输出 JIT（`compile_multi` + CSE + 常量折叠 + 栈压缩）+ f32 混合精度 | ✅ `optimize.rs` / 多输出 |
+| Gröbner 基 | 🟡 F4 完成 + 原生 i64 管线；cyclic-6 性能待 RREF/F5（0.15.1） | ✅ 工业级 |
 
 Symbolica 的核心竞争力——工业级因式分解、有理函数运算、多输出优化、流式
 API——oCAS 基本缺失。Symbolica 经多年打磨，oCAS 需在 ALG 层补齐硬算法。
@@ -157,7 +159,7 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 | 2 | Risch 符号积分（路线图：0.14） | 🔴 "能否积分"的标志 |
 | 3 | Gröbner F4/F5（路线图：0.13） | � F4 核心完成（0.13.0），F5 推迟 |
 | 4 | ~~有理多项式/部分分式~~（0.12 完成） | ✅ 已完成——`RationalPolynomial` 类型 + 部分分式 + 结式 + Karatsuba 乘法 |
-| 5 | 多输出优化/代码生成 | 🟡 JIT 为 f64 单输出；扩展到多输出/多精度 |
+| 5 | ~~多输出优化/代码生成~~（0.15 完成） | ✅ 已完成——多输出 JIT（97×/21×）+ f32 混合精度 + CSE/常量折叠/栈压缩 |
 | 6 | ODE/PDE 求解器（Post-1.0） | 🟢 用户期望高 |
 
 ---
@@ -196,3 +198,4 @@ Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel），0.11.0
 | 0.13.0 | 2026-07-06 | Gröbner F4 矩阵化算法完成（Faugère 1999）；Gebauer-Moeller 临界对筛选 + 简化缓存 + ℤ_p 快速路径；`minimize()` bug 修复；Gröbner 从 🟡 升级为 🟢；最高优先级缺口转为 0.14 Risch 积分。 |
 | 0.13.1 | 2026-07-17 | 补丁发布：docs.rs 构建改为纯 Rust 特性（不含 gmp/mpfr/flint/python/gpl），托管文档恢复构建；功能与算法层面与 0.13.0 一致，差距结论不变。 || 0.13.2 | 2026-07-18 | 工程与发布里程碑：`pip install ocas` 上线 PyPI（5 平台 wheel + sdist，含 macOS 双架构）；打通 OIDC trusted publishing；修复 crossbeam-epoch RUSTSEC-2026-0204；cranelift/chumsky/logos/cbindgen/criterion/hashbrown/flint3-sys/egg 依赖升级；无算法变更，差距结论不变。 |
 | 0.14.0 | 2026-07-18 | Risch 符号积分完成（初等超越塔 + RDE 多项式片段）；有理函数积分（Hermite + 对数部分）；特殊函数表（erf/Ei/Si/Ci/Fresnel）闭合 0.11.0 已知差距 `exp(-x²)→erf`；三角 exp(I·x) + realify；Gröbner 收尾（FGLM 零维换序 + F5 实验性 + Hilbert 界 + reorder）；解析器 `-x^2` 优先级修复；符号积分从 🟡 升级为 🟢；最高优先级缺口转为 0.15 性能/多输出 JIT。 |
+| 0.15.0 | 2026-07-20 | 多输出 JIT（97×/21×）+ f32 混合精度 + 流式求值（百万行恒定内存）+ 常量折叠/栈压缩 + Arena reset/workspace 池 + ahash + 原生 i64 F4 管线；JIT 调用约定 Windows 修复；分段插装定位 F4 瓶颈（extract 99.98%）；cyclic-6 <5s 推迟到 0.15.1（需 RREF/F5）；最高优先级缺口转为 1.0 稳定版。 |

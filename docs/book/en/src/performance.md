@@ -72,6 +72,47 @@ for exponentiation (same as oCAS), so no syntax translation is needed.
 
 ---
 
+## JIT & evaluation
+
+The `eval_jit` benchmark compares the Cranelift JIT against the stack-based
+interpreter on single- and multi-output workloads (1000 calls each, criterion
+`iter_custom` timing):
+
+| Workload | Interpreter | JIT | Speedup |
+|---|---|---|---|
+| Polynomial (single output) | 221 µs | 2.27 µs | **97×** |
+| Trig 3-output | 479 µs | 22.4 µs | **21×** |
+
+```bash
+cargo bench --bench eval_jit --features jit
+```
+
+The multi-output case compiles three expressions (`sin(x)`, `cos(x)`,
+`sin(x)/cos(x)`) into one evaluator via `compile_multi`, sharing the `sin(x)`
+subexpression across outputs; `call_into` writes results into a stack-allocated
+buffer so each call performs zero heap allocation.
+
+### Streaming evaluation
+
+`StreamingEvaluator` reuses internal buffers across rows, so processing a
+million-row dataset uses constant memory regardless of stream length:
+
+| Workload | Per-row `evaluate` | `StreamingEvaluator` | Speedup |
+|---|---|---|---|
+| 100k rows, polynomial | 23.4 ms | 16.8 ms | **28%** |
+
+```bash
+cargo bench --bench eval_streaming
+```
+
+### f32 mixed precision
+
+`compile_jit_f32` / `compile_vector_evaluator_f32` generate single-precision
+code. On the same hardware the SIMD evaluator doubles its lane count (16 lanes
+vs 8 for f64 on AVX-512). Use when f32 accuracy is sufficient.
+
+---
+
 ## Symbolica comparison (local, manual)
 
 [Symbolica](https://github.com/symbolica-dev/symbolica) is the primary
