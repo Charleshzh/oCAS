@@ -43,6 +43,7 @@ pub mod tree;
 
 pub mod compile;
 mod optimize;
+pub mod streaming;
 
 #[cfg(feature = "jit")]
 pub mod jit;
@@ -53,13 +54,17 @@ pub mod simd;
 #[cfg(feature = "fast-poly")]
 pub mod poly_eval;
 
-pub use compile::{compile_atom, compile_atom_with, compile_tree, compile_tree_with};
+pub use compile::{
+    compile_atom, compile_atom_with, compile_atoms_multi, compile_atoms_multi_with, compile_tree,
+    compile_tree_with, compile_trees_multi,
+};
 pub use domain::{EvaluationDomain, PowfExtension};
 pub use error::EvaluationError;
 pub use evaluator::ExpressionEvaluator;
 pub use function_map::FunctionMap;
 pub use instruction::{Instr, Instruction, Slot};
+pub use streaming::StreamingEvaluator;
 pub use tree::EvalTree;
 
 #[cfg(feature = "simd")]
-pub use simd::VectorEvaluator;
+pub use simd::{VectorEvaluator, VectorEvaluatorF32};

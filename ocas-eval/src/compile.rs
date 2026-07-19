@@ -7,9 +7,10 @@
 //! The compiler walks the tree in post-order, assigning stack slots
 //! and emitting instructions for each node.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use ocas_atom::Atom;
+use ocas_core::FastHashMap as HashMap;
 
 use crate::domain::{EvaluationDomain, PowfExtension};
 use crate::error::{EvaluationError, Result};
@@ -48,10 +49,52 @@ pub fn compile_tree_with<T: EvaluationDomain + PowfExtension>(
     tree: &EvalTree,
     function_map: Option<FunctionMap<T>>,
 ) -> Result<ExpressionEvaluator<T>> {
+    compile_trees(&[tree], function_map)
+}
+
+/// Compile multiple [`Atom`]s into a single multi-output
+/// [`ExpressionEvaluator`], sharing constants, CSE, and stack slots
+/// across all outputs.
+pub fn compile_atoms_multi<T: EvaluationDomain + PowfExtension>(
+    atoms: &[Atom<'_>],
+) -> Result<ExpressionEvaluator<T>> {
+    compile_atoms_multi_with(atoms, None)
+}
+
+/// Compile multiple [`Atom`]s with a function map into a single
+/// multi-output [`ExpressionEvaluator`].
+pub fn compile_atoms_multi_with<T: EvaluationDomain + PowfExtension>(
+    atoms: &[Atom<'_>],
+    function_map: Option<FunctionMap<T>>,
+) -> Result<ExpressionEvaluator<T>> {
+    let trees: Vec<EvalTree> = atoms.iter().map(|a| EvalTree::from_atom(*a)).collect();
+    let refs: Vec<&EvalTree> = trees.iter().collect();
+    compile_trees(&refs, function_map)
+}
+
+/// Compile multiple [`EvalTree`]s into a single multi-output
+/// [`ExpressionEvaluator`].
+pub fn compile_trees_multi<T: EvaluationDomain + PowfExtension>(
+    trees: &[&EvalTree],
+) -> Result<ExpressionEvaluator<T>> {
+    compile_trees(trees, None)
+}
+
+/// Shared compiler core: compile a set of trees into one evaluator
+/// with multiple result slots.
+fn compile_trees<T: EvaluationDomain + PowfExtension>(
+    trees: &[&EvalTree],
+    function_map: Option<FunctionMap<T>>,
+) -> Result<ExpressionEvaluator<T>> {
+    // Constant folding and algebraic simplification at the tree level.
+    let folded: Vec<EvalTree> = trees.iter().map(|t| t.fold_constants()).collect();
+
     // Pass 1: collect all variable names and count constants
     let mut var_names = HashSet::new();
     let mut const_count = 0usize;
-    scan_tree(tree, &mut var_names, &mut const_count);
+    for tree in &folded {
+        scan_tree(tree, &mut var_names, &mut const_count);
+    }
     let param_count = var_names.len();
 
     // Assign parameter slots: sort for deterministic ordering
@@ -63,18 +106,23 @@ pub fn compile_tree_with<T: EvaluationDomain + PowfExtension>(
         .map(|(i, v)| (v.clone(), i))
         .collect();
 
-    // Pass 2: compile with known param_count and const_count
+    // Pass 2: compile all trees with one shared context so that CSE
+    // deduplicates subexpressions across outputs.
     let temp_base = param_count + const_count;
-    let (instructions, next_temp, constants, result_slot) = {
+    let (instructions, next_temp, constants, result_slots) = {
         let mut ctx =
             CompileContext::<T>::new(param_count, temp_base, var_to_param, function_map.as_ref());
-        let result_slot = ctx.compile_node(tree)?;
-        (ctx.instructions, ctx.next_temp, ctx.constants, result_slot)
+        let mut result_slots = Vec::with_capacity(folded.len());
+        for tree in &folded {
+            result_slots.push(ctx.compile_node(tree)?);
+        }
+        (ctx.instructions, ctx.next_temp, ctx.constants, result_slots)
     };
 
     let actual_const_count = constants.len();
-    let (instructions, _next_temp) = optimize::optimize(instructions, next_temp);
-    let stack_size = temp_base + next_temp;
+    let (instructions, temp_count, result_indices) =
+        optimize::optimize(instructions, temp_base, next_temp, &result_slots);
+    let stack_size = temp_base + temp_count;
 
     match function_map {
         Some(fm) => Ok(ExpressionEvaluator::new_with_functions(
@@ -82,7 +130,7 @@ pub fn compile_tree_with<T: EvaluationDomain + PowfExtension>(
             param_count,
             actual_const_count,
             stack_size,
-            vec![result_slot],
+            result_indices,
             constants,
             fm,
         )),
@@ -91,7 +139,7 @@ pub fn compile_tree_with<T: EvaluationDomain + PowfExtension>(
             param_count,
             actual_const_count,
             stack_size,
-            vec![result_slot],
+            result_indices,
             constants,
         )),
     }
@@ -295,6 +343,18 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
     pub fn compile_with(atom: Atom<'_>, map: FunctionMap<T>) -> Result<Self> {
         compile_atom_with(atom, Some(map))
     }
+
+    /// Compile multiple [`Atom`]s into one multi-output evaluator,
+    /// sharing common subexpressions across all outputs.
+    pub fn compile_multi(atoms: &[Atom<'_>]) -> Result<Self> {
+        compile_atoms_multi(atoms)
+    }
+
+    /// Compile multiple [`Atom`]s with a [`FunctionMap`] into one
+    /// multi-output evaluator.
+    pub fn compile_multi_with(atoms: &[Atom<'_>], map: FunctionMap<T>) -> Result<Self> {
+        compile_atoms_multi_with(atoms, Some(map))
+    }
 }
 
 #[cfg(test)]
@@ -456,5 +516,66 @@ mod tests {
         let eval = ExpressionEvaluator::compile_with(expr, map).unwrap();
         let result = eval.evaluate(&[]).unwrap();
         assert!((result[0] - 16.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn compile_multi_two_outputs() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let sum = ctx.add(&[ctx.var("x"), ctx.var("y")]);
+        let prod = ctx.mul(&[ctx.var("x"), ctx.var("y")]);
+        let eval: ExpressionEvaluator<f64> =
+            ExpressionEvaluator::compile_multi(&[sum, prod]).unwrap();
+        assert_eq!(eval.result_count(), 2);
+        assert_eq!(eval.param_count(), 2);
+        let result = eval.evaluate(&[2.0, 3.0]).unwrap();
+        assert!((result[0] - 5.0).abs() < 1e-10);
+        assert!((result[1] - 6.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn compile_multi_shared_subexpression() {
+        // outputs: sin(x) + 1, sin(x) * 2 — sin(x) shared via CSE
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let sin_x = ctx.fun("sin", &[ctx.var("x")]);
+        let out0 = ctx.add(&[sin_x, ctx.num(1)]);
+        let out1 = ctx.mul(&[sin_x, ctx.num(2)]);
+        let eval: ExpressionEvaluator<f64> =
+            ExpressionEvaluator::compile_multi(&[out0, out1]).unwrap();
+        let result = eval.evaluate(&[std::f64::consts::FRAC_PI_2]).unwrap();
+        assert!((result[0] - 2.0).abs() < 1e-10);
+        assert!((result[1] - 2.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn compile_multi_constant_folding() {
+        // (2 + 3) * x and x^1 — folding reduces both
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let five_x = ctx.mul(&[ctx.add(&[ctx.num(2), ctx.num(3)]), ctx.var("x")]);
+        let x_pow_1 = ctx.pow(ctx.var("x"), ctx.num(1));
+        let eval: ExpressionEvaluator<f64> =
+            ExpressionEvaluator::compile_multi(&[five_x, x_pow_1]).unwrap();
+        let result = eval.evaluate(&[4.0]).unwrap();
+        assert!((result[0] - 20.0).abs() < 1e-10);
+        assert!((result[1] - 4.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn compile_multi_with_external_function() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let sq = ctx.fun("square", &[ctx.var("x")]);
+        let cube_arg = ctx.fun("square", &[ctx.var("x")]);
+        let out1 = ctx.mul(&[cube_arg, ctx.var("x")]);
+
+        let mut map = FunctionMap::<f64>::new();
+        map.register("square", 1, Box::new(|args| args[0] * args[0]));
+
+        let eval = ExpressionEvaluator::compile_multi_with(&[sq, out1], map).unwrap();
+        let result = eval.evaluate(&[3.0]).unwrap();
+        assert!((result[0] - 9.0).abs() < 1e-10);
+        assert!((result[1] - 27.0).abs() < 1e-10);
     }
 }

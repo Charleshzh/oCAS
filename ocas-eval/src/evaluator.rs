@@ -83,6 +83,19 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
         self.param_count
     }
 
+    /// Return the number of results produced by this evaluator.
+    pub fn result_count(&self) -> usize {
+        self.result_indices.len()
+    }
+
+    /// Return the stack size required to evaluate this expression.
+    ///
+    /// Callers reusing a stack buffer across evaluations should
+    /// pre-allocate a `Vec` with this capacity.
+    pub fn stack_size(&self) -> usize {
+        self.stack_size
+    }
+
     /// Evaluate the expression with the given parameter values.
     ///
     /// Returns a vector of result values. The number of results equals
@@ -100,6 +113,30 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
     /// assert_eq!(result.len(), 1);
     /// ```
     pub fn evaluate(&self, params: &[T]) -> Result<Vec<T>> {
+        let mut stack: Vec<T> = Vec::with_capacity(self.stack_size);
+        let mut results: Vec<T> = Vec::with_capacity(self.result_indices.len());
+        self.evaluate_with_stack(params, &mut stack, &mut results)?;
+        Ok(results)
+    }
+
+    /// Evaluate the expression, reusing caller-provided buffers.
+    ///
+    /// `stack` must have capacity for at least
+    /// [`stack_size`](ExpressionEvaluator::stack_size) elements (it is
+    /// resized as needed); `results` is filled with the result values.
+    /// Reusing buffers across calls avoids per-evaluation heap
+    /// allocation, which matters for streaming and batch workloads.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`EvaluationError`] if the number of parameters does not
+    /// match, or if an arithmetic error occurs.
+    pub fn evaluate_with_stack(
+        &self,
+        params: &[T],
+        stack: &mut Vec<T>,
+        results: &mut Vec<T>,
+    ) -> Result<()> {
         if params.len() != self.param_count {
             return Err(EvaluationError::WrongArity {
                 name: "<expr>".into(),
@@ -108,7 +145,8 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
             });
         }
 
-        let mut stack: Vec<T> = vec![T::zero(); self.stack_size];
+        stack.clear();
+        stack.resize(self.stack_size, T::zero());
 
         // Fill parameters
         for (i, p) in params.iter().enumerate() {
@@ -178,13 +216,53 @@ impl<T: EvaluationDomain + PowfExtension> ExpressionEvaluator<T> {
         }
 
         // Collect results
-        let results: Vec<T> = self
-            .result_indices
-            .iter()
-            .map(|&i| stack[i].clone())
-            .collect();
+        results.clear();
+        results.extend(self.result_indices.iter().map(|&i| stack[i].clone()));
 
-        Ok(results)
+        Ok(())
+    }
+}
+
+/// Cranelift JIT compilation support.
+#[cfg(feature = "jit")]
+impl ExpressionEvaluator<f64> {
+    /// Compile this evaluator's instruction sequence to native machine
+    /// code via the Cranelift JIT backend.
+    ///
+    /// Constants are embedded as immediates and all result slots are
+    /// written in order, so multi-output evaluators are fully supported.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`EvaluationError::UnsupportedOperation`] if the expression
+    /// contains instructions the JIT cannot lower (e.g. external
+    /// functions or `sec`/`csc`/`cot`), or
+    /// [`EvaluationError::JitCompilationError`] on backend failure.
+    pub fn compile_jit(&self) -> Result<crate::jit::JitCompiledFunction> {
+        let constants: Vec<f64> = self.constants.clone();
+        crate::jit::JitEngine::compile(
+            &self.instructions,
+            self.param_count,
+            &constants,
+            &self.result_indices,
+        )
+    }
+
+    /// Compile this evaluator's instruction sequence to single-precision
+    /// native code. Constants are narrowed from f64 to f32; results have
+    /// f32 precision.
+    ///
+    /// # Errors
+    ///
+    /// Same conditions as [`compile_jit`](ExpressionEvaluator::compile_jit).
+    pub fn compile_jit_f32(&self) -> Result<crate::jit::JitCompiledF32> {
+        let constants: Vec<f32> = self.constants.iter().map(|&c| c as f32).collect();
+        crate::jit::JitEngine::compile_f32(
+            &self.instructions,
+            self.param_count,
+            &constants,
+            &self.result_indices,
+        )
     }
 }
 
@@ -217,6 +295,36 @@ impl ExpressionEvaluator<f64> {
             self.stack_size,
             self.result_indices.clone(),
             self.constants.clone(),
+        ))
+    }
+
+    /// Compile this evaluator into a single-precision
+    /// [`VectorEvaluatorF32`](crate::simd::VectorEvaluatorF32) for batch
+    /// SIMD evaluation. Constants are narrowed from f64 to f32; on the
+    /// same hardware this doubles the SIMD lane count.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`EvaluationError::UnsupportedOperation`] if the expression
+    /// contains external functions, which are not supported in SIMD mode.
+    pub fn compile_vector_evaluator_f32(&self) -> Result<crate::simd::VectorEvaluatorF32> {
+        // Check for unsupported instructions
+        for instr in &self.instructions {
+            if let Instr::ExternalFun { .. } = instr {
+                return Err(EvaluationError::UnsupportedOperation {
+                    message: "external functions not supported in SIMD mode".into(),
+                });
+            }
+        }
+
+        let constants: Vec<f32> = self.constants.iter().map(|&c| c as f32).collect();
+        Ok(crate::simd::VectorEvaluatorF32::new(
+            self.instructions.clone(),
+            self.param_count,
+            self.const_count,
+            self.stack_size,
+            self.result_indices.clone(),
+            constants,
         ))
     }
 }
@@ -295,5 +403,38 @@ mod tests {
         let instructions = vec![Instr::Copy { dst: 1, src: 0 }];
         let eval = ExpressionEvaluator::new(instructions, 1, 0, 2, vec![1], vec![]);
         assert!((eval.evaluate(&[42.0]).unwrap()[0] - 42.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn evaluate_with_stack_reuses_buffers() {
+        let eval = make_simple_evaluator();
+        let mut stack: Vec<f64> = Vec::with_capacity(eval.stack_size());
+        let mut results: Vec<f64> = Vec::with_capacity(eval.result_count());
+
+        for x in 0..100 {
+            eval.evaluate_with_stack(&[x as f64], &mut stack, &mut results)
+                .unwrap();
+            assert!((results[0] - (x as f64 + 1.0)).abs() < 1e-10);
+        }
+        // Buffers retain capacity across calls (no reallocation needed)
+        assert!(stack.capacity() >= eval.stack_size());
+    }
+
+    #[test]
+    fn evaluate_with_stack_wrong_arity() {
+        let eval = make_simple_evaluator();
+        let mut stack = Vec::new();
+        let mut results = Vec::new();
+        assert!(
+            eval.evaluate_with_stack(&[1.0, 2.0], &mut stack, &mut results)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn result_and_stack_getters() {
+        let eval = make_simple_evaluator();
+        assert_eq!(eval.result_count(), 1);
+        assert_eq!(eval.stack_size(), 3);
     }
 }

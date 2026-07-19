@@ -118,3 +118,7 @@ required-features = ["fast-poly"]
 name = "eval_pulp"
 harness = false
 required-features = ["simd"]
+
+[[bench]]
+name = "eval_streaming"
+harness = false
