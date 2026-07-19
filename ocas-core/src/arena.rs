@@ -171,6 +171,44 @@ impl Arena {
         chunks.push(new_chunk);
         ptr
     }
+
+    /// Reset the arena, invalidating all previously allocated values.
+    ///
+    /// The first chunk is kept and reused; additional chunks are released.
+    /// This makes repeated build–reset cycles allocation-free in the steady
+    /// state, which is the basis of the workspace pool in `ocas-atom`.
+    ///
+    /// # Safety contract (enforced by convention)
+    ///
+    /// Any reference returned by [`allocate_with`](Arena::allocate_with) or
+    /// [`allocate_slice`](Arena::allocate_slice) before the reset **must not**
+    /// be used afterwards — the memory may be handed out again for different
+    /// values. Callers must treat reset as the end of a generation.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_core::arena::Arena;
+    ///
+    /// let arena = Arena::new();
+    /// let _ = arena.allocate_with(|| 1);
+    /// arena.reset();
+    /// let value = arena.allocate_with(|| 2);
+    /// assert_eq!(*value, 2);
+    /// ```
+    pub fn reset(&self) {
+        let mut chunks = self.chunks.borrow_mut();
+        // Keep the first chunk (reusable block), release the rest.
+        chunks.truncate(1);
+        if let Some(first) = chunks.first_mut() {
+            first.offset = 0;
+        }
+    }
+
+    /// Return the number of chunks currently held by the arena.
+    pub fn chunk_count(&self) -> usize {
+        self.chunks.borrow().len()
+    }
 }
 
 impl Default for Arena {
@@ -207,6 +245,12 @@ impl Chunk {
     }
 
     fn try_alloc(&mut self, layout: Layout) -> Option<NonNull<u8>> {
+        // The chunk's base pointer is only guaranteed to be aligned to
+        // `self.align`; refuse requests needing stricter alignment so the
+        // caller falls through to a fresh, suitably-aligned chunk.
+        if layout.align() > self.align {
+            return None;
+        }
         let aligned_offset = align_up(self.offset, layout.align());
         let end = aligned_offset.checked_add(layout.size())?;
         if end > self.size {
@@ -276,6 +320,57 @@ unsafe impl<T: Sync> Sync for OwnedExpr<T> {}
 mod tests {
     use super::*;
     use proptest::prelude::*;
+
+    mod reset {
+        use super::*;
+
+        #[test]
+        fn reset_keeps_first_chunk() {
+            let arena = Arena::with_capacity(64);
+            // Force several chunks (64-byte blocks, 8-byte values).
+            for i in 0..100u64 {
+                arena.allocate_with(|| i);
+            }
+            assert!(arena.chunk_count() > 1);
+            arena.reset();
+            assert_eq!(arena.chunk_count(), 1);
+        }
+
+        #[test]
+        fn reset_allows_reuse() {
+            let arena = Arena::new();
+            let _ = arena.allocate_with(|| 1u64);
+            arena.reset();
+            let value = arena.allocate_with(|| 2u64);
+            assert_eq!(*value, 2);
+        }
+
+        #[test]
+        fn reset_reuse_steady_state_allocates_nothing() {
+            let arena = Arena::with_capacity(4096);
+            for round in 0..1000 {
+                for i in 0..50u64 {
+                    let v = arena.allocate_with(|| i + round);
+                    assert_eq!(*v, i + round);
+                }
+                arena.reset();
+            }
+            // Steady state: still a single chunk after 1000 generations.
+            assert_eq!(arena.chunk_count(), 1);
+        }
+
+        #[test]
+        fn overaligned_allocation_gets_own_chunk() {
+            let arena = Arena::new();
+            let _ = arena.allocate_with(|| 1u8);
+            #[repr(align(64))]
+            #[derive(Copy, Clone)]
+            struct Wide(u64);
+            let w = arena.allocate_with(|| Wide(7));
+            assert_eq!(w as *const Wide as usize % 64, 0);
+            assert_eq!(w.0, 7);
+        }
+    }
 
     mod simple {
         use super::*;

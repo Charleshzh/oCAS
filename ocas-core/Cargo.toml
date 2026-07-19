@@ -15,6 +15,7 @@ description = "Core runtime, memory management, and numerical backend glue for o
 [dependencies]
 thiserror = { workspace = true }
 rayon = { workspace = true }
+ahash = { workspace = true }
 serde = { workspace = true, optional = true }
 num-bigint = { workspace = true, optional = true }
 

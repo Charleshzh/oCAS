@@ -13,5 +13,15 @@ pub mod arena;
 pub mod error;
 pub mod thread_pool;
 
+/// Hash map using the DoS-resistant, high-performance `ahash` hasher.
+///
+/// Prefer this over [`std::collections::HashMap`] on hot paths
+/// (polynomial term tables, hash-consing, CSE maps); std's SipHash is
+/// needlessly slow for trusted internal keys.
+pub type FastHashMap<K, V> = std::collections::HashMap<K, V, ahash::RandomState>;
+
+/// Hash set using the `ahash` hasher. See [`FastHashMap`].
+pub type FastHashSet<K> = std::collections::HashSet<K, ahash::RandomState>;
+
 #[cfg(feature = "gmp")]
 pub mod gmp;
