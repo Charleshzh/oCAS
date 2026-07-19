@@ -5,9 +5,8 @@
 //! and `Mul` using backtracking, and sequence wildcards for ordered argument
 //! lists such as function arguments.
 
-use std::collections::HashMap;
-
 use ocas_atom::{Atom, AtomNode, Symbol};
+use ocas_core::FastHashMap as HashMap;
 
 use crate::pattern::{Pattern, WildcardLevel};
 

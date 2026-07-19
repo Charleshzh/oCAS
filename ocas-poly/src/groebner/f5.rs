@@ -9,8 +9,7 @@
 //! Reference: Faugère, "A New Efficient Algorithm for Computing Gröbner
 //! Bases without Reduction to Zero (F5)", ISSAC 2002.
 
-use std::collections::HashMap;
-
+use ocas_core::FastHashMap as HashMap;
 use ocas_domain::Domain;
 
 use crate::groebner::GroebnerBasis;

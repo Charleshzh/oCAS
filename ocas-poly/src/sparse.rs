@@ -5,9 +5,9 @@
 //! represents the monomial `x1^e1 * x2^e2 * ...`. Monomial ordering is
 //! controlled by the [`MonomialOrder`] type parameter.
 
-use std::collections::HashMap;
 use std::marker::PhantomData;
 
+use ocas_core::FastHashMap as HashMap;
 use ocas_domain::{Domain, EuclideanDomain, FiniteField, IntegerDomain};
 use smallvec::SmallVec;
 
@@ -132,7 +132,7 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     /// Create the zero polynomial in `n_vars` variables over `domain`.
     pub fn new(domain: D, n_vars: usize) -> Self {
         Self {
-            terms: HashMap::new(),
+            terms: HashMap::default(),
             domain,
             n_vars,
             _marker: PhantomData,

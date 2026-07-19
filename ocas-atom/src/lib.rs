@@ -6,13 +6,14 @@
 //! parser, printer, and rewrite engine.
 
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 
+use ocas_core::FastHashMap;
 use ocas_core::arena::Arena;
 
 pub mod normalize;
 pub mod walk;
+pub mod workspace;
 
 /// An interned symbolic name (variable, function, or constant).
 ///
@@ -63,8 +64,8 @@ impl Symbol {
 }
 
 fn intern(name: &str) -> &'static str {
-    static TABLE: OnceLock<Mutex<HashMap<String, &'static str>>> = OnceLock::new();
-    let table = TABLE.get_or_init(|| Mutex::new(HashMap::new()));
+    static TABLE: OnceLock<Mutex<FastHashMap<String, &'static str>>> = OnceLock::new();
+    let table = TABLE.get_or_init(|| Mutex::new(FastHashMap::default()));
     let mut table = table.lock().expect("symbol interner lock poisoned");
     table.entry(name.to_owned()).or_insert_with(|| {
         let boxed = name.to_owned().into_boxed_str();
@@ -223,7 +224,7 @@ pub enum AtomNode<'a> {
 /// ```
 pub struct AtomArena<'a> {
     arena: &'a Arena,
-    cons_table: RefCell<HashMap<AtomNode<'a>, Atom<'a>>>,
+    cons_table: RefCell<FastHashMap<AtomNode<'a>, Atom<'a>>>,
 }
 
 impl<'a> AtomArena<'a> {
@@ -243,7 +244,7 @@ impl<'a> AtomArena<'a> {
     pub fn new(arena: &'a Arena) -> Self {
         Self {
             arena,
-            cons_table: RefCell::new(HashMap::new()),
+            cons_table: RefCell::new(FastHashMap::default()),
         }
     }
 

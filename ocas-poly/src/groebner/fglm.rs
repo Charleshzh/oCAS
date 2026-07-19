@@ -9,8 +9,7 @@
 //! Reference: Faugère et al., "Efficient Computation of Zero-dimensional
 //! Gröbner Bases by Change of Ordering", JSC 1993.
 
-use std::collections::HashMap;
-
+use ocas_core::FastHashMap as HashMap;
 use ocas_domain::Domain;
 
 use crate::groebner::GroebnerBasis;
@@ -83,7 +82,7 @@ pub fn fglm<D: Domain, O2: MonomialOrder>(
     let mut seen_nfs: Vec<Vec<D::Element>> = Vec::new(); // normal forms seen
     let mut seen_mons: Vec<Vec<usize>> = Vec::new(); // corresponding monomials
     let mut boundary: Vec<Vec<usize>> = vec![vec![0; n_vars]]; // B, start at 1
-    let mut visited: HashMap<Vec<usize>, bool> = HashMap::new();
+    let mut visited: HashMap<Vec<usize>, bool> = HashMap::default();
 
     let max_steps = dim * (dim + 1) + n_vars * 4;
     let mut steps = 0;
@@ -151,7 +150,7 @@ fn compute_staircase(lms: &[Vec<usize>], n_vars: usize) -> Option<Vec<Vec<usize>
     // BFS from the unit monomial; a monomial is in the staircase iff no LM
     // divides it. Zero-dimensional ⟺ BFS terminates.
     let mut queue = vec![vec![0usize; n_vars]];
-    let mut seen: HashMap<Vec<usize>, ()> = HashMap::new();
+    let mut seen: HashMap<Vec<usize>, ()> = HashMap::default();
     let limit = 100_000; // safety bound
     while let Some(m) = queue.pop() {
         if seen.contains_key(&m) {

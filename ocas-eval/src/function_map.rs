@@ -4,7 +4,7 @@
 //! called during expression evaluation via [`ExternalFun`](crate::instruction::Instr::ExternalFun)
 //! instructions.
 
-use std::collections::HashMap;
+use ocas_core::FastHashMap as HashMap;
 
 use crate::domain::EvaluationDomain;
 
@@ -29,8 +29,8 @@ impl<T: EvaluationDomain> FunctionMap<T> {
     pub fn new() -> Self {
         Self {
             entries: Vec::new(),
-            name_to_idx: HashMap::new(),
-            aliases: HashMap::new(),
+            name_to_idx: HashMap::default(),
+            aliases: HashMap::default(),
         }
     }
 

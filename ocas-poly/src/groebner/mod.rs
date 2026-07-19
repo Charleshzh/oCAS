@@ -17,8 +17,7 @@ pub mod f5;
 pub mod fglm;
 pub mod hilbert;
 
-use std::collections::HashSet;
-
+use ocas_core::FastHashSet as HashSet;
 use ocas_domain::Domain;
 
 use crate::sparse::{
@@ -68,7 +67,7 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
         }
 
         // Collect critical pairs: all unordered pairs (i, j) with i < j.
-        let mut pairs: HashSet<(usize, usize)> = HashSet::new();
+        let mut pairs: HashSet<(usize, usize)> = HashSet::default();
         for i in 0..basis.len() {
             for j in i + 1..basis.len() {
                 pairs.insert((i, j));
