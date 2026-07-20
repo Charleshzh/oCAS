@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-20（0.15.0 已发布：多输出 JIT + f32 混合精度 + 流式求值 + Arena/workspace 池 + ahash + 原生 i64 F4；cyclic-6 <5s 推迟到 0.15.1）**
+> 最后修订：**2026-07-20（0.15.1 已发布：F4 真实线性代数修复——列序降序 + echelon 回写 + Symbolica GM 判据移植；cyclic-5 提速 ≈85 000× 且首次通过正确性验证，cyclic-6 可解）**
 
 ---
 
@@ -382,7 +382,7 @@ Risch 代码。
 - 多输出 JIT 在向量化批次上较解释器快 ≥ 10 倍。[x] **97×（单输出）/ 21×（3 输出）**
 - 流式：处理百万行数据集时内存恒定。[x] **恒定内存验证通过，100k 行提速 28%**
 - 与 Symbolica `optimize.rs` 示例正面基准对比并提交。[x] 文档形式交付（AGPL 独立 workspace）
-- ℤ_p 上 cyclic-6 < 5 s。→ **推迟到 0.15.1**（需 RREF/F5；分段插装定位 extract 占 99.98%）
+- ℤ_p 上 cyclic-6 < 5 s。→ **0.15.1 部分达成**（F4 真实线性代数落地后 cyclic-6 可解：9970 s、basis=20、正确；< 5 s 需 LM 索引 + 稀疏 echelon，推迟到 0.15.2）
 
 **文档**
 
@@ -392,7 +392,7 @@ Risch 代码。
 **验收**
 
 - [x] 3 项微基准验证：JIT poly 97×、JIT multi3 21×、Streaming 28%。
-- [x] cyclic-6 < 5 s 目标识别为需 RREF/F5，推迟到 0.15.1。
+- [x] 0.15.1：cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s）；< 5 s 目标推迟到 0.15.2（需 LM 索引 + 稀疏 echelon）。
 
 ---
 
@@ -475,3 +475,5 @@ Risch 代码。
 | 0.12.0 | 2026-07-04 | 有理多项式+结式+Karatsuba 发布。竞品索引更新：因式分解/有理多项式/部分分式/结式标 🟢。 |
 | 0.12.1 | 2026-07-06 | 计算加速库整合+性能优化发布。自研 NTT（Montgomery 模乘）、pulp 替换 wide、BuiltinOp 枚举化、fast_polynomial/sprs/quadrature 集成。竞品索引更新：多项式快速乘法/数值积分/大整数 SOO/模方法多变量 GCD 标 🟢。 |
 | 0.13.0 | 2026-07-06 | F4 Gröbner 基算法发布。Gebauer-Moeller 临界对筛选 + 简化缓存 + ℤ_p 快速路径 + Grlex 序 + `minimize()` bug 修复。竞品索引更新：Gröbner 标 🟢。F5/多序/Hilbert 推迟到 0.14+。 |
+| 0.15.0 | 2026-07-20 | 性能/多输出 JIT/流式发布。JIT 97×/21×、f32 混合精度、流式恒定内存、Arena/workspace 池、ahash。竞品索引更新：流式/优化代码生成标 🟢。 |
+| 0.15.1 | 2026-07-20 | F4 真实线性代数修复。矩阵列序降序 + echelon 回写条件 + Symbolica GM 判据移植 + 经典 F4 提取（独立倍式 + input_heads、提取零约化）。cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s，basis=20）；< 5 s 目标推迟到 0.15.2（需 LM 索引 + 稀疏 echelon）。 |

@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.15.0 @ 2026-07-20**
+> Last evaluated: **0.15.1 @ 2026-07-20**
 
 ---
 
@@ -42,8 +42,9 @@ For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 | 0.13.0 | Beta | ✅ | ✅ F4 Gröbner basis algorithm with Gebauer-Moeller pair filtering and simplification cache, `Grlex` ordering, `Domain` trait extensions, `FiniteField` ℤ_p fast-path utilities, version bumped to 0.13.0 |
 | 0.14.0 | 1.0 Candidate | ✅ | ✅ Risch symbolic integration (Hermite reduction, log-derivative identity, primitive undetermined coefficients, hyperexponential RDE), rational-function integration (Hermite + Rothstein–Trager), special-function table (erf/Ei/Si/Ci/Fresnel), trigonometric integration (exp(I·x) + realify), FGLM/F5/Hilbert, `reorder`, two mdBook chapters |
 | 0.15.0 | 1.0 Candidate | ✅ | ✅ Multi-output JIT (97×/21×), f32 mixed precision (JIT + SIMD 16 lanes), streaming evaluation (constant memory over 1M rows), const-folding + stack compaction, Arena reset + workspace pool, ahash hot-path replacement, native i64 F4 pipeline; cyclic-6 <5s deferred to 0.15.1 (needs RREF/F5) |
+| 0.15.1 | 1.0 Candidate | ✅ | ✅ Real F4 linear algebra fix: descending matrix column order + echelon write-back condition + Symbolica GM criteria port + classic extraction (separate multiples + input-heads, zero reduction). cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s); <5s deferred to 0.15.2 (LM index + sparse echelon) |
 
-All 0.1–0.15.0 deliverables landed. The workspace is pinned at 0.15.0. Quality
+All 0.1–0.15.1 deliverables landed. The workspace is pinned at 0.15.1. Quality
 gates are green: `cargo fmt`, `clippy -D warnings`, workspace tests,
 `cargo deny`, pytest cases, `mdbook build`.
 
@@ -108,7 +109,7 @@ early functional subset of Symbolica.
 | Streaming API | ✅ `streaming.rs` (`StreamingEvaluator`: chunked input + reused stack, constant memory over 1M rows) | ✅ `streaming.rs` |
 | Tensors / dual numbers | 🔴 none | ✅ `tensors.rs` / `dual.rs` |
 | Optimization / codegen | ✅ multi-output JIT (`compile_multi` + CSE + const folding + stack compaction) + f32 mixed precision | ✅ `optimize.rs` / multi-output |
-| Gröbner bases | 🟡 F4 done + native i64 pipeline; cyclic-6 performance pending RREF/F5 (0.15.1) | ✅ industrial-grade |
+| Gröbner bases | 🟡 real F4 linear algebra done (0.15.1: cyclic-5 31 ms, cyclic-6 tractable); cyclic-6 <5s pending 0.15.2 (LM index + sparse echelon) | ✅ industrial-grade |
 
 Symbolica's core strengths — industrial factorization, rational function
 arithmetic, multi-output optimization, streaming — are largely absent in oCAS.
@@ -212,3 +213,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.13.2 | 2026-07-18 | Engineering & distribution milestone: `pip install ocas` live on PyPI (5 platform wheels + sdist, incl. both macOS archs); OIDC trusted publishing pipeline established; crossbeam-epoch RUSTSEC-2026-0204 fixed; cranelift/chumsky/logos/cbindgen/criterion/hashbrown/flint3-sys/egg upgraded; no algorithm changes, gap conclusions unchanged. |
 | 0.14.0 | 2026-07-18 | Risch symbolic integration completed (elementary transcendental towers + RDE polynomial fragment); rational-function integration (Hermite + logarithmic part); special-function table (erf/Ei/Si/Ci/Fresnel) closing the 0.11.0 known gap `exp(-x²)→erf`; trigonometric exp(I·x) + realify; Gröbner wrap-up (FGLM zero-dimensional conversion + experimental F5 + Hilbert bounds + reorder); parser `-x^2` precedence fix; symbolic integration upgraded from 🟡 to 🟢; highest-priority gap shifted to 0.15 performance / multi-output JIT. |
 | 0.15.0 | 2026-07-20 | Multi-output JIT (97×/21×) + f32 mixed precision + streaming evaluation (constant memory over 1M rows) + const-folding/stack-compaction + Arena reset/workspace pool + ahash + native i64 F4 pipeline; JIT calling-convention Windows fix; F4 bottleneck localized via section timing (extraction = 99.98%); cyclic-6 <5s deferred to 0.15.1 (needs RREF/F5); highest-priority gap shifted to 1.0 stable release. |
+| 0.15.1 | 2026-07-20 | Real F4 linear algebra fix: descending matrix column order (was ascending — echelon was decorative, F4 was effectively Buchberger) + echelon write-back condition + Symbolica GM criteria port + classic extraction (separate multiples + input-heads, zero reduction at extraction); cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s, basis=20); <5s deferred to 0.15.2 (LM index + sparse echelon). |

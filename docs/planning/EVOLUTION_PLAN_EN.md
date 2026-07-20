@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-20 (0.15.0 released: multi-output JIT + f32 mixed precision + streaming evaluation + Arena/workspace pool + ahash + native i64 F4; cyclic-6 <5s deferred to 0.15.1)**
+> Last revised: **2026-07-20 (0.15.1 released: real F4 linear algebra — descending column order + echelon write-back fix + Symbolica GM criteria port; cyclic-5 ~85,000× faster with first-ever correctness pass, cyclic-6 tractable)**
 
 ---
 
@@ -403,7 +403,7 @@ Rust + arena + JIT stack should start *exceeding* competitors.
 - Multi-output JIT ≥ 10× interpreter on vectorized batch (extend 0.8.0 win). [x] **97× (single) / 21× (3-output)**
 - Streaming: process a 1M-row dataset with constant memory. [x] **verified, 28% faster on 100k rows**
 - Head-to-head benchmark vs Symbolica `optimize.rs` example committed. [x] documented (AGPL separate workspace)
-- cyclic-6 over ℤ_p < 5 s. → **deferred to 0.15.1** (needs RREF/F5; section timing shows extraction = 99.98%)
+- cyclic-6 over ℤ_p < 5 s. → **partially achieved in 0.15.1** (real F4 linear algebra landed: cyclic-6 tractable at 9970 s, basis=20, correct; < 5 s needs LM index + sparse echelon, deferred to 0.15.2)
 
 **Documentation**
 
@@ -413,7 +413,7 @@ Rust + arena + JIT stack should start *exceeding* competitors.
 **Acceptance**
 
 - [x] 3 micro-benchmarks verified: JIT poly 97×, JIT multi3 21×, Streaming 28%.
-- [x] cyclic-6 < 5 s identified as requiring RREF/F5, deferred to 0.15.1.
+- [x] 0.15.1: cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s); < 5 s target deferred to 0.15.2 (needs LM index + sparse echelon).
 
 ---
 
@@ -498,3 +498,5 @@ Refresh this plan:
 | 0.12.0 | 2026-07-04 | Rational polynomials + resultant + Karatsuba released. Competitor index updated: factorization/rational polynomials/partial fractions/resultant marked 🟢. |
 | 0.12.1 | 2026-07-06 | Compute acceleration libraries + performance optimizations released. Self-implemented NTT (Montgomery modmul), pulp replaces wide, BuiltinOp enum, fast_polynomial/sprs/quadrature integration. Competitor index updated: fast polynomial multiplication/numerical integration/big int SOO/modular multivariate GCD marked 🟢. |
 | 0.13.0 | 2026-07-06 | F4 Gröbner basis algorithm released. Gebauer-Moeller pair filtering + simplification cache + ℤ_p fast path + Grlex ordering + `minimize()` bug fix. Competitor index updated: Gröbner marked 🟢. F5/multi-order/Hilbert deferred to 0.14+. |
+| 0.15.0 | 2026-07-20 | Performance / multi-output JIT / streaming release. JIT 97×/21×, f32 mixed precision, constant-memory streaming, Arena/workspace pool, ahash. Competitor index updated: streaming/optimization codegen marked 🟢. |
+| 0.15.1 | 2026-07-20 | Real F4 linear algebra fix. Descending matrix column order + echelon write-back condition + Symbolica GM criteria port + classic F4 extraction (separate multiples + input-heads, zero reduction at extraction). cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s, basis=20); < 5 s target deferred to 0.15.2 (needs LM index + sparse echelon). |

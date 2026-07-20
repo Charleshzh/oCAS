@@ -303,6 +303,7 @@ After 1.0, development will focus on:
 | 0.13.2 | Beta | Month 19 | PyPI release (`pip install ocas`) + dependency upgrades + CI hardening |
 | 0.14.0 | 1.0 Candidate | Month 22 | Risch symbolic integration + rational-function integration + special-function table + FGLM/F5/Hilbert + trigonometric integration |
 | 0.15.0 | 1.0 Candidate | Month 24 | Multi-output JIT + f32 mixed precision + streaming evaluation + Arena/workspace pool + ahash + native i64 F4 |
+| 0.15.1 | 1.0 Candidate | Month 24 | F4 real linear algebra fix (cyclic-5 ~85,000× faster, cyclic-6 tractable) |
 | 1.0.0 | Stable | Month 26 | Stable release |
 
 ---
