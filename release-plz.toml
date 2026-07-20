@@ -1,0 +1,15 @@
+# release-plz configuration
+#
+# All 13 crates in this workspace share one version (workspace.package.version)
+# and are released together.
+
+[workspace]
+# Don't let release-plz re-verify each crate with `cargo package` in a
+# stripped temporary directory: that context drops the workspace root and
+# cannot resolve `workspace = true` manifests (cargo metadata fails with
+# "dependency.X was not found in workspace.dependencies"). Real packaging is
+# already validated by the full-workspace dry-run in release.yml.
+publish_no_verify = true
+# Same reason as above: packaging inside release-plz's per-crate temp dir
+# breaks on workspace-inherited fields.
+semver_check = false
