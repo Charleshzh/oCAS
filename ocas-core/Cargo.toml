@@ -15,7 +15,10 @@ description = "Core runtime, memory management, and numerical backend glue for o
 [dependencies]
 thiserror = { workspace = true }
 rayon = { workspace = true }
-ahash = { workspace = true }
+# Explicit version (not workspace-inherited): cargo package on Rust < 1.90
+# cannot resolve workspace.dependencies inheritance when packaging a
+# published crate standalone (release-plz CI uses 1.89).
+ahash = "0.8"
 serde = { workspace = true, optional = true }
 num-bigint = { workspace = true, optional = true }
 
