@@ -20,7 +20,10 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@1.89.0
+        # Use stable (>= 1.90): cargo metadata on 1.89 fails to resolve
+        # `workspace.dependencies` inheritance for published crates
+        # ("dependency.ahash was not found in workspace.dependencies").
+        uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
 
