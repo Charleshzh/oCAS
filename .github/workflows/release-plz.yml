@@ -31,6 +31,11 @@ jobs:
 
       - name: Run release-plz
         uses: MarcoIeni/release-plz-action@v0.5
+        with:
+          # Pin the latest release-plz: older versions fail to resolve
+          # `workspace.dependencies` inheritance for the ahash workspace
+          # dep added in 0.15.0 ("dependency.ahash was not found").
+          version: "0.3.160"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

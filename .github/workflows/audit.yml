@@ -27,12 +27,12 @@ jobs:
       # whose deps (e.g. kstring 2.x) require Rust >= 1.96. Without this the
       # default toolchain is too old and the audit job fails to build.
       - uses: dtolnay/rust-toolchain@stable
-      # Install a pinned cargo-audit instead of letting audit-check compile
-      # the latest release on every run: the latest release's dependency
-      # requirements can outpace the stable toolchain and break the job
-      # (as happened with cargo-audit v0.22.2).
+      # Install a pinned cargo-audit. Version 0.22.2 is required: 0.21.x
+      # cannot parse the current advisory-db format (fails on
+      # RUSTSEC-2026-0041 TOML). The stable toolchain above satisfies its
+      # rustc >= 1.96 dependency requirement.
       - name: Install pinned cargo-audit
-        run: cargo install cargo-audit --locked --version 0.21.2
+        run: cargo install cargo-audit --locked --version 0.22.2
       - name: Run cargo audit
         run: cargo audit
         env:
