@@ -16,10 +16,14 @@ Current factorization support covers:
 | $\mathbb{F}_p[x]$ | Univariate | Square-free factorization, Berlekamp |
 | $\mathbb{Z}[x,y]$ | Bivariate (monic in $x$) | Wang's Hensel lifting |
 | $\mathbb{F}_p[x,y]$ | Bivariate (monic in $x$) | Hensel lifting over $\mathbb{F}_p$ |
+| $\mathbb{Z}[x_1,\dots,x_n]$ | Multivariate | Wang EEZ Hensel lifting + leading-coefficient preprocessing + Zassenhaus recombination |
+| $\mathbb{F}_p[x_1,\dots,x_n]$ | Multivariate | EEZ Hensel lifting (with characteristic-$p$ $p$-th power handling) |
 
-Multivariate factorization with more than two variables is not yet implemented.
-Non-monic bivariate polynomials (in $x$) are not supported by the current
-Hensel-lifting implementation and are handled as irreducible for now.
+Since 0.16.0, multivariate factorization with more than two variables is
+supported. Non-monic univariate polynomials are factored via a leading-
+coefficient transformation. The multivariate path conservatively reports
+polynomials whose non-constant leading coefficient cannot be imposed as
+irreducible for now (see "Limitations and Future Work").
 
 ---
 
@@ -191,14 +195,64 @@ printing or freeing it.
 
 ---
 
+## Multivariate Factorization (Wang EEZ)
+
+Since 0.16.0, oCAS factors polynomials in any number of variables over
+$\mathbb{Z}$ and $\mathbb{F}_p$ using **Wang's EEZ (Evaluation and
+EZ-lifting) algorithm**:
+
+1. **Square-free factorization** (Yun): differentiate in the main variable
+$x_1$ and peel repeated factors via $n$-variate GCD (dense recursive
+evaluation–interpolation); characteristic-$p$ $p$-th powers are shrunk and
+expanded.
+2. **Sample-point search**: substitute the secondary variables
+$x_2,\dots,x_n$ at sample points so the univariate image keeps its degree
+and stays square-free.
+3. **Wang leading-coefficient preprocessing**: factor the leading
+coefficient $\ell(x_2,\dots)$ and distribute its factors among the
+univariate factors using their pairwise-coprime integer images, reconstructing
+the true leading coefficients $\ell_i$.
+4. **Variable-by-variable Hensel lifting**: lift the univariate factors back
+to multivariate ones through the ideals $(x_k - a_k)$, solving multivariate
+Diophantine equations at each step.
+5. **Zassenhaus recombination**: when the lifted factors are finer than the
+true factors, enumerate subsets and trial-divide to obtain the irreducible
+factors.
+
+```rust
+use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
+
+// (x + y + z)(x - y + 2z)
+let f = SparseMultivariatePolynomial::<IntegerDomain, Lex>::from_terms(
+    IntegerDomain, 3,
+    vec![
+        (vec![2, 0, 0], Integer::from(1)),
+        (vec![1, 0, 1], Integer::from(3)),
+        (vec![0, 1, 1], Integer::from(1)),
+        (vec![0, 2, 0], Integer::from(-1)),
+        (vec![0, 0, 2], Integer::from(2)),
+    ],
+);
+let factors = f.factor();
+```
+
+The result is a list of `(factor, multiplicity)` pairs, normalized to be
+primitive with a positive leading coefficient.
+
+---
+
 ## Limitations and Future Work
 
-- Multivariate factorization with more than two variables is not yet supported.
-- Non-monic bivariate polynomials in the chosen main variable are not handled
-by the current Wang Hensel implementation
-(tracked as [#13](https://github.com/Charleshzh/oCAS/issues/13)).
-- The evaluation-point search is bounded to a small range; very sparse or highly
-specialized polynomials may need an extended range in the future.
+- The multivariate path conservatively reports inputs whose non-constant
+leading coefficient cannot be imposed (requiring a mod-$p$ Hensel lift to
+impose true leading coefficients) as irreducible; this enhancement is planned
+for 0.16.1.
+- The bivariate Wang Hensel limitation that the leading coefficient be a
+constant is subsumed by the 0.16.0 arbitrary-multivariate (EEZ) path.
+- The evaluation-point search is bounded; very sparse or highly specialized
+polynomials may need an extended range or sparse Diophantine/interpolation in
+the future.
 
 These limitations are tracked in the project roadmap and will be lifted as the
 algebra kernel matures.

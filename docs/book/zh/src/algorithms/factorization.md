@@ -14,8 +14,10 @@ oCAS 实现了整数和素有限域上一元与二元多项式的因式分解。
 | $\mathbb{F}_p[x]$ | 一元 | 无平方分解、Berlekamp |
 | $\mathbb{Z}[x,y]$ | 二元（关于 $x$ 首一） | Wang Hensel 提升 |
 | $\mathbb{F}_p[x,y]$ | 二元（关于 $x$ 首一） | 有限域上的 Hensel 提升 |
+| $\mathbb{Z}[x_1,\dots,x_n]$ | 任意多元 | Wang EEZ Hensel 提升 + 首项系数预处理 + Zassenhaus 重组 |
+| $\mathbb{F}_p[x_1,\dots,x_n]$ | 任意多元 | EEZ Hensel 提升（含特征 $p$ 的 $p$ 次幂处理） |
 
-多于两个变量的多元因式分解尚未实现。当前 Hensel 提升实现不支持关于主变量非首一的二元多项式，这类输入暂时被视为不可约。
+自 0.16.0 起支持多于两个变量的任意多元因式分解。非首一的一元多项式经首项系数变换后同样可分解。目前多元路径对**首项系数非常数且无法施加**的情形会保守地按不可约返回（见"限制与未来工作"）。
 
 ---
 
@@ -164,11 +166,43 @@ int main(void) {
 
 ---
 
+## 任意多元因式分解（Wang EEZ）
+
+自 0.16.0 起，oCAS 支持 $\mathbb{Z}$ 与 $\mathbb{F}_p$ 上任意变量数的多项式因式分解，核心是 **Wang 的 EEZ（Evaluation and EZ-lifting）算法**：
+
+1. **无平方分解**（Yun）：对主变量 $x_1$ 求偏导，用 $n$ 元 GCD（稠密递归求值–插值）剥离重因子；在特征 $p$ 下处理 $p$ 次幂（收缩/展开）。
+2. **求值点采样**：把副变量 $x_2,\dots,x_n$ 代入样本点，使一元像次数不变且无平方。
+3. **Wang 首项系数预处理**：分解首项系数 $\ell(x_2,\dots)$，用其在样本点的两两互素整数像把各因子分配到各一元因子，重建真实首项系数 $\ell_i$。
+4. **逐变量 Hensel 提升**：通过多元 Diophantine 方程把一元因子沿理想 $(x_k - a_k)$ 逐变量提升回多元。
+5. **Zassenhaus 重组**：当提升的因子多于真实因子时，枚举子集组合并试除，得到不可约因子。
+
+```rust
+use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
+
+// (x + y + z)(x - y + 2z)
+let f = SparseMultivariatePolynomial::<IntegerDomain, Lex>::from_terms(
+    IntegerDomain, 3,
+    vec![
+        (vec![2, 0, 0], Integer::from(1)),
+        (vec![1, 0, 1], Integer::from(3)),
+        (vec![0, 1, 1], Integer::from(1)),
+        (vec![0, 2, 0], Integer::from(-1)),
+        (vec![0, 1, 0], Integer::from(0)),
+        (vec![0, 0, 2], Integer::from(2)),
+    ],
+);
+let factors = f.factor();
+```
+
+返回 `(因子, 重数)` 列表，因子按本原且首项系数为正规范化。
+
+---
+
 ## 限制与未来工作
 
-- 尚不支持多于两个变量的多元因式分解。
-- 当前 Wang Hensel 实现不处理关于主变量非首一的二元多项式
-  （[#13](https://github.com/Charleshzh/oCAS/issues/13)）。
-- 赋值点搜索范围较小；对于非常稀疏或高度特殊的多项式，未来可能需要扩大搜索范围。
+- 多元路径对**首项系数非常数且无法施加**（需要模 $p$ Hensel 提升施加真首项系数）的输入会保守地按不可约返回；该增强计划在 0.16.1 完成。
+- 二元 Wang Hensel 实现的原有"首项系数须为常数"限制已由 0.16.0 的任意多元路径覆盖（走 EEZ）。
+- 赋值点搜索范围有限；对于非常稀疏或高度特殊的多项式，未来可能需要扩大搜索范围或采用稀疏 Diophantine/插值。
 
 这些限制已在项目路线图中跟踪，并会随着代数内核的成熟逐步解除。

@@ -9,6 +9,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.16.0] - 2026-07-21
+
+### Added / 新增
+
+- **任意多元因式分解**（`ocas-poly::factor::eez`）：$\mathbb{Z}$ 与
+  $\mathbb{F}_p$ 上任意变量数的多项式因式分解，核心是 Wang EEZ
+  （求值–提升）算法——无平方分解（Yun + 特征 $p$ 的 $p$ 次幂处理）、
+  采样点搜索、Wang 首项系数预处理、逐变量 Hensel 提升（多元
+  Diophantine 方程）、Zassenhaus 重组 / **Arbitrary multivariate
+  factorization** over $\mathbb{Z}$ and $\mathbb{F}_p$ via Wang's EEZ
+  (evaluation–lifting) algorithm: square-free factorization (Yun with
+  characteristic-$p$ $p$-th power handling), sample-point search, Wang
+  leading-coefficient preprocessing, variable-by-variable Hensel lifting via
+  multivariate Diophantine equations, and Zassenhaus recombination.
+- **$n$ 元 GCD**（`ocas-poly::multivariate_gcd`）：稠密递归求值–插值的
+  `multivariate_gcd_field`/`_z`/`_fp`，作为无平方分解与多元分解的前置 /
+  **$n$-variate GCD** via dense recursive evaluation–interpolation.
+- `SparseMultivariatePolynomial` 多元分解辅助 API：`coeff_of_var_pow`、
+  `leading_coeff_in`、`derivative(var)`、`taylor_coefficients`、
+  `drop_main_var`、`embed_new_main`、`permute_variables`、
+  `checked_div_exact`、`eval_keep` / multivariate-factorization helper
+  APIs on `SparseMultivariatePolynomial`.
+- `factor()` 入口泛化：≥3 变量走任意多元路径，2 变量保留原二元路径 /
+  `factor()` dispatch: ≥3 variables use the multivariate path.
+- 一元非首一分解：`factor_square_free` 首项系数变换，修复
+  `factor_square_free_monic` 不能分解非首一多项式的问题 /
+  **Non-monic univariate factorization** via a leading-coefficient
+  transformation (`factor_square_free`).
+- 测试/基准：多元 correctness 往返用例、criterion 多元基准组、
+  proptest 往返（标记 ignore，手动运行）/ multivariate correctness
+  roundtrip cases, criterion benchmarks, and an (ignored) proptest.
+
+### Fixed / 修复
+
+- `div_rem_sparse` 的整除判断方向（潜在 bug，此前无调用方）/
+  `div_rem_sparse` monomial-divisibility argument order (latent bug).
+- 多元 Diophantine 求解的循环上界取原始误差次数（对齐 Symbolica），
+  消除伪无限循环 / multivariate Diophantine loop bound uses the original
+  error degree (matching Symbolica), eliminating a pseudo-infinite loop.
+- `zassenhaus_combine` 重写为按 Symbolica 算法（候选乘余因子首项系数后
+  取本原部分）/ `zassenhaus_combine` rewritten per Symbolica.
+
+### Known Limitations / 已知限制
+
+- 多元路径对**首项系数非常数且无法施加**（需模 $p$ Hensel 提升施加真
+  首项系数）的输入会保守地按不可约返回；该增强计划在 0.16.1 /
+  Multivariate inputs whose non-constant leading coefficient cannot be
+  imposed are reported irreducible; the mod-$p$ imposition lift is planned
+  for 0.16.1.
+
+---
+
 ## [0.15.2] - 2026-07-21
 
 ### Performance / 性能
