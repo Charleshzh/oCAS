@@ -1692,3 +1692,72 @@ mod tests {
         assert_eq!(product_z(&with_mult_z(&factors)), f);
     }
 }
+
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use proptest::prelude::*;
+
+    /// A random small multivariate polynomial over ℤ in exactly `n_vars`
+    /// variables that is monic in variable 0. Kept deliberately tiny (few
+    /// terms, low degree, small coefficients) so that multivariate
+    /// factorization stays fast enough for property-based roundtrip testing.
+    fn any_monic_zmp(n_vars: usize) -> impl Strategy<Value = ZmPoly> {
+        (1usize..=2, 1usize..=2).prop_flat_map(move |(n_terms, max_deg)| {
+            prop::collection::vec(
+                (prop::collection::vec(0usize..=max_deg, n_vars), -2i64..=2),
+                n_terms..=n_terms + 1,
+            )
+            .prop_map(move |mut terms| {
+                let mut lead = vec![0usize; n_vars];
+                lead[0] = max_deg.max(1); // ensure positive degree in x_0
+                terms.push((lead, 1));
+                SparseMultivariatePolynomial::<IntegerDomain, Lex>::from_terms(
+                    IntegerDomain,
+                    n_vars,
+                    terms
+                        .into_iter()
+                        .map(|(e, c)| (e, Integer::from(c)))
+                        .collect(),
+                )
+            })
+        })
+    }
+
+    /// Reconstruct a polynomial from its factorization and compare up to a
+    /// unit (sign), which is the strongest check that factorization did not
+    /// lose or corrupt information.
+    fn reconstructs(f: &ZmPoly, factors: &[(ZmPoly, usize)]) -> bool {
+        let mut prod = one_mpoly(&IntegerDomain, f.n_vars());
+        for (g, m) in factors {
+            for _ in 0..*m {
+                prod = prod.mul(g);
+            }
+        }
+        equal_up_to_unit(&prod, f)
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(24))]
+
+        /// Factoring a product of two small monic factors must reconstruct it.
+        ///
+        /// Marked `ignore` because multivariate factorization is slow enough
+        /// that a property-based sweep does not fit the unit-test budget; run
+        /// manually or via the audit report.
+        #[test]
+        #[ignore = "slow multivariate factorization proptest: run manually"]
+        fn factor_product_of_two_monic(
+            a in any_monic_zmp(3),
+            b in any_monic_zmp(3),
+        ) {
+            let f = a.mul(&b);
+            let factors = multivariate_factor_z(&f);
+            prop_assert!(
+                reconstructs(&f, &factors),
+                "factorization does not reconstruct input: {:?}",
+                factors
+            );
+        }
+    }
+}
