@@ -473,24 +473,25 @@ Hensel 提升，推迟到 0.16.1（2 项 `#[ignore]` 测试）。
 
 | 条目 | 参考 | oCAS 落地位置 | 状态 |
 |---|---|---|---|
-| 真首项系数的模 $p$ Hensel 强加：提升过程中每轮把误差压进低次项并强制 `lc_{x_0} F_i = ℓ_i` | Symbolica `sparse_coefficient_hensel_lift_mod_prime` L4290、`impose_true_lcoeffs_on_integer_factors` L4264 | `ocas-poly::factor::eez` | [ ] |
-| 非常数 LC 强加的 ℤ 多元分解完整路径（解出 0.16.0 的 2 项 `#[ignore]` 测试） | Wang 1978 | `ocas-poly::factor::eez` | [ ] |
-| 稀疏多元 Diophantine / 骨架插值（大规模稀疏输入加速，替代稠密递归） | Symbolica `sparse_multivariate_diophantine_*` L1908/L1963/L2134 | `ocas-poly::factor::eez` | [ ] |
-| 扩大/自适应求值点搜索（稀疏或特殊多项式的鲁棒性） | — | `ocas-poly::factor::eez` | [ ] |
-| Symbolica `factorization.rs` 同规模基准对比纳入 audit 报告 | — | `ocas-tests` | [ ] |
+| 真首项系数的模 $p$ Hensel 强加：提升过程中每轮把误差压进低次项并强制 `lc_{x_0} F_i = ℓ_i` | Symbolica `sparse_coefficient_hensel_lift_mod_prime` L4290、`impose_true_lcoeffs_on_integer_factors` L4264 | `ocas-poly::factor::eez` | [x] |
+| 非常数 LC 强加的 ℤ 多元分解完整路径（解出 0.16.0 的 2 项 `#[ignore]` 测试） | Wang 1978 | `ocas-poly::factor::eez` | [x] |
+| 稀疏多元 Diophantine / 骨架插值（大规模稀疏输入加速，替代稠密递归） | Symbolica `sparse_multivariate_diophantine_*` L1908/L1963/L2134 | `ocas-poly::factor::eez` | [x] |
+| 扩大/自适应求值点搜索（稀疏或特殊多项式的鲁棒性） | — | `ocas-poly::factor::eez` | [x] |
+| Symbolica `factorization.rs` 同规模基准对比纳入 audit 报告 | — | `ocas-tests` | [x] |
 
 **性能指标**
 
-- 解除 2 项 `#[ignore]` 测试（`z_bivariate_wang_nonconstant_lcoeff`、
+- [x] 解除 2 项 `#[ignore]` 测试（`z_bivariate_wang_nonconstant_lcoeff`、
   `z_trivariate_nonconstant_lcoeff`）并通过。
-- 稀疏输入（≥4 变量、≥50 项）分解时间较稠密路径明显下降；audit 报告给出
-  与 Symbolica 的数量级对比。
+- [x] 稀疏输入（≥4 变量、≥50 项）分解时间较稠密路径明显下降；audit 报告给出
+  与 Symbolica 的数量级对比。（sparsity assumption 在小素数下不适用时回退稠密
+  Diophantine；dense-vs-sparse 对比通过 `OCAS_DISABLE_SPARSE_DIO` 环境变量切换。）
 
 **验收**
 
-- [ ] 非常数 LC 强加的正确性：随机非常数-LC 可约多项式 proptest 往返通过。
-- [ ] `cargo test --workspace --exclude ocas-py` 全绿（含解出的 2 项测试）。
-- [ ] mdBook 双语 `factorization.md` 限制章节更新（移除强加限制）。
+- [x] 非常数 LC 强加的正确性：随机非常数-LC 可约多项式 proptest 往返通过。
+- [x] `cargo test --workspace --exclude ocas-py` 全绿（含解出的 2 项测试）。
+- [x] mdBook 双语 `factorization.md` 限制章节更新（移除强加限制）。
 
 ### 0.17.0 — 代数数域与扩域因式分解（Trager）
 
@@ -623,3 +624,4 @@ Hensel 提升，推迟到 0.16.1（2 项 `#[ignore]` 测试）。
 | 0.15.1 | 2026-07-20 | F4 真实线性代数修复。矩阵列序降序 + echelon 回写条件 + Symbolica GM 判据移植 + 经典 F4 提取（独立倍式 + input_heads、提取零约化）。cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s，basis=20）；< 5 s 目标推迟到 0.15.2（需 LM 索引 + 稀疏 echelon）。 |
 | 0.15.1 | 2026-07-21 | 基于 GAP_ANALYSIS 重估新增阶段 B+（0.15.2–0.18.0）：1.0 前清零与 Symbolica 的剩余差距——Gröbner 大规模性能（0.15.2）、任意多元因式分解（0.16）、代数数域因式分解（0.17）、数值积分 Vegas + 双数 + 张量基础 + fuel（0.18）。竞品索引状态同步修正（Risch/JIT/流式标 🟢；新增任意多元、代数数域、fuel 行；修复乱码）。 |
 | 0.16.0 | 2026-07-21 | 任意多元因式分解（Wang EEZ）发布。落地 `factor::eez`：泛型多元 Diophantine、逐变量 EEZ Hensel 提升、$n$ 元 GCD、特征 $p$ $p$ 次幂、Wang 首项系数预处理（常数 LC）、Zassenhaus 重组；`factor()` 泛化到任意变量数。顺手修复 3 个既有 bug（`div_rem_sparse` 整除方向、Diophantine 循环上界、单变量非首一分解）。新增 0.16.1（非常数 LC 强加 + 稀疏化）。 |
+| 0.16.1 | 2026-07-22 | 非常数首项系数强加与多元稀疏化发布。p-adic 系数 Hensel 提升（`coefficient_hensel_lift_z`）；稀疏多元 Diophantine（骨架插值 + Vandermonde + EEA 序列）；自适应采样（去重 + content 排序 + 值域递增）；二元非常数 LC 改走 EEZ；correctness 4 用例 + criterion 2 基准 + proptest；audit 报告 Symbolica 计时对比。修复 2 个 bug（Diophantine 契约违反、采样系数平方）。Fp 路径 LC 预处理（域版 Wang L1297）推迟 0.16.2。 |

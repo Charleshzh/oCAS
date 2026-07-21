@@ -14,16 +14,16 @@ Current factorization support covers:
 |---|---|---|
 | $\mathbb{Z}[x]$ | Univariate | Square-free factorization, Berlekamp–Zassenhaus, Hensel lifting |
 | $\mathbb{F}_p[x]$ | Univariate | Square-free factorization, Berlekamp |
-| $\mathbb{Z}[x,y]$ | Bivariate (monic in $x$) | Wang's Hensel lifting |
+| $\mathbb{Z}[x,y]$ | Bivariate (any LC) | Wang's Hensel lifting; constant-LC fast path, non-constant LC via EEZ |
 | $\mathbb{F}_p[x,y]$ | Bivariate (monic in $x$) | Hensel lifting over $\mathbb{F}_p$ |
-| $\mathbb{Z}[x_1,\dots,x_n]$ | Multivariate | Wang EEZ Hensel lifting + leading-coefficient preprocessing + Zassenhaus recombination |
+| $\mathbb{Z}[x_1,\dots,x_n]$ | Multivariate | Wang EEZ Hensel lifting + leading-coefficient preprocessing + p-adic coefficient Hensel lift (non-constant LC) + skeleton-interpolation Diophantine + Zassenhaus recombination |
 | $\mathbb{F}_p[x_1,\dots,x_n]$ | Multivariate | EEZ Hensel lifting (with characteristic-$p$ $p$-th power handling) |
 
 Since 0.16.0, multivariate factorization with more than two variables is
-supported. Non-monic univariate polynomials are factored via a leading-
-coefficient transformation. The multivariate path conservatively reports
-polynomials whose non-constant leading coefficient cannot be imposed as
-irreducible for now (see "Limitations and Future Work").
+supported. Since 0.16.1, non-constant leading coefficients in the main
+variable are fully handled via a p-adic coefficient Hensel lift that imposes
+Wang's reconstructed leading coefficients at every iteration; the bivariate
+constant-LC fast path is retained for efficiency.
 
 ---
 
@@ -244,15 +244,18 @@ primitive with a positive leading coefficient.
 
 ## Limitations and Future Work
 
-- The multivariate path conservatively reports inputs whose non-constant
-leading coefficient cannot be imposed (requiring a mod-$p$ Hensel lift to
-impose true leading coefficients) as irreducible; this enhancement is planned
-for 0.16.1.
+- Non-constant leading coefficients in the main variable are fully supported
+  since 0.16.1 via a p-adic coefficient Hensel lift with skeleton-interpolation
+  Diophantine.
 - The bivariate Wang Hensel limitation that the leading coefficient be a
-constant is subsumed by the 0.16.0 arbitrary-multivariate (EEZ) path.
-- The evaluation-point search is bounded; very sparse or highly specialized
-polynomials may need an extended range or sparse Diophantine/interpolation in
-the future.
+constant is subsumed by the 0.16.0 arbitrary-multivariate (EEZ) path; bivariate
+non-constant-LC inputs now dispatch to the EEZ path automatically.
+- The $\mathbb{F}_p$ multivariate path still requires a constant leading
+coefficient; Wang's LC preprocessing over a field (L1297 in Symbolica) is
+deferred to 0.16.2.
+- The adaptive evaluation-point search has been widened (7 → 25 for $\mathbb{Z}$,
+8 → 32 for $\mathbb{F}_p$); very sparse or highly specialized polynomials may
+still need an extended range or additional Diophantine interpolation passes.
 
 These limitations are tracked in the project roadmap and will be lifted as the
 algebra kernel matures.

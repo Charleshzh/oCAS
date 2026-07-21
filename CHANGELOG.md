@@ -9,6 +9,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.16.1] - 2026-07-22
+
+### Added / 新增
+
+- **非常数首项系数强加**：$\mathbb{Z}$ 多元因式分解现可通过 p-adic
+  系数 Hensel 提升实现非平凡（非常数）首项系数的完整强加，移植自
+  Symbolica `sparse_coefficient_hensel_lift_mod_prime`（密 Diophantine
+  变体） / **Non-constant leading-coefficient imposition** for $\mathbb{Z}$
+  multivariate factorization via a p-adic coefficient Hensel lift porting
+  Symbolica's `sparse_coefficient_hensel_lift_mod_prime`.
+- **稀疏多元 Diophantine 求解器**：骨架插值（Vandermonde + 移位
+  解）+ 两/多因式 EEA 序列求解，移植自 Symbolica
+  `sparse_multivariate_diophantine_*`（含 ≥512 项上限保护） / **Sparse
+  multivariate Diophantine solver** via skeleton interpolation + Vandermonde,
+  porting Symbolica's `sparse_multivariate_diophantine_*`.
+- 自适应采样：ℤ 路径候选排序引入 `(因式数, content)` 键（content=1
+  优先）；候选去重（`HashSet`）；非首一 LC 因子镜像过滤；值域自适应
+  递增（7 → 25）；Fp 路径两轮递增范围（8 → 32） / Adaptive sampling:
+  dedup, LC-factor filter, content-aware candidate ranking, value-bound
+  escalation (ℤ 7→25, $\mathbb{F}_p$ 8→32).
+- 二元非常数 LC 改走 EEZ 路径（`sparse.rs::factor()` 自动分派） / Bivariate
+  non-constant-LC dispatches to the EEZ path via `factor()`.
+- 审计报告扩展：`generate_audit_report.py` 新增 Symbolica 因式分解计时
+  对比表；`symbolica_runner` 新增 `factor_time` 任务 / Audit report
+  extended with Symbolica factorization timing comparison.
+- 测试/基准：新增 `z_nonconstant_lcoeff_shared_monomial`、
+  `z_nonconstant_lcoeff_reducible_lc`、`z_coefficient_lift_uses_sparse_diophantine`
+  回归测试；correctness 框架新增 4 个非常数 LC 用例（二元、三元、可约
+  LC、4 变量 ≥50 项）；criterion 组新增 `trivariate_nonconstant_lcoeff`
+  与 `sparse_4var_nonconstant_lcoeff` 基准；proptest `factor_product_of_two_nonconstant_lc` / Tests, correctness cases, and benchmarks for non-constant LC paths.
+
+### Fixed / 修复
+
+- **EEZ 多变量 Diophantine 契约违反**：第 $k$ 变量提升中修正项引入
+  $x_k$ 后 `diophantine` 基例 `mpoly_to_dense` 在 $x_k=1$ 处折叠求和。
+  修复：求解前对因子做 `eval_keep(k, a_k)`（对齐 Symbolica
+  `factors_mod = replace(last_var, 0)`）。0.16.0 的全部线性因子测试
+  未触发此路径 / **EEZ multivariate Diophantine contract violation**:
+  correction terms introducing $x_k$ were incorrectly summed by
+  `mpoly_to_dense` at $x_k = 1$; fixed by evaluating the factors at the
+  sample before solving.
+- **稀疏采样样本项系数在幂次提升时被错误平方**：per-term 求值含系数
+  时，采样 $s≥1$ 会将系数一并提升。修复：求值仅存单项式值，系数在
+  构建像时乘入 / **Term coefficient squaring in sparse sampling**: fixed
+  by separating monomial evaluation from coefficient multiplication.
+- `find_sample_z` 早退（2 候选即停）导致非常数 LC 的候选全部无效；
+  修复：候选去重 + 移除早退 + LC 因子镜像过滤（$|g_j(s)|>1$）+
+  content 排序（content=1 优先） / `find_sample_z` early exit with
+  only 2 candidates could yield all invalid candidates for non-constant LC;
+  fixed with dedup, content-aware ranking, and LC-factor filtering.
+- `div_rem_sparse` 整除判断 `monomial_divides` 参数方向错误（无调用方
+  未暴露） / `monomial_divides` argument order bug (latent).
+
+---
+
 ## [0.16.0] - 2026-07-21
 
 ### Added / 新增
