@@ -7,6 +7,7 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use num_bigint::BigInt;
 use ocas_domain::{Domain, FiniteField, Integer, IntegerDomain};
 use ocas_poly::DenseUnivariatePolynomial;
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
 use std::hint::black_box;
 
 fn build_poly(coeffs: &[i64]) -> DenseUnivariatePolynomial<IntegerDomain> {
@@ -121,11 +122,71 @@ fn poly_is_square_free(c: &mut Criterion) {
     group.finish();
 }
 
+// ── multivariate factorization over ℤ (Wang EEZ) ───────────────────
+
+type ZmPoly = SparseMultivariatePolynomial<IntegerDomain, Lex>;
+
+fn zm_poly(n_vars: usize, terms: &[(Vec<usize>, i64)]) -> ZmPoly {
+    SparseMultivariatePolynomial::from_terms(
+        IntegerDomain,
+        n_vars,
+        terms
+            .iter()
+            .map(|(e, c)| (e.clone(), Integer::from(*c)))
+            .collect(),
+    )
+}
+
+fn poly_factor_multivariate_z(c: &mut Criterion) {
+    let mut group = c.benchmark_group("poly_factor_multivariate_z");
+
+    // (x + y + z)(x - y + 2z)(x + y + 1): 3-var, 3 linear factors.
+    let f1 = zm_poly(
+        3,
+        &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], 1)],
+    );
+    let f2 = zm_poly(
+        3,
+        &[(vec![1, 0, 0], 1), (vec![0, 1, 0], -1), (vec![0, 0, 1], 2)],
+    );
+    let f3 = zm_poly(
+        3,
+        &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 0], 1)],
+    );
+    let tri = f1.mul(&f2).mul(&f3);
+    group.bench_function("trivariate_3_linear", |b| {
+        b.iter(|| {
+            let f = black_box(&tri).factor();
+            black_box(f);
+        });
+    });
+
+    // (x^2 + y + z)(x + y - z): 3-var, quadratic + linear.
+    let g1 = zm_poly(
+        3,
+        &[(vec![2, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], 1)],
+    );
+    let g2 = zm_poly(
+        3,
+        &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], -1)],
+    );
+    let quad = g1.mul(&g2);
+    group.bench_function("trivariate_quad_linear", |b| {
+        b.iter(|| {
+            let f = black_box(&quad).factor();
+            black_box(f);
+        });
+    });
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     poly_square_free,
     poly_is_square_free,
     poly_factor_z,
-    poly_factor_fp
+    poly_factor_fp,
+    poly_factor_multivariate_z
 );
 criterion_main!(benches);
