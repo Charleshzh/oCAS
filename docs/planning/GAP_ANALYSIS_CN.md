@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.15.1 @ 2026-07-20**
+> 最后评估：**0.15.2 @ 2026-07-21**（重新评估）
 
 ---
 
@@ -20,7 +20,7 @@
 
 ---
 
-## 1. 版本完成状态（0.1–0.10）
+## 1. 版本完成状态（0.1–0.15.2）
 
 | 版本 | 阶段 | 路线图 | 核验状态 |
 |---|---|---|---|
@@ -42,8 +42,9 @@
 | 0.14.0 | 1.0 候选 | ✅ | ✅ Risch 符号积分（Hermite 约化、对数导数恒等式、primitive 待定系数、hyperexponential RDE）、有理函数积分（Hermite + Rothstein–Trager）、特殊函数表（erf/Ei/Si/Ci/Fresnel）、三角积分（exp(I·x) + realify）、FGLM/F5/Hilbert、`reorder`、mdBook 双章节 |
 | 0.15.0 | 1.0 候选 | ✅ | ✅ 多输出 JIT（97×/21×）、f32 混合精度（JIT + SIMD 16 lane）、流式求值（百万行恒定内存）、常量折叠 + 栈压缩、Arena reset + workspace 池、ahash 热点替换、原生 i64 F4 管线；cyclic-6 <5s 推迟到 0.15.1（需 RREF/F5） |
 | 0.15.1 | 1.0 候选 | ✅ | ✅ F4 真实线性代数修复：矩阵列序降序 + echelon 回写条件 + Symbolica GM 判据移植 + 经典提取（独立倍式 + input_heads、零约化）。cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s）；<5s 推迟到 0.15.2（LM 索引 + 稀疏 echelon） |
+| 0.15.2 | 1.0 候选 | ✅ | ✅ reducer LM 哈希索引（support-mask 桶 + 子掩码枚举）+ 稀疏行 echelon（双指针归并相消，O(nnz)/次）+ 提取查重哈希化 + worklist 预处理 + 行模板缓存。cyclic-6 ℤ₁₃ 9970 s → 3670 s（2.7×，basis=20 正确）；阶段占比转为消除主导（echelon ≈89%）；<5s 未达（264k 行是 F4 固有规模，需 F5 签名约简） |
 
-0.1–0.15.1 交付物全部落地，workspace 版本锁定 0.15.1。质量门全绿：
+0.1–0.15.2 交付物全部落地，workspace 版本锁定 0.15.2。质量门全绿：
 `cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、pytest、
 `mdbook build`。
 
@@ -55,19 +56,23 @@
 
 | Crate | 文件数 | 行数 |
 |---|---|---|
-| ocas-poly | 10 | ~4,250 |
-| ocas-eval | 11 | ~2,525 |
-| ocas-domain | 9 | ~2,115 |
-| ocas-rewrite | 7 | ~1,719 |
-| ocas-py | 7 | ~1,546 |
-| ocas-calc | 7 | ~1,393 |
-| ocas-c | 4 | ~1,550 |
-| ocas-core | 5 | ~1,150 |
-| ocas-atom | 2 | ~864 |
-| ocas-parse | 3 | ~565 |
-| ocas (prelude) | 1 | ~113 |
-| ocas-gpl | 1 | 1（占位） |
-| **src 合计** | **66** | **~18k** |
+| ocas-poly | 22 | ~10,560 |
+| ocas-calc | 18 | ~5,649 |
+| ocas-eval | 13 | ~3,855 |
+| ocas-domain | 10 | ~3,337 |
+| ocas-rewrite | 7 | ~1,593 |
+| ocas-py | 7 | ~1,461 |
+| ocas-c | 4 | ~1,454 |
+| ocas-core | 5 | ~1,115 |
+| ocas-atom | 4 | ~1,111 |
+| ocas-parse | 3 | ~495 |
+| ocas (prelude) | 1 | ~115 |
+| ocas-gpl | 1 | 0（占位） |
+| **src 合计** | **95** | **~30.7k** |
+
+较 0.10 快照（66 文件 / ~18k 行）增长约 70%，增量主要来自 Risch 积分与
+有理函数积分（ocas-calc）、F4/FGLM/F5 与因式分解（ocas-poly）、多输出
+JIT / 流式求值（ocas-eval）。
 
 `ocas-gpl` 为占位；GPL 专属后端属 Post-1.0 工作，符合路线图。
 
@@ -79,11 +84,11 @@
 
 | 算法领域 | oCAS 现状 | 成熟度 |
 |---|---|---|
-| 多项式因式分解 | `DenseUnivariatePolynomial` 上 ℤ 与 ℤ_p 的 `factor()`，以及 `SparseMultivariatePolynomial` 上二元 ℤ 与 ℤ_p 的 `factor()`（关于 x 首一的 Wang Hensel） | 🟢 较完整 |
-| Gröbner 基 | F4 矩阵化算法（Faugère 1999）+ Gebauer-Moeller + 简化缓存 + ℤ_p 快速路径 | 🟢 F4 完成 |
+| 多项式因式分解 | `DenseUnivariatePolynomial` 上 ℤ 与 ℤ_p 的 `factor()`，以及 `SparseMultivariatePolynomial` 上二元 ℤ 与 ℤ_p 的 `factor()`（关于 x 首一的 Wang Hensel）；≥3 变量与代数数域缺失 | 🟡 一元/二元完整 |
+| Gröbner 基 | F4 真实线性代数（0.15.1：降序列序 + Symbolica GM 判据 + 经典提取）+ FGLM + 实验性 F5 + ℤ_p 原生 i64 管线；cyclic-5 ℤ₁₃ 23 ms（2026-07-21 复测） | 🟢 F4 完成 |
 | 符号积分 | Risch（初等超越塔 + RDE 多项式片段）+ 有理函数 Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel）；回退 `Integral(...)` | 🟢 Risch 完成 |
-| 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量） | 🟢 较完整 |
-| 多项式 GCD | GCD + 本原部分；无模 GCD / EEA 优化 | 🟡 可用 |
+| 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量）；已知缺口：Wilkinson n=10 展开多项式仅隔离 8/10 根 | 🟡 较完整 |
+| 多项式 GCD | GCD + 本原部分 + 扩展 GCD（0.12）；无模方法 GCD（大整数系数）优化 | 🟡 可用 |
 | 线性求解 | 有理/整数线性方程组 + 二元丢番图（`ax+by=c`） | 🟡 可用，规模有限 |
 | JIT 求值 | Cranelift 后端；≥10x 加速目标达成（按路线图标准） | 🟢 完整 |
 
@@ -93,12 +98,12 @@
 
 ### 4.1 对照 Symbolica（Rust，AGPL）
 
-Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 Symbolica
-早期的功能子集。
+Symbolica 的 `examples/` 目录揭示了成熟度差距。0.11–0.15 之后 oCAS 已
+覆盖 Symbolica 核心功能面的大部，差距收敛到广度与大规模性能维度。
 
 | 能力 | oCAS | Symbolica |
 |---|---|---|
-| 多项式因式分解 | ✅ ℤ 与 ℤ_p 上 `factor()`（CZ + Hensel + Zassenhaus）；二元 ℤ 与 ℤ_p 上因式分解（关于 x 首一的 Wang Hensel） | ✅ 完整（`factorization.rs`） |
+| 多项式因式分解 | 🟡 一元 ℤ 与 ℤ_p（CZ + Hensel + Zassenhaus）+ 二元（关于 x 首一的 Wang Hensel）；≥3 变量与代数数域缺失 | ✅ 完整（任意多元 + 代数数域，`factorization.rs`） |
 | 有理多项式 | ✅ 含 GCD 规范化的 `RationalPolynomial<D,O>` | ✅ `rational_polynomial.rs` |
 | 部分分式 | ✅ 任意 `EuclideanDomain` 上的 `apart()` / `together()` | ✅ `partial_fraction.rs` |
 | 有理重构 | ✅ 基于扩展欧几里得的 `rational_reconstruction(a, m)` | ✅ `rational_reconstruction.rs` |
@@ -106,10 +111,14 @@ Symbolica 的 `examples/` 目录揭示了成熟度差距。oCAS 大致相当于 
 | 流式 API | ✅ `streaming.rs`（`StreamingEvaluator`：分块输入 + 复用栈，百万行恒定内存） | ✅ `streaming.rs` |
 | 张量 / 双数 | 🔴 无 | ✅ `tensors.rs` / `dual.rs` |
 | 优化 / 代码生成 | ✅ 多输出 JIT（`compile_multi` + CSE + 常量折叠 + 栈压缩）+ f32 混合精度 | ✅ `optimize.rs` / 多输出 |
-| Gröbner 基 | 🟡 F4 真实线性代数完成（0.15.1：cyclic-5 31 ms、cyclic-6 可解）；cyclic-6 <5s 待 0.15.2（LM 索引 + 稀疏 echelon） | ✅ 工业级 |
+| Gröbner 基 | 🟡 F4 完成 + 大规模性能优化（0.15.2：LM 索引 + 稀疏 echelon + 行模板缓存，cyclic-6 ℤ₁₃ 9970 s → 3670 s）；cyclic-6 <5s 未达，需 F5 签名约简 | ✅ 工业级 |
+| 资源控制（fuel） | 🔴 无 | ✅ `fuel_backend.rs` |
 
-Symbolica 的核心竞争力——工业级因式分解、有理函数运算、多输出优化、流式
-API——oCAS 基本缺失。Symbolica 经多年打磨，oCAS 需在 ALG 层补齐硬算法。
+Symbolica 2.1.0 的核心竞争力——工业级因式分解、有理函数运算、多输出
+优化、流式 API——oCAS 已在 0.11–0.15 期间大部补齐。剩余差距集中在：
+任意多元（≥3 变量）与代数数域因式分解、数值积分、张量/双数、fuel
+资源控制，以及 Gröbner 的大规模性能（cyclic-6 量级，Symbolica 仍显著
+领先）。
 
 ### 4.2 对照 SageMath（Python 生态）
 
@@ -137,52 +146,59 @@ SymPy 是 oCAS 最现实的"功能对标 + 性能超越"目标。
 |---|---|---|
 | 解析/化简 | 🟢 持平 | 双方都完备 |
 | 微分 | 🟢 持平 | 链式/乘积/幂法则 |
-| 积分 | 🟡 oCAS 较弱 | SymPy 有 Risch + 启发式；oCAS 仅启发式 |
-| 因式分解 | � 持平 | 单变量 ℤ 与 ℤ_p 已通过 CZ + Hensel + Zassenhaus；多元推迟到 0.11.1 |
-| Gröbner | 🟡 oCAS 略弱 | 双方都非顶级，SymPy 略丰富 |
+| 积分 | � 基本持平 | 双方均有 Risch（oCAS 0.14 补齐）；SymPy 的启发式/manual 回退覆盖更广，oCAS 未覆盖情形返回 `Integral(...)` |
+| 因式分解 | 🟡 oCAS 略弱 | 一元 ℤ 与 ℤ_p 持平（CZ + Hensel + Zassenhaus）；oCAS 支持二元，SymPy 支持任意多元 |
+| Gröbner | 🟢 oCAS 优势 | oCAS F4 矩阵化 + 真实线性代数（cyclic-5 ℤ₁₃ 23 ms），优于 SymPy 的 Buchberger 实现 |
 | 矩阵/线性代数 | 🟢 持平 | oCAS 有 Bareiss 行列式/逆 |
-| **性能** | 🟢 **oCAS 优势** | Rust + Cranelift JIT + arena 对纯 Python |
+| **性能** | 🟢 **oCAS 优势** | Rust + Cranelift JIT + arena 对纯 Python；实测 x³⁰−1 无平方分解 39 µs vs SymPy 完全分解 ~0.9 ms（~24×，2026-07-21） |
 | Python 易用性 | 🟢 持平 | oCAS 有 `ocas-py` 绑定 |
 
 0.6.0 成功标准"基础多项式/微积分/重写与 SymPy 持平"——在**性能**维度已
-达成并领先，单变量**因式分解**已实现持平；**积分**仍是与 SymPy 硬算法差距
-中的主要短板。
+达成并领先，**积分**经 0.14 Risch 补齐；与 SymPy 的剩余功能差距集中在
+**任意多元因式分解**与**积分启发式回退的广度**。
 
 ---
 
 ## 5. 关键缺口与优先级
 
-按"影响面 × 实现成本"排序，通往 1.0 的硬骨头。
+按"影响面 × 实现成本"排序。1.0 前规划的硬算法缺口已全部闭合；与
+Symbolica 的剩余差距已排入阶段 B+（0.15.2–0.18.0，详见
+EVOLUTION_PLAN），目标 1.0 前清零。
 
 | # | 缺口 | 优先级 |
 |---|---|---|
-| 1 | ~~完整多项式因式分解~~（0.11.0–0.11.1 完成） | ✅ 已完成——一元与二元（关于 x 首一）闭合，解阻塞有理函数、部分分式、求解器 |
-| 2 | Risch 符号积分（路线图：0.14） | 🔴 "能否积分"的标志 |
-| 3 | Gröbner F4/F5（路线图：0.13） | � F4 核心完成（0.13.0），F5 推迟 |
+| 1 | ~~完整多项式因式分解~~（0.11.0–0.11.1 完成） | ✅ 已完成——一元与二元（关于 x 首一）闭合；≥3 变量见 #7 |
+| 2 | ~~Risch 符号积分~~（0.14 完成） | ✅ 已完成——初等超越塔 + RDE 片段 + 有理函数 Hermite + 特殊函数表 |
+| 3 | ~~Gröbner F4/F5~~（0.13 / 0.14 / 0.15.1 完成） | ✅ F4 真实线性代数 + FGLM + 实验性 F5；大规模性能见 #6 |
 | 4 | ~~有理多项式/部分分式~~（0.12 完成） | ✅ 已完成——`RationalPolynomial` 类型 + 部分分式 + 结式 + Karatsuba 乘法 |
 | 5 | ~~多输出优化/代码生成~~（0.15 完成） | ✅ 已完成——多输出 JIT（97×/21×）+ f32 混合精度 + CSE/常量折叠/栈压缩 |
-| 6 | ODE/PDE 求解器（Post-1.0） | 🟢 用户期望高 |
+| 6 | Gröbner 大规模性能（cyclic-6 ℤ_p < 5 s） | 🔴 0.15.2——LM 哈希索引 + 稀疏 echelon |
+| 7 | 任意多元（≥3 变量）因式分解 | 🔴 0.16——Wang EEZ 提升 + Zassenhaus 重组 |
+| 8 | 代数数域因式分解 | 🔴 0.17——Trager 算法（范数 + 提升） |
+| 9 | 数值积分 / 双数 / 张量基础 / fuel 资源控制 | 🔴 0.18——Vegas + Hyperdual + 指标收缩 + 步数预算 |
+| 10 | ODE/PDE 求解器（Post-1.0） | 🟢 用户期望高 |
 
 ---
 
 ## 6. 总评
 
-0.1 → 0.12 执行质量很高：每个路线图交付物均兑现，分层架构干净（无环依赖），
-12 crate workspace 严格分层，质量门严格（`-D warnings` + deny + Miri 意识），
-文档/绑定/CI 工程化完备。
+0.1 → 0.15.1 执行质量很高：每个路线图交付物均兑现，分层架构干净（无环
+依赖），12 crate workspace 严格分层，质量门严格（`-D warnings` + deny +
+Miri 意识），文档/绑定/CI 工程化完备。1.0 前规划的三大硬算法——多项式
+因式分解（0.11）、Gröbner F4（0.13，真实线性代数于 0.15.1 修复）、
+Risch 符号积分（0.14）——全部闭合，并经 SymPy/Symbolica 交叉验证框架
+持续回归。
 
-0.12 完成了有理函数运算栈（`RationalPolynomial` 类型 + 四则运算 + 部分分式
-+ 结式 + Karatsuba 乘法 + 有理重构），弥补了 GAP_ANALYSIS 中标记的三大
-🔴 缺口。至此 oCAS 在有理函数能力上与 Symbolica 持平（单变量层面）。
+务实定位：当前 oCAS 是"高性能 SymPy 核心 + Risch 符号积分 + 一元/二元
+因式分解与有理函数 + 真实线性代数的 Gröbner F4 + 多输出 JIT / 流式
+求值"。0.15.1 复测性能：F4 cyclic-5 ℤ₁₃ 23 ms；x³⁰−1 无平方分解
+39 µs（SymPy 完全分解 ~0.9 ms，~24×）；JIT 单输出 97×、三输出 21×。
 
-0.13 与 0.14 完成了通往 1.0 的最后两个"成人礼"：Gröbner F4（0.13）与
-Risch 符号积分（0.14）。Risch 覆盖初等超越塔（log/exp）+ 有理函数
-Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel），0.11.0
-已知差距 `exp(-x²)→erf` 已闭合。
-
-务实定位：当前 oCAS 是"高性能 SymPy 核心 + Risch 符号积分 + 因式分解与
-有理函数持平 + Gröbner F4 + Karatsuba 加速"。1.0 发布前的剩余重点是
-0.15 性能 / 多输出 JIT / 流式。
+1.0 前剩余工作：阶段 B+ "Symbolica 差距清零"（0.15.2 Gröbner 大规模性能
+→ 0.16 任意多元因式分解 → 0.17 代数数域因式分解 → 0.18 数值积分/双数/
+张量/fuel，详见 EVOLUTION_PLAN），随后 1.0.0 仅做稳定性与发布工程
+（API 冻结、覆盖率、迁移指南、签名产物）。ODE/PDE 与完整张量微积分
+仍为 Post-1.0 议题。
 
 ---
 
@@ -201,3 +217,5 @@ Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel），0.11.0
 | 0.14.0 | 2026-07-18 | Risch 符号积分完成（初等超越塔 + RDE 多项式片段）；有理函数积分（Hermite + 对数部分）；特殊函数表（erf/Ei/Si/Ci/Fresnel）闭合 0.11.0 已知差距 `exp(-x²)→erf`；三角 exp(I·x) + realify；Gröbner 收尾（FGLM 零维换序 + F5 实验性 + Hilbert 界 + reorder）；解析器 `-x^2` 优先级修复；符号积分从 🟡 升级为 🟢；最高优先级缺口转为 0.15 性能/多输出 JIT。 |
 | 0.15.0 | 2026-07-20 | 多输出 JIT（97×/21×）+ f32 混合精度 + 流式求值（百万行恒定内存）+ 常量折叠/栈压缩 + Arena reset/workspace 池 + ahash + 原生 i64 F4 管线；JIT 调用约定 Windows 修复；分段插装定位 F4 瓶颈（extract 99.98%）；cyclic-6 <5s 推迟到 0.15.1（需 RREF/F5）；最高优先级缺口转为 1.0 稳定版。 |
 | 0.15.1 | 2026-07-20 | F4 真实线性代数修复：矩阵列序降序（此前升序致 echelon 形同虚设，F4 实为 Buchberger）+ echelon 回写条件 + Symbolica GM 判据移植 + 经典提取（独立倍式 + input_heads、提取零约化）；cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s，basis=20）；<5s 推迟到 0.15.2（LM 索引 + 稀疏 echelon）。 |
+| 0.15.1 | 2026-07-21 | 重新评估：代码规模快照更新至 95 文件 / ~30.7k 行（较 0.10 的 ~18k 增长 ~70%）；F4 cyclic-5 ℤ₁₃ 复测 23 ms；新增实测 x³⁰−1 无平方分解 39 µs vs SymPy 完全分解 ~0.9 ms（~24×）；修正 0.14/0.15 后的过时表述（§3 GCD/实根隔离、§4.1 "基本缺失"段落、§4.3 积分/因式分解/Gröbner、§5 Risch 优先级、乱码字符）；缺口重排——1.0 前硬算法全部闭合，剩余项转为 Post-1.0：任意多元（≥3 变量）与代数数域因式分解、数值积分、张量/双数、ODE/PDE，cyclic-6 <5s 定界 0.15.2。 |
+| 0.15.2 | 2026-07-21 | Gröbner 大规模性能：reducer LM 哈希索引（support-mask 桶 + 子掩码枚举，消除 O(单项式×基) 线性扫描）+ 稀疏行 echelon（双指针归并相消 O(nnz)/次，替代稠密 buffer）+ 提取查重哈希化 + worklist 预处理 + 行模板缓存；cyclic-6 ℤ₁₃ 9970 s → 3670 s（2.7×，basis=20 正确），阶段占比转为消除主导（echelon ≈89%）；<5s 未达——cyclic-6 F4 矩阵第 22 轮达 264k 行 × 284k 列，为 F4 固有规模，进一步数量级提升需 F5 签名约简（消除零约化行），列入 post-1.0；版本提升 0.15.2。 |

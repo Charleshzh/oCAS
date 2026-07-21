@@ -32,6 +32,7 @@ struct CriticalPair {
 trait BasisPoly: Clone {
     fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>>;
     fn n_vars(&self) -> usize;
+    fn n_terms(&self) -> usize;
     fn mul_monomial(&self, exp: &[usize]) -> Self;
 }
 
@@ -41,6 +42,9 @@ impl<D: Domain, O: MonomialOrder> BasisPoly for SparseMultivariatePolynomial<D, 
     }
     fn n_vars(&self) -> usize {
         SparseMultivariatePolynomial::n_vars(self)
+    }
+    fn n_terms(&self) -> usize {
+        SparseMultivariatePolynomial::n_terms(self)
     }
     fn mul_monomial(&self, exp: &[usize]) -> Self {
         SparseMultivariatePolynomial::mul_monomial(self, exp)
@@ -68,10 +72,81 @@ type SimpCache<P> = Vec<(SmallVec<[usize; 4]>, P)>;
 /// Tracks a monomial's state during symbolic preprocessing.
 #[derive(Debug, Clone)]
 struct MonomialData {
-    /// Whether this monomial has been processed (reducer found or confirmed absent).
-    present: bool,
     /// Column index in the matrix (assigned during column construction).
     column: usize,
+}
+
+// =========================================================================
+//  Leading-monomial divisor index
+// =========================================================================
+
+/// Support bitmask of a monomial: bit `v` is set iff `exp[v] > 0`.
+///
+/// Variables beyond index 63 are ignored in the mask; this only weakens
+/// the filter's selectivity, never its correctness (a false-positive
+/// bucket match is filtered out by the exact divisibility check).
+fn support_mask(exp: &[usize]) -> u64 {
+    let mut mask = 0u64;
+    for (v, &e) in exp.iter().enumerate() {
+        if e > 0 && v < 64 {
+            mask |= 1 << v;
+        }
+    }
+    mask
+}
+
+/// Incremental index over basis leading monomials for fast reducer
+/// (divisor) queries, replacing the O(monomials × basis) linear scan.
+///
+/// Basis elements are bucketed by the exact support mask of their leading
+/// monomial. A query for `exp` enumerates the submasks of `support(exp)`
+/// (a basis LM dividing `exp` must have its support inside `exp`'s) and
+/// checks exact divisibility only within those buckets.
+struct DivisorIndex {
+    /// Exact support mask of a basis LM → basis indices with that mask.
+    buckets: HashMap<u64, Vec<usize>>,
+}
+
+impl DivisorIndex {
+    fn new() -> Self {
+        Self {
+            buckets: HashMap::default(),
+        }
+    }
+
+    /// Register the leading monomial of basis element `idx`.
+    fn push(&mut self, lm: &[usize], idx: usize) {
+        self.buckets.entry(support_mask(lm)).or_default().push(idx);
+    }
+}
+
+/// Find a reducer for `exp` in the basis: a basis element whose leading
+/// monomial divides `exp`, chosen with the smallest number of terms
+/// (ties keep the lowest basis index, matching the old linear scan).
+fn find_reducer<P: BasisPoly>(index: &DivisorIndex, basis: &[P], exp: &[usize]) -> Option<usize> {
+    let mask = support_mask(exp);
+    let mut best: Option<usize> = None;
+    // Enumerate all submasks of `mask`, including `mask` itself and 0.
+    let mut sub = mask;
+    loop {
+        if let Some(ids) = index.buckets.get(&sub) {
+            for &bi in ids {
+                if let Some(blm) = basis[bi].leading_monomial()
+                    && monomial_divides(exp, blm)
+                {
+                    match best {
+                        Some(b) if basis[b].n_terms() <= basis[bi].n_terms() => {}
+                        _ => best = Some(bi),
+                    }
+                }
+            }
+        }
+        if sub == 0 {
+            break;
+        }
+        sub = (sub - 1) & mask;
+    }
+    best
 }
 
 // =========================================================================
@@ -133,13 +208,22 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
     let mut basis: Vec<SparseMultivariatePolynomial<D, O>> = Vec::new();
     let mut pairs: Vec<CriticalPair> = Vec::new();
     let mut simplifications: Vec<SimpCache<SparseMultivariatePolynomial<D, O>>> = Vec::new();
+    // Reducer divisor index and LM set, maintained in lockstep with `basis`.
+    let mut div_index = DivisorIndex::new();
+    let mut basis_lm_set: HashSet<SmallVec<[usize; 4]>> = HashSet::default();
     for p in initial {
         update_pairs(&mut basis, &mut pairs, &mut simplifications, p);
+        let idx = basis.len() - 1;
+        if let Some(lm) = basis[idx].leading_monomial() {
+            div_index.push(lm, idx);
+            basis_lm_set.insert(lm.clone());
+        }
     }
 
     // Reusable buffers.
-    // MonomialData tracks whether a monomial has been processed during
-    // symbolic preprocessing (present=true means "already handled").
+    // MonomialData tracks the column index assigned to each monomial;
+    // newly registered monomials are pushed onto `worklist` and processed
+    // exactly once by symbolic preprocessing.
     let mut all_monomials: HashMap<SmallVec<[usize; 4]>, MonomialData> = HashMap::default();
     let mut monomial_list: Vec<SmallVec<[usize; 4]>> = Vec::new();
     let mut matrix: Vec<Vec<(D::Element, usize)>> = Vec::new();
@@ -151,6 +235,8 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
     // Deduplication of (basis index, exponent diff) pairs within one
     // matrix construction.
     let mut seen_rows: HashSet<(usize, SmallVec<[usize; 4]>)> = HashSet::default();
+    // Monomials awaiting a reducer search (filled by add_poly_to_matrix).
+    let mut worklist: Vec<SmallVec<[usize; 4]>> = Vec::new();
 
     while !pairs.is_empty() {
         // --- Selection: find minimum lcm degree ---
@@ -178,6 +264,7 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         matrix.clear();
         input_heads.clear();
         seen_rows.clear();
+        worklist.clear();
 
         for cp in &selected {
             let i = cp.idx1;
@@ -207,7 +294,13 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
             for (idx, diff) in [(i, &diff_i), (j, &diff_j)] {
                 if seen_rows.insert((idx, diff.clone())) {
                     let mult = get_simplified(&simplifications[idx], diff, &basis[idx]);
-                    add_poly_to_matrix(&mult, &mut matrix, &mut all_monomials, &mut monomial_list);
+                    add_poly_to_matrix(
+                        &mult,
+                        &mut matrix,
+                        &mut all_monomials,
+                        &mut monomial_list,
+                        &mut worklist,
+                    );
                 }
             }
         }
@@ -217,77 +310,33 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         }
 
         // --- Iterative symbolic preprocessing (Faugère F4 key innovation) ---
-        // Scan each matrix row's monomials. For each unseen monomial, search
-        // for a reducer in the basis and append it as a new row. Repeat until
-        // no new rows are added. This ensures the matrix contains all
-        // necessary reduction information for the echelon step.
+        // Every monomial registered in the matrix is pushed onto the
+        // worklist exactly once. Pop a monomial, search for a reducer in
+        // the basis via the LM divisor index, and append it as a new row
+        // (whose own monomials may in turn extend the worklist). Repeat
+        // until no unprocessed monomials remain. This ensures the matrix
+        // contains all necessary reduction information for the echelon
+        // step.
         //
         // Reference: Symbolica groebner.rs L262-288.
-        let mut i = 0;
-        while i < matrix.len() {
-            // Collect monomials from this row by scanning the column indices.
-            // We need the actual exponent vectors, so we look them up in monomial_list.
-            // But monomial_list isn't populated yet at this point — we use all_monomials.
-            // Instead, scan the polynomial that produced this row.
-            // Since we store rows as (coeff, col_idx), we need a different approach:
-            // iterate all_monomials entries that are not yet marked present.
-
-            // Mark all monomials in current matrix rows as present.
-            // For the first pass, the S-polynomial rows already registered their monomials
-            // in add_poly_to_matrix. We need to find reducers for monomials that are NOT
-            // leading monomials of the matrix rows.
-
-            // Collect all monomials from the matrix that haven't been processed yet.
-            let mut new_monomials: Vec<SmallVec<[usize; 4]>> = Vec::new();
-            for (exp, md) in all_monomials.iter() {
-                if !md.present {
-                    new_monomials.push(exp.clone());
-                }
+        while let Some(exp) = worklist.pop() {
+            if let Some(bi) = find_reducer(&div_index, &basis, &exp) {
+                let blm = basis[bi].leading_monomial().unwrap();
+                let diff: SmallVec<[usize; 4]> =
+                    exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
+                let reducer = get_simplified(&simplifications[bi], &diff, &basis[bi]);
+                // The reducer's head is exactly `exp` — record it as an
+                // input head for the extraction criterion.
+                input_heads.insert(exp.clone());
+                // Add reducer row to matrix, registering any new monomials.
+                add_poly_to_matrix(
+                    &reducer,
+                    &mut matrix,
+                    &mut all_monomials,
+                    &mut monomial_list,
+                    &mut worklist,
+                );
             }
-
-            if new_monomials.is_empty() {
-                break;
-            }
-
-            // Mark them as present.
-            for exp in &new_monomials {
-                if let Some(md) = all_monomials.get_mut(exp) {
-                    md.present = true;
-                }
-            }
-
-            // For each new monomial, find a reducer in the basis.
-            for exp in &new_monomials {
-                let mut best: Option<usize> = None;
-                for (bi, bp) in basis.iter().enumerate() {
-                    if let Some(blm) = bp.leading_monomial()
-                        && monomial_divides(exp, blm)
-                    {
-                        match best {
-                            Some(b) if basis[b].n_terms() <= bp.n_terms() => {}
-                            _ => best = Some(bi),
-                        }
-                    }
-                }
-                if let Some(bi) = best {
-                    let blm = basis[bi].leading_monomial().unwrap();
-                    let diff: SmallVec<[usize; 4]> =
-                        exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
-                    let reducer = get_simplified(&simplifications[bi], &diff, &basis[bi]);
-                    // The reducer's head is exactly `exp` — record it as an
-                    // input head for the extraction criterion.
-                    input_heads.insert(exp.clone());
-                    // Add reducer row to matrix, registering any new monomials.
-                    add_poly_to_matrix(
-                        &reducer,
-                        &mut matrix,
-                        &mut all_monomials,
-                        &mut monomial_list,
-                    );
-                }
-            }
-
-            i += 1;
         }
 
         if matrix.is_empty() || monomial_list.is_empty() {
@@ -361,15 +410,17 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
             let new_lm = poly.leading_monomial().unwrap().clone();
 
             // Skip if a polynomial with this leading monomial already exists.
-            if basis.iter().any(|bp| {
-                bp.leading_monomial()
-                    .is_some_and(|blm| blm.as_slice() == new_lm.as_slice())
-            }) {
+            if basis_lm_set.contains(&new_lm) {
                 continue;
             }
 
             // Add to basis with Gebauer-Moeller pair filtering.
             update_pairs(&mut basis, &mut pairs, &mut simplifications, poly);
+            let idx = basis.len() - 1;
+            if let Some(lm) = basis[idx].leading_monomial() {
+                div_index.push(lm, idx);
+                basis_lm_set.insert(lm.clone());
+            }
         }
     }
 
@@ -491,21 +542,23 @@ fn add_poly_to_matrix<D: Domain, O: MonomialOrder>(
     matrix: &mut Vec<Vec<(D::Element, usize)>>,
     monomial_map: &mut HashMap<SmallVec<[usize; 4]>, MonomialData>,
     monomial_list: &mut Vec<SmallVec<[usize; 4]>>,
+    worklist: &mut Vec<SmallVec<[usize; 4]>>,
 ) {
     let mut row: Vec<(D::Element, usize)> = Vec::new();
     for (exp, coeff) in poly.sorted_terms().iter().rev() {
         if poly.domain().is_zero(coeff) {
             continue;
         }
-        monomial_map.entry((*exp).clone()).or_insert_with(|| {
+        let mut new_col = None;
+        let md = monomial_map.entry((*exp).clone()).or_insert_with(|| {
             let idx = monomial_list.len();
             monomial_list.push((*exp).clone());
-            MonomialData {
-                present: false,
-                column: idx,
-            }
+            new_col = Some(idx);
+            MonomialData { column: idx }
         });
-        let md = monomial_map.get(*exp).unwrap();
+        if new_col.is_some() {
+            worklist.push((*exp).clone());
+        }
         row.push(((*coeff).clone(), md.column));
     }
     if !row.is_empty() {
@@ -627,6 +680,9 @@ impl BasisPoly for FpPoly {
     fn n_vars(&self) -> usize {
         self.n_vars
     }
+    fn n_terms(&self) -> usize {
+        FpPoly::n_terms(self)
+    }
     fn mul_monomial(&self, exp: &[usize]) -> Self {
         Self {
             terms: self
@@ -660,29 +716,31 @@ fn monic_fp(p: &mut FpPoly, prime: i64) {
     }
 }
 
-/// Register an `FpPoly` as a matrix row, tracking new monomials.
-fn add_poly_to_matrix_fp(
-    poly: &FpPoly,
-    matrix: &mut Vec<Vec<(i64, usize)>>,
-    monomial_map: &mut HashMap<SmallVec<[usize; 4]>, MonomialData>,
-    monomial_list: &mut Vec<SmallVec<[usize; 4]>>,
-) {
-    let mut row: Vec<(i64, usize)> = Vec::with_capacity(poly.terms.len());
-    for (exp, coeff) in &poly.terms {
-        monomial_map.entry(exp.clone()).or_insert_with(|| {
-            let idx = monomial_list.len();
-            monomial_list.push(exp.clone());
-            MonomialData {
-                present: false,
-                column: idx,
-            }
-        });
-        let md = monomial_map.get(exp).unwrap();
-        row.push((*coeff, md.column));
+/// Fetch (or build and cache) the polynomial content of the basis
+/// multiple `basis[basis_idx] * x^diff`. The row content is cached across
+/// rounds so a repeated reducer/S-multiple is built only once; monomial
+/// registration into the per-round column table happens at materialize
+/// time. Returns the row-store index, or `None` for a zero polynomial.
+fn register_row_fp(
+    basis_idx: usize,
+    diff: &SmallVec<[usize; 4]>,
+    basis: &[FpPoly],
+    simplifications: &[SimpCache<FpPoly>],
+    row_store: &mut Vec<FpPoly>,
+    row_cache: &mut HashMap<(usize, SmallVec<[usize; 4]>), usize>,
+) -> Option<usize> {
+    let key = (basis_idx, diff.clone());
+    if let Some(&rs) = row_cache.get(&key) {
+        return Some(rs);
     }
-    if !row.is_empty() {
-        matrix.push(row);
+    let poly = get_simplified(&simplifications[basis_idx], diff, &basis[basis_idx]);
+    if poly.is_zero() {
+        return None;
     }
+    let rs = row_store.len();
+    row_store.push(poly);
+    row_cache.insert(key, rs);
+    Some(rs)
 }
 
 /// Native ℤ_p F4: the full F4 pipeline on `i64` residues.
@@ -716,19 +774,43 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
     let mut basis: Vec<FpPoly> = Vec::new();
     let mut pairs: Vec<CriticalPair> = Vec::new();
     let mut simplifications: Vec<SimpCache<FpPoly>> = Vec::new();
+    // Reducer divisor index and LM set, maintained in lockstep with `basis`.
+    let mut div_index = DivisorIndex::new();
+    let mut basis_lm_set: HashSet<SmallVec<[usize; 4]>> = HashSet::default();
     for p in initial {
         update_pairs(&mut basis, &mut pairs, &mut simplifications, p);
+        let idx = basis.len() - 1;
+        if let Some(lm) = basis[idx].leading_monomial() {
+            div_index.push(lm, idx);
+            basis_lm_set.insert(lm.clone());
+        }
     }
 
+    // Monomial table: rebuilt each round (clearing keeps the column space
+    // per-round compact — a persistent table accumulated every historical
+    // monomial and exploded the echelon's pivots array and column sort).
     let mut all_monomials: HashMap<SmallVec<[usize; 4]>, MonomialData> = HashMap::default();
     let mut monomial_list: Vec<SmallVec<[usize; 4]>> = Vec::new();
     let mut matrix: Vec<Vec<(i64, usize)>> = Vec::new();
     let mut pivots: Vec<Option<usize>> = Vec::new();
-    let mut fp_buffer: Vec<i64> = Vec::new();
     // Head monomials of every input row of the current matrix (basis
     // multiples). See the generic path for the extraction invariant.
     let mut input_heads: HashSet<SmallVec<[usize; 4]>> = HashSet::default();
     let mut seen_rows: HashSet<(usize, SmallVec<[usize; 4]>)> = HashSet::default();
+    // Monomials awaiting a reducer search this round.
+    let mut worklist: Vec<SmallVec<[usize; 4]>> = Vec::new();
+    // Per-round dedup for the worklist monomial scan.
+    let mut seen_monomials: HashSet<SmallVec<[usize; 4]>> = HashSet::default();
+
+    // Row template cache (persistent across rounds): a basis multiple is
+    // built once and its polynomial content stored; subsequent rounds
+    // reuse the stored content instead of re-running the simplification
+    // cache + polynomial walk. Basis elements are only ever appended, so
+    // `(basis_idx, diff)` keys stay valid.
+    let mut row_store: Vec<FpPoly> = Vec::new();
+    let mut row_cache: HashMap<(usize, SmallVec<[usize; 4]>), usize> = HashMap::default();
+    // Row-store indices participating in the current round's matrix.
+    let mut round_rows: Vec<usize> = Vec::new();
 
     // Optional section timing for performance diagnosis (OCAS_F4_STATS=1).
     let stats = std::env::var("OCAS_F4_STATS").is_ok();
@@ -738,6 +820,8 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
     let mut t_pre = std::time::Duration::ZERO;
     let mut t_ech = std::time::Duration::ZERO;
     let mut t_ext = std::time::Duration::ZERO;
+    // 每轮矩阵规模直方（OCAS_F4_ROUND_STATS=1 逐行打印）。
+    let round_stats = std::env::var("OCAS_F4_ROUND_STATS").is_ok();
 
     while !pairs.is_empty() {
         rounds += 1;
@@ -760,11 +844,16 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
         }
 
         // --- Build matrix rows from selected pairs ---
+        // Per-round column table; row content comes from the persistent
+        // row cache.
         all_monomials.clear();
         monomial_list.clear();
         matrix.clear();
         input_heads.clear();
         seen_rows.clear();
+        worklist.clear();
+        seen_monomials.clear();
+        round_rows.clear();
 
         for cp in &selected {
             let i = cp.idx1;
@@ -788,19 +877,22 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
             // generic path for why the difference is never precomputed).
             input_heads.insert(lcm_exp.clone());
             for (idx, diff) in [(i, &diff_i), (j, &diff_j)] {
-                if seen_rows.insert((idx, diff.clone())) {
-                    let mult = get_simplified(&simplifications[idx], diff, &basis[idx]);
-                    add_poly_to_matrix_fp(
-                        &mult,
-                        &mut matrix,
-                        &mut all_monomials,
-                        &mut monomial_list,
-                    );
+                if seen_rows.insert((idx, diff.clone()))
+                    && let Some(rs) = register_row_fp(
+                        idx,
+                        diff,
+                        &basis,
+                        &simplifications,
+                        &mut row_store,
+                        &mut row_cache,
+                    )
+                {
+                    round_rows.push(rs);
                 }
             }
         }
 
-        if matrix.is_empty() {
+        if round_rows.is_empty() {
             continue;
         }
 
@@ -808,61 +900,69 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
         let t1 = std::time::Instant::now();
 
         // --- Iterative symbolic preprocessing ---
-        let mut i = 0;
-        while i < matrix.len() {
-            let mut new_monomials: Vec<SmallVec<[usize; 4]>> = Vec::new();
-            for (exp, md) in all_monomials.iter() {
-                if !md.present {
-                    new_monomials.push(exp.clone());
+        // Collect every monomial appearing in this round's rows into the
+        // worklist (deduplicated per round), then process LIFO: search a
+        // reducer via the LM divisor index and append it as a new row
+        // (whose own monomials extend the worklist). The row cache keeps
+        // repeated reducers free; the per-round worklist scan still
+        // reduces every monomial against the CURRENT basis.
+        for &rs in &round_rows {
+            for (exp, _) in &row_store[rs].terms {
+                if seen_monomials.insert(exp.clone()) {
+                    worklist.push(exp.clone());
                 }
             }
-
-            if new_monomials.is_empty() {
-                break;
-            }
-
-            for exp in &new_monomials {
-                if let Some(md) = all_monomials.get_mut(exp) {
-                    md.present = true;
-                }
-            }
-
-            for exp in &new_monomials {
-                let mut best: Option<usize> = None;
-                for (bi, bp) in basis.iter().enumerate() {
-                    if let Some(blm) = bp.leading_monomial()
-                        && monomial_divides(exp, blm)
-                    {
-                        match best {
-                            Some(b) if basis[b].n_terms() <= bp.n_terms() => {}
-                            _ => best = Some(bi),
+        }
+        while let Some(exp) = worklist.pop() {
+            if let Some(bi) = find_reducer(&div_index, &basis, &exp) {
+                let blm = basis[bi].leading_monomial().unwrap();
+                let diff: SmallVec<[usize; 4]> =
+                    exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
+                input_heads.insert(exp);
+                if let Some(rs) = register_row_fp(
+                    bi,
+                    &diff,
+                    &basis,
+                    &simplifications,
+                    &mut row_store,
+                    &mut row_cache,
+                ) {
+                    round_rows.push(rs);
+                    for (mexp, _) in &row_store[rs].terms {
+                        if seen_monomials.insert(mexp.clone()) {
+                            worklist.push(mexp.clone());
                         }
                     }
                 }
-                if let Some(bi) = best {
-                    let blm = basis[bi].leading_monomial().unwrap();
-                    let diff: SmallVec<[usize; 4]> =
-                        exp.iter().zip(blm.iter()).map(|(a, b)| a - b).collect();
-                    let reducer = get_simplified(&simplifications[bi], &diff, &basis[bi]);
-                    input_heads.insert(exp.clone());
-                    add_poly_to_matrix_fp(
-                        &reducer,
-                        &mut matrix,
-                        &mut all_monomials,
-                        &mut monomial_list,
-                    );
-                }
             }
-
-            i += 1;
         }
 
-        if matrix.is_empty() || monomial_list.is_empty() {
+        if round_rows.is_empty() {
             continue;
         }
 
         t_pre += t1.elapsed();
         let t2 = std::time::Instant::now();
+
+        // Materialize this round's matrix: register each stored row's
+        // monomials into the per-round column table (in stored order —
+        // rows store the leading term first, so column 0 of each row is
+        // its head before the global sort).
+        for &rs in &round_rows {
+            let poly = &row_store[rs];
+            let mut row: Vec<(i64, usize)> = Vec::with_capacity(poly.terms.len());
+            for (exp, coeff) in &poly.terms {
+                let col = all_monomials.entry(exp.clone()).or_insert_with(|| {
+                    let idx = monomial_list.len();
+                    monomial_list.push(exp.clone());
+                    MonomialData { column: idx }
+                });
+                row.push((*coeff, col.column));
+            }
+            if !row.is_empty() {
+                matrix.push(row);
+            }
+        }
 
         let ncols = monomial_list.len();
 
@@ -888,7 +988,17 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
         }
 
         // --- Row echelon form (native i64) ---
-        echelonize_fp(&mut matrix, ncols, prime, &mut pivots, &mut fp_buffer);
+        echelonize_fp(&mut matrix, ncols, prime, &mut pivots);
+
+        if round_stats {
+            let nnz: usize = matrix.iter().map(Vec::len).sum();
+            let max_len = matrix.iter().map(Vec::len).max().unwrap_or(0);
+            eprintln!(
+                "  round {rounds}: rows={} cols={ncols} nnz={nnz} maxlen={max_len} sel={}",
+                matrix.len(),
+                selected.len()
+            );
+        }
 
         t_ech += t2.elapsed();
         let t3 = std::time::Instant::now();
@@ -920,14 +1030,16 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
             let new_lm = poly.leading_monomial().unwrap().clone();
 
             // Skip if a polynomial with this leading monomial already exists.
-            if basis.iter().any(|bp| {
-                bp.leading_monomial()
-                    .is_some_and(|blm| blm.as_slice() == new_lm.as_slice())
-            }) {
+            if basis_lm_set.contains(&new_lm) {
                 continue;
             }
 
             update_pairs(&mut basis, &mut pairs, &mut simplifications, poly);
+            let idx = basis.len() - 1;
+            if let Some(lm) = basis[idx].leading_monomial() {
+                div_index.push(lm, idx);
+                basis_lm_set.insert(lm.clone());
+            }
             added += 1;
         }
 
@@ -960,10 +1072,8 @@ fn echelonize_fp(
     ncols: usize,
     prime: i64,
     pivots: &mut Vec<Option<usize>>,
-    buffer: &mut Vec<i64>,
 ) {
     let p = prime;
-    let p2 = p * p;
 
     sort_rows(matrix);
 
@@ -987,98 +1097,106 @@ fn echelonize_fp(
         }
     }
 
-    // Reduce rows.
+    // Scratch row reused by every merge step (avoids per-subtraction
+    // allocation churn).
+    let mut scratch: Vec<(i64, usize)> = Vec::new();
+
+    // Reduce rows. Each row repeatedly cancels its head against the pivot
+    // row registered at the head column (sparse two-pointer merge), until
+    // the row vanishes or its head column has no pivot yet — in which case
+    // the row is normalized to monic and registered as the new pivot.
+    // This is semantically identical to the old dense-buffer scan but
+    // costs O(nnz) per cancellation instead of O(ncols) per row.
     for r in 0..matrix.len() {
         if matrix[r].is_empty() {
             continue;
         }
-
-        let first_col = matrix[r][0].1;
-        if pivots[first_col].is_none() {
-            pivots[first_col] = Some(r);
-            if matrix[r][0].0 != 1 {
-                let inv = mod_inv(matrix[r][0].0, p);
-                for (c, _) in &mut matrix[r] {
-                    *c = (*c * inv) % p;
-                }
-            }
-        }
-
-        if pivots[first_col] == Some(r) {
+        if pivots[matrix[r][0].1] == Some(r) {
             continue;
         }
 
-        // Dense buffer elimination.
-        buffer.clear();
-        buffer.resize(ncols, 0);
-        for &(c, col) in &matrix[r] {
-            buffer[col] = c;
-        }
-
-        for i in 0..ncols {
-            buffer[i] %= p;
-            if buffer[i] == 0 {
-                continue;
+        let mut row = std::mem::take(&mut matrix[r]);
+        loop {
+            if row.is_empty() {
+                break;
             }
-            let pi = match pivots[i] {
-                Some(pi) => pi,
+            let head_col = row[0].1;
+            match pivots[head_col] {
+                Some(pi) if pi != r => {
+                    // Pivot rows are monic, so the heads cancel exactly.
+                    let c = row[0].0;
+                    sub_scaled_fp(&mut row, &matrix[pi], c, p, &mut scratch);
+                }
+                Some(_) => break,
                 None => {
-                    // New pivot.
-                    pivots[i] = Some(r);
-                    let inv = mod_inv(buffer[i], p);
-                    buffer[i] = 1;
-                    for j in (i + 1)..ncols {
-                        buffer[j] = (buffer[j] * inv) % p;
-                    }
-                    matrix[r].clear();
-                    for (col, val) in buffer.iter_mut().enumerate() {
-                        let v = *val % p;
-                        if v != 0 {
-                            matrix[r].push((v, col));
-                            *val = 0;
+                    if row[0].0 != 1 {
+                        let inv = mod_inv(row[0].0, p);
+                        for (c, _) in &mut row {
+                            *c = (*c * inv) % p;
                         }
                     }
-                    continue;
-                }
-            };
-
-            let c = buffer[i];
-            buffer[i] = 0;
-            for &(pc, pcol) in &matrix[pi] {
-                if pcol <= i {
-                    continue;
-                }
-                let m = pc * c;
-                let t = buffer[pcol];
-                buffer[pcol] = if t >= m { t - m } else { t + p2 - m };
-            }
-        }
-
-        // Write back the eliminated row — but only when it was NOT already
-        // written as a new pivot mid-scan (in that case the buffer is
-        // drained and the row in the matrix is already final). A row whose
-        // first column is unchanged still holds its ORIGINAL terms and
-        // must be replaced by the buffer contents (possibly empty).
-        if matrix[r][0].1 == first_col {
-            matrix[r].clear();
-            for (col, val) in buffer.iter_mut().enumerate() {
-                let v = *val % p;
-                if v != 0 {
-                    matrix[r].push((v, col));
-                    *val = 0;
+                    pivots[head_col] = Some(r);
+                    break;
                 }
             }
         }
+        matrix[r] = row;
     }
 
     matrix.retain(|r| !r.is_empty());
+}
+
+/// Sparse `row -= c * pivot` (mod `p`) by merging the two
+/// column-ascending rows. The head columns coincide and cancel (pivot is
+/// monic), so both heads are skipped. All emitted coefficients are
+/// normalized into `[0, p)`; zeros are dropped.
+fn sub_scaled_fp(
+    row: &mut Vec<(i64, usize)>,
+    pivot: &[(i64, usize)],
+    c: i64,
+    p: i64,
+    scratch: &mut Vec<(i64, usize)>,
+) {
+    scratch.clear();
+    scratch.reserve(row.len() + pivot.len());
+    let mut i = 1;
+    let mut j = 1;
+    while i < row.len() && j < pivot.len() {
+        let (rc, rcol) = row[i];
+        let (pc, pcol) = pivot[j];
+        if rcol < pcol {
+            scratch.push((rc, rcol));
+            i += 1;
+        } else if rcol > pcol {
+            let v = norm_mod(-c * pc, p);
+            if v != 0 {
+                scratch.push((v, pcol));
+            }
+            j += 1;
+        } else {
+            let v = norm_mod(rc - c * pc, p);
+            if v != 0 {
+                scratch.push((v, rcol));
+            }
+            i += 1;
+            j += 1;
+        }
+    }
+    scratch.extend_from_slice(&row[i..]);
+    for &(pc, pcol) in &pivot[j..] {
+        let v = norm_mod(-c * pc, p);
+        if v != 0 {
+            scratch.push((v, pcol));
+        }
+    }
+    std::mem::swap(row, scratch);
 }
 
 // =========================================================================
 //  Row echelon form: generic domain path
 // =========================================================================
 
-#[allow(clippy::needless_range_loop, clippy::collapsible_if)]
+#[allow(clippy::needless_range_loop)]
 fn echelonize_generic<D: Domain>(
     matrix: &mut Vec<Vec<(D::Element, usize)>>,
     ncols: usize,
@@ -1090,8 +1208,6 @@ fn echelonize_generic<D: Domain>(
     pivots.clear();
     pivots.resize(ncols, None);
 
-    let mut buffer: Vec<D::Element> = vec![domain.zero(); ncols];
-
     // Identify initial pivots.
     for r in 0..matrix.len() {
         if matrix[r].is_empty() {
@@ -1101,102 +1217,103 @@ fn echelonize_generic<D: Domain>(
         if pivots[col].is_none() {
             pivots[col] = Some(r);
             let lc = matrix[r][0].0.clone();
-            if !domain.is_one(&lc) {
-                if let Some(inv) = domain.inv(&lc) {
-                    for (c, _) in &mut matrix[r] {
-                        *c = domain.mul(c, &inv);
-                    }
+            if !domain.is_one(&lc)
+                && let Some(inv) = domain.inv(&lc)
+            {
+                for (c, _) in &mut matrix[r] {
+                    *c = domain.mul(c, &inv);
                 }
             }
         }
     }
 
-    // Reduce rows.
+    let mut scratch: Vec<(D::Element, usize)> = Vec::new();
+
+    // Reduce rows with sparse merge cancellation (same structure as the
+    // ℤ_p fast path — see `echelonize_fp`).
     for r in 0..matrix.len() {
         if matrix[r].is_empty() {
             continue;
         }
+        if pivots[matrix[r][0].1] == Some(r) {
+            continue;
+        }
 
-        let first_col = matrix[r][0].1;
-        if pivots[first_col].is_none() {
-            pivots[first_col] = Some(r);
-            let lc = matrix[r][0].0.clone();
-            if !domain.is_one(&lc) {
-                if let Some(inv) = domain.inv(&lc) {
-                    for (c, _) in &mut matrix[r] {
-                        *c = domain.mul(c, &inv);
-                    }
+        let mut row = std::mem::take(&mut matrix[r]);
+        loop {
+            if row.is_empty() {
+                break;
+            }
+            let head_col = row[0].1;
+            match pivots[head_col] {
+                Some(pi) if pi != r => {
+                    let c = row[0].0.clone();
+                    sub_scaled_generic(domain, &mut row, &matrix[pi], &c, &mut scratch);
                 }
-            }
-            continue;
-        }
-
-        if pivots[first_col] == Some(r) {
-            continue;
-        }
-
-        // Copy to dense buffer.
-        for b in buffer.iter_mut() {
-            *b = domain.zero();
-        }
-        for (c, col) in &matrix[r] {
-            buffer[*col] = c.clone();
-        }
-
-        // Eliminate.
-        for i in 0..ncols {
-            if domain.is_zero(&buffer[i]) {
-                continue;
-            }
-            let pi = match pivots[i] {
-                Some(pi) => pi,
+                Some(_) => break,
                 None => {
-                    pivots[i] = Some(r);
-                    if let Some(inv) = domain.inv(&buffer[i]) {
-                        buffer[i] = domain.one();
-                        for j in (i + 1)..ncols {
-                            buffer[j] = domain.mul(&buffer[j], &inv);
+                    let lc = row[0].0.clone();
+                    if !domain.is_one(&lc)
+                        && let Some(inv) = domain.inv(&lc)
+                    {
+                        for (c, _) in &mut row {
+                            *c = domain.mul(c, &inv);
                         }
                     }
-                    matrix[r].clear();
-                    for (col, val) in buffer.iter_mut().enumerate() {
-                        if !domain.is_zero(val) {
-                            matrix[r].push((val.clone(), col));
-                            *val = domain.zero();
-                        }
-                    }
-                    continue;
-                }
-            };
-
-            let c = buffer[i].clone();
-            buffer[i] = domain.zero();
-            for (pc, pcol) in &matrix[pi] {
-                if *pcol <= i {
-                    continue;
-                }
-                let product = domain.mul(pc, &c);
-                buffer[*pcol] = domain.sub(&buffer[*pcol], &product);
-            }
-        }
-
-        // Write back the eliminated row — but only when it was NOT already
-        // written as a new pivot mid-scan (in that case the buffer is
-        // drained and the row in the matrix is already final). A row whose
-        // first column is unchanged still holds its ORIGINAL terms and
-        // must be replaced by the buffer contents (possibly empty).
-        if matrix[r][0].1 == first_col {
-            matrix[r].clear();
-            for (col, val) in buffer.iter_mut().enumerate() {
-                if !domain.is_zero(val) {
-                    matrix[r].push((val.clone(), col));
-                    *val = domain.zero();
+                    pivots[head_col] = Some(r);
+                    break;
                 }
             }
         }
+        matrix[r] = row;
     }
 
     matrix.retain(|r| !r.is_empty());
+}
+
+/// Sparse `row -= c * pivot` over a generic domain by merging the two
+/// column-ascending rows. The head columns coincide and cancel (pivot is
+/// monic), so both heads are skipped; zero coefficients are dropped.
+fn sub_scaled_generic<D: Domain>(
+    domain: &D,
+    row: &mut Vec<(D::Element, usize)>,
+    pivot: &[(D::Element, usize)],
+    c: &D::Element,
+    scratch: &mut Vec<(D::Element, usize)>,
+) {
+    scratch.clear();
+    let mut i = 1;
+    let mut j = 1;
+    while i < row.len() && j < pivot.len() {
+        if row[i].1 < pivot[j].1 {
+            scratch.push(row[i].clone());
+            i += 1;
+        } else if row[i].1 > pivot[j].1 {
+            let prod = domain.mul(&pivot[j].0, c);
+            let v = domain.sub(&domain.zero(), &prod);
+            if !domain.is_zero(&v) {
+                scratch.push((v, pivot[j].1));
+            }
+            j += 1;
+        } else {
+            let prod = domain.mul(&pivot[j].0, c);
+            let v = domain.sub(&row[i].0, &prod);
+            if !domain.is_zero(&v) {
+                scratch.push((v, row[i].1));
+            }
+            i += 1;
+            j += 1;
+        }
+    }
+    scratch.extend_from_slice(&row[i..]);
+    for (pc, pcol) in &pivot[j..] {
+        let prod = domain.mul(pc, c);
+        let v = domain.sub(&domain.zero(), &prod);
+        if !domain.is_zero(&v) {
+            scratch.push((v, *pcol));
+        }
+    }
+    std::mem::swap(row, scratch);
 }
 
 // =========================================================================

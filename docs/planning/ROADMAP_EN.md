@@ -263,7 +263,11 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 
 > The fine-grained per-version plan from Beta to 1.0 (0.11 factorization →
 > 0.12 rational functions → 0.13 Gröbner F4 → 0.14 Risch integration → 0.15
-> multi-output JIT) is detailed in [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md).
+> multi-output JIT → 0.15.2 Gröbner performance at scale → 0.16 arbitrary
+> multivariate factorization → 0.17 algebraic-number-field factorization →
+> 0.18 numerical integration / duals / tensors / fuel) is detailed in
+> [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md). Versions 0.15.2–0.18.0 form
+> Phase B+ "Closing the Symbolica Gap"; 1.0.0 is freeze-and-polish only.
 
 ---
 
@@ -304,7 +308,11 @@ After 1.0, development will focus on:
 | 0.14.0 | 1.0 Candidate | Month 22 | Risch symbolic integration + rational-function integration + special-function table + FGLM/F5/Hilbert + trigonometric integration |
 | 0.15.0 | 1.0 Candidate | Month 24 | Multi-output JIT + f32 mixed precision + streaming evaluation + Arena/workspace pool + ahash + native i64 F4 |
 | 0.15.1 | 1.0 Candidate | Month 24 | F4 real linear algebra fix (cyclic-5 ~85,000× faster, cyclic-6 tractable) |
-| 1.0.0 | Stable | Month 26 | Stable release |
+| 0.15.2 | 1.0 Candidate | Month 25 | Gröbner performance at scale (LM index + sparse echelon, cyclic-6 ℤ₁₃ 9970 s → 3670 s; <5 s needs F5) |
+| 0.16.0 | 1.0 Candidate | Month 26 | Arbitrary multivariate factorization (Wang EEZ, ≥3 variables, ℤ and ℤ_p) |
+| 0.17.0 | 1.0 Candidate | Month 27 | Algebraic number field & extension-field factorization (Trager) |
+| 0.18.0 | 1.0 Candidate | Month 28 | Numerical integration (Vegas) + dual-number AD + tensor basics + fuel resource control |
+| 1.0.0 | Stable | Month 30 | Stable release (frozen after the Symbolica feature/performance gap is closed) |
 
 ---
 

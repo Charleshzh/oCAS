@@ -17,7 +17,7 @@ members = [
 resolver = "3"
 
 [workspace.package]
-version = "0.15.1"
+version = "0.15.2"
 authors = ["oCAS Contributors"]
 edition = "2024"
 rust-version = "1.89"
@@ -29,18 +29,18 @@ keywords = ["cas", "symbolic", "algebra", "mathematics", "polynomial"]
 categories = ["science", "mathematics"]
 
 [workspace.dependencies]
-ocas-core = { path = "ocas-core", version = "0.15.1" }
-ocas-domain = { path = "ocas-domain", version = "0.15.1" }
-ocas-poly = { path = "ocas-poly", version = "0.15.1" }
-ocas-atom = { path = "ocas-atom", version = "0.15.1" }
-ocas-rewrite = { path = "ocas-rewrite", version = "0.15.1" }
-ocas-calc = { path = "ocas-calc", version = "0.15.1" }
-ocas-eval = { path = "ocas-eval", version = "0.15.1" }
-ocas-parse = { path = "ocas-parse", version = "0.15.1" }
-ocas = { path = "ocas", version = "0.15.1" }
-ocas-py = { path = "ocas-py", version = "0.15.1" }
-ocas-c = { path = "ocas-c", version = "0.15.1" }
-ocas-gpl = { path = "ocas-gpl", version = "0.15.1" }
+ocas-core = { path = "ocas-core", version = "0.15.2" }
+ocas-domain = { path = "ocas-domain", version = "0.15.2" }
+ocas-poly = { path = "ocas-poly", version = "0.15.2" }
+ocas-atom = { path = "ocas-atom", version = "0.15.2" }
+ocas-rewrite = { path = "ocas-rewrite", version = "0.15.2" }
+ocas-calc = { path = "ocas-calc", version = "0.15.2" }
+ocas-eval = { path = "ocas-eval", version = "0.15.2" }
+ocas-parse = { path = "ocas-parse", version = "0.15.2" }
+ocas = { path = "ocas", version = "0.15.2" }
+ocas-py = { path = "ocas-py", version = "0.15.2" }
+ocas-c = { path = "ocas-c", version = "0.15.2" }
+ocas-gpl = { path = "ocas-gpl", version = "0.15.2" }
 num-bigint = "0.4"
 num-rational = "0.4"
 num-traits = "0.2"

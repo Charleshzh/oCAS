@@ -396,6 +396,109 @@ Risch 代码。
 
 ---
 
+## 阶段 B+ — Symbolica 差距清零（0.15.2 → 0.18.0）
+
+**目标**：在 1.0.0 之前彻底补全与 Symbolica 2.1.0 的剩余功能与性能差距
+（依据 GAP_ANALYSIS 0.15.1 @ 2026-07-21 重估）：任意多元（≥3 变量）与
+代数数域因式分解、数值积分、双数/张量、fuel 资源控制、Gröbner 大规模
+性能。完成后 1.0.0 仅做冻结与打磨。
+
+### 0.15.2 — Gröbner 大规模性能：LM 索引与稀疏 Echelon
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| reducer 首项单项式哈希索引（消除 O(单项式 × 基) 线性扫描） | Symbolica `src/poly/groebner.rs` reducer 查找 | `ocas-poly::groebner::f4` | [x] |
+| 稀疏行 echelon（排序 (列, 系数) 行 + 归并消元，替代稠密矩阵行） | 0.12.1 `sprs` 基础设施 | `ocas-poly::groebner::f4` 矩阵构建/消除 | [x] |
+| 提取阶段列签名去重强化 | — | `ocas-poly::groebner::f4`（`FastHashSet` 列签名） | [x] |
+| 分段插装回归（`OCAS_F4_STATS`）纳入 CI 手动基准 | — | `ocas-tests::groebner_timing` | [x] |
+
+**性能指标**
+
+- cyclic-6 ℤ₁₃：9970 s → 3670 s（2.7×；行模板缓存微调后约持平，见
+  `groebner_timing`）。**<5 s 未达成**——cyclic-6 的 F4 矩阵在第 22 轮
+  达 264k 行 × 284k 列，是 F4 对该理想的固有规模（S-多项式 + 符号
+  预处理生成的行），而非实现低效；cyclic 理想的 `(基下标, diff)` 对
+  几乎不重复，跨轮行缓存命中率极低，行数不减。进一步数量级提升需
+  F5 签名约简（消除零约化行），超出 0.15.2 范围，留待后续版本。
+- cyclic-7 ℤ_p：仍超出实用时限（行规模随 n 爆炸）。
+- 消除/提取阶段占比已从 0.15.0 的 99.98% 提取主导转为消除主导
+  （0.15.2 实测：echelon 3265 s / 总 3670 s ≈ 89%）。
+
+**验收**
+
+- [x] 21 项既有 Gröbner 测试 + `f4_cyclic_3_fp13_matches_q` 回归全绿。
+- [x] cyclic-6 ℤ₁₃ 正确（basis=20，`is_groebner_basis` 通过）；3670 s
+  （未达 <5 s，原因见上，需 F5）。
+
+### 0.16.0 — 任意多元因式分解（Wang EEZ）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| 多元内容/本原部分按主变量递归分解 | Symbolica `src/poly/factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
+| 多元 ℤ_p 因式分解：无平方 → 逐变量 EEZ Hensel 提升 | Wang 1978 EEZ；Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
+| 首项系数预处理（Wang leading-coefficient determination） | Wang 1978 改进 | `ocas-poly::factor::multivariate` | [ ] |
+| 多元 ℤ 因式分解：模素数分解 → 多元提升 → Zassenhaus 组合重组 | Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
+| `SparseMultivariatePolynomial::factor` 任意元入口（泛化 0.11.1 二元路径） | — | `ocas-poly::sparse` | [ ] |
+
+**性能指标**
+
+- 3–4 变量、总次数 ≤ 20 的随机可约多项式 < 1 s。
+- 与 Symbolica `factorization.rs` 示例同规模输入对比，数量级持平。
+
+**验收**
+
+- [ ] proptest 往返：随机因子乘积分解后重组一致（≥500 例，3–4 变量）。
+- [ ] SymPy `factor` 交叉验证（correctness 框架新增多元用例）。
+
+### 0.17.0 — 代数数域与扩域因式分解（Trager）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| `AlgebraicNumberField` domain：ℚ(α) 算术（极小多项式 + 扩展 Euclid 求逆） | Symbolica `domains` | `ocas-domain::algebraic` | [ ] |
+| 扩域上多项式 GCD / 无平方分解 | — | `ocas-poly::factor::algebraic` | [ ] |
+| Trager 因式分解：范数 → ℤ 上分解 → 提升回扩域 | Trager 1976；Symbolica `factor.rs` ANF 路径 | `ocas-poly::factor::algebraic` | [ ] |
+| 与 0.12 结式栈集成（范数经结式计算） | — | `ocas-poly::resultant` | [ ] |
+
+**性能指标**
+
+- ℚ(√2)、ℚ(∛2)、ℚ(ζ₅) 上次数 ≤ 12 多项式分解 < 100 ms。
+
+**验收**
+
+- [ ] SymPy `factor(extension=...)` 交叉验证（≥20 用例）。
+- [ ] 范数为无平方时分解完备性经 proptest 验证。
+
+### 0.18.0 — 数值积分、自动微分与资源控制
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| Vegas 自适应蒙特卡洛积分（分层网格训练 + 多通道） | Symbolica `numerical_integration.rs` | `ocas-eval::numeric::vegas` | [ ] |
+| 确定性 quadrature ↔ `Expression` 桥接（`compile_jit` 被积函数） | 0.12.1 quadrature 基础设施 | `ocas-eval::numeric` | [ ] |
+| 超对偶数 `Hyperdual<Rational>`（前向自动微分，任意阶截断） | Symbolica `dual.rs` | `ocas-domain::dual` | [ ] |
+| fuel 资源控制（求值/重写步数预算，耗尽确定性报错） | Symbolica `fuel` | `ocas-core::fuel` + eval/rewrite 接入 | [ ] |
+| 张量基础：指标槽、收缩、指标对称性 | Symbolica `tensors.rs` | `ocas-atom::tensor` | [ ] |
+
+**性能指标**
+
+- Vegas：1M 采样下光滑一维被积函数精度 ≤ 1e-6（误差估计收敛）。
+- 对偶数三变量乘积的全导数与符号 `diff` 结果一致（proptest）。
+- fuel 耗尽在既有求值/重写基准上开销 < 3%。
+
+**验收**
+
+- [ ] Symbolica `numerical_integration.rs` 示例等价工作负载对比报告。
+- [ ] 张量微积分 / 广义相对论级功能明确标注 Post-1.0（本版本仅基础代数）。
+
+---
+
 ## 阶段 C — 1.0.0 稳定版
 
 **目标**：API 稳定性保证、完整文档、迁移指南、签名产物。不加新功能；仅冻结
@@ -439,19 +542,22 @@ Risch 代码。
 
 | oCAS 领域 | 主要参考 | 次要参考 | 状态 |
 |---|---|---|---|
-| 因式分解 | Symbolica `src/poly/factor.rs` | Knuth TAOCP 卷 2 | � 0.11 完成 |
+| 因式分解（一元/二元） | Symbolica `src/poly/factor.rs` | Knuth TAOCP 卷 2 | 🟢 0.11 完成 |
+| 因式分解（任意多元） | Symbolica `src/poly/factor.rs`；Wang 1978 EEZ | — | 🔴 缺口（0.16） |
+| 因式分解（代数数域） | Symbolica `factor.rs` ANF 路径；Trager 1976 | — | 🔴 缺口（0.17） |
 | 有理多项式 | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 完成 |
 | 部分分式 | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 完成 |
 | 结式 | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 完成 |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | 🟡 基础（0.13） |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | 🟡 F4 完成（0.15.1）；大规模性能 0.15.2 |
 | GCD（模） | Symbolica `poly/gcd.rs` | — | 🟡 基础 |
 | GCD（模方法多变量） | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 完成 |
-| 积分（Risch） | Bronstein 著作；SymPy Risch | — | 🔴 缺口（0.14） |
-| 多输出 JIT | Symbolica `optimize_multiple.rs` | — | 🟡 单输出（0.15） |
-| 流式 | Symbolica `streaming.rs` | — | 🔴 缺口（0.15） |
+| 积分（Risch） | Bronstein 著作；SymPy Risch | — | 🟢 0.14 完成 |
+| 多输出 JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 完成 |
+| 流式 | Symbolica `streaming.rs` | — | 🟢 0.15 完成 |
 | 级数 | Symbolica `poly/series.rs`；SymPy `series` | — | 🟢 已有基础 |
-| 张量/双数 | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 缺口（Post-1.0） |
-| 数值积分 | Symbolica `numerical_integration.rs` | QUADPACK | 🟢 0.12.1（quadrature 验证） |
+| 张量/双数 | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 缺口（0.18） |
+| 数值积分 | Symbolica `numerical_integration.rs`（Vegas） | QUADPACK | 🟡 确定性 quadrature 已有（0.12.1）；Vegas 0.18 |
+| 资源控制（fuel） | Symbolica `fuel` | — | 🔴 缺口（0.18） |
 | 域（大整数） | FLINT/GMP 经由 `rug` | — | 🟢 经后端 |
 | 域（大整数 SOO） | FLINT `fmpz_t`；Symbolica 系数编码 | — | 🟢 0.11.2 完成 |
 | 多项式快速乘法 | FLINT 3 SSA；Symbolica dense mul | — | 🟢 0.12.1 NTT（90× vs Karatsuba） |
@@ -477,3 +583,4 @@ Risch 代码。
 | 0.13.0 | 2026-07-06 | F4 Gröbner 基算法发布。Gebauer-Moeller 临界对筛选 + 简化缓存 + ℤ_p 快速路径 + Grlex 序 + `minimize()` bug 修复。竞品索引更新：Gröbner 标 🟢。F5/多序/Hilbert 推迟到 0.14+。 |
 | 0.15.0 | 2026-07-20 | 性能/多输出 JIT/流式发布。JIT 97×/21×、f32 混合精度、流式恒定内存、Arena/workspace 池、ahash。竞品索引更新：流式/优化代码生成标 🟢。 |
 | 0.15.1 | 2026-07-20 | F4 真实线性代数修复。矩阵列序降序 + echelon 回写条件 + Symbolica GM 判据移植 + 经典 F4 提取（独立倍式 + input_heads、提取零约化）。cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s，basis=20）；< 5 s 目标推迟到 0.15.2（需 LM 索引 + 稀疏 echelon）。 |
+| 0.15.1 | 2026-07-21 | 基于 GAP_ANALYSIS 重估新增阶段 B+（0.15.2–0.18.0）：1.0 前清零与 Symbolica 的剩余差距——Gröbner 大规模性能（0.15.2）、任意多元因式分解（0.16）、代数数域因式分解（0.17）、数值积分 Vegas + 双数 + 张量基础 + fuel（0.18）。竞品索引状态同步修正（Risch/JIT/流式标 🟢；新增任意多元、代数数域、fuel 行；修复乱码）。 |

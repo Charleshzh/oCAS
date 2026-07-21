@@ -417,6 +417,112 @@ Rust + arena + JIT stack should start *exceeding* competitors.
 
 ---
 
+## Phase B+ — Closing the Symbolica Gap (0.15.2 → 0.18.0)
+
+**Goal**: before 1.0.0, fully close the remaining functional and performance
+gaps against Symbolica 2.1.0 (per the GAP_ANALYSIS 0.15.1 @ 2026-07-21
+re-evaluation): arbitrary multivariate (≥3 variables) and
+algebraic-number-field factorization, numerical integration, dual numbers /
+tensors, fuel resource control, and Gröbner performance at scale. After this
+phase, 1.0.0 is freeze-and-polish only.
+
+### 0.15.2 — Gröbner Performance at Scale: LM Index & Sparse Echelon
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Reducer leading-monomial hash index (removes O(monomials × basis) linear scan) | Symbolica `src/poly/groebner.rs` reducer lookup | `ocas-poly::groebner::f4` | [x] |
+| Sparse-row echelon (sorted (col, coeff) rows + merge elimination, replacing dense matrix rows) | 0.12.1 `sprs` infrastructure | `ocas-poly::groebner::f4` matrix build/elimination | [x] |
+| Stronger column-signature dedup at extraction | — | `ocas-poly::groebner::f4` (`FastHashSet` column signatures) | [x] |
+| Section instrumentation regression (`OCAS_F4_STATS`) in manual CI benchmark | — | `ocas-tests::groebner_timing` | [x] |
+
+**Performance KPI**
+
+- cyclic-6 ℤ₁₃: 9970 s → 3670 s (2.7×). **<5 s not reached** — the cyclic-6
+  F4 matrix reaches 264k rows × 284k cols at round 22, an intrinsic size
+  for this ideal (S-polynomial + symbolic-preprocessing rows), not an
+  implementation inefficiency; cyclic's `(basis_idx, diff)` pairs rarely
+  repeat, so the cross-round row cache hits rarely and row count is
+  unchanged. A further order-of-magnitude win needs F5 signature
+  reduction (eliminating zero-reducing rows), out of 0.15.2 scope.
+- cyclic-7 ℤ_p: still beyond practical time (row size explodes with n).
+- Phase profile shifted from 99.98% extraction-dominated (0.15.0) to
+  elimination-dominated (0.15.2 measured: echelon 3265 s / 3670 s ≈ 89%).
+
+**Acceptance**
+
+- [x] All 21 existing Gröbner tests + `f4_cyclic_3_fp13_matches_q` regression green.
+- [x] cyclic-6 ℤ₁₃ correct (basis=20, `is_groebner_basis` pass); 3670 s
+  (<5 s not reached, see above — needs F5).
+
+### 0.16.0 — Arbitrary Multivariate Factorization (Wang EEZ)
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Recursive content/primitive-part decomposition by main variable | Symbolica `src/poly/factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
+| Multivariate ℤ_p factorization: square-free → per-variable EEZ Hensel lifting | Wang 1978 EEZ; Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
+| Leading-coefficient pre-processing (Wang LC determination) | Wang 1978 improvements | `ocas-poly::factor::multivariate` | [ ] |
+| Multivariate ℤ factorization: modular factorization → multivariate lifting → Zassenhaus recombination | Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
+| `SparseMultivariatePolynomial::factor` entry for any arity (generalizes the 0.11.1 bivariate path) | — | `ocas-poly::sparse` | [ ] |
+
+**Performance KPI**
+
+- Random reducible polynomials in 3–4 variables, total degree ≤ 20: < 1 s.
+- Same-order-of-magnitude parity with Symbolica `factorization.rs` example inputs.
+
+**Acceptance**
+
+- [ ] proptest round-trip: products of random factors factor back consistently (≥500 cases, 3–4 variables).
+- [ ] SymPy `factor` cross-verification (new multivariate cases in the correctness framework).
+
+### 0.17.0 — Algebraic Number Fields & Extension-Field Factorization (Trager)
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| `AlgebraicNumberField` domain: ℚ(α) arithmetic (minimal polynomial + extended-Euclid inverse) | Symbolica `domains` | `ocas-domain::algebraic` | [ ] |
+| Polynomial GCD / square-free over extension fields | — | `ocas-poly::factor::algebraic` | [ ] |
+| Trager factorization: norm → factor over ℤ → lift back to the extension | Trager 1976; Symbolica `factor.rs` ANF path | `ocas-poly::factor::algebraic` | [ ] |
+| Integration with the 0.12 resultant stack (norm via resultant) | — | `ocas-poly::resultant` | [ ] |
+
+**Performance KPI**
+
+- Factorization over ℚ(√2), ℚ(∛2), ℚ(ζ₅) for degree ≤ 12 polynomials: < 100 ms.
+
+**Acceptance**
+
+- [ ] SymPy `factor(extension=...)` cross-verification (≥20 cases).
+- [ ] proptest completeness check when the norm is square-free.
+
+### 0.18.0 — Numerical Integration, Automatic Differentiation & Resource Control
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Vegas adaptive Monte Carlo integration (stratified grid training + multi-channel) | Symbolica `numerical_integration.rs` | `ocas-eval::numeric::vegas` | [ ] |
+| Deterministic quadrature ↔ `Expression` bridge (`compile_jit` integrand) | 0.12.1 quadrature infrastructure | `ocas-eval::numeric` | [ ] |
+| Hyperdual numbers `Hyperdual<Rational>` (forward AD, arbitrary truncation order) | Symbolica `dual.rs` | `ocas-domain::dual` | [ ] |
+| fuel resource control (evaluation/rewrite step budget, deterministic error on exhaustion) | Symbolica `fuel` | `ocas-core::fuel` + eval/rewrite hooks | [ ] |
+| Tensor basics: index slots, contraction, index symmetries | Symbolica `tensors.rs` | `ocas-atom::tensor` | [ ] |
+
+**Performance KPI**
+
+- Vegas: ≤ 1e-6 accuracy on smooth 1-D integrands at 1M samples (converging error estimate).
+- Full derivatives of a 3-variable product via duals match symbolic `diff` (proptest).
+- fuel accounting overhead < 3% on existing evaluation/rewrite benchmarks.
+
+**Acceptance**
+
+- [ ] Comparison report against the Symbolica `numerical_integration.rs` equivalent workload.
+- [ ] Tensor calculus / general-relativity-grade features explicitly scoped Post-1.0 (this version ships algebraic basics only).
+
+---
+
 ## Phase C — 1.0.0 Stable Release
 
 **Goal**: API stability guarantee, complete docs, migration guide, signed
@@ -462,19 +568,22 @@ when an item is met or beaten.
 
 | oCAS area | Primary reference | Secondary | Status |
 |---|---|---|---|
-| Factorization | Symbolica `src/poly/factor.rs` | Knuth TAOCP v2 | � 0.11 done |
+| Factorization (univariate/bivariate) | Symbolica `src/poly/factor.rs` | Knuth TAOCP v2 | 🟢 0.11 done |
+| Factorization (arbitrary multivariate) | Symbolica `src/poly/factor.rs`; Wang 1978 EEZ | — | 🔴 gap (0.16) |
+| Factorization (algebraic number fields) | Symbolica `factor.rs` ANF path; Trager 1976 | — | 🔴 gap (0.17) |
 | Rational polynomials | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 done |
 | Partial fractions | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 done |
 | Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 done |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 basic (0.13) |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 F4 done (0.15.1); scale performance 0.15.2 |
 | GCD (modular) | Symbolica `poly/gcd.rs` | — | 🟡 basic |
 | GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 done |
-| Integration (Risch) | Bronstein book; SymPy Risch | — | 🔴 gap (0.14) |
-| Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟡 single-output (0.15) |
-| Streaming | Symbolica `streaming.rs` | — | 🔴 gap (0.15) |
+| Integration (Risch) | Bronstein book; SymPy Risch | — | 🟢 0.14 done |
+| Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 done |
+| Streaming | Symbolica `streaming.rs` | — | 🟢 0.15 done |
 | Series | Symbolica `poly/series.rs`; SymPy `series` | — | 🟢 have basics |
-| Tensors/dual | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 gap (post-1.0) |
-| Numerical integration | Symbolica `numerical_integration.rs` | QUADPACK | 🟢 0.12.1 (quadrature verification) |
+| Tensors/dual | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 gap (0.18) |
+| Numerical integration | Symbolica `numerical_integration.rs` (Vegas) | QUADPACK | 🟡 deterministic quadrature done (0.12.1); Vegas 0.18 |
+| Resource control (fuel) | Symbolica `fuel` | — | 🔴 gap (0.18) |
 | Domains (big int) | FLINT/GMP via `rug` | — | 🟢 via backend |
 | Domains (big int SOO) | FLINT `fmpz_t`; Symbolica coefficient encoding | — | 🟢 0.11.2 done |
 | Fast polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🟢 0.12.1 NTT (90× vs Karatsuba) |
@@ -500,3 +609,4 @@ Refresh this plan:
 | 0.13.0 | 2026-07-06 | F4 Gröbner basis algorithm released. Gebauer-Moeller pair filtering + simplification cache + ℤ_p fast path + Grlex ordering + `minimize()` bug fix. Competitor index updated: Gröbner marked 🟢. F5/multi-order/Hilbert deferred to 0.14+. |
 | 0.15.0 | 2026-07-20 | Performance / multi-output JIT / streaming release. JIT 97×/21×, f32 mixed precision, constant-memory streaming, Arena/workspace pool, ahash. Competitor index updated: streaming/optimization codegen marked 🟢. |
 | 0.15.1 | 2026-07-20 | Real F4 linear algebra fix. Descending matrix column order + echelon write-back condition + Symbolica GM criteria port + classic F4 extraction (separate multiples + input-heads, zero reduction at extraction). cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s, basis=20); < 5 s target deferred to 0.15.2 (needs LM index + sparse echelon). |
+| 0.15.1 | 2026-07-21 | Phase B+ added (0.15.2–0.18.0) from the GAP_ANALYSIS re-evaluation: close all remaining Symbolica gaps before 1.0 — Gröbner performance at scale (0.15.2), arbitrary multivariate factorization (0.16), algebraic-number-field factorization (0.17), Vegas numerical integration + dual numbers + tensor basics + fuel (0.18). Competitor index statuses corrected (Risch/JIT/streaming marked 🟢; new rows for multivariate, ANF factorization, fuel; mojibake fixed). |

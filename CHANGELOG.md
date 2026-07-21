@@ -9,6 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.2] - 2026-07-21
+
+### Performance / 性能
+
+- **reducer 首项单项式哈希索引**（`ocas-poly::groebner::f4`）：基首项按
+  support-mask 分桶 + 子掩码枚举的 `DivisorIndex`/`find_reducer`，消除
+  符号预处理中 O(单项式 × 基) 的线性扫描；保留"n_terms 最小 + 低下标
+  平局"选择语义 / **Reducer LM divisor index**: basis leading monomials
+  are bucketed by exact support mask; reducer queries enumerate the
+  submasks of the query support instead of scanning the whole basis —
+  eliminating the O(monomials × basis) linear scan in symbolic
+  preprocessing while preserving the "fewest terms, lowest index"
+  selection semantics
+- **稀疏行 echelon**（`echelonize_fp`/`echelonize_generic`）：消元由稠密
+  buffer + 全列扫描改为稀疏双指针归并相消（`sub_scaled_fp`/
+  `sub_scaled_generic`），每次相消 O(nnz) 而非 O(ncols)；scratch 行复用、
+  头部相消跳过、去零 / **Sparse-row echelon**: elimination now merges
+  rows with a two-pointer sparse AXPY instead of a dense buffer + full
+  column scan — O(nnz) per cancellation; reused scratch row, head
+  cancellation skipped, zeros dropped
+- **单项式表行模板缓存**（fp 路径）：基倍式内容经 `row_cache`/
+  `row_store` 缓存，避免重跑 `get_simplified` 简化缓存 / **Row-template
+  cache** (fp path): basis-multiple content is cached by `(basis_idx,
+  diff)`, avoiding re-running the simplification cache
+- **提取阶段查重哈希化**：基首项查重由 O(基) 线性扫描改为 `HashSet`
+  / **Extraction dedup hashed**: basis-LM duplicate check uses a `HashSet`
+  instead of a linear scan
+- **符号预处理 worklist 驱动**：新注册单项式即入队、LIFO 处理，替代
+  每轮对全单项式表的 `!present` 扫描 / **Worklist-driven symbolic
+  preprocessing**: newly-registered monomials are queued and processed
+  LIFO instead of rescanning the whole monomial table each pass
+- cyclic-6 ℤ₁₃：9970 s → **3670 s**（2.7×，basis=20 正确且通过
+  `is_groebner_basis`）；阶段占比转为消除主导（echelon ≈89%）。**<5 s
+  未达成**——cyclic-6 的 F4 矩阵第 22 轮达 264k 行 × 284k 列，为 F4 对
+  该理想的固有规模；进一步数量级提升需 F5 签名约简（消除零约化行），
+  列入 post-1.0 / cyclic-6 over ℤ₁₃: 9970 s → **3670 s** (2.7×,
+  basis=20, `is_groebner_basis` pass); the phase profile shifted to
+  elimination-dominated (echelon ≈89%). **<5 s not reached** — the F4
+  matrix reaches 264k rows × 284k cols at round 22, intrinsic to F4 for
+  this ideal; a further order-of-magnitude win needs F5 signature
+  reduction (post-1.0)
+
+---
+
 ## [0.15.1] - 2026-07-20
 
 ### Fixed / 修复
