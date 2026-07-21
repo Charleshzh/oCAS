@@ -38,6 +38,17 @@ fn run(task: &str, expr: &str) -> Result<String, String> {
             }
             Ok(parts.join(" * "))
         }
+        "factor_time" => {
+            // Time `factor` over the integers; prints nanoseconds per op.
+            let a = parse!(expr).expand();
+            let poly: MultivariatePolynomial<_, u8> = a.to_polynomial(&Z, None);
+            let iters: u32 = 20;
+            let start = std::time::Instant::now();
+            for _ in 0..iters {
+                std::hint::black_box(poly.factor());
+            }
+            Ok(format!("{}", start.elapsed().as_nanos() / iters as u128))
+        }
         "series" => {
             let a = parse!(expr);
             let s = a

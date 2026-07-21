@@ -178,6 +178,41 @@ fn poly_factor_multivariate_z(c: &mut Criterion) {
         });
     });
 
+    // (z·x^2 + y)(x + 1): 3-var, non-constant leading coefficient (Wang
+    // imposition + p-adic coefficient lift).
+    let h1 = zm_poly(3, &[(vec![2, 0, 1], 1), (vec![0, 1, 0], 1)]);
+    let h2 = zm_poly(3, &[(vec![1, 0, 0], 1), (vec![0, 0, 0], 1)]);
+    let nclc = h1.mul(&h2);
+    group.bench_function("trivariate_nonconstant_lcoeff", |b| {
+        b.iter(|| {
+            let f = black_box(&nclc).factor();
+            black_box(f);
+        });
+    });
+
+    // Sparse 4-variable product (≥ 50 terms) with non-constant leading
+    // coefficients. Run with `OCAS_DISABLE_SPARSE_DIO=1` to time the dense
+    // Diophantine fallback for comparison.
+    let mut s1_terms = vec![(vec![2usize, 1, 1, 0], 1i64)];
+    let mut s2_terms = vec![(vec![1, 1, 0, 0], 1i64), (vec![1, 0, 0, 1], 1)];
+    for i in 0..4usize {
+        for j in 0..3usize {
+            let c1 = ((i * 7 + j * 3) % 4 + 1) as i64;
+            let c2 = ((i * 5 + j * 11 + 2) % 4 + 1) as i64;
+            s1_terms.push((vec![i % 2, i, j, (i + j) % 2], c1));
+            s2_terms.push((vec![0, (i + 1) % 3, (j + 2) % 2, i % 3], c2));
+        }
+    }
+    let s1 = zm_poly(4, &s1_terms);
+    let s2 = zm_poly(4, &s2_terms);
+    let sparse = s1.mul(&s2);
+    group.bench_function("sparse_4var_nonconstant_lcoeff", |b| {
+        b.iter(|| {
+            let f = black_box(&sparse).factor();
+            black_box(f);
+        });
+    });
+
     group.finish();
 }
 

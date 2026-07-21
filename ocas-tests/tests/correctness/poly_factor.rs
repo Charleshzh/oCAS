@@ -195,3 +195,64 @@ fn poly_factor_four_variables() {
     assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
     assert!(mpoly_eq_up_to_unit(&expand_mpoly_factors(&factors), &f));
 }
+
+// ── non-constant leading coefficients (Wang imposition, 0.16.1) ───
+
+#[test]
+fn poly_factor_bivariate_nonconstant_lcoeff() {
+    // f = (y·x² + 1)(x + 1): leading coefficient y.
+    let f1 = zm_poly(2, &[(vec![2, 1], 1), (vec![0, 0], 1)]);
+    let f2 = zm_poly(2, &[(vec![1, 0], 1), (vec![0, 0], 1)]);
+    let f = f1.mul(&f2);
+    let factors = f.factor();
+    assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+    assert!(mpoly_eq_up_to_unit(&expand_mpoly_factors(&factors), &f));
+}
+
+#[test]
+fn poly_factor_trivariate_nonconstant_lcoeff() {
+    // f = (z·x² + y)(x + 1): leading coefficient z.
+    let f1 = zm_poly(3, &[(vec![2, 0, 1], 1), (vec![0, 1, 0], 1)]);
+    let f2 = zm_poly(3, &[(vec![1, 0, 0], 1), (vec![0, 0, 0], 1)]);
+    let f = f1.mul(&f2);
+    let factors = f.factor();
+    assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+    assert!(mpoly_eq_up_to_unit(&expand_mpoly_factors(&factors), &f));
+}
+
+#[test]
+fn poly_factor_trivariate_reducible_lcoeff() {
+    // f = (x·y² − x + 2y)(x·y − z): leading coefficient y³ − y factors as
+    // (y−1)(y+1)y and must be distributed (y²−1) / y across the factors.
+    let f1 = zm_poly(
+        3,
+        &[(vec![1, 2, 0], 1), (vec![1, 0, 0], -1), (vec![0, 1, 0], 2)],
+    );
+    let f2 = zm_poly(3, &[(vec![1, 1, 0], 1), (vec![0, 0, 1], -1)]);
+    let f = f1.mul(&f2);
+    let factors = f.factor();
+    assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+    assert!(mpoly_eq_up_to_unit(&expand_mpoly_factors(&factors), &f));
+}
+
+#[test]
+fn poly_factor_sparse_four_var_nonconstant_lcoeff() {
+    // Sparse product in 4 variables with ≥ 50 terms and non-constant
+    // leading coefficients (skeleton interpolation in the p-adic lift).
+    let mut f1_terms = vec![(vec![2usize, 1, 1, 0], 1i64)]; // y·z·x² LC
+    let mut f2_terms = vec![(vec![1, 1, 0, 0], 1i64), (vec![1, 0, 0, 1], 1)]; // (y+w)·x
+    for i in 0..4usize {
+        for j in 0..3usize {
+            let c1 = ((i * 7 + j * 3) % 4 + 1) as i64;
+            let c2 = ((i * 5 + j * 11 + 2) % 4 + 1) as i64;
+            f1_terms.push((vec![i % 2, i, j, (i + j) % 2], c1));
+            f2_terms.push((vec![0, (i + 1) % 3, (j + 2) % 2, i % 3], c2));
+        }
+    }
+    let f1 = zm_poly(4, &f1_terms);
+    let f2 = zm_poly(4, &f2_terms);
+    let f = f1.mul(&f2);
+    let factors = f.factor();
+    assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+    assert!(mpoly_eq_up_to_unit(&expand_mpoly_factors(&factors), &f));
+}
