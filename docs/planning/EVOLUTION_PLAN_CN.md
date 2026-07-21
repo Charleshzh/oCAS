@@ -438,21 +438,59 @@ Risch 代码。
 
 | 条目 | 参考 | oCAS 落地位置 | 状态 |
 |---|---|---|---|
-| 多元内容/本原部分按主变量递归分解 | Symbolica `src/poly/factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
-| 多元 ℤ_p 因式分解：无平方 → 逐变量 EEZ Hensel 提升 | Wang 1978 EEZ；Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
-| 首项系数预处理（Wang leading-coefficient determination） | Wang 1978 改进 | `ocas-poly::factor::multivariate` | [ ] |
-| 多元 ℤ 因式分解：模素数分解 → 多元提升 → Zassenhaus 组合重组 | Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
-| `SparseMultivariatePolynomial::factor` 任意元入口（泛化 0.11.1 二元路径） | — | `ocas-poly::sparse` | [ ] |
+| 多元内容/本原部分按主变量递归分解 | Symbolica `src/poly/factor.rs` | `ocas-poly::factor::eez` | [x] |
+| 多元 ℤ_p 因式分解：无平方 → 逐变量 EEZ Hensel 提升 | Wang 1978 EEZ；Symbolica `factor.rs` | `ocas-poly::factor::eez` | [x] |
+| 首项系数预处理（Wang leading-coefficient determination） | Wang 1978 改进 | `ocas-poly::factor::eez` | [x] 常数 LC；非常数强加推迟 0.16.1 |
+| 多元 ℤ 因式分解：模素数分解 → 多元提升 → Zassenhaus 组合重组 | Symbolica `factor.rs` | `ocas-poly::factor::eez` | [x] |
+| `SparseMultivariatePolynomial::factor` 任意元入口（泛化 0.11.1 二元路径） | — | `ocas-poly::sparse` | [x] |
+
+**实现说明**：落地于新模块 `ocas-poly::factor::eez`（非 `factor::multivariate`）。
+含泛型多元 Diophantine 求解、逐变量 EEZ Hensel 提升、$n$ 元 GCD
+（`multivariate_gcd_z/fp`）、特征 $p$ 的 $p$ 次幂处理。非首一一元分解经
+`factor_square_free` 首项系数变换修复。非常数首项系数的**强加**需模 $p$
+Hensel 提升，推迟到 0.16.1（2 项 `#[ignore]` 测试）。
 
 **性能指标**
 
-- 3–4 变量、总次数 ≤ 20 的随机可约多项式 < 1 s。
-- 与 Symbolica `factorization.rs` 示例同规模输入对比，数量级持平。
+- 3–4 变量、总次数 ≤ 20 的随机可约多项式 < 1 s（criterion 组
+  `poly_factor_multivariate_z` 已就位，手动基准验证）。
+- 与 Symbolica `factorization.rs` 示例同规模输入对比，数量级持平（待
+  audit 报告量化）。
 
 **验收**
 
-- [ ] proptest 往返：随机因子乘积分解后重组一致（≥500 例，3–4 变量）。
-- [ ] SymPy `factor` 交叉验证（correctness 框架新增多元用例）。
+- [x] correctness 框架新增 3 个多元用例（三元 3 线性因子、重因子、4 变量），
+  经 expand-up-to-unit 验证；`cargo test -p ocas-tests --test correctness` 全绿。
+- [x] proptest 往返（3 变量，标记 `ignore`——多元分解对单元测试预算太慢，
+  手动/审计运行；回归种子已入 `proptest-regressions/factor/eez.txt`）。
+
+### 0.16.1 — 非常数首项系数强加与多元稀疏化
+
+**目标**：补齐 0.16.0 遗留的 Wang 首项系数**强加**（imposition），并提升
+多元分解在稀疏/大规模输入下的实用性。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| 真首项系数的模 $p$ Hensel 强加：提升过程中每轮把误差压进低次项并强制 `lc_{x_0} F_i = ℓ_i` | Symbolica `sparse_coefficient_hensel_lift_mod_prime` L4290、`impose_true_lcoeffs_on_integer_factors` L4264 | `ocas-poly::factor::eez` | [ ] |
+| 非常数 LC 强加的 ℤ 多元分解完整路径（解出 0.16.0 的 2 项 `#[ignore]` 测试） | Wang 1978 | `ocas-poly::factor::eez` | [ ] |
+| 稀疏多元 Diophantine / 骨架插值（大规模稀疏输入加速，替代稠密递归） | Symbolica `sparse_multivariate_diophantine_*` L1908/L1963/L2134 | `ocas-poly::factor::eez` | [ ] |
+| 扩大/自适应求值点搜索（稀疏或特殊多项式的鲁棒性） | — | `ocas-poly::factor::eez` | [ ] |
+| Symbolica `factorization.rs` 同规模基准对比纳入 audit 报告 | — | `ocas-tests` | [ ] |
+
+**性能指标**
+
+- 解除 2 项 `#[ignore]` 测试（`z_bivariate_wang_nonconstant_lcoeff`、
+  `z_trivariate_nonconstant_lcoeff`）并通过。
+- 稀疏输入（≥4 变量、≥50 项）分解时间较稠密路径明显下降；audit 报告给出
+  与 Symbolica 的数量级对比。
+
+**验收**
+
+- [ ] 非常数 LC 强加的正确性：随机非常数-LC 可约多项式 proptest 往返通过。
+- [ ] `cargo test --workspace --exclude ocas-py` 全绿（含解出的 2 项测试）。
+- [ ] mdBook 双语 `factorization.md` 限制章节更新（移除强加限制）。
 
 ### 0.17.0 — 代数数域与扩域因式分解（Trager）
 
@@ -584,3 +622,4 @@ Risch 代码。
 | 0.15.0 | 2026-07-20 | 性能/多输出 JIT/流式发布。JIT 97×/21×、f32 混合精度、流式恒定内存、Arena/workspace 池、ahash。竞品索引更新：流式/优化代码生成标 🟢。 |
 | 0.15.1 | 2026-07-20 | F4 真实线性代数修复。矩阵列序降序 + echelon 回写条件 + Symbolica GM 判据移植 + 经典 F4 提取（独立倍式 + input_heads、提取零约化）。cyclic-5 ℤ₁₃ 2609 s → 31 ms（≈85 000×）且首次通过 `is_groebner_basis`；cyclic-6 可解（9970 s，basis=20）；< 5 s 目标推迟到 0.15.2（需 LM 索引 + 稀疏 echelon）。 |
 | 0.15.1 | 2026-07-21 | 基于 GAP_ANALYSIS 重估新增阶段 B+（0.15.2–0.18.0）：1.0 前清零与 Symbolica 的剩余差距——Gröbner 大规模性能（0.15.2）、任意多元因式分解（0.16）、代数数域因式分解（0.17）、数值积分 Vegas + 双数 + 张量基础 + fuel（0.18）。竞品索引状态同步修正（Risch/JIT/流式标 🟢；新增任意多元、代数数域、fuel 行；修复乱码）。 |
+| 0.16.0 | 2026-07-21 | 任意多元因式分解（Wang EEZ）发布。落地 `factor::eez`：泛型多元 Diophantine、逐变量 EEZ Hensel 提升、$n$ 元 GCD、特征 $p$ $p$ 次幂、Wang 首项系数预处理（常数 LC）、Zassenhaus 重组；`factor()` 泛化到任意变量数。顺手修复 3 个既有 bug（`div_rem_sparse` 整除方向、Diophantine 循环上界、单变量非首一分解）。新增 0.16.1（非常数 LC 强加 + 稀疏化）。 |

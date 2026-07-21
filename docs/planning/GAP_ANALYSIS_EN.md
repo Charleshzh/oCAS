@@ -108,7 +108,7 @@ breadth and large-scale performance.
 
 | Capability | oCAS | Symbolica |
 |---|---|---|
-| Polynomial factorization | 🟡 univariate ℤ and ℤ_p (CZ + Hensel + Zassenhaus) + bivariate (monic-in-x Wang Hensel); ≥3-variable and algebraic-number-field factorization missing | ✅ full (arbitrary multivariate + algebraic number fields, `factorization.rs`) |
+| Polynomial factorization | � univariate ℤ and ℤ_p (CZ + Hensel + Zassenhaus) + arbitrary multivariate (0.16.0 Wang EEZ, constant-LC preprocessing); algebraic number fields missing; non-constant LC imposition 0.16.1 | ✅ full (arbitrary multivariate + algebraic number fields, `factorization.rs`) |
 | Rational polynomials | ✅ `RationalPolynomial<D,O>` with GCD canonicalization | ✅ `rational_polynomial.rs` |
 | Partial fractions | ✅ `apart()` / `together()` over Euclidean domains | ✅ `partial_fraction.rs` |
 | Rational reconstruction | ✅ `rational_reconstruction(a, m)` via extended Euclidean | ✅ `rational_reconstruction.rs` |
@@ -185,7 +185,8 @@ Ranked by impact × implementation cost. All hard-algorithm gaps planned before
 | 4 | ~~Rational polynomials / partial fractions~~ (completed 0.12) | ✅ done — `RationalPolynomial` type + partial fractions + resultant + Karatsuba multiplication |
 | 5 | ~~Multi-output optimization / codegen~~ (done in 0.15) | ✅ done — multi-output JIT (97×/21×) + f32 mixed precision + CSE/const-folding/stack-compaction |
 | 6 | Gröbner performance at scale (cyclic-6 ℤ_p < 5 s) | � 0.15.2 done (9970 s → 3670 s, 2.7×); <5 s needs F5 signature reduction (post-1.0) |
-| 7 | Arbitrary multivariate (≥3 variables) factorization | 🔴 0.16 — Wang EEZ lifting + Zassenhaus recombination |
+| 7 | ~~Arbitrary multivariate (≥3 variables) factorization~~ (completed 0.16) | ✅ done — Wang EEZ lifting + LC preprocessing (constant LC) + Zassenhaus; non-constant LC imposition see #7a |
+| 7a | Non-constant leading-coefficient imposition + multivariate sparsity | 🔴 0.16.1 — mod-p Hensel imposition + sparse Diophantine |
 | 8 | Algebraic-number-field factorization | 🔴 0.17 — Trager algorithm (norm + lifting) |
 | 9 | Numerical integration / dual numbers / tensor basics / fuel | 🔴 0.18 — Vegas + Hyperdual + index contraction + step budget |
 | 10 | ODE/PDE solvers (Post-1.0) | 🟢 high user demand |
@@ -211,8 +212,9 @@ streaming evaluation". Re-measured 0.15.1 performance: F4 cyclic-5 ℤ₁₃
 ~24×); JIT 97× single-output, 21× three-output.
 
 The remaining pre-1.0 work is Phase B+ "Closing the Symbolica Gap" (0.15.2
-Gröbner performance at scale → 0.16 arbitrary multivariate factorization →
-0.17 algebraic-number-field factorization → 0.18 numerical integration /
+Gröbner performance at scale → 0.16 arbitrary multivariate factorization ✅ →
+0.16.1 non-constant leading-coefficient imposition → 0.17
+algebraic-number-field factorization → 0.18 numerical integration /
 duals / tensors / fuel, see EVOLUTION_PLAN), after which 1.0.0 is
 stabilization and release engineering only (API freeze, coverage, migration
 guides, signed artifacts). ODE/PDE and full tensor calculus remain Post-1.0
@@ -238,3 +240,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.15.1 | 2026-07-20 | Real F4 linear algebra fix: descending matrix column order (was ascending — echelon was decorative, F4 was effectively Buchberger) + echelon write-back condition + Symbolica GM criteria port + classic extraction (separate multiples + input-heads, zero reduction at extraction); cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s, basis=20); <5s deferred to 0.15.2 (LM index + sparse echelon). |
 | 0.15.1 | 2026-07-21 | Re-evaluation: code-scale snapshot updated to 95 files / ~30.7k lines (+~70% vs 0.10's ~18k); F4 cyclic-5 ℤ₁₃ re-measured at 23 ms; new measurement x³⁰−1 square-free factorization 39 µs vs SymPy full factor ~0.9 ms (~24×); stale post-0.14/0.15 statements fixed (§3 GCD/root-isolation, §4.1 "largely absent" paragraph, §4.3 integration/factorization/Gröbner, §5 Risch priority, mojibake characters); gaps re-ranked — all pre-1.0 hard algorithms closed, remaining items moved to Post-1.0: arbitrary multivariate (≥3 variables) + algebraic-number-field factorization, numerical integration, tensors / dual numbers, ODE/PDE; cyclic-6 <5s scoped to 0.15.2. |
 | 0.15.2 | 2026-07-21 | Gröbner performance at scale: reducer LM hash index (support-mask buckets + submask enumeration, removing the O(monomials × basis) linear scan) + sparse-row echelon (two-pointer merge cancellation, O(nnz)/op, replacing the dense buffer) + hashed extraction dedup + worklist preprocessing + row-template cache; cyclic-6 ℤ₁₃ 9970 s → 3670 s (2.7×, basis=20 correct), phase profile shifted to elimination-dominated (echelon ≈89%); <5s not reached — the cyclic-6 F4 matrix hits 264k rows × 284k cols at round 22 (intrinsic to F4), a further order-of-magnitude win needs F5 signature reduction (eliminating zero-reducing rows), moved to post-1.0; version bumped to 0.15.2. |
+| 0.16.0 | 2026-07-21 | Arbitrary multivariate factorization (Wang EEZ) done: landed `factor::eez` (generic multivariate Diophantine + per-variable EEZ Hensel lifting + $n$-variate GCD + characteristic-$p$ $p$-th powers + Wang LC preprocessing [constant LC] + Zassenhaus recombination); `factor()` generalized to any arity; three pre-existing bugs fixed (`div_rem_sparse` divisibility order, Diophantine loop bound, non-monic univariate factorization); factorization upgraded 🟡 → 🟢 (univariate/bivariate/arbitrary multivariate); 0.16.1 added (non-constant LC imposition + sparsity); version bumped to 0.16.0. |

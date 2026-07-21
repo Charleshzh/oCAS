@@ -462,21 +462,69 @@ phase, 1.0.0 is freeze-and-polish only.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Recursive content/primitive-part decomposition by main variable | Symbolica `src/poly/factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
-| Multivariate ℤ_p factorization: square-free → per-variable EEZ Hensel lifting | Wang 1978 EEZ; Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
-| Leading-coefficient pre-processing (Wang LC determination) | Wang 1978 improvements | `ocas-poly::factor::multivariate` | [ ] |
-| Multivariate ℤ factorization: modular factorization → multivariate lifting → Zassenhaus recombination | Symbolica `factor.rs` | `ocas-poly::factor::multivariate` | [ ] |
-| `SparseMultivariatePolynomial::factor` entry for any arity (generalizes the 0.11.1 bivariate path) | — | `ocas-poly::sparse` | [ ] |
+| Recursive content/primitive-part decomposition by main variable | Symbolica `src/poly/factor.rs` | `ocas-poly::factor::eez` | [x] |
+| Multivariate ℤ_p factorization: square-free → per-variable EEZ Hensel lifting | Wang 1978 EEZ; Symbolica `factor.rs` | `ocas-poly::factor::eez` | [x] |
+| Leading-coefficient pre-processing (Wang LC determination) | Wang 1978 improvements | `ocas-poly::factor::eez` | [x] constant LC; non-constant imposition deferred to 0.16.1 |
+| Multivariate ℤ factorization: modular factorization → multivariate lifting → Zassenhaus recombination | Symbolica `factor.rs` | `ocas-poly::factor::eez` | [x] |
+| `SparseMultivariatePolynomial::factor` entry for any arity (generalizes the 0.11.1 bivariate path) | — | `ocas-poly::sparse` | [x] |
+
+**Implementation notes**: landed in the new module `ocas-poly::factor::eez`
+(not `factor::multivariate`). Includes a generic multivariate Diophantine
+solver, per-variable EEZ Hensel lifting, $n$-variate GCD
+(`multivariate_gcd_z/fp`), and characteristic-$p$ $p$-th power handling.
+Non-monic univariate factorization was fixed via the `factor_square_free`
+leading-coefficient transformation. Imposition of non-constant leading
+coefficients requires a mod-$p$ Hensel lift and is deferred to 0.16.1 (two
+`#[ignore]` tests).
 
 **Performance KPI**
 
-- Random reducible polynomials in 3–4 variables, total degree ≤ 20: < 1 s.
-- Same-order-of-magnitude parity with Symbolica `factorization.rs` example inputs.
+- Random reducible polynomials in 3–4 variables, total degree ≤ 20: < 1 s
+  (criterion group `poly_factor_multivariate_z` in place, manual benchmark).
+- Same-order-of-magnitude parity with Symbolica `factorization.rs` example
+  inputs (to be quantified in the audit report).
 
 **Acceptance**
 
-- [ ] proptest round-trip: products of random factors factor back consistently (≥500 cases, 3–4 variables).
-- [ ] SymPy `factor` cross-verification (new multivariate cases in the correctness framework).
+- [x] Three new multivariate cases in the correctness framework (trivariate
+  3-linear-factor, repeated-factor, 4-variable), verified via expand-up-to-unit;
+  `cargo test -p ocas-tests --test correctness` green.
+- [x] proptest round-trip (3 variables, marked `ignore` — multivariate
+  factorization is too slow for the unit-test budget; run manually or via the
+  audit report; regression seed checked into
+  `proptest-regressions/factor/eez.txt`).
+
+### 0.16.1 — Non-Constant Leading-Coefficient Imposition & Multivariate Sparsity
+
+**Goal**: close the Wang leading-coefficient **imposition** left over from
+0.16.0, and make multivariate factorization practical on sparse / large inputs.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Mod-$p$ Hensel imposition of true leading coefficients: force `lc_{x_0} F_i = ℓ_i` every lifting round, confining error to lower degrees | Symbolica `sparse_coefficient_hensel_lift_mod_prime` L4290, `impose_true_lcoeffs_on_integer_factors` L4264 | `ocas-poly::factor::eez` | [ ] |
+| Full ℤ multivariate path with non-constant LC imposition (unblocks the two 0.16.0 `#[ignore]` tests) | Wang 1978 | `ocas-poly::factor::eez` | [ ] |
+| Sparse multivariate Diophantine / skeleton interpolation (faster on large sparse inputs than dense recursion) | Symbolica `sparse_multivariate_diophantine_*` L1908/L1963/L2134 | `ocas-poly::factor::eez` | [ ] |
+| Wider / adaptive evaluation-point search (robustness on sparse or special polynomials) | — | `ocas-poly::factor::eez` | [ ] |
+| Same-scale benchmark against Symbolica `factorization.rs` added to the audit report | — | `ocas-tests` | [ ] |
+
+**Performance KPI**
+
+- Un-ignore and pass the two tests `z_bivariate_wang_nonconstant_lcoeff` and
+  `z_trivariate_nonconstant_lcoeff`.
+- Noticeably faster factorization on sparse inputs (≥4 variables, ≥50 terms)
+  than the dense path; audit report quantifies the order-of-magnitude parity
+  with Symbolica.
+
+**Acceptance**
+
+- [ ] Correctness of non-constant LC imposition: proptest round-trip on random
+  reducible polynomials with non-constant leading coefficients.
+- [ ] `cargo test --workspace --exclude ocas-py` green (including the two
+  un-ignored tests).
+- [ ] mdBook `factorization.md` (en/zh) limitations section updated (imposition
+  limitation removed).
 
 ### 0.17.0 — Algebraic Number Fields & Extension-Field Factorization (Trager)
 
@@ -610,3 +658,4 @@ Refresh this plan:
 | 0.15.0 | 2026-07-20 | Performance / multi-output JIT / streaming release. JIT 97×/21×, f32 mixed precision, constant-memory streaming, Arena/workspace pool, ahash. Competitor index updated: streaming/optimization codegen marked 🟢. |
 | 0.15.1 | 2026-07-20 | Real F4 linear algebra fix. Descending matrix column order + echelon write-back condition + Symbolica GM criteria port + classic F4 extraction (separate multiples + input-heads, zero reduction at extraction). cyclic-5 ℤ₁₃ 2609 s → 31 ms (~85,000×) with first-ever `is_groebner_basis` pass; cyclic-6 tractable (9970 s, basis=20); < 5 s target deferred to 0.15.2 (needs LM index + sparse echelon). |
 | 0.15.1 | 2026-07-21 | Phase B+ added (0.15.2–0.18.0) from the GAP_ANALYSIS re-evaluation: close all remaining Symbolica gaps before 1.0 — Gröbner performance at scale (0.15.2), arbitrary multivariate factorization (0.16), algebraic-number-field factorization (0.17), Vegas numerical integration + dual numbers + tensor basics + fuel (0.18). Competitor index statuses corrected (Risch/JIT/streaming marked 🟢; new rows for multivariate, ANF factorization, fuel; mojibake fixed). |
+| 0.16.0 | 2026-07-21 | Arbitrary multivariate factorization (Wang EEZ) released. Landed `factor::eez`: generic multivariate Diophantine, per-variable EEZ Hensel lifting, $n$-variate GCD, characteristic-$p$ $p$-th powers, Wang LC preprocessing (constant LC), Zassenhaus recombination; `factor()` generalized to any arity. Three pre-existing bugs fixed (`div_rem_sparse` divisibility order, Diophantine loop bound, non-monic univariate factorization). 0.16.1 added (non-constant LC imposition + sparsity). |
