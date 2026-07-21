@@ -493,6 +493,31 @@ Hensel 提升，推迟到 0.16.1（2 项 `#[ignore]` 测试）。
 - [x] `cargo test --workspace --exclude ocas-py` 全绿（含解出的 2 项测试）。
 - [x] mdBook 双语 `factorization.md` 限制章节更新（移除强加限制）。
 
+### 0.16.2 — $\mathbb{F}_p$ 路径非常数 LC 预处理与采样性能优化
+
+**目标**：将 0.16.1 仅在 $\mathbb{Z}$ 上完成的非常数首项系数支持扩展到
+$\mathbb{F}_p$ 路径，并优化非首一情形的采样性能。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| 域版 Wang 首项系数预处理（`lcoeff_precomputation`）：GCD-free 基 + 变量逐级 Hensel 提升 + 逐因式 LC 修正 | Symbolica `lcoeff_precomputation` L1297 | `ocas-poly::factor::eez` | [ ] |
+| 移除 `factor_square_free_fp` L733 放弃分支：非常数 LC 输入走域版 Wang + `eez_lift_imposed` | — | `ocas-poly::factor::eez` | [ ] |
+| `find_sample_z` 非首一 LC 采样性能优化：减少无效一元分解次数（上限或预筛选） | — | `ocas-poly::factor::eez` | [ ] |
+| 稀疏 Diophantine 小素数启发式：组大小 > p−1 时自动升级到更大素数而非全部回退稠密 | — | `ocas-poly::factor::eez` | [ ] |
+
+**性能指标**
+
+- $\mathbb{F}_p$ 上非常数 LC 多元多项式正确分解（可新增 Fp 非常数 LC correctness 用例）。
+- 非首一 $\mathbb{Z}$ 路径的 `find_sample_z` 4000 次一元分解有上限或预筛选，减少大系数多项式的扫描时间。
+
+**验收**
+
+- [ ] $\mathbb{F}_p$ 非常数 LC correctness 用例通过。
+- [ ] `cargo test --workspace --exclude ocas-py` 全绿。
+- [ ] mdBook 双语 `factorization.md` 限制章节更新（移除 Fp 限制）。
+
 ### 0.17.0 — 代数数域与扩域因式分解（Trager）
 
 **功能**
@@ -625,3 +650,4 @@ Hensel 提升，推迟到 0.16.1（2 项 `#[ignore]` 测试）。
 | 0.15.1 | 2026-07-21 | 基于 GAP_ANALYSIS 重估新增阶段 B+（0.15.2–0.18.0）：1.0 前清零与 Symbolica 的剩余差距——Gröbner 大规模性能（0.15.2）、任意多元因式分解（0.16）、代数数域因式分解（0.17）、数值积分 Vegas + 双数 + 张量基础 + fuel（0.18）。竞品索引状态同步修正（Risch/JIT/流式标 🟢；新增任意多元、代数数域、fuel 行；修复乱码）。 |
 | 0.16.0 | 2026-07-21 | 任意多元因式分解（Wang EEZ）发布。落地 `factor::eez`：泛型多元 Diophantine、逐变量 EEZ Hensel 提升、$n$ 元 GCD、特征 $p$ $p$ 次幂、Wang 首项系数预处理（常数 LC）、Zassenhaus 重组；`factor()` 泛化到任意变量数。顺手修复 3 个既有 bug（`div_rem_sparse` 整除方向、Diophantine 循环上界、单变量非首一分解）。新增 0.16.1（非常数 LC 强加 + 稀疏化）。 |
 | 0.16.1 | 2026-07-22 | 非常数首项系数强加与多元稀疏化发布。p-adic 系数 Hensel 提升（`coefficient_hensel_lift_z`）；稀疏多元 Diophantine（骨架插值 + Vandermonde + EEA 序列）；自适应采样（去重 + content 排序 + 值域递增）；二元非常数 LC 改走 EEZ；correctness 4 用例 + criterion 2 基准 + proptest；audit 报告 Symbolica 计时对比。修复 2 个 bug（Diophantine 契约违反、采样系数平方）。Fp 路径 LC 预处理（域版 Wang L1297）推迟 0.16.2。 |
+| 0.16.2 | — | 新增 0.16.2（$\mathbb{F}_p$ 路径非常数 LC 预处理 + 采样性能优化）。 |

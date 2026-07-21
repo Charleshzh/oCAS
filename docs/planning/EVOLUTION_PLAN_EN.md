@@ -528,6 +528,35 @@ coefficients requires a mod-$p$ Hensel lift and is deferred to 0.16.1 (two
 - [x] mdBook `factorization.md` (en/zh) limitations section updated (imposition
   limitation removed).
 
+### 0.16.2 — $\mathbb{F}_p$-Path Non-Constant LC Preprocessing & Sampling Performance
+
+**Goal**: extend the non-constant leading-coefficient support completed for
+$\mathbb{Z}$ in 0.16.1 to the $\mathbb{F}_p$ multivariate path, and optimize
+sampling performance for non-monic inputs.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Field Wang LC precomputation: GCD-free basis + per-variable Hensel lift + per-factor LC correction | Symbolica `lcoeff_precomputation` L1297 | `ocas-poly::factor::eez` | [ ] |
+| Remove `factor_square_free_fp` L733 bail-out: non-constant LC inputs use field Wang + `eez_lift_imposed` | — | `ocas-poly::factor::eez` | [ ] |
+| `find_sample_z` performance optimization for non-constant LC: reduce redundant univariate factorizations (cap or pre-filter) | — | `ocas-poly::factor::eez` | [ ] |
+| Sparse Diophantine small-prime heuristic: auto-escalate to a larger prime when group size > p−1 instead of falling back to dense | — | `ocas-poly::factor::eez` | [ ] |
+
+**Performance KPI**
+
+- $\mathbb{F}_p$ non-constant-LC multivariate polynomials factor correctly
+  (new Fp non-constant-LC correctness cases to be added).
+- Non-constant-LC `find_sample_z` scans are bounded or pre-filtered, reducing
+  univariate factorization time on large-coefficient inputs.
+
+**Acceptance**
+
+- [ ] $\mathbb{F}_p$ non-constant-LC correctness cases pass.
+- [ ] `cargo test --workspace --exclude ocas-py` green.
+- [ ] mdBook `factorization.md` (en/zh) limitations section updated (Fp
+  limitation removed).
+
 ### 0.17.0 — Algebraic Number Fields & Extension-Field Factorization (Trager)
 
 **Functionality**
@@ -662,3 +691,4 @@ Refresh this plan:
 | 0.15.1 | 2026-07-21 | Phase B+ added (0.15.2–0.18.0) from the GAP_ANALYSIS re-evaluation: close all remaining Symbolica gaps before 1.0 — Gröbner performance at scale (0.15.2), arbitrary multivariate factorization (0.16), algebraic-number-field factorization (0.17), Vegas numerical integration + dual numbers + tensor basics + fuel (0.18). Competitor index statuses corrected (Risch/JIT/streaming marked 🟢; new rows for multivariate, ANF factorization, fuel; mojibake fixed). |
 | 0.16.0 | 2026-07-21 | Arbitrary multivariate factorization (Wang EEZ) released. Landed `factor::eez`: generic multivariate Diophantine, per-variable EEZ Hensel lifting, $n$-variate GCD, characteristic-$p$ $p$-th powers, Wang LC preprocessing (constant LC), Zassenhaus recombination; `factor()` generalized to any arity. Three pre-existing bugs fixed (`div_rem_sparse` divisibility order, Diophantine loop bound, non-monic univariate factorization). 0.16.1 added (non-constant LC imposition + sparsity). |
 | 0.16.1 | 2026-07-22 | Non-constant leading-coefficient imposition & multivariate sparsity released. Landed p-adic coefficient Hensel lift (`coefficient_hensel_lift_z`), sparse multivariate Diophantine (skeleton interpolation + Vandermonde + EEA sequence), adaptive sampling (dedup, content-aware ranking, value-bound escalation), bivariate non-constant-LC dispatch to EEZ path; 4 correctness cases + 2 criterion benchmarks + proptest; audit report with Symbolica timing comparison. Two bugs fixed (Diophantine contract violation, term coefficient squaring in sampling). Fp-path LC preprocessing (field Wang) deferred to 0.16.2. |
+| 0.16.2 | — | Added 0.16.2 ($\mathbb{F}_p$-path non-constant LC preprocessing + sampling performance). |
