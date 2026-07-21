@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 880614fe5a437e4e5b9438b4f6871c4ec571477348715b808a28ec1033d7f56a # shrinks to a = SparseMultivariatePolynomial { terms: {[1, 0, 0]: Integer(1)}, domain: IntegerDomain, n_vars: 3, _marker: PhantomData<ocas_poly::sparse::Lex> }, b = SparseMultivariatePolynomial { terms: {[1, 0]: Integer(1)}, domain: IntegerDomain, n_vars: 2, _marker: PhantomData<ocas_poly::sparse::Lex> }
