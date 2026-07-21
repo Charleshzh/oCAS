@@ -252,7 +252,107 @@ fn eez_lift<D: EuclideanDomain>(
             if e.is_zero() {
                 continue;
             }
-            let sigmas = diophantine(&lifted, &e, sample, k)?;
+            // Solve against the factors evaluated at the current variable's
+            // sample point: the (x_k − a_k)^j coefficient of
+            // σ_i·cofactor_i·(x_k − a_k)^j is σ_i·cofactor_i(a_k), and the
+            // Diophantine solver requires its inputs to be free of
+            // variables ≥ k. Previous corrections (and imposed leading
+            // coefficients) may depend on x_k, so evaluate them away.
+            let u_base: Vec<MP<D>> = lifted.iter().map(|g| g.eval_keep(k, &a_k)).collect();
+            let sigmas = diophantine(&u_base, &e, sample, k)?;
+            let xp = x_minus_a_pow(f.domain(), n, k, &a_k, j);
+            for (i, g) in lifted.iter_mut().enumerate() {
+                *g = g.add(&sigmas[i].mul(&xp));
+            }
+        }
+    }
+    Some(lifted)
+}
+
+/// Impose the true leading coefficient `ℓ` on the leading `x_0`-coefficient
+/// of `f_i`, first evaluating `ℓ` at the sample points of variables
+/// `≥ from_var` (those still fixed at the sample during the lift).
+///
+/// Reference: Symbolica `impose_true_lcoeffs_on_factors`.
+fn impose_lcoeff_field<D: EuclideanDomain>(
+    f_i: &MP<D>,
+    true_lc: &MP<D>,
+    sample: &[D::Element],
+    from_var: usize,
+) -> MP<D> {
+    let mut lc = true_lc.clone();
+    for (m, s) in sample.iter().enumerate().skip(from_var) {
+        lc = lc.eval_keep(m, s);
+    }
+    let deg = f_i.degree_in(0);
+    let mut result = f_i.clone();
+    let top: Vec<smallvec::SmallVec<[usize; 4]>> = result
+        .terms_ref()
+        .keys()
+        .filter(|e| e.first().copied().unwrap_or(0) == deg)
+        .cloned()
+        .collect();
+    for e in top {
+        result.set_term_external(e.to_vec(), f_i.domain().zero());
+    }
+    for (e, c) in lc.terms_ref() {
+        let mut exp = e.to_vec();
+        exp[0] = deg;
+        let existing = result.coeff(&exp);
+        result.set_term_external(exp, f_i.domain().add(&existing, c));
+    }
+    result
+}
+
+/// EEZ lift over a field with Wang-imposed leading coefficients.
+///
+/// Like [`eez_lift`], but the factors need not be monic in `x_0`: before
+/// lifting each variable `k`, the true leading coefficient `ℓ_i` (evaluated
+/// at the sample points of variables `> k`) is imposed on every factor.
+/// Diophantine corrections have lower degree in `x_0` than the factors, so
+/// the imposed leading coefficients stay fixed within each variable's lift.
+fn eez_lift_imposed<D: EuclideanDomain>(
+    f: &MP<D>,
+    sample: &[D::Element],
+    initial: &[MP<D>],
+    true_lcoeffs: &[MP<D>],
+) -> Option<Vec<MP<D>>> {
+    let n = f.n_vars();
+    let mut lifted: Vec<MP<D>> = initial.to_vec();
+
+    for k in 1..n {
+        // Impose the true leading coefficients for this lift step.
+        for (i, g) in lifted.iter_mut().enumerate() {
+            *g = impose_lcoeff_field(g, &true_lcoeffs[i], sample, k + 1);
+        }
+        // Work on the image of f with variables > k evaluated at the sample.
+        let mut f_k = f.clone();
+        for m in (k + 1..n).rev() {
+            f_k = f_k.eval_keep(m, &sample[m]);
+        }
+        let a_k = sample[k].clone();
+        let d_k = f_k.degree_in(k);
+        let t_f = f_k.taylor_coefficients(k, &a_k);
+
+        for j in 1..=d_k {
+            let mut prod = one_mpoly(f.domain(), n);
+            for g in &lifted {
+                prod = prod.mul(g);
+            }
+            let t_p = prod.taylor_coefficients(k, &a_k);
+            let e = if j < t_p.len() {
+                t_f[j].sub(&t_p[j])
+            } else {
+                t_f[j].clone()
+            };
+            if e.is_zero() {
+                continue;
+            }
+            // See eez_lift: solve against the factors with x_k evaluated at
+            // the sample point (the imposed leading coefficients introduce
+            // x_k-dependence into the factors at this stage).
+            let u_base: Vec<MP<D>> = lifted.iter().map(|g| g.eval_keep(k, &a_k)).collect();
+            let sigmas = diophantine(&u_base, &e, sample, k)?;
             let xp = x_minus_a_pow(f.domain(), n, k, &a_k, j);
             for (i, g) in lifted.iter_mut().enumerate() {
                 *g = g.add(&sigmas[i].mul(&xp));
@@ -377,7 +477,10 @@ fn eez_lift_z(
             if e.is_zero() {
                 continue;
             }
-            let sigmas = diophantine_z(&lifted, &e, sample, k)?;
+            // See eez_lift: solve against the factors with x_k evaluated at
+            // the sample point.
+            let u_base: Vec<ZmPoly> = lifted.iter().map(|g| g.eval_keep(k, &a_k)).collect();
+            let sigmas = diophantine_z(&u_base, &e, sample, k)?;
             let xp = x_minus_a_pow(&IntegerDomain, n, k, &a_k, j);
             for (i, g) in lifted.iter_mut().enumerate() {
                 *g = g.add(&sigmas[i].mul(&xp));
@@ -389,6 +492,816 @@ fn eez_lift_z(
         }
     }
     Some(lifted)
+}
+
+// ---------------------------------------------------------------------
+// p-adic coefficient Hensel lifting (non-constant leading coefficients)
+// ---------------------------------------------------------------------
+
+/// Convert a sparse integer polynomial to a sparse polynomial over `field`.
+fn zmp_to_fmp(f: &ZmPoly, field: &FiniteField) -> FpMPoly {
+    FpMPoly::from_terms(
+        field.clone(),
+        f.n_vars(),
+        f.terms_ref()
+            .iter()
+            .map(|(e, c)| (e.to_vec(), field.element(c.to_bigint())))
+            .filter(|(_, c)| !field.is_zero(c))
+            .collect(),
+    )
+}
+
+/// Convert a sparse finite-field polynomial to an integer polynomial using
+/// the symmetric residue representation `(-p/2, p/2]`.
+fn fp_to_z_symmetric(g: &FpMPoly) -> ZmPoly {
+    let p = g.domain().prime().clone();
+    let half = &p / BigInt::from(2u32);
+    ZmPoly::from_terms(
+        IntegerDomain,
+        g.n_vars(),
+        g.terms_ref()
+            .iter()
+            .map(|(e, c)| {
+                let v = c.value().clone();
+                let sym = if v > half { v - &p } else { v };
+                (e.to_vec(), Integer::from(sym))
+            })
+            .collect(),
+    )
+}
+
+/// Gelfond-style bound on the coefficient magnitude of every factor of `f`:
+/// `(sqrt(∏(d_v+1) · 2^{2·Σd_v − #vars}) + 1) · max_norm · |lc(f)|`.
+///
+/// Reference: Symbolica `coefficient_bound`.
+fn coefficient_bound_z(f: &ZmPoly) -> Integer {
+    let max_norm = f
+        .terms_ref()
+        .values()
+        .map(|c| c.abs())
+        .max()
+        .unwrap_or_else(|| Integer::from(1));
+    let mut bound = Integer::from(1);
+    let mut total_degree = 0u64;
+    let mut non_zero_vars = 0u64;
+    for v in 0..f.n_vars() {
+        let d = f.degree_in(v) as u64;
+        if d > 0 {
+            non_zero_vars += 1;
+            total_degree += d;
+            bound = IntegerDomain.mul(&bound, &Integer::from(d as i64 + 1));
+        }
+    }
+    let shift = (total_degree * 2).saturating_sub(non_zero_vars);
+    let pow2 = IntegerDomain.pow(&Integer::from(2), shift);
+    bound = IntegerDomain.mul(&bound, &pow2);
+    let root = IntegerDomain.add(&bound.sqrt(), &Integer::from(1));
+    let lc = f
+        .leading_coeff()
+        .map(|c| c.abs())
+        .unwrap_or_else(|| Integer::from(1));
+    IntegerDomain.mul(&root, &IntegerDomain.mul(&max_norm, &lc))
+}
+
+/// p-adic coefficient Hensel lift with imposed leading coefficients.
+///
+/// `factors` are the mod-`p` multivariate factors of `target` (as symmetric
+/// integers); the true leading coefficients are imposed exactly. Each
+/// iteration solves the mod-`p` Diophantine equation for the current error,
+/// applies the correction scaled by `m = p^k`, and re-imposes the leading
+/// coefficients, until the error vanishes or `m` exceeds the coefficient
+/// bound `max_p`. Returns `None` on an unlucky sample or prime.
+///
+/// Reference: Symbolica `sparse_coefficient_hensel_lift_mod_prime` (dense
+/// Diophantine variant).
+fn coefficient_hensel_lift_z(
+    target: &ZmPoly,
+    factors: Vec<ZmPoly>,
+    true_lcoeffs: &[ZmPoly],
+    p: u64,
+    max_p: &Integer,
+    sample: &[Integer],
+) -> Option<Vec<ZmPoly>> {
+    let n = target.n_vars();
+    let field = FiniteField::new(BigInt::from(p));
+    let mut factors: Vec<ZmPoly> = factors
+        .iter()
+        .zip(true_lcoeffs)
+        .map(|(g, l)| impose_lcoeff_z(g, l))
+        .collect();
+    let factors_fp: Vec<FpMPoly> = factors.iter().map(|g| zmp_to_fmp(g, &field)).collect();
+    // Skeletons: the mod-p factors with their leading x_0-part removed,
+    // used by the sparse Diophantine solver to restrict correction support.
+    let skeletons: Vec<FpMPoly> = factors_fp
+        .iter()
+        .map(|g| {
+            let deg = g.degree_in(0);
+            let mut sk = g.clone();
+            let top: Vec<smallvec::SmallVec<[usize; 4]>> = sk
+                .terms_ref()
+                .keys()
+                .filter(|e| e.first().copied().unwrap_or(0) == deg)
+                .cloned()
+                .collect();
+            for e in top {
+                sk.set_term_external(e.to_vec(), field.zero());
+            }
+            sk
+        })
+        .collect();
+    let sample_fp: Vec<FiniteFieldElement> = sample
+        .iter()
+        .map(|s| field.element(s.to_bigint()))
+        .collect();
+
+    let mut prod = one_mpoly(&IntegerDomain, n);
+    for g in &factors {
+        prod = prod.mul(g);
+    }
+    let mut error = target.sub(&prod);
+    let mut m = Integer::from(p as i64);
+    let p_int = Integer::from(p as i64);
+    let mut iteration = 0u64;
+    while !error.is_zero() && m <= *max_p {
+        // The error must be divisible by m; reduce the quotient mod p.
+        let mut error_over_m = ZmPoly::new(IntegerDomain, n);
+        for (e, c) in error.terms_ref() {
+            let (q, r) = c.div_rem(&m);
+            if !r.is_zero() {
+                return None;
+            }
+            error_over_m.set_term_external(e.to_vec(), q);
+        }
+        let error_fp = zmp_to_fmp(&error_over_m, &field);
+        // Prefer skeleton interpolation; fall back to the dense recursive
+        // solver when the sparsity assumption fails.
+        let deltas = sparse_diophantine_fp(&factors_fp, &error_fp, &skeletons, iteration)
+            .or_else(|| diophantine(&factors_fp, &error_fp, &sample_fp, n))?;
+        iteration += 1;
+        for (g, d) in factors.iter_mut().zip(&deltas) {
+            let corr = fp_to_z_symmetric(d).mul_scalar(&m);
+            *g = g.add(&corr);
+        }
+        // Re-impose the true leading coefficients after each correction.
+        for (g, l) in factors.iter_mut().zip(true_lcoeffs) {
+            *g = impose_lcoeff_z(g, l);
+        }
+        let mut prod = one_mpoly(&IntegerDomain, n);
+        for g in &factors {
+            prod = prod.mul(g);
+        }
+        error = target.sub(&prod);
+        m = IntegerDomain.mul(&m, &p_int);
+    }
+    if error.is_zero() { Some(factors) } else { None }
+}
+
+// ---------------------------------------------------------------------
+// Sparse multivariate Diophantine solver (skeleton interpolation)
+// ---------------------------------------------------------------------
+
+/// Maximum skeleton size accepted by the sparse Diophantine solver; larger
+/// inputs fall back to the dense recursive solver.
+const SPARSE_MDP_MAX_TERMS: usize = 512;
+/// Number of random base-point sets tried before giving up.
+const SPARSE_MDP_BASE_ATTEMPTS: usize = 4;
+
+/// Deterministic SplitMix64 generator for interpolation base points.
+struct SplitMix64(u64);
+
+impl SplitMix64 {
+    fn next(&mut self) -> u64 {
+        self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = self.0;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
+    }
+}
+
+/// Solve `rhs[k] = Σ_i c_i · x_i^(k+1)` for the coefficients `c_i`.
+///
+/// Reference: Symbolica `solve_shifted_transposed_vandermonde`.
+fn solve_shifted_transposed_vandermonde(
+    field: &FiniteField,
+    x: &[FiniteFieldElement],
+    rhs: &[FiniteFieldElement],
+) -> Vec<FiniteFieldElement> {
+    debug_assert_eq!(x.len(), rhs.len());
+    match x.len() {
+        0 => Vec::new(),
+        1 => vec![field.div(&rhs[0], &x[0]).expect("nonzero generator")],
+        len => {
+            // master(z) = ∏(z − x_i), built coefficient by coefficient.
+            let mut master = vec![field.zero(); len + 1];
+            master[0] = field.one();
+            for (i, xi) in x.iter().enumerate() {
+                let mut old_last = master[0].clone();
+                master[0] = field.mul(&master[0], &field.neg(xi));
+                for m in master.iter_mut().take(i + 1).skip(1) {
+                    let ov = m.clone();
+                    *m = field.add(&field.mul(m, &field.neg(xi)), &old_last);
+                    old_last = ov;
+                }
+                master[i + 1] = field.one();
+            }
+            let mut sol = Vec::with_capacity(len);
+            for (i, s) in x.iter().enumerate() {
+                // norm = ∏_{j≠i} (x_i − x_j); generators are distinct.
+                let mut norm = field.one();
+                for (j, l) in x.iter().enumerate() {
+                    if j != i {
+                        norm = field.mul(&norm, &field.sub(s, l));
+                    }
+                }
+                // Sample master/(1 − x_i·z) against rhs via Horner's rule.
+                let mut coeff = field.zero();
+                let mut last_q = field.zero();
+                for (m, r) in master.iter().skip(1).zip(rhs.iter()).rev() {
+                    last_q = field.add(m, &field.mul(s, &last_q));
+                    coeff = field.add(&coeff, &field.mul(&last_q, r));
+                }
+                coeff = field.div(&coeff, &norm).expect("distinct generators");
+                // Shift from the x_i^k basis to the x_i^(k+1) basis.
+                coeff = field.div(&coeff, &x[i]).expect("nonzero generator");
+                sol.push(coeff);
+            }
+            sol
+        }
+    }
+}
+
+/// Solve the univariate Diophantine equation `Σ δ_i · ∏_{j≠i} f_j = rhs`
+/// over a prime field with `deg(δ_i) < deg(f_i)`, using the sequential
+/// extended-Euclid iteration. Returns `None` if the factors are not
+/// pairwise coprime.
+///
+/// Reference: Symbolica `try_univariate_diophantine`.
+fn try_univariate_diophantine_fp(
+    factors: &[UP<FiniteField>],
+    rhs: &UP<FiniteField>,
+) -> Option<Vec<UP<FiniteField>>> {
+    let r = factors.len();
+    if r == 0 {
+        return None;
+    }
+    if r == 1 {
+        return Some(vec![rhs.clone()]);
+    }
+    if factors
+        .iter()
+        .any(|f| f.leading_coeff().is_none_or(|c| f.domain().is_zero(c)))
+    {
+        return None;
+    }
+    // products[i] = f_{i+1}···f_{r−1}.
+    let mut products: Vec<UP<FiniteField>> = Vec::with_capacity(r - 1);
+    let mut cur = factors[r - 1].clone();
+    products.push(cur.clone());
+    for f in factors[1..r - 1].iter().rev() {
+        cur = cur.mul(f);
+        products.push(cur.clone());
+    }
+    products.reverse();
+
+    let mut deltas: Vec<UP<FiniteField>> = Vec::with_capacity(r);
+    let mut cur_s = rhs.clone();
+    for (factor, product) in factors.iter().zip(&products) {
+        let (g, s, t) = factor.extended_gcd_poly(product);
+        if g.degree() != Some(0) {
+            return None; // not coprime
+        }
+        let inv = factor.domain().inv(g.leading_coeff().unwrap())?;
+        let s = s.mul_scalar(&inv);
+        let t = t.mul_scalar(&inv);
+        let (_, new_s) = t.mul(&cur_s).div_rem(factor)?;
+        deltas.push(new_s);
+        let (_, rem) = s.mul(&cur_s).div_rem(product)?;
+        cur_s = rem;
+    }
+    deltas.push(cur_s);
+    Some(deltas)
+}
+
+/// Evaluate the secondary-variable monomial `exp` (variables 1..n) at the
+/// base points.
+fn monomial_eval_fp(
+    field: &FiniteField,
+    exp: &[usize],
+    base: &[FiniteFieldElement],
+) -> FiniteFieldElement {
+    let mut v = field.one();
+    for (i, b) in base.iter().enumerate() {
+        let e = exp.get(i + 1).copied().unwrap_or(0);
+        if e > 0 {
+            v = field.mul(&v, &field.pow(b, e as u64));
+        }
+    }
+    v
+}
+
+/// Group the exponents of a skeleton by their `x_0`-degree.
+fn group_skeleton(skeleton: &FpMPoly) -> Vec<(usize, Vec<smallvec::SmallVec<[usize; 4]>>)> {
+    let mut groups: Vec<(usize, Vec<smallvec::SmallVec<[usize; 4]>>)> = Vec::new();
+    for exp in skeleton.terms_ref().keys() {
+        let deg = exp.first().copied().unwrap_or(0);
+        if let Some((_, exps)) = groups.iter_mut().find(|(d, _)| *d == deg) {
+            exps.push(exp.clone());
+        } else {
+            groups.push((deg, vec![exp.clone()]));
+        }
+    }
+    groups
+}
+
+/// Build the dense univariate image in variable 0 from per-term secondary
+/// monomial evaluations (`evals[t]` is the monomial evaluation of the
+/// exponent of `terms[t]`, WITHOUT the coefficient; the coefficient is
+/// applied here so that powering the monomials does not power the
+/// coefficients).
+fn build_image_fp(
+    field: &FiniteField,
+    terms: &[(smallvec::SmallVec<[usize; 4]>, FiniteFieldElement)],
+    evals: &[FiniteFieldElement],
+) -> UP<FiniteField> {
+    let mut coeffs: Vec<FiniteFieldElement> = Vec::new();
+    for ((exp, c), ev) in terms.iter().zip(evals) {
+        let idx = exp.first().copied().unwrap_or(0);
+        if idx >= coeffs.len() {
+            coeffs.resize(idx + 1, field.zero());
+        }
+        coeffs[idx] = field.add(&coeffs[idx], &field.mul(c, ev));
+    }
+    UP::<FiniteField>::from_coeffs(field.clone(), coeffs)
+}
+
+/// Coefficient of `x_0^deg` in a dense univariate polynomial (zero if the
+/// degree is absent).
+fn upoly_coeff(p: &UP<FiniteField>, deg: usize) -> FiniteFieldElement {
+    p.coeffs()
+        .get(deg)
+        .cloned()
+        .unwrap_or_else(|| p.domain().zero())
+}
+
+/// Snapshot of a polynomial's terms in a stable order.
+type TermSnapshot = Vec<(smallvec::SmallVec<[usize; 4]>, FiniteFieldElement)>;
+
+/// Skeleton exponents grouped by their `x_0`-degree, per factor.
+type SkeletonGroups = Vec<Vec<(usize, Vec<smallvec::SmallVec<[usize; 4]>>)>>;
+
+fn snapshot_terms(f: &FpMPoly) -> TermSnapshot {
+    f.terms_ref()
+        .iter()
+        .map(|(e, c)| (e.clone(), c.clone()))
+        .collect()
+}
+
+/// Random nonzero base points for the secondary variables.
+fn random_base_fp(field: &FiniteField, n: usize, rng: &mut SplitMix64) -> Vec<FiniteFieldElement> {
+    (1..n)
+        .map(|_| {
+            loop {
+                let v = field.element(BigInt::from(rng.next()));
+                if !field.is_zero(&v) {
+                    break v;
+                }
+            }
+        })
+        .collect()
+}
+
+/// Sparse two-factor Diophantine solver over a prime field: interpolates
+/// the correction of the factor with the sparser skeleton from univariate
+/// images, then obtains the other correction by exact division.
+///
+/// Reference: Symbolica `sparse_multivariate_diophantine_two_factor_by_sampling`.
+fn sparse_diophantine_two_factor_fp(
+    factors: &[FpMPoly],
+    prods: &[FpMPoly],
+    error: &FpMPoly,
+    skeletons: &[FpMPoly],
+    seed: u64,
+) -> Option<Vec<FpMPoly>> {
+    if factors.len() != 2 {
+        return None;
+    }
+    let field = error.domain().clone();
+    let n = error.n_vars();
+    let sparse_factor = skeletons
+        .iter()
+        .enumerate()
+        .filter(|(_, s)| !s.is_zero())
+        .min_by_key(|(_, s)| s.n_terms())
+        .map(|(i, _)| i)?;
+    let dense_factor = 1 - sparse_factor;
+    let skeleton = &skeletons[sparse_factor];
+    let groups = group_skeleton(skeleton);
+    let samples_needed = groups.iter().map(|(_, e)| e.len()).max().unwrap_or(0);
+    if samples_needed == 0 || skeleton.n_terms() > SPARSE_MDP_MAX_TERMS {
+        return None;
+    }
+    // Interpolation needs one distinct nonzero generator per group member;
+    // a prime field offers only p − 1.
+    if BigInt::from(samples_needed) >= field.prime().clone() {
+        return None;
+    }
+
+    let error_terms = snapshot_terms(error);
+    let factor_terms: Vec<TermSnapshot> = factors.iter().map(snapshot_terms).collect();
+
+    let mut rng = SplitMix64(seed);
+    'attempts: for _ in 0..SPARSE_MDP_BASE_ATTEMPTS {
+        let base = random_base_fp(&field, n, &mut rng);
+        // Generators must be nonzero and pairwise distinct within a group.
+        let mut generators: Vec<Vec<FiniteFieldElement>> = Vec::with_capacity(groups.len());
+        for (_, exps) in &groups {
+            let mut gens: Vec<FiniteFieldElement> = Vec::with_capacity(exps.len());
+            for e in exps {
+                let g = monomial_eval_fp(&field, e, &base);
+                if field.is_zero(&g) || gens.contains(&g) {
+                    continue 'attempts;
+                }
+                gens.push(g);
+            }
+            generators.push(gens);
+        }
+
+        // Per-term secondary monomial evaluations (without coefficients).
+        let error_base: Vec<FiniteFieldElement> = error_terms
+            .iter()
+            .map(|(e, _)| monomial_eval_fp(&field, e, &base))
+            .collect();
+        let factors_base: Vec<Vec<FiniteFieldElement>> = factor_terms
+            .iter()
+            .map(|terms| {
+                terms
+                    .iter()
+                    .map(|(e, _)| monomial_eval_fp(&field, e, &base))
+                    .collect()
+            })
+            .collect();
+
+        let mut rhs: Vec<Vec<FiniteFieldElement>> = groups.iter().map(|_| Vec::new()).collect();
+        let mut error_current = error_base.clone();
+        let mut factors_current = factors_base.clone();
+        for s in 0..samples_needed {
+            if s > 0 {
+                for (cur, b) in error_current.iter_mut().zip(&error_base) {
+                    *cur = field.mul(cur, b);
+                }
+                for (cur_f, base_f) in factors_current.iter_mut().zip(&factors_base) {
+                    for (cur, b) in cur_f.iter_mut().zip(base_f) {
+                        *cur = field.mul(cur, b);
+                    }
+                }
+            }
+            let error_img = build_image_fp(&field, &error_terms, &error_current);
+            let factor_imgs: Vec<UP<FiniteField>> = factor_terms
+                .iter()
+                .zip(&factors_current)
+                .map(|(te, cur)| build_image_fp(&field, te, cur))
+                .collect();
+            let Some(deltas_img) = try_univariate_diophantine_fp(&factor_imgs, &error_img) else {
+                continue 'attempts;
+            };
+            for (gi, (deg, _)) in groups.iter().enumerate() {
+                rhs[gi].push(upoly_coeff(&deltas_img[sparse_factor], *deg));
+            }
+        }
+
+        // Vandermonde per group gives the sparse correction.
+        let mut sparse_delta = skeleton.zero();
+        for ((_, exps), (gens, rhs)) in groups.iter().zip(generators.iter().zip(rhs.iter())) {
+            let coeffs = solve_shifted_transposed_vandermonde(&field, gens, &rhs[..exps.len()]);
+            for (c, e) in coeffs.into_iter().zip(exps) {
+                if !field.is_zero(&c) {
+                    sparse_delta.set_term_external(e.to_vec(), c);
+                }
+            }
+        }
+
+        // The other correction follows by exact division.
+        let residual = error.sub(&sparse_delta.mul(&prods[sparse_factor]));
+        let Some(dense_delta) = residual.checked_div_exact(&prods[dense_factor]) else {
+            continue;
+        };
+        let mut deltas = vec![error.zero(), error.zero()];
+        deltas[sparse_factor] = sparse_delta;
+        deltas[dense_factor] = dense_delta;
+
+        let mut check = error.zero();
+        for (d, p) in deltas.iter().zip(prods) {
+            check = check.add(&d.mul(p));
+        }
+        if check == *error {
+            return Some(deltas);
+        }
+    }
+    None
+}
+
+/// Sparse n-factor Diophantine solver over a prime field: interpolates every
+/// factor's correction from its skeleton via univariate images and
+/// Vandermonde solves, then verifies against the full equation.
+///
+/// Reference: Symbolica `sparse_multivariate_diophantine_by_sampling`.
+fn sparse_diophantine_n_factor_fp(
+    factors: &[FpMPoly],
+    prods: &[FpMPoly],
+    error: &FpMPoly,
+    skeletons: &[FpMPoly],
+    seed: u64,
+) -> Option<Vec<FpMPoly>> {
+    let r = factors.len();
+    let field = error.domain().clone();
+    let n = error.n_vars();
+
+    let mut groups: SkeletonGroups = Vec::with_capacity(r);
+    let mut samples_needed = 0usize;
+    let mut total_terms = 0usize;
+    for sk in skeletons {
+        let fg = group_skeleton(sk);
+        for (_, exps) in &fg {
+            samples_needed = samples_needed.max(exps.len());
+        }
+        total_terms += sk.n_terms();
+        groups.push(fg);
+    }
+    if samples_needed == 0 || total_terms > SPARSE_MDP_MAX_TERMS {
+        return None;
+    }
+    // Interpolation needs one distinct nonzero generator per group member;
+    // a prime field offers only p − 1.
+    if BigInt::from(samples_needed) >= field.prime().clone() {
+        return None;
+    }
+
+    let error_terms = snapshot_terms(error);
+    let factor_terms: Vec<TermSnapshot> = factors.iter().map(snapshot_terms).collect();
+
+    let mut rng = SplitMix64(seed);
+    'attempts: for _ in 0..SPARSE_MDP_BASE_ATTEMPTS {
+        let base = random_base_fp(&field, n, &mut rng);
+        let mut generators: Vec<Vec<Vec<FiniteFieldElement>>> = Vec::with_capacity(r);
+        for fg in &groups {
+            let mut gen_fg: Vec<Vec<FiniteFieldElement>> = Vec::with_capacity(fg.len());
+            for (_, exps) in fg {
+                let mut gens: Vec<FiniteFieldElement> = Vec::with_capacity(exps.len());
+                for e in exps {
+                    let g = monomial_eval_fp(&field, e, &base);
+                    if field.is_zero(&g) || gens.contains(&g) {
+                        continue 'attempts;
+                    }
+                    gens.push(g);
+                }
+                gen_fg.push(gens);
+            }
+            generators.push(gen_fg);
+        }
+
+        // Per-term secondary monomial evaluations (without coefficients).
+        let error_base: Vec<FiniteFieldElement> = error_terms
+            .iter()
+            .map(|(e, _)| monomial_eval_fp(&field, e, &base))
+            .collect();
+        let factors_base: Vec<Vec<FiniteFieldElement>> = factor_terms
+            .iter()
+            .map(|terms| {
+                terms
+                    .iter()
+                    .map(|(e, _)| monomial_eval_fp(&field, e, &base))
+                    .collect()
+            })
+            .collect();
+
+        let mut rhs: Vec<Vec<Vec<FiniteFieldElement>>> = groups
+            .iter()
+            .map(|fg| fg.iter().map(|_| Vec::new()).collect())
+            .collect();
+        let mut error_current = error_base.clone();
+        let mut factors_current = factors_base.clone();
+        for s in 0..samples_needed {
+            if s > 0 {
+                for (cur, b) in error_current.iter_mut().zip(&error_base) {
+                    *cur = field.mul(cur, b);
+                }
+                for (cur_f, base_f) in factors_current.iter_mut().zip(&factors_base) {
+                    for (cur, b) in cur_f.iter_mut().zip(base_f) {
+                        *cur = field.mul(cur, b);
+                    }
+                }
+            }
+            let error_img = build_image_fp(&field, &error_terms, &error_current);
+            let factor_imgs: Vec<UP<FiniteField>> = factor_terms
+                .iter()
+                .zip(&factors_current)
+                .map(|(te, cur)| build_image_fp(&field, te, cur))
+                .collect();
+            let Some(deltas_img) = try_univariate_diophantine_fp(&factor_imgs, &error_img) else {
+                continue 'attempts;
+            };
+            for (i, fg) in groups.iter().enumerate() {
+                for (gi, (deg, _)) in fg.iter().enumerate() {
+                    rhs[i][gi].push(upoly_coeff(&deltas_img[i], *deg));
+                }
+            }
+        }
+
+        let mut deltas: Vec<FpMPoly> = skeletons.iter().map(|s| s.zero()).collect();
+        for (i, fg) in groups.iter().enumerate() {
+            for (gi, (_, exps)) in fg.iter().enumerate() {
+                let coeffs = solve_shifted_transposed_vandermonde(
+                    &field,
+                    &generators[i][gi],
+                    &rhs[i][gi][..exps.len()],
+                );
+                for (c, e) in coeffs.into_iter().zip(exps) {
+                    if !field.is_zero(&c) {
+                        deltas[i].set_term_external(e.to_vec(), c);
+                    }
+                }
+            }
+        }
+
+        let mut check = error.zero();
+        for (d, p) in deltas.iter().zip(prods) {
+            check = check.add(&d.mul(p));
+        }
+        if check == *error {
+            return Some(deltas);
+        }
+    }
+    None
+}
+
+/// Solve the multivariate Diophantine equation `Σ δ_i · ∏_{j≠i} f_j = e`
+/// over a prime field by skeleton interpolation. Returns `None` when the
+/// sparsity assumption does not hold; the caller falls back to the dense
+/// recursive solver.
+fn sparse_diophantine_fp(
+    factors: &[FpMPoly],
+    error: &FpMPoly,
+    skeletons: &[FpMPoly],
+    seed: u64,
+) -> Option<Vec<FpMPoly>> {
+    // Benchmark kill-switch: `OCAS_DISABLE_SPARSE_DIO=1` forces the dense
+    // recursive solver so dense-vs-sparse timings can be compared.
+    static DISABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    if *DISABLED.get_or_init(|| std::env::var_os("OCAS_DISABLE_SPARSE_DIO").is_some()) {
+        return None;
+    }
+    let r = factors.len();
+    if r < 2 {
+        return None;
+    }
+    let field = error.domain().clone();
+    let n = error.n_vars();
+    let prods: Vec<FpMPoly> = (0..r)
+        .map(|i| {
+            let mut p = one_mpoly(&field, n);
+            for (j, f) in factors.iter().enumerate() {
+                if i != j {
+                    p = p.mul(f);
+                }
+            }
+            p
+        })
+        .collect();
+    let found = if r == 2 {
+        sparse_diophantine_two_factor_fp(factors, &prods, error, skeletons, seed)
+    } else if r > 2 {
+        sparse_diophantine_n_factor_fp(factors, &prods, error, skeletons, seed)
+    } else {
+        None
+    };
+    if let Some(d) = found {
+        #[cfg(test)]
+        SPARSE_DIO_HITS.with(|h| h.set(h.get() + 1));
+        return Some(d);
+    }
+    None
+}
+
+// Test-only thread-local counter of successful sparse Diophantine solves.
+// Thread-local so parallel tests cannot pollute each other's assertions.
+#[cfg(test)]
+mod sparse_dio_hits {
+    #![allow(clippy::missing_const_for_thread_local)]
+    thread_local! {
+        pub static SPARSE_DIO_HITS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    }
+}
+
+#[cfg(test)]
+use sparse_dio_hits::SPARSE_DIO_HITS;
+
+/// Small primes tried for the p-adic coefficient lift. A prime is usable
+/// when the univariate image keeps its degree and stays square-free mod p.
+const PADIC_PRIMES: [u64; 25] = [
+    2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
+];
+
+/// Factor square-free `f` via p-adic coefficient Hensel lifting with
+/// Wang-imposed non-constant leading coefficients.
+///
+/// The target is rescaled to `c^{r−1}·f` (image content `c`, `r` univariate
+/// factors) so that the imposed leading coefficients `c·ℓ_i` are consistent
+/// with the scaled initial factors `c·u_i`. The mod-`p` factors are first
+/// lifted through the secondary variables over `𝔽_p` ([`eez_lift_imposed`]),
+/// then lifted p-adically in the coefficients
+/// ([`coefficient_hensel_lift_z`]). Returns the primitive irreducible
+/// factors of `f`, or `None` on unlucky samples/primes.
+///
+/// Reference: Symbolica `multivariate_factorization` (univariate start).
+fn padic_lift_factors(
+    f: &ZmPoly,
+    sample: &[Integer],
+    uni: &[UP<IntegerDomain>],
+    content: &Integer,
+    true_lcoeffs: &[ZmPoly],
+) -> Option<Vec<ZmPoly>> {
+    let n = f.n_vars();
+    let r = uni.len();
+    let deg0 = f.degree_in(0);
+    let mut scale_pow = Integer::from(1);
+    for _ in 1..r {
+        scale_pow = IntegerDomain.mul(&scale_pow, content);
+    }
+    let target = f.mul_scalar(&scale_pow);
+    let scaled_lcoeffs: Vec<ZmPoly> = true_lcoeffs.iter().map(|l| l.mul_scalar(content)).collect();
+    let scaled_uni: Vec<UP<IntegerDomain>> = uni.iter().map(|u| u.mul_scalar(content)).collect();
+    let bound = coefficient_bound_z(&target);
+    let image = eval_to_image_z(f, sample);
+
+    // For large sparse inputs, start from a larger prime: the sparse
+    // Diophantine solver needs at least one distinct nonzero field element
+    // per skeleton group member, and bigger primes also cut the number of
+    // p-adic iterations.
+    let prime_start = if f.n_terms() >= 30 { 8 } else { 0 };
+    for p in PADIC_PRIMES[prime_start..].iter().copied() {
+        let field = FiniteField::new(BigInt::from(p));
+        let image_fp = UP::<FiniteField>::from_coeffs(
+            field.clone(),
+            image
+                .coeffs()
+                .iter()
+                .map(|c| field.element(c.to_bigint()))
+                .collect(),
+        );
+        if image_fp.degree() != Some(deg0) || !image_fp.is_square_free() {
+            continue; // p divides the leading coefficient or the discriminant
+        }
+        let target_fp = zmp_to_fmp(&target, &field);
+        let initial_fp: Vec<FpMPoly> = scaled_uni
+            .iter()
+            .map(|u| zmp_to_fmp(&dense_to_mpoly(u, n), &field))
+            .collect();
+        let tl_fp: Vec<FpMPoly> = scaled_lcoeffs
+            .iter()
+            .map(|l| zmp_to_fmp(l, &field))
+            .collect();
+        let sample_fp: Vec<FiniteFieldElement> = sample
+            .iter()
+            .map(|s| field.element(s.to_bigint()))
+            .collect();
+        let Some(lifted_fp) = eez_lift_imposed(&target_fp, &sample_fp, &initial_fp, &tl_fp) else {
+            continue;
+        };
+        let lifted_z: Vec<ZmPoly> = lifted_fp.iter().map(fp_to_z_symmetric).collect();
+        // Smallest p^k with 2·p^k ≥ bound.
+        let mut max_p = Integer::from(p as i64);
+        while IntegerDomain.mul(&max_p, &Integer::from(2)) < bound {
+            max_p = IntegerDomain.mul(&max_p, &Integer::from(p as i64));
+        }
+        let Some(factors) =
+            coefficient_hensel_lift_z(&target, lifted_z, &scaled_lcoeffs, p, &max_p, sample)
+        else {
+            continue;
+        };
+        let out: Vec<ZmPoly> = factors.iter().map(primitive_positive).collect();
+        let mut prod = one_mpoly(&IntegerDomain, n);
+        for g in &out {
+            prod = prod.mul(g);
+        }
+        if equal_up_to_unit(&prod, f) {
+            let mut out = out;
+            out.sort_by_key(|b| std::cmp::Reverse(b.degree_in(0)));
+            return Some(out);
+        }
+        // Recombination fallback: the lifted factors may be finer than the
+        // true irreducible factors.
+        if let Some(irr) = zassenhaus_multivariate(f, &out) {
+            let mut prod = one_mpoly(&IntegerDomain, n);
+            for g in &irr {
+                prod = prod.mul(g);
+            }
+            if equal_up_to_unit(&prod, f) {
+                return Some(irr);
+            }
+        }
+    }
+    None
 }
 
 // ---------------------------------------------------------------------
@@ -409,14 +1322,18 @@ fn eval_to_image_fp(f: &FpMPoly, sample: &[FiniteFieldElement]) -> UP<FiniteFiel
 /// image of `f` has full degree and is square-free. Returns candidates
 /// (sample, monic irreducible image factors) ordered by increasing number
 /// of factors, capped at `max_candidates`.
+///
+/// `range` caps the sample values; the caller retries with a larger range
+/// when the first round yields no usable candidate (adaptive search).
 fn find_sample_fp(
     f: &FpMPoly,
     max_candidates: usize,
+    range: u64,
 ) -> Vec<(Vec<FiniteFieldElement>, Vec<UP<FiniteField>>)> {
     let n = f.n_vars();
     let field = f.domain().clone();
     let p = field.prime().to_u64().unwrap_or(u64::MAX);
-    let range = p.clamp(1, 8);
+    let range = range.clamp(1, p);
     let attempts = (range as usize).saturating_pow((n - 1) as u32).min(512);
     let deg0 = f.degree_in(0);
 
@@ -737,20 +1654,24 @@ fn factor_square_free_fp(f: &FpMPoly) -> Vec<FpMPoly> {
     let inv_c = f.domain().inv(&c).expect("nonzero leading coefficient");
     let f_m = f.mul_scalar(&inv_c);
 
-    for (sample, uni) in find_sample_fp(&f_m, 8) {
-        if uni.len() == 1 {
-            // Square-free, degree-preserving irreducible image ⇒ f irreducible.
-            return vec![f.clone()];
-        }
-        if let Some(lifted) = eez_lift(&f_m, &sample, &uni) {
-            let mut prod = one_mpoly(f.domain(), f.n_vars());
-            for g in &lifted {
-                prod = prod.mul(g);
+    // Adaptive sample search: retry with a larger value range when the
+    // first round yields no usable candidate.
+    for range in [8u64, 32] {
+        for (sample, uni) in find_sample_fp(&f_m, 8, range) {
+            if uni.len() == 1 {
+                // Square-free, degree-preserving irreducible image ⇒ f irreducible.
+                return vec![f.clone()];
             }
-            if prod == f_m {
-                let mut out = lifted;
-                out[0] = out[0].mul_scalar(&c);
-                return out;
+            if let Some(lifted) = eez_lift(&f_m, &sample, &uni) {
+                let mut prod = one_mpoly(f.domain(), f.n_vars());
+                for g in &lifted {
+                    prod = prod.mul(g);
+                }
+                if prod == f_m {
+                    let mut out = lifted;
+                    out[0] = out[0].mul_scalar(&c);
+                    return out;
+                }
             }
         }
     }
@@ -1042,25 +1963,60 @@ fn wang_reconstruct_lcoeffs(
 /// Find integer sample points for the secondary variables such that the
 /// univariate image has full degree and is square-free, returning candidate
 /// (sample, primitive image factors, content) ordered by factor count.
+///
+/// `lc_filter` lists the non-constant factors of the leading coefficient
+/// (in the secondary variables); samples where any of them evaluates to
+/// `0` or `±1` are skipped, since Wang's leading-coefficient distribution
+/// requires every such image `α_j` to exceed 1 in absolute value.
+///
+/// `value_bound` caps the absolute sample values; `factor_square_free_z`
+/// retries with a larger bound when every candidate of the first round
+/// fails downstream (adaptive sample search, cf. Symbolica `find_sample`
+/// restarting with `coefficient_upper_bound + 10`).
 #[allow(clippy::type_complexity)]
 fn find_sample_z(
     f: &ZmPoly,
     max_candidates: usize,
+    lc_filter: &[ZmPoly],
+    value_bound: i64,
 ) -> Vec<(Vec<Integer>, Vec<UP<IntegerDomain>>, Integer)> {
     let n = f.n_vars();
     let deg0 = f.degree_in(0);
     let mut best: Vec<(Vec<Integer>, Vec<UP<IntegerDomain>>, Integer)> = Vec::new();
-    let candidates: [i64; 15] = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7];
+    let mut candidates: Vec<i64> = Vec::with_capacity((2 * value_bound + 1) as usize);
+    candidates.push(0);
+    for v in 1..=value_bound {
+        candidates.push(v);
+        candidates.push(-v);
+    }
     let attempts = 4000usize;
+    let mut seen: std::collections::HashSet<Vec<i64>> = std::collections::HashSet::new();
 
     for t in 0..attempts {
         let mut sample = vec![Integer::from(0); n];
         let mut rem = t;
-        for (k, slot) in sample.iter_mut().enumerate().take(n).skip(1) {
+        for slot in sample.iter_mut().enumerate().take(n).skip(1) {
             let idx = rem % candidates.len();
             rem /= candidates.len();
-            *slot = Integer::from(candidates[idx]);
-            let _ = k;
+            *slot.1 = Integer::from(candidates[idx]);
+        }
+        let key: Vec<i64> = sample
+            .iter()
+            .map(|s| s.to_i64().unwrap_or(i64::MAX))
+            .collect();
+        if !seen.insert(key) {
+            continue;
+        }
+        // Wang viability: every non-constant LC factor must evaluate to
+        // an integer exceeding 1 in absolute value.
+        if lc_filter.iter().any(|g| {
+            let mut img = g.clone();
+            for k in 0..img.n_vars() {
+                img = img.eval_keep(k, &sample[k + 1]);
+            }
+            img.coeff(&vec![0; img.n_vars()]).abs() <= Integer::from(1)
+        }) {
+            continue;
         }
         let image = eval_to_image_z(f, &sample);
         if image.degree().unwrap_or(0) != deg0 || deg0 == 0 {
@@ -1110,15 +2066,24 @@ fn find_sample_z(
             continue;
         }
         uni.sort_by_key(|b| std::cmp::Reverse(b.degree().unwrap_or(0)));
+        // Rank by (factor count, image content): fewer factors is better,
+        // and a smaller content gives Wang's distribution more room (the
+        // image content cannot be recovered by the integer reconcile).
+        let content = content.abs();
         let pos = best
-            .binary_search_by(|(_, b, _)| b.len().cmp(&uni.len()))
+            .binary_search_by(|(_, b, c)| {
+                b.len().cmp(&uni.len()).then_with(|| c.abs().cmp(&content))
+            })
             .unwrap_or_else(|e| e);
         best.insert(pos, (sample, uni, content));
         if best.len() > max_candidates {
             best.pop();
         }
-        // Early exit: a sample with ≥2 factors is good enough.
-        if !best.is_empty() && best[0].1.len() >= 2 && best.len() >= 2 {
+        // Early exit for constant leading coefficients: two candidates with
+        // at least two factors are enough (the 0.16.0 behaviour). With a
+        // non-constant LC the full scan is required, since Wang's
+        // distribution may reject early candidates downstream.
+        if lc_filter.is_empty() && best.len() >= 2 && best[0].1.len() >= 2 {
             break;
         }
     }
@@ -1248,7 +2213,38 @@ fn factor_square_free_z(f: &ZmPoly) -> Vec<ZmPoly> {
     }
 
     let lcoeff = f.leading_coeff_in(0);
-    let samples = find_sample_z(f, 8);
+    // Non-constant factors of the leading coefficient (in the secondary
+    // variables), used to filter samples that cannot admit Wang's
+    // leading-coefficient distribution.
+    let lc_filter: Vec<ZmPoly> =
+        if lcoeff.degree_in(0) == 0 && lcoeff.drop_main_var().total_degree() == Some(0) {
+            Vec::new()
+        } else {
+            multivariate_factor_z(&lcoeff.drop_main_var())
+                .into_iter()
+                .map(|(g, _)| g)
+                .filter(|g| !is_constant(g))
+                .collect()
+        };
+    // Adaptive sample search: if every candidate of the first round fails
+    // (unlucky samples), retry with a larger value bound.
+    for value_bound in [7i64, 25] {
+        let samples = find_sample_z(f, 16, &lc_filter, value_bound);
+        if let Some(out) = factor_square_free_z_candidates(f, &lcoeff, samples) {
+            return out;
+        }
+    }
+    vec![f.clone()]
+}
+
+/// Try to factor square-free `f` from the given sample candidates; returns
+/// `None` when every candidate is unlucky.
+#[allow(clippy::type_complexity)]
+fn factor_square_free_z_candidates(
+    f: &ZmPoly,
+    lcoeff: &ZmPoly,
+    samples: Vec<(Vec<Integer>, Vec<UP<IntegerDomain>>, Integer)>,
+) -> Option<Vec<ZmPoly>> {
     for (sample, uni, content) in samples {
         if uni.len() == 1 {
             // Degree-preserving square-free irreducible image at this sample.
@@ -1257,12 +2253,23 @@ fn factor_square_free_z(f: &ZmPoly) -> Vec<ZmPoly> {
             continue;
         }
         // Wang LC preprocessing: reconstruct the true leading coefficients.
-        let true_lcoeffs = match wang_reconstruct_lcoeffs(&lcoeff, &sample, &uni, &content) {
+        let true_lcoeffs = match wang_reconstruct_lcoeffs(lcoeff, &sample, &uni, &content) {
             Some(l) => l,
             None => {
                 continue; // unlucky sample
             }
         };
+        if true_lcoeffs.iter().any(|l| !is_constant(l)) {
+            // Non-constant true leading coefficients: exact-ℚ lifting
+            // generally produces non-integral corrections, so lift
+            // p-adically instead (Wang imposition with coefficient Hensel
+            // lifting over 𝔽_p followed by a p-adic lift in the
+            // coefficients).
+            if let Some(out) = padic_lift_factors(f, &sample, &uni, &content, &true_lcoeffs) {
+                return Some(out);
+            }
+            continue;
+        }
         // Impose true LCs on the univariate image factors to form the
         // initial (zeroth-order) lifted factors, then lift through the
         // remaining variables via EEZ. Since ℓ_i(s) = lc(u_i), the multiplier
@@ -1311,7 +2318,7 @@ fn factor_square_free_z(f: &ZmPoly) -> Vec<ZmPoly> {
         if equal_up_to_unit(&prod, f) {
             let mut out: Vec<ZmPoly> = lifted.iter().map(primitive_positive).collect();
             out.sort_by_key(|b| std::cmp::Reverse(b.degree_in(0)));
-            return out;
+            return Some(out);
         }
         // Zassenhaus recombination over the lifted modular factors.
         if let Some(irr) = zassenhaus_multivariate(f, &lifted) {
@@ -1320,11 +2327,11 @@ fn factor_square_free_z(f: &ZmPoly) -> Vec<ZmPoly> {
                 prod = prod.mul(g);
             }
             if equal_up_to_unit(&prod, f) {
-                return irr;
+                return Some(irr);
             }
         }
     }
-    vec![f.clone()]
+    None
 }
 
 /// Return the primitive part of `g` with a positive Lex-leading coefficient.
@@ -1646,7 +2653,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "non-constant LC imposition requires mod-p Hensel lifting (0.16.1)"]
     fn z_bivariate_wang_nonconstant_lcoeff() {
         // f = (y·x² + 1)(x + 1) over ℤ: f1 = yx²+1 is monic in x with
         // non-constant LC y, so the univariate image y(s)x²+1 is monic and
@@ -1660,7 +2666,165 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "non-constant LC imposition requires mod-p Hensel lifting (0.16.1)"]
+    fn fp_sparse_diophantine_two_factor() {
+        // Over F_13: f1 = x²y + 2x + 1 (skeleton 2x+1), f2 = xy + 3
+        // (skeleton 3). The sparse solver must recover the unique
+        // corrections δ1 = 5x + 7, δ2 = 11 with support inside the
+        // skeletons.
+        let f1 = fmp(13, 2, &[(vec![2, 1], 1), (vec![1, 0], 2), (vec![0, 0], 1)]);
+        let f2 = fmp(13, 2, &[(vec![1, 1], 1), (vec![0, 0], 3)]);
+        let d1 = fmp(13, 2, &[(vec![1, 0], 5), (vec![0, 0], 7)]);
+        let d2 = fmp(13, 2, &[(vec![0, 0], 11)]);
+        let error = d1.mul(&f2).add(&d2.mul(&f1));
+        let sk1 = fmp(13, 2, &[(vec![1, 0], 2), (vec![0, 0], 1)]);
+        let sk2 = fmp(13, 2, &[(vec![0, 0], 3)]);
+        let deltas = sparse_diophantine_fp(&[f1, f2], &error, &[sk1, sk2], 42)
+            .expect("sparse solve must succeed");
+        assert_eq!(deltas, vec![d1, d2]);
+    }
+
+    #[test]
+    fn fp_sparse_diophantine_three_factor() {
+        // Over F_17: three factors with sparse skeletons.
+        let f1 = fmp(17, 2, &[(vec![2, 1], 1), (vec![1, 0], 3), (vec![0, 1], 2)]);
+        let f2 = fmp(17, 2, &[(vec![1, 1], 1), (vec![0, 0], 5)]);
+        let f3 = fmp(17, 2, &[(vec![1, 0], 1), (vec![0, 1], 1), (vec![0, 0], 7)]);
+        let d1 = fmp(17, 2, &[(vec![1, 0], 4), (vec![0, 1], 9)]);
+        let d2 = fmp(17, 2, &[(vec![0, 0], 6)]);
+        let d3 = fmp(17, 2, &[(vec![0, 1], 2), (vec![0, 0], 1)]);
+        let error = d1
+            .mul(&f2)
+            .mul(&f3)
+            .add(&d2.mul(&f1).mul(&f3))
+            .add(&d3.mul(&f1).mul(&f2));
+        let sk1 = fmp(17, 2, &[(vec![1, 0], 3), (vec![0, 1], 2)]);
+        let sk2 = fmp(17, 2, &[(vec![0, 0], 5)]);
+        let sk3 = fmp(17, 2, &[(vec![0, 1], 1), (vec![0, 0], 7)]);
+        let deltas = sparse_diophantine_fp(&[f1, f2, f3], &error, &[sk1, sk2, sk3], 7)
+            .expect("sparse solve must succeed");
+        assert_eq!(deltas, vec![d1, d2, d3]);
+    }
+
+    #[test]
+    fn z_sparse_four_var_nonconstant_lc() {
+        // Sparse product in 4 variables with ≥ 50 terms and non-constant
+        // leading coefficients factors back into its two sparse factors via
+        // the p-adic path.
+        let mut f1_terms = vec![(vec![2usize, 1, 1, 0], 1i64)]; // y·z·x² LC
+        let mut f2_terms = vec![(vec![1, 1, 0, 0], 1i64), (vec![1, 0, 0, 1], 1)]; // (y+w)·x
+        for i in 0..4usize {
+            for j in 0..3usize {
+                let c1 = ((i * 7 + j * 3) % 4 + 1) as i64;
+                let c2 = ((i * 5 + j * 11 + 2) % 4 + 1) as i64;
+                f1_terms.push((vec![i % 2, i, j, (i + j) % 2], c1));
+                f2_terms.push((vec![0, (i + 1) % 3, (j + 2) % 2, i % 3], c2));
+            }
+        }
+        let f1 = zm_poly(4, &f1_terms);
+        let f2 = zm_poly(4, &f2_terms);
+        let f = f1.mul(&f2);
+        assert!(
+            f.n_terms() >= 50,
+            "test product should be sparse-large, got {} terms",
+            f.n_terms()
+        );
+        let factors = multivariate_factor_z(&f);
+        assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+        assert_eq!(product_z(&with_mult_z(&factors)), f);
+    }
+
+    #[test]
+    fn z_coefficient_lift_uses_sparse_diophantine() {
+        // Surgical test of the p-adic coefficient lift: corrupt one body
+        // coefficient of a known factor, then check that the lift restores
+        // it and that the sparse Diophantine solver was used (thread-local
+        // hit counter). The prime 13 leaves enough nonzero elements for the
+        // interpolation generators (groups of ≤ 4).
+        let f1_true = zm_poly(
+            4,
+            &[
+                (vec![2, 1, 1, 0], 1), // y·z·x² (LC)
+                (vec![1, 0, 0, 0], 3),
+                (vec![1, 1, 0, 0], 1),
+                (vec![0, 0, 1, 0], 2),
+                (vec![0, 0, 0, 1], 1),
+            ],
+        );
+        let f2_true = zm_poly(
+            4,
+            &[
+                (vec![1, 1, 0, 0], 1), // (y+w)·x (LC)
+                (vec![1, 0, 0, 1], 1),
+                (vec![0, 1, 0, 0], 2),
+                (vec![0, 0, 0, 0], 3),
+            ],
+        );
+        let target = f1_true.mul(&f2_true);
+        // Corrupt one skeleton coefficient of f1 by a multiple of the prime
+        // (3 → 3 + 13 = 16 at x^1), so the initial error is 0 mod 13.
+        let f1_bad = zm_poly(
+            4,
+            &[
+                (vec![2, 1, 1, 0], 1),
+                (vec![1, 0, 0, 0], 16),
+                (vec![1, 1, 0, 0], 1),
+                (vec![0, 0, 1, 0], 2),
+                (vec![0, 0, 0, 1], 1),
+            ],
+        );
+        let lc1 = zm_poly(4, &[(vec![0, 1, 1, 0], 1)]); // y·z
+        let lc2 = zm_poly(4, &[(vec![0, 1, 0, 0], 1), (vec![0, 0, 0, 1], 1)]); // y+w
+        let max_p = Integer::from(13 * 13);
+        let sample = vec![Integer::from(0); 4];
+        let before = SPARSE_DIO_HITS.with(|h| h.get());
+        let lifted = coefficient_hensel_lift_z(
+            &target,
+            vec![f1_bad, f2_true.clone()],
+            &[lc1, lc2],
+            13,
+            &max_p,
+            &sample,
+        )
+        .expect("coefficient lift must succeed");
+        let after = SPARSE_DIO_HITS.with(|h| h.get());
+        assert_eq!(lifted, vec![f1_true, f2_true]);
+        assert!(
+            after > before,
+            "sparse Diophantine was not used in the coefficient lift"
+        );
+    }
+
+    #[test]
+    fn z_nonconstant_lcoeff_reducible_lc() {
+        // Proptest regression: f = (x·y² − x + 2y)(x·y − z), ℓ = y³ − y
+        // factors as (y−1)(y+1)y and must be distributed (y²−1) / y across
+        // the two factors. Samples with |y(s)| ≤ 2 are filtered out.
+        let a = zm_poly(
+            3,
+            &[(vec![1, 2, 0], 1), (vec![1, 0, 0], -1), (vec![0, 1, 0], 2)],
+        );
+        let b = zm_poly(3, &[(vec![1, 1, 0], 1), (vec![0, 0, 1], -1)]);
+        let f = a.mul(&b);
+        let factors = multivariate_factor_z(&f);
+        assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+        assert_eq!(product_z(&with_mult_z(&factors)), f);
+    }
+
+    #[test]
+    fn z_nonconstant_lcoeff_shared_monomial() {
+        // Proptest regression: f = (x·y + 1)(x·y - z). The leading
+        // coefficient y² must be distributed one y per factor; samples with
+        // z = 0 have image content |y(s)| > 1 and cannot admit the
+        // distribution, so candidate ranking prefers content-1 samples.
+        let a = zm_poly(3, &[(vec![1, 1, 0], 1), (vec![0, 0, 0], 1)]);
+        let b = zm_poly(3, &[(vec![1, 1, 0], 1), (vec![0, 0, 1], -1)]);
+        let f = a.mul(&b);
+        let factors = multivariate_factor_z(&f);
+        assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
+        assert_eq!(product_z(&with_mult_z(&factors)), f);
+    }
+
+    #[test]
     fn z_trivariate_nonconstant_lcoeff() {
         // f = (z·x² + y)(x + 1) over ℤ: f1 monic in x with LC z; images
         // z(s)x²+y(s)+1·... split as (linear)·(quadratic with LC z(s)).
@@ -1737,6 +2901,41 @@ mod proptests {
         equal_up_to_unit(&prod, f)
     }
 
+    /// A random small multivariate polynomial over ℤ in exactly `n_vars`
+    /// variables whose leading coefficient in variable 0 is a non-constant
+    /// monomial in the secondary variables.
+    fn any_nonconstant_lc_zmp(n_vars: usize) -> impl Strategy<Value = ZmPoly> {
+        (1usize..=2, 1usize..=2, 1usize..=2).prop_flat_map(move |(n_terms, max_deg, lc_deg)| {
+            (
+                prop::collection::vec(
+                    (prop::collection::vec(0usize..=max_deg, n_vars), -2i64..=2),
+                    n_terms..=n_terms + 1,
+                ),
+                prop::collection::vec(0usize..=lc_deg, n_vars - 1),
+            )
+                .prop_map(move |(mut terms, lc_exp)| {
+                    let mut lead = vec![0usize; n_vars];
+                    lead[0] = max_deg.max(1); // positive degree in x_0
+                    for (i, e) in lc_exp.iter().enumerate() {
+                        lead[i + 1] = *e;
+                    }
+                    // Ensure the leading coefficient is non-constant.
+                    if lead.iter().skip(1).all(|&e| e == 0) {
+                        lead[1] = 1;
+                    }
+                    terms.push((lead, 1));
+                    SparseMultivariatePolynomial::<IntegerDomain, Lex>::from_terms(
+                        IntegerDomain,
+                        n_vars,
+                        terms
+                            .into_iter()
+                            .map(|(e, c)| (e, Integer::from(c)))
+                            .collect(),
+                    )
+                })
+        })
+    }
+
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(24))]
 
@@ -1758,6 +2957,30 @@ mod proptests {
                 "factorization does not reconstruct input: {:?}",
                 factors
             );
+        }
+
+        /// Factoring a product of two small factors with non-constant
+        /// leading coefficients (Wang imposition + p-adic lifting) must
+        /// reconstruct it and must not report the product as irreducible.
+        ///
+        /// Marked `ignore` for the same reason as the monic roundtrip.
+        #[test]
+        #[ignore = "slow multivariate factorization proptest: run manually"]
+        fn factor_product_of_two_nonconstant_lc(
+            a in any_nonconstant_lc_zmp(3),
+            b in any_nonconstant_lc_zmp(3),
+        ) {
+            let f = a.mul(&b);
+            let factors = multivariate_factor_z(&f);
+            prop_assert!(
+                reconstructs(&f, &factors),
+                "factorization does not reconstruct input: {:?}",
+                factors
+            );
+            // f = a·b with both factors of positive x_0-degree is reducible,
+            // so a complete factorization cannot be trivial.
+            let nontrivial = factors.len() >= 2 || factors.iter().any(|(_, m)| *m >= 2);
+            prop_assert!(nontrivial, "factorization is trivial: {:?}", factors);
         }
     }
 }

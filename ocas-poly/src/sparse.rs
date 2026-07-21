@@ -964,10 +964,11 @@ impl SparseMultivariatePolynomial<IntegerDomain, Lex> {
     /// Factor this bivariate integer polynomial into irreducible factors with
     /// multiplicities.
     ///
-    /// The current implementation treats the polynomial as univariate in the
-    /// first variable $x$ with coefficients in $\mathbb{Z}[y]$ and uses
-    /// Wang's Hensel-lifting algorithm. It succeeds when the leading
-    /// coefficient in $x$ is an integer constant.
+    /// With a constant leading coefficient in $x$ the polynomial is treated
+    /// as univariate in $x$ with coefficients in $\mathbb{Z}[y]$ and factored
+    /// via Wang's bivariate Hensel-lifting algorithm. With a non-constant
+    /// leading coefficient the general EEZ path with Wang leading-coefficient
+    /// imposition (p-adic coefficient Hensel lifting) is used instead.
     ///
     /// # Example
     ///
@@ -995,6 +996,16 @@ impl SparseMultivariatePolynomial<IntegerDomain, Lex> {
     /// ```
     pub fn factor(&self) -> Vec<(Self, usize)> {
         if self.n_vars() >= 3 {
+            crate::factor::eez::multivariate_factor_z(self)
+        } else if self
+            .leading_coeff_in(0)
+            .terms_ref()
+            .keys()
+            .any(|e| e.iter().skip(1).any(|&d| d > 0))
+        {
+            // Non-constant leading coefficient in x: the bivariate path
+            // requires a constant LC, so use the EEZ path with Wang
+            // leading-coefficient imposition.
             crate::factor::eez::multivariate_factor_z(self)
         } else {
             bivariate_factor_z(self, 0, 1)
