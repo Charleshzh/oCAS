@@ -14,6 +14,7 @@ use ocas_domain::{FiniteField, IntegerDomain};
 
 use crate::dense::DenseUnivariatePolynomial;
 
+pub mod eez;
 pub mod finite_field;
 pub mod hensel;
 pub mod multivariate;

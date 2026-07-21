@@ -582,7 +582,7 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
                 None => break,
             };
             // Check if leading monomial of divisor divides leading monomial of remainder.
-            if !monomial_divides(&div_exp, &rem_exp) {
+            if !monomial_divides(&rem_exp, &div_exp) {
                 break;
             }
             let q_coeff = match self.domain.div(&rem_lc, &div_lc) {
@@ -632,6 +632,191 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
             .map(|e| e.get(var_index).copied().unwrap_or(0))
             .max()
             .unwrap_or(0)
+    }
+
+    // ------------------------------------------------------------------
+    //  Multivariate factorization support
+    // ------------------------------------------------------------------
+
+    /// Return the coefficient polynomial of `x_var^pow`: the sum of all terms
+    /// whose exponent in `var_index` equals `pow`, with that exponent zeroed
+    /// out. The result has the same number of variables and does not depend
+    /// on `var_index`.
+    pub fn coeff_of_var_pow(&self, var_index: usize, pow: usize) -> Self {
+        let mut result = Self::new(self.domain.clone(), self.n_vars);
+        for (exp, coeff) in &self.terms {
+            if exp.get(var_index).copied().unwrap_or(0) == pow {
+                let mut new_exp = exp.clone();
+                if var_index < new_exp.len() {
+                    new_exp[var_index] = 0;
+                }
+                result.terms.insert(new_exp, coeff.clone());
+            }
+        }
+        result
+    }
+
+    /// Return the leading coefficient when this polynomial is viewed as a
+    /// univariate polynomial in `var_index`. The result is a polynomial in
+    /// the remaining variables (same `n_vars`, exponent of `var_index` is 0).
+    pub fn leading_coeff_in(&self, var_index: usize) -> Self {
+        self.coeff_of_var_pow(var_index, self.degree_in(var_index))
+    }
+
+    /// Compute the formal partial derivative with respect to `var_index`.
+    pub fn derivative(&self, var_index: usize) -> Self {
+        let mut result = Self::new(self.domain.clone(), self.n_vars);
+        for (exp, coeff) in &self.terms {
+            let power = exp.get(var_index).copied().unwrap_or(0);
+            if power == 0 {
+                continue;
+            }
+            let mut new_exp = exp.clone();
+            new_exp[var_index] = power - 1;
+            let scalar = self.domain.cast_u64(power as u64);
+            let new_coeff = self.domain.mul(coeff, &scalar);
+            let existing = result
+                .terms
+                .get(&new_exp)
+                .cloned()
+                .unwrap_or_else(|| self.domain.zero());
+            let sum = self.domain.add(&existing, &new_coeff);
+            if self.domain.is_zero(&sum) {
+                result.terms.remove(&new_exp);
+            } else {
+                result.terms.insert(new_exp, sum);
+            }
+        }
+        result
+    }
+
+    /// Compute the Taylor coefficients in variable `var_index` around `a`:
+    /// `f = Σ_j t_j · (x_var - a)^j` where each `t_j` does not depend on
+    /// `var_index` (its exponent is zeroed).
+    ///
+    /// Returns `t_0, t_1, ..., t_d` with `d = degree_in(var_index)`.
+    pub fn taylor_coefficients(&self, var_index: usize, a: &D::Element) -> Vec<Self> {
+        let d = self.degree_in(var_index);
+        let mut coeffs = vec![Self::new(self.domain.clone(), self.n_vars); d + 1];
+        for (exp, coeff) in &self.terms {
+            let e = exp.get(var_index).copied().unwrap_or(0);
+            let mut base_exp = exp.clone();
+            if var_index < base_exp.len() {
+                base_exp[var_index] = 0;
+            }
+            // x_v^e = Σ_j binom(e, j) · a^(e-j) · (x_v - a)^j
+            for (j, t_j) in coeffs.iter_mut().enumerate().take(e + 1) {
+                let binom = self.domain.cast_u64(binomial(e, j));
+                let a_pow = self.domain.pow(a, (e - j) as u64);
+                let contrib = self.domain.mul(coeff, &self.domain.mul(&binom, &a_pow));
+                let existing = t_j
+                    .terms
+                    .get(&base_exp)
+                    .cloned()
+                    .unwrap_or_else(|| self.domain.zero());
+                let sum = self.domain.add(&existing, &contrib);
+                if self.domain.is_zero(&sum) {
+                    t_j.terms.remove(&base_exp);
+                } else {
+                    t_j.terms.insert(base_exp.clone(), sum);
+                }
+            }
+        }
+        coeffs
+    }
+
+    /// Drop variable 0, which must not occur in any term. Returns a
+    /// polynomial in `n_vars - 1` variables with indices shifted down.
+    ///
+    /// Panics in debug builds if variable 0 occurs with a non-zero exponent.
+    pub fn drop_main_var(&self) -> Self {
+        debug_assert!(
+            self.terms_ref()
+                .keys()
+                .all(|e| e.first().copied().unwrap_or(0) == 0),
+            "drop_main_var: variable 0 must not occur"
+        );
+        let new_n_vars = self.n_vars.saturating_sub(1);
+        let mut result = Self::new(self.domain.clone(), new_n_vars);
+        for (exp, coeff) in &self.terms {
+            if exp.first().copied().unwrap_or(0) != 0 {
+                continue;
+            }
+            let new_exp: SmallVec<[usize; 4]> = exp.iter().skip(1).copied().collect();
+            result.terms.insert(new_exp, coeff.clone());
+        }
+        result
+    }
+
+    /// Embed into one more variable by inserting a new variable 0 with
+    /// exponent 0 (all existing variable indices shift up by one).
+    pub fn embed_new_main(&self) -> Self {
+        let new_n_vars = self.n_vars + 1;
+        let mut result = Self::new(self.domain.clone(), new_n_vars);
+        for (exp, coeff) in &self.terms {
+            let mut new_exp = SmallVec::with_capacity(new_n_vars);
+            new_exp.push(0);
+            new_exp.extend(exp.iter().copied());
+            result.terms.insert(new_exp, coeff.clone());
+        }
+        result
+    }
+
+    /// Permute variables: the result's exponent at position `i` is the old
+    /// exponent at position `perm[i]`. `perm` must be a permutation of
+    /// `0..n_vars`.
+    pub fn permute_variables(&self, perm: &[usize]) -> Self {
+        assert_eq!(perm.len(), self.n_vars, "perm must be a permutation");
+        let mut result = Self::new(self.domain.clone(), self.n_vars);
+        for (exp, coeff) in &self.terms {
+            let mut new_exp = SmallVec::with_capacity(self.n_vars);
+            for &p in perm {
+                new_exp.push(exp.get(p).copied().unwrap_or(0));
+            }
+            result.terms.insert(new_exp, coeff.clone());
+        }
+        result
+    }
+
+    /// Divide this polynomial by `divisor`, returning the quotient only if
+    /// the division is exact (zero remainder).
+    pub fn checked_div_exact(&self, divisor: &Self) -> Option<Self> {
+        if divisor.is_zero() {
+            return None;
+        }
+        let (quot, rem) = self.div_rem_sparse(divisor);
+        if rem.is_zero() { Some(quot) } else { None }
+    }
+
+    /// Evaluate variable `var_index` at `value` while keeping the total
+    /// number of variables unchanged (the variable disappears from the
+    /// support but all indices are preserved).
+    ///
+    /// This is the substitution used by multivariate Hensel lifting, where
+    /// variable positions must stay fixed across recursion levels.
+    pub fn eval_keep(&self, var_index: usize, value: &D::Element) -> Self {
+        let mut result = Self::new(self.domain.clone(), self.n_vars);
+        for (exp, coeff) in &self.terms {
+            let power = self.domain.pow(value, exp[var_index] as u64);
+            let new_coeff = self.domain.mul(coeff, &power);
+            if self.domain.is_zero(&new_coeff) {
+                continue;
+            }
+            let mut new_exp = exp.clone();
+            new_exp[var_index] = 0;
+            let existing = result
+                .terms
+                .get(&new_exp)
+                .cloned()
+                .unwrap_or_else(|| self.domain.zero());
+            let sum = self.domain.add(&existing, &new_coeff);
+            if self.domain.is_zero(&sum) {
+                result.terms.remove(&new_exp);
+            } else {
+                result.terms.insert(new_exp, sum);
+            }
+        }
+        result
     }
 
     // ------------------------------------------------------------------
@@ -809,21 +994,28 @@ impl SparseMultivariatePolynomial<IntegerDomain, Lex> {
     /// assert!(factors.len() >= 2);
     /// ```
     pub fn factor(&self) -> Vec<(Self, usize)> {
-        bivariate_factor_z(self, 0, 1)
+        if self.n_vars() >= 3 {
+            crate::factor::eez::multivariate_factor_z(self)
+        } else {
+            bivariate_factor_z(self, 0, 1)
+        }
     }
 }
 
 impl SparseMultivariatePolynomial<FiniteField, Lex> {
-    /// Factor this bivariate polynomial over a prime finite field into
+    /// Factor this multivariate polynomial over a prime finite field into
     /// irreducible factors with multiplicities.
     ///
-    /// The current implementation treats the polynomial as univariate in the
-    /// first variable $x$ with coefficients in $\mathbb{F}_p[y]$ and uses
-    /// Hensel lifting. It succeeds when the leading coefficient in $x$ is a
-    /// field constant and the polynomial is square-free (or the derivative in
-    /// $x$ is non-zero).
+    /// Bivariate polynomials use the evaluation–Hensel path; polynomials in
+    /// three or more variables use EEZ Hensel lifting. Both currently require
+    /// the leading coefficient in the main variable to be a nonzero field
+    /// constant.
     pub fn factor(&self) -> Vec<(Self, usize)> {
-        bivariate_factor_fp(self, 0, 1)
+        if self.n_vars() >= 3 {
+            crate::factor::eez::multivariate_factor_fp(self)
+        } else {
+            bivariate_factor_fp(self, 0, 1)
+        }
     }
 }
 
@@ -844,6 +1036,24 @@ pub fn monomial_lcm(a: &[usize], b: &[usize]) -> SmallVec<[usize; 4]> {
 /// Return true if the two monomials are coprime (no variable appears in both).
 pub fn monomial_are_coprime(a: &[usize], b: &[usize]) -> bool {
     a.iter().zip(b.iter()).all(|(x, y)| *x == 0 || *y == 0)
+}
+
+/// Binomial coefficient `n choose k`.
+pub(crate) fn binomial(n: usize, k: usize) -> u64 {
+    if k > n {
+        return 0;
+    }
+    if k == 0 || k == n {
+        return 1;
+    }
+    let k = k.min(n - k);
+    let mut num = 1u64;
+    let mut den = 1u64;
+    for i in 0..k {
+        num *= (n - i) as u64;
+        den *= (i + 1) as u64;
+    }
+    num / den
 }
 
 #[cfg(test)]

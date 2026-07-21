@@ -886,3 +886,472 @@ mod tests {
         }
     }
 }
+
+// =========================================================================
+// Multivariate GCD (arbitrary number of variables)
+// =========================================================================
+//
+// Dense recursive evaluation–interpolation GCD: treat the polynomials as
+// univariate in variable 0, evaluate the last variable at successive points,
+// compute the GCD recursively in one fewer variable, and interpolate the
+// coefficients back. Correctness is verified by trial division, so unlucky
+// evaluation points only cost extra iterations.
+//
+// References: Brown (1971); Geddes, Czapor, Labahn, *Algorithms for Computer
+// Algebra*, §7.
+
+use ocas_domain::{Rational, RationalDomain};
+
+/// Sparse multivariate polynomial over the rationals (auxiliary for the
+/// integer multivariate GCD).
+pub type QMPoly = SparseMultivariatePolynomial<RationalDomain, Lex>;
+
+/// Convert a sparse polynomial that only involves variable 0 into a dense
+/// univariate polynomial in that variable.
+fn mpoly_to_dense_x<D: Domain>(
+    p: &SparseMultivariatePolynomial<D, Lex>,
+) -> DenseUnivariatePolynomial<D> {
+    let mut coeffs = Vec::new();
+    for (exp, c) in p.terms_ref() {
+        let idx = exp.first().copied().unwrap_or(0);
+        if idx >= coeffs.len() {
+            coeffs.resize(idx + 1, p.domain().zero());
+        }
+        coeffs[idx] = p.domain().add(&coeffs[idx], c);
+    }
+    DenseUnivariatePolynomial::from_coeffs(p.domain().clone(), coeffs)
+}
+
+/// Wrap a dense univariate polynomial as a sparse polynomial in `n_vars`
+/// variables (variable 0 is the polynomial variable).
+fn dense_to_mpoly_x<D: Domain>(
+    g: &DenseUnivariatePolynomial<D>,
+    n_vars: usize,
+) -> SparseMultivariatePolynomial<D, Lex> {
+    let mut result = SparseMultivariatePolynomial::new(g.domain().clone(), n_vars);
+    for (i, c) in g.coeffs().iter().enumerate() {
+        if !g.domain().is_zero(c) {
+            let mut exp = vec![0usize; n_vars];
+            exp[0] = i;
+            result.set_term_external(exp, c.clone());
+        }
+    }
+    result
+}
+
+/// Scale a polynomial so that its Lex-leading coefficient is 1.
+///
+/// Requires the coefficient domain to be a field (every nonzero element must
+/// have an inverse).
+fn normalize_unit_lc<D: Domain>(
+    p: &SparseMultivariatePolynomial<D, Lex>,
+) -> SparseMultivariatePolynomial<D, Lex> {
+    if p.is_zero() {
+        return p.clone();
+    }
+    let lc = p.leading_coeff().cloned().unwrap();
+    if p.domain().is_one(&lc) {
+        return p.clone();
+    }
+    let inv = p
+        .domain()
+        .inv(&lc)
+        .expect("normalize_unit_lc: coefficient domain must be a field");
+    p.mul_scalar(&inv)
+}
+
+/// GCD of the coefficient polynomials of `x_0^k` for `k = 0..=deg`, returned
+/// as a polynomial in the remaining `n_vars - 1` variables.
+fn gcd_content_main<D: EuclideanDomain>(
+    f: &SparseMultivariatePolynomial<D, Lex>,
+) -> Option<SparseMultivariatePolynomial<D, Lex>> {
+    let d = f.degree_in(0);
+    let mut acc = f.coeff_of_var_pow(0, 0).drop_main_var();
+    for k in 1..=d {
+        if acc.is_zero() {
+            acc = f.coeff_of_var_pow(0, k).drop_main_var();
+            continue;
+        }
+        let ck = f.coeff_of_var_pow(0, k).drop_main_var();
+        if ck.is_zero() {
+            continue;
+        }
+        acc = multivariate_gcd_field(&acc, &ck)?;
+        if acc.total_degree() == Some(0) {
+            break;
+        }
+    }
+    Some(acc)
+}
+
+/// Multivariate GCD over a field via dense recursive
+/// evaluation–interpolation. Both inputs must have the same number of
+/// variables; the result is normalized to have Lex-leading coefficient 1.
+///
+/// Returns `None` if the heuristic fails (e.g. the field is too small to
+/// provide enough distinct evaluation points).
+pub fn multivariate_gcd_field<D: EuclideanDomain>(
+    a: &SparseMultivariatePolynomial<D, Lex>,
+    b: &SparseMultivariatePolynomial<D, Lex>,
+) -> Option<SparseMultivariatePolynomial<D, Lex>> {
+    if a.is_zero() {
+        return Some(normalize_unit_lc(b));
+    }
+    if b.is_zero() {
+        return Some(normalize_unit_lc(a));
+    }
+    if a.n_vars() != b.n_vars() {
+        return None;
+    }
+    let v = a.n_vars();
+    if v == 0 {
+        let mut one = SparseMultivariatePolynomial::new(a.domain().clone(), 0);
+        one.set_term_external(vec![], a.domain().one());
+        return Some(one);
+    }
+    if v == 1 {
+        let g = mpoly_to_dense_x(a).gcd(&mpoly_to_dense_x(b));
+        return Some(normalize_unit_lc(&dense_to_mpoly_x(&g, 1)));
+    }
+
+    // Contents in the main variable (polynomials in the remaining v-1 vars).
+    let ca = gcd_content_main(a)?;
+    let cb = gcd_content_main(b)?;
+    let cont = multivariate_gcd_field(&ca, &cb)?.embed_new_main();
+    let pa = a.checked_div_exact(&ca.embed_new_main())?;
+    let pb = b.checked_div_exact(&cb.embed_new_main())?;
+
+    if pa.degree_in(0) == 0 || pb.degree_in(0) == 0 {
+        return Some(normalize_unit_lc(&cont));
+    }
+
+    let last = v - 1;
+    let deg_bound = pa.degree_in(last).min(pb.degree_in(last));
+    let mut images: Vec<(D::Element, SparseMultivariatePolynomial<D, Lex>)> = Vec::new();
+    let mut used: Vec<D::Element> = Vec::new();
+    let mut min_d0 = usize::MAX;
+    let mut needed = deg_bound + 1;
+    let max_attempts = needed + 80;
+
+    for t in 0..max_attempts {
+        let alpha = a.domain().cast_u64(t as u64);
+        if used.contains(&alpha) {
+            // Field exhausted: no more distinct evaluation points.
+            if t > max_attempts / 2 {
+                break;
+            }
+            continue;
+        }
+        used.push(alpha.clone());
+
+        let ia = pa.eval(last, &alpha);
+        let ib = pb.eval(last, &alpha);
+        if ia.degree_in(0) != pa.degree_in(0) || ib.degree_in(0) != pb.degree_in(0) {
+            continue; // leading coefficient vanished — unlucky point
+        }
+        let g = multivariate_gcd_field(&ia, &ib)?;
+        let d0 = g.degree_in(0);
+        if d0 > min_d0 {
+            continue;
+        }
+        if d0 < min_d0 {
+            images.clear();
+            min_d0 = d0;
+        }
+        if d0 == 0 {
+            return Some(normalize_unit_lc(&cont));
+        }
+        images.push((alpha, g));
+
+        if images.len() >= needed {
+            if let Some(cand) = interpolate_gcd_images::<D>(&images, v) {
+                let cand = normalize_unit_lc(&cand);
+                // Strip spurious content introduced by interpolation.
+                let cc = gcd_content_main(&cand)?;
+                let cpp = cand.checked_div_exact(&cc.embed_new_main())?;
+                if pa.checked_div_exact(&cpp).is_some() && pb.checked_div_exact(&cpp).is_some() {
+                    return Some(normalize_unit_lc(&cont.mul(&cpp)));
+                }
+            }
+            needed += 1; // interpolation/trial failed — collect more points
+        }
+    }
+    None
+}
+
+/// Interpolate a polynomial in `v` variables from images that are
+/// polynomials in `v - 1` variables evaluated at successive points of the
+/// last variable.
+fn interpolate_gcd_images<D: Domain>(
+    images: &[(D::Element, SparseMultivariatePolynomial<D, Lex>)],
+    v: usize,
+) -> Option<SparseMultivariatePolynomial<D, Lex>> {
+    if images.is_empty() {
+        return None;
+    }
+    let domain = images[0].1.domain().clone();
+    let mut result = SparseMultivariatePolynomial::new(domain.clone(), v);
+
+    // Union of exponent patterns (length v-1) across all images.
+    let mut support: Vec<smallvec::SmallVec<[usize; 4]>> = Vec::new();
+    for (_, g) in images {
+        for exp in g.terms_ref().keys() {
+            if !support.contains(exp) {
+                support.push(exp.clone());
+            }
+        }
+    }
+
+    for e in support {
+        let points: Vec<(D::Element, D::Element)> = images
+            .iter()
+            .map(|(a, g)| (a.clone(), g.coeff(&e)))
+            .collect();
+        let coeffs = lagrange_interp::<D>(&domain, &points)?;
+        for (j, c) in coeffs.iter().enumerate() {
+            if domain.is_zero(c) {
+                continue;
+            }
+            let mut exp = vec![0usize; v];
+            exp[..v - 1].copy_from_slice(&e);
+            exp[v - 1] = j;
+            let existing = result.coeff(&exp);
+            let sum = domain.add(&existing, c);
+            result.set_term_external(exp, sum);
+        }
+    }
+    Some(result)
+}
+
+/// Lagrange interpolation over a field domain: given points `(x_i, y_i)`,
+/// return ascending coefficients of the interpolating polynomial.
+fn lagrange_interp<D: Domain>(
+    domain: &D,
+    points: &[(D::Element, D::Element)],
+) -> Option<Vec<D::Element>> {
+    let n = points.len();
+    if n == 0 {
+        return Some(Vec::new());
+    }
+    let mut result = vec![domain.zero(); n];
+    for i in 0..n {
+        let xi = &points[i].0;
+        let yi = &points[i].1;
+        // denominator = Π_{j≠i} (x_i - x_j)
+        let mut denom = domain.one();
+        for (j, _) in points.iter().enumerate() {
+            if j == i {
+                continue;
+            }
+            denom = domain.mul(&denom, &domain.sub(xi, &points[j].0));
+        }
+        let scale = domain.div(yi, &denom)?;
+        // basis = Π_{j≠i} (x - x_j), ascending coefficients
+        let mut basis = vec![domain.one()];
+        for (j, _) in points.iter().enumerate() {
+            if j == i {
+                continue;
+            }
+            let neg_xj = domain.neg(&points[j].0);
+            let mut new_basis = vec![domain.zero(); basis.len() + 1];
+            for (k, b) in basis.iter().enumerate() {
+                new_basis[k] = domain.add(&new_basis[k], &domain.mul(&neg_xj, b));
+                new_basis[k + 1] = domain.add(&new_basis[k + 1], b);
+            }
+            basis = new_basis;
+        }
+        for (k, b) in basis.iter().enumerate().take(n) {
+            result[k] = domain.add(&result[k], &domain.mul(&scale, b));
+        }
+    }
+    Some(result)
+}
+
+/// Convert a sparse integer polynomial to a sparse rational polynomial.
+fn zmpoly_to_qmpoly(f: &ZMPoly) -> QMPoly {
+    QMPoly::from_terms(
+        RationalDomain,
+        f.n_vars(),
+        f.terms_ref()
+            .iter()
+            .map(|(e, c)| (e.to_vec(), Rational::from_integer(c.clone())))
+            .collect(),
+    )
+}
+
+/// Convert a sparse rational polynomial to a primitive integer polynomial by
+/// clearing denominators (multiply by the LCM of all denominators).
+fn qmpoly_to_primitive_zmpoly(f: &QMPoly) -> ZMPoly {
+    let mut lcm = BigInt::one();
+    for c in f.terms_ref().values() {
+        let d = c.denom().to_bigint();
+        let g = bigint_gcd(&lcm, &d);
+        lcm = lcm * d / g;
+    }
+    let terms: Vec<(Vec<usize>, Integer)> = f
+        .terms_ref()
+        .iter()
+        .map(|(e, c)| {
+            let scale = &lcm / c.denom().to_bigint();
+            (e.to_vec(), Integer::from(c.numer().to_bigint() * scale))
+        })
+        .collect();
+    ZMPoly::from_terms(IntegerDomain, f.n_vars(), terms).primitive_part()
+}
+
+/// Negate the polynomial if its Lex-leading coefficient is negative.
+fn make_lc_positive(f: ZMPoly) -> ZMPoly {
+    match f.leading_coeff() {
+        Some(lc) if lc.is_negative() => f.neg(),
+        _ => f,
+    }
+}
+
+/// Multivariate GCD over the integers (arbitrary number of variables).
+///
+/// Computes the GCD of the primitive parts over ℚ via
+/// [`multivariate_gcd_field`] (evaluation–interpolation), then clears
+/// denominators and reattaches the integer content GCD. The result is
+/// primitive with a positive Lex-leading coefficient.
+///
+/// Returns `None` if the heuristic fails (unlucky evaluation points).
+pub fn multivariate_gcd_z(a: &ZMPoly, b: &ZMPoly) -> Option<ZMPoly> {
+    if a.is_zero() {
+        return Some(make_lc_positive(b.primitive_part()));
+    }
+    if b.is_zero() {
+        return Some(make_lc_positive(a.primitive_part()));
+    }
+    if a.n_vars() != b.n_vars() {
+        return None;
+    }
+    let v = a.n_vars();
+    if v == 0 {
+        return Some(ZMPoly::from_terms(
+            IntegerDomain,
+            0,
+            vec![(vec![], Integer::from(1))],
+        ));
+    }
+    if v == 1 {
+        let g = mpoly_to_dense_x(a).gcd(&mpoly_to_dense_x(b));
+        return Some(make_lc_positive(dense_to_mpoly_x(&g, 1).primitive_part()));
+    }
+
+    let content_gcd = IntegerDomain.gcd(&a.content(), &b.content());
+    let pa = a.primitive_part();
+    let pb = b.primitive_part();
+    let qa = zmpoly_to_qmpoly(&pa);
+    let qb = zmpoly_to_qmpoly(&pb);
+    let gq = multivariate_gcd_field(&qa, &qb)?;
+    let gz = make_lc_positive(qmpoly_to_primitive_zmpoly(&gq));
+
+    // Safety net: the candidate must divide both primitive parts.
+    pa.checked_div_exact(&gz)?;
+    pb.checked_div_exact(&gz)?;
+
+    let result = gz.mul_scalar(&content_gcd);
+    Some(make_lc_positive(result))
+}
+
+/// Multivariate GCD over a prime finite field (arbitrary number of
+/// variables). The result is normalized to have Lex-leading coefficient 1.
+///
+/// Returns `None` if the field is too small for enough distinct evaluation
+/// points.
+pub fn multivariate_gcd_fp(a: &FpMPoly, b: &FpMPoly) -> Option<FpMPoly> {
+    multivariate_gcd_field(a, b)
+}
+
+#[cfg(test)]
+mod nvar_gcd_tests {
+    use super::*;
+
+    fn zmp(n_vars: usize, terms: &[(Vec<usize>, i64)]) -> ZMPoly {
+        ZMPoly::from_terms(
+            IntegerDomain,
+            n_vars,
+            terms
+                .iter()
+                .map(|(e, c)| (e.clone(), Integer::from(*c)))
+                .collect(),
+        )
+    }
+
+    /// (x + y + z) as a trivariate polynomial.
+    fn xyz_plus() -> ZMPoly {
+        zmp(
+            3,
+            &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], 1)],
+        )
+    }
+
+    #[test]
+    fn gcd_trivariate_shared_factor() {
+        // a = (x + y + z)(x + 1), b = (x + y + z)(y + 2)
+        let g_true = xyz_plus();
+        let f1 = zmp(3, &[(vec![1, 0, 0], 1), (vec![0, 0, 0], 1)]); // x + 1
+        let f2 = zmp(3, &[(vec![0, 1, 0], 1), (vec![0, 0, 0], 2)]); // y + 2
+        let a = g_true.mul(&f1);
+        let b = g_true.mul(&f2);
+        let g = multivariate_gcd_z(&a, &b).expect("trivariate gcd should succeed");
+        assert!(
+            g == g_true || g == g_true.neg(),
+            "gcd should be x + y + z, got {:?}",
+            g
+        );
+    }
+
+    #[test]
+    fn gcd_trivariate_coprime() {
+        // gcd(x + y, z + 1) = 1
+        let a = zmp(3, &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1)]);
+        let b = zmp(3, &[(vec![0, 0, 1], 1), (vec![0, 0, 0], 1)]);
+        let g = multivariate_gcd_z(&a, &b).expect("gcd should succeed");
+        assert_eq!(
+            g.total_degree(),
+            Some(0),
+            "coprime polys should have constant gcd"
+        );
+    }
+
+    #[test]
+    fn gcd_trivariate_with_content() {
+        // a = 2(x + y + z)(x + 1), b = 4(x + y + z)(y + 2): gcd = 2(x+y+z)
+        let g_true = xyz_plus();
+        let f1 = zmp(3, &[(vec![1, 0, 0], 2), (vec![0, 0, 0], 2)]);
+        let f2 = zmp(3, &[(vec![0, 1, 0], 4), (vec![0, 0, 0], 8)]);
+        let a = g_true.mul(&f1);
+        let b = g_true.mul(&f2);
+        let g = multivariate_gcd_z(&a, &b).expect("gcd should succeed");
+        let expected = g_true.mul_scalar(&Integer::from(2));
+        assert!(
+            g == expected || g == expected.neg(),
+            "gcd should be 2(x + y + z), got {:?}",
+            g
+        );
+    }
+
+    #[test]
+    fn gcd_trivariate_fp() {
+        // Over ℤ_7: a = (x + y + z)(x + 1), b = (x + y + z)(y + 2)
+        let field = FiniteField::new(BigInt::from(7));
+        let mk = |terms: &[(Vec<usize>, i64)]| {
+            FpMPoly::from_terms(
+                field.clone(),
+                3,
+                terms
+                    .iter()
+                    .map(|(e, c)| (e.clone(), field.element(BigInt::from(*c))))
+                    .collect(),
+            )
+        };
+        let g_true = mk(&[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], 1)]);
+        let f1 = mk(&[(vec![1, 0, 0], 1), (vec![0, 0, 0], 1)]);
+        let f2 = mk(&[(vec![0, 1, 0], 1), (vec![0, 0, 0], 2)]);
+        let a = g_true.mul(&f1);
+        let b = g_true.mul(&f2);
+        let g = multivariate_gcd_fp(&a, &b).expect("fp gcd should succeed");
+        assert_eq!(g, g_true, "gcd over F_7 should be x + y + z");
+    }
+}

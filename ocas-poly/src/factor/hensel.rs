@@ -15,7 +15,7 @@
 //! References: Zassenhaus (1969); Geddes, Czapor, Labahn, *Algorithms for
 //! Computer Algebra*; Knuth, TAOCP vol. 2 §4.6.2.
 
-use ocas_domain::{Domain, FiniteField, Integer, IntegerDomain, number_theory};
+use ocas_domain::{Domain, EuclideanDomain, FiniteField, Integer, IntegerDomain, number_theory};
 
 use crate::dense::DenseUnivariatePolynomial;
 use crate::factor::finite_field::{self, FpPoly};
@@ -263,13 +263,9 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &Integer) -> Vec<ZPo
         return Vec::new();
     }
     let one = f.one();
-    let lc_f = f
-        .leading_coeff()
-        .cloned()
-        .unwrap_or_else(|| Integer::from(1));
-    let lc_f_abs = lc_f.abs();
     let mut remaining: Vec<ZPoly> = lifted.to_vec();
     let mut result = Vec::new();
+    let mut rest = f.clone();
     let mut size = 1usize;
     while size <= remaining.len() && !remaining.is_empty() {
         let n = remaining.len();
@@ -279,31 +275,52 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &Integer) -> Vec<ZPo
             for &idx in &combo {
                 prod = prod.mul(&remaining[idx]);
             }
-            // Reduce into the symmetric range so that the candidate equals the
-            // true integer factor (whose coefficients fit in (-B/2, B/2]).
-            let candidate = reduce_symmetric(&prod, modulus);
-            // Try attaching each divisor of the leading coefficient in case the
-            // true factor is not monic.
-            for d in divisors(&lc_f_abs) {
-                let scaled = candidate.mul_scalar(&d);
-                if let Some((_, r)) = f.div_rem(&scaled)
-                    && r.is_zero()
-                    && !scaled.is_one()
-                {
-                    result.push(scaled);
-                    let mut nr = Vec::new();
-                    for (i, fac) in remaining.iter().enumerate() {
-                        if !combo.contains(&i) {
-                            nr.push(fac.clone());
-                        }
-                    }
-                    remaining = nr;
-                    found = true;
-                    size = 1;
-                    break;
-                }
+            // Scale by the leading coefficient of the current cofactor, then
+            // take the primitive part: a true integer factor g satisfies
+            // lc(rest)·∏(subset) = c·g for some content c (Zassenhaus).
+            let scaled = prod.mul_scalar(
+                &rest
+                    .leading_coeff()
+                    .cloned()
+                    .unwrap_or_else(|| Integer::from(1)),
+            );
+            let candidate = reduce_symmetric(&scaled, modulus);
+            let content = candidate
+                .coeffs()
+                .iter()
+                .fold(Integer::from(0), |acc, c| IntegerDomain.gcd(&acc, &c.abs()));
+            let content = if content.is_zero() {
+                Integer::from(1)
+            } else {
+                content.abs()
+            };
+            let primitive = if content == Integer::from(1) {
+                candidate.clone()
+            } else {
+                let coeffs = candidate
+                    .coeffs()
+                    .iter()
+                    .map(|c| IntegerDomain.div(c, &content).unwrap_or_else(|| c.clone()))
+                    .collect();
+                ZPoly::from_coeffs(IntegerDomain, coeffs)
+            };
+            if primitive.is_one() || primitive.is_zero() {
+                continue;
             }
-            if found {
+            if let Some((q, r)) = rest.div_rem(&primitive)
+                && r.is_zero()
+            {
+                result.push(primitive);
+                let mut nr = Vec::new();
+                for (i, fac) in remaining.iter().enumerate() {
+                    if !combo.contains(&i) {
+                        nr.push(fac.clone());
+                    }
+                }
+                remaining = nr;
+                rest = q;
+                found = true;
+                size = 1;
                 break;
             }
         }
@@ -311,56 +328,48 @@ fn zassenhaus_combine(f: &ZPoly, lifted: &[ZPoly], modulus: &Integer) -> Vec<ZPo
             size += 1;
         }
     }
-    for fac in remaining {
-        if !fac.is_one() {
-            result.push(fac);
+    // The final cofactor is the last factor (primitive part).
+    if !rest.is_one() && !rest.is_zero() {
+        let content = rest
+            .coeffs()
+            .iter()
+            .fold(Integer::from(0), |acc, c| IntegerDomain.gcd(&acc, &c.abs()));
+        let content = if content.is_zero() {
+            Integer::from(1)
+        } else {
+            content.abs()
+        };
+        let last = if content == Integer::from(1) {
+            rest.clone()
+        } else {
+            let coeffs = rest
+                .coeffs()
+                .iter()
+                .map(|c| IntegerDomain.div(c, &content).unwrap_or_else(|| c.clone()))
+                .collect();
+            ZPoly::from_coeffs(IntegerDomain, coeffs)
+        };
+        if !last.is_one() {
+            result.push(last);
         }
     }
     result
 }
 
-/// All positive divisors of a positive integer in ascending order.
-fn divisors(n: &Integer) -> Vec<Integer> {
-    if n <= &Integer::from(0) {
-        return Vec::new();
-    }
-    let mut divs = vec![Integer::from(1)];
-    let mut remaining = n.clone();
-    let mut p = Integer::from(2);
-    while &p * &p <= remaining {
-        let mut count = 0u32;
-        while (&remaining % &p).is_zero() {
-            remaining /= &p;
-            count += 1;
-        }
-        if count > 0 {
-            let current = divs.clone();
-            for d in current {
-                for e in 1..=count {
-                    let factor = &d * &p.pow_u32(e);
-                    divs.push(factor);
-                }
-            }
-        }
-        p += &Integer::from(1);
-    }
-    if remaining > Integer::from(1) {
-        let current = divs.clone();
-        for d in current {
-            divs.push(&d * &remaining);
-        }
-    }
-    divs.sort();
-    divs
-}
-
 /// Factor a monic square-free polynomial over $\mathbb{Z}$ into monic
-/// irreducible factors.
+/// irreducible factors. The input must be monic in its leading variable;
+/// non-monic polynomials are returned unfactored (the multivariate driver
+/// works over a finite field where monic normalization is always possible).
 pub fn factor_square_free_monic(f: &ZPoly) -> Vec<ZPoly> {
     if f.degree().unwrap_or(0) == 0 {
         return Vec::new();
     }
     if f.degree() == Some(1) {
+        return vec![f.clone()];
+    }
+    let lc_abs = f.leading_coeff().unwrap().abs();
+    if lc_abs != Integer::from(1) {
+        // Hensel lifting below assumes a monic leading coefficient.
         return vec![f.clone()];
     }
     let bound = mignotte_bound(f);
@@ -399,6 +408,83 @@ pub fn factor_square_free_monic(f: &ZPoly) -> Vec<ZPoly> {
     vec![f.clone()]
 }
 
+/// Factor a square-free (not necessarily monic) primitive polynomial over
+/// $\mathbb{Z}$ into irreducible factors.
+///
+/// Non-monic inputs are handled by the leading-coefficient transformation:
+/// for $f$ of degree $d$ with leading coefficient $a$, the polynomial
+/// $a^{d-1} f(x/a)$ is monic and is factored via [`factor_square_free_monic`];
+/// each monic factor $G$ maps back to the primitive part of $G(a x)$.
+pub fn factor_square_free(f: &ZPoly) -> Vec<ZPoly> {
+    let d = f.degree().unwrap_or(0);
+    if d == 0 {
+        return Vec::new();
+    }
+    if d == 1 {
+        return vec![f.clone()];
+    }
+    let a = f.leading_coeff().cloned().unwrap();
+    if a.abs() == Integer::from(1) {
+        return factor_square_free_monic(f);
+    }
+    // g(x) = a^{d-1} f(x/a) = Σ_k c_k·a^{d-1-k}·x^k. For k = d this is
+    // c_d·a^{-1} = a/a = 1, so g is monic; for k < d, g_k = c_k·a^{d-1-k}.
+    let mut g_coeffs = vec![Integer::from(0); d + 1];
+    for (k, c) in f.coeffs().iter().enumerate().take(d + 1) {
+        if IntegerDomain.is_zero(c) {
+            continue;
+        }
+        g_coeffs[k] = if k == d {
+            Integer::from(1)
+        } else {
+            IntegerDomain.mul(c, &a.pow_u32((d - 1 - k) as u32))
+        };
+    }
+    let g = ZPoly::from_coeffs(IntegerDomain, g_coeffs);
+    let monic_factors = factor_square_free_monic(&g);
+    if monic_factors.len() <= 1 && g != *f {
+        // Transformation produced no split; try direct (monic-only) as a
+        // fallback for degenerate cases.
+        return vec![f.clone()];
+    }
+    // Map back: H(x) = primitive part of G(a x).
+    let mut out = Vec::new();
+    for gm in &monic_factors {
+        let mut h = ZPoly::from_coeffs(IntegerDomain, vec![Integer::from(0)]);
+        for (k, c) in gm.coeffs().iter().enumerate() {
+            if IntegerDomain.is_zero(c) {
+                continue;
+            }
+            let a_pow = a.pow_u32(k as u32);
+            let coeff = IntegerDomain.mul(c, &a_pow);
+            let term = ZPoly::from_coeffs(IntegerDomain, {
+                let mut v = vec![Integer::from(0); k + 1];
+                v[k] = coeff;
+                v
+            });
+            h = h.add(&term);
+        }
+        let hp = h.primitive_part();
+        // Normalize sign so the leading coefficient matches f's sign pattern.
+        if hp.leading_coeff().is_some_and(|l| l.is_negative()) {
+            out.push(hp.mul_scalar(&Integer::from(-1)));
+        } else {
+            out.push(hp);
+        }
+    }
+    // Verify reconstruction; fall back to unfactored on any mismatch.
+    let mut prod = f.one();
+    for h in &out {
+        prod = prod.mul(h);
+    }
+    let (q, r) = f.div_rem(&prod).unwrap_or((f.zero(), f.clone()));
+    if r.is_zero() && q.degree() == Some(0) {
+        out
+    } else {
+        vec![f.clone()]
+    }
+}
+
 /// Factor a primitive polynomial over $\mathbb{Z}$ into irreducible factors
 /// with multiplicities, using square-free factorization (characteristic 0,
 /// so the generic Yun algorithm applies) followed by
@@ -420,7 +506,7 @@ pub fn factor_primitive(f: &ZPoly) -> Vec<(ZPoly, usize)> {
             Integer::from(1i64)
         };
         let g_pos = g.mul_scalar(&sign);
-        for irr in factor_square_free_monic(&g_pos.primitive_part()) {
+        for irr in factor_square_free(&g_pos.primitive_part()) {
             result.push((irr, mult));
         }
     }
