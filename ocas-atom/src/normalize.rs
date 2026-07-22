@@ -47,9 +47,13 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
             let mut flat = Vec::new();
             collect_add(&normalized_children, &mut flat);
             let mut normalized = flat;
+            // Drop explicit zero terms first (covers the common `x + 0` case),
+            // then sort and merge numeric literals. Merging can itself produce
+            // a new zero (e.g. `93 + -93`), so drop zeros AGAIN after merging.
             normalized.retain(|a| !matches!(a.node(), AtomNode::Num(0)));
             normalized.sort();
             merge_numbers(ctx, &mut normalized, true);
+            normalized.retain(|a| !matches!(a.node(), AtomNode::Num(0)));
             if normalized.is_empty() {
                 ctx.num(0)
             } else if normalized.len() == 1 {
@@ -71,9 +75,13 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
             {
                 return ctx.num(0);
             }
+            // Drop explicit unit terms first, then sort and merge numeric
+            // literals. Merging can produce a new unit (e.g. `-1 * -1 = 1`),
+            // so drop units AGAIN after merging — mirrors the Add branch.
             normalized.retain(|a| !matches!(a.node(), AtomNode::Num(1)));
             normalized.sort();
             merge_numbers(ctx, &mut normalized, false);
+            normalized.retain(|a| !matches!(a.node(), AtomNode::Num(1)));
             if normalized.is_empty() {
                 ctx.num(1)
             } else if normalized.len() == 1 {
@@ -157,6 +165,34 @@ mod tests {
         let inner = ctx.add(&[x, y]);
         let outer = ctx.add(&[inner, z]);
         assert_eq!(normalize(&ctx, outer).to_string(), "x + y + z");
+    }
+
+    #[test]
+    fn normalize_drops_zero_from_opposite_numerics() {
+        // `93 + (-93) + sin(x)` must collapse to `sin(x)`: the two numerics
+        // merge to 0, which must then be dropped (regression for the
+        // retain-before-merge ordering bug found by proptest).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let sinx = ctx.fun("sin", &[x]);
+        let a1 = ctx.add(&[ctx.num(93)]);
+        let a2 = ctx.add(&[ctx.num(-93)]);
+        let atom = ctx.add(&[a1, a2, sinx]);
+        assert_eq!(normalize(&ctx, atom).to_string(), "sin(x)");
+    }
+
+    #[test]
+    fn normalize_drops_unit_from_opposite_numerics() {
+        // `(-1) * ((-1) * x)` must collapse to `x`: the two units merge to 1,
+        // which must then be dropped.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let neg1 = ctx.num(-1);
+        let inner = ctx.mul(&[x, neg1]);
+        let atom = ctx.mul(&[neg1, inner]);
+        assert_eq!(normalize(&ctx, atom).to_string(), "x");
     }
 
     #[test]

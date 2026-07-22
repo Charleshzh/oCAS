@@ -593,6 +593,60 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 
 ---
 
+### 0.18.1 — 0.18.0 三项能力的 Python/C 绑定补齐（已发布）
+
+**目标**：0.18.0 新增的数值积分（Vegas）、双数自动微分（HyperDual）、张量基础
+（Tensor）三项能力仅有 Rust API，缺 Python/C 绑定，违背纵向切片原则（每版交付
+算法 + Rust API + Python/C 绑定 + 测试 + 文档）。本版仿 0.17.1（代数数域）模式
+补齐这三项的 `ocas-py` + `ocas-c` 绑定 + 测试 + prelude 导出，使顶层 API 完整。
+完成后 1.0.0 仅做冻结与发布工程。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| Python 绑定 — 数值积分 | 0.17.1 algebraic 模式 | `ocas-py::numeric`（`Vegas` 类 + `integrate_1d` 函数 + Python callable 桥接） | [x] |
+| C/C++ 绑定 — 数值积分 | FFI callback 经典模式 | `ocas-c::numeric`（`OcasVegas` 句柄 + `ocas_vegas_*` + `ocas_integrate_1d` + `ocas_integrand_t` 函数指针 + `void* user_data`） | [x] |
+| Python 绑定 — 张量基础 | expression.rs arena-leak 模式 | `ocas-py::tensor`（`Tensor` 类 + `contract_tensors` + `tensor_symmetrise_sign`；每张量自管理 arena） | [x] |
+| C/C++ 绑定 — 张量基础 | 同上 | `ocas-c::tensor`（`OcasTensor`/`OcasTensorContraction` 句柄 + `ocas_tensor_*`；slots 字符串 `"label,position;..."`） | [x] |
+| Python 绑定 — 双数 AD | algebraic 值类型模式 | `ocas-py::dual`（`DualShape` + `HyperDual` 类 + 算术 dunder；系数 int 或 `(num,den)`） | [x] |
+| C/C++ 绑定 — 双数 AD | algebraic 字符串约定模式 | `ocas-c::dual`（`OcasDualShape`/`OcasHyperDual` 句柄 + `ocas_dual_*`；系数字符串 `"num"`/`"num/den"`） | [x] |
+| prelude 补齐 | 0.6.0 稳定 prelude 纪律 | `ocas::prelude` 新增张量/双数/`StatisticsAccumulator` 导出 | [x] |
+
+**实现说明**
+
+- **张量 arena 管理**：`contract_tensors` 在函数内分配一次性共享 arena（DropGuard
+  保证回收），把结果因子重建到各自独立 arena 的 `PyTensor` 中，避免跨对象生命周期
+  耦合。C 端 `ocas_tensor_contract` 同策略。
+- **双数 AD 限制**：`HyperDual` 仅 `Rational` 系数（`DualCoeff` 仅 `Rational` 实现），
+  仅多项式/有理算术（`+ − × ÷`、一元负号）；不支持超越函数（sin/exp/log）与 `pow`。
+  Python 端用重复乘法实现整数幂；C 端系数字符串约定 `"num"` 或 `"num/den"`。
+- **pyo3 0.29 注意事项**：`#[pyclass] + Clone` 类型加 `skip_from_py_object`；
+  `Python::attach`（非 `with_gil`）；`PyErr::take(py)`（非 `taken`）；`PyErr::restore(self, py)`；
+  `PyList::new`/`PyFloat::new` 返回 `PyResult<Bound<_>>`。
+- **Rust 2024**：`#[no_mangle]` 必须写成 `#[unsafe(no_mangle)]`。
+- **C 头文件**：`include/ocas.h` 手工同步（build.rs 只写 `OUT_DIR`，避免 `cargo publish` 冲突）。
+- **clippy 修复**：`Box<Arc<DualShape>>` → `DualShapeStore { shape: Arc<DualShape> }`
+  包装结构体（避免 `box_collection` lint）；`!(b > a)` → `a.partial_cmp(&b) != Some(Less)`
+  （避免 `neg_cmp_op_on_partial_ord`）；`from_base` 加 `#[allow(wrong_self_convention)]`
+  （保持 Python API 名与底层 Rust API 一致）。
+
+**验收**
+
+- [x] `cargo test --workspace --exclude ocas-py` 全绿（含 c_api.rs 31 项新增：numeric 10 + tensor 10 + dual 11）。
+- [x] `maturin develop` + `pytest ocas-tests/tests/python/` 全绿（41 项新增：numeric 14 + tensor 13 + dual 14；总计 131 项无回归）。
+- [x] `cargo clippy --workspace --all-targets -- -D warnings` 零警告。
+- [x] `cargo fmt --all -- --check` 干净。
+- [x] `cargo deny check` 通过（无新依赖，`ocas-eval` 已在 workspace）。
+- [x] `include/ocas.h` 已手工同步新增类型与函数原型。
+- [x] workspace 版本提升 0.18.0 → 0.18.1（13 crate，14 处）。
+- [x] CHANGELOG / ROADMAP / EVOLUTION_PLAN / GAP_ANALYSIS 双语同步。
+
+**明确未做**：fuel 资源控制的 Python/C 绑定；Vegas 多通道/嵌套；确定性 quadrature
+桥接；HyperDual JIT 集成；张量完整规范化（图同构）。均为 Post-1.0。
+
+---
+
 ## 阶段 C — 1.0.0 稳定版
 
 **目标**：API 稳定性保证、完整文档、迁移指南、签名产物。不加新功能；仅冻结

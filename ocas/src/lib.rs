@@ -53,6 +53,10 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// Optional backends (GMP, MPFR, FLINT, LLVM, etc.) are enabled via the
 /// corresponding feature flags on this crate.
 pub mod prelude {
+    pub use ocas_atom::tensor::{
+        Contracted, IndexPosition, IndexSlot, Symmetry, Tensor, TensorProduct, contract,
+        symmetrise_sign,
+    };
     pub use ocas_atom::{Atom, AtomArena, AtomNode, Symbol, normalize};
     pub use ocas_calc::solve::{
         self, DiophantineSolution, SolveError, solve_diophantine, solve_linear_integer,
@@ -62,6 +66,7 @@ pub mod prelude {
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
     pub use ocas_core::fuel::Fuel;
+    pub use ocas_domain::dual::{DualCoeff, DualShape, HyperDual, new_first_order};
     pub use ocas_domain::{
         AlgebraicElement, AlgebraicExtension, AlgebraicNumberField, Assumption, Assumptions,
         Complex, ComplexDomain, Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer,
@@ -71,7 +76,9 @@ pub mod prelude {
     pub use ocas_eval::VectorEvaluator;
     #[cfg(feature = "jit")]
     pub use ocas_eval::jit::{JitCompiledFunction, JitEngine};
-    pub use ocas_eval::numeric::{IntegrateResult, Integrator, Vegas, VegasOptions, integrate_1d};
+    pub use ocas_eval::numeric::{
+        IntegrateResult, Integrator, StatisticsAccumulator, Vegas, VegasOptions, integrate_1d,
+    };
     pub use ocas_eval::{
         EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FunctionMap, Instr,
         Instruction, PowfExtension, Slot,

@@ -43,9 +43,12 @@
 #![allow(clippy::missing_const_for_thread_local)]
 
 pub mod algebraic;
+pub mod dual;
 pub mod error;
 pub mod expression;
+pub mod numeric;
 pub mod polynomial;
+pub mod tensor;
 
 use std::ffi::c_char;
 
@@ -57,6 +60,12 @@ pub use algebraic::{
     ocas_algebraic_field_free, ocas_algebraic_poly_create, ocas_algebraic_poly_degree,
     ocas_algebraic_poly_factor, ocas_algebraic_poly_free, ocas_algebraic_poly_to_string,
 };
+pub use dual::{
+    OcasDualShape, OcasHyperDual, ocas_dual_add, ocas_dual_constant, ocas_dual_deriv,
+    ocas_dual_div, ocas_dual_mul, ocas_dual_neg, ocas_dual_shape_free,
+    ocas_dual_shape_n_components, ocas_dual_shape_n_vars, ocas_dual_shape_new, ocas_dual_sub,
+    ocas_dual_value, ocas_dual_variable, ocas_hyperdual_free,
+};
 pub use error::{
     OCAS_ERROR_DIVISION_BY_ZERO, OCAS_ERROR_INVALID_ARGUMENT, OCAS_ERROR_NULL_POINTER,
     OCAS_ERROR_OUT_OF_MEMORY, OCAS_ERROR_PARSE, OCAS_ERROR_RUNTIME, OCAS_OK,
@@ -66,11 +75,20 @@ pub use expression::{
     ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify, ocas_expr_substitute,
     ocas_expr_taylor, ocas_expr_to_string, ocas_string_free,
 };
+pub use numeric::{
+    OcasIntegrateResult, OcasVegas, OcasVegasOptions, ocas_integrate_1d, ocas_vegas_create,
+    ocas_vegas_free, ocas_vegas_integrate, ocas_vegas_iterations, ocas_vegas_result,
+};
 pub use polynomial::{
     OcasPolyFactor, OcasPolyFactorArray, OcasPolyFp, OcasPolyZ, ocas_poly_factor_array_free,
     ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor,
     ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create,
     ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string,
+};
+pub use tensor::{
+    OcasTensor, OcasTensorContraction, ocas_tensor_contract, ocas_tensor_contraction_free,
+    ocas_tensor_create, ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank,
+    ocas_tensor_symmetrise_sign, ocas_tensor_symmetry, ocas_tensor_to_string,
 };
 
 /// Return the oCAS version string.

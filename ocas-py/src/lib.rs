@@ -18,23 +18,29 @@ use pyo3::prelude::*;
 
 pub mod algebraic;
 pub mod domain;
+pub mod dual;
 pub mod eval;
 pub mod expression;
 pub mod matrix;
+pub mod numeric;
 pub mod polynomial;
 pub mod solve;
+pub mod tensor;
 
 pub use algebraic::{
     PyAlgebraicElement, PyAlgebraicExtension, PyAlgebraicFactor, PyAlgebraicPolynomial,
 };
 pub use domain::{PyFiniteField, PyIntegerDomain, PyRationalDomain};
+pub use dual::{PyDualShape, PyHyperDual};
 pub use eval::PyExpressionEvaluator;
 pub use expression::Expression;
 pub use matrix::PyMatrix;
+pub use numeric::{PyIntegrateResult, PyVegas, integrate_1d};
 pub use polynomial::{PyPolynomial, PyPolynomialFactor};
 pub use solve::{
     PyDiophantineSolution, py_solve_diophantine, py_solve_linear_integer, py_solve_linear_rational,
 };
+pub use tensor::{PyTensor, contract_tensors, tensor_symmetrise_sign};
 
 /// The oCAS Python module entry point.
 ///
@@ -57,10 +63,18 @@ fn ocas(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyIntegerDomain>()?;
     m.add_class::<PyRationalDomain>()?;
     m.add_class::<PyFiniteField>()?;
+    m.add_class::<PyVegas>()?;
+    m.add_class::<PyIntegrateResult>()?;
+    m.add_class::<PyTensor>()?;
+    m.add_class::<PyDualShape>()?;
+    m.add_class::<PyHyperDual>()?;
 
     m.add_function(wrap_pyfunction!(py_solve_linear_rational, m)?)?;
     m.add_function(wrap_pyfunction!(py_solve_linear_integer, m)?)?;
     m.add_function(wrap_pyfunction!(py_solve_diophantine, m)?)?;
+    m.add_function(wrap_pyfunction!(integrate_1d, m)?)?;
+    m.add_function(wrap_pyfunction!(contract_tensors, m)?)?;
+    m.add_function(wrap_pyfunction!(tensor_symmetrise_sign, m)?)?;
 
     Ok(())
 }

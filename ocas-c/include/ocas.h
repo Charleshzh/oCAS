@@ -456,6 +456,310 @@ int ocas_algebraic_poly_factor(const struct ocas_OcasAlgebraicPoly *poly,
  */
 void ocas_algebraic_factor_array_free(struct ocas_OcasAlgebraicFactorArray *arr);
 
+/**
+ * Opaque handle for a Vegas adaptive Monte Carlo integrator.
+ */
+struct ocas_OcasVegas {
+  uint8_t _private[0];
+};
+
+/**
+ * Result of a numerical integration: the estimate and its standard error.
+ */
+struct ocas_OcasIntegrateResult {
+  /**
+   * Best estimate of the integral.
+   */
+  double integral;
+  /**
+   * Estimated standard error on `integral`.
+   */
+  double error;
+};
+
+/**
+ * Tuning knobs for [`ocas_vegas_create`]. Pass zeros (or `NULL` to the
+ * creation function) to use library defaults.
+ */
+struct ocas_OcasVegasOptions {
+  /**
+   * Number of bins per dimension (default 64).
+   */
+  size_t n_bins;
+  /**
+   * Number of samples per iteration (default 10000).
+   */
+  size_t n_samples;
+  /**
+   * Number of adaptive iterations (default 10).
+   */
+  size_t iterations;
+  /**
+   * Grid smoothing / learning rate (default 1.5).
+   */
+  double learning_rate;
+  /**
+   * RNG seed (default 0x0C45).
+   */
+  uint64_t seed;
+};
+
+/**
+ * Integrand function pointer for one-dimensional integration.
+ *
+ * `user_data` is passed through untouched from the caller of
+ * [`ocas_vegas_integrate`] or [`ocas_integrate_1d`].
+ */
+typedef double (*ocas_integrand_t)(double x, void *user_data);
+
+/**
+ * Create a Vegas integrator for `n_dims` dimensions.
+ *
+ * `opts` may be `NULL` to use library defaults. Returns an opaque handle,
+ * or `NULL` on failure (with the error code written to `*err`).
+ */
+struct ocas_OcasVegas *ocas_vegas_create(size_t n_dims,
+                                         const struct ocas_OcasVegasOptions *opts,
+                                         int *err);
+
+/**
+ * Free a Vegas integrator handle. Safe to call with `NULL`.
+ */
+void ocas_vegas_free(struct ocas_OcasVegas *v);
+
+/**
+ * Integrate `f` over the unit hypercube, invoking `f(x, user_data)` for each
+ * sample. Returns the result; writes the error code to `*err` on failure.
+ */
+struct ocas_OcasIntegrateResult ocas_vegas_integrate(struct ocas_OcasVegas *v,
+                                                     ocas_integrand_t f,
+                                                     void *user_data,
+                                                     int *err);
+
+/**
+ * Latest accumulated estimate and error after [`ocas_vegas_integrate`].
+ */
+struct ocas_OcasIntegrateResult ocas_vegas_result(const struct ocas_OcasVegas *v);
+
+/**
+ * Number of completed iterations, or `0` on a null handle.
+ */
+size_t ocas_vegas_iterations(const struct ocas_OcasVegas *v);
+
+/**
+ * Numerically integrate `f` over `[a, b]` using Vegas in one shot.
+ *
+ * `opts` may be `NULL` to use library defaults. Returns the result; writes
+ * the error code to `*err` on failure.
+ */
+struct ocas_OcasIntegrateResult ocas_integrate_1d(ocas_integrand_t f,
+                                                  void *user_data,
+                                                  double a,
+                                                  double b,
+                                                  const struct ocas_OcasVegasOptions *opts,
+                                                  int *err);
+
+/**
+ * Opaque handle for a tensor (named object with index slots).
+ */
+struct ocas_OcasTensor {
+  uint8_t _private[0];
+};
+
+/**
+ * Result of [`ocas_tensor_contract`]. When `kind == 0` (product), `tensors`
+ * holds `n_tensors` independent tensor handles the caller must free via
+ * [`ocas_tensor_free`]. When `kind == 1` (scalar), `scalar_str` holds a
+ * heap-allocated string the caller must release via [`ocas_string_free`].
+ */
+struct ocas_OcasTensorContraction {
+  /**
+   * `0` = product, `1` = scalar.
+   */
+  int kind;
+  /**
+   * Array of `OcasTensor*` handles (valid when `kind == 0`). May be `NULL`.
+   */
+  struct ocas_OcasTensor **tensors;
+  /**
+   * Number of tensor handles in `tensors`.
+   */
+  size_t n_tensors;
+  /**
+   * Heap-allocated scalar string (valid when `kind == 1`). May be `NULL`.
+   */
+  char *scalar_str;
+};
+
+/**
+ * Create a tensor from a name, a slots string, and an optional symmetry.
+ *
+ * `slots` is a semicolon-separated list of `label,position` entries where
+ * `position` is `"upper"` or `"lower"` (aliases: `up`, `down`,
+ * `contravariant`, `covariant`). Example: `"i,upper;j,lower"`.
+ * `symmetry` may be `NULL` (meaning `"none"`) or one of `"none"`,
+ * `"symmetric"`, `"antisymmetric"`.
+ */
+struct ocas_OcasTensor *ocas_tensor_create(const char *name,
+                                           const char *slots,
+                                           const char *symmetry,
+                                           int *err);
+
+/**
+ * Free a tensor handle. Safe to call with `NULL`.
+ */
+void ocas_tensor_free(struct ocas_OcasTensor *t);
+
+/**
+ * Return the tensor's name as a heap-allocated string. The caller must
+ * release it with [`ocas_string_free`].
+ */
+char *ocas_tensor_name(const struct ocas_OcasTensor *t, int *err);
+
+/**
+ * Return the tensor's arity (number of slots), or `0` on a null handle.
+ */
+size_t ocas_tensor_rank(const struct ocas_OcasTensor *t);
+
+/**
+ * Return the tensor's symmetry code: `0` = none, `1` = symmetric,
+ * `2` = antisymmetric, `-1` on a null handle.
+ */
+int ocas_tensor_symmetry(const struct ocas_OcasTensor *t);
+
+/**
+ * Return a heap-allocated string representation of the tensor rendered as
+ * `name(slot, slot, ...)`. The caller must release it with
+ * [`ocas_string_free`].
+ */
+char *ocas_tensor_to_string(const struct ocas_OcasTensor *t, int *err);
+
+/**
+ * Return the symmetrisation sign of the tensor (+1 or -1), or `0` on a null
+ * handle.
+ */
+int64_t ocas_tensor_symmetrise_sign(const struct ocas_OcasTensor *t);
+
+/**
+ * Contract two tensors by summing over shared dummy indices (equal label,
+ * opposite variance). On success fills `out` (see
+ * [`OcasTensorContraction`]).
+ */
+int ocas_tensor_contract(const struct ocas_OcasTensor *a,
+                         const struct ocas_OcasTensor *b,
+                         struct ocas_OcasTensorContraction *out,
+                         int *err);
+
+/**
+ * Free the `tensors` array (but NOT the individual tensor handles) returned
+ * by [`ocas_tensor_contract`] when `kind == 0`, plus the `scalar_str` when
+ * `kind == 1`. Each tensor handle must still be freed separately via
+ * [`ocas_tensor_free`]. Safe to call with `NULL`.
+ */
+void ocas_tensor_contraction_free(struct ocas_OcasTensorContraction *c);
+
+/**
+ * Opaque handle for a dual-number shape (derivative layout).
+ */
+struct ocas_OcasDualShape {
+  uint8_t _private[0];
+};
+
+/**
+ * Opaque handle for a hyper-dual number (value plus partial derivatives).
+ */
+struct ocas_OcasHyperDual {
+  uint8_t _private[0];
+};
+
+/**
+ * Build a first-order shape tracking one derivative per variable for
+ * `n_vars` variables. Returns an opaque handle, or `NULL` on failure.
+ */
+struct ocas_OcasDualShape *ocas_dual_shape_new(size_t n_vars, int *err);
+
+/**
+ * Free a dual-number shape handle. Safe to call with `NULL`.
+ */
+void ocas_dual_shape_free(struct ocas_OcasDualShape *s);
+
+/**
+ * Return the number of differentiation variables, or `0` on a null handle.
+ */
+size_t ocas_dual_shape_n_vars(const struct ocas_OcasDualShape *s);
+
+/**
+ * Return the total number of components, or `0` on a null handle.
+ */
+size_t ocas_dual_shape_n_components(const struct ocas_OcasDualShape *s);
+
+/**
+ * Create an independent variable `x_i = value`. `coeff` is a coefficient
+ * string `"num"` or `"num/den"`. Derivative is 1 w.r.t. variable `i`.
+ */
+struct ocas_OcasHyperDual *ocas_dual_variable(const struct ocas_OcasDualShape *shape,
+                                              size_t i,
+                                              const char *coeff,
+                                              int *err);
+
+/**
+ * Create a constant dual number (all derivatives zero).
+ */
+struct ocas_OcasHyperDual *ocas_dual_constant(const struct ocas_OcasDualShape *shape,
+                                              const char *coeff,
+                                              int *err);
+
+/**
+ * Free a hyper-dual handle. Safe to call with `NULL`.
+ */
+void ocas_hyperdual_free(struct ocas_OcasHyperDual *d);
+
+/**
+ * Return the scalar value component as a heap-allocated string (`"num"` or
+ * `"num/den"`). The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_dual_value(const struct ocas_OcasHyperDual *d, int *err);
+
+/**
+ * Return the derivative w.r.t. variable `i` as a heap-allocated string, or
+ * `NULL` if the shape has no first-order component for `i`.
+ */
+char *ocas_dual_deriv(const struct ocas_OcasHyperDual *d, size_t i, int *err);
+
+/**
+ * Compute `a + b` and return a new handle. Both operands must share a shape.
+ */
+struct ocas_OcasHyperDual *ocas_dual_add(const struct ocas_OcasHyperDual *a,
+                                         const struct ocas_OcasHyperDual *b,
+                                         int *err);
+
+/**
+ * Compute `a - b` and return a new handle.
+ */
+struct ocas_OcasHyperDual *ocas_dual_sub(const struct ocas_OcasHyperDual *a,
+                                         const struct ocas_OcasHyperDual *b,
+                                         int *err);
+
+/**
+ * Compute `a * b` and return a new handle.
+ */
+struct ocas_OcasHyperDual *ocas_dual_mul(const struct ocas_OcasHyperDual *a,
+                                         const struct ocas_OcasHyperDual *b,
+                                         int *err);
+
+/**
+ * Compute `a / b` and return a new handle. Sets an error if the divisor's
+ * value component is zero.
+ */
+struct ocas_OcasHyperDual *ocas_dual_div(const struct ocas_OcasHyperDual *a,
+                                         const struct ocas_OcasHyperDual *b,
+                                         int *err);
+
+/**
+ * Compute `-a` (negation) and return a new handle.
+ */
+struct ocas_OcasHyperDual *ocas_dual_neg(const struct ocas_OcasHyperDual *a, int *err);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -315,6 +315,7 @@ After 1.0, development will focus on:
 | 0.16.2 | 1.0 Candidate | Month 26 | $\mathbb{F}_p$-path non-constant LC preprocessing (field Wang) + sampling performance |
 | 0.17.0 | 1.0 Candidate | Month 27 | Algebraic number field & extension-field factorization (Trager) ✅ (univariate path; multivariate extension deferred) |
 | 0.18.0 | 1.0 Candidate | Month 28 | Numerical integration (Vegas) + dual-number AD + tensor basics + fuel resource control |
+| 0.18.1 | 1.0 Candidate | Month 28 | Python/C bindings backfill for the three 0.18.0 capabilities (numeric integration + tensor + dual) + prelude completeness ✅ |
 | 1.0.0 | Stable | Month 30 | Stable release (frozen after the Symbolica feature/performance gap is closed) |
 
 ---

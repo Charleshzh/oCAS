@@ -9,6 +9,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.18.1] - 2026-07-23
+
+### Added / 新增
+
+- **Python 绑定 — 数值积分**：新增 `ocas-py::numeric` 模块，暴露 `Vegas` 类
+  （n_bins/n_samples/iterations/learning_rate/seed kwargs）与顶层
+  `integrate_1d(callable, a, b, **opts)` 函数；Python callable 自动桥接为
+  Rust 闭包，异常与非 float 返回值传播为 `ValueError`；`IntegrateResult`
+  提供 `.integral`/`.error` 属性与索引访问 / **Python bindings for
+  numerical integration**: new `ocas-py::numeric` module exposing the
+  `Vegas` class (with tuning kwargs) and a top-level
+  `integrate_1d(callable, a, b, **opts)` function; Python callables are
+  bridged to Rust closures with exception/non-float propagation as
+  `ValueError`.
+- **C/C++ 绑定 — 数值积分**：新增 `ocas-c::numeric` 模块，不透明句柄
+  `OcasVegas`、`OcasVegasOptions`、`OcasIntegrateResult`，以及
+  `ocas_vegas_create/integrate/result/iterations/free` + 便捷
+  `ocas_integrate_1d` C ABI；被积函数约定为
+  `typedef double (*ocas_integrand_t)(double x, void *user_data);`；
+  `include/ocas.h` 已重新生成 / **C/C++ bindings for numerical
+  integration**: opaque `OcasVegas`/`OcasVegasOptions`/`OcasIntegrateResult`
+  handles and `ocas_vegas_*` + `ocas_integrate_1d` C ABI with a function-pointer
+  + `user_data` integrand convention; `include/ocas.h` regenerated.
+- **Python 绑定 — 张量基础**：新增 `ocas-py::tensor` 模块，`Tensor` 类
+  （name + `(label, "upper"/"lower")` 槽列表 + symmetry）+ `contract_tensors`
+  返回 `("product", [...])`/`("scalar", expr_str)` 元组 +
+  `tensor_symmetrise_sign`；每个张量自管理私有 arena / **Python bindings
+  for tensor basics**: `Tensor` class with slots and symmetry, plus
+  `contract_tensors` and `tensor_symmetrise_sign`.
+- **C/C++ 绑定 — 张量基础**：新增 `ocas-c::tensor` 模块，不透明句柄
+  `OcasTensor`、`OcasTensorContraction`，以及
+  `ocas_tensor_create/free/name/rank/symmetry/to_string/symmetrise_sign/contract/contraction_free`
+  C ABI；slots 字符串约定 `"label,position;..."` / **C/C++ bindings for
+  tensor basics**: opaque `OcasTensor`/`OcasTensorContraction` handles and
+  the `ocas_tensor_*` C ABI with a `"label,position;..."` slots format.
+- **Python 绑定 — 双数自动微分**：新增 `ocas-py::dual` 模块，`DualShape`
+  类（`first_order(n_vars)` 静态方法）+ `HyperDual` 类（`variable`/`constant`
+  静态方法、`value()`/`deriv(i)`、`__add__/__sub__/__mul__/__truediv__/__neg__`）；
+  系数接受 int 或 `(num, denom)` 元组；仅 Rational 系数，仅多项式/有理算术
+  / **Python bindings for hyper-dual AD**: `DualShape` and `HyperDual`
+  classes with arithmetic dunders; coefficients accept int or `(num, denom)`.
+- **C/C++ 绑定 — 双数自动微分**：新增 `ocas-c::dual` 模块，不透明句柄
+  `OcasDualShape`、`OcasHyperDual`，以及 `ocas_dual_shape_new/free/n_vars/
+  n_components` + `ocas_dual_variable/constant/value/deriv/add/sub/mul/div/
+  neg` + `ocas_hyperdual_free` C ABI；系数字符串约定 `"num"` 或 `"num/den"` /
+  **C/C++ bindings for hyper-dual AD**: opaque
+  `OcasDualShape`/`OcasHyperDual` handles and the `ocas_dual_*` C ABI with
+  `"num"` or `"num/den"` coefficient strings.
+- **prelude 补齐**：顶层 `ocas::prelude` 新增导出张量（`Tensor`、`IndexSlot`、
+  `IndexPosition`、`Symmetry`、`contract`、`symmetrise_sign`、`Contracted`、
+  `TensorProduct`）、双数（`HyperDual`、`DualShape`、`DualCoeff`、
+  `new_first_order`）与 `StatisticsAccumulator` / **Prelude completeness**:
+  the top-level `ocas::prelude` now re-exports the tensor, dual, and
+  `StatisticsAccumulator` items.
+- 测试：Python 41 项（`test_numeric.py` 14 + `test_tensor.py` 13 +
+  `test_dual.py` 14）；C API 31 项（numeric 10 + tensor 10 + dual 11） /
+  Tests: 41 Python (14 numeric + 13 tensor + 14 dual) and 31 C API
+  (10 numeric + 10 tensor + 11 dual).
+
+### Changed / 变更
+
+- workspace 版本 0.18.0 → 0.18.1（13 crate）/ workspace 0.18.0 → 0.18.1.
+- `ocas-c` 新增 `ocas-eval` 依赖（数值积分 C 绑定所需）/ `ocas-c` gained an
+  `ocas-eval` dependency (required by the numeric C bindings).
+
+### Fixed / 修复
+
+- **normalize 幂等性 bug**：`ocas-atom::normalize` 在 Add/Mul 分支先 `retain`
+  移除 `Num(0)`/`Num(1)` 再 `merge_numbers`，导致合并产生的零/单位元
+  （如 `93 + (-93) → 0`、`(-1) * (-1) → 1`）未被移除，破坏幂等性
+  （`normalize(x) != normalize(0 + x)`）。改为合并后再次 `retain`
+  / **normalize idempotency bug**: the Add/Mul branches dropped explicit
+  `Num(0)`/`Num(1)` *before* merging numeric literals, so zeros/units
+  produced by merging (e.g. `93 + (-93) → 0`, `(-1)*(-1) → 1`) survived
+  and broke idempotency (`normalize(x) != normalize(0 + x)`). Now drops
+  them again *after* merging. Caught by the `add_identity` proptest.
+
+---
+
 ## [0.18.0] - 2026-07-23
 
 ### Added / 新增

@@ -155,6 +155,7 @@ impl PyAlgebraicExtension {
     }
 
     /// Embed a rational constant (int or `(num, denom)`) into the field.
+    #[allow(clippy::wrong_self_convention)]
     fn from_base(&self, c: &Bound<'_, PyAny>) -> PyResult<PyAlgebraicElement> {
         let r = py_to_rational(c)?;
         Ok(PyAlgebraicElement {

@@ -22,6 +22,7 @@ ocas-domain.workspace = true
 ocas-poly.workspace = true
 ocas-atom.workspace = true
 ocas-calc.workspace = true
+ocas-eval.workspace = true
 ocas-parse.workspace = true
 ocas-rewrite.workspace = true
 num-bigint.workspace = true

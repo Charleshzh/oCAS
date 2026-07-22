@@ -657,6 +657,76 @@ Python/C numerical-integration bindings, tensor canonicalisation, and
 
 ---
 
+### 0.18.1 — Python/C Bindings Backfill for the Three 0.18.0 Capabilities (RELEASED)
+
+**Goal**: The three capabilities added in 0.18.0 (Vegas numerical integration,
+HyperDual forward AD, tensor basics) shipped with Rust APIs only — no
+Python/C bindings — violating the vertical-slice discipline (each release
+delivers algorithm + Rust API + Python/C bindings + tests + docs). This
+release backfills the `ocas-py` + `ocas-c` bindings + tests + prelude exports
+for those three, mirroring the 0.17.1 (algebraic number fields) pattern. With
+the top-level API surface complete, 1.0.0 is then only freeze and release
+engineering.
+
+**Features**
+
+| Item | Reference | oCAS location | Status |
+|---|---|---|---|
+| Python bindings — numerical integration | 0.17.1 algebraic pattern | `ocas-py::numeric` (`Vegas` class + `integrate_1d` function + Python callable bridging) | [x] |
+| C/C++ bindings — numerical integration | classic FFI callback pattern | `ocas-c::numeric` (`OcasVegas` handle + `ocas_vegas_*` + `ocas_integrate_1d` + `ocas_integrand_t` function pointer + `void* user_data`) | [x] |
+| Python bindings — tensor basics | expression.rs arena-leak pattern | `ocas-py::tensor` (`Tensor` class + `contract_tensors` + `tensor_symmetrise_sign`; each tensor manages its own arena) | [x] |
+| C/C++ bindings — tensor basics | same | `ocas-c::tensor` (`OcasTensor`/`OcasTensorContraction` handles + `ocas_tensor_*`; slots string `"label,position;..."`) | [x] |
+| Python bindings — dual AD | algebraic value-type pattern | `ocas-py::dual` (`DualShape` + `HyperDual` classes + arithmetic dunders; coefficients accept int or `(num,den)`) | [x] |
+| C/C++ bindings — dual AD | algebraic string-convention pattern | `ocas-c::dual` (`OcasDualShape`/`OcasHyperDual` handles + `ocas_dual_*`; coefficient strings `"num"`/`"num/den"`) | [x] |
+| Prelude completeness | 0.6.0 stable-prelude discipline | `ocas::prelude` re-exports tensor / dual / `StatisticsAccumulator` items | [x] |
+
+**Implementation notes**
+
+- **Tensor arena management**: `contract_tensors` allocates a one-shot shared
+  arena inside the function (a `DropGuard` guarantees reclamation) and rebuilds
+  result factors into independent arenas on each `PyTensor`, avoiding
+  cross-object lifetime coupling. The C `ocas_tensor_contract` uses the same
+  strategy.
+- **Dual AD limitations**: `HyperDual` is `Rational`-coefficient only
+  (`DualCoeff` has only a `Rational` impl) and supports only
+  polynomial/rational arithmetic (`+ − × ÷`, unary negation); transcendental
+  functions (sin/exp/log) and `pow` are out of scope. Python users implement
+  integer powers via repeated multiplication; the C side uses `"num"` or
+  `"num/den"` coefficient strings.
+- **pyo3 0.29 notes**: `#[pyclass] + Clone` types need `skip_from_py_object`;
+  use `Python::attach` (not `with_gil`); `PyErr::take(py)` (not `taken`);
+  `PyErr::restore(self, py)`; `PyList::new`/`PyFloat::new` return
+  `PyResult<Bound<_>>`.
+- **Rust 2024**: `#[no_mangle]` must be written `#[unsafe(no_mangle)]`.
+- **C header**: `include/ocas.h` is hand-synced (build.rs writes only
+  `OUT_DIR`, avoiding a `cargo publish` conflict).
+- **Clippy fixes**: `Box<Arc<DualShape>>` → a `DualShapeStore { shape:
+  Arc<DualShape> }` wrapper struct (avoids the `box_collection` lint);
+  `!(b > a)` → `a.partial_cmp(&b) != Some(Less)` (avoids
+  `neg_cmp_op_on_partial_ord`); `from_base` gets
+  `#[allow(wrong_self_convention)]` to keep the Python API name aligned with
+  the underlying Rust API.
+
+**Acceptance**
+
+- [x] `cargo test --workspace --exclude ocas-py` green (incl. 31 new c_api.rs
+  cases: 10 numeric + 10 tensor + 11 dual).
+- [x] `maturin develop` + `pytest ocas-tests/tests/python/` green (41 new:
+  14 numeric + 13 tensor + 14 dual; 131 total with no regressions).
+- [x] `cargo clippy --workspace --all-targets -- -D warnings` clean.
+- [x] `cargo fmt --all -- --check` clean.
+- [x] `cargo deny check` passes (no new dependency; `ocas-eval` already in
+  the workspace).
+- [x] `include/ocas.h` hand-synced with the new types and prototypes.
+- [x] Workspace version bumped 0.18.0 → 0.18.1 (13 crates, 14 sites).
+- [x] CHANGELOG / ROADMAP / EVOLUTION_PLAN / GAP_ANALYSIS synced bilingually.
+
+**Explicitly deferred**: Python/C bindings for fuel resource control; Vegas
+multi-channel / nested; deterministic quadrature bridge; HyperDual JIT
+integration; full tensor canonicalisation (graph isomorphism). All Post-1.0.
+
+---
+
 ## Phase C — 1.0.0 Stable Release
 
 **Goal**: API stability guarantee, complete docs, migration guide, signed
