@@ -540,6 +540,30 @@ $\mathbb{F}_p$ 路径，并优化非首一情形的采样性能。
 
 **实现说明**：数域 GCD 采用模方法（$\mathrm{GF}(p^d)$ + CRT + 有理重构 + 试除），跳过 $m \bmod p$ 可约的素数以规避零因子；有理系数输入走"先在 ℚ 上分解"快速通道（范数必为幂次，避免强制平移）。多元扩域分解（Zippel 稀疏插值）留待后续版本。
 
+### 0.17.1 — 代数数绑定收尾（已发布）
+
+**目标**：让 0.17.0 的 `AlgebraicNumberField` 与 Trager 因式分解在
+Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 | 状态 |
+|---|---|---|---|
+| `AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial`/`AlgebraicFactor` Python 类（极小多项式由升序系数构造；多项式系数可为整数、`(num,den)` 元组、$\alpha$-多项式列表或 `AlgebraicElement`） | 0.17.0 ANF API | `ocas-py::algebraic` | [x] |
+| `OcasAlgebraicField`/`OcasAlgebraicPoly`/`OcasAlgebraicFactorArray` 不透明句柄与 `ocas_algebraic_*` C ABI（极小多项式字符串、系数列表字符串） | 0.17.0 ANF API | `ocas-c::algebraic` + `include/ocas.h` | [x] |
+| `RootOf(poly, root_index)` 解析为 `Fun` 节点（无需词法/语法改动） | — | `ocas-parse`（现有递归下降） | [x] |
+
+**验收**
+
+- [x] 13 项 Python 测试（`test_algebraic.py`）通过：ℚ(√2)/ℚ(∛2) 构造、
+  元素嵌入、含 $\alpha$ 系数的多项式、Trager 因式分解、$x^2-\alpha$ 不可约。
+- [x] 7 项 C API 测试通过（含 $x^2-2$ 在 ℚ(√2) 上分裂为两个一次因子、
+  $x^2-\alpha$ 不可约、非首一极小多项式拒绝）。
+
+**明确未做**：多元扩域因式分解（Zippel）、代数数字面量专用语法
+（radical `√`/`∛`，统一以 `RootOf` 表达）、Python/C 元素算术。这些留待
+后续版本。
+
 ### 0.18.0 — 数值积分、自动微分与资源控制
 
 **功能**

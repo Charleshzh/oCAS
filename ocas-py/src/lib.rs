@@ -16,6 +16,7 @@
 
 use pyo3::prelude::*;
 
+pub mod algebraic;
 pub mod domain;
 pub mod eval;
 pub mod expression;
@@ -23,6 +24,9 @@ pub mod matrix;
 pub mod polynomial;
 pub mod solve;
 
+pub use algebraic::{
+    PyAlgebraicElement, PyAlgebraicExtension, PyAlgebraicFactor, PyAlgebraicPolynomial,
+};
 pub use domain::{PyFiniteField, PyIntegerDomain, PyRationalDomain};
 pub use eval::PyExpressionEvaluator;
 pub use expression::Expression;
@@ -45,6 +49,10 @@ fn ocas(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyDiophantineSolution>()?;
     m.add_class::<PyPolynomial>()?;
     m.add_class::<PyPolynomialFactor>()?;
+    m.add_class::<PyAlgebraicExtension>()?;
+    m.add_class::<PyAlgebraicElement>()?;
+    m.add_class::<PyAlgebraicPolynomial>()?;
+    m.add_class::<PyAlgebraicFactor>()?;
     m.add_class::<PyMatrix>()?;
     m.add_class::<PyIntegerDomain>()?;
     m.add_class::<PyRationalDomain>()?;

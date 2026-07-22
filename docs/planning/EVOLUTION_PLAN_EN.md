@@ -585,6 +585,33 @@ with all-rational coefficients take a "factor over ℚ first" fast path
 Multivariate extension-field factorization (Zippel sparse interpolation)
 is deferred to a later release.
 
+### 0.17.1 — Algebraic Number Bindings Completion (RELEASED)
+
+**Goal**: make 0.17.0's `AlgebraicNumberField` and Trager factorization
+usable from Python and C, and confirm the `RootOf(poly, idx)` parse path.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| `AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial`/`AlgebraicFactor` Python classes (minimal polynomial from ascending coefficients; polynomial coefficients may be ints, `(num,den)` tuples, α-polynomial lists, or `AlgebraicElement`) | 0.17.0 ANF API | `ocas-py::algebraic` | [x] |
+| `OcasAlgebraicField`/`OcasAlgebraicPoly`/`OcasAlgebraicFactorArray` opaque handles and `ocas_algebraic_*` C ABI (minimal-polynomial string, coefficient-list string) | 0.17.0 ANF API | `ocas-c::algebraic` + `include/ocas.h` | [x] |
+| `RootOf(poly, root_index)` parses to a `Fun` node (no lexer/parser changes) | — | `ocas-parse` (existing recursive descent) | [x] |
+
+**Acceptance**
+
+- [x] 13 Python tests (`test_algebraic.py`) pass: ℚ(√2)/ℚ(∛2) construction,
+  element embedding, α-coefficient polynomials, Trager factorization, and
+  $x^2-\alpha$ irreducibility.
+- [x] 7 C API tests pass (including $x^2-2$ splitting into two linear
+  factors over ℚ(√2), $x^2-\alpha$ irreducibility, and non-monic
+  minimal-polynomial rejection).
+
+**Explicitly deferred**: multivariate extension-field factorization
+(Zippel), dedicated algebraic-number literal syntax (radicals `√`/`∛`;
+`RootOf` is the uniform form), and Python/C element arithmetic. These
+remain for later releases.
+
 ### 0.18.0 — Numerical Integration, Automatic Differentiation & Resource Control
 
 **Functionality**

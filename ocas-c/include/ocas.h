@@ -104,6 +104,51 @@ struct ocas_OcasPolyFp {
   uint8_t _private[0];
 };
 
+/**
+ * Opaque handle for an algebraic number field $\mathbb{Q}(\alpha)$.
+ */
+struct ocas_OcasAlgebraicField {
+  uint8_t _private[0];
+};
+
+/**
+ * Opaque handle for a univariate polynomial over an algebraic number field.
+ */
+struct ocas_OcasAlgebraicPoly {
+  uint8_t _private[0];
+};
+
+/**
+ * A factor returned by [`ocas_algebraic_poly_factor`]. The `poly` pointer
+ * must be cast to `OcasAlgebraicPoly*` and freed with
+ * [`ocas_algebraic_poly_free`].
+ */
+struct ocas_OcasAlgebraicFactor {
+  /**
+   * The polynomial factor.
+   */
+  void *poly;
+  /**
+   * Multiplicity of the factor.
+   */
+  size_t multiplicity;
+};
+
+/**
+ * An array of factors returned by [`ocas_algebraic_poly_factor`]. Free with
+ * [`ocas_algebraic_factor_array_free`].
+ */
+struct ocas_OcasAlgebraicFactorArray {
+  /**
+   * Pointer to the first factor. May be `NULL` if `len == 0`.
+   */
+  struct ocas_OcasAlgebraicFactor *factors;
+  /**
+   * Number of factors in the array.
+   */
+  size_t len;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -349,6 +394,67 @@ int ocas_poly_fp_factor(const struct ocas_OcasPolyFp *poly,
  * (e.g. [`ocas_poly_z_free`] or [`ocas_poly_fp_free`]).
  */
 void ocas_poly_factor_array_free(struct ocas_OcasPolyFactorArray *arr);
+
+/**
+ * Create an algebraic number field from its monic minimal polynomial.
+ *
+ * `min_poly` is a string such as `"x^2 - 2"` (variable must be `x`). Returns
+ * an opaque handle, or `NULL` on failure.
+ */
+struct ocas_OcasAlgebraicField *ocas_algebraic_field_create(const char *min_poly, int *err);
+
+/**
+ * Free an algebraic number field handle.
+ */
+void ocas_algebraic_field_free(struct ocas_OcasAlgebraicField *field);
+
+/**
+ * Return the extension degree $\deg(m)$, or `0` on a null handle.
+ */
+size_t ocas_algebraic_field_degree(const struct ocas_OcasAlgebraicField *field);
+
+/**
+ * Create a polynomial over an algebraic number field from a coefficient-list
+ * string (see the [module docs](self) for the format).
+ */
+struct ocas_OcasAlgebraicPoly *ocas_algebraic_poly_create(const struct ocas_OcasAlgebraicField *field,
+                                                          const char *coeffs,
+                                                          int *err);
+
+/**
+ * Free an algebraic-field polynomial handle.
+ */
+void ocas_algebraic_poly_free(struct ocas_OcasAlgebraicPoly *poly);
+
+/**
+ * Return the degree of the polynomial, or `0` for the zero polynomial.
+ */
+size_t ocas_algebraic_poly_degree(const struct ocas_OcasAlgebraicPoly *poly);
+
+/**
+ * Return a heap-allocated string representation of the polynomial.
+ * The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_algebraic_poly_to_string(const struct ocas_OcasAlgebraicPoly *poly, int *err);
+
+/**
+ * Factor a polynomial over an algebraic number field (Trager's algorithm).
+ *
+ * On success `out` is filled with a heap-allocated array of factors. The
+ * caller must free each factor's `poly` via [`ocas_algebraic_poly_free`]
+ * and then the array via [`ocas_algebraic_factor_array_free`].
+ */
+int ocas_algebraic_poly_factor(const struct ocas_OcasAlgebraicPoly *poly,
+                               struct ocas_OcasAlgebraicFactorArray *out,
+                               int *err);
+
+/**
+ * Free a factor array returned by [`ocas_algebraic_poly_factor`].
+ *
+ * This releases only the array storage; each factor's `poly` handle must be
+ * freed separately via [`ocas_algebraic_poly_free`].
+ */
+void ocas_algebraic_factor_array_free(struct ocas_OcasAlgebraicFactorArray *arr);
 
 #ifdef __cplusplus
 }  // extern "C"

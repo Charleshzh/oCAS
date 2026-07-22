@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.17.1] - 2026-07-22
+
+### Added / 新增
+
+- **Python 绑定 — 代数数域**：新增 `ocas-py::algebraic` 模块，暴露
+  `AlgebraicExtension`（由首一极小多项式升序系数构造，如
+  `AlgebraicExtension([-2, 0, 1])` 即 $\mathbb{Q}(\sqrt{2})$）、
+  `AlgebraicElement`、`AlgebraicPolynomial`（系数项可为整数、
+  `(num, denom)` 元组、$\alpha$-多项式系数列表或 `AlgebraicElement`）、
+  `AlgebraicFactor`，并支持 Trager 因式分解（`factor()`）/ **Python
+  bindings for algebraic number fields**: new `ocas-py::algebraic` module
+  exposing `AlgebraicExtension`, `AlgebraicElement`, `AlgebraicPolynomial`,
+  and `AlgebraicFactor` with Trager factorization.
+- **C/C++ 绑定 — 代数数域**：新增 `ocas-c::algebraic` 模块，不透明句柄
+  `OcasAlgebraicField` / `OcasAlgebraicPoly` / `OcasAlgebraicFactorArray`，
+  以及 `ocas_algebraic_field_create`（极小多项式字符串如 `"x^2 - 2"`）、
+  `ocas_algebraic_poly_create`（系数列表字符串，多项式系数以 `;` 分隔、
+  每项 $\alpha$-多项式以 `,` 分隔）、`ocas_algebraic_poly_factor` 等
+  C ABI；`include/ocas.h` 已重新生成 / **C/C++ bindings for algebraic
+  number fields**: opaque handles and `ocas_algebraic_*` C ABI for
+  creating fields and polynomials and factoring via Trager; `include/ocas.h`
+  regenerated.
+- `RootOf(poly, root_index)` 经现有递归下降解析器自动产生
+  `Fun("RootOf", ...)` 节点（无需词法/语法改动）/ `RootOf(poly, idx)`
+  parses directly to an `Atom` function node with no parser changes.
+- 测试：13 项 Python 测试（`test_algebraic.py`）与 7 项 C API 测试
+  （含 $\mathbb{Q}(\sqrt{2})$、$\mathbb{Q}(\sqrt[3]{2})$ 因式分解、
+  $x^2-\alpha$ 不可约性验证）/ Tests: 13 Python and 7 C API cases
+  covering ANF factorization and irreducibility over $\mathbb{Q}(\sqrt{2})$.
+
 ## [0.17.0] - 2026-07-22
 
 ### Added / 新增

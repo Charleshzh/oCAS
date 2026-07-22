@@ -4,13 +4,16 @@
 //! `#[no_mangle] extern "C"` functions exactly as a C caller would.
 
 use ocas_c::{
-    OCAS_OK, OcasPolyFactorArray, ocas_error_clear, ocas_error_last_message, ocas_expr_clone,
-    ocas_expr_diff, ocas_expr_free, ocas_expr_integrate, ocas_expr_normalize, ocas_expr_parse,
-    ocas_expr_simplify, ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string,
-    ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree,
-    ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone,
-    ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free,
-    ocas_poly_z_to_string, ocas_string_free, ocas_version,
+    OCAS_OK, OcasAlgebraicFactorArray, OcasPolyFactorArray, ocas_algebraic_factor_array_free,
+    ocas_algebraic_field_create, ocas_algebraic_field_degree, ocas_algebraic_field_free,
+    ocas_algebraic_poly_create, ocas_algebraic_poly_degree, ocas_algebraic_poly_factor,
+    ocas_algebraic_poly_free, ocas_algebraic_poly_to_string, ocas_error_clear,
+    ocas_error_last_message, ocas_expr_clone, ocas_expr_diff, ocas_expr_free, ocas_expr_integrate,
+    ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify, ocas_expr_substitute,
+    ocas_expr_taylor, ocas_expr_to_string, ocas_poly_factor_array_free, ocas_poly_fp_clone,
+    ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor, ocas_poly_fp_free,
+    ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create, ocas_poly_z_degree,
+    ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string, ocas_string_free, ocas_version,
 };
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -286,6 +289,133 @@ fn poly_z_factor_null_poly_returns_error() {
     };
     let mut err: std::ffi::c_int = 0;
     let rc = ocas_poly_z_factor(ptr::null(), &mut factors, &mut err);
+    assert_ne!(rc, OCAS_OK);
+    ocas_error_clear();
+}
+
+// -- Algebraic number field polynomial (OcasAlgebraicPoly) --
+
+#[test]
+fn algebraic_field_create_sqrt2() {
+    let mut err: std::ffi::c_int = 0;
+    let f = ocas_algebraic_field_create(cstr("x^2 - 2").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!f.is_null());
+    assert_eq!(ocas_algebraic_field_degree(f), 2);
+    ocas_algebraic_field_free(f);
+}
+
+#[test]
+fn algebraic_field_create_cbrt2() {
+    let mut err: std::ffi::c_int = 0;
+    let f = ocas_algebraic_field_create(cstr("x^3 - 2").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!f.is_null());
+    assert_eq!(ocas_algebraic_field_degree(f), 3);
+    ocas_algebraic_field_free(f);
+}
+
+#[test]
+fn algebraic_field_non_monic_rejected() {
+    let mut err: std::ffi::c_int = 0;
+    let f = ocas_algebraic_field_create(cstr("2*x^2 - 2").as_ptr(), &mut err);
+    assert!(f.is_null());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn algebraic_poly_factor_sqrt2_splits() {
+    // Over ℚ(√2): x² − 2 = (x − α)(x + α), two linear factors.
+    let mut err: std::ffi::c_int = 0;
+    let f = ocas_algebraic_field_create(cstr("x^2 - 2").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!f.is_null());
+    // x² − 2: coefficients "-2;0;1".
+    let p = ocas_algebraic_poly_create(f, cstr("-2;0;1").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!p.is_null());
+    assert_eq!(ocas_algebraic_poly_degree(p), 2);
+    let mut factors = OcasAlgebraicFactorArray {
+        factors: ptr::null_mut(),
+        len: 0,
+    };
+    let rc = ocas_algebraic_poly_factor(p, &mut factors, &mut err);
+    assert_eq!(rc, OCAS_OK);
+    assert_eq!(factors.len, 2, "x^2 - 2 must split into 2 linear factors");
+    for i in 0..factors.len {
+        let fac = unsafe { &*factors.factors.add(i) };
+        assert!(!fac.poly.is_null());
+        assert_eq!(fac.multiplicity, 1);
+        assert_eq!(ocas_algebraic_poly_degree(fac.poly as *mut _), 1);
+        ocas_algebraic_poly_free(fac.poly as *mut _);
+    }
+    ocas_algebraic_factor_array_free(&mut factors);
+    ocas_algebraic_poly_free(p);
+    ocas_algebraic_field_free(f);
+}
+
+#[test]
+fn algebraic_poly_to_string_roundtrip() {
+    let mut err: std::ffi::c_int = 0;
+    let f = ocas_algebraic_field_create(cstr("x^2 - 2").as_ptr(), &mut err);
+    assert!(!f.is_null());
+    let p = ocas_algebraic_poly_create(f, cstr("-2;0;1").as_ptr(), &mut err);
+    assert!(!p.is_null());
+    let s_ptr = ocas_algebraic_poly_to_string(p, &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!s_ptr.is_null());
+    let s = c_string_to_string(s_ptr);
+    assert!(s.contains('x'), "to_string output must mention x: {s}");
+    ocas_algebraic_poly_free(p);
+    ocas_algebraic_field_free(f);
+}
+
+#[test]
+fn algebraic_poly_factor_with_alpha_coefficient() {
+    // Over ℚ(√2): x² − α is irreducible (a root would be 2^(1/4) ∉ ℚ(√2)).
+    // Construct x² − α as "0,-1;0;1": constant = −α, x coeff = 0, x² coeff = 1.
+    let mut err: std::ffi::c_int = 0;
+    let f = ocas_algebraic_field_create(cstr("x^2 - 2").as_ptr(), &mut err);
+    assert!(!f.is_null());
+    let p = ocas_algebraic_poly_create(f, cstr("0,-1;0;1").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!p.is_null());
+    let mut factors = OcasAlgebraicFactorArray {
+        factors: ptr::null_mut(),
+        len: 0,
+    };
+    let rc = ocas_algebraic_poly_factor(p, &mut factors, &mut err);
+    assert_eq!(rc, OCAS_OK);
+    // x² − α is irreducible of degree 2 over ℚ(√2).
+    assert_eq!(factors.len, 1);
+    for i in 0..factors.len {
+        let fac = unsafe { &*factors.factors.add(i) };
+        assert_eq!(
+            ocas_algebraic_poly_degree(fac.poly as *mut _),
+            2,
+            "x^2 - alpha must stay irreducible"
+        );
+        ocas_algebraic_poly_free(fac.poly as *mut _);
+    }
+    ocas_algebraic_factor_array_free(&mut factors);
+    ocas_algebraic_poly_free(p);
+    ocas_algebraic_field_free(f);
+}
+
+#[test]
+fn algebraic_poly_null_handles_return_error() {
+    let mut err: std::ffi::c_int = 0;
+    let p = ocas_algebraic_poly_create(ptr::null(), cstr("1").as_ptr(), &mut err);
+    assert!(p.is_null());
+    ocas_error_clear();
+
+    let mut err: std::ffi::c_int = 0;
+    let mut factors = OcasAlgebraicFactorArray {
+        factors: ptr::null_mut(),
+        len: 0,
+    };
+    let rc = ocas_algebraic_poly_factor(ptr::null(), &mut factors, &mut err);
     assert_ne!(rc, OCAS_OK);
     ocas_error_clear();
 }

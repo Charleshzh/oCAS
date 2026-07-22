@@ -42,6 +42,7 @@
 #![warn(missing_docs)]
 #![allow(clippy::missing_const_for_thread_local)]
 
+pub mod algebraic;
 pub mod error;
 pub mod expression;
 pub mod polynomial;
@@ -50,6 +51,12 @@ use std::ffi::c_char;
 
 // Re-export error codes and the expression C API at the crate root so both
 // Rust callers (integration tests) and cbindgen can find them easily.
+pub use algebraic::{
+    OcasAlgebraicFactor, OcasAlgebraicFactorArray, OcasAlgebraicField, OcasAlgebraicPoly,
+    ocas_algebraic_factor_array_free, ocas_algebraic_field_create, ocas_algebraic_field_degree,
+    ocas_algebraic_field_free, ocas_algebraic_poly_create, ocas_algebraic_poly_degree,
+    ocas_algebraic_poly_factor, ocas_algebraic_poly_free, ocas_algebraic_poly_to_string,
+};
 pub use error::{
     OCAS_ERROR_DIVISION_BY_ZERO, OCAS_ERROR_INVALID_ARGUMENT, OCAS_ERROR_NULL_POINTER,
     OCAS_ERROR_OUT_OF_MEMORY, OCAS_ERROR_PARSE, OCAS_ERROR_RUNTIME, OCAS_OK,
