@@ -22,7 +22,7 @@ jobs:
     name: Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Pin a recent toolchain: audit-check compiles the latest cargo-audit,
       # whose deps (e.g. kstring 2.x) require Rust >= 1.96. Without this the
       # default toolchain is too old and the audit job fails to build.
