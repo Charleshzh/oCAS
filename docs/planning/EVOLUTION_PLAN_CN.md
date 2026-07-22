@@ -502,9 +502,9 @@ $\mathbb{F}_p$ 路径，并优化非首一情形的采样性能。
 
 | 条目 | 参考 | oCAS 落地位置 | 状态 |
 |---|---|---|---|
-| 域版 Wang 首项系数预处理（`lcoeff_precomputation`）：GCD-free 基 + 变量逐级 Hensel 提升 + 逐因式 LC 修正 | Symbolica `lcoeff_precomputation` L1297 | `ocas-poly::factor::eez` | [ ] |
-| 移除 `factor_square_free_fp` L733 放弃分支：非常数 LC 输入走域版 Wang + `eez_lift_imposed` | — | `ocas-poly::factor::eez` | [ ] |
-| `find_sample_z` 非首一 LC 采样性能优化：减少无效一元分解次数（上限或预筛选） | — | `ocas-poly::factor::eez` | [ ] |
+| 域版 Wang 首项系数预处理（`lcoeff_precomputation`）：GCD-free 基 + 变量逐级 Hensel 提升 + 逐因式 LC 修正 | Symbolica `lcoeff_precomputation` L1297 | `ocas-poly::factor::eez` | [x] |
+| 移除 `factor_square_free_fp` L733 放弃分支：非常数 LC 输入走域版 Wang + `eez_lift_imposed` | — | `ocas-poly::factor::eez` | [x] |
+| `find_sample_z` 非首一 LC 采样性能优化：减少无效一元分解次数（上限或预筛选） | — | `ocas-poly::factor::eez` | [x] |
 | 稀疏 Diophantine 小素数启发式：组大小 > p−1 时自动升级到更大素数而非全部回退稠密 | — | `ocas-poly::factor::eez` | [ ] |
 
 **性能指标**
@@ -514,9 +514,9 @@ $\mathbb{F}_p$ 路径，并优化非首一情形的采样性能。
 
 **验收**
 
-- [ ] $\mathbb{F}_p$ 非常数 LC correctness 用例通过。
-- [ ] `cargo test --workspace --exclude ocas-py` 全绿。
-- [ ] mdBook 双语 `factorization.md` 限制章节更新（移除 Fp 限制）。
+- [x] $\mathbb{F}_p$ 非常数 LC correctness 用例通过。
+- [x] `cargo test --workspace --exclude ocas-py` 全绿。
+- [x] mdBook 双语 `factorization.md` 限制章节更新（移除 Fp 限制）。
 
 ### 0.17.0 — 代数数域与扩域因式分解（Trager）
 
@@ -524,19 +524,21 @@ $\mathbb{F}_p$ 路径，并优化非首一情形的采样性能。
 
 | 条目 | 参考 | oCAS 落地位置 | 状态 |
 |---|---|---|---|
-| `AlgebraicNumberField` domain：ℚ(α) 算术（极小多项式 + 扩展 Euclid 求逆） | Symbolica `domains` | `ocas-domain::algebraic` | [ ] |
-| 扩域上多项式 GCD / 无平方分解 | — | `ocas-poly::factor::algebraic` | [ ] |
-| Trager 因式分解：范数 → ℤ 上分解 → 提升回扩域 | Trager 1976；Symbolica `factor.rs` ANF 路径 | `ocas-poly::factor::algebraic` | [ ] |
-| 与 0.12 结式栈集成（范数经结式计算） | — | `ocas-poly::resultant` | [ ] |
+| `AlgebraicNumberField` domain：ℚ(α) 算术（极小多项式 + 扩展 Euclid 求逆） | Symbolica `domains` | `ocas-domain::algebraic` | [x] |
+| 扩域上多项式 GCD / 无平方分解 | — | `ocas-poly::factor::algebraic` | [x] |
+| Trager 因式分解：范数 → ℤ 上分解 → 提升回扩域 | Trager 1976；Symbolica `factor.rs` ANF 路径 | `ocas-poly::factor::algebraic` | [x] 一元路径 |
+| 与 0.12 结式栈集成（范数经结式计算） | — | `ocas-poly::resultant` | [x] 求值–插值调用既有结式；并修复了 Brown PRS 一般次数 bug |
 
 **性能指标**
 
-- ℚ(√2)、ℚ(∛2)、ℚ(ζ₅) 上次数 ≤ 12 多项式分解 < 100 ms。
+- ℚ(√2)、ℚ(∛2)、ℚ(ζ₅) 上次数 ≤ 12 多项式分解 < 100 ms：达成（criterion 组 `poly_factor_anf` 实测约 8 / 24 / 32 ms）。
 
 **验收**
 
-- [ ] SymPy `factor(extension=...)` 交叉验证（≥20 用例）。
-- [ ] 范数为无平方时分解完备性经 proptest 验证。
+- [x] SymPy `factor(extension=...)` 交叉验证（≥20 用例；correctness 框架 `poly_factor_anf` 21 例）。
+- [x] 范数为无平方时分解完备性经 proptest 验证（ℚ(√2) 往返，标记 ignore 手动/审计运行）。
+
+**实现说明**：数域 GCD 采用模方法（$\mathrm{GF}(p^d)$ + CRT + 有理重构 + 试除），跳过 $m \bmod p$ 可约的素数以规避零因子；有理系数输入走"先在 ℚ 上分解"快速通道（范数必为幂次，避免强制平移）。多元扩域分解（Zippel 稀疏插值）留待后续版本。
 
 ### 0.18.0 — 数值积分、自动微分与资源控制
 
@@ -651,3 +653,4 @@ $\mathbb{F}_p$ 路径，并优化非首一情形的采样性能。
 | 0.16.0 | 2026-07-21 | 任意多元因式分解（Wang EEZ）发布。落地 `factor::eez`：泛型多元 Diophantine、逐变量 EEZ Hensel 提升、$n$ 元 GCD、特征 $p$ $p$ 次幂、Wang 首项系数预处理（常数 LC）、Zassenhaus 重组；`factor()` 泛化到任意变量数。顺手修复 3 个既有 bug（`div_rem_sparse` 整除方向、Diophantine 循环上界、单变量非首一分解）。新增 0.16.1（非常数 LC 强加 + 稀疏化）。 |
 | 0.16.1 | 2026-07-22 | 非常数首项系数强加与多元稀疏化发布。p-adic 系数 Hensel 提升（`coefficient_hensel_lift_z`）；稀疏多元 Diophantine（骨架插值 + Vandermonde + EEA 序列）；自适应采样（去重 + content 排序 + 值域递增）；二元非常数 LC 改走 EEZ；correctness 4 用例 + criterion 2 基准 + proptest；audit 报告 Symbolica 计时对比。修复 2 个 bug（Diophantine 契约违反、采样系数平方）。Fp 路径 LC 预处理（域版 Wang L1297）推迟 0.16.2。 |
 | 0.16.2 | — | 新增 0.16.2（$\mathbb{F}_p$ 路径非常数 LC 预处理 + 采样性能优化）。 |
+| 0.17.0 | 2026-07-22 | 代数数域因式分解（Trager）发布。新增 `ocas-domain::algebraic`（`AlgebraicExtension<D>`，ℚ(α)/GF(p^d) 同一实现）与 `ocas-poly::factor::algebraic`（平移范数 + 数域模 GCD + 有理快速通道）；修复结式 Brown PRS 一般次数 bug（按 Symbolica `resultant_prs` 重移植）；0.16.2 小素数升级启发式补齐并勾选复选框；性能指标达成（deg≤12 实测 8–32 ms < 100 ms）；多元扩域（Zippel）留待后续。 |

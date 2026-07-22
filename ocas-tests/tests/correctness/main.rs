@@ -231,6 +231,7 @@ mod parse;
 mod partial_fraction;
 mod poly_arithmetic;
 mod poly_factor;
+mod poly_factor_anf;
 mod poly_gcd;
 mod resultant;
 mod rewrite;

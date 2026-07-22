@@ -62,9 +62,9 @@ pub mod prelude {
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
     pub use ocas_domain::{
-        Assumption, Assumptions, Complex, ComplexDomain, Domain, EuclideanDomain, FiniteField,
-        FiniteFieldElement, Integer, IntegerDomain, Rational, RationalDomain, RealBall,
-        RealBallDomain, SymbolAssumptions,
+        AlgebraicElement, AlgebraicExtension, AlgebraicNumberField, Assumption, Assumptions,
+        Complex, ComplexDomain, Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer,
+        IntegerDomain, Rational, RationalDomain, RealBall, RealBallDomain, SymbolAssumptions,
     };
     #[cfg(feature = "simd")]
     pub use ocas_eval::VectorEvaluator;

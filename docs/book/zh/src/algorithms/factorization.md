@@ -15,9 +15,10 @@ oCAS 实现了整数和素有限域上一元与二元多项式的因式分解。
 | $\mathbb{Z}[x,y]$ | 二元（关于 $x$ 首一） | Wang Hensel 提升 |
 | $\mathbb{F}_p[x,y]$ | 二元（关于 $x$ 首一） | 有限域上的 Hensel 提升 |
 | $\mathbb{Z}[x_1,\dots,x_n]$ | 任意多元 | Wang EEZ Hensel 提升 + 首项系数预处理 + Zassenhaus 重组 |
-| $\mathbb{F}_p[x_1,\dots,x_n]$ | 任意多元 | EEZ Hensel 提升（含特征 $p$ 的 $p$ 次幂处理） |
+| $\mathbb{F}_p[x_1,\dots,x_n]$ | 任意多元 | EEZ Hensel 提升（含特征 $p$ 的 $p$ 次幂处理；非常数 LC 走域版 Wang 预处理） |
+| $\mathbb{Q}(\alpha)[x]$ | 一元 | Trager 算法：范数 + $\mathbb{Q}$ 上分解 + $\mathrm{GF}(p^d)$ 模 GCD |
 
-自 0.16.0 起支持多于两个变量的任意多元因式分解。非首一的一元多项式经首项系数变换后同样可分解。自 0.16.1 起，$\mathbb{Z}$ 上的多元路径通过 p-adic 系数 Hensel 提升（骨架插值 Diophantine）完整支持非常数首项系数强加；二元非常数 LC 输入自动转入 EEZ 路径。
+自 0.16.0 起支持多于两个变量的任意多元因式分解。非首一的一元多项式经首项系数变换后同样可分解。自 0.16.1 起，$\mathbb{Z}$ 上的多元路径通过 p-adic 系数 Hensel 提升（骨架插值 Diophantine）完整支持非常数首项系数强加；二元非常数 LC 输入自动转入 EEZ 路径。自 0.17.0 起支持代数数域上的一元因式分解（Trager 算法）。
 
 ---
 
@@ -199,11 +200,48 @@ let factors = f.factor();
 
 ---
 
+## 代数数域上的因式分解（Trager）
+
+自 0.17.0 起，oCAS 支持代数数域 $K = \mathbb{Q}(\alpha)$ 上一元多项式的因式分解，其中 $\alpha$ 由 $\mathbb{Q}$ 上的首一极小多项式给出。域类型位于 `ocas-domain`：`AlgebraicExtension<D>`（$D = \mathbb{Q}$ 时为 `AlgebraicNumberField`）；同一类型在 $D = \mathbb{F}_p$ 时表示 $\mathrm{GF}(p^d)$。
+
+分解器实现 **Trager 算法**：
+
+1. **无平方分解**（Yun）：在 $K$ 上进行，GCD 使用下述模方法而非伪余式序列。
+2. **范数与平移**：对 $s = 0, 1, 2, \dots$ 计算 $g(x) = f(x - s\alpha)$ 的范数——通过求值–插值计算标量结式 $\operatorname{Res}_\alpha(m, g)$——直到范数在 $\mathbb{Q}$ 上无平方（用小素数模检验；接受条件是精确的）。
+3. **有理数域分解**：无平方范数在 $\mathbb{Z}$ 上分解（Hensel 路径）。
+4. **数域上的模 GCD**：把每个有理因子映到 $K[x]$，用模方法求其与 $g$ 的 GCD——在 $m \bmod p$ 不可约的素数上映到 $\mathrm{GF}(p^d)$，CRT 合并首一模 GCD，有理重构系数，试除验证。
+5. **回代** $x \mapsto x + s\alpha$ 并首一化。
+
+当 $f$ 的所有系数都是有理常数时走**有理快速通道**：先在 $\mathbb{Q}$ 上分解，仅把 $\mathbb{Q}$ 不可约因子送入 Trager 范数流程。
+
+```rust
+use ocas_domain::{AlgebraicNumberField, Domain, Rational, RationalDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+// ℚ(√2)：极小多项式 α² − 2。
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+// x² − 2 = (x − √2)(x + √2) 在 ℚ(√2) 上分裂。
+let f = DenseUnivariatePolynomial::from_coeffs(
+    field.clone(),
+    vec![field.from_base(Rational::new(-2, 1)), field.zero(), field.one()],
+);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);
+```
+
+基准（criterion 组 `poly_factor_anf`）：$\mathbb{Q}(\sqrt2)$、$\mathbb{Q}(\sqrt[3]{2})$ 与分圆域 $\mathbb{Q}(\zeta_5)$ 上次数 ≤ 12 的多项式分解均远低于 100 ms。
+
+---
+
 ## 限制与未来工作
 
 - $\mathbb{Z}$ 上的多元路径自 0.16.1 起已完整支持非常数首项系数强加（p-adic 系数 Hensel 提升 + 骨架插值 Diophantine）。
 - 二元 Wang Hensel 实现的原有"首项系数须为常数"限制已由 0.16.0 的任意多元路径覆盖（走 EEZ）；二元非常数 LC 输入现自动转入 EEZ 路径。
-- $\mathbb{F}_p$ 多元路径仍要求首项系数为常数；域版 Wang 首项系数预处理（Symbolica L1297）推迟至 0.16.2。
+- 自 0.16.2 起 $\mathbb{F}_p$ 多元路径同样支持非常数首项系数（域版 Wang LC 预处理 `wang_reconstruct_lcoeffs_fp` + `eez_lift_imposed`）。
+- 代数数域因式分解（0.17.0）目前**仅限一元**；扩域上的多元因式分解与解析器的 `RootOf`/根式语法留待后续版本。极小多项式的不可约性由调用方保证（模可约时环中存在零因子，求逆会失败）。
 - 自适应赋值点搜索已扩大（ℤ：7 → 25，$\mathbb{F}_p$：8 → 32）；对于非常稀疏或高度特殊的多项式，可能仍需进一步扩大搜索范围或额外的 Diophantine 插值遍次。
 
 这些限制已在项目路线图中跟踪，并会随着代数内核的成熟逐步解除。

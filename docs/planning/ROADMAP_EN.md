@@ -313,7 +313,7 @@ After 1.0, development will focus on:
 | 0.16.0 | 1.0 Candidate | Month 26 | Arbitrary multivariate factorization (Wang EEZ, ≥3 variables, ℤ and ℤ_p) ✅ |
 | 0.16.1 | 1.0 Candidate | Month 26 | Non-constant leading-coefficient imposition (mod-p Hensel) + multivariate sparsity + sparse Diophantine ✅ |
 | 0.16.2 | 1.0 Candidate | Month 26 | $\mathbb{F}_p$-path non-constant LC preprocessing (field Wang) + sampling performance |
-| 0.17.0 | 1.0 Candidate | Month 27 | Algebraic number field & extension-field factorization (Trager) |
+| 0.17.0 | 1.0 Candidate | Month 27 | Algebraic number field & extension-field factorization (Trager) ✅ (univariate path; multivariate extension deferred) |
 | 0.18.0 | 1.0 Candidate | Month 28 | Numerical integration (Vegas) + dual-number AD + tensor basics + fuel resource control |
 | 1.0.0 | Stable | Month 30 | Stable release (frozen after the Symbolica feature/performance gap is closed) |
 

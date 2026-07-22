@@ -574,6 +574,11 @@ fn coefficient_bound_z(f: &ZmPoly) -> Integer {
 ///
 /// Reference: Symbolica `sparse_coefficient_hensel_lift_mod_prime` (dense
 /// Diophantine variant).
+///
+/// When `allow_dense_fallback` is false and the skeletons would need more
+/// distinct nonzero field elements than `𝔽_p` offers, returns `None`
+/// immediately so the caller escalates to a larger prime instead of
+/// silently degrading to the dense Diophantine solver.
 fn coefficient_hensel_lift_z(
     target: &ZmPoly,
     factors: Vec<ZmPoly>,
@@ -581,6 +586,7 @@ fn coefficient_hensel_lift_z(
     p: u64,
     max_p: &Integer,
     sample: &[Integer],
+    allow_dense_fallback: bool,
 ) -> Option<Vec<ZmPoly>> {
     let n = target.n_vars();
     let field = FiniteField::new(BigInt::from(p));
@@ -609,6 +615,15 @@ fn coefficient_hensel_lift_z(
             sk
         })
         .collect();
+    // Small-prime heuristic: skeleton interpolation needs one distinct
+    // nonzero field element per group member; bail out so the caller can
+    // escalate to a larger prime instead of degrading to the dense solver.
+    if !allow_dense_fallback
+        && let Some(needed) = sparse_samples_needed(&skeletons)
+        && BigInt::from(needed) >= field.prime().clone()
+    {
+        return None;
+    }
     let sample_fp: Vec<FiniteFieldElement> = sample
         .iter()
         .map(|s| field.element(s.to_bigint()))
@@ -812,6 +827,44 @@ fn group_skeleton(skeleton: &FpMPoly) -> Vec<(usize, Vec<smallvec::SmallVec<[usi
         }
     }
     groups
+}
+
+/// Maximum skeleton group size the sparse Diophantine solver would need for
+/// these skeletons, or `None` when the sparse solver is inapplicable (empty
+/// skeletons or too many terms). Mirrors the applicability checks in
+/// [`sparse_diophantine_two_factor_fp`] and
+/// [`sparse_diophantine_n_factor_fp`].
+fn sparse_samples_needed(skeletons: &[FpMPoly]) -> Option<usize> {
+    if skeletons.len() == 2 {
+        let sparse = skeletons
+            .iter()
+            .filter(|s| !s.is_zero())
+            .min_by_key(|s| s.n_terms())?;
+        if sparse.n_terms() > SPARSE_MDP_MAX_TERMS {
+            return None;
+        }
+        let needed = group_skeleton(sparse)
+            .iter()
+            .map(|(_, exps)| exps.len())
+            .max()
+            .unwrap_or(0);
+        (needed > 0).then_some(needed)
+    } else if skeletons.len() > 2 {
+        let mut needed = 0usize;
+        let mut total_terms = 0usize;
+        for sk in skeletons {
+            for (_, exps) in group_skeleton(sk) {
+                needed = needed.max(exps.len());
+            }
+            total_terms += sk.n_terms();
+        }
+        if needed == 0 || total_terms > SPARSE_MDP_MAX_TERMS {
+            return None;
+        }
+        Some(needed)
+    } else {
+        None
+    }
 }
 
 /// Build the dense univariate image in variable 0 from per-term secondary
@@ -1239,65 +1292,78 @@ fn padic_lift_factors(
     // per skeleton group member, and bigger primes also cut the number of
     // p-adic iterations.
     let prime_start = if f.n_terms() >= 30 { 8 } else { 0 };
-    for p in PADIC_PRIMES[prime_start..].iter().copied() {
-        let field = FiniteField::new(BigInt::from(p));
-        let image_fp = UP::<FiniteField>::from_coeffs(
-            field.clone(),
-            image
-                .coeffs()
+    // Two passes over the primes: the first escalates past primes too small
+    // for skeleton interpolation (dense Diophantine fallback disabled); the
+    // second re-enables the dense fallback so inputs whose skeletons fit no
+    // prime in `PADIC_PRIMES` still factor.
+    for allow_dense_fallback in [false, true] {
+        for p in PADIC_PRIMES[prime_start..].iter().copied() {
+            let field = FiniteField::new(BigInt::from(p));
+            let image_fp = UP::<FiniteField>::from_coeffs(
+                field.clone(),
+                image
+                    .coeffs()
+                    .iter()
+                    .map(|c| field.element(c.to_bigint()))
+                    .collect(),
+            );
+            if image_fp.degree() != Some(deg0) || !image_fp.is_square_free() {
+                continue; // p divides the leading coefficient or the discriminant
+            }
+            let target_fp = zmp_to_fmp(&target, &field);
+            let initial_fp: Vec<FpMPoly> = scaled_uni
                 .iter()
-                .map(|c| field.element(c.to_bigint()))
-                .collect(),
-        );
-        if image_fp.degree() != Some(deg0) || !image_fp.is_square_free() {
-            continue; // p divides the leading coefficient or the discriminant
-        }
-        let target_fp = zmp_to_fmp(&target, &field);
-        let initial_fp: Vec<FpMPoly> = scaled_uni
-            .iter()
-            .map(|u| zmp_to_fmp(&dense_to_mpoly(u, n), &field))
-            .collect();
-        let tl_fp: Vec<FpMPoly> = scaled_lcoeffs
-            .iter()
-            .map(|l| zmp_to_fmp(l, &field))
-            .collect();
-        let sample_fp: Vec<FiniteFieldElement> = sample
-            .iter()
-            .map(|s| field.element(s.to_bigint()))
-            .collect();
-        let Some(lifted_fp) = eez_lift_imposed(&target_fp, &sample_fp, &initial_fp, &tl_fp) else {
-            continue;
-        };
-        let lifted_z: Vec<ZmPoly> = lifted_fp.iter().map(fp_to_z_symmetric).collect();
-        // Smallest p^k with 2·p^k ≥ bound.
-        let mut max_p = Integer::from(p as i64);
-        while IntegerDomain.mul(&max_p, &Integer::from(2)) < bound {
-            max_p = IntegerDomain.mul(&max_p, &Integer::from(p as i64));
-        }
-        let Some(factors) =
-            coefficient_hensel_lift_z(&target, lifted_z, &scaled_lcoeffs, p, &max_p, sample)
-        else {
-            continue;
-        };
-        let out: Vec<ZmPoly> = factors.iter().map(primitive_positive).collect();
-        let mut prod = one_mpoly(&IntegerDomain, n);
-        for g in &out {
-            prod = prod.mul(g);
-        }
-        if equal_up_to_unit(&prod, f) {
-            let mut out = out;
-            out.sort_by_key(|b| std::cmp::Reverse(b.degree_in(0)));
-            return Some(out);
-        }
-        // Recombination fallback: the lifted factors may be finer than the
-        // true irreducible factors.
-        if let Some(irr) = zassenhaus_multivariate(f, &out) {
+                .map(|u| zmp_to_fmp(&dense_to_mpoly(u, n), &field))
+                .collect();
+            let tl_fp: Vec<FpMPoly> = scaled_lcoeffs
+                .iter()
+                .map(|l| zmp_to_fmp(l, &field))
+                .collect();
+            let sample_fp: Vec<FiniteFieldElement> = sample
+                .iter()
+                .map(|s| field.element(s.to_bigint()))
+                .collect();
+            let Some(lifted_fp) = eez_lift_imposed(&target_fp, &sample_fp, &initial_fp, &tl_fp)
+            else {
+                continue;
+            };
+            let lifted_z: Vec<ZmPoly> = lifted_fp.iter().map(fp_to_z_symmetric).collect();
+            // Smallest p^k with 2·p^k ≥ bound.
+            let mut max_p = Integer::from(p as i64);
+            while IntegerDomain.mul(&max_p, &Integer::from(2)) < bound {
+                max_p = IntegerDomain.mul(&max_p, &Integer::from(p as i64));
+            }
+            let Some(factors) = coefficient_hensel_lift_z(
+                &target,
+                lifted_z,
+                &scaled_lcoeffs,
+                p,
+                &max_p,
+                sample,
+                allow_dense_fallback,
+            ) else {
+                continue;
+            };
+            let out: Vec<ZmPoly> = factors.iter().map(primitive_positive).collect();
             let mut prod = one_mpoly(&IntegerDomain, n);
-            for g in &irr {
+            for g in &out {
                 prod = prod.mul(g);
             }
             if equal_up_to_unit(&prod, f) {
-                return Some(irr);
+                let mut out = out;
+                out.sort_by_key(|b| std::cmp::Reverse(b.degree_in(0)));
+                return Some(out);
+            }
+            // Recombination fallback: the lifted factors may be finer than the
+            // true irreducible factors.
+            if let Some(irr) = zassenhaus_multivariate(f, &out) {
+                let mut prod = one_mpoly(&IntegerDomain, n);
+                for g in &irr {
+                    prod = prod.mul(g);
+                }
+                if equal_up_to_unit(&prod, f) {
+                    return Some(irr);
+                }
             }
         }
     }
@@ -1325,10 +1391,16 @@ fn eval_to_image_fp(f: &FpMPoly, sample: &[FiniteFieldElement]) -> UP<FiniteFiel
 ///
 /// `range` caps the sample values; the caller retries with a larger range
 /// when the first round yields no usable candidate (adaptive search).
+///
+/// `lc_filter` lists the non-constant factors of the leading coefficient
+/// (in the secondary variables); samples where any evaluates to zero are
+/// skipped, since Wang's leading-coefficient distribution requires every
+/// image α_j to be nonzero (over a field, nonzero ⟹ invertible).
 fn find_sample_fp(
     f: &FpMPoly,
     max_candidates: usize,
     range: u64,
+    lc_filter: &[FpMPoly],
 ) -> Vec<(Vec<FiniteFieldElement>, Vec<UP<FiniteField>>)> {
     let n = f.n_vars();
     let field = f.domain().clone();
@@ -1344,6 +1416,26 @@ fn find_sample_fp(
         for slot in sample.iter_mut().take(n).skip(1) {
             *slot = field.element(BigInt::from(rem % range));
             rem /= range;
+        }
+        // Skip samples where any LC filter polynomial evaluates to zero:
+        // Wang's distribution requires α_j = g_j(s) ≠ 0.
+        // Note: lc_filter elements have n-1 variables (main var dropped),
+        // so variable k in the reduced polynomial corresponds to sample[k+1].
+        if !lc_filter.is_empty() {
+            let mut bad = false;
+            for g in lc_filter {
+                let mut img = g.clone();
+                for k in (0..img.n_vars()).rev() {
+                    img = img.eval_keep(k, &sample[k + 1]);
+                }
+                if img.is_zero() {
+                    bad = true;
+                    break;
+                }
+            }
+            if bad {
+                continue;
+            }
         }
         let image = eval_to_image_fp(f, &sample);
         if image.degree().unwrap_or(0) != deg0 || image.degree().unwrap_or(0) == 0 {
@@ -1370,6 +1462,118 @@ fn find_sample_fp(
         }
     }
     best
+}
+
+/// Reconstruct the true multivariate leading coefficients ℓ_i for the
+/// factors of `f` over a prime field, using Wang's greedy distribution of
+/// the irreducible factors of the overall leading coefficient.
+///
+/// Ported from [`wang_reconstruct_lcoeffs`] (ℤ path), adapted for `𝔽_p`:
+/// over a field, α_j ≠ 0 implies invertibility, so the "coprimality"
+/// check becomes "all α_j nonzero" and the divisibility check in the
+/// greedy loop is always satisfiable.
+fn wang_reconstruct_lcoeffs_fp(
+    lcoeff: &FpMPoly,
+    sample: &[FiniteFieldElement],
+    uni: &[UP<FiniteField>],
+) -> Option<Vec<FpMPoly>> {
+    let n = lcoeff.n_vars();
+    let field = lcoeff.domain().clone();
+
+    // Constant LC fast path: each ℓ_i is the constant lc(u_i).
+    if lcoeff.degree_in(0) == 0 && lcoeff.drop_main_var().total_degree() == Some(0) {
+        return Some(
+            uni.iter()
+                .map(|u| {
+                    let lc = u.leading_coeff().cloned().unwrap_or_else(|| field.one());
+                    one_mpoly(&field, n).mul_scalar(&lc)
+                })
+                .collect(),
+        );
+    }
+
+    // Factor the leading coefficient in the secondary variables.
+    let lc_reduced = lcoeff.drop_main_var();
+    let lc_factors: Vec<(FpMPoly, usize)> = if lc_reduced.n_vars() == 0 {
+        Vec::new()
+    } else {
+        multivariate_factor_fp(&lc_reduced)
+    };
+
+    // Field images α_j = g_j(s), requiring each to be nonzero.
+    let mut alpha: Vec<FiniteFieldElement> = Vec::new();
+    let mut nonconst: Vec<FpMPoly> = Vec::new();
+    let mut const_part = field.one();
+    for (g, _e) in &lc_factors {
+        if is_constant(g) {
+            const_part = field.mul(&const_part, &g.coeff(&vec![0; g.n_vars()]));
+            continue;
+        }
+        let mut img = g.clone();
+        // g is in (n-1) variables (main var dropped); evaluate at the
+        // secondary sample values.
+        for k in 0..img.n_vars() {
+            img = img.eval_keep(k, &sample[k + 1]);
+        }
+        let a = img.coeff(&vec![0; img.n_vars()]);
+        if field.is_zero(&a) {
+            return None; // unlucky sample: factor vanishes
+        }
+        alpha.push(a);
+        nonconst.push(g.clone());
+    }
+    // Over a field, all nonzero elements are pairwise coprime, so no
+    // additional coprimality check is needed (unlike the ℤ path).
+
+    // Multiplicities of each non-constant factor in ℓ.
+    let multiplicities: Vec<usize> = nonconst
+        .iter()
+        .map(|g| {
+            lc_factors
+                .iter()
+                .find(|(h, _)| h == g)
+                .map(|(_, e)| *e)
+                .unwrap_or(1)
+        })
+        .collect();
+
+    // Greedy distribution: assign g_j to u_i while α_j ≠ 0.
+    // Over a field every nonzero element divides any element, so we
+    // distribute based on the number of available copies.
+    let r = uni.len();
+    let mut lcoeffs: Vec<FpMPoly> = vec![one_mpoly(&field, n); r];
+    let mut residual_lc: Vec<FiniteFieldElement> = uni
+        .iter()
+        .map(|u| u.leading_coeff().cloned().unwrap_or_else(|| field.one()))
+        .collect();
+    let mut used = vec![0usize; nonconst.len()];
+    for i in 0..r {
+        for j in 0..nonconst.len() {
+            while used[j] < multiplicities[j] && !field.is_zero(&residual_lc[i]) {
+                lcoeffs[i] = lcoeffs[i].mul(&nonconst[j].embed_new_main());
+                // residual_lc[i] /= α_j  (exact in a field)
+                residual_lc[i] = field
+                    .div(&residual_lc[i], &alpha[j])
+                    .unwrap_or_else(|| field.zero());
+                used[j] += 1;
+            }
+        }
+    }
+    if used != multiplicities {
+        return None; // could not distribute all factors
+    }
+
+    // No reconciliation needed: find_sample_fp returns monic factors
+    // (lc(u_i) = 1), so ℓ_i(s) may be any nonzero value — the identity
+    // ∏ ℓ_i = ℓ is verified globally below. (The ℤ path reconciles
+    // because find_sample_z returns non-monic factors.)
+
+    // Global verification: ∏ ℓ_i = ℓ as a polynomial identity.
+    let mut prod = one_mpoly(&field, n);
+    for l in &lcoeffs {
+        prod = prod.mul(l);
+    }
+    if prod == *lcoeff { Some(lcoeffs) } else { None }
 }
 
 /// Make a dense univariate polynomial monic over a field.
@@ -1645,31 +1849,97 @@ fn factor_square_free_fp(f: &FpMPoly) -> Vec<FpMPoly> {
     }
 
     let lc = f.leading_coeff_in(0);
+    let n = f.n_vars();
+    let field = f.domain().clone();
+
     if !is_constant(&lc) {
-        // Wang leading-coefficient preprocessing lands in a later phase;
-        // conservatively report the input as unfactored.
-        return vec![f.clone()];
+        // Non-constant leading coefficient: use Wang's LC reconstruction
+        // to distribute the factors of ℓ among the polynomial factors,
+        // then lift with imposed leading coefficients.
+        return factor_square_free_fp_nonconstant_lc(f, &lc);
     }
-    let c = lc.coeff(&vec![0; f.n_vars()]);
-    let inv_c = f.domain().inv(&c).expect("nonzero leading coefficient");
+
+    // Constant LC: make monic and lift.
+    let c = lc.coeff(&vec![0; n]);
+    let inv_c = field.inv(&c).expect("nonzero leading coefficient");
     let f_m = f.mul_scalar(&inv_c);
 
     // Adaptive sample search: retry with a larger value range when the
     // first round yields no usable candidate.
-    for range in [8u64, 32] {
-        for (sample, uni) in find_sample_fp(&f_m, 8, range) {
+    for range in [8u64, 16, 32] {
+        for (sample, uni) in find_sample_fp(&f_m, 8, range, &[]) {
             if uni.len() == 1 {
                 // Square-free, degree-preserving irreducible image ⇒ f irreducible.
                 return vec![f.clone()];
             }
             if let Some(lifted) = eez_lift(&f_m, &sample, &uni) {
-                let mut prod = one_mpoly(f.domain(), f.n_vars());
+                let mut prod = one_mpoly(&field, n);
                 for g in &lifted {
                     prod = prod.mul(g);
                 }
                 if prod == f_m {
                     let mut out = lifted;
                     out[0] = out[0].mul_scalar(&c);
+                    return out;
+                }
+            }
+        }
+    }
+    vec![f.clone()]
+}
+
+/// Factor a square-free multivariate polynomial over a prime field when the
+/// leading coefficient (in variable 0) is non-constant.
+///
+/// Uses Wang's leading-coefficient reconstruction to determine the true
+/// multivariate leading coefficients ℓ_i, then lifts the factors via
+/// [`eez_lift_imposed`].
+fn factor_square_free_fp_nonconstant_lc(f: &FpMPoly, lc: &FpMPoly) -> Vec<FpMPoly> {
+    let n = f.n_vars();
+    let field = f.domain().clone();
+
+    // Compute the non-constant irreducible factors of the LC (in the
+    // secondary variables) for sample filtering.
+    let lc_reduced = lc.drop_main_var();
+    let lc_filter: Vec<FpMPoly> = if lc_reduced.total_degree() == Some(0) {
+        Vec::new()
+    } else {
+        multivariate_factor_fp(&lc_reduced)
+            .into_iter()
+            .map(|(g, _)| g)
+            .filter(|g| !is_constant(g))
+            .collect()
+    };
+
+    // Adaptive sample search with lc_filter for Wang distribution.
+    for range in [8u64, 16, 32] {
+        for (sample, mono) in find_sample_fp(f, 8, range, &lc_filter) {
+            if mono.len() == 1 {
+                continue; // try other samples before concluding irreducible
+            }
+            // Reconstruct the true multivariate leading coefficients.
+            let true_lcoeffs = match wang_reconstruct_lcoeffs_fp(lc, &sample, &mono) {
+                Some(l) => l,
+                None => continue,
+            };
+            // Build initial factors: multiply the monic univariate factor by
+            // ℓ_i to get the correct leading coefficient AND correct lower
+            // terms. For monic u_i, lc(ℓ_i · u_i) = ℓ_i, and the lower
+            // terms carry the ℓ_i scaling that the EEZ lift will refine.
+            let mut initial: Vec<FpMPoly> = Vec::with_capacity(mono.len());
+            for (i, u) in mono.iter().enumerate() {
+                let f_i = dense_to_mpoly(u, n);
+                initial.push(true_lcoeffs[i].mul(&f_i));
+            }
+            // EEZ lift with imposed leading coefficients.
+            if let Some(lifted) = eez_lift_imposed(f, &sample, &initial, &true_lcoeffs) {
+                let mut prod = one_mpoly(&field, n);
+                for g in &lifted {
+                    prod = prod.mul(g);
+                }
+                if equal_up_to_unit(&prod, f) {
+                    let mut out = lifted;
+                    out.sort_by_key(|b| std::cmp::Reverse(b.degree_in(0)));
                     return out;
                 }
             }
@@ -1709,9 +1979,9 @@ fn equal_up_to_unit<D: Domain>(a: &MP<D>, b: &MP<D>) -> bool {
 /// Factor a multivariate polynomial over a prime finite field into
 /// irreducible factors with multiplicities.
 ///
-/// Currently the leading coefficient in variable 0 must be a nonzero field
-/// constant; otherwise the (square-free part of the) input is returned
-/// unfactored.
+/// Supports polynomials with non-constant leading coefficients in
+/// variable 0 via Wang's leading-coefficient reconstruction and imposed
+/// EEZ lifting.
 pub fn multivariate_factor_fp(f: &FpMPoly) -> Vec<(FpMPoly, usize)> {
     if f.is_zero() || is_constant(f) {
         return Vec::new();
@@ -1973,6 +2243,12 @@ fn wang_reconstruct_lcoeffs(
 /// retries with a larger bound when every candidate of the first round
 /// fails downstream (adaptive sample search, cf. Symbolica `find_sample`
 /// restarting with `coefficient_upper_bound + 10`).
+///
+/// At most `max_decompositions` successful univariate decompositions are
+/// evaluated (distinct samples whose image is square-free and factors into
+/// ≥ 2 coprime parts); beyond that the best candidates found so far are
+/// returned.  This caps the dominant cost (univariate factoring) without
+/// affecting the quality of the candidate pool.
 #[allow(clippy::type_complexity)]
 fn find_sample_z(
     f: &ZmPoly,
@@ -1990,6 +2266,8 @@ fn find_sample_z(
         candidates.push(-v);
     }
     let attempts = 4000usize;
+    let max_decompositions = 200usize;
+    let mut decompositions = 0usize;
     let mut seen: std::collections::HashSet<Vec<i64>> = std::collections::HashSet::new();
 
     for t in 0..attempts {
@@ -2066,6 +2344,7 @@ fn find_sample_z(
             continue;
         }
         uni.sort_by_key(|b| std::cmp::Reverse(b.degree().unwrap_or(0)));
+        decompositions += 1;
         // Rank by (factor count, image content): fewer factors is better,
         // and a smaller content gives Wang's distribution more room (the
         // image content cannot be recovered by the integer reconcile).
@@ -2084,6 +2363,11 @@ fn find_sample_z(
         // non-constant LC the full scan is required, since Wang's
         // distribution may reject early candidates downstream.
         if lc_filter.is_empty() && best.len() >= 2 && best[0].1.len() >= 2 {
+            break;
+        }
+        // Cap the number of successful univariate decompositions to bound
+        // the dominant cost (univariate factoring over ℤ).
+        if decompositions >= max_decompositions {
             break;
         }
     }
@@ -2228,7 +2512,7 @@ fn factor_square_free_z(f: &ZmPoly) -> Vec<ZmPoly> {
         };
     // Adaptive sample search: if every candidate of the first round fails
     // (unlucky samples), retry with a larger value bound.
-    for value_bound in [7i64, 25] {
+    for value_bound in [7i64, 15, 25] {
         let samples = find_sample_z(f, 16, &lc_filter, value_bound);
         if let Some(out) = factor_square_free_z_candidates(f, &lcoeff, samples) {
             return out;
@@ -2705,6 +2989,112 @@ mod tests {
         assert_eq!(deltas, vec![d1, d2, d3]);
     }
 
+    // ---- 𝔽_p non-constant LC tests (0.16.2) ----
+
+    #[test]
+    fn fp_bivariate_nonconstant_lcoeff() {
+        // f = (y·x² + 1)(x + 1) over F₁₃.
+        // LC in x is y (non-constant). Wang distributes ℓ = y to the first factor.
+        let f1 = fmp(13, 2, &[(vec![2, 1], 1), (vec![0, 0], 1)]); // y·x² + 1
+        let f2 = fmp(13, 2, &[(vec![1, 0], 1), (vec![0, 0], 1)]); // x + 1
+        let f = f1.mul(&f2);
+        let factors = multivariate_factor_fp(&f);
+        let mut prod = fmp(13, 2, &[(vec![0, 0], 1)]);
+        for (g, m) in &factors {
+            for _ in 0..*m {
+                prod = prod.mul(g);
+            }
+        }
+        assert!(
+            equal_up_to_unit(&prod, &f),
+            "Fp non-constant LC bivariate roundtrip failed: factors={:?}",
+            factors
+        );
+        assert!(factors.len() >= 2, "expected at least 2 factors");
+    }
+
+    #[test]
+    fn fp_trivariate_nonconstant_lcoeff() {
+        // f = (z·x + y)(x + z) over F₁₇.
+        // LC in x is z (non-constant in the secondary variables).
+        let f1 = fmp(17, 3, &[(vec![1, 0, 1], 1), (vec![0, 1, 0], 1)]); // z·x + y
+        let f2 = fmp(17, 3, &[(vec![1, 0, 0], 1), (vec![0, 0, 1], 1)]); // x + z
+        let f = f1.mul(&f2);
+        let factors = multivariate_factor_fp(&f);
+        let mut prod = fmp(17, 3, &[(vec![0, 0, 0], 1)]);
+        for (g, m) in &factors {
+            for _ in 0..*m {
+                prod = prod.mul(g);
+            }
+        }
+        assert!(
+            equal_up_to_unit(&prod, &f),
+            "Fp non-constant LC trivariate roundtrip failed: factors={:?}",
+            factors
+        );
+        assert!(factors.len() >= 2, "expected at least 2 factors");
+    }
+
+    #[test]
+    fn fp_reducible_nonconstant_lcoeff() {
+        // f = (x + y)(y·x² + z) over F₁₃.
+        // LC of f in x is y (from the second factor); first factor is monic.
+        let f1 = fmp(13, 3, &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1)]); // x + y
+        let f2 = fmp(13, 3, &[(vec![2, 1, 0], 1), (vec![0, 0, 1], 1)]); // y·x² + z
+        let f = f1.mul(&f2);
+        let factors = multivariate_factor_fp(&f);
+        let mut prod = fmp(13, 3, &[(vec![0, 0, 0], 1)]);
+        for (g, m) in &factors {
+            for _ in 0..*m {
+                prod = prod.mul(g);
+            }
+        }
+        assert!(
+            equal_up_to_unit(&prod, &f),
+            "Fp reducible non-constant LC roundtrip failed: factors={:?}",
+            factors
+        );
+    }
+
+    #[test]
+    #[ignore] // slow: 4-variable factorization; run manually
+    fn fp_four_var_nonconstant_lcoeff() {
+        // Sparse product in 4 variables with non-constant LC over F₁₃.
+        let f1 = fmp(
+            13,
+            4,
+            &[
+                (vec![2, 1, 1, 0], 1), // y·z·x²
+                (vec![1, 0, 0, 0], 3),
+                (vec![0, 1, 0, 0], 2),
+                (vec![0, 0, 0, 1], 5),
+            ],
+        );
+        let f2 = fmp(
+            13,
+            4,
+            &[
+                (vec![1, 1, 0, 0], 1), // y·x
+                (vec![1, 0, 0, 1], 1), // w·x
+                (vec![0, 1, 0, 0], 2),
+                (vec![0, 0, 0, 0], 3),
+            ],
+        );
+        let f = f1.mul(&f2);
+        let factors = multivariate_factor_fp(&f);
+        let mut prod = fmp(13, 4, &[(vec![0, 0, 0, 0], 1)]);
+        for (g, m) in &factors {
+            for _ in 0..*m {
+                prod = prod.mul(g);
+            }
+        }
+        assert!(
+            equal_up_to_unit(&prod, &f),
+            "Fp 4-var non-constant LC roundtrip failed: factors={:?}",
+            factors
+        );
+    }
+
     #[test]
     fn z_sparse_four_var_nonconstant_lc() {
         // Sparse product in 4 variables with ≥ 50 terms and non-constant
@@ -2731,6 +3121,52 @@ mod tests {
         let factors = multivariate_factor_z(&f);
         assert_eq!(factors.len(), 2, "expected 2 factors, got {:?}", factors);
         assert_eq!(product_z(&with_mult_z(&factors)), f);
+    }
+
+    #[test]
+    fn small_prime_escalation_bails_for_large_skeleton_groups() {
+        // Both factors have skeleton groups of size 2 ({y, z} at
+        // x_0-degree 0), but 𝔽_2 offers only one nonzero element, so
+        // skeleton interpolation cannot work: with the dense fallback
+        // disabled the lift must bail out (the caller then escalates to a
+        // larger prime); with the fallback enabled it succeeds.
+        let f1 = zm_poly(
+            3,
+            &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], 1)],
+        );
+        let f2 = zm_poly(
+            3,
+            &[(vec![1, 0, 0], 1), (vec![0, 1, 0], 1), (vec![0, 0, 1], -1)],
+        );
+        let target = f1.mul(&f2);
+        let one = zm_poly(3, &[(vec![0, 0, 0], 1)]);
+        let lcs = [one.clone(), one.clone()];
+        let max_p = Integer::from(8);
+        let sample = vec![Integer::from(0); 3];
+        assert!(
+            coefficient_hensel_lift_z(
+                &target,
+                vec![f1.clone(), f2.clone()],
+                &lcs,
+                2,
+                &max_p,
+                &sample,
+                false,
+            )
+            .is_none(),
+            "small prime must bail out when skeleton groups need ≥ p generators"
+        );
+        let lifted = coefficient_hensel_lift_z(
+            &target,
+            vec![f1.clone(), f2.clone()],
+            &lcs,
+            2,
+            &max_p,
+            &sample,
+            true,
+        )
+        .expect("dense fallback must succeed on the same input");
+        assert_eq!(lifted, vec![f1, f2]);
     }
 
     #[test]
@@ -2784,6 +3220,7 @@ mod tests {
             13,
             &max_p,
             &sample,
+            true,
         )
         .expect("coefficient lift must succeed");
         let after = SPARSE_DIO_HITS.with(|h| h.get());

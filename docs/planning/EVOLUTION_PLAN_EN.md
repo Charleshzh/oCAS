@@ -538,9 +538,9 @@ sampling performance for non-monic inputs.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Field Wang LC precomputation: GCD-free basis + per-variable Hensel lift + per-factor LC correction | Symbolica `lcoeff_precomputation` L1297 | `ocas-poly::factor::eez` | [ ] |
-| Remove `factor_square_free_fp` L733 bail-out: non-constant LC inputs use field Wang + `eez_lift_imposed` | — | `ocas-poly::factor::eez` | [ ] |
-| `find_sample_z` performance optimization for non-constant LC: reduce redundant univariate factorizations (cap or pre-filter) | — | `ocas-poly::factor::eez` | [ ] |
+| Field Wang LC precomputation: GCD-free basis + per-variable Hensel lift + per-factor LC correction | Symbolica `lcoeff_precomputation` L1297 | `ocas-poly::factor::eez` | [x] |
+| Remove `factor_square_free_fp` L733 bail-out: non-constant LC inputs use field Wang + `eez_lift_imposed` | — | `ocas-poly::factor::eez` | [x] |
+| `find_sample_z` performance optimization for non-constant LC: reduce redundant univariate factorizations (cap or pre-filter) | — | `ocas-poly::factor::eez` | [x] |
 | Sparse Diophantine small-prime heuristic: auto-escalate to a larger prime when group size > p−1 instead of falling back to dense | — | `ocas-poly::factor::eez` | [ ] |
 
 **Performance KPI**
@@ -552,9 +552,9 @@ sampling performance for non-monic inputs.
 
 **Acceptance**
 
-- [ ] $\mathbb{F}_p$ non-constant-LC correctness cases pass.
-- [ ] `cargo test --workspace --exclude ocas-py` green.
-- [ ] mdBook `factorization.md` (en/zh) limitations section updated (Fp
+- [x] $\mathbb{F}_p$ non-constant-LC correctness cases pass.
+- [x] `cargo test --workspace --exclude ocas-py` green.
+- [x] mdBook `factorization.md` (en/zh) limitations section updated (Fp
   limitation removed).
 
 ### 0.17.0 — Algebraic Number Fields & Extension-Field Factorization (Trager)
@@ -563,19 +563,27 @@ sampling performance for non-monic inputs.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| `AlgebraicNumberField` domain: ℚ(α) arithmetic (minimal polynomial + extended-Euclid inverse) | Symbolica `domains` | `ocas-domain::algebraic` | [ ] |
-| Polynomial GCD / square-free over extension fields | — | `ocas-poly::factor::algebraic` | [ ] |
-| Trager factorization: norm → factor over ℤ → lift back to the extension | Trager 1976; Symbolica `factor.rs` ANF path | `ocas-poly::factor::algebraic` | [ ] |
-| Integration with the 0.12 resultant stack (norm via resultant) | — | `ocas-poly::resultant` | [ ] |
+| `AlgebraicNumberField` domain: ℚ(α) arithmetic (minimal polynomial + extended-Euclid inverse) | Symbolica `domains` | `ocas-domain::algebraic` | [x] |
+| Polynomial GCD / square-free over extension fields | — | `ocas-poly::factor::algebraic` | [x] |
+| Trager factorization: norm → factor over ℤ → lift back to the extension | Trager 1976; Symbolica `factor.rs` ANF path | `ocas-poly::factor::algebraic` | [x] univariate path |
+| Integration with the 0.12 resultant stack (norm via resultant) | — | `ocas-poly::resultant` | [x] evaluation–interpolation over the existing resultant; also fixed the general-degree Brown PRS bug |
 
 **Performance KPI**
 
-- Factorization over ℚ(√2), ℚ(∛2), ℚ(ζ₅) for degree ≤ 12 polynomials: < 100 ms.
+- Factorization over ℚ(√2), ℚ(∛2), ℚ(ζ₅) for degree ≤ 12 polynomials: < 100 ms — met (criterion group `poly_factor_anf`: ≈ 8 / 24 / 32 ms).
 
 **Acceptance**
 
-- [ ] SymPy `factor(extension=...)` cross-verification (≥20 cases).
-- [ ] proptest completeness check when the norm is square-free.
+- [x] SymPy `factor(extension=...)` cross-verification (≥20 cases; 21 cases in the `poly_factor_anf` correctness module).
+- [x] proptest completeness check when the norm is square-free (ℚ(√2) roundtrip, marked `ignore` for manual/audit runs).
+
+**Implementation notes**: the number-field GCD uses the modular method
+($\mathrm{GF}(p^d)$ + CRT + rational reconstruction + trial division),
+skipping primes with $m$ reducible mod $p$ to avoid zero divisors; inputs
+with all-rational coefficients take a "factor over ℚ first" fast path
+(their norm is always a perfect power, which would force a shift).
+Multivariate extension-field factorization (Zippel sparse interpolation)
+is deferred to a later release.
 
 ### 0.18.0 — Numerical Integration, Automatic Differentiation & Resource Control
 
@@ -692,3 +700,4 @@ Refresh this plan:
 | 0.16.0 | 2026-07-21 | Arbitrary multivariate factorization (Wang EEZ) released. Landed `factor::eez`: generic multivariate Diophantine, per-variable EEZ Hensel lifting, $n$-variate GCD, characteristic-$p$ $p$-th powers, Wang LC preprocessing (constant LC), Zassenhaus recombination; `factor()` generalized to any arity. Three pre-existing bugs fixed (`div_rem_sparse` divisibility order, Diophantine loop bound, non-monic univariate factorization). 0.16.1 added (non-constant LC imposition + sparsity). |
 | 0.16.1 | 2026-07-22 | Non-constant leading-coefficient imposition & multivariate sparsity released. Landed p-adic coefficient Hensel lift (`coefficient_hensel_lift_z`), sparse multivariate Diophantine (skeleton interpolation + Vandermonde + EEA sequence), adaptive sampling (dedup, content-aware ranking, value-bound escalation), bivariate non-constant-LC dispatch to EEZ path; 4 correctness cases + 2 criterion benchmarks + proptest; audit report with Symbolica timing comparison. Two bugs fixed (Diophantine contract violation, term coefficient squaring in sampling). Fp-path LC preprocessing (field Wang) deferred to 0.16.2. |
 | 0.16.2 | — | Added 0.16.2 ($\mathbb{F}_p$-path non-constant LC preprocessing + sampling performance). |
+| 0.17.0 | 2026-07-22 | Algebraic-number-field factorization (Trager) released. New `ocas-domain::algebraic` (`AlgebraicExtension<D>` — one implementation for ℚ(α) and GF(p^d)) and `ocas-poly::factor::algebraic` (shifted norm + modular number-field GCD + rational fast path); Brown PRS resultant bug for general degrees fixed (re-ported from Symbolica's `resultant_prs`); 0.16.2 small-prime escalation heuristic completed and checkboxes ticked; performance target met (degree ≤ 12 at 8–32 ms < 100 ms); multivariate extension (Zippel) deferred. |

@@ -216,12 +216,84 @@ fn poly_factor_multivariate_z(c: &mut Criterion) {
     group.finish();
 }
 
+// ── algebraic number field factorization (Trager) ──────────────────
+
+use ocas_domain::{AlgebraicNumberField, Rational, RationalDomain};
+
+fn q(n: i64, d: i64) -> Rational {
+    Rational::new(n, d)
+}
+
+/// Build an ANF polynomial with rational (constant) coefficients.
+fn anf_rational_poly(
+    field: &AlgebraicNumberField,
+    coeffs: &[i64],
+) -> DenseUnivariatePolynomial<AlgebraicNumberField> {
+    DenseUnivariatePolynomial::from_coeffs(
+        field.clone(),
+        coeffs
+            .iter()
+            .map(|&c| field.element(vec![q(c, 1)]))
+            .collect(),
+    )
+}
+
+fn poly_factor_anf(c: &mut Criterion) {
+    let mut group = c.benchmark_group("poly_factor_anf");
+
+    // ℚ(√2), degree 12: (x²−2)²(x²+1)²(x−1)(x+1)(x²−x+1).
+    let sqrt2 = AlgebraicNumberField::new(RationalDomain, vec![q(-2, 1), q(0, 1), q(1, 1)]);
+    let f = anf_rational_poly(&sqrt2, &[-2, 0, 1])
+        .mul(&anf_rational_poly(&sqrt2, &[-2, 0, 1]))
+        .mul(&anf_rational_poly(&sqrt2, &[1, 0, 1]))
+        .mul(&anf_rational_poly(&sqrt2, &[1, 0, 1]))
+        .mul(&anf_rational_poly(&sqrt2, &[-1, 1]))
+        .mul(&anf_rational_poly(&sqrt2, &[1, 1]))
+        .mul(&anf_rational_poly(&sqrt2, &[1, -1, 1]));
+    group.bench_function("sqrt2_deg12", |b| {
+        b.iter(|| {
+            let f = black_box(&f).factor();
+            black_box(f);
+        });
+    });
+
+    // ℚ(∛2), degree 9: (x³−2)(x³+1)(x³−1).
+    let cbrt2 =
+        AlgebraicNumberField::new(RationalDomain, vec![q(-2, 1), q(0, 1), q(0, 1), q(1, 1)]);
+    let f = anf_rational_poly(&cbrt2, &[-2, 0, 0, 1])
+        .mul(&anf_rational_poly(&cbrt2, &[1, 0, 0, 1]))
+        .mul(&anf_rational_poly(&cbrt2, &[-1, 0, 0, 1]));
+    group.bench_function("cbrt2_deg9", |b| {
+        b.iter(|| {
+            let f = black_box(&f).factor();
+            black_box(f);
+        });
+    });
+
+    // ℚ(ζ₅), degree 9: (x⁴+x³+x²+x+1)(x⁵−1) — nine linear factors.
+    let zeta5 = AlgebraicNumberField::new(
+        RationalDomain,
+        vec![q(1, 1), q(1, 1), q(1, 1), q(1, 1), q(1, 1)],
+    );
+    let f = anf_rational_poly(&zeta5, &[1, 1, 1, 1, 1])
+        .mul(&anf_rational_poly(&zeta5, &[-1, 0, 0, 0, 0, 1]));
+    group.bench_function("zeta5_deg9_nine_linears", |b| {
+        b.iter(|| {
+            let f = black_box(&f).factor();
+            black_box(f);
+        });
+    });
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     poly_square_free,
     poly_is_square_free,
     poly_factor_z,
     poly_factor_fp,
-    poly_factor_multivariate_z
+    poly_factor_multivariate_z,
+    poly_factor_anf
 );
 criterion_main!(benches);

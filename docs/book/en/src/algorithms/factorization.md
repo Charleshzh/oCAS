@@ -17,13 +17,15 @@ Current factorization support covers:
 | $\mathbb{Z}[x,y]$ | Bivariate (any LC) | Wang's Hensel lifting; constant-LC fast path, non-constant LC via EEZ |
 | $\mathbb{F}_p[x,y]$ | Bivariate (monic in $x$) | Hensel lifting over $\mathbb{F}_p$ |
 | $\mathbb{Z}[x_1,\dots,x_n]$ | Multivariate | Wang EEZ Hensel lifting + leading-coefficient preprocessing + p-adic coefficient Hensel lift (non-constant LC) + skeleton-interpolation Diophantine + Zassenhaus recombination |
-| $\mathbb{F}_p[x_1,\dots,x_n]$ | Multivariate | EEZ Hensel lifting (with characteristic-$p$ $p$-th power handling) |
+| $\mathbb{F}_p[x_1,\dots,x_n]$ | Multivariate | EEZ Hensel lifting (with characteristic-$p$ $p$-th power handling; non-constant LC via field Wang preprocessing) |
+| $\mathbb{Q}(\alpha)[x]$ | Univariate | Trager's algorithm: norm + factorization over $\mathbb{Q}$ + modular GCD over $\mathrm{GF}(p^d)$ |
 
 Since 0.16.0, multivariate factorization with more than two variables is
 supported. Since 0.16.1, non-constant leading coefficients in the main
 variable are fully handled via a p-adic coefficient Hensel lift that imposes
 Wang's reconstructed leading coefficients at every iteration; the bivariate
-constant-LC fast path is retained for efficiency.
+constant-LC fast path is retained for efficiency. Since 0.17.0, univariate
+factorization over algebraic number fields is supported (Trager).
 
 ---
 
@@ -242,6 +244,60 @@ primitive with a positive leading coefficient.
 
 ---
 
+## Factorization over Algebraic Number Fields (Trager)
+
+Since 0.17.0, oCAS factors univariate polynomials over an algebraic number
+field $K = \mathbb{Q}(\alpha)$, where $\alpha$ is given by a monic minimal
+polynomial over $\mathbb{Q}$. The domain lives in `ocas-domain` as
+`AlgebraicExtension<D>` (`AlgebraicNumberField` for $D = \mathbb{Q}$);
+the same type with $D = \mathbb{F}_p$ represents $\mathrm{GF}(p^d)$.
+
+The factorizer implements **Trager's algorithm**:
+
+1. **Square-free factorization** (Yun) over $K$, using the modular GCD
+   below instead of a pseudo-remainder sequence.
+2. **Norm with shift**: for $s = 0, 1, 2, \dots$ compute the norm of
+   $g(x) = f(x - s\alpha)$ down to $\mathbb{Q}[x]$ by
+   evaluation–interpolation of the scalar resultant
+   $\operatorname{Res}_\alpha(m, g)$, until the norm is square-free
+   (checked modulo small primes; acceptance is exact).
+3. **Rational factorization**: the square-free norm is factored over
+   $\mathbb{Z}$ (Hensel path).
+4. **Modular GCD over $K$**: each rational factor is mapped into $K[x]$
+   and its GCD with $g$ is computed by the modular method — map to
+   $\mathrm{GF}(p^d)$ for primes with $m$ irreducible mod $p$, combine
+   monic modular GCDs by CRT, rational-reconstruct the coefficients, and
+   verify by trial division.
+5. **Shift back** with $x \mapsto x + s\alpha$ and normalize monic.
+
+A **rational fast path** applies when all coefficients of $f$ are rational
+constants: $f$ is first factored over $\mathbb{Q}$, and only the
+$\mathbb{Q}$-irreducible factors go through Trager's norm machinery.
+
+```rust
+use ocas_domain::{AlgebraicNumberField, Domain, Rational, RationalDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+// ℚ(√2): minimal polynomial α² − 2.
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+// x² − 2 = (x − √2)(x + √2) splits over ℚ(√2).
+let f = DenseUnivariatePolynomial::from_coeffs(
+    field.clone(),
+    vec![field.from_base(Rational::new(-2, 1)), field.zero(), field.one()],
+);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);
+```
+
+Benchmarks (criterion group `poly_factor_anf`): degree ≤ 12 over
+$\mathbb{Q}(\sqrt2)$, $\mathbb{Q}(\sqrt[3]{2})$, and the cyclotomic field
+$\mathbb{Q}(\zeta_5)$ all factor in well under 100 ms.
+
+---
+
 ## Limitations and Future Work
 
 - Non-constant leading coefficients in the main variable are fully supported
@@ -250,9 +306,14 @@ primitive with a positive leading coefficient.
 - The bivariate Wang Hensel limitation that the leading coefficient be a
 constant is subsumed by the 0.16.0 arbitrary-multivariate (EEZ) path; bivariate
 non-constant-LC inputs now dispatch to the EEZ path automatically.
-- The $\mathbb{F}_p$ multivariate path still requires a constant leading
-coefficient; Wang's LC preprocessing over a field (L1297 in Symbolica) is
-deferred to 0.16.2.
+- Since 0.16.2 the $\mathbb{F}_p$ multivariate path also supports non-constant
+  leading coefficients via field Wang LC preprocessing
+  (`wang_reconstruct_lcoeffs_fp`) and `eez_lift_imposed`.
+- Algebraic number field factorization (0.17.0) is currently **univariate
+  only**; extension-field factorization of multivariate polynomials and a
+  `RootOf`/radical syntax in the parser are future work. The minimal
+  polynomial's irreducibility is the caller's responsibility (over a
+  reducible modulus the ring has zero divisors and inversion fails).
 - The adaptive evaluation-point search has been widened (7 → 25 for $\mathbb{Z}$,
 8 → 32 for $\mathbb{F}_p$); very sparse or highly specialized polynomials may
 still need an extended range or additional Diophantine interpolation passes.

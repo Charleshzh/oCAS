@@ -17,6 +17,10 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
     /// The resultant $\operatorname{Res}(a, b)$ is a scalar in the coefficient
     /// domain. It is zero if and only if $\gcd(a, b)$ is non-constant.
     ///
+    /// Ported from Symbolica's `resultant_prs` (`src/poly/resultant.rs`):
+    /// subresultant PRS with exact division by `beta` at every step (the
+    /// division is exact in any UFD by the subresultant theorem).
+    ///
     /// # Example
     ///
     /// ```
@@ -36,126 +40,106 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
     pub fn resultant(&self, other: &Self) -> D::Element {
         let d = self.domain();
 
-        // Ensure deg(a) >= deg(b).
-        let (a, b, swapped) = match (self.degree(), other.degree()) {
+        // Ensure deg(self) >= deg(other); swap with the sign
+        // Res(a, b) = (-1)^(deg a · deg b) Res(b, a).
+        match (self.degree(), other.degree()) {
             (None, _) | (_, None) => return d.zero(),
-            (Some(da), Some(db)) => {
-                if da >= db {
-                    (self.clone(), other.clone(), false)
-                } else {
-                    (other.clone(), self.clone(), true)
+            (Some(ds), Some(do_)) if ds < do_ => {
+                let r = other.resultant(self);
+                if ds % 2 == 1 && do_ % 2 == 1 {
+                    return d.neg(&r);
                 }
+                return r;
             }
-        };
-
-        let deg_a = a.degree().unwrap();
-        let deg_b = b.degree().unwrap();
-
-        // If b is constant, return b^(deg a).
-        if deg_b == 0 {
-            let val = b.constant();
-            let res = d.pow(&val, deg_a as u64);
-            // Sign correction: (-1)^(deg_a * deg_b) when swapped.
-            if swapped && (deg_a * deg_b) % 2 == 1 {
-                return d.neg(&res);
-            }
-            return res;
+            _ => {}
         }
 
-        // Run Brown's PRS.
-        let mut a_cur = a;
-        let mut b_cur = b;
+        let deg_a = self.degree().expect("nonzero polynomial");
+        let deg_b = other.degree().expect("nonzero polynomial");
 
-        let deg_diff = a_cur.degree().unwrap() - b_cur.degree().unwrap();
-        let neg_lc = d.neg(b_cur.leading_coeff().unwrap());
-        let mut beta = d.pow(&d.neg(&d.one()), (deg_diff + 1) as u64);
+        // If the smaller polynomial is constant, the resultant is
+        // `constant^(deg of the larger)`.
+        if deg_b == 0 {
+            return d.pow(&other.constant(), deg_a as u64);
+        }
+
+        let mut a = self.clone();
+        let mut a_new = other.clone();
+
+        let mut deg = (a.degree().expect("nonzero") - a_new.degree().expect("nonzero")) as u64;
+        let mut neg_lc = d.one(); // set before use
+        let mut init = false;
+        let mut beta = d.pow(&d.neg(&d.one()), deg + 1);
         let mut psi = d.neg(&d.one());
 
         // Collect (leading_coeff, degree) at each step.
-        let mut lcs: Vec<(D::Element, usize)> = Vec::new();
-        lcs.push((a_cur.lcoeff(), a_cur.degree().unwrap()));
+        let mut lcs: Vec<(D::Element, u64)> =
+            vec![(a.lcoeff(), a.degree().expect("nonzero") as u64)];
 
-        let mut first = true;
-
-        while !b_cur.is_zero() {
-            let b_deg = b_cur.degree().unwrap();
-
-            if !first {
+        while a_new.degree().unwrap_or(0) > 0 {
+            if init {
                 // Update psi and beta.
-                let cur_deg_diff = a_cur.degree().unwrap() - b_deg;
-                psi = if cur_deg_diff == 0 {
+                psi = if deg == 0 {
+                    // Can only happen on the first iteration.
                     psi
-                } else if cur_deg_diff == 1 {
+                } else if deg == 1 {
                     neg_lc.clone()
                 } else {
-                    let a_part = d.pow(&neg_lc, cur_deg_diff as u64);
-                    let psi_old = d.pow(&psi, (cur_deg_diff - 1) as u64);
-                    d.div_rem(&a_part, &psi_old).unwrap().0
+                    let num = d.pow(&neg_lc, deg);
+                    let den = d.pow(&psi, deg - 1);
+                    let (q, r) = d
+                        .div_rem(&num, &den)
+                        .expect("subresultant psi division is exact");
+                    debug_assert!(d.is_zero(&r));
+                    q
                 };
-
-                let new_deg_diff = a_cur.degree().unwrap() - b_deg;
-                beta = d.mul(&neg_lc, &d.pow(&psi, new_deg_diff as u64));
+                deg = (a.degree().expect("nonzero") - a_new.degree().expect("nonzero")) as u64;
+                beta = d.mul(&neg_lc, &d.pow(&psi, deg));
+            } else {
+                init = true;
             }
-            first = false;
 
-            let neg_lc_new = d.neg(b_cur.leading_coeff().unwrap());
-            let deg_diff_now = a_cur.degree().unwrap() - b_deg;
+            neg_lc = d.neg(a_new.leading_coeff().expect("nonzero"));
 
-            // Compute pseudo-remainder: a * (-lc)^(deg_diff+1) mod b.
-            let factor = d.pow(&neg_lc_new, (deg_diff_now + 1) as u64);
-            let scaled = a_cur.mul_scalar(&factor);
-            let (_, mut r) = scaled.div_rem(&b_cur).unwrap();
-
-            // Sign correction: (-1)^(deg_diff + 1).
-            if (deg_diff_now + 1) % 2 == 1 {
+            // Pseudo-remainder: a · (−lc(b))^(deg+1) mod b, with sign.
+            let factor = d.pow(&neg_lc, deg + 1);
+            let (_, mut r) = a
+                .mul_scalar(&factor)
+                .div_rem(&a_new)
+                .expect("pseudo-division succeeds after scaling");
+            if (deg + 1) % 2 == 1 {
                 r = r.neg();
             }
 
-            // Normalize by beta.
-            if !d.is_zero(&beta) {
-                let inv_beta = d.div_rem(&d.one(), &beta);
-                if let Some((q, rem)) = inv_beta
-                    && d.is_zero(&rem)
-                {
-                    r = r.mul_scalar(&q);
-                }
-            }
+            lcs.push((a_new.lcoeff(), a_new.degree().expect("nonzero") as u64));
 
-            lcs.push((b_cur.lcoeff(), b_deg));
-
-            a_cur = b_cur;
-            b_cur = r;
+            // Exact scalar division by beta (subresultant theorem).
+            let r_reduced = Self::from_coeffs(
+                d.clone(),
+                r.coeffs()
+                    .iter()
+                    .map(|c| {
+                        d.div(c, &beta)
+                            .expect("subresultant beta division is exact")
+                    })
+                    .collect(),
+            );
+            a = a_new;
+            a_new = r_reduced;
         }
 
-        // If the last non-zero polynomial is not constant, the GCD is
-        // non-trivial and the resultant is zero.
-        if let Some(last_deg) = b_cur.degree()
-            && last_deg > 0
-        {
+        // A zero remainder before reaching a constant means a common factor.
+        if a_new.is_zero() {
             return d.zero();
         }
-        // b_cur is now zero; check if a_cur is a non-constant GCD.
-        if a_cur.degree().unwrap_or(0) > 0 {
-            return d.zero();
-        }
+        lcs.push((a_new.lcoeff(), 0));
 
-        // Compute resultant from PRS using the fundamental theorem.
-        lcs.push((a_cur.lcoeff(), 0));
-
+        // Compute the resultant from the PRS using the fundamental theorem.
         let mut rho = d.one();
         let mut den = d.one();
 
         for k in 1..lcs.len() {
-            let deg_k_prev = lcs[k - 1].1 as i64;
-            let deg_k = lcs[k].1 as i64;
-            #[allow(unused_variables)]
-            let deg_k_next = if k + 1 < lcs.len() {
-                lcs[k + 1].1 as i64
-            } else {
-                0
-            };
-
-            let mut exponent: i64 = deg_k_prev - deg_k;
+            let mut exponent: i64 = lcs[k - 1].1 as i64 - lcs[k].1 as i64;
             // Multiply by (deg differences from remaining steps).
             for l in k..lcs.len() - 1 {
                 let dl = lcs[l].1 as i64;
@@ -172,14 +156,9 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
             }
         }
 
-        let result = d.div_rem(&rho, &den).unwrap().0;
-
-        // Sign correction for swapping.
-        if swapped && (deg_a * deg_b) % 2 == 1 {
-            d.neg(&result)
-        } else {
-            result
-        }
+        d.div_rem(&rho, &den)
+            .expect("resultant reconstruction is exact")
+            .0
     }
 }
 
@@ -263,5 +242,18 @@ mod tests {
         let a = poly(&[0]); // zero polynomial
         let b = poly(&[1, 1]); // x + 1
         assert_eq!(a.resultant(&b), int(0));
+    }
+
+    #[test]
+    fn resultant_quartic_cubic() {
+        // SymPy: resultant(x^4 - 3, 3x^3 - x^2 + 2x + 1, x) == -2243.
+        // Regression: the previous implementation skipped the beta division
+        // unless beta was a unit, which is not a valid resultant algorithm
+        // beyond trivial degrees.
+        let a = poly(&[-3, 0, 0, 0, 1]);
+        let b = poly(&[1, 2, -1, 3]);
+        assert_eq!(a.resultant(&b), int(-2243));
+        // And swapped (both degrees odd? 4 and 3 — no sign flip).
+        assert_eq!(b.resultant(&a), int(-2243));
     }
 }

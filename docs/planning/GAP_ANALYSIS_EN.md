@@ -88,7 +88,7 @@ source of the gap.
 
 | Algorithm Area | oCAS Status | Maturity |
 |---|---|---|
-| Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p, plus bivariate `factor()` on `SparseMultivariatePolynomial` over ℤ and ℤ_p (monic-in-x Wang Hensel); ≥3-variable and algebraic-number-field factorization missing | 🟡 Univariate/bivariate complete |
+| Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p, arbitrary multivariate `factor()` on `SparseMultivariatePolynomial` over ℤ and ℤ_p (0.16.x Wang EEZ + non-constant LC imposition), plus univariate `factor()` over `AlgebraicNumberField` (0.17.0 Trager: shifted norm + modular GCD) | 🟢 Univariate/bivariate/multivariate/ANF (univariate) |
 | Gröbner basis | F4 with real linear algebra (0.15.1: descending column order + Symbolica GM criteria + classic extraction) + FGLM + experimental F5 + native i64 ℤ_p pipeline; cyclic-5 ℤ₁₃ 23 ms (re-measured 2026-07-21) | 🟢 F4 complete |
 | Symbolic integration | Risch (elementary transcendental towers + RDE polynomial fragment) + rational-function Hermite + trig exp(I·x) + special-function table (erf/Ei/Si/Ci/Fresnel); falls back to `Integral(...)` | 🟢 Risch done |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate); known gap: only 8/10 roots isolated on expanded Wilkinson n=10 | 🟡 Fairly complete |
@@ -186,8 +186,8 @@ Ranked by impact × implementation cost. All hard-algorithm gaps planned before
 | 5 | ~~Multi-output optimization / codegen~~ (done in 0.15) | ✅ done — multi-output JIT (97×/21×) + f32 mixed precision + CSE/const-folding/stack-compaction |
 | 6 | Gröbner performance at scale (cyclic-6 ℤ_p < 5 s) | � 0.15.2 done (9970 s → 3670 s, 2.7×); <5 s needs F5 signature reduction (post-1.0) |
 | 7 | ~~Arbitrary multivariate (≥3 variables) factorization~~ (completed 0.16) | ✅ done — Wang EEZ lifting + LC preprocessing (constant LC) + Zassenhaus; non-constant LC imposition see #7a |
-| 7a | Non-constant leading-coefficient imposition + multivariate sparsity | 🔴 0.16.1 — mod-p Hensel imposition + sparse Diophantine |
-| 8 | Algebraic-number-field factorization | 🔴 0.17 — Trager algorithm (norm + lifting) |
+| 7a | ~~Non-constant leading-coefficient imposition + multivariate sparsity~~ (completed 0.16.1/0.16.2) | ✅ done — mod-p Hensel imposition + sparse Diophantine + field Wang preprocessing on the Fp path |
+| 8 | ~~Algebraic-number-field factorization~~ (completed 0.17) | ✅ done — Trager algorithm (shifted norm + ℚ factorization + GF(p^d) modular GCD), univariate path; multivariate extension deferred |
 | 9 | Numerical integration / dual numbers / tensor basics / fuel | 🔴 0.18 — Vegas + Hyperdual + index contraction + step budget |
 | 10 | ODE/PDE solvers (Post-1.0) | 🟢 high user demand |
 
@@ -213,8 +213,8 @@ streaming evaluation". Re-measured 0.15.1 performance: F4 cyclic-5 ℤ₁₃
 
 The remaining pre-1.0 work is Phase B+ "Closing the Symbolica Gap" (0.15.2
 Gröbner performance at scale → 0.16 arbitrary multivariate factorization ✅ →
-0.16.1 non-constant leading-coefficient imposition → 0.17
-algebraic-number-field factorization → 0.18 numerical integration /
+0.16.1 non-constant leading-coefficient imposition ✅ → 0.17
+algebraic-number-field factorization ✅ → 0.18 numerical integration /
 duals / tensors / fuel, see EVOLUTION_PLAN), after which 1.0.0 is
 stabilization and release engineering only (API freeze, coverage, migration
 guides, signed artifacts). ODE/PDE and full tensor calculus remain Post-1.0
@@ -241,3 +241,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.15.1 | 2026-07-21 | Re-evaluation: code-scale snapshot updated to 95 files / ~30.7k lines (+~70% vs 0.10's ~18k); F4 cyclic-5 ℤ₁₃ re-measured at 23 ms; new measurement x³⁰−1 square-free factorization 39 µs vs SymPy full factor ~0.9 ms (~24×); stale post-0.14/0.15 statements fixed (§3 GCD/root-isolation, §4.1 "largely absent" paragraph, §4.3 integration/factorization/Gröbner, §5 Risch priority, mojibake characters); gaps re-ranked — all pre-1.0 hard algorithms closed, remaining items moved to Post-1.0: arbitrary multivariate (≥3 variables) + algebraic-number-field factorization, numerical integration, tensors / dual numbers, ODE/PDE; cyclic-6 <5s scoped to 0.15.2. |
 | 0.15.2 | 2026-07-21 | Gröbner performance at scale: reducer LM hash index (support-mask buckets + submask enumeration, removing the O(monomials × basis) linear scan) + sparse-row echelon (two-pointer merge cancellation, O(nnz)/op, replacing the dense buffer) + hashed extraction dedup + worklist preprocessing + row-template cache; cyclic-6 ℤ₁₃ 9970 s → 3670 s (2.7×, basis=20 correct), phase profile shifted to elimination-dominated (echelon ≈89%); <5s not reached — the cyclic-6 F4 matrix hits 264k rows × 284k cols at round 22 (intrinsic to F4), a further order-of-magnitude win needs F5 signature reduction (eliminating zero-reducing rows), moved to post-1.0; version bumped to 0.15.2. |
 | 0.16.0 | 2026-07-21 | Arbitrary multivariate factorization (Wang EEZ) done: landed `factor::eez` (generic multivariate Diophantine + per-variable EEZ Hensel lifting + $n$-variate GCD + characteristic-$p$ $p$-th powers + Wang LC preprocessing [constant LC] + Zassenhaus recombination); `factor()` generalized to any arity; three pre-existing bugs fixed (`div_rem_sparse` divisibility order, Diophantine loop bound, non-monic univariate factorization); factorization upgraded 🟡 → 🟢 (univariate/bivariate/arbitrary multivariate); 0.16.1 added (non-constant LC imposition + sparsity); version bumped to 0.16.0. |
+| 0.17.0 | 2026-07-22 | Algebraic-number-field factorization (Trager) done: new `ocas-domain::algebraic` (`AlgebraicExtension<D>` — one implementation for ℚ(α) and GF(p^d), EEA inversion) + `ocas-poly::factor::algebraic` (shifted norm via evaluation–interpolation resultants + modular number-field GCD [GF(p^d) + CRT + rational reconstruction + trial division] + rational fast path); fixed the Brown PRS resultant bug for general degrees (beta division was applied only for unit betas — not a valid resultant algorithm; re-ported from Symbolica's `resultant_prs`); 0.16.2 sparse Diophantine small-prime escalation completed; factorization now covers univariate/bivariate/multivariate/ANF (univariate); performance target met (degree ≤ 12 at 8–32 ms < 100 ms); version bumped to 0.17.0. |

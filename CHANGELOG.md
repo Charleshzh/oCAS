@@ -9,6 +9,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.17.0] - 2026-07-22
+
+### Added / 新增
+
+- **代数数域因式分解（Trager 算法）**：新增 `ocas-domain::algebraic` 模块，
+  `AlgebraicExtension<D>` 表示 $D[\alpha]/(m)$（$m$ 首一；$D=\mathbb{Q}$
+  即代数数域 `AlgebraicNumberField`，$D=\mathbb{F}_p$ 即
+  $\mathrm{GF}(p^d)$），求逆经自包含的扩展 Euclid 实现 / **Algebraic
+  number field factorization (Trager's algorithm)**: new
+  `ocas-domain::algebraic` module with `AlgebraicExtension<D>` for
+  $D[\alpha]/(m)$ (`AlgebraicNumberField` over $\mathbb{Q}$,
+  $\mathrm{GF}(p^d)$ over $\mathbb{F}_p$), inversion via a self-contained
+  extended Euclidean algorithm.
+- `DenseUnivariatePolynomial<AlgebraicNumberField>::factor()`：Yun 无平方
+  分解（模 GCD）→ 平移范数（求值–插值结式，mod-$p$ 无平方检验）→
+  $\mathbb{Q}$ 上分解 → 数域模 GCD（$\mathrm{GF}(p^d)$ + CRT + 有理重构
+  + 试除）→ 回代首一化；有理系数输入走快速通道（先在 $\mathbb{Q}$ 上
+  分解）/ `factor()` over $\mathbb{Q}(\alpha)$: Yun square-free stage
+  with modular GCD, shifted norm via evaluation–interpolation resultants,
+  rational factorization, modular GCD over $\mathrm{GF}(p^d)$ with CRT and
+  rational reconstruction, and a rational fast path.
+- 稀疏 Diophantine 小素数升级启发式：骨架组大小超过 $p-1$ 时
+  `padic_lift_factors` 第一轮素数扫描自动升级到更大素数，第二轮才允许
+  回退稠密 Diophantine / Sparse Diophantine small-prime escalation: the
+  first prime pass escalates past primes too small for skeleton
+  interpolation instead of degrading to the dense solver.
+- 顶层 `ocas` crate prelude 导出 `AlgebraicElement`、`AlgebraicExtension`、
+  `AlgebraicNumberField` / Prelude re-exports for the new ANF types.
+- 测试与基准：13 项单元测试（含 Symbolica `algebraic_extension`、
+  `gcd_number_field` 镜像）、21 项 correctness 用例（SymPy
+  `factor(extension=...)` 交叉验证）、proptest 往返（ignore，手动运行）、
+  criterion 组 `poly_factor_anf`（$\mathbb{Q}(\sqrt2)$ deg 12 ≈ 8 ms、
+  $\mathbb{Q}(\sqrt[3]{2})$ deg 9 ≈ 24 ms、$\mathbb{Q}(\zeta_5)$ deg 9
+  ≈ 32 ms，均远低于 100 ms 指标）/ Tests, correctness cases, proptest
+  roundtrip, and `poly_factor_anf` benchmarks (all well under the 100 ms
+  target).
+
+### Fixed / 修复
+
+- **结式（Brown PRS）在一般次数下结果错误**：原实现仅在 $\beta$ 为单位
+  时才执行 $\beta$ 除法，不是合法的结式算法（小次数凑巧正确）。已按
+  Symbolica `resultant_prs` 移植为逐步精确除以 $\beta$ 的
+  subresultant PRS；新增回归测试
+  $\operatorname{Res}(x^4-3,\,3x^3-x^2+2x+1)=-2243$（SymPy 验证） /
+  **Resultant (Brown PRS) wrong beyond trivial degrees**: the beta division
+  was applied only when beta was a unit; ported Symbolica's `resultant_prs`
+  with exact per-step division. Regression test against SymPy added.
+
+---
+
+## [0.16.2] - 2026-07-22
+
+### Added / 新增
+
+- **$\mathbb{F}_p$ 非常数首项系数因式分解**：$\mathbb{F}_p$ 多元因式分解现支持
+  非常数首项系数，通过 Wang 首项系数重建（`wang_reconstruct_lcoeffs_fp`）
+  分配 LC 因子后以 `eez_lift_imposed` 提升 / **$\mathbb{F}_p$ non-constant
+  leading-coefficient factorization** via Wang LC reconstruction (`wang_reconstruct_lcoeffs_fp`)
+  distributing LC factors among polynomial factors, then `eez_lift_imposed`.
+- `find_sample_fp` 新增 `lc_filter` 参数：过滤 LC 因子在采样点为零的样本 /
+  `find_sample_fp` gains `lc_filter` parameter to skip samples where any
+  LC factor evaluates to zero.
+- `find_sample_z` 新增分解上限（200 次有效单变量分解）+ 自适应值域中间档
+  （7→15→25）/ `find_sample_z` decomposition cap (200) and intermediate
+  value-bound level (7→15→25).
+- 测试：3 项 $\mathbb{F}_p$ 非常数 LC 用例（二元、三元、可约 LC）+ 1 项 4
+  变量（ignored）/ 3 Fp non-constant LC tests + 1 ignored 4-variable test.
+
+### Changed / 变更
+
+- `multivariate_factor_fp` 文档更新：移除 "LC must be constant" 限制声明 /
+  `multivariate_factor_fp` doc updated: removed LC-must-be-constant restriction.
+- `factor_square_free_fp` 移除非常数 LC 放弃分支，改走 Wang LC + `eez_lift_imposed`
+  路径 / `factor_square_free_fp` non-constant LC now routes through Wang LC +
+  `eez_lift_imposed` instead of returning unfactored.
+
+---
+
 ## [0.16.1] - 2026-07-22
 
 ### Added / 新增
