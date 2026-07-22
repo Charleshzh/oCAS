@@ -85,7 +85,7 @@ fn x_minus_a_pow<D: Domain>(
     for i in 0..=j {
         // term: binom(j, i) * (-a)^(j-i) * x^i
         let binom = domain.cast_u64(binomial(j, i));
-        let neg_a_pow = if (j - i) % 2 == 0 {
+        let neg_a_pow = if (j - i).is_multiple_of(2) {
             domain.pow(a, (j - i) as u64)
         } else {
             domain.neg(&domain.pow(a, (j - i) as u64))

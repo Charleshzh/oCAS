@@ -33,7 +33,7 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    cd ocas
    ```
 3. Install dependencies:
-   - Rust 1.89 or later
+   - Rust 1.97 or later
    - GMP, MPFR, FLINT 3 development libraries
 4. Build the workspace:
    ```bash
@@ -53,7 +53,7 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    cd ocas
    ```
 3. 安装依赖：
-   - Rust 1.89 或更高版本
+   - Rust 1.97 或更高版本
    - GMP、MPFR、FLINT 3 开发库
 4. 构建 workspace：
    ```bash

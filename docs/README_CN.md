@@ -1,7 +1,7 @@
 # oCAS — 开源计算机代数系统
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![Rust](https://img.shields.io/badge/Rust-1.89%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/Rust-1.97%2B-orange.svg)](https://www.rust-lang.org)
 [![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
 [![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
 [![PyPI](https://img.shields.io/pypi/v/ocas.svg)](https://pypi.org/project/ocas/)
@@ -122,7 +122,7 @@ fn main() -> Result<(), ParseError> {
 
 ### 环境要求
 
-- Rust 1.89 或更高版本
+- Rust 1.97 或更高版本
 - C 编译器（MSVC、GCC 或 Clang）
 - GMP、MPFR 与 FLINT 3 开发库
 

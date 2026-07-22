@@ -98,7 +98,11 @@ fn univariate_times_y_minus_alpha_k(
             let mut exp = vec![0usize; n_vars];
             exp[x_var] = i;
             exp[y_var] = j;
-            let sign = if (k - j) % 2 == 0 { 1i64 } else { -1i64 };
+            let sign = if (k - j).is_multiple_of(2) {
+                1i64
+            } else {
+                -1i64
+            };
             let binom = Integer::from(binomial(k, j) as i64);
             let alpha_pow = alpha.pow_u32((k - j) as u32);
             let sign_int = Integer::from(sign);
@@ -787,7 +791,7 @@ fn univariate_times_y_minus_alpha_k_fp(
             exp[y_var] = j;
             let alpha_pow = domain.pow(alpha, (k - j) as u64);
             let binom = domain.cast_u64(binomial(k, j));
-            let sign = if (k - j) % 2 == 0 {
+            let sign = if (k - j).is_multiple_of(2) {
                 domain.one()
             } else {
                 domain.neg(&domain.one())
@@ -816,7 +820,7 @@ fn choose_evaluation_point_fp(
             continue;
         }
         let mut factors = image.factor();
-        factors.sort_by(|a, b| b.0.degree().unwrap_or(0).cmp(&a.0.degree().unwrap_or(0)));
+        factors.sort_by_key(|a| std::cmp::Reverse(a.0.degree().unwrap_or(0)));
         let factors: Vec<FpPoly> = factors.into_iter().map(|(g, _)| monic_fppoly(&g)).collect();
         if factors.len() < 2 {
             continue;

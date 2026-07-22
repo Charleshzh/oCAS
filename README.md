@@ -1,7 +1,7 @@
 # oCAS — open Computer Algebra System
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![Rust](https://img.shields.io/badge/Rust-1.89%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/Rust-1.97%2B-orange.svg)](https://www.rust-lang.org)
 [![CI](https://github.com/charleshzh/ocas/actions/workflows/ci.yml/badge.svg)](https://github.com/charleshzh/ocas/actions/workflows/ci.yml)
 [![docs.rs](https://docs.rs/ocas/badge.svg)](https://docs.rs/ocas)
 [![PyPI](https://img.shields.io/pypi/v/ocas.svg)](https://pypi.org/project/ocas/)
@@ -133,7 +133,7 @@ saturation are available through `ocas::prelude` (see `ocas-rewrite` examples).
 
 ### Requirements
 
-- Rust 1.89 or later
+- Rust 1.97 or later
 - C compiler (MSVC, GCC, or Clang)
 - GMP, MPFR, and FLINT 3 development libraries
 

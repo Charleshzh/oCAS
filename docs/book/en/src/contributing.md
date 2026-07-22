@@ -5,7 +5,7 @@ with short-lived feature branches and pull requests.
 
 ## Development setup
 
-- Rust 1.89+ (Edition 2024)
+- Rust 1.97+ (Edition 2024)
 - A C compiler (MSVC, GCC, or Clang)
 - Optional: GMP/MPFR/FLINT system libraries for backend features
 

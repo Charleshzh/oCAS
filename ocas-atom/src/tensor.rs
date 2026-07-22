@@ -263,7 +263,7 @@ pub fn symmetrise_sign(tensor: &Tensor<'_>) -> i64 {
                     j -= 1;
                 }
             }
-            if swaps % 2 == 0 { 1 } else { -1 }
+            if swaps.is_multiple_of(2) { 1 } else { -1 }
         }
     }
 }

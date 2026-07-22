@@ -242,12 +242,13 @@ fn find_relation<D: Domain>(
         let Some(piv) = piv else { continue };
         mat.swap(r, piv);
         let inv = domain.inv(&mat[r][c].clone())?;
-        for cc in c..=rows {
-            mat[r][cc] = domain.mul(&mat[r][cc], &inv);
+        for elt in mat[r].iter_mut().take(rows + 1).skip(c) {
+            *elt = domain.mul(elt, &inv);
         }
         for rr in 0..cols {
             if rr != r && !domain.is_zero(&mat[rr][c]) {
                 let factor = mat[rr][c].clone();
+                #[allow(clippy::needless_range_loop)]
                 for cc in c..=rows {
                     let sub = domain.mul(&factor, &mat[r][cc]);
                     mat[rr][cc] = domain.sub(&mat[rr][cc], &sub);

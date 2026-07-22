@@ -4,7 +4,7 @@
 
 ## 开发环境
 
-- Rust 1.89+（Edition 2024）
+- Rust 1.97+（Edition 2024）
 - C 编译器（MSVC、GCC 或 Clang）
 - 可选：用于后端特性的 GMP/MPFR/FLINT 系统库
 

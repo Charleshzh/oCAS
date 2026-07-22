@@ -23,6 +23,7 @@ jobs:
         # Use stable (>= 1.90): cargo metadata on 1.89 fails to resolve
         # `workspace.dependencies` inheritance for published crates
         # ("dependency.ahash was not found in workspace.dependencies").
+        # Pinned to 1.97.1 via rust-toolchain.toml.
         uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2

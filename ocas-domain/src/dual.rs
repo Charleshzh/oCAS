@@ -103,12 +103,9 @@ impl DualShape {
         }
         let zero = vec![0usize; nvars];
         // Find and move the zero component to index 0.
-        if let Some(pos) = components.iter().position(|c| *c == zero) {
-            if pos != 0 {
-                components.swap(0, pos);
-            }
-        } else {
-            return None;
+        let pos = components.iter().position(|c| *c == zero)?;
+        if pos != 0 {
+            components.swap(0, pos);
         }
         // Validate ancestor-closure: for every component, all strictly smaller
         // (component-wise) non-negative multi-indices must also be present.

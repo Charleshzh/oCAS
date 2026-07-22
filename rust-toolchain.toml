@@ -4,5 +4,5 @@
 # Linux, macOS, and Windows hosts. Windows users who want the MSYS2/MINGW64
 # host toolchain should run `rustup default stable-x86_64-pc-windows-gnu`
 # locally; see docs/build-windows.md for details.
-channel = "1.89.0"
+channel = "1.97.1"
 components = ["rustfmt", "clippy"]
