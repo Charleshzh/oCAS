@@ -464,17 +464,11 @@ fn sqrt_positive_rational<'a>(ctx: &'a AtomArena<'a>, r: &Rational) -> Option<Sq
 }
 
 fn isqrt_i128(n: i128) -> i128 {
-    if n <= 0 {
-        return 0;
-    }
-    let mut x = (n as f64).sqrt() as i128 + 2;
-    while x * x > n {
-        x = (x + n / x) / 2;
-    }
-    while (x + 1) * (x + 1) <= n {
-        x += 1;
-    }
-    x
+    // Standard-library integer square root (stabilized in Rust 1.84).
+    // The caller guarantees n ≥ 0 via checked_mul on positive numer/denom;
+    // checked_isqrt returns None only for n < 0, where we fall back to 0
+    // (matching the prior hand-rolled Newton iteration behaviour).
+    n.checked_isqrt().unwrap_or(0)
 }
 
 fn rat_is_negative(r: &Rational) -> bool {
