@@ -268,7 +268,10 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 > imposition → 0.17 algebraic-number-field factorization →
 > 0.18 numerical integration / duals / tensors / fuel) is detailed in
 > [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md). Versions 0.15.2–0.18.0 form
-> Phase B+ "Closing the Symbolica Gap"; 1.0.0 is freeze-and-polish only.
+> Phase B+ "Closing the Symbolica Gap" (now complete); 0.19–0.23 form Phase B++
+> "Competitive Alignment" (F5 Gröbner → ODE solvers → number theory → tensor
+> canonicalisation → algebraic geometry). After Phase B++, 1.0.0 is
+> freeze-and-polish only.
 
 ---
 
@@ -276,8 +279,8 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 
 After 1.0, development will focus on:
 
-- Advanced symbolic integration (Risch algorithm)
-- Differential equation solvers
+- Partial differential equation (PDE) solvers (Poisson, heat, wave)
+- Differential Galois theory (research prelude)
 - Optional GPL backends (`ocas-gpl`)
 - GPU acceleration (CUDA / HIP / Vulkan compute)
 - LLVM/Inkwell JIT backend
@@ -316,7 +319,12 @@ After 1.0, development will focus on:
 | 0.17.0 | 1.0 Candidate | Month 27 | Algebraic number field & extension-field factorization (Trager) ✅ (univariate path; multivariate extension deferred) |
 | 0.18.0 | 1.0 Candidate | Month 28 | Numerical integration (Vegas) + dual-number AD + tensor basics + fuel resource control |
 | 0.18.1 | 1.0 Candidate | Month 28 | Python/C bindings backfill for the three 0.18.0 capabilities (numeric integration + tensor + dual) + prelude completeness ✅ |
-| 1.0.0 | Stable | Month 30 | Stable release (frozen after the Symbolica feature/performance gap is closed) |
+| 0.19.0 | 1.0 Candidate | Month 30 | F5 Gröbner basis signature reduction (cyclic-6 ℤ₁₃ <5 s target) |
+| 0.20.0 | 1.0 Candidate | Month 33 | Ordinary differential equation solvers (first/second-order + systems + series + Laplace) |
+| 0.21.0 | 1.0 Candidate | Month 36 | Number theory & computational algebra (modular GCD + integer factorization + primality + discrete log + CRT + number-theoretic functions) |
+| 0.22.0 | 1.0 Candidate | Month 39 | Tensor canonicalisation (graph-isomorphism engine) + advanced pattern matching (`Transformer::Partition`) |
+| 0.23.0 | 1.0 Candidate | Month 42 | Advanced Gröbner & algebraic-geometry tooling (ideal ops + RUR + primary decomposition + Hilbert series) |
+| 1.0.0 | Stable | Month 44 | Stable release (frozen after Phase B++ competitive alignment: Symbolica performance parity + SageMath/SymPy feature breadth parity) |
 
 ---
 

@@ -1,13 +1,13 @@
 # oCAS 演进计划（Beta → 1.0 → Post-1.0）
 
 本文档是 oCAS 从 0.10.0 Beta 到 1.0 稳定版及之后的细粒度演进计划，覆盖
-**功能、性能、文档**，并将每个交付物显式映射到参考竞品的实现或算法，作为
+**功能、性能、文档**，将以每个交付物显式映射到参考竞品的实现或算法，作为
 学习对象，直到 oCAS 达到或超越竞品。本文档是
 [ROADMAP_CN.md](ROADMAP_CN.md)（发布节奏）与
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-20（0.15.1 已发布：F4 真实线性代数修复——列序降序 + echelon 回写 + Symbolica GM 判据移植；cyclic-5 提速 ≈85 000× 且首次通过正确性验证，cyclic-6 可解）**
+> 最后修订：**2026-07-23（0.18.1 已发布 + 阶段 B++ "竞品全面对齐" [0.19–0.23] 已规划：F5 Gröbner → ODE 求解器 → 数论 → 张量规范化 → 代数几何；阶段 B++ 之后，1.0.0 仅做冻结与打磨；GAP_ANALYSIS 已于 0.18.1 评估：112 文件 / ~40.9k 行，阶段 B+ 完成）**
 
 ---
 
@@ -37,8 +37,16 @@ gantt
     section 1.0 候选
     0.14 Risch 积分          :r14, after b13, 3M
     0.15 性能+JIT+内存优化    :r15, after r14, 2M
+    section Symbolica 差距清零
+    0.15.2-0.18.1 阶段 B+    :bp, after r15, 4M
+    section 竞品全面对齐
+    0.19 F5 Gröbner          :c19, after bp, 3M
+    0.20 ODE 求解器          :c20, after c19, 3M
+    0.21 数论                :c21, after c20, 3M
+    0.22 张量规范化+重写      :c22, after c21, 3M
+    0.23 代数几何            :c23, after c22, 3M
     section 稳定版
-    1.0.0 冻结+文档          :s10, after r15, 2M
+    1.0.0 冻结+文档          :s10, after c23, 2M
     section Post-1.0
     LLVM、GPU、稠密 SIMD      :p1, after s10, 6M
 ```
@@ -396,12 +404,13 @@ Risch 代码。
 
 ---
 
-## 阶段 B+ — Symbolica 差距清零（0.15.2 → 0.18.0）
+## 阶段 B+ — Symbolica 差距清零（0.15.2 → 0.18.0）—— 已完成
 
-**目标**：在 1.0.0 之前彻底补全与 Symbolica 2.1.0 的剩余功能与性能差距
-（依据 GAP_ANALYSIS 0.15.1 @ 2026-07-21 重估）：任意多元（≥3 变量）与
-代数数域因式分解、数值积分、双数/张量、fuel 资源控制、Gröbner 大规模
-性能。完成后 1.0.0 仅做冻结与打磨。
+**目标**：在 1.0.0 之前彻底补全与 Symbolica 2.1.0 的剩余功能与性能差距。
+依据 GAP_ANALYSIS 0.18.1 @ 2026-07-23 重估，**本阶段已完成**：任意多元
+（≥3 变量）与代数数域因式分解、数值积分、双数/张量、fuel 资源控制全部
+落地；仅剩 cyclic-6 量级 Gröbner 性能（需 F5 签名约简）与张量完整规范化
+（需图同构引擎）未达，均推迟至 Post-1.0。完成后 1.0.0 仅做冻结与打磨。
 
 ### 0.15.2 — Gröbner 大规模性能：LM 索引与稀疏 Echelon
 
@@ -647,6 +656,150 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 
 ---
 
+## 阶段 B++ — 竞品全面对齐：Symbolica 性能 + SageMath 广度（0.19.0 → 0.23.0）
+
+**目标**：在 1.0.0 之前实现真正的竞品对齐。阶段 B+ 闭合了 Symbolica 的
+*示例域*功能缺口；阶段 B++ 则闭合与 Symbolica 的剩余*性能*差距
+（cyclic-6 量级的 F5 Gröbner）和与 SageMath/SymPy 的*最高需求功能广度*
+差距（ODE 求解器、数论、代数几何工具），以及 Symbolica 的最后阵地
+（张量规范化 + 高级模式匹配）。此后 1.0.0 严格只做冻结与打磨。
+
+两条主线并行推进：
+
+- **主线 SP（Symbolica 性能）**：0.19 F5 Gröbner、0.22 张量规范化——
+  Symbolica 仍在性能或功能完备性上领先的两个领域。
+- **主线 SF（SageMath 功能）**：0.20 ODE、0.21 数论、0.23 代数几何——
+  SageMath/SymPy 长期占据用户群的最高需求能力。
+
+### 0.19.0 — F5 Gröbner 基：签名约简
+
+**主题**：Symbolica 性能对齐（主线 SP）。F4 矩阵算法（0.15.1 完成并于
+0.15.2 优化）在 cyclic-6 上触及 264k 行，因为约 99% 的行约化为零——F4
+几乎把所有时间花在生产废料工作上。Faugère 的 F5（2002）为每个多项式
+附加一个*签名*，用 syzygy 判据在零约化行进入矩阵*之前*即予以剔除，
+在困难理想上取得数量级加速。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地 | 状态 |
+|---|---|---|---|
+| 签名单项式 + 项排序（签名 = 该行"历史"多项式的首项单项式） | Faugère 2002 §2；Symbolica `groebner.rs` F5 | `ocas-poly::groebner::f5` | [ ] |
+| F5 判据：syzygy（重写）判据、签名兼容 reductor 选择 | Faugère 2002 §3 | `f5` 判据模块 | [ ] |
+| F5 矩阵构造（签名排序行，仅选签名兼容 reductor） | Faugère 2002 §4 | `f5` 矩阵构建器 | [ ] |
+| 逐次数增量基构造 + 签名簿记 | Faugère 2002 §3.3 | `f5` 主循环 | [ ] |
+| F5'/F5C 优化（次数步之间做 inter-reduction） | Eder & Perry 2009 | `f5` 后处理 | [ ] |
+| 多序支持：grevlex（已完成）、lex、block/weight 消元序 | Cox-Little-O'Shea 第 2 章 | `groebner` 序分派 | [ ] |
+
+**验收**
+
+- cyclic-6 ℤ₁₃ Gröbner 基 < 5 s（0.15.2 为 3670 s；目标 ≈700×）。
+- cyclic-7 ℤ₁₃ 可解（完成且基正确）。
+- `is_groebner_basis` 在 ℤ₁₃ 上所有 cyclic-n（n ≤ 7）通过。
+- 简单理想无回归（F5 在非退化输入上回退到 F4 代价）。
+
+### 0.20.0 — 常微分方程求解器
+
+**主题**：SageMath/SymPy 功能对齐（主线 SF）。ODE 求解是最高需求的缺失
+能力——每个通用 CAS 都有。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地 | 状态 |
+|---|---|---|---|
+| 一阶 ODE 分类引擎：可分离、线性（`y'+p(x)y=q(x)`）、Bernoulli、恰当（`∂M/∂y=∂N/∂x`）、齐次替换 | SymPy `dsolve` 分类器；Boyce & DiPrima 第 2 章 | `ocas-calc::ode::first_order` | [ ] |
+| 非恰当一阶 ODE 的积分因子检测 | Boyce & DiPrima §2.6 | `first_order::integrating_factor` | [ ] |
+| 二阶线性 ODE：常系数（特征方程）、Cauchy-Euler、降阶法、常数变易法 | Boyce & DiPrima 第 3–4 章 | `ocas-calc::ode::second_order` | [ ] |
+| 线性 ODE 系统：矩阵指数（经特征分解） | SageMath `desolve_system`；SymPy `dsolve(system=True)` | `ocas-calc::ode::systems` | [ ] |
+| 常点附近幂级数解；正则奇点附近 Frobenius 方法 | Boyce & DiPrima 第 5 章 | `ocas-calc::ode::series` | [ ] |
+| 线性 IVP 的 Laplace 变换方法 | Boyce & DiPrima 第 6 章 | `ocas-calc::ode::laplace` | [ ] |
+| 待定系数法与零化子方法 | Boyce & DiPrima §3.5–3.6 | `second_order::undetermined` | [ ] |
+| Python/C 绑定：`dsolve(equation, func, hint=None)` + `classify_ode` | SymPy API 对齐 | `ocas-py::ode`, `ocas-c::ode` | [ ] |
+
+**验收**
+
+- 与 SymPy `dsolve` 交叉验证 ≥ 30 个规范 ODE（一阶可分离/线性/Bernoulli/
+  恰当/齐次，二阶常系数/Cauchy-Euler/常数变易）。
+- 初值问题返回显式解。
+- 级数解与 Taylor 展开匹配 ≥ 5 项。
+- 无分类器匹配时返回 `ODE(equation, func)` 未求值形式。
+
+### 0.21.0 — 数论与计算代数栈
+
+**主题**：SageMath/PARI 功能对齐（主线 SF）。闭合 GAP_ANALYSIS §3 中的
+GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地 | 状态 |
+|---|---|---|---|
+| 模多项式 GCD（Brown 算法 / EZ-GCD，闭合 GAP_ANALYSIS §3 GCD 缺口） | Brown 1971；Symbolica `poly/gcd.rs` 模方法路径 | `ocas-poly::gcd::modular` | [ ] |
+| 中国剩余定理：多项式 + 整数，完整重构 | Crandall & Pomerance 第 2 章 | `ocas-domain::crt` | [ ] |
+| 整数分解：试除（小素数）、Pollard rho、Pollard p−1、Williams p+1、椭圆曲线法（ECM） | Crandall & Pomerance 第 5–6 章 | `ocas-domain::factor::integer` | [ ] |
+| 素性判定：Miller-Rabin（概率）、BPSW、确定性（APR-CL 或 AKS） | Crandall & Pomerance 第 4 章 | `ocas-domain::primes` | [ ] |
+| 离散对数：baby-step giant-step、Pohlig-Hellman | Crandall & Pomerance 第 6 章 | `ocas-domain::dlog` | [ ] |
+| 数论函数：Euler φ、Möbius μ、因子 σ/τ、Liouville λ | Hardy & Wright | `ocas-domain::number_theory`（扩展） | [ ] |
+| 二次剩余：Legendre/Jacobi 符号、模平方根（Tonelli-Shanks） | Crandall & Pomerance §2.9 | `ocas-domain::residues` | [ ] |
+| Python/C 绑定：`factorint`、`isprime`、`nextprime`、`discrete_log`、`crt`、`jacobi_symbol` | SymPy `ntheory` API 对齐 | `ocas-py::ntheory`, `ocas-c::ntheory` | [ ] |
+
+**验收**
+
+- 与 SymPy `ntheory` 交叉验证，每个子模块 ≥ 20 例。
+- ECM 在 10 s 内分解 30 位半素数。
+- 模多项式 GCD 处理 100 位系数的 50 次整系数多项式，无系数爆炸。
+- BPSW 素性：无已知合数通过（n < 2⁶⁴ 确定性）。
+
+### 0.22.0 — 张量规范化与高级模式匹配
+
+**主题**：Symbolica 功能对齐（主线 SP）——最后阵地。oCAS 在 0.18 交付了
+张量*基础版*；本版本加入基于图同构的规范化（Symbolica 的 `graphica`
+引擎）以及补全 Symbolica 重写面的专用模式变换器。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地 | 状态 |
+|---|---|---|---|
+| 基于图同构的张量规范化（指标为顶点、收缩为边、对称性为自同构） | Symbolica `graphica`（基于 Bliss）；移植思想，不拷贝代码 | `ocas-atom::tensor::canon` | [ ] |
+| 哑指标管理：自动配对、引入/消除、迹检测 | Cadabra；xAct | `tensor::dummy` | [ ] |
+| 对称性感知规范型：Young 盘（全对称/反对称），混合对称的广义 Young 投影子 | Waldmann；Fulton & Harris | `tensor::young` | [ ] |
+| `Transformer::Partition`：模式替换中的参数序列分拆 | Symbolica `examples/partition.rs` | `ocas-rewrite::transformer::partition` | [ ] |
+| 带回溯与条件守卫的多模式替换 | Symbolica `replace_all`（带限制） | `ocas-rewrite::replace::multi` | [ ] |
+| Python/C 绑定：张量规范化 API、带变换器的 `replace_all` | Symbolica API 对齐 | `ocas-py::tensor`（扩展）、`ocas-c::tensor`（扩展） | [ ] |
+
+**验收**
+
+- 张量规范型在指标重标记下不变（proptest：随机重标记 → 相同规范型）。
+- Ricci 演算恒等式：经规范化验证 Riemann 张量前两指标反对称。
+- `Transformer::Partition` 匹配 Symbolica `partition.rs` 示例输出。
+- 多模式替换确定性地解析重叠模式。
+
+### 0.23.0 — 高级 Gröbner 与代数几何工具
+
+**主题**：SageMath/Singular 功能对齐（主线 SF）。使 oCAS 从"能算 Gröbner 基"
+提升到"能做代数几何"——理想运算、消元、零维求解、准素分解。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地 | 状态 |
+|---|---|---|---|
+| 附加单项式序：纯 lex、weight/block 消元、矩阵序 | Cox-Little-O'Shea 第 2 章 §4；Singular | `ocas-poly::order`（扩展） | [ ] |
+| 理想运算：交、商、饱和、和、积 | Cox-Little-O'Shea 第 4 章 §3 | `ocas-poly::ideal` | [ ] |
+| 理想归属测试（归约到 Gröbner 基余式为零） | Cox-Little-O'Shea 第 2 章 §6 | `ideal::contains` | [ ] |
+| 零维求解：乘法矩阵特征向量法、有理一元表示（RUR） | Rouillier 1999；Cox-Little-O'Shea 第 2 章 §9 | `ocas-poly::solve::zero_dim` | [ ] |
+| 准素分解（Gianni-Trager-Zacharias / Shimoyama-Yokoyama） | GTZ 1988；Decker-Greuel 计算代数教材 | `ocas-poly::ideal::primary_decomposition` | [ ] |
+| 根式计算（Kemper 算法或 Eisenbud-Hunecke） | Kemper 1999 | `ideal::radical` | [ ] |
+| Hilbert 级数 / Hilbert 多项式（将 0.14 的 Hilbert 界扩展为完整级数） | Cox-Little-O'Shea 第 9 章 | `ideal::hilbert_series` | [ ] |
+| Python/C 绑定：`ideal_*` 运算、`solve_polynomial_system`、`primary_decomposition` | SageMath `ideal` API 对齐 | `ocas-py::ideal`, `ocas-c::ideal` | [ ] |
+
+**验收**
+
+- 与 Singular 交叉验证 ≥ 15 个理想（交、商、饱和、归属、零维求解、
+  准素分解）。
+- RUR 正确求解 cyclic-4 根系。
+- `(x², xy)` 的准素分解返回 `(x) ∩ (x, y) ∩ (x², y)`。
+- 消元序求解 Cox-Little-O'Shea 中的隐式化问题。
+
+---
+
 ## 阶段 C — 1.0.0 稳定版
 
 **目标**：API 稳定性保证、完整文档、迁移指南、签名产物。不加新功能；仅冻结
@@ -671,11 +824,12 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 
 ## 阶段 D — Post-1.0
 
-路线图驱动的扩展，每个都版本化并与相关竞品基准对比。
+路线图驱动的扩展，每个都版本化并与相关竞品基准对比。（ODE/PDE 已移至
+1.0 前的 0.20。）
 
 | 版本 | 主题 | 参考竞品 | 备注 |
 |---|---|---|---|
-| 1.1 | ODE/PDE 求解器 | SageMath `desolve`；SymPy `dsolve` | 级数 + 数值混合 |
+| 1.1 | PDE 求解器（Poisson、热传导、波动） | SageMath；Mathematica `DSolve` | 有限差分 + 谱方法 |
 | 1.2 | 微分 Galois 理论（序章） | Maple；研究 | 研究级 |
 | 1.3 | `ocas-gpl` 实后端 | LinBox、NTL | GPL-3.0 隔离 crate |
 | 1.4 | GPU 加速 | CUDA/HIP | 多项式 + 线性代数核 |
@@ -691,26 +845,30 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 | oCAS 领域 | 主要参考 | 次要参考 | 状态 |
 |---|---|---|---|
 | 因式分解（一元/二元） | Symbolica `src/poly/factor.rs` | Knuth TAOCP 卷 2 | 🟢 0.11 完成 |
-| 因式分解（任意多元） | Symbolica `src/poly/factor.rs`；Wang 1978 EEZ | — | 🔴 缺口（0.16） |
-| 因式分解（代数数域） | Symbolica `factor.rs` ANF 路径；Trager 1976 | — | 🔴 缺口（0.17） |
+| 因式分解（任意多元） | Symbolica `src/poly/factor.rs`；Wang 1978 EEZ | — | 🟢 0.16 完成 |
+| 因式分解（代数数域） | Symbolica `factor.rs` ANF 路径；Trager 1976 | — | 🟢 0.17 完成（一元） |
 | 有理多项式 | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 完成 |
 | 部分分式 | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 完成 |
 | 结式 | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 完成 |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | 🟡 F4 完成（0.15.1）；大规模性能 0.15.2 |
-| GCD（模） | Symbolica `poly/gcd.rs` | — | 🟡 基础 |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | 🟡 F4 完成（0.15.1）+ LM 索引/稀疏 echelon（0.15.2）；F5 签名约简计划 0.19 |
+| GCD（模） | Symbolica `poly/gcd.rs`；Brown 1971 | — | 🟡 基础；大 ℤ 系数模 GCD 计划 0.21 |
 | GCD（模方法多变量） | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 完成 |
 | 积分（Risch） | Bronstein 著作；SymPy Risch | — | 🟢 0.14 完成 |
 | 多输出 JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 完成 |
 | 流式 | Symbolica `streaming.rs` | — | 🟢 0.15 完成 |
 | 级数 | Symbolica `poly/series.rs`；SymPy `series` | — | 🟢 已有基础 |
-| 张量/双数 | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 缺口（0.18） |
-| 数值积分 | Symbolica `numerical_integration.rs`（Vegas） | QUADPACK | 🟡 确定性 quadrature 已有（0.12.1）；Vegas 0.18 |
-| 资源控制（fuel） | Symbolica `fuel` | — | 🔴 缺口（0.18） |
+| 张量/双数 | Symbolica `tensors.rs`/`dual.rs` | — | 🟢 基础版已完成（0.18）；完整规范化（图同构）计划 0.22 |
+| 数值积分 | Symbolica `numerical_integration.rs`（Vegas） | QUADPACK | 🟢 Vegas 已完成（0.18）；确定性 quadrature（0.12.1） |
+| 资源控制（fuel） | 第一性原理（Symbolica 无） | — | 🟢 0.18 完成 |
 | 域（大整数） | FLINT/GMP 经由 `rug` | — | 🟢 经后端 |
 | 域（大整数 SOO） | FLINT `fmpz_t`；Symbolica 系数编码 | — | 🟢 0.11.2 完成 |
 | 多项式快速乘法 | FLINT 3 SSA；Symbolica dense mul | — | 🟢 0.12.1 NTT（90× vs Karatsuba） |
-| 内存管理（mimalloc/对象池） | Symbolica Workspace；Maple 分层区域 | — | 🟡 mimalloc 已完成（0.11.2）；对象池待 0.15 |
-| ODE/PDE | SageMath `desolve`；SymPy `dsolve` | — | 🔴 缺口（Post-1.0） |
+| 内存管理（mimalloc/对象池） | Symbolica Workspace；Maple 分层区域 | — | 🟢 mimalloc（0.11.2）+ Arena/对象池（0.15）已完成 |
+| ODE/PDE | SageMath `desolve`；SymPy `dsolve` | — | 🔴 缺口；ODE 求解器计划 0.20 |
+| 数论 | SageMath/PARI；SymPy `ntheory` | Crandall & Pomerance | 🔴 缺口；模 GCD + 分解 + 素性 + 离散对数 计划 0.21 |
+| 代数几何（理想） | Singular；SageMath `ideal` | Cox-Little-O'Shea | 🔴 缺口；理想运算 + RUR + 准素分解 + Hilbert 级数 |
+| 张量规范化 | Symbolica `graphica`（Bliss） | Cadabra | 🔴 缺口；图同构规范化 计划 0.22 |
+| 模式变换器 | Symbolica `Transformer::Partition` | — | 🔴 缺口；计划 0.22 |
 
 ---
 
@@ -736,3 +894,7 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 | 0.16.1 | 2026-07-22 | 非常数首项系数强加与多元稀疏化发布。p-adic 系数 Hensel 提升（`coefficient_hensel_lift_z`）；稀疏多元 Diophantine（骨架插值 + Vandermonde + EEA 序列）；自适应采样（去重 + content 排序 + 值域递增）；二元非常数 LC 改走 EEZ；correctness 4 用例 + criterion 2 基准 + proptest；audit 报告 Symbolica 计时对比。修复 2 个 bug（Diophantine 契约违反、采样系数平方）。Fp 路径 LC 预处理（域版 Wang L1297）推迟 0.16.2。 |
 | 0.16.2 | — | 新增 0.16.2（$\mathbb{F}_p$ 路径非常数 LC 预处理 + 采样性能优化）。 |
 | 0.17.0 | 2026-07-22 | 代数数域因式分解（Trager）发布。新增 `ocas-domain::algebraic`（`AlgebraicExtension<D>`，ℚ(α)/GF(p^d) 同一实现）与 `ocas-poly::factor::algebraic`（平移范数 + 数域模 GCD + 有理快速通道）；修复结式 Brown PRS 一般次数 bug（按 Symbolica `resultant_prs` 重移植）；0.16.2 小素数升级启发式补齐并勾选复选框；性能指标达成（deg≤12 实测 8–32 ms < 100 ms）；多元扩域（Zippel）留待后续。 |
+| 0.17.1 | 2026-07-22 | 代数数域 Python/C 绑定发布（`AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial` Python 类 + `OcasAlgebraicField`/`OcasAlgebraicPoly` 不透明句柄与 `ocas_algebraic_*` C ABI + `RootOf` 解析确认）；无算法变更。 |
+| 0.18.0 | 2026-07-23 | 数值积分（Vegas 自适应蒙特卡洛 + `integrate_1d` + `StatisticsAccumulator`）、前向 AD（`HyperDual<T>` 运行时形状 + 截断乘法表 + 几何级数求逆）、fuel 资源控制（`Fuel` + `simplify_with_fuel`/`integrate_with_fuel`）、张量基础（独立 `Tensor` + 收缩 + `symmetrise_sign`）发布。 |
+| 0.18.1 | 2026-07-23 | 0.18.0 三项能力的 Python/C 绑定补齐 + prelude 补齐；修复 `normalize` 幂等性 bug。阶段 B+ 宣告完成。 |
+| 0.18.1 | 2026-07-23 | **阶段 B++ "竞品全面对齐"（0.19.0→0.23.0）规划完成。** 两条主线：主线 SP（Symbolica 性能）——0.19 F5 Gröbner 签名约简（cyclic-6 <5s 目标）、0.22 张量规范化（图同构引擎）+ `Transformer::Partition`；主线 SF（SageMath 功能）——0.20 ODE 求解器（一阶/二阶 + 系统 + 级数 + Laplace）、0.21 数论（模 GCD + 整数分解 + 素性 + 离散对数 + CRT + 数论函数）、0.23 代数几何（理想运算 + RUR + 准素分解 + Hilbert 级数）。Gantt 图更新（阶段 B+ + B++）；竞品参考索引修正：多元/代数数域因式分解标 🟢，张量/fuel/数值积分标 🟢，ODE 从 Post-1.0 移入 0.20；新增数论、代数几何、张量规范化、模式变换器行。阶段 D 调整（ODE→0.20；1.1 改为 PDE）。 |

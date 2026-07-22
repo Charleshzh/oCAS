@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-20 (0.15.1 released: real F4 linear algebra — descending column order + echelon write-back fix + Symbolica GM criteria port; cyclic-5 ~85,000× faster with first-ever correctness pass, cyclic-6 tractable)**
+> Last revised: **2026-07-23 (0.18.1 released + Phase B++ "Competitive Alignment" [0.19–0.23] planned: F5 Gröbner → ODE solvers → number theory → tensor canonicalisation → algebraic geometry; after Phase B++, 1.0.0 is freeze-and-polish only; GAP_ANALYSIS at 0.18.1: 112 files / ~40.9k lines, Phase B+ complete)**
 
 ---
 
@@ -44,8 +44,16 @@ gantt
     section 1.0 RC
     0.14 Risch Integration    :r14, after b13, 3M
     0.15 Perf+JIT+MemOpt      :r15, after r14, 2M
+    section Symbolica Gap Closure
+    0.15.2-0.18.1 Phase B+    :bp, after r15, 4M
+    section Competitive Alignment
+    0.19 F5 Groebner          :c19, after bp, 3M
+    0.20 ODE Solvers          :c20, after c19, 3M
+    0.21 Number Theory        :c21, after c20, 3M
+    0.22 Tensor Canon+Rewrite :c22, after c21, 3M
+    0.23 Algebraic Geometry   :c23, after c22, 3M
     section Stable
-    1.0.0 Freeze+Docs         :s10, after r15, 2M
+    1.0.0 Freeze+Docs         :s10, after c23, 2M
     section Post-1.0
     LLVM, GPU, dense SIMD     :p1, after s10, 6M
 ```
@@ -417,14 +425,16 @@ Rust + arena + JIT stack should start *exceeding* competitors.
 
 ---
 
-## Phase B+ — Closing the Symbolica Gap (0.15.2 → 0.18.0)
+## Phase B+ — Closing the Symbolica Gap (0.15.2 → 0.18.0) — COMPLETE
 
 **Goal**: before 1.0.0, fully close the remaining functional and performance
-gaps against Symbolica 2.1.0 (per the GAP_ANALYSIS 0.15.1 @ 2026-07-21
-re-evaluation): arbitrary multivariate (≥3 variables) and
-algebraic-number-field factorization, numerical integration, dual numbers /
-tensors, fuel resource control, and Gröbner performance at scale. After this
-phase, 1.0.0 is freeze-and-polish only.
+gaps against Symbolica 2.1.0. Per the GAP_ANALYSIS 0.18.1 @ 2026-07-23
+re-evaluation, **this phase is complete**: arbitrary multivariate (≥3
+variables) and algebraic-number-field factorization, numerical integration,
+dual numbers / tensors, and fuel resource control all landed; only
+cyclic-6-scale Gröbner performance (needs F5 signature reduction) and full
+tensor canonicalisation (needs a graph-isomorphism engine) remain, both
+deferred to Post-1.0. After this phase, 1.0.0 is freeze-and-polish only.
 
 ### 0.15.2 — Gröbner Performance at Scale: LM Index & Sparse Echelon
 
@@ -727,6 +737,163 @@ integration; full tensor canonicalisation (graph isomorphism). All Post-1.0.
 
 ---
 
+## Phase B++ — Competitive Alignment: Symbolica Performance + SageMath Breadth (0.19.0 → 0.23.0)
+
+**Goal**: before 1.0.0, achieve true competitive parity. Phase B+ closed
+Symbolica's *example-domain* feature gaps; Phase B++ closes the remaining
+*performance* gap against Symbolica (F5 Gröbner at cyclic-6 scale) and the
+*most-requested feature breadth* gap against SageMath/SymPy (ODE solvers,
+number theory, algebraic-geometry tooling), plus the last Symbolica bastion
+(tensor canonicalisation + advanced pattern matching). After this phase,
+1.0.0 is strictly freeze-and-polish.
+
+Two tracks run in parallel:
+
+- **Track SP (Symbolica Performance)**: 0.19 F5 Gröbner, 0.22 tensor
+  canonicalisation — the two areas where Symbolica still leads on either
+  performance or feature completeness.
+- **Track SF (SageMath Feature)**: 0.20 ODE, 0.21 number theory, 0.23
+  algebraic geometry — the highest-demand capabilities where SageMath/SymPy
+  have long held the user base.
+
+### 0.19.0 — F5 Gröbner Basis: Signature Reduction
+
+**Theme**: Symbolica performance alignment (Track SP). The F4 matrix algorithm
+(complete since 0.15.1, optimized in 0.15.2) hits 264 k rows on cyclic-6
+because ~99 % of rows reduce to zero — F4 spends nearly all its time
+producing throwaway work. Faugère's F5 (2002) attaches a *signature* to each
+polynomial and uses syzygy criteria to reject zero-reducers *before* they
+enter the matrix, achieving order-of-magnitude speedups on difficult ideals.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Signature monomial + term ordering (signature = leading monomial of the row's "history" polynomial) | Faugère 2002 §2; Symbolica `groebner.rs` F5 | `ocas-poly::groebner::f5` | [ ] |
+| F5 criteria: syzygy (rewritten) criterion, signature-compatible reductor selection | Faugère 2002 §3 | `f5` criteria module | [ ] |
+| F5 matrix construction (signature-sorted rows, only signature-compatible reductors) | Faugère 2002 §4 | `f5` matrix builder | [ ] |
+| Incremental degree-by-degree basis construction with signature bookkeeping | Faugère 2002 §3.3 | `f5` main loop | [ ] |
+| F5' / F5C optimizations (inter-reduction between degree steps) | Eder & Perry 2009 | `f5` post-step | [ ] |
+| Multi-order support: grevlex (done), lex, block/weight elimination orders | Cox-Little-O'Shea Ch. 2 | `groebner` order dispatch | [ ] |
+
+**Acceptance**
+
+- cyclic-6 ℤ₁₃ Gröbner basis in < 5 s (0.15.2: 3670 s; target: ~700× faster).
+- cyclic-7 ℤ₁₃ tractable (completes, basis verified correct).
+- `is_groebner_basis` passes on all cyclic-n n ≤ 7 over ℤ₁₃.
+- No regression on easy ideals (F5 falls back to F4 cost on non-degenerate
+  inputs).
+
+### 0.20.0 — Ordinary Differential Equation Solvers
+
+**Theme**: SageMath/SymPy feature alignment (Track SF). ODE solving is the
+most-requested missing capability — every general-purpose CAS ships it.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| First-order ODE classification engine: separable, linear (`y'+p(x)y=q(x)`), Bernoulli, exact (`∂M/∂y=∂N/∂x`), homogeneous substitution | SymPy `dsolve` classifiers; Boyce & DiPrima Ch. 2 | `ocas-calc::ode::first_order` | [ ] |
+| Integrating-factor detection for non-exact first-order ODEs | Boyce & DiPrima §2.6 | `first_order::integrating_factor` | [ ] |
+| Second-order linear ODE: constant coefficients (characteristic equation), Cauchy-Euler, reduction of order, variation of parameters | Boyce & DiPrima Ch. 3–4 | `ocas-calc::ode::second_order` | [ ] |
+| Linear ODE systems: matrix exponential via eigen-decomposition | SageMath `desolve_system`; SymPy `dsolve(system=True)` | `ocas-calc::ode::systems` | [ ] |
+| Power series solutions near ordinary points; Frobenius method near regular singular points | Boyce & DiPrima Ch. 5 | `ocas-calc::ode::series` | [ ] |
+| Laplace-transform method for linear IVPs | Boyce & DiPrima Ch. 6 | `ocas-calc::ode::laplace` | [ ] |
+| Undetermined-coefficients and annihilator method for forcing terms | Boyce & DiPrima §3.5–3.6 | `second_order::undetermined` | [ ] |
+| Python/C bindings: `dsolve(equation, func, hint=None)` + `classify_ode` | SymPy API parity | `ocas-py::ode`, `ocas-c::ode` | [ ] |
+
+**Acceptance**
+
+- SymPy `dsolve` cross-verification on ≥ 30 canonical ODEs (first-order
+  separable/linear/Bernoulli/exact/homogeneous, second-order
+  constant-coeff/Cauchy-Euler/variation-of-parameters).
+- Initial-value problems return explicit solutions.
+- Series solutions match Taylor expansion to ≥ 5 terms.
+- Returns `ODE(equation, func)` unevaluated form when no classifier matches.
+
+### 0.21.0 — Number Theory & Computational Algebra Stack
+
+**Theme**: SageMath/PARI feature alignment (Track SF). Closes the GCD
+performance gap noted in GAP_ANALYSIS §3 (no modular GCD for large integer
+coefficients) and brings core number-theory tooling.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Modular polynomial GCD (Brown's algorithm / EZ-GCD for large ℤ coefficients — closes GAP_ANALYSIS §3 GCD gap) | Brown 1971; Symbolica `poly/gcd.rs` modular path | `ocas-poly::gcd::modular` | [ ] |
+| Chinese remainder theorem: polynomial + integer, full reconstruction | Crandall & Pomerance Ch. 2 | `ocas-domain::crt` | [ ] |
+| Integer factorization: trial (small primes), Pollard rho, Pollard p−1, Williams p+1, elliptic curve method (ECM) | Crandall & Pomerance Ch. 5–6 | `ocas-domain::factor::integer` | [ ] |
+| Primality: Miller-Rabin (probabilistic), BPSW, deterministic (APR-CL or AKS) | Crandall & Pomerance Ch. 4 | `ocas-domain::primes` | [ ] |
+| Discrete logarithm: baby-step giant-step, Pohlig-Hellman | Crandall & Pomerance Ch. 6 | `ocas-domain::dlog` | [ ] |
+| Number-theoretic functions: Euler totient, Möbius μ, divisor σ/τ, Liouville λ | Hardy & Wright | `ocas-domain::number_theory` (extend) | [ ] |
+| Quadratic residues: Legendre/Jacobi symbols, modular square root (Tonelli-Shanks) | Crandall & Pomerance §2.9 | `ocas-domain::residues` | [ ] |
+| Python/C bindings: `factorint`, `isprime`, `nextprime`, `discrete_log`, `crt`, `jacobi_symbol` | SymPy `ntheory` API parity | `ocas-py::ntheory`, `ocas-c::ntheory` | [ ] |
+
+**Acceptance**
+
+- SymPy `ntheory` cross-verification on ≥ 20 cases per sub-module.
+- ECM factors 30-digit semiprimes in < 10 s.
+- Modular polynomial GCD handles degree-50 integer-coefficient polynomials
+  with 100-digit coefficients without coefficient explosion.
+- BPSW primality: no known composites pass (deterministic for n < 2⁶⁴).
+
+### 0.22.0 — Tensor Canonicalisation & Advanced Pattern Matching
+
+**Theme**: Symbolica feature alignment (Track SP) — the last bastion. oCAS
+shipped tensor *basics* in 0.18; this version adds graph-isomorphism-based
+canonicalisation (Symbolica's `graphica` engine) and the specialized pattern
+transformers that round out Symbolica's rewriting surface.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Graph-isomorphism-based tensor canonicalisation (indices as vertices, contractions as edges, symmetries as automorphisms) | Symbolica `graphica` (Bliss-based); Port idea, not code | `ocas-atom::tensor::canon` | [ ] |
+| Dummy-index management: auto-pairing, introduction/elimination, trace detection | Cadabra; xAct | `tensor::dummy` | [ ] |
+| Symmetry-aware canonical form: Young tableaux (fully symmetric/antisymmetric), general Young projector for mixed symmetry | Waldmann; Fulton & Harris | `tensor::young` | [ ] |
+| `Transformer::Partition`: argument-sequence partitioning for pattern replacement | Symbolica `examples/partition.rs` | `ocas-rewrite::transformer::partition` | [ ] |
+| Multi-pattern replace with backtracking and condition guards | Symbolica `replace_all` with restrictions | `ocas-rewrite::replace::multi` | [ ] |
+| Python/C bindings: tensor canonicalisation API, `replace_all` with transformer | Symbolica API parity | `ocas-py::tensor` (extend), `ocas-c::tensor` (extend) | [ ] |
+
+**Acceptance**
+
+- Tensor canonical form is invariant under index relabelling (proptest:
+  random relabel → same canonical form).
+- Ricci calculus identity: Riemann tensor antisymmetry in first two indices
+  verified via canonicalisation.
+- `Transformer::Partition` matches Symbolica `partition.rs` example output.
+- Multi-pattern replace resolves overlapping patterns deterministically.
+
+### 0.23.0 — Advanced Gröbner & Algebraic-Geometry Tooling
+
+**Theme**: SageMath/Singular feature alignment (Track SF). Brings oCAS from
+"can compute a Gröbner basis" to "can do algebraic geometry" — ideal
+operations, elimination, zero-dimensional solving, and primary decomposition.
+
+**Functionality**
+
+| Item | Reference | oCAS landing | Status |
+|---|---|---|---|
+| Additional monomial orders: pure lex, weight/block elimination, matrix ordering | Cox-Little-O'Shea Ch. 2 §4; Singular | `ocas-poly::order` (extend) | [ ] |
+| Ideal operations: intersection, quotient, saturation, sum, product | Cox-Little-O'Shea Ch. 4 §3 | `ocas-poly::ideal` | [ ] |
+| Ideal membership test (reduction to Gröbner basis with remainder zero) | Cox-Little-O'Shea Ch. 2 §6 | `ideal::contains` | [ ] |
+| Zero-dimensional solving: multiplication-matrix eigenvector method, rational univariate representation (RUR) | Rouillier 1999; Cox-Little-O'Shea Ch. 2 §9 | `ocas-poly::solve::zero_dim` | [ ] |
+| Primary decomposition (Gianni-Trager-Zacharias / Shimoyama-Yokoyama) | GTZ 1988; Decker-Greuel computer-algebra textbook | `ocas-poly::ideal::primary_decomposition` | [ ] |
+| Radical computation (Kemper algorithm or Eisenbud-Hunecke) | Kemper 1999 | `ideal::radical` | [ ] |
+| Hilbert series / Hilbert polynomial (extend 0.14 Hilbert bounds to full series) | Cox-Little-O'Shea Ch. 9 | `ideal::hilbert_series` | [ ] |
+| Python/C bindings: `ideal_*` operations, `solve_polynomial_system`, `primary_decomposition` | SageMath `ideal` API parity | `ocas-py::ideal`, `ocas-c::ideal` | [ ] |
+
+**Acceptance**
+
+- Singular cross-verification on ≥ 15 ideals (intersection, quotient,
+  saturation, membership, zero-dimensional solving, primary decomposition).
+- RUR solves cyclic-4 root system correctly.
+- Primary decomposition of `(x², xy)` returns `(x) ∩ (x, y) ∩ (x², y)`.
+- Elimination order solves implicitization problems from Cox-Little-O'Shea.
+
+---
+
 ## Phase C — 1.0.0 Stable Release
 
 **Goal**: API stability guarantee, complete docs, migration guide, signed
@@ -752,11 +919,11 @@ artifacts. No new features; freeze and polish only.
 ## Phase D — Post-1.0
 
 Roadmap-driven expansions, each versioned and benchmarked against the relevant
-competitor.
+competitor. (ODE/PDE moved to 0.20 pre-1.0.)
 
 | Version | Theme | Reference competitor | Notes |
 |---|---|---|---|
-| 1.1 | ODE/PDE solvers | SageMath `desolve`; SymPy `dsolve` | series + numeric hybrid |
+| 1.1 | PDE solvers (Poisson, heat, wave) | SageMath; Mathematica `DSolve` | finite-difference + spectral |
 | 1.2 | Differential Galois theory (prelude) | Maple; research | research-grade |
 | 1.3 | `ocas-gpl` real backend | LinBox, NTL | GPL-3.0 isolated crate |
 | 1.4 | GPU acceleration | CUDA/HIP | polynomial + linear algebra kernels |
@@ -773,26 +940,30 @@ when an item is met or beaten.
 | oCAS area | Primary reference | Secondary | Status |
 |---|---|---|---|
 | Factorization (univariate/bivariate) | Symbolica `src/poly/factor.rs` | Knuth TAOCP v2 | 🟢 0.11 done |
-| Factorization (arbitrary multivariate) | Symbolica `src/poly/factor.rs`; Wang 1978 EEZ | — | 🔴 gap (0.16) |
-| Factorization (algebraic number fields) | Symbolica `factor.rs` ANF path; Trager 1976 | — | 🔴 gap (0.17) |
+| Factorization (arbitrary multivariate) | Symbolica `src/poly/factor.rs`; Wang 1978 EEZ | — | 🟢 0.16 done |
+| Factorization (algebraic number fields) | Symbolica `factor.rs` ANF path; Trager 1976 | — | 🟢 0.17 done (univariate) |
 | Rational polynomials | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 done |
 | Partial fractions | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 done |
 | Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 done |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 F4 done (0.15.1); scale performance 0.15.2 |
-| GCD (modular) | Symbolica `poly/gcd.rs` | — | 🟡 basic |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 F4 done (0.15.1) + LM index/sparse echelon (0.15.2); F5 signature reduction planned 0.19 |
+| GCD (modular) | Symbolica `poly/gcd.rs`; Brown 1971 | — | 🟡 basic; modular GCD for large ℤ coefficients planned 0.21 |
 | GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 done |
 | Integration (Risch) | Bronstein book; SymPy Risch | — | 🟢 0.14 done |
 | Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 done |
 | Streaming | Symbolica `streaming.rs` | — | 🟢 0.15 done |
 | Series | Symbolica `poly/series.rs`; SymPy `series` | — | 🟢 have basics |
-| Tensors/dual | Symbolica `tensors.rs`/`dual.rs` | — | 🔴 gap (0.18) |
-| Numerical integration | Symbolica `numerical_integration.rs` (Vegas) | QUADPACK | 🟡 deterministic quadrature done (0.12.1); Vegas 0.18 |
-| Resource control (fuel) | Symbolica `fuel` | — | 🔴 gap (0.18) |
+| Tensors/dual | Symbolica `tensors.rs`/`dual.rs` | — | 🟢 basics done (0.18); full canonicalisation (graph iso) planned 0.22 |
+| Numerical integration | Symbolica `numerical_integration.rs` (Vegas) | QUADPACK | 🟢 Vegas done (0.18); deterministic quadrature (0.12.1) |
+| Resource control (fuel) | First-principles (Symbolica has none) | — | 🟢 0.18 done |
 | Domains (big int) | FLINT/GMP via `rug` | — | 🟢 via backend |
 | Domains (big int SOO) | FLINT `fmpz_t`; Symbolica coefficient encoding | — | 🟢 0.11.2 done |
 | Fast polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🟢 0.12.1 NTT (90× vs Karatsuba) |
-| Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🟡 mimalloc done (0.11.2); pool deferred to 0.15 |
-| ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🔴 gap (post-1.0) |
+| Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🟢 mimalloc (0.11.2) + Arena/pool (0.15) done |
+| ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🔴 gap; ODE solvers planned 0.20 |
+| Number theory | SageMath/PARI; SymPy `ntheory` | Crandall & Pomerance | 🔴 gap; modular GCD + factorization + primality + dlog + CRT + number-theoretic functions planned 0.21 |
+| Algebraic geometry (ideals) | Singular; SageMath `ideal` | Cox-Little-O'Shea | 🔴 gap; ideal ops + RUR + primary decomposition + Hilbert series planned 0.23 |
+| Tensor canonicalisation | Symbolica `graphica` (Bliss) | Cadabra | 🔴 gap; graph-iso canonicalisation planned 0.22 |
+| Pattern transformers | Symbolica `Transformer::Partition` | — | 🔴 gap; planned 0.22 |
 
 ---
 
@@ -818,3 +989,7 @@ Refresh this plan:
 | 0.16.1 | 2026-07-22 | Non-constant leading-coefficient imposition & multivariate sparsity released. Landed p-adic coefficient Hensel lift (`coefficient_hensel_lift_z`), sparse multivariate Diophantine (skeleton interpolation + Vandermonde + EEA sequence), adaptive sampling (dedup, content-aware ranking, value-bound escalation), bivariate non-constant-LC dispatch to EEZ path; 4 correctness cases + 2 criterion benchmarks + proptest; audit report with Symbolica timing comparison. Two bugs fixed (Diophantine contract violation, term coefficient squaring in sampling). Fp-path LC preprocessing (field Wang) deferred to 0.16.2. |
 | 0.16.2 | — | Added 0.16.2 ($\mathbb{F}_p$-path non-constant LC preprocessing + sampling performance). |
 | 0.17.0 | 2026-07-22 | Algebraic-number-field factorization (Trager) released. New `ocas-domain::algebraic` (`AlgebraicExtension<D>` — one implementation for ℚ(α) and GF(p^d)) and `ocas-poly::factor::algebraic` (shifted norm + modular number-field GCD + rational fast path); Brown PRS resultant bug for general degrees fixed (re-ported from Symbolica's `resultant_prs`); 0.16.2 small-prime escalation heuristic completed and checkboxes ticked; performance target met (degree ≤ 12 at 8–32 ms < 100 ms); multivariate extension (Zippel) deferred. |
+| 0.17.1 | 2026-07-22 | Algebraic-number Python/C bindings released (`AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial` Python classes + `OcasAlgebraicField`/`OcasAlgebraicPoly` opaque handles and `ocas_algebraic_*` C ABI + `RootOf` parse confirmation); no algorithm changes. |
+| 0.18.0 | 2026-07-23 | Numerical integration (Vegas adaptive Monte Carlo + `integrate_1d` + `StatisticsAccumulator`), forward AD (`HyperDual<T>` runtime shape + truncated product table + geometric-series inverse), fuel resource control (`Fuel` + `simplify_with_fuel`/`integrate_with_fuel`), tensor basics (independent `Tensor` + contraction + `symmetrise_sign`) released. |
+| 0.18.1 | 2026-07-23 | Python/C bindings backfill for the three 0.18.0 capabilities + prelude completeness; `normalize` idempotency bug fixed. Phase B+ declared COMPLETE. |
+| 0.18.1 | 2026-07-23 | **Phase B++ "Competitive Alignment" (0.19.0→0.23.0) planned.** Two tracks: Track SP (Symbolica Performance) — 0.19 F5 Gröbner signature reduction (cyclic-6 <5s target), 0.22 tensor canonicalisation (graph-iso engine) + `Transformer::Partition`; Track SF (SageMath Feature) — 0.20 ODE solvers (first/second-order + systems + series + Laplace), 0.21 number theory (modular GCD + integer factorization + primality + dlog + CRT + number-theoretic functions), 0.23 algebraic geometry (ideal ops + RUR + primary decomposition + Hilbert series). Gantt updated with Phase B+ + B++ sections. Competitor reference index corrected: multivariate/ANF factorization 🟢, tensors/fuel/numerical-integration 🟢, ODE moved from post-1.0 to 0.20; new rows added for number theory, algebraic geometry, tensor canonicalisation, pattern transformers. Phase D adjusted (ODE→0.20; 1.1 re-scoped to PDE). |
