@@ -37,7 +37,7 @@ updates:
           - "*"
     ignore:
       # The dtolnay/rust-toolchain action is tagged by toolchain version
-      # (e.g. @1.89.0), not by action release. Dependabot mistakes these for
+      # (e.g. @1.97.1), not by action release. Dependabot mistakes these for
       # semver action releases and proposes nonexistent toolchains (1.100.0),
       # breaking every job. We pin the toolchain manually via rust-version.
       - dependency-name: "dtolnay/rust-toolchain"

@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed / 变更
+
+- **Rust 工具链升级 1.89.0 → 1.97.1**：MSRV 从 1.89 提升至 1.97（跨越 8 个
+  次版本，约 11.5 个月）。CI workflow 中 12 处 `dtolnay/rust-toolchain`
+  引用同步更新。为即将到来的 Phase B++（0.19–0.23）准备：`core::range`
+  模块（1.95）、`assert_matches!` 宏（1.96）、`if let guards`（1.95）、
+  LLVM 22 codegen 改进（1.95）/ **Rust toolchain upgrade 1.89.0 → 1.97.1**:
+  MSRV bumped from 1.89 to 1.97 (8 minor versions, ~11.5 months). 12 CI
+  workflow `dtolnay/rust-toolchain` references updated. Prepares for the
+  upcoming Phase B++ (0.19–0.23): `core::range` (1.95),
+  `assert_matches!` (1.96), `if let guards` (1.95), LLVM 22 (1.95).
+
+### Fixed / 修复
+
+- **`isqrt_i128` 重构**：`ocas-calc::integral::rational` 中手写的牛顿迭代
+  整数平方根替换为标准库 `i128::checked_isqrt`（1.84 稳定），消除 `f64`
+  中间值的精度风险，减少 11 行手写循环代码 / **`isqrt_i128` refactor**:
+  the hand-rolled Newton-iteration integer square root in
+  `ocas-calc::integral::rational` is replaced by the standard-library
+  `i128::checked_isqrt` (stabilized in 1.84), eliminating the `f64`
+  intermediate precision risk and removing 11 lines of manual loop code.
+
+- **clippy 新 lint 修复（1.90–1.97）**：`manual_is_multiple_of`（`x % 2 == 0`
+  → `x.is_multiple_of(2)`，5 处）、`question_mark`（`if let Some` → `?`）、
+  `unnecessary_sort_by`（`sort_by` → `sort_by_key(Reverse)`）、
+  `needless_range_loop`（`for cc in c..=rows` → `iter_mut().take().skip()`）
+  / **clippy new-lint fixes (1.90–1.97)**: `manual_is_multiple_of` (5 sites),
+  `question_mark`, `unnecessary_sort_by`, `needless_range_loop`.
+
+---
+
 ## [0.18.1] - 2026-07-23
 
 ### Added / 新增
