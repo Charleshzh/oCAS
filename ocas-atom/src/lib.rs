@@ -12,6 +12,7 @@ use ocas_core::FastHashMap;
 use ocas_core::arena::Arena;
 
 pub mod normalize;
+pub mod tensor;
 pub mod walk;
 pub mod workspace;
 

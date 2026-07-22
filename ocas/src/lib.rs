@@ -58,9 +58,10 @@ pub mod prelude {
         self, DiophantineSolution, SolveError, solve_diophantine, solve_linear_integer,
         solve_linear_rational, solve_polynomial_system,
     };
-    pub use ocas_calc::{apart, diff, integrate, substitute, taylor};
+    pub use ocas_calc::{apart, diff, integrate, integrate_with_fuel, substitute, taylor};
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
+    pub use ocas_core::fuel::Fuel;
     pub use ocas_domain::{
         AlgebraicElement, AlgebraicExtension, AlgebraicNumberField, Assumption, Assumptions,
         Complex, ComplexDomain, Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer,
@@ -70,6 +71,7 @@ pub mod prelude {
     pub use ocas_eval::VectorEvaluator;
     #[cfg(feature = "jit")]
     pub use ocas_eval::jit::{JitCompiledFunction, JitEngine};
+    pub use ocas_eval::numeric::{IntegrateResult, Integrator, Vegas, VegasOptions, integrate_1d};
     pub use ocas_eval::{
         EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FunctionMap, Instr,
         Instruction, PowfExtension, Slot,
@@ -81,7 +83,8 @@ pub mod prelude {
         f4, monomial_are_coprime, monomial_divides, monomial_lcm,
     };
     pub use ocas_rewrite::{
-        Bindings, MatchError, Pattern, Rule, WildcardLevel, match_pattern, simplify, transform,
+        Bindings, MatchError, Pattern, Rule, WildcardLevel, match_pattern, simplify,
+        simplify_with_fuel, transform,
     };
 }
 

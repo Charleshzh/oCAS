@@ -89,6 +89,74 @@ impl std::fmt::Display for Rational {
 }
 
 #[cfg(not(feature = "gmp"))]
+impl std::ops::Add for Rational {
+    type Output = Rational;
+    fn add(self, rhs: Rational) -> Rational {
+        Rational(self.0 + rhs.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::Sub for Rational {
+    type Output = Rational;
+    fn sub(self, rhs: Rational) -> Rational {
+        Rational(self.0 - rhs.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::Mul for Rational {
+    type Output = Rational;
+    fn mul(self, rhs: Rational) -> Rational {
+        Rational(self.0 * rhs.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::Div for Rational {
+    type Output = Rational;
+    fn div(self, rhs: Rational) -> Rational {
+        Rational(self.0 / rhs.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::Neg for Rational {
+    type Output = Rational;
+    fn neg(self) -> Rational {
+        Rational(-self.0)
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::AddAssign for Rational {
+    fn add_assign(&mut self, rhs: Rational) {
+        self.0 += rhs.0;
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::SubAssign for Rational {
+    fn sub_assign(&mut self, rhs: Rational) {
+        self.0 -= rhs.0;
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::MulAssign for Rational {
+    fn mul_assign(&mut self, rhs: Rational) {
+        self.0 *= rhs.0;
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
+impl std::ops::DivAssign for Rational {
+    fn div_assign(&mut self, rhs: Rational) {
+        self.0 /= rhs.0;
+    }
+}
+
+#[cfg(not(feature = "gmp"))]
 impl Domain for RationalDomain {
     type Element = Rational;
 

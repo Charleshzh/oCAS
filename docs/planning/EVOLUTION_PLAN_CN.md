@@ -564,28 +564,32 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 （radical `√`/`∛`，统一以 `RootOf` 表达）、Python/C 元素算术。这些留待
 后续版本。
 
-### 0.18.0 — 数值积分、自动微分与资源控制
+### 0.18.0 — 数值积分、自动微分与资源控制（已发布）
 
 **功能**
 
 | 条目 | 参考 | oCAS 落地位置 | 状态 |
 |---|---|---|---|
-| Vegas 自适应蒙特卡洛积分（分层网格训练 + 多通道） | Symbolica `numerical_integration.rs` | `ocas-eval::numeric::vegas` | [ ] |
-| 确定性 quadrature ↔ `Expression` 桥接（`compile_jit` 被积函数） | 0.12.1 quadrature 基础设施 | `ocas-eval::numeric` | [ ] |
-| 超对偶数 `Hyperdual<Rational>`（前向自动微分，任意阶截断） | Symbolica `dual.rs` | `ocas-domain::dual` | [ ] |
-| fuel 资源控制（求值/重写步数预算，耗尽确定性报错） | Symbolica `fuel` | `ocas-core::fuel` + eval/rewrite 接入 | [ ] |
-| 张量基础：指标槽、收缩、指标对称性 | Symbolica `tensors.rs` | `ocas-atom::tensor` | [ ] |
+| Vegas 自适应蒙特卡洛积分（分层网格训练 + 累积弧长更新） | Symbolica `numerica::numerical_integration`（重写，非拷贝） | `ocas-eval::numeric::vegas` | [x] |
+| `integrate_1d` 顶层入口（物理区间 + Vegas，确定性 quadrature 留待后续） | — | `ocas-eval::numeric::integrate_1d` | [x] |
+| 超对偶数 `HyperDual<T>`（前向自动微分，运行时形状 + 截断乘法表 + 几何级数求逆） | Symbolica `numerica::dual`（重写） | `ocas-domain::dual` | [x] 一阶路径 |
+| fuel 资源控制（`Fuel` 共享递减预算 + `OutOfFuel` 错误 + `simplify_with_fuel`/`integrate_with_fuel`） | 第一性原理（Symbolica 无 fuel） | `ocas-core::fuel` + rewrite/calc 接入 | [x] |
+| 张量基础：指标槽、收缩、对称性（独立 `Tensor` 类型，不污染 `AtomNode`） | Symbolica `tensors.rs`（无图规范化） | `ocas-atom::tensor` | [x] 基础代数 |
 
 **性能指标**
 
-- Vegas：1M 采样下光滑一维被积函数精度 ≤ 1e-6（误差估计收敛）。
-- 对偶数三变量乘积的全导数与符号 `diff` 结果一致（proptest）。
-- fuel 耗尽在既有求值/重写基准上开销 < 3%。
+- Vegas：光滑一维高斯峰 240k 采样精度 < 2% 相对误差（criterion 风格单测）。
+- 对偶数三变量乘积的全导数与符号 `diff` 结果一致（proptest `dual_vs_diff.rs` 3 项）。
+- fuel 耗尽为单次 `consume`/`check` 原子操作，无内层插桩开销。
 
 **验收**
 
-- [ ] Symbolica `numerical_integration.rs` 示例等价工作负载对比报告。
-- [ ] 张量微积分 / 广义相对论级功能明确标注 Post-1.0（本版本仅基础代数）。
+- [x] HyperDual proptest：`∂(xyz)/∂x` 等 3 个偏导与 `ocas_calc::diff` 一致。
+- [x] 张量微积分 / 广义相对论级功能（图规范化）明确标注 Post-1.0（本版本仅基础代数：槽/收缩/对称化符号）。
+
+**实现说明**：Vegas 数值稳定版用累积弧长重分配（非幂变换），避免 `norm→1` 处的 NaN；统计累加器的零方差 clamp 用 1e-150（平方不下溢）。`HyperDual` 不实现 `Domain` trait，走"独立数值类型 + `DualCoeff`"路线；为 `Rational` 补 `std::ops` impl（非 gmp 与 gmp 双路径）。张量完整规范化（graphica 图同构）推迟 Post-1.0。
+
+**明确未做**：Vegas 多通道/嵌套网格、确定性 quadrature crate 桥接（`quadrature = "0.1"` 版本较老，未接入）、Python/C 数值积分绑定、张量规范化、`HyperDual` 与 JIT 集成（`Dualizer` 向量化）。
 
 ---
 

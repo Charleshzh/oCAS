@@ -19,7 +19,7 @@ pub mod transformer;
 pub use matcher::{Bindings, MatchError, match_pattern};
 pub use pattern::{Pattern, WildcardLevel};
 pub use rules::Rule;
-pub use simplify::simplify;
+pub use simplify::{simplify, simplify_with_fuel};
 pub use transformer::transform;
 
 #[cfg(test)]

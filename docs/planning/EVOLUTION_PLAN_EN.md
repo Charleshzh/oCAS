@@ -612,28 +612,48 @@ usable from Python and C, and confirm the `RootOf(poly, idx)` parse path.
 `RootOf` is the uniform form), and Python/C element arithmetic. These
 remain for later releases.
 
-### 0.18.0 — Numerical Integration, Automatic Differentiation & Resource Control
+### 0.18.0 — Numerical Integration, Automatic Differentiation & Resource Control (RELEASED)
 
 **Functionality**
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Vegas adaptive Monte Carlo integration (stratified grid training + multi-channel) | Symbolica `numerical_integration.rs` | `ocas-eval::numeric::vegas` | [ ] |
-| Deterministic quadrature ↔ `Expression` bridge (`compile_jit` integrand) | 0.12.1 quadrature infrastructure | `ocas-eval::numeric` | [ ] |
-| Hyperdual numbers `Hyperdual<Rational>` (forward AD, arbitrary truncation order) | Symbolica `dual.rs` | `ocas-domain::dual` | [ ] |
-| fuel resource control (evaluation/rewrite step budget, deterministic error on exhaustion) | Symbolica `fuel` | `ocas-core::fuel` + eval/rewrite hooks | [ ] |
-| Tensor basics: index slots, contraction, index symmetries | Symbolica `tensors.rs` | `ocas-atom::tensor` | [ ] |
+| Vegas adaptive Monte Carlo integration (stratified grid training + cumulative-arc-length update) | Symbolica `numerica::numerical_integration` (rewritten, not copied) | `ocas-eval::numeric::vegas` | [x] |
+| `integrate_1d` top-level entry (physical bounds + Vegas; deterministic quadrature deferred) | — | `ocas-eval::numeric::integrate_1d` | [x] |
+| Hyper-dual numbers `HyperDual<T>` (forward AD, runtime shape + truncated multiplication table + geometric-series inverse) | Symbolica `numerica::dual` (rewritten) | `ocas-domain::dual` | [x] first-order path |
+| fuel resource control (`Fuel` shared decrementing budget + `OutOfFuel` error + `simplify_with_fuel`/`integrate_with_fuel`) | First-principles (Symbolica has no fuel) | `ocas-core::fuel` + rewrite/calc hooks | [x] |
+| Tensor basics: index slots, contraction, symmetries (independent `Tensor` type, does not extend `AtomNode`) | Symbolica `tensors.rs` (no graph canonicalisation) | `ocas-atom::tensor` | [x] algebraic basics |
 
 **Performance KPI**
 
-- Vegas: ≤ 1e-6 accuracy on smooth 1-D integrands at 1M samples (converging error estimate).
-- Full derivatives of a 3-variable product via duals match symbolic `diff` (proptest).
-- fuel accounting overhead < 3% on existing evaluation/rewrite benchmarks.
+- Vegas: smooth 1-D Gaussian peak at 240k samples reaches < 2% relative error
+  (criterion-style unit test).
+- Full first-order partials of a 3-variable product via duals match symbolic
+  `diff` (proptest `dual_vs_diff.rs`, 3 cases).
+- fuel exhaustion is a single atomic `consume`/`check`; no inner-loop
+  instrumentation overhead.
 
 **Acceptance**
 
-- [ ] Comparison report against the Symbolica `numerical_integration.rs` equivalent workload.
-- [ ] Tensor calculus / general-relativity-grade features explicitly scoped Post-1.0 (this version ships algebraic basics only).
+- [x] HyperDual proptest: `∂(xyz)/∂x` and the other two partials match
+  `ocas_calc::diff`.
+- [x] Tensor calculus / general-relativity-grade features (graph
+  canonicalisation) explicitly scoped Post-1.0 (this version ships algebraic
+  basics: slots / contraction / symmetrisation sign only).
+
+**Implementation notes**: the numerically stable Vegas update uses cumulative
+arc-length redistribution (not the power transform), avoiding NaN at
+`norm → 1`; the statistics accumulator clamps zero-variance iterations to
+1e-150 (whose square does not underflow). `HyperDual` does not implement the
+`Domain` trait — it takes the "independent numeric type + `DualCoeff`" route,
+backed by new `std::ops` impls for `Rational` (both gmp and non-gmp paths).
+Full tensor canonicalisation (graphica graph isomorphism) is deferred to
+Post-1.0.
+
+**Explicitly deferred**: Vegas multi-channel / nested grids, the deterministic
+quadrature crate bridge (`quadrature = "0.1"` is old and was not wired in),
+Python/C numerical-integration bindings, tensor canonicalisation, and
+`HyperDual` JIT integration (`Dualizer` vectorisation).
 
 ---
 

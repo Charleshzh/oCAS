@@ -23,7 +23,7 @@ mod pattern_alloc;
 mod rules;
 
 pub use derivative::diff;
-pub use integral::integrate;
+pub use integral::{integrate, integrate_with_fuel};
 pub use partial_fraction::apart;
 pub use series::{substitute, taylor};
 

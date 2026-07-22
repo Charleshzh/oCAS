@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.17.1 @ 2026-07-22**（代数数域因式分解 Python/C 绑定收尾）
+> 最后评估：**0.18.0 @ 2026-07-23**（数值积分 + 自动微分 + 资源控制 + 张量基础）
 
 ---
 
@@ -221,6 +221,7 @@ ODE/PDE 与完整张量微积分仍为 Post-1.0 议题。
 | 0.16.0–0.16.2 | 2026-07-21 | 任意多元因式分解栈（Wang EEZ + Hensel + 非常数首项系数强加 + 稀疏 Diophantine 小素数升级），覆盖 ℤ 与 𝔽ₚ 多元路径；多元因式分解从 🔴 升级为 🟢。 |
 | 0.17.0 | 2026-07-22 | 代数数域因式分解（Trager）完成：`AlgebraicNumberField` + 数域模 GCD（GF(p^d) + CRT + 有理重构）+ 平移范数；修复结式 Brown PRS 一般次数 bug；代数数域因式分解从 🔴 升级为 🟢（单变量路径）。 |
 | 0.17.1 | 2026-07-22 | 补丁：代数数域 Python/C 绑定收尾（`AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial` Python 类 + `OcasAlgebraicField`/`OcasAlgebraicPoly` 不透明句柄与 `ocas_algebraic_*` C ABI + `RootOf` 解析确认）；无算法变更，差距结论不变。 |
+| 0.18.0 | 2026-07-23 | 数值积分（Vegas 自适应蒙特卡洛 + `integrate_1d`）、前向自动微分（`HyperDual<T>` 运行时形状）、fuel 资源控制（`Fuel` + `simplify_with_fuel`/`integrate_with_fuel`）、张量基础（独立 `Tensor` 类型 + 显式收缩 + 对称化符号）落地；新增 `rand`/`rand_xoshiro` 依赖；张量完整规范化与确定性 quadrature 桥接推迟。 |
 | 0.15.1 | 2026-07-21 | 重新评估：代码规模快照更新至 95 文件 / ~30.7k 行（较 0.10 的 ~18k 增长 ~70%）；F4 cyclic-5 ℤ₁₃ 复测 23 ms；新增实测 x³⁰−1 无平方分解 39 µs vs SymPy 完全分解 ~0.9 ms（~24×）；修正 0.14/0.15 后的过时表述（§3 GCD/实根隔离、§4.1 "基本缺失"段落、§4.3 积分/因式分解/Gröbner、§5 Risch 优先级、乱码字符）；缺口重排——1.0 前硬算法全部闭合，剩余项转为 Post-1.0：任意多元（≥3 变量）与代数数域因式分解、数值积分、张量/双数、ODE/PDE，cyclic-6 <5s 定界 0.15.2。 |
 | 0.15.2 | 2026-07-21 | Gröbner 大规模性能：reducer LM 哈希索引（support-mask 桶 + 子掩码枚举，消除 O(单项式×基) 线性扫描）+ 稀疏行 echelon（双指针归并相消 O(nnz)/次，替代稠密 buffer）+ 提取查重哈希化 + worklist 预处理 + 行模板缓存；cyclic-6 ℤ₁₃ 9970 s → 3670 s（2.7×，basis=20 正确），阶段占比转为消除主导（echelon ≈89%）；<5s 未达——cyclic-6 F4 矩阵第 22 轮达 264k 行 × 284k 列，为 F4 固有规模，进一步数量级提升需 F5 签名约简（消除零约化行），列入 post-1.0；版本提升 0.15.2。 |
 | 0.16.0 | 2026-07-21 | 任意多元因式分解（Wang EEZ）完成：落地 `factor::eez`（泛型多元 Diophantine + 逐变量 EEZ Hensel 提升 + $n$ 元 GCD + 特征 $p$ $p$ 次幂 + Wang 首项系数预处理[常数 LC] + Zassenhaus 重组）；`factor()` 泛化到任意变量数；顺手修复 3 个既有 bug（`div_rem_sparse` 整除方向、Diophantine 循环上界、单变量非首一分解）；因式分解从 🟡 升级为 🟢（一元/二元/任意多元）；新增 0.16.1（非常数 LC 强加 + 稀疏化）；版本提升 0.16.0。 |

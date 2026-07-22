@@ -17,8 +17,10 @@ pub(crate) mod trig;
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
+use ocas_core::error::Result;
+use ocas_core::fuel::Fuel;
 use ocas_rewrite::rules::default_rules;
-use ocas_rewrite::simplify::simplify;
+use ocas_rewrite::simplify::{simplify, simplify_with_fuel};
 
 use crate::rules::calculus_rules;
 
@@ -55,6 +57,28 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
     let after_default = simplify(ctx, raw, &default_rules, 20);
     let after_calc = simplify(ctx, after_default, &calc_rules, 10);
     normalize(ctx, after_calc)
+}
+
+/// Integrate with a [`Fuel`] budget bounding the post-integration
+/// simplification passes.
+///
+/// The integration traversal itself uses the internal depth limit; this entry
+/// point threads `fuel` through the two simplification stages so a pathological
+/// result that would otherwise spin the rewriter can be cut off determin-
+/// istically. Returns `Err` only when fuel was exhausted mid-simplification.
+pub fn integrate_with_fuel<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    fuel: &Fuel,
+) -> Result<Atom<'a>> {
+    let normalized = normalize(ctx, expr);
+    let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    let raw = integrate_raw(ctx, normalized, var, 0);
+    let after_default = simplify_with_fuel(ctx, raw, &default_rules, 20, fuel)?;
+    let after_calc = simplify_with_fuel(ctx, after_default, &calc_rules, 10, fuel)?;
+    Ok(normalize(ctx, after_calc))
 }
 
 fn integrate_raw<'a>(

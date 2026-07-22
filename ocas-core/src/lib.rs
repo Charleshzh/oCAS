@@ -11,6 +11,7 @@
 
 pub mod arena;
 pub mod error;
+pub mod fuel;
 pub mod thread_pool;
 
 /// Hash map using the DoS-resistant, high-performance `ahash` hasher.

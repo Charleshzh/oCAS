@@ -140,6 +140,65 @@ impl std::fmt::Display for Rational {
     }
 }
 
+impl std::ops::Add for Rational {
+    type Output = Rational;
+    fn add(self, rhs: Rational) -> Rational {
+        Rational(self.0 + rhs.0)
+    }
+}
+
+impl std::ops::Sub for Rational {
+    type Output = Rational;
+    fn sub(self, rhs: Rational) -> Rational {
+        Rational(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::Mul for Rational {
+    type Output = Rational;
+    fn mul(self, rhs: Rational) -> Rational {
+        Rational(self.0 * rhs.0)
+    }
+}
+
+impl std::ops::Div for Rational {
+    type Output = Rational;
+    fn div(self, rhs: Rational) -> Rational {
+        Rational(self.0 / rhs.0)
+    }
+}
+
+impl std::ops::Neg for Rational {
+    type Output = Rational;
+    fn neg(self) -> Rational {
+        Rational(-self.0)
+    }
+}
+
+impl std::ops::AddAssign for Rational {
+    fn add_assign(&mut self, rhs: Rational) {
+        self.0 += rhs.0;
+    }
+}
+
+impl std::ops::SubAssign for Rational {
+    fn sub_assign(&mut self, rhs: Rational) {
+        self.0 -= rhs.0;
+    }
+}
+
+impl std::ops::MulAssign for Rational {
+    fn mul_assign(&mut self, rhs: Rational) {
+        self.0 *= rhs.0;
+    }
+}
+
+impl std::ops::DivAssign for Rational {
+    fn div_assign(&mut self, rhs: Rational) {
+        self.0 /= rhs.0;
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Domain for IntegerDomain (with SOO fast paths)
 // ---------------------------------------------------------------------------

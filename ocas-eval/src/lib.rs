@@ -39,6 +39,7 @@ pub mod error;
 pub mod evaluator;
 pub mod function_map;
 pub mod instruction;
+pub mod numeric;
 pub mod tree;
 
 pub mod compile;

@@ -67,6 +67,12 @@ pub enum OcasError {
         /// Reason the argument is invalid.
         reason: String,
     },
+
+    /// A resource budget ([`crate::fuel::Fuel`]) was exhausted before the
+    /// operation could complete. Retrying with a larger budget (or no budget)
+    /// will resume from scratch.
+    #[error("out of fuel: budget exhausted")]
+    OutOfFuel,
 }
 
 /// A convenient result type for oCAS operations.

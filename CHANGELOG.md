@@ -9,6 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.18.0] - 2026-07-23
+
+### Added / 新增
+
+- **fuel 资源控制**：新增 `ocas-core::fuel` 模块，`Fuel` 为 `Arc<AtomicUsize>`
+  共享递减预算（clone 共享计数器），`consume`/`check`/`remaining` + `OcasError::OutOfFuel`；
+  `simplify_with_fuel` 与 `integrate_with_fuel` 接入（保留旧 API 冻结）/ **fuel
+  resource control**: new `ocas-core::fuel` module with `Fuel` as a shared
+  decrementing budget, `OutOfFuel` error, and `simplify_with_fuel` /
+  `integrate_with_fuel` entry points (legacy APIs preserved).
+- **超对偶数自动微分**：新增 `ocas-domain::dual` 模块，`HyperDual<T>` 运行时形状
+  + 截断乘法表 + 几何级数求逆；`DualCoeff` trait + `new_first_order` 构造器；
+  为 `Rational` 补 `std::ops` impl（gmp 与非 gmp 双路径）/ **Hyper-dual forward
+  AD**: `ocas-domain::dual` with runtime-shaped `HyperDual<T>`, truncated
+  multiplication table, geometric-series inverse, and `std::ops` impls for
+  `Rational` on both backends.
+- **Vegas 自适应蒙特卡洛积分**：新增 `ocas-eval::numeric` 模块，`Vegas` 积分器
+  （累积弧长网格更新，数值稳定版）+ `StatisticsAccumulator`（inverse-variance
+  跨迭代合并）+ `Integrator` trait + `integrate_1d` 顶层入口 / **Vegas adaptive
+  Monte Carlo integration**: `ocas-eval::numeric` with the `Vegas` integrator
+  (numerically stable cumulative-arc-length grid update),
+  `StatisticsAccumulator`, `Integrator` trait, and `integrate_1d`.
+- **张量基础**：新增 `ocas-atom::tensor` 模块，独立 `Tensor` 类型（指标槽 +
+  `IndexPosition` + `Symmetry`）、`contract` 显式收缩、`symmetrise_sign` 对称化
+  符号（完整图规范化推迟 Post-1.0）/ **Tensor basics**: `ocas-atom::tensor`
+  with an independent `Tensor` type (index slots + variance + symmetry),
+  explicit `contract`, and `symmetrise_sign` (full graph canonicalisation
+  deferred to Post-1.0).
+- 测试：fuel 8 项、dual 11 项单元 + 3 项跨域 proptest（`dual_vs_diff.rs`，
+  与 `ocas_calc::diff` 对照）、numeric 9 项（含高斯峰自适应）、tensor 8 项 /
+  Tests: 8 fuel, 11 dual unit + 3 cross-domain proptests vs `diff`, 9 numeric
+  (incl. Gaussian-peak adaptation), 8 tensor.
+
+### Changed / 变更
+
+- workspace 版本 0.17.1 → 0.18.0（13 crate）；新增 `rand`/`rand_xoshiro` 依赖 /
+  workspace 0.17.1 → 0.18.0; added `rand`/`rand_xoshiro` dependencies.
+
 ## [0.17.1] - 2026-07-22
 
 ### Added / 新增

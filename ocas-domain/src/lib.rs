@@ -6,6 +6,7 @@ pub mod algebraic;
 pub mod assumptions;
 pub mod complex;
 pub mod domain;
+pub mod dual;
 pub mod finite_field;
 pub mod integer;
 pub mod number_theory;

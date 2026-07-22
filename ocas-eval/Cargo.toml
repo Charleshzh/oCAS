@@ -17,6 +17,8 @@ ocas-core.workspace = true
 ocas-domain.workspace = true
 ocas-atom.workspace = true
 thiserror.workspace = true
+rand = { workspace = true }
+rand_xoshiro = { workspace = true }
 cranelift = { workspace = true, optional = true }
 cranelift-module = { workspace = true, optional = true }
 cranelift-jit = { workspace = true, optional = true }
