@@ -1,6 +1,7 @@
 use num_bigint::BigInt;
 use ocas_domain::{FiniteField, Rational, RationalDomain};
 use ocas_poly::groebner::f4::f4;
+use ocas_poly::groebner::f5::f5;
 use ocas_poly::sparse::Lex;
 use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial};
 
@@ -178,4 +179,88 @@ fn groebner_f4_vs_buchberger_cyclic_3() {
     assert!(gb_buch.is_groebner_basis());
     assert!(gb_f4.is_groebner_basis());
     // Both should generate the same ideal (verified by is_groebner_basis).
+}
+
+// =========================================================================
+//  F5 tests
+// =========================================================================
+
+#[test]
+fn groebner_f5_cyclic_3_q() {
+    let ideal = cyclic_q(3);
+    let gb = f5(&ideal);
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+}
+
+#[test]
+fn groebner_f5_cyclic_3_fp13() {
+    let ideal = cyclic_fp(3, 13);
+    let gb = f5(&ideal);
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+}
+
+#[test]
+fn groebner_f5_vs_f4_cyclic_3() {
+    let ideal = cyclic_q(3);
+    let gb_f5 = f5(&ideal);
+    let gb_f4 = f4(&ideal);
+    assert!(gb_f5.is_groebner_basis());
+    assert!(gb_f4.is_groebner_basis());
+}
+
+#[test]
+fn groebner_f5_cyclic_4_q() {
+    let ideal = cyclic_q(4);
+    let gb = f5(&ideal);
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+}
+
+#[test]
+fn groebner_f5_cyclic_4_fp13() {
+    let ideal = cyclic_fp(4, 13);
+    let gb = f5(&ideal);
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+}
+
+#[test]
+fn groebner_f5_cyclic_5_fp13() {
+    let ideal = cyclic_fp(5, 13);
+    let gb = f5(&ideal);
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+}
+
+#[test]
+#[ignore = "cyclic-6 ℤ₁₃ takes ~2.6s in release, ~15s in debug; run with --release --ignored"]
+fn groebner_f5_cyclic_6_fp13() {
+    // Roadmap acceptance target: cyclic-6 ℤ₁₃ in < 5s.
+    // Baseline (F4, 0.15.2): 3670s.
+    let ideal = cyclic_fp(6, 13);
+    let start = std::time::Instant::now();
+    let gb = f5(&ideal);
+    let elapsed = start.elapsed();
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+    eprintln!("cyclic-6 ℤ₁₃ F5: {elapsed:.2?}");
+    assert!(
+        elapsed.as_secs() < 5,
+        "cyclic-6 ℤ₁₃ took {elapsed:.2?}, expected < 5s"
+    );
+}
+
+#[test]
+#[ignore = "cyclic-7 ℤ₁₃ takes >5 min; run manually with --ignored --release"]
+fn groebner_f5_cyclic_7_fp13() {
+    // Roadmap acceptance: cyclic-7 ℤ₁₃ should be tractable.
+    let ideal = cyclic_fp(7, 13);
+    let start = std::time::Instant::now();
+    let gb = f5(&ideal);
+    let elapsed = start.elapsed();
+    assert!(!gb.basis.is_empty());
+    assert!(gb.is_groebner_basis());
+    eprintln!("cyclic-7 ℤ₁₃ F5: {elapsed:.2?}");
 }

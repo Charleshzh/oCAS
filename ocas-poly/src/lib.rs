@@ -24,7 +24,7 @@ pub mod ntt;
 pub mod sprs_backend;
 
 pub use dense::DenseUnivariatePolynomial;
-pub use groebner::{GroebnerBasis, buchberger, f4};
+pub use groebner::{Algorithm, GroebnerBasis, buchberger, f4, f5, groebner_basis};
 pub use matrix::{Matrix, MatrixError};
 pub use multivariate_gcd::{bivariate_gcd, gcd_modular, lift_from_fp, reduce_mod};
 pub use rational::RationalPolynomial;

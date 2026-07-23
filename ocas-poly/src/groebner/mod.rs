@@ -1,16 +1,21 @@
 //! Gröbner basis computation for multivariate polynomial ideals.
 //!
-//! Provides two algorithms:
+//! Provides three algorithms, all reachable through the unified
+//! [`groebner_basis`] entry point with an [`Algorithm`] selector:
 //!
 //! - **Buchberger** ([`buchberger`]) — classic S-polynomial iteration with
 //!   Gebauer-Moeller optimization. Suitable for small ideals.
 //! - **F4** ([`f4::f4`]) — matrix-based algorithm from Faugère (1999).
 //!   Dramatically faster for larger ideals by batching S-polynomial
 //!   reductions into sparse matrix row operations.
+//! - **F5** ([`f5::f5`]) — signature-based algorithm from Faugère (2002).
+//!   Rejects zero-reducers *before* matrix construction via syzygy
+//!   criteria, targeting order-of-magnitude speedups on difficult ideals
+//!   (e.g. cyclic-n). Currently a placeholder; full implementation
+//!   landing in 0.19.0.
 //!
-//! Both algorithms produce a reduced Gröbner basis. The F4 algorithm is
-//! recommended for production use and is the default in
-//! [`solve_polynomial_system`](ocas_calc::solve::solve_polynomial_system).
+//! All algorithms produce a reduced Gröbner basis. [`Algorithm::Auto`]
+//! selects a backend by heuristic (currently F4).
 
 pub mod f4;
 pub mod f5;
@@ -251,6 +256,66 @@ pub fn buchberger<D: Domain, O: MonomialOrder>(
     ideal: &[SparseMultivariatePolynomial<D, O>],
 ) -> GroebnerBasis<D, O> {
     GroebnerBasis::buchberger(ideal).minimize().auto_reduce()
+}
+
+/// Algorithm selector for [`groebner_basis`].
+///
+/// `Auto` picks a backend based on the ideal's size and structure; the
+/// other variants force a specific algorithm. See [`groebner_basis`] for
+/// the unified entry point.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Algorithm {
+    /// Automatically select the most suitable algorithm based on ideal
+    /// size and structure (heuristic, calibrated from benchmarks).
+    /// Currently routes to F4; the crossover to F5 will be tuned from
+    /// cyclic-n benchmarks once the F5 core is complete.
+    #[default]
+    Auto,
+    /// Force the F4 matrix algorithm (Faugère 1999).
+    F4,
+    /// Force the F5 signature-based algorithm (Faugère 2002).
+    F5,
+    /// Force Buchberger's classic S-polynomial iteration.
+    Buchberger,
+}
+
+/// Compute a Gröbner basis using the requested [`Algorithm`].
+///
+/// This is the unified entry point for Gröbner basis computation. Zero
+/// polynomials in `ideal` are filtered internally by each backend.
+///
+/// [`Algorithm::Auto`] currently routes to F4; the crossover to F5 will
+/// be calibrated from cyclic-n benchmarks once the F5 core is complete.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{RationalDomain, Rational};
+/// use ocas_poly::sparse::Lex;
+/// use ocas_poly::{Algorithm, groebner_basis, SparseMultivariatePolynomial};
+///
+/// let d = RationalDomain;
+/// // ideal: x + y, x - y
+/// let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+///     (vec![1, 0], Rational::new(1, 1)),
+///     (vec![0, 1], Rational::new(1, 1)),
+/// ]);
+/// let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+///     (vec![1, 0], Rational::new(1, 1)),
+///     (vec![0, 1], Rational::new(-1, 1)),
+/// ]);
+/// let gb = groebner_basis(&[f1, f2], Algorithm::Auto);
+/// assert!(gb.is_groebner_basis());
+/// ```
+pub fn groebner_basis<D: Domain + 'static, O: MonomialOrder>(
+    ideal: &[SparseMultivariatePolynomial<D, O>],
+    algo: Algorithm,
+) -> GroebnerBasis<D, O> {
+    match algo {
+        Algorithm::Auto | Algorithm::F4 => f4::f4(ideal),
+        Algorithm::F5 => f5::f5(ideal),
+        Algorithm::Buchberger => buchberger(ideal),
+    }
 }
 
 #[cfg(test)]

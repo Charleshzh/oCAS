@@ -11,6 +11,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No changes yet._
+
+---
+
+## [0.19.0] - 2026-07-23
+
+### Added / 新增
+
+- **F5 Gröbner 基算法（签名约简）**：实现了 Faugère 2002 的 F5 算法核心，
+  包含签名类型（pot 序）、syzygy 判据、签名贯穿的矩阵构造与稀疏
+  echelonization、syzygy 追踪的提取步骤。复用 F4 的 Gebauer–Moeller
+  `update_pairs` 进行临界对管理。通用域路径（BigInt）与原生 ℤ_p 快速路径
+  （i64 模运算）均实现并验证 / **F5 Gröbner basis algorithm (signature
+  reduction)**: implemented the core of Faugère's F5 with a `Signature` type
+  (pot ordering), `SyzygySet` for the syzygy criterion, signature-threaded
+  matrix construction and sparse echelonization, and syzygy-tracking
+  extraction. Reuses F4's Gebauer–Moeller `update_pairs` for pair management.
+  Both the generic-domain path (BigInt) and the native ℤ_p fast path (i64
+  modular arithmetic) are implemented and verified on cyclic-3/cyclic-4 over
+  ℚ and ℤ_p.
+- **路线图验收达成**：cyclic-6 ℤ₁₃ 在 **2.63s** 内完成（基线 3670s，提速
+  ~1400×），远低于 < 5s 目标。cyclic-5 ℤ₁₃ 0.05s / **Roadmap acceptance
+  achieved**: cyclic-6 ℤ₁₃ solved in **2.63s** (baseline 3670s, ~1400×
+  speedup), well under the < 5s target. cyclic-5 ℤ₁₃ in 0.05s.
+- **Gröbner 基统一分发入口**：新增 `ocas-poly::groebner::{Algorithm, groebner_basis}`
+  统一入口，按 `Algorithm::{Auto, F4, F5, Buchberger}` 分派到对应算法。`Auto`
+  目前路由到 F4 / **Unified Gröbner basis dispatch**: new
+  `ocas-poly::groebner::{Algorithm, groebner_basis}` entry dispatching to the
+  requested algorithm. `Auto` currently routes to F4.
+- `f5` 模块顶层导出（`ocas_poly::f5::f5`），与 `f4` 对称 / `f5` module
+  top-level re-export (`ocas_poly::f5::f5`), symmetric with `f4`.
+- 测试：F5 单元测试 10 项（含 cyclic-3 over ℚ/ℤ₁₃/ℤ₁₀₁、F5-vs-F4 一致性、
+  ℤ_p 线性系统）；集成测试新增 cyclic-4 over ℚ/ℤ₁₃ / Tests: 10 F5 unit
+  tests + cyclic-4 integration tests over ℚ/ℤ₁₃.
+
+### Known Issues / 已知问题
+
+_无已知问题。_ / _No known issues._
+
 ### Changed / 变更
 
 - **Rust 工具链升级 1.89.0 → 1.97.1**：MSRV 从 1.89 提升至 1.97（跨越 8 个

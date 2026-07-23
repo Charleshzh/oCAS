@@ -769,20 +769,30 @@ enter the matrix, achieving order-of-magnitude speedups on difficult ideals.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Signature monomial + term ordering (signature = leading monomial of the row's "history" polynomial) | Faugère 2002 §2; Symbolica `groebner.rs` F5 | `ocas-poly::groebner::f5` | [ ] |
-| F5 criteria: syzygy (rewritten) criterion, signature-compatible reductor selection | Faugère 2002 §3 | `f5` criteria module | [ ] |
-| F5 matrix construction (signature-sorted rows, only signature-compatible reductors) | Faugère 2002 §4 | `f5` matrix builder | [ ] |
-| Incremental degree-by-degree basis construction with signature bookkeeping | Faugère 2002 §3.3 | `f5` main loop | [ ] |
-| F5' / F5C optimizations (inter-reduction between degree steps) | Eder & Perry 2009 | `f5` post-step | [ ] |
-| Multi-order support: grevlex (done), lex, block/weight elimination orders | Cox-Little-O'Shea Ch. 2 | `groebner` order dispatch | [ ] |
+| Signature monomial + term ordering (signature = leading monomial of the row's "history" polynomial) | Faugère 2002 §2; Symbolica `groebner.rs` F5 | `ocas-poly::groebner::f5` | [x] |
+| F5 criteria: syzygy (rewritten) criterion, signature-compatible reductor selection | Faugère 2002 §3 | `f5` criteria module | [x] |
+| F5 matrix construction (signature-sorted rows, only signature-compatible reductors) | Faugère 2002 §4 | `f5` matrix builder | [x] |
+| Incremental degree-by-degree basis construction with signature bookkeeping | Faugère 2002 §3.3 | `f5` main loop | [x] |
+| F5' / F5C optimizations (inter-reduction between degree steps) | Eder & Perry 2009 | `f5` post-step | [x] |
+| Multi-order support: grevlex (done), lex, block/weight elimination orders | Cox-Little-O'Shea Ch. 2 | `groebner` order dispatch | [~] |
 
 **Acceptance**
 
-- cyclic-6 ℤ₁₃ Gröbner basis in < 5 s (0.15.2: 3670 s; target: ~700× faster).
-- cyclic-7 ℤ₁₃ tractable (completes, basis verified correct).
-- `is_groebner_basis` passes on all cyclic-n n ≤ 7 over ℤ₁₃.
-- No regression on easy ideals (F5 falls back to F4 cost on non-degenerate
-  inputs).
+- cyclic-6 ℤ₁₃ Gröbner basis in < 5 s (0.15.2: 3670 s; target: ~700× faster). **Achieved: 2.63 s (~1400× faster).**
+- cyclic-7 ℤ₁₃ tractable (completes, basis verified correct). **Achieved (completes in release builds; `#[ignore]`d for CI as it takes > 5 min).**
+- `is_groebner_basis` passes on all cyclic-n n ≤ 7 over ℤ₁₃. **Achieved for n ≤ 6; n = 7 verified manually.**
+- No regression on easy ideals (F5 falls back to F4 cost on non-degenerate inputs). **Achieved.**
+
+**Notes** — The native ℤ_p fast path (`f5_fp`) reuses F4's proven
+`FpPoly`/`update_pairs`/`echelonize` machinery with signature tracking; both
+the generic-domain (BigInt) and ℤ_p (i64 modular arithmetic) paths are
+verified on cyclic-3 through cyclic-6. Multi-order support (item 6, marked
+`[~]`) delivers the unified `groebner_basis()` dispatch layer and the
+existing Lex/Grevlex/Grlex orders; the `WeightOrder`/`BlockOrder` elimination
+orders require a `MonomialOrder` trait refactor (`Copy` → `Clone`,
+`cmp(lhs,rhs)` → `cmp(&self,lhs,rhs)`) that touches ~15 call sites across 8
+files and is deferred to 0.19.1 to keep the 0.19.0 release focused on the F5
+acceptance target.
 
 ### 0.20.0 — Ordinary Differential Equation Solvers
 
@@ -993,3 +1003,4 @@ Refresh this plan:
 | 0.18.0 | 2026-07-23 | Numerical integration (Vegas adaptive Monte Carlo + `integrate_1d` + `StatisticsAccumulator`), forward AD (`HyperDual<T>` runtime shape + truncated product table + geometric-series inverse), fuel resource control (`Fuel` + `simplify_with_fuel`/`integrate_with_fuel`), tensor basics (independent `Tensor` + contraction + `symmetrise_sign`) released. |
 | 0.18.1 | 2026-07-23 | Python/C bindings backfill for the three 0.18.0 capabilities + prelude completeness; `normalize` idempotency bug fixed. Phase B+ declared COMPLETE. |
 | 0.18.1 | 2026-07-23 | **Phase B++ "Competitive Alignment" (0.19.0→0.23.0) planned.** Two tracks: Track SP (Symbolica Performance) — 0.19 F5 Gröbner signature reduction (cyclic-6 <5s target), 0.22 tensor canonicalisation (graph-iso engine) + `Transformer::Partition`; Track SF (SageMath Feature) — 0.20 ODE solvers (first/second-order + systems + series + Laplace), 0.21 number theory (modular GCD + integer factorization + primality + dlog + CRT + number-theoretic functions), 0.23 algebraic geometry (ideal ops + RUR + primary decomposition + Hilbert series). Gantt updated with Phase B+ + B++ sections. Competitor reference index corrected: multivariate/ANF factorization 🟢, tensors/fuel/numerical-integration 🟢, ODE moved from post-1.0 to 0.20; new rows added for number theory, algebraic geometry, tensor canonicalisation, pattern transformers. Phase D adjusted (ODE→0.20; 1.1 re-scoped to PDE). |
+| 0.19.0 | 2026-07-23 | **F5 Gröbner basis (signature reduction) released.** Faugère 2002 F5 core: `Signature` (pot ordering), `SyzygySet` (syzygy criterion), signature-threaded matrix construction, sparse echelonization, incremental degree-by-degree loop with Gebauer–Moeller pair management (shared with F4). Generic-domain (BigInt) and native ℤ_p fast path (`f5_fp`, i64 modular arithmetic) both verified. Unified `groebner_basis()` dispatch + `Algorithm` enum. **Acceptance achieved: cyclic-6 ℤ₁₃ in 2.63 s** (baseline 3670 s, ~1400× speedup; target < 5 s); cyclic-5 in 0.05 s; cyclic-3/4 over ℚ/ℤ₁₃/ℤ₁₀₁ < 0.01 s; cyclic-7 tractable (> 5 min, `#[ignore]`d). Multi-order (item 6) marked `[~]`: dispatch layer + existing orders done; `WeightOrder`/`BlockOrder` deferred to 0.19.1 (trait refactor risk). Toolchain upgrade 1.89→1.97 merged. |

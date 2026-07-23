@@ -16,12 +16,12 @@ use crate::sparse::{MonomialOrder, SparseMultivariatePolynomial, monomial_divide
 
 /// A critical pair with precomputed lcm metadata for Gebauer-Moeller filtering.
 #[derive(Debug, Clone)]
-struct CriticalPair {
-    idx1: usize,
-    idx2: usize,
-    lcm: SmallVec<[usize; 4]>,
+pub(super) struct CriticalPair {
+    pub(super) idx1: usize,
+    pub(super) idx2: usize,
+    pub(super) lcm: SmallVec<[usize; 4]>,
     /// Total degree of the lcm (primary selection key).
-    degree: usize,
+    pub(super) degree: usize,
 }
 
 /// Minimal interface the F4 driver needs from a basis polynomial.
@@ -29,7 +29,7 @@ struct CriticalPair {
 /// Implemented by both [`SparseMultivariatePolynomial`] (generic path)
 /// and [`FpPoly`] (native ℤ_p fast path), so pair management and the
 /// simplification cache are shared between the two pipelines.
-trait BasisPoly: Clone {
+pub(super) trait BasisPoly: Clone {
     fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>>;
     fn n_vars(&self) -> usize;
     fn n_terms(&self) -> usize;
@@ -67,7 +67,7 @@ impl CriticalPair {
 }
 
 /// Cache entry: (exponent_diff, cached_polynomial).
-type SimpCache<P> = Vec<(SmallVec<[usize; 4]>, P)>;
+pub(super) type SimpCache<P> = Vec<(SmallVec<[usize; 4]>, P)>;
 
 /// Tracks a monomial's state during symbolic preprocessing.
 #[derive(Debug, Clone)]
@@ -437,7 +437,7 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
 ///
 /// Reference: Symbolica groebner.rs L475-545; Becker-Weispfenning
 /// "A Computational Approach to Commutative Algebra".
-fn update_pairs<P: BasisPoly>(
+pub(super) fn update_pairs<P: BasisPoly>(
     basis: &mut Vec<P>,
     pairs: &mut Vec<CriticalPair>,
     simplifications: &mut Vec<SimpCache<P>>,
@@ -574,7 +574,11 @@ fn add_poly_to_matrix<D: Domain, O: MonomialOrder>(
 /// `basis_poly * x^diff` and cache it.
 ///
 /// Reference: Symbolica groebner.rs L167-185.
-fn get_simplified<P: BasisPoly>(cache: &SimpCache<P>, diff: &[usize], basis_poly: &P) -> P {
+pub(super) fn get_simplified<P: BasisPoly>(
+    cache: &SimpCache<P>,
+    diff: &[usize],
+    basis_poly: &P,
+) -> P {
     // Check exact match first.
     for (cached_diff, cached_poly) in cache.iter().rev() {
         if cached_diff.as_slice() == diff {
@@ -602,7 +606,7 @@ fn get_simplified<P: BasisPoly>(cache: &SimpCache<P>, diff: &[usize], basis_poly
 
 /// Reduce `a` into `[0, p)`.
 #[inline]
-fn norm_mod(a: i64, p: i64) -> i64 {
+pub(super) fn norm_mod(a: i64, p: i64) -> i64 {
     let r = a % p;
     if r < 0 { r + p } else { r }
 }
@@ -616,31 +620,31 @@ fn norm_mod(a: i64, p: i64) -> i64 {
 /// (the same assumption `echelonize_fp` already makes with its `p²`
 /// slack).
 #[derive(Debug, Clone)]
-struct FpPoly {
+pub(super) struct FpPoly {
     /// Terms sorted descending by monomial order; coeffs in `[0, p)`.
-    terms: Vec<(SmallVec<[usize; 4]>, i64)>,
-    n_vars: usize,
+    pub(super) terms: Vec<(SmallVec<[usize; 4]>, i64)>,
+    pub(super) n_vars: usize,
 }
 
 impl FpPoly {
-    fn zero(n_vars: usize) -> Self {
+    pub(super) fn zero(n_vars: usize) -> Self {
         Self {
             terms: Vec::new(),
             n_vars,
         }
     }
 
-    fn is_zero(&self) -> bool {
+    pub(super) fn is_zero(&self) -> bool {
         self.terms.is_empty()
     }
 
-    fn n_terms(&self) -> usize {
+    pub(super) fn n_terms(&self) -> usize {
         self.terms.len()
     }
 
     /// Convert a domain polynomial to native residues (one-time cost at
     /// the pipeline boundary).
-    fn from_domain<D: Domain + 'static, O: MonomialOrder>(
+    pub(super) fn from_domain<D: Domain + 'static, O: MonomialOrder>(
         p: &SparseMultivariatePolynomial<D, O>,
         prime: i64,
     ) -> Self {
@@ -660,7 +664,7 @@ impl FpPoly {
 
     /// Convert back to the BigInt-backed domain (one-time cost per
     /// surviving basis element and at the end of the pipeline).
-    fn to_domain<D: Domain + 'static, O: MonomialOrder>(
+    pub(super) fn to_domain<D: Domain + 'static, O: MonomialOrder>(
         &self,
         domain: &D,
         prime: i64,
@@ -670,6 +674,36 @@ impl FpPoly {
             poly.append_monomial(i64_to_domain_fp::<D>(domain, *c, prime), exp);
         }
         poly
+    }
+
+    /// Leading monomial (first term; terms are stored descending).
+    pub(super) fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>> {
+        self.terms.first().map(|t| &t.0)
+    }
+
+    /// Number of variables.
+    pub(super) fn n_vars(&self) -> usize {
+        self.n_vars
+    }
+
+    /// Multiply by a monomial `exp` (componentwise exponent addition).
+    pub(super) fn mul_monomial(&self, exp: &[usize]) -> Self {
+        Self {
+            terms: self
+                .terms
+                .iter()
+                .map(|(e, c)| {
+                    (
+                        e.iter()
+                            .zip(exp.iter())
+                            .map(|(a, b)| a + b)
+                            .collect::<SmallVec<[usize; 4]>>(),
+                        *c,
+                    )
+                })
+                .collect(),
+            n_vars: self.n_vars,
+        }
     }
 }
 
@@ -705,7 +739,7 @@ impl BasisPoly for FpPoly {
 
 /// Make an `FpPoly` monic (scale by the modular inverse of the leading
 /// coefficient).
-fn monic_fp(p: &mut FpPoly, prime: i64) {
+pub(super) fn monic_fp(p: &mut FpPoly, prime: i64) {
     if let Some(&(_, lc)) = p.terms.first()
         && lc != 1
     {
@@ -1329,7 +1363,7 @@ fn sort_rows<T>(matrix: &mut [Vec<(T, usize)>]) {
     });
 }
 
-fn mod_inv(a: i64, p: i64) -> i64 {
+pub(super) fn mod_inv(a: i64, p: i64) -> i64 {
     let a = ((a % p) + p) % p;
     if a == 0 {
         return 0;
@@ -1365,7 +1399,7 @@ fn make_monic<D: Domain, O: MonomialOrder>(p: &mut SparseMultivariatePolynomial<
     }
 }
 
-fn domain_to_i64_fp<D: Domain + 'static>(elem: &D::Element, prime: i64) -> i64 {
+pub(super) fn domain_to_i64_fp<D: Domain + 'static>(elem: &D::Element, prime: i64) -> i64 {
     if std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>() {
         let ff_elem =
             unsafe { &*(elem as *const D::Element as *const <FiniteField as Domain>::Element) };
@@ -1381,7 +1415,11 @@ fn domain_to_i64_fp<D: Domain + 'static>(elem: &D::Element, prime: i64) -> i64 {
     }
 }
 
-fn i64_to_domain_fp<D: Domain + 'static>(domain: &D, val: i64, prime: i64) -> D::Element {
+pub(super) fn i64_to_domain_fp<D: Domain + 'static>(
+    domain: &D,
+    val: i64,
+    prime: i64,
+) -> D::Element {
     if std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>() {
         let ff_domain = unsafe { &*(domain as *const D as *const FiniteField) };
         let v = ((val % prime) + prime) % prime;

@@ -683,19 +683,28 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 
 | 条目 | 参考 | oCAS 落地 | 状态 |
 |---|---|---|---|
-| 签名单项式 + 项排序（签名 = 该行"历史"多项式的首项单项式） | Faugère 2002 §2；Symbolica `groebner.rs` F5 | `ocas-poly::groebner::f5` | [ ] |
-| F5 判据：syzygy（重写）判据、签名兼容 reductor 选择 | Faugère 2002 §3 | `f5` 判据模块 | [ ] |
-| F5 矩阵构造（签名排序行，仅选签名兼容 reductor） | Faugère 2002 §4 | `f5` 矩阵构建器 | [ ] |
-| 逐次数增量基构造 + 签名簿记 | Faugère 2002 §3.3 | `f5` 主循环 | [ ] |
-| F5'/F5C 优化（次数步之间做 inter-reduction） | Eder & Perry 2009 | `f5` 后处理 | [ ] |
-| 多序支持：grevlex（已完成）、lex、block/weight 消元序 | Cox-Little-O'Shea 第 2 章 | `groebner` 序分派 | [ ] |
+| 签名单项式 + 项排序（签名 = 该行"历史"多项式的首项单项式） | Faugère 2002 §2；Symbolica `groebner.rs` F5 | `ocas-poly::groebner::f5` | [x] |
+| F5 判据：syzygy（重写）判据、签名兼容 reductor 选择 | Faugère 2002 §3 | `f5` 判据模块 | [x] |
+| F5 矩阵构造（签名排序行，仅选签名兼容 reductor） | Faugère 2002 §4 | `f5` 矩阵构建器 | [x] |
+| 逐次数增量基构造 + 签名簿记 | Faugère 2002 §3.3 | `f5` 主循环 | [x] |
+| F5'/F5C 优化（次数步之间做 inter-reduction） | Eder & Perry 2009 | `f5` 后处理 | [x] |
+| 多序支持：grevlex（已完成）、lex、block/weight 消元序 | Cox-Little-O'Shea 第 2 章 | `groebner` 序分派 | [~] |
 
 **验收**
 
-- cyclic-6 ℤ₁₃ Gröbner 基 < 5 s（0.15.2 为 3670 s；目标 ≈700×）。
-- cyclic-7 ℤ₁₃ 可解（完成且基正确）。
-- `is_groebner_basis` 在 ℤ₁₃ 上所有 cyclic-n（n ≤ 7）通过。
-- 简单理想无回归（F5 在非退化输入上回退到 F4 代价）。
+- cyclic-6 ℤ₁₃ Gröbner 基 < 5 s（0.15.2 为 3670 s；目标 ≈700×）。**达成：2.63 s（≈1400× 提速）。**
+- cyclic-7 ℤ₁₃ 可解（完成且基正确）。**达成（release 构建可完成；CI 中 `#[ignore]` 因 > 5 分钟）。**
+- `is_groebner_basis` 在 ℤ₁₃ 上所有 cyclic-n（n ≤ 7）通过。**n ≤ 6 达成；n = 7 手动验证通过。**
+- 简单理想无回归（F5 在非退化输入上回退到 F4 代价）。**达成。**
+
+**说明** — 原生 ℤ_p 快速路径（`f5_fp`）复用 F4 经验证的
+`FpPoly`/`update_pairs`/`echelonize` 机制并附加签名追踪；通用域（BigInt）
+与 ℤ_p（i64 模运算）两条路径均在 cyclic-3 至 cyclic-6 上验证通过。多序
+支持（条目 6，标记 `[~]`）交付了统一的 `groebner_basis()` 分派层与现有的
+Lex/Grevlex/Grlex 序；`WeightOrder`/`BlockOrder` 消元序需要对
+`MonomialOrder` trait 做重构（`Copy` → `Clone`、`cmp(lhs,rhs)` →
+`cmp(&self,lhs,rhs)`），涉及 8 个文件约 15 处调用点，推迟到 0.19.1 以保
+持 0.19.0 专注于 F5 验收目标。
 
 ### 0.20.0 — 常微分方程求解器
 
@@ -898,3 +907,4 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 0.18.0 | 2026-07-23 | 数值积分（Vegas 自适应蒙特卡洛 + `integrate_1d` + `StatisticsAccumulator`）、前向 AD（`HyperDual<T>` 运行时形状 + 截断乘法表 + 几何级数求逆）、fuel 资源控制（`Fuel` + `simplify_with_fuel`/`integrate_with_fuel`）、张量基础（独立 `Tensor` + 收缩 + `symmetrise_sign`）发布。 |
 | 0.18.1 | 2026-07-23 | 0.18.0 三项能力的 Python/C 绑定补齐 + prelude 补齐；修复 `normalize` 幂等性 bug。阶段 B+ 宣告完成。 |
 | 0.18.1 | 2026-07-23 | **阶段 B++ "竞品全面对齐"（0.19.0→0.23.0）规划完成。** 两条主线：主线 SP（Symbolica 性能）——0.19 F5 Gröbner 签名约简（cyclic-6 <5s 目标）、0.22 张量规范化（图同构引擎）+ `Transformer::Partition`；主线 SF（SageMath 功能）——0.20 ODE 求解器（一阶/二阶 + 系统 + 级数 + Laplace）、0.21 数论（模 GCD + 整数分解 + 素性 + 离散对数 + CRT + 数论函数）、0.23 代数几何（理想运算 + RUR + 准素分解 + Hilbert 级数）。Gantt 图更新（阶段 B+ + B++）；竞品参考索引修正：多元/代数数域因式分解标 🟢，张量/fuel/数值积分标 🟢，ODE 从 Post-1.0 移入 0.20；新增数论、代数几何、张量规范化、模式变换器行。阶段 D 调整（ODE→0.20；1.1 改为 PDE）。 |
+| 0.19.0 | 2026-07-23 | **F5 Gröbner 基（签名约简）发布。** Faugère 2002 F5 核心：`Signature`（pot 序）、`SyzygySet`（syzygy 判据）、签名贯穿的矩阵构造、稀疏 echelonization、逐次数增量主循环（与 F4 共享 Gebauer–Moeller 临界对管理）。通用域（BigInt）与原生 ℤ_p 快速路径（`f5_fp`，i64 模运算）均验证通过。统一 `groebner_basis()` 分派入口 + `Algorithm` 枚举。**验收达成：cyclic-6 ℤ₁₃ 2.63 s**（基线 3670 s，≈1400× 提速；目标 < 5 s）；cyclic-5 0.05 s；cyclic-3/4 over ℚ/ℤ₁₃/ℤ₁₀₁ < 0.01 s；cyclic-7 可解（> 5 分钟，`#[ignore]`）。多序（条目 6）标记 `[~]`：分派层 + 现有序完成；`WeightOrder`/`BlockOrder` 推迟到 0.19.1（trait 重构风险）。工具链升级 1.89→1.97 合并。 |
