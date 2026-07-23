@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-23 (0.18.1 released + Phase B++ "Competitive Alignment" [0.19–0.23] planned: F5 Gröbner → ODE solvers → number theory → tensor canonicalisation → algebraic geometry; after Phase B++, 1.0.0 is freeze-and-polish only; GAP_ANALYSIS at 0.18.1: 112 files / ~40.9k lines, Phase B+ complete)**
+> Last revised: **2026-07-23 (0.19.1 released: MonomialOrder trait refactor + WeightOrder/BlockOrder; Phase B++ continues)**
 
 ---
 
@@ -791,8 +791,13 @@ verified on cyclic-3 through cyclic-6. Multi-order support (item 6, marked
 existing Lex/Grevlex/Grlex orders; the `WeightOrder`/`BlockOrder` elimination
 orders require a `MonomialOrder` trait refactor (`Copy` → `Clone`,
 `cmp(lhs,rhs)` → `cmp(&self,lhs,rhs)`) that touches ~15 call sites across 8
-files and is deferred to 0.19.1 to keep the 0.19.0 release focused on the F5
-acceptance target.
+files and is deferred to 0.19.1.
+
+**0.19.1 supplement** — `MonomialOrder` trait refactor completed: `PhantomData<O>`
+replaced with `order: O` field, all 11 `O::cmp` call sites updated to instance
+method calls, new `WeightOrder` (weighted) and `BlockOrder` (block) orderings
+added with `SubOrder` enum. `Signature::cmp_pot` signature updated with
+`order: &O` parameter. Full workspace tests pass.
 
 ### 0.20.0 — Ordinary Differential Equation Solvers
 
@@ -1004,3 +1009,4 @@ Refresh this plan:
 | 0.18.1 | 2026-07-23 | Python/C bindings backfill for the three 0.18.0 capabilities + prelude completeness; `normalize` idempotency bug fixed. Phase B+ declared COMPLETE. |
 | 0.18.1 | 2026-07-23 | **Phase B++ "Competitive Alignment" (0.19.0→0.23.0) planned.** Two tracks: Track SP (Symbolica Performance) — 0.19 F5 Gröbner signature reduction (cyclic-6 <5s target), 0.22 tensor canonicalisation (graph-iso engine) + `Transformer::Partition`; Track SF (SageMath Feature) — 0.20 ODE solvers (first/second-order + systems + series + Laplace), 0.21 number theory (modular GCD + integer factorization + primality + dlog + CRT + number-theoretic functions), 0.23 algebraic geometry (ideal ops + RUR + primary decomposition + Hilbert series). Gantt updated with Phase B+ + B++ sections. Competitor reference index corrected: multivariate/ANF factorization 🟢, tensors/fuel/numerical-integration 🟢, ODE moved from post-1.0 to 0.20; new rows added for number theory, algebraic geometry, tensor canonicalisation, pattern transformers. Phase D adjusted (ODE→0.20; 1.1 re-scoped to PDE). |
 | 0.19.0 | 2026-07-23 | **F5 Gröbner basis (signature reduction) released.** Faugère 2002 F5 core: `Signature` (pot ordering), `SyzygySet` (syzygy criterion), signature-threaded matrix construction, sparse echelonization, incremental degree-by-degree loop with Gebauer–Moeller pair management (shared with F4). Generic-domain (BigInt) and native ℤ_p fast path (`f5_fp`, i64 modular arithmetic) both verified. Unified `groebner_basis()` dispatch + `Algorithm` enum. **Acceptance achieved: cyclic-6 ℤ₁₃ in 2.63 s** (baseline 3670 s, ~1400× speedup; target < 5 s); cyclic-5 in 0.05 s; cyclic-3/4 over ℚ/ℤ₁₃/ℤ₁₀₁ < 0.01 s; cyclic-7 tractable (> 5 min, `#[ignore]`d). Multi-order (item 6) marked `[~]`: dispatch layer + existing orders done; `WeightOrder`/`BlockOrder` deferred to 0.19.1 (trait refactor risk). Toolchain upgrade 1.89→1.97 merged. |
+| 0.19.1 | 2026-07-23 | **MonomialOrder trait refactor + WeightOrder/BlockOrder released.** `Copy` + static dispatch → `Clone + Default` + method dispatch (`&self`); `PhantomData<O>` → `order: O` field; new `WeightOrder` (weighted) and `BlockOrder` (block) orderings with `SubOrder` enum; all 11 `O::cmp` call sites updated; `Signature::cmp_pot` signature updated with `order: &O` parameter. Multi-order support upgraded from `[~]` to `[x]`. |

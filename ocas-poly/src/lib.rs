@@ -30,6 +30,6 @@ pub use multivariate_gcd::{bivariate_gcd, gcd_modular, lift_from_fp, reduce_mod}
 pub use rational::RationalPolynomial;
 pub use roots::RootInterval;
 pub use sparse::{
-    Grevlex, Grlex, Lex, MonomialOrder, SparseMultivariatePolynomial, monomial_are_coprime,
-    monomial_divides, monomial_lcm,
+    BlockOrder, Grevlex, Grlex, Lex, MonomialOrder, SparseMultivariatePolynomial, SubOrder,
+    WeightOrder, monomial_are_coprime, monomial_divides, monomial_lcm,
 };

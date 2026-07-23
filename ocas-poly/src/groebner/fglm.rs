@@ -93,7 +93,7 @@ pub fn fglm<D: Domain, O2: MonomialOrder>(
         let (pos, m) = boundary
             .iter()
             .enumerate()
-            .min_by(|(_, a), (_, b)| O2::cmp(a, b))
+            .min_by(|(_, a), (_, b)| O2::default().cmp(a, b))
             .map(|(i, a)| (i, a.clone()))?;
         boundary.remove(pos);
         if visited.contains_key(&m) {

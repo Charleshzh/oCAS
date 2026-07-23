@@ -76,12 +76,12 @@ impl Signature {
     ///
     /// Returns `Less` if `self` should be processed *before* `other`.
     /// First compares module positions (smaller first), then monomials
-    /// under the monomial order `O` (where `O::cmp(a, b)` returns `Less`
-    /// when `a` precedes `b`).
-    pub fn cmp_pot<O: MonomialOrder>(&self, other: &Self) -> Ordering {
+    /// under the given monomial `order` (where `order.cmp(a, b)` returns
+    /// `Less` when `a` precedes `b`).
+    pub fn cmp_pot<O: MonomialOrder>(&self, other: &Self, order: &O) -> Ordering {
         self.module_pos
             .cmp(&other.module_pos)
-            .then_with(|| O::cmp(&self.monomial, &other.monomial))
+            .then_with(|| order.cmp(&self.monomial, &other.monomial))
     }
 }
 
@@ -281,6 +281,7 @@ fn build_and_reduce<D: Domain + 'static, O: MonomialOrder>(
     syzygies: &mut SyzygySet,
 ) -> Vec<LabeledPoly<D, O>> {
     let domain = basis[0].poly.domain();
+    let order = basis[0].poly.order.clone();
 
     let mut monomial_map: HashMap<SmallVec<[usize; 4]>, usize> = HashMap::default();
     let mut monomial_list: Vec<SmallVec<[usize; 4]>> = Vec::new();
@@ -355,7 +356,7 @@ fn build_and_reduce<D: Domain + 'static, O: MonomialOrder>(
 
     // --- Sort columns: DESCENDING monomial order ---
     let mut col_order: Vec<usize> = (0..ncols).collect();
-    col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[b], &monomial_list[a]));
+    col_order.sort_unstable_by(|&a, &b| order.cmp(&monomial_list[b], &monomial_list[a]));
     let mut col_inv = vec![0usize; ncols];
     for (new_col, &old_col) in col_order.iter().enumerate() {
         col_inv[old_col] = new_col;
@@ -372,7 +373,7 @@ fn build_and_reduce<D: Domain + 'static, O: MonomialOrder>(
     }
 
     // --- Sort rows by ascending signature (pot order) ---
-    rows.sort_by(|a, b| a.sig.cmp_pot::<O>(&b.sig));
+    rows.sort_by(|a, b| a.sig.cmp_pot::<O>(&b.sig, &order));
 
     // --- Echelonize ---
     echelonize(&mut rows, ncols, domain);
@@ -626,8 +627,7 @@ fn f5_fp<D: Domain + 'static, O: MonomialOrder>(
     prime: i64,
 ) -> GroebnerBasis<D, O> {
     let n_vars = ideal[0].n_vars();
-
-    // Filter zeros, convert to native residues, make monic.
+    let order = ideal[0].order.clone();
     let mut generators: Vec<FpPoly> = ideal
         .iter()
         .filter(|p| !p.is_zero())
@@ -661,7 +661,8 @@ fn f5_fp<D: Domain + 'static, O: MonomialOrder>(
             let selected: Vec<CriticalPair> =
                 pairs.extract_if(.., |p| p.degree == min_deg).collect();
 
-            let new_polys = build_and_reduce_fp::<O>(&selected, &basis, &mut syzygies, prime);
+            let new_polys =
+                build_and_reduce_fp::<O>(&selected, &basis, &mut syzygies, prime, &order);
 
             for poly in new_polys {
                 update_pairs(&mut basis, &mut pairs, &mut simplifications, poly);
@@ -685,6 +686,7 @@ fn build_and_reduce_fp<O: MonomialOrder>(
     basis: &[LabeledFpPoly],
     syzygies: &mut SyzygySet,
     prime: i64,
+    order: &O,
 ) -> Vec<LabeledFpPoly> {
     // --- Build input rows from selected pairs ---
     let mut monomial_map: HashMap<SmallVec<[usize; 4]>, usize> = HashMap::default();
@@ -760,7 +762,7 @@ fn build_and_reduce_fp<O: MonomialOrder>(
 
     // --- Sort columns: DESCENDING monomial order ---
     let mut col_order: Vec<usize> = (0..ncols).collect();
-    col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[b], &monomial_list[a]));
+    col_order.sort_unstable_by(|&a, &b| order.cmp(&monomial_list[b], &monomial_list[a]));
     let mut col_inv = vec![0usize; ncols];
     for (new_col, &old_col) in col_order.iter().enumerate() {
         col_inv[old_col] = new_col;
@@ -777,7 +779,7 @@ fn build_and_reduce_fp<O: MonomialOrder>(
     }
 
     // --- Sort rows by ascending signature (pot order) ---
-    rows.sort_by(|a, b| a.sig.cmp_pot::<O>(&b.sig));
+    rows.sort_by(|a, b| a.sig.cmp_pot::<O>(&b.sig, order));
 
     // --- Echelonize (i64 modular arithmetic) ---
     echelonize_fp_labeled(&mut rows, ncols, prime);
@@ -1016,7 +1018,7 @@ mod tests {
         let s1 = Signature::unit(0, 2);
         let s2 = Signature::unit(1, 2);
         // module_pos dominates: (0, ...) < (1, ...)
-        assert_eq!(s1.cmp_pot::<Lex>(&s2), Ordering::Less);
+        assert_eq!(s1.cmp_pot::<Lex>(&s2, &Lex), Ordering::Less);
 
         // Same module_pos: compare monomials under O.
         let s3 = Signature {
@@ -1028,7 +1030,7 @@ mod tests {
             monomial: smallvec![1, 0],
         };
         // Lex: [0,1] < [1,0] (first component 0 < 1)
-        assert_eq!(s3.cmp_pot::<Lex>(&s4), Ordering::Less);
+        assert_eq!(s3.cmp_pot::<Lex>(&s4, &Lex), Ordering::Less);
     }
 
     #[test]

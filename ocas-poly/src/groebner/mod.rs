@@ -157,10 +157,15 @@ impl<D: Domain, O: MonomialOrder> GroebnerBasis<D, O> {
     /// no monomial of any basis element is divisible by the leading
     /// monomial of any other basis element.
     pub fn auto_reduce(mut self) -> Self {
+        let order = self
+            .basis
+            .first()
+            .map(|p| p.order.clone())
+            .unwrap_or_default();
         // Sort basis in ascending order of leading monomial (smallest first).
         self.basis
             .sort_by(|a, b| match (a.leading_monomial(), b.leading_monomial()) {
-                (Some(ma), Some(mb)) => O::cmp(ma, mb),
+                (Some(ma), Some(mb)) => order.cmp(ma, mb),
                 (Some(_), None) => std::cmp::Ordering::Greater,
                 (None, Some(_)) => std::cmp::Ordering::Less,
                 (None, None) => std::cmp::Ordering::Equal,

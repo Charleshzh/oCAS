@@ -15,6 +15,51 @@ _No changes yet._
 
 ---
 
+## [0.19.1] - 2026-07-23
+
+### Changed / 变更
+
+- **`MonomialOrder` trait 重构**：将单项式序从零大小标记类型 + 静态分派
+  （`Copy` + `fn cmp(lhs, rhs)`）重构为实例化类型 + 方法分派
+  （`Clone + Default` + `fn cmp(&self, lhs, rhs)`），使需要运行时配置
+  的序类型成为可能 / **`MonomialOrder` trait refactor**: changed from
+  zero-sized marker types with static dispatch (`Copy` + `fn cmp(lhs, rhs)`)
+  to instance-based types with method dispatch (`Clone + Default` +
+  `fn cmp(&self, lhs, rhs)`), enabling orderings that carry runtime
+  configuration.
+- **`SparseMultivariatePolynomial` 结构变更**：`_marker: PhantomData<O>`
+  替换为 `pub order: O` 字段，新增 `new_with_order()` 构造函数 /
+  **`SparseMultivariatePolynomial` struct change**: replaced
+  `_marker: PhantomData<O>` with `pub order: O` field; added
+  `new_with_order()` constructor.
+- **`Signature::cmp_pot` 签名变更**：新增 `order: &O` 参数 /
+  **`Signature::cmp_pot` signature change**: added `order: &O` parameter.
+
+### Added / 新增
+
+- **`WeightOrder`**：按加权和 $\sum_i w_i \cdot e_i$ 降序排列的单项式序，
+  支持任意消除序 / **`WeightOrder`**: monomial ordering by weighted sum
+  $\sum_i w_i \cdot e_i$ (descending), supporting arbitrary elimination
+  orderings.
+- **`BlockOrder`**：按变量块逐块比较的单项式序，子序通过 `SubOrder` 枚举
+  （Lex/Grevlex/Grlex）指定 / **`BlockOrder`**: block-based monomial ordering
+  comparing variable blocks sequentially; sub-orders specified via `SubOrder`
+  enum (Lex/Grevlex/Grlex).
+- **`SubOrder` 枚举**：`BlockOrder` 的子序类型 /
+  **`SubOrder` enum**: sub-ordering types for `BlockOrder`.
+- prelude 新增 `WeightOrder`、`BlockOrder`、`SubOrder` 导出 / prelude now
+  exports `WeightOrder`, `BlockOrder`, `SubOrder`.
+
+### Fixed / 修复
+
+- 更新 `f4`、`f5`、`buchberger`、`fglm` 中所有 11 处 `O::cmp` 静态调用
+  为实例方法调用，确保 `WeightOrder`/`BlockOrder` 在 Gröbner 基计算中
+  正确使用 / Updated all 11 static `O::cmp` call sites in `f4`, `f5`,
+  `buchberger`, `fglm` to instance method calls, ensuring
+  `WeightOrder`/`BlockOrder` work correctly in Gröbner basis computations.
+
+---
+
 ## [0.19.0] - 2026-07-23
 
 ### Added / 新增

@@ -85,9 +85,10 @@ pub mod prelude {
     };
     pub use ocas_parse::{ParseError, parse};
     pub use ocas_poly::{
-        DenseUnivariatePolynomial, Grevlex, Grlex, GroebnerBasis, Lex, Matrix, MatrixError,
-        MonomialOrder, RationalPolynomial, RootInterval, SparseMultivariatePolynomial, buchberger,
-        f4, monomial_are_coprime, monomial_divides, monomial_lcm,
+        BlockOrder, DenseUnivariatePolynomial, Grevlex, Grlex, GroebnerBasis, Lex, Matrix,
+        MatrixError, MonomialOrder, RationalPolynomial, RootInterval, SparseMultivariatePolynomial,
+        SubOrder, WeightOrder, buchberger, f4, monomial_are_coprime, monomial_divides,
+        monomial_lcm,
     };
     pub use ocas_rewrite::{
         Bindings, MatchError, Pattern, Rule, WildcardLevel, match_pattern, simplify,
@@ -117,14 +118,15 @@ pub use ocas_rewrite;
 
 // Re-export the most common types and functions at the crate root as well.
 pub use prelude::{
-    Arena, Assumption, Assumptions, Atom, AtomArena, AtomNode, Bindings, Complex, ComplexDomain,
-    DenseUnivariatePolynomial, DiophantineSolution, Domain, EuclideanDomain, EvalTree,
-    EvaluationDomain, EvaluationError, ExpressionEvaluator, FiniteField, FiniteFieldElement,
-    FunctionMap, Grevlex, GroebnerBasis, Instr, Instruction, Integer, IntegerDomain, Lex,
-    MatchError, Matrix, MatrixError, MonomialOrder, OcasError, ParseError, Pattern, PowfExtension,
-    Rational, RationalDomain, RationalPolynomial, RealBall, RealBallDomain, Result, RootInterval,
-    Rule, Slot, SolveError, SparseMultivariatePolynomial, Symbol, SymbolAssumptions, WildcardLevel,
-    apart, buchberger, diff, integrate, match_pattern, monomial_are_coprime, monomial_divides,
-    monomial_lcm, normalize, parse, simplify, solve_diophantine, solve_linear_integer,
-    solve_linear_rational, solve_polynomial_system, substitute, taylor, transform,
+    Arena, Assumption, Assumptions, Atom, AtomArena, AtomNode, Bindings, BlockOrder, Complex,
+    ComplexDomain, DenseUnivariatePolynomial, DiophantineSolution, Domain, EuclideanDomain,
+    EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FiniteField,
+    FiniteFieldElement, FunctionMap, Grevlex, GroebnerBasis, Instr, Instruction, Integer,
+    IntegerDomain, Lex, MatchError, Matrix, MatrixError, MonomialOrder, OcasError, ParseError,
+    Pattern, PowfExtension, Rational, RationalDomain, RationalPolynomial, RealBall, RealBallDomain,
+    Result, RootInterval, Rule, Slot, SolveError, SparseMultivariatePolynomial, SubOrder, Symbol,
+    SymbolAssumptions, WeightOrder, WildcardLevel, apart, buchberger, diff, integrate,
+    match_pattern, monomial_are_coprime, monomial_divides, monomial_lcm, normalize, parse,
+    simplify, solve_diophantine, solve_linear_integer, solve_linear_rational,
+    solve_polynomial_system, substitute, taylor, transform,
 };

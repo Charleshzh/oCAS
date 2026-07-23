@@ -5,8 +5,6 @@
 //! represents the monomial `x1^e1 * x2^e2 * ...`. Monomial ordering is
 //! controlled by the [`MonomialOrder`] type parameter.
 
-use std::marker::PhantomData;
-
 use ocas_core::FastHashMap as HashMap;
 use ocas_domain::{Domain, EuclideanDomain, FiniteField, IntegerDomain};
 use smallvec::SmallVec;
@@ -15,8 +13,9 @@ use crate::factor::multivariate::{bivariate_factor_fp, bivariate_factor_z};
 
 /// A monomial ordering determines how terms are sorted and compared.
 ///
-/// Orderings are implemented as zero-sized types with an associated method
-/// that compares two exponent vectors.
+/// Simple orderings (Lex, Grevlex, Grlex) are zero-sized types with no
+/// runtime data. Parameterized orderings (WeightOrder, BlockOrder) carry
+/// configuration at runtime.
 ///
 /// # Example
 ///
@@ -25,34 +24,34 @@ use crate::factor::multivariate::{bivariate_factor_fp, bivariate_factor_z};
 ///
 /// let a = [2, 1];
 /// let b = [1, 1];
-/// assert_eq!(Lex::cmp(&a, &b), std::cmp::Ordering::Greater);
-/// assert_eq!(Grevlex::cmp(&a, &b), std::cmp::Ordering::Less);
+/// assert_eq!(Lex.cmp(&a, &b), std::cmp::Ordering::Greater);
+/// assert_eq!(Grevlex.cmp(&a, &b), std::cmp::Ordering::Less);
 /// ```
-pub trait MonomialOrder: Clone + Copy + PartialEq + Eq + std::fmt::Debug {
+pub trait MonomialOrder: Clone + PartialEq + Eq + std::fmt::Debug + Default {
     /// Compare two exponent vectors.
     ///
     /// Returns `std::cmp::Ordering::Less` if `lhs` should appear before `rhs`
     /// in the ordering.
-    fn cmp(lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering;
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering;
 }
 
 /// Lexicographic ordering: compare exponents left-to-right.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Lex;
 
 impl MonomialOrder for Lex {
-    fn cmp(lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
         lhs.cmp(rhs)
     }
 }
 
 /// Graded reverse lexicographic ordering: first by total degree descending,
 /// then reverse lexicographic.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Grevlex;
 
 impl MonomialOrder for Grevlex {
-    fn cmp(lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
         let deg_lhs: usize = lhs.iter().sum();
         let deg_rhs: usize = rhs.iter().sum();
         deg_rhs
@@ -76,18 +75,175 @@ impl MonomialOrder for Grevlex {
 /// let b = [1, 1]; // x*y, degree 2
 /// let c = [0, 3]; // y^3, degree 3
 /// // c has highest degree, so it comes first
-/// assert_eq!(Grlex::cmp(&c, &a), std::cmp::Ordering::Less);
+/// assert_eq!(Grlex.cmp(&c, &a), std::cmp::Ordering::Less);
 /// // a and b have same degree; a > b lexicographically
-/// assert_eq!(Grlex::cmp(&a, &b), std::cmp::Ordering::Greater);
+/// assert_eq!(Grlex.cmp(&a, &b), std::cmp::Ordering::Greater);
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Grlex;
 
 impl MonomialOrder for Grlex {
-    fn cmp(lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
         let deg_lhs: usize = lhs.iter().sum();
         let deg_rhs: usize = rhs.iter().sum();
         deg_rhs.cmp(&deg_lhs).then_with(|| lhs.cmp(rhs))
+    }
+}
+
+/// Weighted ordering: compare by $\sum_i w_i \cdot e_i$ descending.
+///
+/// The weight vector is stored at construction time, enabling arbitrary
+/// elimination orderings that cannot be expressed as zero-sized types.
+///
+/// # Example
+///
+/// ```
+/// use ocas_poly::sparse::{MonomialOrder, WeightOrder};
+/// use smallvec::smallvec;
+///
+/// let ord = WeightOrder::new(smallvec![2, 1]);
+/// // [1,0] → weight 2, [0,1] → weight 1 → [1,0] is "larger"
+/// assert_eq!(ord.cmp(&[1, 0], &[0, 1]), std::cmp::Ordering::Less);
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WeightOrder {
+    weights: SmallVec<[i64; 4]>,
+}
+
+impl WeightOrder {
+    /// Create a new weighted ordering with the given weight vector.
+    pub fn new(weights: SmallVec<[i64; 4]>) -> Self {
+        Self { weights }
+    }
+
+    /// Create a weighted ordering from a slice.
+    pub fn from_slice(weights: &[i64]) -> Self {
+        Self {
+            weights: SmallVec::from_slice(weights),
+        }
+    }
+}
+
+impl Default for WeightOrder {
+    /// Default: all-ones weights (total degree ordering).
+    fn default() -> Self {
+        Self {
+            weights: smallvec::smallvec![1; 4],
+        }
+    }
+}
+
+impl MonomialOrder for WeightOrder {
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+        let w_lhs: i64 = lhs
+            .iter()
+            .zip(self.weights.iter())
+            .map(|(&e, &w)| w * e as i64)
+            .sum();
+        let w_rhs: i64 = rhs
+            .iter()
+            .zip(self.weights.iter())
+            .map(|(&e, &w)| w * e as i64)
+            .sum();
+        // Higher weight first (descending).
+        w_rhs.cmp(&w_lhs)
+    }
+}
+
+/// A sub-ordering used inside [`BlockOrder`] for each variable block.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SubOrder {
+    /// Lexicographic within the block.
+    Lex,
+    /// Graded reverse lexicographic within the block.
+    Grevlex,
+    /// Graded lexicographic within the block.
+    Grlex,
+}
+
+impl SubOrder {
+    fn cmp_block(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+        match self {
+            SubOrder::Lex => lhs.cmp(rhs),
+            SubOrder::Grevlex => {
+                let deg_l: usize = lhs.iter().sum();
+                let deg_r: usize = rhs.iter().sum();
+                deg_r
+                    .cmp(&deg_l)
+                    .then_with(|| rhs.iter().rev().cmp(lhs.iter().rev()))
+            }
+            SubOrder::Grlex => {
+                let deg_l: usize = lhs.iter().sum();
+                let deg_r: usize = rhs.iter().sum();
+                deg_r.cmp(&deg_l).then_with(|| lhs.cmp(rhs))
+            }
+        }
+    }
+}
+
+/// Block ordering: partition variables into contiguous blocks, each compared
+/// under its own sub-ordering.
+///
+/// Blocks are defined by `boundaries`: a sorted list of split points
+/// (exclusive upper bounds, *not* including `n_vars`). For example,
+/// `boundaries = [2]` with `orders = [Lex, Grevlex]` on a 4-variable
+/// polynomial means: compare variables 0–1 under Lex first; if equal,
+/// compare variables 2–3 under Grevlex.
+///
+/// # Example
+///
+/// ```
+/// use ocas_poly::sparse::{BlockOrder, MonomialOrder, SubOrder};
+/// use smallvec::smallvec;
+///
+/// let ord = BlockOrder::new(smallvec![2], smallvec![SubOrder::Lex, SubOrder::Grevlex]);
+/// // First compare variables 0–1 lex, then variables 2–3 grevlex.
+/// let a = [1, 0, 0, 0]; // x₀
+/// let b = [0, 1, 0, 0]; // x₁
+/// // Lex: [1,0] > [0,1], so a is "greater" (comes first in ordering)
+/// assert_eq!(ord.cmp(&a, &b), std::cmp::Ordering::Greater);
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BlockOrder {
+    /// Sorted split points (exclusive upper bounds, excluding n_vars).
+    boundaries: SmallVec<[usize; 4]>,
+    /// One sub-ordering per block (len = boundaries.len() + 1).
+    orders: SmallVec<[SubOrder; 4]>,
+}
+
+impl BlockOrder {
+    /// Create a new block ordering.
+    ///
+    /// `boundaries` must be sorted in ascending order and not include `n_vars`.
+    /// `orders.len()` must equal `boundaries.len() + 1`.
+    pub fn new(boundaries: SmallVec<[usize; 4]>, orders: SmallVec<[SubOrder; 4]>) -> Self {
+        debug_assert_eq!(orders.len(), boundaries.len() + 1);
+        Self { boundaries, orders }
+    }
+}
+
+impl Default for BlockOrder {
+    /// Default: single block with Grevlex.
+    fn default() -> Self {
+        Self {
+            boundaries: SmallVec::new(),
+            orders: smallvec::smallvec![SubOrder::Grevlex],
+        }
+    }
+}
+
+impl MonomialOrder for BlockOrder {
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+        let mut start = 0;
+        for (i, &end) in self.boundaries.iter().enumerate() {
+            match self.orders[i].cmp_block(&lhs[start..end], &rhs[start..end]) {
+                std::cmp::Ordering::Equal => {}
+                ord => return ord,
+            }
+            start = end;
+        }
+        // Last block: from `start` to end of slice.
+        self.orders[self.boundaries.len()].cmp_block(&lhs[start..], &rhs[start..])
     }
 }
 
@@ -125,17 +281,29 @@ pub struct SparseMultivariatePolynomial<D: Domain, O: MonomialOrder = Grevlex> {
     domain: D,
     /// Number of variables. Exponent vectors are padded/trimmed to this length.
     n_vars: usize,
-    _marker: PhantomData<O>,
+    /// The monomial ordering used for leading-term and sorting operations.
+    pub order: O,
 }
 
 impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
-    /// Create the zero polynomial in `n_vars` variables over `domain`.
+    /// Create the zero polynomial in `n_vars` variables over `domain`
+    /// with the default monomial ordering.
     pub fn new(domain: D, n_vars: usize) -> Self {
         Self {
             terms: HashMap::default(),
             domain,
             n_vars,
-            _marker: PhantomData,
+            order: O::default(),
+        }
+    }
+
+    /// Create the zero polynomial with an explicit monomial ordering.
+    pub fn new_with_order(domain: D, n_vars: usize, order: O) -> Self {
+        Self {
+            terms: HashMap::default(),
+            domain,
+            n_vars,
+            order,
         }
     }
 
@@ -336,7 +504,7 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     /// Return the terms sorted according to the monomial ordering.
     pub fn sorted_terms(&self) -> Vec<(&SmallVec<[usize; 4]>, &D::Element)> {
         let mut terms: Vec<_> = self.terms.iter().collect();
-        terms.sort_by(|(a, _), (b, _)| O::cmp(a, b));
+        terms.sort_by(|(a, _), (b, _)| self.order.cmp(a, b));
         terms
     }
 
@@ -350,12 +518,14 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     /// This scans the HashMap in O(n) without allocating — faster than
     /// `sorted_terms()` for repeated calls during reduction.
     pub fn leading_term(&self) -> Option<(&SmallVec<[usize; 4]>, &D::Element)> {
-        self.terms.iter().max_by(|(a, _), (b, _)| O::cmp(a, b))
+        self.terms
+            .iter()
+            .max_by(|(a, _), (b, _)| self.order.cmp(a, b))
     }
 
     /// Return the leading monomial (exponent vector) or `None`.
     pub fn leading_monomial(&self) -> Option<&SmallVec<[usize; 4]>> {
-        self.terms.keys().max_by(|a, b| O::cmp(a, b))
+        self.terms.keys().max_by(|a, b| self.order.cmp(a, b))
     }
 
     /// Return the leading coefficient or `None`.
@@ -848,7 +1018,7 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     /// polynomial for symbolic preprocessing.
     pub fn exponents_iter(&self) -> impl Iterator<Item = &SmallVec<[usize; 4]>> {
         let mut sorted: Vec<_> = self.terms.keys().collect();
-        sorted.sort_by(|a, b| O::cmp(a, b));
+        sorted.sort_by(|a, b| self.order.cmp(a, b));
         sorted.into_iter()
     }
 

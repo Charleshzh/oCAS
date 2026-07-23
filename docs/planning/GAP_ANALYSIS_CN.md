@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.18.1 @ 2026-07-23**（全面重新评估：代码规模快照刷新至 0.18.1，0.16–0.18 落地后重核 Symbolica 差距表）
+> 最后评估：**0.19.1 @ 2026-07-23**（0.19.1 MonomialOrder trait 重构 + WeightOrder/BlockOrder 发布；多序支持从 `[~]` 升级为 `[x]`）
 
 ---
 
@@ -256,3 +256,4 @@ cyclic-6 量级 Gröbner 性能（F5 签名约简，0.19）、ODE 求解器
 | 0.17.0 | 2026-07-22 | 代数数域因式分解（Trager）完成：新增 `ocas-domain::algebraic`（`AlgebraicExtension<D>`：ℚ(α) 与 GF(p^d) 同一实现，EEA 求逆）+ `ocas-poly::factor::algebraic`（平移范数[求值–插值结式] + 数域模 GCD[GF(p^d) + CRT + 有理重构 + 试除] + 有理快速通道）；修复结式 Brown PRS 一般次数 bug（β 除法仅在单位时执行的非法实现，按 Symbolica `resultant_prs` 重移植）；0.16.2 稀疏 Diophantine 小素数升级启发式补齐；因式分解能力覆盖 一元/二元/任意多元/代数数域（一元）；性能指标达成（deg≤12 实测 8–32 ms < 100 ms）；版本提升 0.17.0。 |
 | 0.18.1 | 2026-07-23 | **全面重新评估**（0.16–0.18 落地后）。代码规模快照刷新至 112 文件 / ~40.9k 行（较 0.15.1 的 95 文件 / ~30.7k 增长 33%；较 0.10 的 ~18k 增长 127%）。§1 版本表扩展至 0.18.1（新增 0.16.0–0.18.1 行）。§3 多项式 GCD 从 🟡 升级为 🟢（经 EEZ 的任意元数多元 GCD [0.16] + 模数域 GCD [0.17]）。§4.1 Symbolica 差距表重写：数值积分/张量/双数/fuel 全部从 🔴 升级为 ✅（0.18 闭合）；因式分解行补注 ANF 已完成（0.17）；新增模式变换器行（🟡，缺 `Transformer::Partition`）；收尾段落重写——除大规模 Gröbner + 张量完整规范化外，Symbolica 示例域缺口全部闭合。§4.3 SymPy 因式分解从 🟡 升级为 🟢（任意多元持平，0.16）。§5 新增 #11（张量规范化 + 专用模式变换器，Post-1.0）；表头重写——阶段 B+ 宣告完成。§6 总评重写——1.0 仅剩稳定性/发布工程。全文多处乱码字符修复。 |
 | 0.19.0 | 2026-07-23 | **F5 Gröbner 基发布——cyclic-6 规模缺口闭合。** §3 Gröbner 行从 🟡 升级为 🟢（F5 签名约简）。§4.1 Gröbner 基竞品行从 🟡 升级为 🟢。§5 #6（Gröbner 大规模性能）标记 ✅ 完成——cyclic-6 ℤ₁₃ 3670 s → **2.63 s**（≈1400×），经 `f5_fp` ℤ_p 原生快速路径；cyclic-5 0.05 s；通用域 + ℤ_p 路径均验证。统一 `groebner_basis()` 分派（`Algorithm::{Auto,F4,F5,Buchberger}`）。多序（`WeightOrder`/`BlockOrder`）推迟到 0.19.1（trait 重构）。 |
+| 0.19.1 | 2026-07-23 | **MonomialOrder trait 重构 + WeightOrder/BlockOrder 发布。** `Copy` + 静态分派 → `Clone + Default` + 方法分派（`&self`）；`PhantomData<O>` → `order: O` 字段；新增 `WeightOrder`（加权序）与 `BlockOrder`（分块序）+ `SubOrder` 枚举；11 处 `O::cmp` 调用点全部更新；`Signature::cmp_pot` 签名新增 `order: &O` 参数。多序支持标记从 `[~]` 升级为 `[x]`。 |

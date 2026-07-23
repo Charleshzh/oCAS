@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-23（0.18.1 已发布 + 阶段 B++ "竞品全面对齐" [0.19–0.23] 已规划：F5 Gröbner → ODE 求解器 → 数论 → 张量规范化 → 代数几何；阶段 B++ 之后，1.0.0 仅做冻结与打磨；GAP_ANALYSIS 已于 0.18.1 评估：112 文件 / ~40.9k 行，阶段 B+ 完成）**
+> 最后修订：**2026-07-23（0.19.1 已发布：MonomialOrder trait 重构 + WeightOrder/BlockOrder；阶段 B++ 继续推进）**
 
 ---
 
@@ -703,8 +703,12 @@ Python/C 端可用，并确认 `RootOf(poly, idx)` 解析路径。
 支持（条目 6，标记 `[~]`）交付了统一的 `groebner_basis()` 分派层与现有的
 Lex/Grevlex/Grlex 序；`WeightOrder`/`BlockOrder` 消元序需要对
 `MonomialOrder` trait 做重构（`Copy` → `Clone`、`cmp(lhs,rhs)` →
-`cmp(&self,lhs,rhs)`），涉及 8 个文件约 15 处调用点，推迟到 0.19.1 以保
-持 0.19.0 专注于 F5 验收目标。
+`cmp(&self,lhs,rhs)`），涉及 8 个文件约 15 处调用点，推迟到 0.19.1。
+
+**0.19.1 补充** — `MonomialOrder` trait 重构已完成：`PhantomData<O>` 替换为
+`order: O` 字段，11 处 `O::cmp` 调用点全部更新为实例方法调用，新增
+`WeightOrder`（加权序）与 `BlockOrder`（分块序）+ `SubOrder` 枚举。
+`Signature::cmp_pot` 签名新增 `order: &O` 参数。全 workspace 测试通过。
 
 ### 0.20.0 — 常微分方程求解器
 
@@ -908,3 +912,4 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 0.18.1 | 2026-07-23 | 0.18.0 三项能力的 Python/C 绑定补齐 + prelude 补齐；修复 `normalize` 幂等性 bug。阶段 B+ 宣告完成。 |
 | 0.18.1 | 2026-07-23 | **阶段 B++ "竞品全面对齐"（0.19.0→0.23.0）规划完成。** 两条主线：主线 SP（Symbolica 性能）——0.19 F5 Gröbner 签名约简（cyclic-6 <5s 目标）、0.22 张量规范化（图同构引擎）+ `Transformer::Partition`；主线 SF（SageMath 功能）——0.20 ODE 求解器（一阶/二阶 + 系统 + 级数 + Laplace）、0.21 数论（模 GCD + 整数分解 + 素性 + 离散对数 + CRT + 数论函数）、0.23 代数几何（理想运算 + RUR + 准素分解 + Hilbert 级数）。Gantt 图更新（阶段 B+ + B++）；竞品参考索引修正：多元/代数数域因式分解标 🟢，张量/fuel/数值积分标 🟢，ODE 从 Post-1.0 移入 0.20；新增数论、代数几何、张量规范化、模式变换器行。阶段 D 调整（ODE→0.20；1.1 改为 PDE）。 |
 | 0.19.0 | 2026-07-23 | **F5 Gröbner 基（签名约简）发布。** Faugère 2002 F5 核心：`Signature`（pot 序）、`SyzygySet`（syzygy 判据）、签名贯穿的矩阵构造、稀疏 echelonization、逐次数增量主循环（与 F4 共享 Gebauer–Moeller 临界对管理）。通用域（BigInt）与原生 ℤ_p 快速路径（`f5_fp`，i64 模运算）均验证通过。统一 `groebner_basis()` 分派入口 + `Algorithm` 枚举。**验收达成：cyclic-6 ℤ₁₃ 2.63 s**（基线 3670 s，≈1400× 提速；目标 < 5 s）；cyclic-5 0.05 s；cyclic-3/4 over ℚ/ℤ₁₃/ℤ₁₀₁ < 0.01 s；cyclic-7 可解（> 5 分钟，`#[ignore]`）。多序（条目 6）标记 `[~]`：分派层 + 现有序完成；`WeightOrder`/`BlockOrder` 推迟到 0.19.1（trait 重构风险）。工具链升级 1.89→1.97 合并。 |
+| 0.19.1 | 2026-07-23 | **MonomialOrder trait 重构 + WeightOrder/BlockOrder 发布。** `Copy` + 静态分派 → `Clone + Default` + 方法分派（`&self`）；`PhantomData<O>` → `order: O` 字段；新增 `WeightOrder`（加权序）与 `BlockOrder`（分块序）+ `SubOrder` 枚举；11 处 `O::cmp` 调用点全部更新；`Signature::cmp_pot` 签名新增 `order: &O` 参数。多序支持标记从 `[~]` 升级为 `[x]`。 |

@@ -202,6 +202,7 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
     if initial.is_empty() {
         return GroebnerBasis { basis: vec![] };
     }
+    let order = ideal[0].order.clone();
 
     // Feed generators one at a time so that initial critical pairs go
     // through the same Gebauer–Moeller filtering (as Symbolica does).
@@ -355,7 +356,7 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
         // extraction blowup: the echelon form was decorative and all real
         // work fell back to polynomial division).
         let mut col_order: Vec<usize> = (0..ncols).collect();
-        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[b], &monomial_list[a]));
+        col_order.sort_unstable_by(|&a, &b| order.cmp(&monomial_list[b], &monomial_list[a]));
 
         // Build inverse column map: old_col → new_col.
         let mut col_inv = vec![0usize; ncols];
@@ -790,8 +791,7 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
     prime: i64,
 ) -> GroebnerBasis<D, O> {
     let n_vars = ideal[0].n_vars();
-
-    // Filter zeros, convert to native residues, and make monic.
+    let order = ideal[0].order.clone();
     let mut initial: Vec<FpPoly> = ideal
         .iter()
         .filter(|p| !p.is_zero())
@@ -1003,7 +1003,7 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
         // --- Sort columns: DESCENDING monomial order ---
         // (See the generic path for why descending order is essential.)
         let mut col_order: Vec<usize> = (0..ncols).collect();
-        col_order.sort_unstable_by(|&a, &b| O::cmp(&monomial_list[b], &monomial_list[a]));
+        col_order.sort_unstable_by(|&a, &b| order.cmp(&monomial_list[b], &monomial_list[a]));
 
         let mut col_inv = vec![0usize; ncols];
         for (new_col, &old_col) in col_order.iter().enumerate() {
@@ -1661,9 +1661,10 @@ mod tests {
     #[test]
     fn grlex_ordering() {
         use crate::sparse::Grlex;
-        assert_eq!(Grlex::cmp(&[2, 0], &[1, 1]), std::cmp::Ordering::Greater);
-        assert_eq!(Grlex::cmp(&[1, 1], &[0, 2]), std::cmp::Ordering::Greater);
-        assert_eq!(Grlex::cmp(&[0, 2], &[1, 0]), std::cmp::Ordering::Less);
-        assert_eq!(Grlex::cmp(&[1, 0], &[0, 2]), std::cmp::Ordering::Greater);
+        let ord = Grlex;
+        assert_eq!(ord.cmp(&[2, 0], &[1, 1]), std::cmp::Ordering::Greater);
+        assert_eq!(ord.cmp(&[1, 1], &[0, 2]), std::cmp::Ordering::Greater);
+        assert_eq!(ord.cmp(&[0, 2], &[1, 0]), std::cmp::Ordering::Less);
+        assert_eq!(ord.cmp(&[1, 0], &[0, 2]), std::cmp::Ordering::Greater);
     }
 }
