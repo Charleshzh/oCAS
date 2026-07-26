@@ -15,6 +15,33 @@ _No changes yet._
 
 ---
 
+## [0.20.0] - 2026-07-27
+
+### Added / 新增
+
+- **常微分方程（ODE）求解器**：新增 `ocas_calc::ode` 模块，提供 `dsolve()` 函数
+  用于解析求解常微分方程 / **Ordinary Differential Equation (ODE) solver**:
+  new `ocas_calc::ode` module providing `dsolve()` for analytical ODE solving.
+  - **一阶 ODE** / **First-order ODE**（5 种方法）：
+    - 可分离变量 / Separable equations
+    - 一阶线性 / First-order linear ($y' + p(x)y = q(x)$)
+    - Bernoulli 方程 / Bernoulli equations
+    - 恰当方程 / Exact equations
+    - 齐次方程 / Homogeneous equations
+  - **二阶线性 ODE** / **Second-order linear ODE**（2 种方法）：
+    - 常系数 / Constant coefficients（特征方程法 / characteristic equation）
+    - Cauchy-Euler 方程 / Cauchy-Euler equations
+  - **幂级数解法** / **Power series method**：常点附近的幂级数展开（占位实现，
+    完整系数递推待后续版本 / placeholder, full coefficient recursion deferred）
+  - **ODE 分类引擎** / **ODE classifier**：`classify_ode()` 自动识别 ODE 类型
+    并按优先级尝试求解 / `classify_ode()` auto-detects ODE type and tries
+    solvers in priority order.
+  - **prelude 导出** / **prelude exports**：`dsolve`、`classify_ode`、`ODE`、
+    `ODESolution`、`ODEType`。
+- workspace 版本提升至 0.20.0 / workspace version bumped to 0.20.0.
+
+---
+
 ## [0.19.1] - 2026-07-23
 
 ### Changed / 变更

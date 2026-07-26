@@ -14,6 +14,7 @@
 pub mod complex;
 pub mod derivative;
 pub mod integral;
+pub mod ode;
 pub mod partial_fraction;
 pub mod series;
 pub mod solve;

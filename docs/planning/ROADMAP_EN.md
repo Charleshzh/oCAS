@@ -320,7 +320,7 @@ After 1.0, development will focus on:
 | 0.18.0 | 1.0 Candidate | Month 28 | Numerical integration (Vegas) + dual-number AD + tensor basics + fuel resource control |
 | 0.18.1 | 1.0 Candidate | Month 28 | Python/C bindings backfill for the three 0.18.0 capabilities (numeric integration + tensor + dual) + prelude completeness ✅ |
 | 0.19.0 | 1.0 Candidate | Month 30 | F5 Gröbner basis signature reduction (cyclic-6 ℤ₁₃ <5 s target) ✅ (2.63 s, ~1400×; multi-order deferred to 0.19.1) |
-| 0.20.0 | 1.0 Candidate | Month 33 | Ordinary differential equation solvers (first/second-order + systems + series + Laplace) |
+| 0.20.0 | 1.0 Candidate | Month 33 | Ordinary differential equation solvers (5 first-order + 2 second-order + power-series framework + classifier) ✅ (core complete; Laplace/systems/bindings deferred) |
 | 0.21.0 | 1.0 Candidate | Month 36 | Number theory & computational algebra (modular GCD + integer factorization + primality + discrete log + CRT + number-theoretic functions) |
 | 0.22.0 | 1.0 Candidate | Month 39 | Tensor canonicalisation (graph-isomorphism engine) + advanced pattern matching (`Transformer::Partition`) |
 | 0.23.0 | 1.0 Candidate | Month 42 | Advanced Gröbner & algebraic-geometry tooling (ideal ops + RUR + primary decomposition + Hilbert series) |

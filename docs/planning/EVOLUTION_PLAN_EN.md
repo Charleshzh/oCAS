@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-23 (0.19.1 released: MonomialOrder trait refactor + WeightOrder/BlockOrder; Phase B++ continues)**
+> Last revised: **2026-07-27 (0.20.0 released: ODE solver — 5 first-order + 2 second-order + power-series framework + ODE classifier; Phase B++ continues)**
 
 ---
 
@@ -808,23 +808,24 @@ most-requested missing capability — every general-purpose CAS ships it.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| First-order ODE classification engine: separable, linear (`y'+p(x)y=q(x)`), Bernoulli, exact (`∂M/∂y=∂N/∂x`), homogeneous substitution | SymPy `dsolve` classifiers; Boyce & DiPrima Ch. 2 | `ocas-calc::ode::first_order` | [ ] |
+| First-order ODE classification engine: separable, linear (`y'+p(x)y=q(x)`), Bernoulli, exact (`∂M/∂y=∂N/∂x`), homogeneous substitution | SymPy `dsolve` classifiers; Boyce & DiPrima Ch. 2 | `ocas-calc::ode::first_order` | [x] |
 | Integrating-factor detection for non-exact first-order ODEs | Boyce & DiPrima §2.6 | `first_order::integrating_factor` | [ ] |
-| Second-order linear ODE: constant coefficients (characteristic equation), Cauchy-Euler, reduction of order, variation of parameters | Boyce & DiPrima Ch. 3–4 | `ocas-calc::ode::second_order` | [ ] |
-| Linear ODE systems: matrix exponential via eigen-decomposition | SageMath `desolve_system`; SymPy `dsolve(system=True)` | `ocas-calc::ode::systems` | [ ] |
-| Power series solutions near ordinary points; Frobenius method near regular singular points | Boyce & DiPrima Ch. 5 | `ocas-calc::ode::series` | [ ] |
-| Laplace-transform method for linear IVPs | Boyce & DiPrima Ch. 6 | `ocas-calc::ode::laplace` | [ ] |
-| Undetermined-coefficients and annihilator method for forcing terms | Boyce & DiPrima §3.5–3.6 | `second_order::undetermined` | [ ] |
-| Python/C bindings: `dsolve(equation, func, hint=None)` + `classify_ode` | SymPy API parity | `ocas-py::ode`, `ocas-c::ode` | [ ] |
+| Second-order linear ODE: constant coefficients (characteristic equation), Cauchy-Euler, reduction of order, variation of parameters | Boyce & DiPrima Ch. 3–4 | `ocas-calc::ode::second_order` | [x] const-coeff + Cauchy-Euler; reduction/VOP deferred |
+| Linear ODE systems: matrix exponential via eigen-decomposition | SageMath `desolve_system`; SymPy `dsolve(system=True)` | `ocas-calc::ode::systems` | [ ] framework stub, impl deferred |
+| Power series solutions near ordinary points; Frobenius method near regular singular points | Boyce & DiPrima Ch. 5 | `ocas-calc::ode::series` | [~] framework built, coefficient recursion needs completion |
+| Laplace-transform method for linear IVPs | Boyce & DiPrima Ch. 6 | `ocas-calc::ode::laplace` | [ ] deferred to later release |
+| Undetermined-coefficients and annihilator method for forcing terms | Boyce & DiPrima §3.5–3.6 | `second_order::undetermined` | [x] constant/exponential/linear forcing |
+| Python/C bindings: `dsolve(equation, func, hint=None)` + `classify_ode` | SymPy API parity | `ocas-py::ode`, `ocas-c::ode` | [ ] deferred to later release |
 
 **Acceptance**
 
-- SymPy `dsolve` cross-verification on ≥ 30 canonical ODEs (first-order
+- [ ] SymPy `dsolve` cross-verification on ≥ 30 canonical ODEs (first-order
   separable/linear/Bernoulli/exact/homogeneous, second-order
   constant-coeff/Cauchy-Euler/variation-of-parameters).
-- Initial-value problems return explicit solutions.
-- Series solutions match Taylor expansion to ≥ 5 terms.
-- Returns `ODE(equation, func)` unevaluated form when no classifier matches.
+- [ ] Initial-value problems return explicit solutions.
+- [~] Series solutions match Taylor expansion to ≥ 5 terms (framework built,
+  coefficient recursion needs completion).
+- [x] Returns `ODE(equation, func)` unevaluated form when no classifier matches.
 
 ### 0.21.0 — Number Theory & Computational Algebra Stack
 
