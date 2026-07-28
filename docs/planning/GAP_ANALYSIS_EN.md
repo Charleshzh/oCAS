@@ -105,7 +105,7 @@ source of the gap.
 | Polynomial GCD | GCD + primitive part + extended GCD (0.12) + arbitrary-arity multivariate GCD via EEZ (0.16) + modular number-field GCD over GF(p^d) with CRT + rational reconstruction (0.17); no modular-GCD fast path for very large integer coefficients | 🟢 Usable, no HEVMGCD |
 | Linear solving | Rational/integer linear systems + bivariate Diophantine (`ax+by=c`) | 🟡 Usable, limited scale |
 | JIT evaluation | Cranelift backend; ≥10x speedup target met (per roadmap criterion) | 🟢 Complete |
-| ODE | `ocas-calc::ode`: `dsolve()` entry + `classify_ode()` classifier; 5 first-order (separable/linear/Bernoulli/exact/homogeneous); 2 second-order (const-coeff/Cauchy-Euler); power-series framework; Laplace/ODE systems/Python bindings deferred | 🟡 Core complete, advanced deferred |
+| ODE | `ocas-calc::ode`: `dsolve()` entry + `classify_ode()` classifier; 5 first-order + integrating factors; 2 second-order + VOP + reduction of order; series recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 systems (`dsolve_system`); Python/C bindings | 🟢 Complete (0.20.1) |
 
 ---
 
@@ -152,7 +152,7 @@ SageMath is a "Swiss-army-knife" scientific environment. The gap is
 |---|---|---|
 | Algebraic geometry | 🟡 basic Gröbner | ✅ Singular integration |
 | Number theory | 🟡 basic Diophantine | ✅ PARI/FLINT full stack |
-| Differential equations | � 5 first-order + 2 second-order + power-series framework (0.20) | ✅ full ODE/PDE solvers |
+| Differential equations | 🟢 first/second-order/systems/series/Laplace/bindings complete (0.20.1) | ✅ full ODE/PDE solvers |
 | Group / representation theory | 🔴 none | ✅ GAP integration |
 | Combinatorics | 🔴 none | ✅ complete |
 | Plotting / visualization | 🔴 none | ✅ matplotlib integration |
@@ -208,7 +208,7 @@ breadth, and Post-1.0 topics.
 | 7a | ~~Non-constant leading-coefficient imposition + multivariate sparsity~~ (completed 0.16.1/0.16.2) | ✅ done — mod-p Hensel imposition + sparse Diophantine + field Wang preprocessing on the Fp path |
 | 8 | ~~Algebraic-number-field factorization~~ (completed 0.17) | ✅ done — Trager algorithm (shifted norm + ℚ factorization + GF(p^d) modular GCD), univariate path; multivariate extension deferred |
 | 9 | ~~Numerical integration / dual numbers / tensor basics / fuel~~ (done in 0.18) | ✅ Done — Vegas + HyperDual + index contraction + fuel; 0.18.1 backfilled the Python/C bindings |
-| 10 | ODE solvers (Phase B++ 0.20) | � Partially complete — 5 first-order + 2 second-order + power-series framework; Laplace/systems/bindings deferred |
+| 10 | ~~ODE solvers~~ (0.20.1 complete) | ✅ Done — 5 first-order + integrating factors; 2 second-order + VOP + reduction of order; series recursion + Frobenius; Laplace IVP; 2×2 systems; Python/C bindings |
 | 11 | Number theory stack (Phase B++ 0.21) | 🟢 SageMath/PARI parity; modular GCD + integer factorization + primality + discrete log + CRT |
 | 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | 🟡 Symbolica's last bastion; needs graph-isomorphism engine |
 | 13 | Algebraic-geometry tooling (Phase B++ 0.23) | 🟢 SageMath/Singular parity; ideal ops + RUR + primary decomposition + Hilbert series |
@@ -282,3 +282,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.19.0 | 2026-07-23 | **F5 Gröbner basis released — cyclic-6 scale gap closed.** §3 Gröbner row upgraded 🟡→🟢 (F5 signature reduction). §4.1 Gröbner bases competitor row upgraded 🟡→🟢. §5 #6 (Gröbner performance at scale) marked ✅ done — cyclic-6 ℤ₁₃ 3670 s → **2.63 s** (~1400×) via `f5_fp` native ℤ_p fast path; cyclic-5 0.05 s; generic-domain + ℤ_p paths both verified. Unified `groebner_basis()` dispatch (`Algorithm::{Auto,F4,F5,Buchberger}`). Multi-order (`WeightOrder`/`BlockOrder`) deferred to 0.19.1 (trait refactor). |
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait refactor + WeightOrder/BlockOrder released.** `Copy` + static dispatch → `Clone + Default` + method dispatch (`&self`); `PhantomData<O>` → `order: O` field; new `WeightOrder` (weighted) and `BlockOrder` (block) orderings with `SubOrder` enum; all 11 `O::cmp` call sites updated; `Signature::cmp_pot` updated with `order: &O` param. Multi-order support upgraded `[~]`→`[x]`. |
 | 0.20.0 | 2026-07-27 | **ODE solver released.** §3 added ODE row (🟡). §4.2 SageMath ODE row upgraded 🔴→🟡. §5 #10 (ODE solver) marked 🟡 partially complete — 5 first-order (separable/linear/Bernoulli/exact/homogeneous) + 2 second-order (const-coeff/Cauchy-Euler) + power-series framework + `classify_ode()` classifier + `dsolve()` entry; Laplace transform, ODE systems, Python/C bindings deferred. Version bumped to 0.20.0. |
+| 0.20.1 | 2026-07-27 | **ODE solver backfill complete.** Integrating factors (μ(x)/μ(y)); variation of parameters (VOP, fixing silently-dropped Cauchy-Euler forcing); reduction of order; power-series coefficient recursion + Frobenius (real rational indicial roots); Laplace IVP (`dsolve_ivp`); 2×2 constant-coefficient systems (`dsolve_system`); Python/C bindings (`classify_ode`/`dsolve`/`dsolve_ivp`). Fixed `real_roots` isqrt/formula bugs, hardcoded `is_exact`, unnormalized Cauchy-Euler coefficients, integrator (ax+b)⁻¹ and fractional-power gaps, `substitute_solution` missing bare y(x), and series-coefficient `diff` pollution. Added the `collect_terms` like-term collector + `expand`. 31 substitution-verified correctness tests (3 known gaps ignored). ODE gap upgraded 🟡→🟢. Version bumped to 0.20.1. |

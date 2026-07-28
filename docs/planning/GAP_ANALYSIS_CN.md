@@ -100,7 +100,7 @@ ocas-domain +~1.1k）、数值积分/流式求值（ocas-eval，+~0.5k），以�
 | 多项式 GCD | GCD + 本原部分 + 扩展 GCD（0.12）+ 经 EEZ 的任意元数多元 GCD（0.16）+ GF(p^d) 上模数域 GCD（CRT + 有理重构，0.17）；大整数系数尚无模 GCD 快速路径 | 🟢 可用，无 HEVMGCD |
 | 线性求解 | 有理/整数线性方程组 + 二元丢番图（`ax+by=c`） | 🟡 可用，规模有限 |
 | JIT 求值 | Cranelift 后端；≥10x 加速目标达成（按路线图标准） | 🟢 完整 |
-| 常微分方程 | `ocas-calc::ode`：`dsolve()` 入口 + `classify_ode()` 分类引擎；一阶 5 种（可分离/线性/Bernoulli/恰当/齐次）；二阶 2 种（常系数/Cauchy-Euler）；幂级数框架；Laplace 变换/ODE 系统/Python 绑定推迟 | 🟡 核心完成，高级功能推迟 |
+| 常微分方程 | `ocas-calc::ode`：`dsolve()` 入口 + `classify_ode()` 分类引擎；一阶 5 种（可分离/线性/Bernoulli/恰当/齐次）+ 积分因子检测；二阶 2 种（常系数/Cauchy-Euler）+ VOP + 降阶法；幂级数系数递推 + Frobenius（实有理指标根）；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定 | 🟢 完整（0.20.1） |
 
 ---
 
@@ -142,7 +142,7 @@ SageMath 是"瑞士军刀"式科学计算环境，差距是**广度级**的。
 |---|---|---|
 | 代数几何 | 🟡 基础 Gröbner | ✅ Singular 集成 |
 | 数论 | 🟡 基础丢番图 | ✅ PARI/FLINT 全栈 |
-| 微分方程 | � 一阶 5 种 + 二阶 2 种 + 幂级数框架（0.20） | ✅ 完整 ODE/PDE 求解器 |
+| 微分方程 | 🟢 一阶/二阶/系统/级数/Laplace/绑定 完整（0.20.1） | ✅ 完整 ODE/PDE 求解器 |
 | 群论/表示论 | 🔴 无 | ✅ GAP 集成 |
 | 组合数学 | 🔴 无 | ✅ 完整 |
 | 绘图/可视化 | 🔴 无 | ✅ matplotlib 集成 |
@@ -193,7 +193,7 @@ B+ "Symbolica 差距清零"（0.15.2–0.18.0）已完成——详见 EVOLUTION_
 | 7a | ~~非常数首项系数强加 + 多元稀疏化~~（0.16.1/0.16.2 完成） | ✅ 已完成——模 p Hensel 强加 + 稀疏 Diophantine + Fp 路径域版 Wang 预处理 |
 | 8 | ~~代数数域因式分解~~（0.17 完成） | ✅ 已完成——Trager 算法（平移范数 + ℚ 分解 + GF(p^d) 模 GCD），一元路径；多元扩域留待后续 |
 | 9 | ~~数值积分 / 双数 / 张量基础 / fuel 资源控制~~（0.18 完成） | ✅ 已完成——Vegas + HyperDual + 指标收缩 + fuel；0.18.1 补齐 Python/C 绑定 |
-| 10 | ODE 求解器（阶段 B++ 0.20） | � 部分完成——一阶 5 种 + 二阶 2 种 + 幂级数框架；Laplace/系统/绑定推迟 |
+| 10 | ~~ODE 求解器~~（0.20.1 完成） | ✅ 已完成——一阶 5 种 + 积分因子；二阶 2 种 + VOP + 降阶法；级数递推 + Frobenius；Laplace IVP；2×2 系统；Python/C 绑定 |
 | 11 | 数论栈（阶段 B++ 0.21） | 🟢 SageMath/PARI 对齐；模 GCD + 整数分解 + 素性 + 离散对数 + CRT |
 | 12 | 张量完整规范化 + 专用模式变换器（阶段 B++ 0.22） | 🟡 Symbolica 最后阵地；需图同构引擎 |
 | 13 | 代数几何工具（阶段 B++ 0.23） | 🟢 SageMath/Singular 对齐；理想运算 + RUR + 准素分解 + Hilbert 级数 |
@@ -259,3 +259,4 @@ cyclic-6 量级 Gröbner 性能（F5 签名约简，0.19）、ODE 求解器
 | 0.19.0 | 2026-07-23 | **F5 Gröbner 基发布——cyclic-6 规模缺口闭合。** §3 Gröbner 行从 🟡 升级为 🟢（F5 签名约简）。§4.1 Gröbner 基竞品行从 🟡 升级为 🟢。§5 #6（Gröbner 大规模性能）标记 ✅ 完成——cyclic-6 ℤ₁₃ 3670 s → **2.63 s**（≈1400×），经 `f5_fp` ℤ_p 原生快速路径；cyclic-5 0.05 s；通用域 + ℤ_p 路径均验证。统一 `groebner_basis()` 分派（`Algorithm::{Auto,F4,F5,Buchberger}`）。多序（`WeightOrder`/`BlockOrder`）推迟到 0.19.1（trait 重构）。 |
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait 重构 + WeightOrder/BlockOrder 发布。** `Copy` + 静态分派 → `Clone + Default` + 方法分派（`&self`）；`PhantomData<O>` → `order: O` 字段；新增 `WeightOrder`（加权序）与 `BlockOrder`（分块序）+ `SubOrder` 枚举；11 处 `O::cmp` 调用点全部更新；`Signature::cmp_pot` 签名新增 `order: &O` 参数。多序支持标记从 `[~]` 升级为 `[x]`。 |
 | 0.20.0 | 2026-07-27 | **常微分方程求解器发布。** §3 新增 ODE 行（🟡）。§4.1 新增 ODE 竞品行（🟡）。§5 #10（ODE 求解器）标记 🟡 部分完成——一阶 5 种（可分离/线性/Bernoulli/恰当/齐次）+ 二阶 2 种（常系数/Cauchy-Euler）+ 幂级数框架 + ODE 分类引擎 `classify_ode()` + `dsolve()` 入口；Laplace 变换、ODE 系统、Python/C 绑定推迟。版本提升 0.20.0。 |
+| 0.20.1 | 2026-07-27 | **ODE 求解器全量收尾。** 积分因子检测（μ(x)/μ(y)）；常数变易法（VOP，修复 Cauchy-Euler forcing 静默丢弃）；降阶法；幂级数系数递推 + Frobenius（实有理指标根）；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定（`classify_ode`/`dsolve`/`dsolve_ivp`）。修复 real_roots isqrt/公式 bug、is_exact 硬编码、Cauchy-Euler 系数归一化、积分器 (ax+b)^-1 与分数次幂、substitute_solution 裸 y(x)、级数系数 diff 污染。新增同类项收集器 collect_terms + expand。31 项代入验证正确性测试（3 项已知限制 ignore）。ODE 缺口从 🟡 升级为 🟢。版本提升 0.20.1。 |

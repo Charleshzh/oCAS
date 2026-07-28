@@ -720,20 +720,21 @@ Lex/Grevlex/Grlex 序；`WeightOrder`/`BlockOrder` 消元序需要对
 | 条目 | 参考 | oCAS 落地 | 状态 |
 |---|---|---|---|
 | 一阶 ODE 分类引擎：可分离、线性（`y'+p(x)y=q(x)`）、Bernoulli、恰当（`∂M/∂y=∂N/∂x`）、齐次替换 | SymPy `dsolve` 分类器；Boyce & DiPrima 第 2 章 | `ocas-calc::ode::first_order` | [x] |
-| 非恰当一阶 ODE 的积分因子检测 | Boyce & DiPrima §2.6 | `first_order::integrating_factor` | [ ] |
-| 二阶线性 ODE：常系数（特征方程）、Cauchy-Euler、降阶法、常数变易法 | Boyce & DiPrima 第 3–4 章 | `ocas-calc::ode::second_order` | [x] 常系数 + Cauchy-Euler；降阶/VOP 推迟 |
-| 线性 ODE 系统：矩阵指数（经特征分解） | SageMath `desolve_system`；SymPy `dsolve(system=True)` | `ocas-calc::ode::systems` | [ ] 框架已建，实现推迟 |
-| 常点附近幂级数解；正则奇点附近 Frobenius 方法 | Boyce & DiPrima 第 5 章 | `ocas-calc::ode::series` | [~] 框架已建，系数递推待完善 |
-| 线性 IVP 的 Laplace 变换方法 | Boyce & DiPrima 第 6 章 | `ocas-calc::ode::laplace` | [ ] 推迟到后续版本 |
-| 待定系数法与零化子方法 | Boyce & DiPrima §3.5–3.6 | `second_order::undetermined` | [x] 常数/指数/线性 forcing |
-| Python/C 绑定：`dsolve(equation, func, hint=None)` + `classify_ode` | SymPy API 对齐 | `ocas-py::ode`, `ocas-c::ode` | [ ] 推迟到后续版本 |
+| 非恰当一阶 ODE 的积分因子检测 | Boyce & DiPrima §2.6 | `first_order::find_integrating_factor` | [x] 0.20.1（μ(x)/μ(y) 单变量型） |
+| 二阶线性 ODE：常系数（特征方程）、Cauchy-Euler、降阶法、常数变易法 | Boyce & DiPrima 第 3–4 章 | `ocas-calc::ode::second_order` | [x] 0.20.1（VOP + 降阶法补齐） |
+| 线性 ODE 系统：矩阵指数（经特征分解） | SageMath `desolve_system`；SymPy `dsolve(system=True)` | `ocas-calc::ode::systems` | [x] 0.20.1（2×2 闭式：互异实根/重根广义特征向量/共轭复根） |
+| 常点附近幂级数解；正则奇点附近 Frobenius 方法 | Boyce & DiPrima 第 5 章 | `ocas-calc::ode::series` | [x] 0.20.1（系数递推 + Frobenius 实有理指标根） |
+| 线性 IVP 的 Laplace 变换方法 | Boyce & DiPrima 第 6 章 | `ocas-calc::ode::laplace` | [x] 0.20.1（一阶/二阶常系数 IVP，`dsolve_ivp`） |
+| 待定系数法与零化子方法 | Boyce & DiPrima §3.5–3.6 | `second_order::undetermined` | [x] 0.20.1（任意次多项式/指数共振/三角 forcing） |
+| Python/C 绑定：`dsolve(equation, func, hint=None)` + `classify_ode` | SymPy API 对齐 | `ocas-py::ode`, `ocas-c::ode` | [x] 0.20.1（含 `dsolve_ivp`） |
 
 **验收**
 
-- [ ] 与 SymPy `dsolve` 交叉验证 ≥ 30 个规范 ODE（一阶可分离/线性/Bernoulli/
-  恰当/齐次，二阶常系数/Cauchy-Euler/常数变易）。
-- [ ] 初值问题返回显式解。
-- [~] 级数解与 Taylor 展开匹配 ≥ 5 项（框架已建，系数递推待完善）。
+- [x] 与 SymPy `dsolve` 交叉验证 ≥ 30 个规范 ODE（0.20.1：31 项正确性测试
+  通过代入验证，3 项已知限制标记 ignore：Bernoulli forcing 提取、齐次
+  启发式、积分器 tan/sec 表缺口）。
+- [x] 初值问题返回显式解（0.20.1：`dsolve_ivp` Laplace 方法）。
+- [x] 级数解与 Taylor 展开匹配 ≥ 5 项（0.20.1：系数递推 + Frobenius）。
 - [x] 无分类器匹配时返回 `ODE(equation, func)` 未求值形式。
 
 ### 0.21.0 — 数论与计算代数栈

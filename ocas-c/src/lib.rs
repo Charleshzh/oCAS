@@ -47,6 +47,7 @@ pub mod dual;
 pub mod error;
 pub mod expression;
 pub mod numeric;
+pub mod ode;
 pub mod polynomial;
 pub mod tensor;
 
@@ -79,6 +80,7 @@ pub use numeric::{
     OcasIntegrateResult, OcasVegas, OcasVegasOptions, ocas_integrate_1d, ocas_vegas_create,
     ocas_vegas_free, ocas_vegas_integrate, ocas_vegas_iterations, ocas_vegas_result,
 };
+pub use ode::{ocas_ode_classify, ocas_ode_dsolve, ocas_ode_dsolve_ivp};
 pub use polynomial::{
     OcasPolyFactor, OcasPolyFactorArray, OcasPolyFp, OcasPolyZ, ocas_poly_factor_array_free,
     ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor,

@@ -381,6 +381,14 @@ impl<'a> AtomArena<'a> {
     pub fn pow(&self, base: Atom<'a>, exp: Atom<'a>) -> Atom<'a> {
         self.intern(AtomNode::Pow(base, exp))
     }
+
+    /// Allocate a slice of atoms in the arena.
+    ///
+    /// Used for returning multiple results that share the arena lifetime,
+    /// such as the component solutions of an ODE system.
+    pub fn slice(&self, atoms: &[Atom<'a>]) -> &'a [Atom<'a>] {
+        self.arena.allocate_slice(atoms)
+    }
 }
 
 impl std::fmt::Display for Atom<'_> {

@@ -247,19 +247,88 @@ fn integrate_power<'a>(
             let denom = ctx.num(n + 1);
             return ctx.mul(&[ctx.pow(base, new_exp), ctx.pow(denom, ctx.num(-1))]);
         }
+        // Fractional exponents p/q: ∫ x^(p/q) dx = x^(p/q+1) / (p/q + 1).
+        if let Some((p, q)) = fraction_exponent(exp) {
+            if p != -q {
+                // new exponent = (p+q)/q; coefficient = q/(p+q)
+                let new_exp = ctx.mul(&[ctx.num(p + q), ctx.pow(ctx.num(q), ctx.num(-1))]);
+                let denom = ctx.mul(&[ctx.num(p + q), ctx.pow(ctx.num(q), ctx.num(-1))]);
+                return ctx.mul(&[ctx.pow(base, new_exp), ctx.pow(denom, ctx.num(-1))]);
+            }
+        }
     }
 
     // Detect linear substitution: (a*x + b)^n where n is constant integer.
     if let AtomNode::Num(n) = exp.node()
         && let Some((a, _b)) = linear_form(ctx, base, var)
     {
+        if *n == -1 {
+            // ∫ (a*x + b)^(-1) dx = log(a*x + b) / a
+            return ctx.mul(&[ctx.fun("log", &[base]), ctx.pow(a, ctx.num(-1))]);
+        }
         // ∫ (a*x + b)^n dx = (a*x + b)^(n+1) / (a * (n+1))
         let new_exp = ctx.num(n + 1);
         let denom = ctx.mul(&[a, ctx.num(n + 1)]);
         return ctx.mul(&[ctx.pow(base, new_exp), ctx.pow(denom, ctx.num(-1))]);
     }
 
+    // Fractional exponent on a linear form: (a*x + b)^(p/q).
+    if let Some((p, q)) = fraction_exponent(exp)
+        && p != -q
+        && let Some((a, _b)) = linear_form(ctx, base, var)
+    {
+        // ∫ (a*x+b)^(p/q) dx = (a*x+b)^((p+q)/q) * q / (a*(p+q))
+        let new_exp = ctx.mul(&[ctx.num(p + q), ctx.pow(ctx.num(q), ctx.num(-1))]);
+        let coeff_num = ctx.num(q);
+        let coeff_den = ctx.mul(&[a, ctx.num(p + q)]);
+        return ctx.mul(&[
+            ctx.pow(base, new_exp),
+            coeff_num,
+            ctx.pow(coeff_den, ctx.num(-1)),
+        ]);
+    }
+
     fallback(ctx, ctx.pow(base, exp), var)
+}
+
+/// Parse an exponent atom as a fraction p/q (small integers).
+///
+/// Accepts `p * q^-1`, `p * (q^-1)` with integer p, q (q > 0), as produced by
+/// rational arithmetic in the ODE solvers.
+fn fraction_exponent<'a>(exp: Atom<'a>) -> Option<(i64, i64)> {
+    if let AtomNode::Mul(args) = exp.node() {
+        let mut num: Option<i64> = None;
+        let mut den: Option<i64> = None;
+        for a in args.iter() {
+            match a.node() {
+                AtomNode::Num(n) => {
+                    if num.is_some() {
+                        return None;
+                    }
+                    num = Some(*n);
+                }
+                AtomNode::Pow(b, e) => {
+                    if let (AtomNode::Num(bb), AtomNode::Num(ee)) = (b.node(), e.node())
+                        && *ee == -1
+                    {
+                        if den.is_some() {
+                            return None;
+                        }
+                        den = Some(*bb);
+                    } else {
+                        return None;
+                    }
+                }
+                _ => return None,
+            }
+        }
+        if let (Some(p), Some(q)) = (num, den)
+            && q > 0
+        {
+            return Some((p, q));
+        }
+    }
+    None
 }
 
 /// If `expr` is of the form `a*x + b` (with `a` and `b` constant w.r.t. `var`),

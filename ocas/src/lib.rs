@@ -58,7 +58,9 @@ pub mod prelude {
         symmetrise_sign,
     };
     pub use ocas_atom::{Atom, AtomArena, AtomNode, Symbol, normalize};
-    pub use ocas_calc::ode::{ODE, ODESolution, ODEType, classify_ode, dsolve};
+    pub use ocas_calc::ode::{
+        ODE, ODESolution, ODEType, classify_ode, dsolve, dsolve_ivp, dsolve_system,
+    };
     pub use ocas_calc::solve::{
         self, DiophantineSolution, SolveError, solve_diophantine, solve_linear_integer,
         solve_linear_rational, solve_polynomial_system,

@@ -227,6 +227,7 @@ mod integral_risch;
 mod linear_solve;
 mod matrix;
 mod normalize;
+mod ode;
 mod parse;
 mod partial_fraction;
 mod poly_arithmetic;

@@ -73,6 +73,11 @@ unsafe fn extend_str_lifetime(s: &str) -> &'static str {
     unsafe { std::mem::transmute::<&str, &'static str>(s) }
 }
 
+/// `pub(crate)` wrapper for sibling modules (ode bindings).
+pub(crate) unsafe fn extend_str_lifetime_pub(s: &str) -> &'static str {
+    unsafe { extend_str_lifetime(s) }
+}
+
 /// Leak a fresh arena and a fresh `AtomArena<'static>` borrowing it. Returns
 /// raw pointers suitable for storage in [`ExprBox`].
 fn leak_arena_and_ctx() -> (*mut Arena, *mut AtomArena<'static>) {
@@ -263,6 +268,22 @@ fn cstr_to_str<'a>(s: *const c_char, what: &str) -> Option<&'a str> {
             None
         }
     }
+}
+
+/// `pub(crate)` wrapper for sibling modules (ode bindings).
+pub(crate) fn cstr_to_str_pub<'a>(s: *const c_char, what: &str) -> Option<&'a str> {
+    cstr_to_str(s, what)
+}
+
+/// Run `f` with a fresh arena + AtomArena (crate-internal helper for
+/// modules that need a standalone context, e.g. ODE solvers). The arena
+/// pair is freed after `f` returns, so `R` must not borrow from the arena.
+pub(crate) fn expr_ctx_atom<R>(f: impl FnOnce(&'static AtomArena<'static>) -> R) -> R {
+    let (arena_ptr, ctx_ptr) = leak_arena_and_ctx();
+    let ctx = unsafe { static_ctx(ctx_ptr) };
+    let result = f(ctx);
+    unsafe { free_leaked(arena_ptr, ctx_ptr) };
+    result
 }
 
 /// Unwrap an [`OcasExpr`] pointer, setting a null error if needed.

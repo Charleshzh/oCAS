@@ -14,14 +14,14 @@ use ocas_c::{
     ocas_dual_variable, ocas_error_clear, ocas_error_last_message, ocas_expr_clone, ocas_expr_diff,
     ocas_expr_free, ocas_expr_integrate, ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify,
     ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string, ocas_hyperdual_free,
-    ocas_integrate_1d, ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create,
-    ocas_poly_fp_degree, ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string,
-    ocas_poly_z_clone, ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor,
-    ocas_poly_z_free, ocas_poly_z_to_string, ocas_string_free, ocas_tensor_contract,
-    ocas_tensor_contraction_free, ocas_tensor_create, ocas_tensor_free, ocas_tensor_name,
-    ocas_tensor_rank, ocas_tensor_symmetrise_sign, ocas_tensor_symmetry, ocas_tensor_to_string,
-    ocas_vegas_create, ocas_vegas_free, ocas_vegas_integrate, ocas_vegas_iterations,
-    ocas_vegas_result, ocas_version,
+    ocas_integrate_1d, ocas_ode_classify, ocas_ode_dsolve, ocas_ode_dsolve_ivp,
+    ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree,
+    ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone,
+    ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free,
+    ocas_poly_z_to_string, ocas_string_free, ocas_tensor_contract, ocas_tensor_contraction_free,
+    ocas_tensor_create, ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank,
+    ocas_tensor_symmetrise_sign, ocas_tensor_symmetry, ocas_tensor_to_string, ocas_vegas_create,
+    ocas_vegas_free, ocas_vegas_integrate, ocas_vegas_iterations, ocas_vegas_result, ocas_version,
 };
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -1032,4 +1032,98 @@ fn dual_shape_mismatch_arithmetic_returns_error() {
 fn dual_free_on_null_is_safe() {
     ocas_hyperdual_free(ptr::null_mut());
     ocas_dual_shape_free(ptr::null_mut());
+}
+
+// ------------------------------------------------------------------
+//  ODE C API tests
+// ------------------------------------------------------------------
+
+fn c_ode_result(ptr: *mut std::ffi::c_char) -> String {
+    assert!(!ptr.is_null());
+    // SAFETY: `ptr` is a valid null-terminated C string returned by the
+    // ODE C API; freed via ocas_string_free after reading.
+    let s = unsafe { CStr::from_ptr(ptr) }.to_str().unwrap().to_string();
+    unsafe { ocas_string_free(ptr) };
+    s
+}
+
+#[test]
+fn ode_classify_first_order_linear() {
+    let eq = CString::new("Derivative(y(x), x) - y(x)").unwrap();
+    let func = CString::new("y").unwrap();
+    let var = CString::new("x").unwrap();
+    let mut err = 0;
+    let ptr = unsafe { ocas_ode_classify(eq.as_ptr(), func.as_ptr(), var.as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    let s = c_ode_result(ptr);
+    assert!(
+        s.contains("LinearFirst"),
+        "classify should list LinearFirst: {s}"
+    );
+}
+
+#[test]
+fn ode_dsolve_first_order() {
+    let eq = CString::new("Derivative(y(x), x) - y(x)").unwrap();
+    let func = CString::new("y").unwrap();
+    let var = CString::new("x").unwrap();
+    let mut err = 0;
+    let ptr = unsafe {
+        ocas_ode_dsolve(
+            eq.as_ptr(),
+            func.as_ptr(),
+            var.as_ptr(),
+            ptr::null(),
+            &mut err,
+        )
+    };
+    assert_eq!(err, OCAS_OK);
+    let s = c_ode_result(ptr);
+    assert!(s.contains("exp"), "dsolve should return exp solution: {s}");
+}
+
+#[test]
+fn ode_dsolve_ivp_first_order() {
+    let eq = CString::new("Derivative(y(x), x) - y(x)").unwrap();
+    let func = CString::new("y").unwrap();
+    let var = CString::new("x").unwrap();
+    let y0 = CString::new("2").unwrap();
+    let mut err = 0;
+    let ptr = unsafe {
+        ocas_ode_dsolve_ivp(
+            eq.as_ptr(),
+            func.as_ptr(),
+            var.as_ptr(),
+            y0.as_ptr(),
+            ptr::null(),
+            &mut err,
+        )
+    };
+    assert_eq!(err, OCAS_OK);
+    let s = c_ode_result(ptr);
+    assert!(s.contains("exp"), "IVP should return exp solution: {s}");
+    assert!(!s.contains("C1"), "IVP solution must not contain C1: {s}");
+}
+
+#[test]
+fn ode_dsolve_ivp_second_order() {
+    let eq = CString::new("Derivative(y(x), x, x) + y(x)").unwrap();
+    let func = CString::new("y").unwrap();
+    let var = CString::new("x").unwrap();
+    let y0 = CString::new("0").unwrap();
+    let y1 = CString::new("1").unwrap();
+    let mut err = 0;
+    let ptr = unsafe {
+        ocas_ode_dsolve_ivp(
+            eq.as_ptr(),
+            func.as_ptr(),
+            var.as_ptr(),
+            y0.as_ptr(),
+            y1.as_ptr(),
+            &mut err,
+        )
+    };
+    assert_eq!(err, OCAS_OK);
+    let s = c_ode_result(ptr);
+    assert!(s.contains("sin"), "IVP y''+y=0 y(0)=0 y'(0)=1 => sin: {s}");
 }

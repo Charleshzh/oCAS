@@ -560,6 +560,50 @@ struct ocas_OcasIntegrateResult ocas_integrate_1d(ocas_integrand_t f,
                                                   int *err);
 
 /**
+ * Classify an ODE and return the applicable method names as a
+ * comma-separated string (e.g. `"LinearFirst,Separable,PowerSeries"`).
+ *
+ * `equation` is the ODE written as an expression equal to zero (e.g.
+ * `"Derivative(y(x), x) - y(x)"`), `func` the unknown function name
+ * (e.g. `"y"`), and `var` the independent variable (e.g. `"x"`).
+ *
+ * Returns a heap-allocated string which the caller must release with
+ * [`ocas_string_free`], or `NULL` on failure.
+ */
+char *ocas_ode_classify(const char *equation,
+                        const char *func,
+                        const char *var,
+                        int *err);
+
+/**
+ * Solve an ODE symbolically. `hint` may be `NULL` (auto classification) or
+ * one of the method names returned by [`ocas_ode_classify`].
+ *
+ * Returns a heap-allocated solution string such as `"y = C1*exp(x)"`,
+ * or `"unsolved"`. The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_ode_dsolve(const char *equation,
+                      const char *func,
+                      const char *var,
+                      const char *hint,
+                      int *err);
+
+/**
+ * Solve a first- or second-order linear constant-coefficient IVP via the
+ * Laplace transform. `y0` is `y(0)` as an expression string (e.g. `"1"`);
+ * `y1` is `y'(0)` (may be `NULL` for first-order problems).
+ *
+ * Returns a heap-allocated explicit solution string with no free
+ * constants. The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_ode_dsolve_ivp(const char *equation,
+                          const char *func,
+                          const char *var,
+                          const char *y0,
+                          const char *y1,
+                          int *err);
+
+/**
  * Opaque handle for a tensor (named object with index slots).
  */
 struct ocas_OcasTensor {

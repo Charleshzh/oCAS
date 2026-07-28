@@ -15,6 +15,116 @@ _No changes yet._
 
 ---
 
+## [0.20.1] - 2026-07-27
+
+### Added / 新增
+
+- **积分因子检测**：一阶非恰当 ODE 现在尝试 $\mu(x)$ 与 $\mu(y)$ 型
+  积分因子，将 $(M_y-N_x)/N$ 或 $(N_x-M_y)/M$ 仅含单变量的方程转化为
+  恰当方程求解 / **Integrating factor detection**: first-order non-exact
+  ODEs now try $\mu(x)$ and $\mu(y)$ integrating factors, converting to
+  exact form when $(M_y-N_x)/N$ or $(N_x-M_y)/M$ is single-variable.
+- **常数变易法（VOP）**：二阶线性 ODE 的通解现在通过
+  $y_p = -y_1\int\frac{y_2 g}{W} + y_2\int\frac{y_1 g}{W}$ 求得，
+  覆盖常系数与 Cauchy-Euler forcing（此前被静默丢弃）/
+  **Variation of parameters (VOP)**: particular solutions for second-order
+  linear ODEs are now computed via the Wronskian formula, covering both
+  constant-coefficient and Cauchy-Euler forcing (previously silently dropped).
+- **待定系数法扩展**：多项式 forcing 支持任意次数（三角回代解系数
+  方程组）、指数 forcing 支持共振情形（$k$ 为单/双重特征根时
+  自动乘 $x$/$x^2$）、新增三角 forcing（$\cos/\sin(wx)$，2×2 Cramer
+  与共振公式）、叠加原理（forcing 为和式时逐项求解）/
+  **Undetermined coefficients extension**: polynomial forcing of any
+  degree (triangular back-substitution), exponential forcing with resonance
+  handling (automatic $x$/$x^2$ multiplication for single/double roots),
+  trigonometric forcing ($\cos/\sin(wx)$, 2×2 Cramer + resonance formula),
+  and superposition for sum forcings.
+- **降阶法**：二阶线性 ODE 在找到候选解 $y_1$ 时，通过
+  $y_2 = y_1\int e^{-\int p}/y_1^2$ 构造第二解，非齐次情形自动接 VOP；
+  新增 `ODEType::ReductionOfOrder` / **Reduction of order**: when a
+  candidate solution $y_1$ is found, the second solution is built via
+  the standard integral formula; non-homogeneous equations fall through
+  to VOP. New `ODEType::ReductionOfOrder`.
+- **幂级数系数递推**：常点幂级数解现在真正求解系数递推
+  （残差逐阶求导在展开点取值），不再是占位实现 /
+  **Power series coefficient recursion**: series solutions around ordinary
+  points now actually solve the coefficient recurrence (successive residual
+  derivatives evaluated at the expansion point), replacing the placeholder.
+- **Frobenius 方法**：正则奇点（$x_0=0$，多项式系数，实有理指标根）
+  的级数解，含指标方程求解与按 $x$ 幂分组的递推 /
+  **Frobenius method**: series solutions at regular singular points
+  ($x_0=0$, polynomial coefficients, real rational indicial roots) with
+  indicial equation solving and $x$-power-grouped recurrences.
+- **Laplace 变换 IVP 求解器**：`dsolve_ivp` 支持一阶/二阶线性常系数
+  初值问题，正变换查表 + 逆变换（移位指数、一阶/二阶分母模式、
+  部分分式）/ **Laplace transform IVP solver**: `dsolve_ivp` handles
+  first/second-order linear constant-coefficient initial value problems
+  with table forward transform and inverse via shifted exponentials,
+  first/second-order denominator patterns, and partial fractions.
+- **2×2 常系数 ODE 系统**：`dsolve_system` 求解
+  $\mathbf{Y}' = A\mathbf{Y}$（特征值闭式：互异实根、重根含广义
+  特征向量、共轭复根）/ **2×2 constant-coefficient ODE systems**:
+  `dsolve_system` solves $\mathbf{Y}' = A\mathbf{Y}$ with closed-form
+  eigenvalues (distinct real, repeated with generalized eigenvectors,
+  complex conjugate pairs).
+- **`ODESolution::System` 变体** 与 `AtomArena::slice` / **`ODESolution::System`
+  variant** and `AtomArena::slice` for returning multi-component solutions.
+- **Python 绑定**：`ocas.classify_ode`、`ocas.dsolve`（含 `hint` 参数）、
+  `ocas.dsolve_ivp` / **Python bindings**: `ocas.classify_ode`,
+  `ocas.dsolve` (with `hint`), `ocas.dsolve_ivp`.
+- **C 绑定**：`ocas_ode_classify`、`ocas_ode_dsolve`、
+  `ocas_ode_dsolve_ivp`（字符串进出，含 `include/ocas.h` 同步）/
+  **C bindings**: `ocas_ode_classify`, `ocas_ode_dsolve`,
+  `ocas_ode_dsolve_ivp` (string in/out, `include/ocas.h` synced).
+
+### Fixed / 修复
+
+- **`real_roots` 判别式取整 bug**：判别式非完全平方时（如 $d=2$）
+  整数 `isqrt` 取整出错根，现保留 $\sqrt{d}$ 符号形式 /
+  **`real_roots` discriminant truncation bug**: non-perfect-square
+  discriminants (e.g. $d=2$) were truncated by integer `isqrt` to wrong
+  roots; now kept as symbolic $\sqrt{d}$.
+- **`is_exact` 分类器硬编码 `false`**：恰当方程自动分类不可达；
+  现在通过符号偏导 $\partial M/\partial y = \partial N/\partial x$
+  真正判定 / **`is_exact` classifier hardcoded `false`**: exact equations
+  were unreachable via auto-classification; now genuinely detected via
+  symbolic partial derivatives.
+- **`real_roots` 求根公式错误**：$(-1 + b \pm \sqrt{d})/(2a)$
+  修正为 $(-b \pm \sqrt{d})/(2a)$（旧测试只断言 C1 存在未暴露）/
+  **`real_roots` formula error**: $(-1 + b \pm \sqrt{d})/(2a)$ corrected
+  to $(-b \pm \sqrt{d})/(2a)$ (old tests only asserted C1 presence).
+- **Cauchy-Euler 系数未归一化**：提取的 $a$ 含 $x^2$ 因子，
+  现先除以 $x^2$ 得到常数 $a,b,c$ / **Cauchy-Euler coefficients not
+  normalized**: extracted $a$ carried the $x^2$ factor; now divided out
+  to obtain constant $a,b,c$.
+- **积分器 $(ax+b)^{-1}$ 幂法则 bug**：线性替换分支在 $n=-1$ 时
+  返回 `0^-1` 而非 $\log(ax+b)/a$ / **Integrator $(ax+b)^{-1}$ power
+  rule bug**: the linear-substitution branch returned `0^-1` instead of
+  $\log(ax+b)/a$ at $n=-1$.
+- **积分器不支持分数次幂**：新增 $x^{p/q}$ 与 $(ax+b)^{p/q}$ 的
+  幂法则积分 / **Integrator missing fractional powers**: added power-rule
+  integration for $x^{p/q}$ and $(ax+b)^{p/q}$.
+- **`substitute_solution` 漏掉裸 `y(x)`**：未知函数本身在代入时
+  未被替换 / **`substitute_solution` missed bare `y(x)`**: the unknown
+  function itself was not replaced during substitution.
+- **级数系数符号被 `diff` 求导污染**：`a(n)` 被当作未知函数产生
+  `Derivative(a(n), x)` 垃圾项，现手工构建 $S, S', S''$ /
+  **Series coefficient symbols polluted by `diff`**: `a(n)` was treated as
+  an unknown function producing junk `Derivative(a(n), x)` terms; series
+  derivatives are now built manually.
+
+### Changed / 变更
+
+- **同类项收集器**：`ocas-calc::ode::util::collect_terms` 新增带
+  理性系数的同类项合并（$x^2 - 2\cdot 2^{-1}x^2 \to 0$、
+  $x\cdot x^{-1/2} \to x^{1/2}$、嵌套数值幂折叠），以及乘法分配
+  `expand` 与 $\exp(k\log u) \to u^k$ 化简 /
+  **Like-term collector**: new `collect_terms` with rational-coefficient
+  like-term merging, distribution `expand`, and $\exp(k\log u) \to u^k$
+  simplification in `ocas-calc::ode::util`.
+
+---
+
 ## [0.20.0] - 2026-07-27
 
 ### Added / 新增

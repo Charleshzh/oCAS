@@ -25,6 +25,9 @@ pub enum ODEType {
     LinearConstantCoeff,
     /// Cauchy-Euler: $a\,x^2\,y'' + b\,x\,y' + c\,y = f(x)$.
     CauchyEuler,
+    /// Reduction of order for second-order linear ODEs (tries simple
+    /// candidate solutions, then builds the second solution).
+    ReductionOfOrder,
     /// Power series solution around an ordinary point.
     PowerSeries,
 }
@@ -98,6 +101,11 @@ pub fn classify_ode<'a>(ctx: &'a AtomArena<'a>, ode: ODE<'a>) -> Vec<ODEType> {
             // we can still try constant_coeff as a fallback (it will fail gracefully).
             if types.is_empty() {
                 types.push(ODEType::LinearConstantCoeff);
+            }
+            // Reduction of order works for any second-order linear ODE
+            // when a simple candidate solution can be found.
+            if ode_order(equation, func, var) == 2 {
+                types.push(ODEType::ReductionOfOrder);
             }
         }
     }
@@ -211,34 +219,195 @@ fn is_separable<'a>(
 }
 
 /// Check if the ODE is exact: M(x,y) + N(x,y)*y' = 0 with dM/dy = dN/dx.
-fn is_exact<'a>(_ctx: &'a AtomArena<'a>, equation: Atom<'a>, func: Atom<'a>, var: Symbol) -> bool {
+fn is_exact<'a>(ctx: &'a AtomArena<'a>, equation: Atom<'a>, func: Atom<'a>, var: Symbol) -> bool {
+    use ocas_rewrite::rules::default_rules;
+    use ocas_rewrite::simplify::simplify;
+
     if ode_order(equation, func, var) != 1 {
         return false;
     }
 
-    // For an exact ODE, we need to identify M and N from the equation
-    // written as M + N*y' = 0. Then check dM/dy = dN/dx.
-    // This is a deeper check that requires coefficient extraction.
-    // We do a simplified version here.
-
-    // For now, any first-order linear ODE is also exact if the
-    // integrating factor condition holds, but we use a simpler heuristic:
-    // Check if the equation has the structure where M and N can be identified.
-    let y_sym = func_symbol(func);
-    if y_sym.is_none() {
+    let Some(y_sym) = func_symbol(func) else {
         return false;
+    };
+
+    // Split equation into M (terms without y') and N (coefficient of y').
+    // y' must appear linearly; terms containing y' inside powers or
+    // nonlinear functions disqualify the exact form.
+    let Some((m, n)) = split_mn(ctx, equation, func, var) else {
+        return false;
+    };
+
+    // Replace y(x) with a plain symbol y so that M and N are bivariate
+    // expressions in x and y; then compare partial derivatives.
+    let y_var = ctx.var(y_sym.as_str());
+    let m_sub = replace_atom(ctx, m, func, y_var);
+    let n_sub = replace_atom(ctx, n, func, y_var);
+
+    let dm_dy = crate::derivative::diff(ctx, m_sub, y_sym);
+    let dn_dx = crate::derivative::diff(ctx, n_sub, var);
+
+    // Exactness: dM/dy == dN/dx. Compare normalized forms structurally
+    // (the simplifier does not combine like terms such as 2x - 2x, so a
+    // difference-is-zero check alone is too weak).
+    let dm_norm = ocas_atom::normalize::normalize(ctx, dm_dy);
+    let dn_norm = ocas_atom::normalize::normalize(ctx, dn_dx);
+    if dm_norm.to_string() == dn_norm.to_string() {
+        return true;
     }
 
-    // Simplified check: if the equation is linear, it's already covered by
-    // LinearFirst. Exact is mainly for nonlinear first-order equations.
-    if is_linear_in(equation, func, var) {
-        return false;
+    // Fallback: try the difference after rule-based simplification.
+    let rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    let difference = simplify(
+        ctx,
+        ctx.add(&[dm_dy, ctx.mul(&[ctx.num(-1), dn_dx])]),
+        &rules,
+        20,
+    );
+    let difference = ocas_atom::normalize::normalize(ctx, difference);
+    matches!(difference.node(), AtomNode::Num(0))
+}
+
+/// Split a first-order equation `M + N*y' = 0` into (M, N).
+///
+/// Returns `None` when y' does not appear linearly (e.g. inside a power or
+/// another function), or when either side is empty.
+pub(crate) fn split_mn<'a>(
+    ctx: &'a AtomArena<'a>,
+    equation: Atom<'a>,
+    func: Atom<'a>,
+    var: Symbol,
+) -> Option<(Atom<'a>, Atom<'a>)> {
+    let dy_str = derivative_atom(func, var);
+
+    let mut m_terms = Vec::new();
+    let mut n_terms = Vec::new();
+
+    let terms: Vec<Atom<'a>> = match equation.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![equation],
+    };
+
+    for term in terms {
+        let s = term.to_string();
+        if s == dy_str {
+            // Bare y' with coefficient 1.
+            n_terms.push(ctx.num(1));
+            continue;
+        }
+        match term.node() {
+            AtomNode::Mul(args) => {
+                let dy_count = args.iter().filter(|a| a.to_string() == dy_str).count();
+                if dy_count == 1 {
+                    // Coefficient of y' is the product of the other factors.
+                    let rest: Vec<_> = args
+                        .iter()
+                        .filter(|a| a.to_string() != dy_str)
+                        .copied()
+                        .collect();
+                    // The remaining factors must not contain y' nonlinearly.
+                    if rest.iter().any(|a| contains_derivative_str(*a, &dy_str)) {
+                        return None;
+                    }
+                    n_terms.push(if rest.is_empty() {
+                        ctx.num(1)
+                    } else {
+                        ctx.mul(&rest)
+                    });
+                } else if dy_count == 0 {
+                    if contains_derivative_str(term, &dy_str) {
+                        // y' inside a power or function — nonlinear.
+                        return None;
+                    }
+                    m_terms.push(term);
+                } else {
+                    // (y')^2 or higher — nonlinear.
+                    return None;
+                }
+            }
+            _ => {
+                if contains_derivative_str(term, &dy_str) {
+                    // y' inside Pow/Fun — nonlinear.
+                    return None;
+                }
+                m_terms.push(term);
+            }
+        }
     }
 
-    // For nonlinear first-order, we attempt to identify M and N.
-    // This is a placeholder: full exactness checking requires symbolic
-    // partial differentiation with respect to the dependent variable.
-    false
+    if m_terms.is_empty() || n_terms.is_empty() {
+        return None;
+    }
+
+    let m = if m_terms.len() == 1 {
+        m_terms[0]
+    } else {
+        ctx.add(&m_terms)
+    };
+    let n = if n_terms.len() == 1 {
+        n_terms[0]
+    } else {
+        ctx.add(&n_terms)
+    };
+    Some((m, n))
+}
+
+/// Check whether `expr` contains the derivative string anywhere.
+pub(crate) fn contains_derivative_str<'a>(expr: Atom<'a>, dy_str: &str) -> bool {
+    if expr.to_string() == dy_str {
+        return true;
+    }
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+        AtomNode::Add(args) | AtomNode::Mul(args) => {
+            args.iter().any(|a| contains_derivative_str(*a, dy_str))
+        }
+        AtomNode::Pow(base, exp) => {
+            contains_derivative_str(*base, dy_str) || contains_derivative_str(*exp, dy_str)
+        }
+        AtomNode::Fun(_, args) => args.iter().any(|a| contains_derivative_str(*a, dy_str)),
+    }
+}
+
+/// Replace every occurrence of `target` inside `expr` with `replacement`.
+pub(crate) fn replace_atom<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    target: Atom<'a>,
+    replacement: Atom<'a>,
+) -> Atom<'a> {
+    if expr.to_string() == target.to_string() {
+        return replacement;
+    }
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
+        AtomNode::Add(args) => {
+            let mapped: Vec<_> = args
+                .iter()
+                .map(|a| replace_atom(ctx, *a, target, replacement))
+                .collect();
+            ctx.add(&mapped)
+        }
+        AtomNode::Mul(args) => {
+            let mapped: Vec<_> = args
+                .iter()
+                .map(|a| replace_atom(ctx, *a, target, replacement))
+                .collect();
+            ctx.mul(&mapped)
+        }
+        AtomNode::Pow(base, exp) => {
+            let b = replace_atom(ctx, *base, target, replacement);
+            let e = replace_atom(ctx, *exp, target, replacement);
+            ctx.pow(b, e)
+        }
+        AtomNode::Fun(name, args) => {
+            let mapped: Vec<_> = args
+                .iter()
+                .map(|a| replace_atom(ctx, *a, target, replacement))
+                .collect();
+            ctx.fun(name.as_str(), &mapped)
+        }
+    }
 }
 
 /// Check if the ODE is homogeneous: y' = F(y/x).

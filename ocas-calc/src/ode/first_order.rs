@@ -189,6 +189,12 @@ pub(crate) fn solve_bernoulli<'a>(
 /// where dM/dy = dN/dx.
 ///
 /// The solution is F(x,y) = C where dF/dx = M and dF/dy = N.
+///
+/// When the equation is not exact as given, an integrating factor is
+/// attempted: if $(M_y - N_x)/N$ depends only on $x$, then
+/// $\mu(x) = \exp(\int (M_y - N_x)/N\,dx)$ makes the equation exact;
+/// symmetrically, if $(N_x - M_y)/M$ depends only on $y$, then
+/// $\mu(y) = \exp(\int (N_x - M_y)/M\,dy)$ works.
 pub(crate) fn solve_exact<'a>(
     ctx: &'a AtomArena<'a>,
     ode: super::ODE<'a>,
@@ -199,42 +205,154 @@ pub(crate) fn solve_exact<'a>(
         var,
     } = ode;
 
-    // For exact equations, we need to identify M and N.
-    // The equation is M + N*y' = 0.
-    // We integrate M with respect to x to get F(x,y),
-    // then check dF/dy = N and add correction terms.
-    //
-    // This is a complex operation. For now, we attempt a simplified version.
-    let (m, n) = extract_exact_coeffs(ctx, equation, func, var)?;
+    // Split into M + N*y' = 0 (y' must appear linearly).
+    let (m, n) = super::classify::split_mn(ctx, equation, func, var)?;
 
-    // Integrate M with respect to x (treating y as constant).
-    let f_partial = integrate(ctx, m, var);
-
-    // Compute dF/dy of the partial integral.
-    let y_sym = match func.node() {
-        AtomNode::Fun(name, _) => Symbol::new(name.as_str()),
+    let y_name = match func.node() {
+        AtomNode::Fun(name, _) => *name,
         _ => return None,
     };
-    let df_dy = diff(ctx, f_partial, y_sym);
+    let y_var = ctx.var(y_name.as_str());
 
-    // The correction: g(y) = N - dF/dy
-    let rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
-    let correction = simplify(
-        ctx,
-        ctx.add(&[n, ctx.mul(&[ctx.num(-1), df_dy])]),
-        &rules,
-        20,
-    );
+    // Work with bivariate expressions: replace y(x) by a plain symbol y.
+    let m_sub = super::classify::replace_atom(ctx, m, func, y_var);
+    let n_sub = super::classify::replace_atom(ctx, n, func, y_var);
+
+    // Exactness check: dM/dy == dN/dx.
+    let (m_eff, n_eff) = if partials_equal(ctx, m_sub, n_sub, y_name, var) {
+        (m_sub, n_sub)
+    } else {
+        // Try integrating factors.
+        find_integrating_factor(ctx, m_sub, n_sub, y_name, var)?
+    };
+
+    // Integrate M with respect to x (treating y as constant).
+    let f_partial = integrate(ctx, m_eff, var);
+
+    // Compute dF/dy of the partial integral.
+    let df_dy = diff(ctx, f_partial, y_name);
+
+    // The correction: g(y) = N - dF/dy. Use like-term collection so that
+    // equivalent terms with different coefficient representations cancel.
+    let correction =
+        super::util::collect_terms(ctx, ctx.add(&[n_eff, ctx.mul(&[ctx.num(-1), df_dy])]));
 
     // If correction depends only on y, integrate it.
-    if !contains_func(correction, func, var) && !contains_x(correction, var) {
+    if !contains_x(correction, var) {
         // Correction is a function of y only (or constant).
-        let g_y = integrate(ctx, correction, y_sym);
+        let g_y = integrate(ctx, correction, y_name);
         let solution = ctx.add(&[f_partial, g_y]);
+        // Substitute the plain symbol y back to y(x) for presentation.
+        let solution = super::classify::replace_atom(ctx, solution, y_var, func);
         return Some(ODESolution::Implicit(solution));
     }
 
     None
+}
+
+/// Check whether dM/dy == dN/dx (after normalization).
+fn partials_equal<'a>(
+    ctx: &'a AtomArena<'a>,
+    m: Atom<'a>,
+    n: Atom<'a>,
+    y_sym: Symbol,
+    var: Symbol,
+) -> bool {
+    let dm_dy = diff(ctx, m, y_sym);
+    let dn_dx = diff(ctx, n, var);
+    let dm_norm = ocas_atom::normalize::normalize(ctx, dm_dy);
+    let dn_norm = ocas_atom::normalize::normalize(ctx, dn_dx);
+    if dm_norm.to_string() == dn_norm.to_string() {
+        return true;
+    }
+    let difference =
+        super::util::collect_terms(ctx, ctx.add(&[dm_dy, ctx.mul(&[ctx.num(-1), dn_dx])]));
+    matches!(difference.node(), AtomNode::Num(0))
+}
+
+/// Attempt to find an integrating factor mu(x) or mu(y) that makes
+/// M + N*y' = 0 exact. Returns the multiplied (mu*M, mu*N) on success.
+fn find_integrating_factor<'a>(
+    ctx: &'a AtomArena<'a>,
+    m: Atom<'a>,
+    n: Atom<'a>,
+    y_sym: Symbol,
+    var: Symbol,
+) -> Option<(Atom<'a>, Atom<'a>)> {
+    let dm_dy = diff(ctx, m, y_sym);
+    let dn_dx = diff(ctx, n, var);
+
+    let rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+
+    // Candidate 1: (M_y - N_x)/N depends only on x.
+    // mu(x) = exp(integral((M_y - N_x)/N dx)).
+    let diff1 = simplify(
+        ctx,
+        ctx.add(&[dm_dy, ctx.mul(&[ctx.num(-1), dn_dx])]),
+        &rules,
+        20,
+    );
+    let ratio1 = ocas_atom::normalize::normalize(
+        ctx,
+        simplify(ctx, ctx.mul(&[diff1, ctx.pow(n, ctx.num(-1))]), &rules, 20),
+    );
+    if !ratio1.to_string().contains(y_sym.as_str()) && !contains_fun_named(ratio1, y_sym) {
+        let exponent = integrate(ctx, ratio1, var);
+        let mu = exp_simplify(ctx, exponent);
+        let m_new = ctx.mul(&[mu, m]);
+        let n_new = ctx.mul(&[mu, n]);
+        // Verify exactness of the multiplied pair.
+        if partials_equal(ctx, m_new, n_new, y_sym, var) {
+            return Some((m_new, n_new));
+        }
+    }
+
+    // Candidate 2: (N_x - M_y)/M depends only on y.
+    // mu(y) = exp(integral((N_x - M_y)/M dy)).
+    let diff2 = simplify(
+        ctx,
+        ctx.add(&[dn_dx, ctx.mul(&[ctx.num(-1), dm_dy])]),
+        &rules,
+        20,
+    );
+    let ratio2 = ocas_atom::normalize::normalize(
+        ctx,
+        simplify(ctx, ctx.mul(&[diff2, ctx.pow(m, ctx.num(-1))]), &rules, 20),
+    );
+    if !contains_x(ratio2, var) {
+        let exponent = integrate(ctx, ratio2, y_sym);
+        let mu = exp_simplify(ctx, exponent);
+        let m_new = ctx.mul(&[mu, m]);
+        let n_new = ctx.mul(&[mu, n]);
+        if partials_equal(ctx, m_new, n_new, y_sym, var) {
+            return Some((m_new, n_new));
+        }
+    }
+
+    None
+}
+
+/// Simplify `exp(exponent)` when the exponent is a constant times a single
+/// logarithm: `exp(k * log(u)) = u^k`. Falls back to the literal `exp` form.
+///
+/// Numeric constant factors inside the logarithm's argument are dropped:
+/// they only scale the integrating factor by a constant, which is harmless.
+fn exp_simplify<'a>(ctx: &'a AtomArena<'a>, exponent: Atom<'a>) -> Atom<'a> {
+    super::util::exp_simplify(ctx, exponent)
+}
+
+/// Check whether expr contains a Fun node with the given symbol name.
+fn contains_fun_named<'a>(expr: Atom<'a>, name: Symbol) -> bool {
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+        AtomNode::Add(args) | AtomNode::Mul(args) => {
+            args.iter().any(|a| contains_fun_named(*a, name))
+        }
+        AtomNode::Pow(base, exp) => {
+            contains_fun_named(*base, name) || contains_fun_named(*exp, name)
+        }
+        AtomNode::Fun(n, args) => *n == name || args.iter().any(|a| contains_fun_named(*a, name)),
+    }
 }
 
 /// Attempt to solve a homogeneous ODE: y' = f(y/x).
@@ -271,8 +389,10 @@ pub(crate) fn solve_homogeneous<'a>(
     // So: x*v' = F(v) - v
     // Separable: dv/(F(v)-v) = dx/x
 
-    // Heuristic: try to collect the equation into the form x*v' = G(v)
-    let _dv = ctx.fun("Derivative", &[ctx.fun("v", &[]), x]);
+    // Heuristic: try to collect the equation into the form x*v' = G(v).
+    // The v' atom is only needed conceptually here; actual derivative
+    // handling goes through `separate_by_var` below.
+    let _dv_symbol = ctx.var("dv");
 
     // Simplify the substituted equation.
     let rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
@@ -361,6 +481,11 @@ fn extract_linear_coeffs<'a>(
             // y' coefficient is 1, which is the standard form.
             continue;
         }
+        // Bare y(x): coefficient is 1.
+        if s == func.to_string() {
+            p_coeff = Some(ctx.num(1));
+            continue;
+        }
         // Check if this term contains y(x) as a factor.
         if contains_func(*term, func, var) && !is_derivative(*term, func, var) {
             // This should be p(x)*y(x).
@@ -419,63 +544,6 @@ fn find_power_inner<'a>(expr: Atom<'a>, func: Atom<'a>, var: Symbol) -> Option<i
         }
         _ => None,
     }
-}
-
-/// Extract M(x,y) and N(x,y) from exact ODE form M + N*y' = 0.
-fn extract_exact_coeffs<'a>(
-    ctx: &'a AtomArena<'a>,
-    equation: Atom<'a>,
-    func: Atom<'a>,
-    var: Symbol,
-) -> Option<(Atom<'a>, Atom<'a>)> {
-    let x = ctx.var(var.as_str());
-    let dy = ctx.fun("Derivative", &[func, x]);
-
-    let terms = flatten_add(equation);
-    let mut m_terms = Vec::new();
-    let mut n_terms = Vec::new();
-
-    for term in &terms {
-        let s = term.to_string();
-        if s == dy.to_string() {
-            n_terms.push(ctx.num(1));
-        } else if is_derivative(*term, func, var) {
-            // N * y' — extract N.
-            if let AtomNode::Mul(args) = term.node() {
-                let factors: Vec<_> = args
-                    .iter()
-                    .filter(|a| a.to_string() != dy.to_string() && !is_derivative(**a, func, var))
-                    .copied()
-                    .collect();
-                if factors.is_empty() {
-                    n_terms.push(ctx.num(1));
-                } else if factors.len() == 1 {
-                    n_terms.push(factors[0]);
-                } else {
-                    n_terms.push(ctx.mul(&factors));
-                }
-            }
-        } else {
-            m_terms.push(*term);
-        }
-    }
-
-    if m_terms.is_empty() || n_terms.is_empty() {
-        return None;
-    }
-
-    let m = if m_terms.len() == 1 {
-        m_terms[0]
-    } else {
-        ctx.add(&m_terms)
-    };
-    let n = if n_terms.len() == 1 {
-        n_terms[0]
-    } else {
-        ctx.add(&n_terms)
-    };
-
-    Some((m, n))
 }
 
 /// Separate terms into those involving `dep_var` and those free of it.

@@ -25,6 +25,12 @@ unsafe fn extend_str_lifetime(s: &str) -> &'static str {
     unsafe { std::mem::transmute::<&str, &'static str>(s) }
 }
 
+/// `pub(crate)` wrapper for sibling modules (ode bindings) that need to
+/// parse inside an expression's arena.
+pub(crate) unsafe fn extend_str_lifetime_pub(s: &str) -> &'static str {
+    unsafe { extend_str_lifetime(s) }
+}
+
 /// Internal storage behind an [`Expression`]: a leaked arena pair recovered
 /// on drop.
 struct ExprInner {
@@ -157,6 +163,18 @@ impl ExprInner {
 #[pyclass(name = "Expression")]
 pub struct Expression {
     inner: Box<ExprInner>,
+}
+
+impl Expression {
+    /// Borrow the expression's arena (crate-internal).
+    pub(crate) fn ctx_ref(&self) -> &'static AtomArena<'static> {
+        self.inner.ctx()
+    }
+
+    /// Borrow the underlying atom (crate-internal).
+    pub(crate) fn atom(&self) -> Atom<'static> {
+        self.inner.atom
+    }
 }
 
 #[pymethods]

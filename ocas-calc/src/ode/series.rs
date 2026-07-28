@@ -5,8 +5,6 @@
 //! around regular singular points.
 
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
-use ocas_rewrite::rules::default_rules;
-use ocas_rewrite::simplify::simplify;
 
 use super::ODESolution;
 use super::util::ode_order;
@@ -43,67 +41,168 @@ pub(crate) fn solve_power_series<'a>(
     }
 
     let x = ctx.var(var.as_str());
-    let _a_sym = Symbol::new("a");
     let h = ctx.add(&[x, ctx.mul(&[ctx.num(-1), x0])]);
 
-    // Build symbolic coefficients a0, a1, ...
+    // Build symbolic coefficients a0, a1, ... as plain variables so that
+    // `diff` on the residual treats them as constants.
     let max_coeff = n_terms;
     let mut a_syms: Vec<Atom<'a>> = Vec::with_capacity(max_coeff);
     for i in 0..max_coeff {
-        a_syms.push(ctx.fun("a", &[ctx.num(i as i64)]));
+        a_syms.push(ctx.var(&format!("a{i}")));
     }
 
-    // Build y = sum_{n=0}^{n_terms-1} a_n * (x - x0)^n
-    let mut y_series: Option<Atom<'a>> = None;
-    for n in 0..n_terms {
-        let term = if n == 0 {
-            a_syms[0]
-        } else {
-            ctx.mul(&[a_syms[n], ctx.pow(h, ctx.num(n as i64))])
-        };
-        y_series = Some(match y_series {
-            Some(prev) => ctx.add(&[prev, term]),
-            None => term,
+    // Build y = sum a_n (x-x0)^n and its derivatives, treating a_n as
+    // constants (using `diff` here would differentiate the a_n symbols as
+    // unknown functions of x).
+    let (y_series, y1, y2) = build_series_triple(ctx, &a_syms, h);
+
+    // Substitute y, y', y'' into the ODE equation: residual R(x) must be
+    // identically zero, so R(x0) = R'(x0) = R''(x0) = ... = 0. The k-th
+    // condition is linear in the coefficients and determines the highest
+    // remaining coefficient, giving a recurrence.
+    let mut residual = substitute_series(ctx, equation, func, var, y_series, y1, y2);
+    residual = super::util::collect_terms(ctx, residual);
+
+    // Solved coefficient values (a_0 .. a_{order-1} stay free parameters).
+    let mut solved: Vec<(Atom<'a>, Atom<'a>)> = Vec::new();
+
+    for k in 0..n_terms.saturating_sub(order) {
+        // Evaluate the k-th derivative of the residual at x = x0.
+        if k > 0 {
+            residual = super::util::collect_terms(ctx, diff(ctx, residual, var));
+        }
+        let mut cond = super::classify::replace_atom(ctx, residual, x, x0);
+        cond = super::util::collect_terms(ctx, cond);
+
+        // Substitute already-solved coefficients.
+        for (sym, val) in &solved {
+            cond = super::classify::replace_atom(ctx, cond, *sym, *val);
+        }
+        cond = super::util::collect_terms(ctx, cond);
+
+        // Solve for the highest-index coefficient that is not yet solved
+        // and not a free parameter (a_0 .. a_{order-1}).
+        let target = a_syms.iter().skip(order).rev().find(|s| {
+            cond.to_string().contains(&s.to_string())
+                && !solved
+                    .iter()
+                    .any(|(sym, _)| sym.to_string() == s.to_string())
         });
+        match target {
+            Some(&target) => {
+                if let Some(value) = solve_linear_coeff(ctx, cond, target) {
+                    solved.push((target, value));
+                }
+            }
+            None => {
+                // No new coefficient in this condition. A nontrivial
+                // constraint on the free parameters means x0 is not an
+                // ordinary point (e.g. a regular singular point), so the
+                // Taylor ansatz is inconsistent — decline and let the
+                // Frobenius method handle it.
+                if !matches!(cond.node(), AtomNode::Num(0)) {
+                    return None;
+                }
+            }
+        }
     }
-    let y_series = y_series?;
 
-    // Compute derivatives of the series.
-    let y1 = diff(ctx, y_series, var);
-    let y2 = if order >= 2 {
-        diff(ctx, y1, var)
-    } else {
-        ctx.num(0)
-    };
+    if solved.is_empty() {
+        return None;
+    }
 
-    // Substitute y, y', y'' into the ODE equation.
-    // We need to replace Derivative(func, x) with y1, Derivative(func, x, x) with y2,
-    // and func with y_series.
-    let substituted = substitute_series(ctx, equation, func, var, y_series, y1, y2);
+    // Rebuild the series with solved coefficients substituted.
+    let mut series_expr = y_series;
+    for (sym, val) in &solved {
+        series_expr = super::classify::replace_atom(ctx, series_expr, *sym, *val);
+    }
+    series_expr = super::util::collect_terms(ctx, series_expr);
 
-    // Simplify the substituted equation.
-    let rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
-    let simplified = simplify(ctx, substituted, &rules, 20);
-
-    // For a power series solution, after substitution and simplification,
-    // the result should be a polynomial in (x - x0) whose coefficients must
-    // all vanish. We extract the coefficient equations and solve recursively.
-    //
-    // For now, we return the substituted series as-is — the caller can
-    // extract coefficient equations from the simplified expression.
-    // A fully automated coefficient extraction would require polynomial
-    // arithmetic in (x - x0) which we defer to a future iteration.
-    let rules = calculus_rules_for_series(ctx);
-    let _result = simplify(ctx, simplified, &rules, 10);
-
-    // Build the truncated series expression for the solution.
-    let series_expr = y_series;
     Some(ODESolution::Series(series_expr, n_terms))
 }
 
-/// Solve a second-order linear ODE with regular singular point at `x0`
+/// Solve `cond` of the form `coeff*target + rest = 0` for `target`.
+///
+/// Returns `-rest/coeff` with like terms collected, or `None` when `target`
+/// does not appear linearly with a nonzero coefficient.
+fn solve_linear_coeff<'a>(
+    ctx: &'a AtomArena<'a>,
+    cond: Atom<'a>,
+    target: Atom<'a>,
+) -> Option<Atom<'a>> {
+    let terms: Vec<Atom<'a>> = match cond.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![cond],
+    };
+
+    let target_str = target.to_string();
+    let mut coeff_terms: Vec<Atom<'a>> = Vec::new();
+    let mut rest_terms: Vec<Atom<'a>> = Vec::new();
+
+    for term in terms {
+        // Does this term contain `target` as a linear factor?
+        let factors: Vec<Atom<'a>> = match term.node() {
+            AtomNode::Mul(args) => args.to_vec(),
+            _ => vec![term],
+        };
+        let target_count = factors
+            .iter()
+            .filter(|f| f.to_string() == target_str)
+            .count();
+        if target_count == 1 {
+            let rest: Vec<_> = factors
+                .iter()
+                .filter(|f| f.to_string() != target_str)
+                .copied()
+                .collect();
+            // The remaining factors must not contain the target nonlinearly.
+            if rest.iter().any(|f| f.to_string().contains(&target_str)) {
+                return None;
+            }
+            coeff_terms.push(if rest.is_empty() {
+                ctx.num(1)
+            } else {
+                ctx.mul(&rest)
+            });
+        } else if target_count == 0 {
+            if term.to_string().contains(&target_str) {
+                return None; // target inside a sub-expression: not linear
+            }
+            rest_terms.push(term);
+        } else {
+            return None; // target^2 or higher: not linear
+        }
+    }
+
+    if coeff_terms.is_empty() {
+        return None;
+    }
+
+    let coeff = super::util::collect_terms(ctx, ctx.add(&coeff_terms));
+    if matches!(coeff.node(), AtomNode::Num(0)) {
+        return None;
+    }
+    let rest = if rest_terms.is_empty() {
+        ctx.num(0)
+    } else {
+        super::util::collect_terms(ctx, ctx.add(&rest_terms))
+    };
+
+    let value = super::util::collect_terms(
+        ctx,
+        ctx.mul(&[ctx.num(-1), rest, ctx.pow(coeff, ctx.num(-1))]),
+    );
+    Some(value)
+}
+
+/// Solve a second-order linear ODE with regular singular point at `x0 = 0`
 /// using the Frobenius method.
-#[allow(dead_code)]
+///
+/// Sets $y = x^r \sum_{n=0}^{N-1} a_n x^n$, substitutes into the ODE, and
+/// groups the residual by powers of $x$. The lowest-power group yields the
+/// indicial equation $A r^2 + B r + C = 0$; subsequent groups determine
+/// $a_n$ recursively. Only real rational roots of the indicial equation are
+/// handled; the series for the larger root is returned.
 pub(crate) fn solve_frobenius<'a>(
     ctx: &'a AtomArena<'a>,
     ode: super::ODE<'a>,
@@ -119,21 +218,405 @@ pub(crate) fn solve_frobenius<'a>(
     if order != 2 {
         return None;
     }
+    // Only the singular point x0 = 0 is supported.
+    if !matches!(x0.node(), AtomNode::Num(0)) {
+        return None;
+    }
 
-    // For Frobenius method, we need the ODE in standard form:
-    // y'' + p(x)*y' + q(x)*y = 0
-    // where p and q have at most a pole of order 1 and 2 at x0 respectively.
-    //
-    // The indicial equation is: r(r-1) + p0*r + q0 = 0
-    // where p0 = lim_{x->x0} (x-x0)*p(x), q0 = lim_{x->x0} (x-x0)^2*q(x).
-    //
-    // This is a complex analysis that requires extracting Laurent series
-    // coefficients. For the initial implementation, we fall back to the
-    // power series method (which works when x0 is an ordinary point).
-    //
-    // For a regular singular point, we delegate to power_series with a note
-    // that the result may not be complete.
-    solve_power_series(ctx, ode, x0, n_terms)
+    let x = ctx.var(var.as_str());
+    let (a, b, c, forcing) =
+        super::second_order::extract_second_order_coeffs(ctx, equation, func, var)?;
+    // Only homogeneous equations.
+    if !matches!(
+        super::util::collect_terms(ctx, forcing).node(),
+        AtomNode::Num(0)
+    ) {
+        return None;
+    }
+
+    // Placeholder atoms: u = x^r (opaque factor), r = indicial root symbol.
+    let u = ctx.var("XR");
+    let r = ctx.var("r");
+
+    // S = sum a_n x^n, with derivatives built manually so that the a_n
+    // coefficient symbols are not differentiated by `diff` (which would
+    // treat them as unknown functions of x).
+    let a_syms: Vec<Atom<'a>> = (0..n_terms).map(|i| ctx.var(&format!("a{i}"))).collect();
+    let (s, s1, s2) = build_series_triple(ctx, &a_syms, x);
+
+    // y = u*S, y' = r*x^-1*u*S + u*S', y'' = r(r-1)*x^-2*u*S + 2r*x^-1*u*S' + u*S''.
+    let y = ctx.mul(&[u, s]);
+    let x_inv = ctx.pow(x, ctx.num(-1));
+    let x_inv2 = ctx.pow(x, ctx.num(-2));
+    let y1 = ctx.add(&[ctx.mul(&[r, x_inv, u, s]), ctx.mul(&[u, s1])]);
+    let y2 = ctx.add(&[
+        ctx.mul(&[r, ctx.add(&[r, ctx.num(-1)]), x_inv2, u, s]),
+        ctx.mul(&[ctx.num(2), r, x_inv, u, s1]),
+        ctx.mul(&[u, s2]),
+    ]);
+
+    // Residual R = a*y2 + b*y1 + c*y, with the common factor u removed.
+    let residual = super::util::collect_terms(
+        ctx,
+        ctx.add(&[ctx.mul(&[a, y2]), ctx.mul(&[b, y1]), ctx.mul(&[c, y])]),
+    );
+
+    // Group residual terms by the integer power of x (after removing u).
+    let terms: Vec<Atom<'a>> = match residual.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![residual],
+    };
+    let mut groups: Vec<(i64, Vec<Atom<'a>>)> = Vec::new();
+    for term in terms {
+        let (power, stripped) = strip_x_and_u(ctx, term, x, u)?;
+        if let Some(g) = groups.iter_mut().find(|(p, _)| *p == power) {
+            g.1.push(stripped);
+        } else {
+            groups.push((power, vec![stripped]));
+        }
+    }
+    groups.sort_by_key(|(p, _)| *p);
+
+    // The lowest group gives the indicial equation A*r^2 + B*r + C = 0
+    // (its terms must be a_0 times a quadratic in r).
+    let (_, lowest_terms) = groups.first()?.clone();
+    let (ca, cb, cc) = indicial_coeffs(ctx, &lowest_terms, r, a_syms[0])?;
+    // Solve A*r^2 + B*r + C = 0 for rational roots.
+    let disc = cb * cb - 4 * ca * cc;
+    if disc < 0 || ca == 0 {
+        return None;
+    }
+    let sd = isqrt_i64(disc);
+    if sd * sd != disc {
+        return None; // irrational roots: not handled
+    }
+    // Larger root r1 = (-B + sd) / (2A).
+    let r1_num = -cb + sd;
+    let r1_den = 2 * ca;
+    if r1_den == 0 {
+        return None;
+    }
+
+    // r as an atom (reduced fraction).
+    let g = gcd_i64(r1_num.unsigned_abs() as i64, r1_den.unsigned_abs() as i64).max(1);
+    let (rn, rd) = (r1_num / g, r1_den / g);
+    let r_val = if rd == 1 {
+        ctx.num(rn)
+    } else {
+        ctx.mul(&[ctx.num(rn), ctx.pow(ctx.num(rd), ctx.num(-1))])
+    };
+
+    // Substitute r = r_val into the groups and solve for a_n recursively.
+    let mut solved: Vec<(Atom<'a>, Atom<'a>)> = Vec::new();
+    for (idx, (_, g_terms)) in groups.iter().enumerate() {
+        let mut cond = ctx.add(g_terms);
+        cond = super::classify::replace_atom(ctx, cond, r, r_val);
+        cond = super::util::collect_terms(ctx, cond);
+        // Substitute already-solved coefficients.
+        for (sym, val) in &solved {
+            cond = super::classify::replace_atom(ctx, cond, *sym, *val);
+        }
+        cond = super::util::collect_terms(ctx, cond);
+
+        if idx == 0 {
+            // Indicial group: must vanish identically for the chosen root.
+            if !matches!(cond.node(), AtomNode::Num(0)) {
+                return None;
+            }
+            continue;
+        }
+
+        // Solve for the highest-index a_n not yet solved, excluding the
+        // free parameter a_0. Groups whose coefficients are all determined
+        // are truncation artifacts (the dropped tail a_N, a_{N+1}, ...
+        // would contribute here) and are simply skipped.
+        let target = a_syms.iter().skip(1).rev().find(|s| {
+            cond.to_string().contains(&s.to_string())
+                && !solved
+                    .iter()
+                    .any(|(sym, _)| sym.to_string() == s.to_string())
+        });
+        let Some(&target) = target else {
+            continue;
+        };
+        let value = solve_linear_coeff(ctx, cond, target)?;
+        solved.push((target, value));
+    }
+
+    if solved.is_empty() {
+        return None;
+    }
+
+    // Rebuild y = x^r * S with solved coefficients.
+    let mut series = s;
+    for (sym, val) in &solved {
+        series = super::classify::replace_atom(ctx, series, *sym, *val);
+    }
+    series = super::util::collect_terms(ctx, series);
+    let y_sol = super::util::collect_terms(ctx, ctx.mul(&[ctx.pow(x, r_val), series]));
+
+    Some(ODESolution::Series(y_sol, n_terms))
+}
+
+/// Build (S, S', S'') for S = sum_{n} a_n x^n, treating a_n as constants.
+fn build_series_triple<'a>(
+    ctx: &'a AtomArena<'a>,
+    a_syms: &[Atom<'a>],
+    x: Atom<'a>,
+) -> (Atom<'a>, Atom<'a>, Atom<'a>) {
+    let mut s_terms = Vec::with_capacity(a_syms.len());
+    let mut s1_terms = Vec::new();
+    let mut s2_terms = Vec::new();
+    for (n, an) in a_syms.iter().enumerate() {
+        if n == 0 {
+            s_terms.push(*an);
+        } else {
+            s_terms.push(ctx.mul(&[*an, ctx.pow(x, ctx.num(n as i64))]));
+            // S' term: n * a_n * x^(n-1)
+            let d1 = if n == 1 {
+                ctx.mul(&[ctx.num(n as i64), *an])
+            } else {
+                ctx.mul(&[ctx.num(n as i64), *an, ctx.pow(x, ctx.num(n as i64 - 1))])
+            };
+            s1_terms.push(d1);
+            // S'' term: n*(n-1) * a_n * x^(n-2)
+            if n >= 2 {
+                let d2 = if n == 2 {
+                    ctx.mul(&[ctx.num((n * (n - 1)) as i64), *an])
+                } else {
+                    ctx.mul(&[
+                        ctx.num((n * (n - 1)) as i64),
+                        *an,
+                        ctx.pow(x, ctx.num(n as i64 - 2)),
+                    ])
+                };
+                s2_terms.push(d2);
+            }
+        }
+    }
+    let s = ctx.add(&s_terms);
+    let s1 = if s1_terms.is_empty() {
+        ctx.num(0)
+    } else {
+        ctx.add(&s1_terms)
+    };
+    let s2 = if s2_terms.is_empty() {
+        ctx.num(0)
+    } else {
+        ctx.add(&s2_terms)
+    };
+    (s, s1, s2)
+}
+
+/// Remove the opaque `u` factor and the `x`-power from a residual term,
+/// returning (power_of_x, remaining_expression).
+fn strip_x_and_u<'a>(
+    ctx: &'a AtomArena<'a>,
+    term: Atom<'a>,
+    x: Atom<'a>,
+    u: Atom<'a>,
+) -> Option<(i64, Atom<'a>)> {
+    let factors: Vec<Atom<'a>> = match term.node() {
+        AtomNode::Mul(args) => args.to_vec(),
+        _ => vec![term],
+    };
+    let mut power: i64 = 0;
+    let mut rest: Vec<Atom<'a>> = Vec::new();
+    for f in factors {
+        if f.to_string() == u.to_string() {
+            continue; // drop u
+        }
+        match f.node() {
+            AtomNode::Var(v) if *v == Symbol::new("x") && f.to_string() == x.to_string() => {
+                power += 1;
+            }
+            AtomNode::Pow(base, exp) => {
+                if base.to_string() == x.to_string() {
+                    if let AtomNode::Num(n) = exp.node() {
+                        power += n;
+                    } else {
+                        return None;
+                    }
+                } else {
+                    rest.push(f);
+                }
+            }
+            _ => rest.push(f),
+        }
+    }
+    let stripped = if rest.is_empty() {
+        ctx.num(1)
+    } else {
+        ctx.mul(&rest)
+    };
+    Some((power, stripped))
+}
+
+/// Extract (A, B, C) of the indicial equation A*r^2 + B*r + C = 0 from the
+/// lowest-power group terms. The terms must be `a_0` times a quadratic in r
+/// with integer coefficients.
+fn indicial_coeffs<'a>(
+    ctx: &'a AtomArena<'a>,
+    terms: &[Atom<'a>],
+    r: Atom<'a>,
+    a0: Atom<'a>,
+) -> Option<(i64, i64, i64)> {
+    let r_str = r.to_string();
+    let a0_str = a0.to_string();
+    let mut ca = 0i64;
+    let mut cb = 0i64;
+    let mut cc = 0i64;
+    for term in terms {
+        let factors: Vec<Atom<'a>> = match term.node() {
+            AtomNode::Mul(args) => args.to_vec(),
+            _ => vec![*term],
+        };
+        let mut r_pow = 0i64;
+        let mut num: i64 = 1;
+        for f in factors {
+            match f.node() {
+                AtomNode::Num(n) => num *= n,
+                AtomNode::Var(_) if f.to_string() == r_str => r_pow += 1,
+                AtomNode::Pow(base, exp) => {
+                    if base.to_string() == r_str {
+                        if let AtomNode::Num(n) = exp.node() {
+                            r_pow += n;
+                        } else {
+                            return None;
+                        }
+                    } else {
+                        return None;
+                    }
+                }
+                AtomNode::Add(args) => {
+                    // (r + -1) style: expand manually for r(r-1).
+                    // Support Add of [r, Num(-1)] only.
+                    let mut has_r = false;
+                    let mut has_m1 = false;
+                    for aa in args.iter() {
+                        if aa.to_string() == r_str {
+                            has_r = true;
+                        } else if matches!(aa.node(), AtomNode::Num(-1)) {
+                            has_m1 = true;
+                        }
+                    }
+                    if has_r && has_m1 && args.len() == 2 {
+                        // This factor is (r - 1): combined with an existing
+                        // r factor it forms r(r-1) = r^2 - r. Handle by
+                        // returning a marker: we expand below.
+                        return expand_indicial(ctx, terms, r, a0);
+                    }
+                    return None;
+                }
+                _ => {
+                    if f.to_string() != a0_str {
+                        return None;
+                    }
+                }
+            }
+        }
+        match r_pow {
+            2 => ca += num,
+            1 => cb += num,
+            0 => cc += num,
+            _ => return None,
+        }
+    }
+    Some((ca, cb, cc))
+}
+
+/// Expand products in the indicial group (handles (r-1) factors) and retry
+/// coefficient extraction.
+fn expand_indicial<'a>(
+    ctx: &'a AtomArena<'a>,
+    terms: &[Atom<'a>],
+    r: Atom<'a>,
+    a0: Atom<'a>,
+) -> Option<(i64, i64, i64)> {
+    // Multiply out each term containing (r-1) factors, then re-extract.
+    let mut expanded: Vec<Atom<'a>> = Vec::new();
+    for term in terms {
+        let factors: Vec<Atom<'a>> = match term.node() {
+            AtomNode::Mul(args) => args.to_vec(),
+            _ => vec![*term],
+        };
+        let mut current: Vec<Atom<'a>> = vec![ctx.num(1)];
+        for f in factors {
+            if let AtomNode::Add(args) = f.node() {
+                let mut next: Vec<Atom<'a>> = Vec::new();
+                for c in &current {
+                    for aa in args.iter() {
+                        next.push(ctx.mul(&[*c, *aa]));
+                    }
+                }
+                current = next;
+            } else {
+                for c in &mut current {
+                    *c = ctx.mul(&[*c, f]);
+                }
+            }
+        }
+        expanded.extend(current);
+    }
+    let expanded_sum = super::util::collect_terms(ctx, ctx.add(&expanded));
+    let new_terms: Vec<Atom<'a>> = match expanded_sum.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![expanded_sum],
+    };
+    // Retry extraction on the expanded terms (no Add factors remain).
+    let r_str = r.to_string();
+    let a0_str = a0.to_string();
+    let mut ca = 0i64;
+    let mut cb = 0i64;
+    let mut cc = 0i64;
+    for term in new_terms {
+        let factors: Vec<Atom<'a>> = match term.node() {
+            AtomNode::Mul(args) => args.to_vec(),
+            _ => vec![term],
+        };
+        let mut r_pow = 0i64;
+        let mut num: i64 = 1;
+        for f in factors {
+            match f.node() {
+                AtomNode::Num(n) => num *= n,
+                AtomNode::Var(_) if f.to_string() == r_str => r_pow += 1,
+                _ => {
+                    if f.to_string() != a0_str {
+                        return None;
+                    }
+                }
+            }
+        }
+        match r_pow {
+            2 => ca += num,
+            1 => cb += num,
+            0 => cc += num,
+            _ => return None,
+        }
+    }
+    Some((ca, cb, cc))
+}
+
+fn isqrt_i64(n: i64) -> i64 {
+    if n <= 0 {
+        return 0;
+    }
+    let mut x = n;
+    let mut y = x / 2 + 1;
+    while y < x {
+        x = y;
+        y = (x + n / x) / 2;
+    }
+    x
+}
+
+fn gcd_i64(mut a: i64, mut b: i64) -> i64 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a.abs()
 }
 
 /// Substitute series expressions for y, y', y'' into the ODE equation.
@@ -211,9 +694,4 @@ fn substitute_series_inner<'a>(
             ctx.fun(name.as_str(), &mapped)
         }
     }
-}
-
-/// Get calculus-specific rules for series simplification.
-fn calculus_rules_for_series<'a>(ctx: &'a AtomArena<'a>) -> Vec<ocas_rewrite::rules::Rule<'a>> {
-    crate::rules::calculus_rules(ctx, &crate::pattern_alloc::VecAlloc)
 }

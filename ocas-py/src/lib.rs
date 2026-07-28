@@ -23,6 +23,7 @@ pub mod eval;
 pub mod expression;
 pub mod matrix;
 pub mod numeric;
+pub mod ode;
 pub mod polynomial;
 pub mod solve;
 pub mod tensor;
@@ -36,6 +37,7 @@ pub use eval::PyExpressionEvaluator;
 pub use expression::Expression;
 pub use matrix::PyMatrix;
 pub use numeric::{PyIntegrateResult, PyVegas, integrate_1d};
+pub use ode::{py_classify_ode, py_dsolve, py_dsolve_ivp};
 pub use polynomial::{PyPolynomial, PyPolynomialFactor};
 pub use solve::{
     PyDiophantineSolution, py_solve_diophantine, py_solve_linear_integer, py_solve_linear_rational,
@@ -75,6 +77,9 @@ fn ocas(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(integrate_1d, m)?)?;
     m.add_function(wrap_pyfunction!(contract_tensors, m)?)?;
     m.add_function(wrap_pyfunction!(tensor_symmetrise_sign, m)?)?;
+    m.add_function(wrap_pyfunction!(py_classify_ode, m)?)?;
+    m.add_function(wrap_pyfunction!(py_dsolve, m)?)?;
+    m.add_function(wrap_pyfunction!(py_dsolve_ivp, m)?)?;
 
     Ok(())
 }
