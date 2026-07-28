@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-27（0.20.0 已发布：常微分方程求解器——一阶 5 种 + 二阶 2 种 + 幂级数框架 + ODE 分类引擎；阶段 B++ 继续推进）**
+> 最后修订：**2026-07-28（0.20.1 已发布：ODE 求解器全量收尾——积分因子 + VOP + 降阶法 + 级数递推 + Frobenius + Laplace IVP + 2×2 系统 + Python/C 绑定；阶段 B++ 继续推进）**
 
 ---
 

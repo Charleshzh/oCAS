@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-27 (0.20.0 released: ODE solver — 5 first-order + 2 second-order + power-series framework + ODE classifier; Phase B++ continues)**
+> Last revised: **2026-07-28 (0.20.1 released: full ODE solver backfill — integrating factors + VOP + reduction of order + series recursion + Frobenius + Laplace IVP + 2×2 systems + Python/C bindings; Phase B++ continues)**
 
 ---
 

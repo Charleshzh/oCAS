@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.20.0 @ 2026-07-27** (0.20.0 ODE solver released: 5 first-order + 2 second-order + power-series framework + ODE classifier; ODE gap upgraded 🔴→🟡)
+> Last evaluated: **0.20.1 @ 2026-07-28** (0.20.1 full ODE solver backfill: integrating factors + VOP + reduction of order + series recursion + Frobenius + Laplace IVP + 2×2 systems + Python/C bindings; ODE gap upgraded 🟡→🟢)
 
 ---
 

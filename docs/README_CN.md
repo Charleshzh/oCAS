@@ -12,7 +12,8 @@
 性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
 保持自由与开放。
 
-> **状态**：Beta (0.13.2)。完整的符号引擎、多项式代数、方程求解器、JIT/SIMD
+> **状态**：Beta (0.20.1)。完整的符号引擎、多项式代数、方程求解器、ODE
+> 求解器（一阶/二阶 + 系统 + 级数 + Laplace 初值问题）、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。`pip install ocas`
 > 已在 PyPI 上线。详见
 > [文档](https://charleshzh.github.io/ocas/latest/zh/)
@@ -52,6 +53,9 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 - **多项式运算**：稠密与稀疏多元多项式、最大公因式、因式分解、Gröbner 基、
   结式。
 - **微积分**：符号微分、部分积分、Taylor/Laurent 级数。
+- **ODE 求解**：一阶（可分离/线性/Bernoulli/恰当/齐次 + 积分因子）、
+  二阶（常系数/Cauchy-Euler + 常数变易法 + 降阶法）、幂级数 + Frobenius、
+  Laplace 初值问题，以及 2×2 常系数系统。
 - **方程求解**：线性方程组、多项式方程组、代数数。
 - **数值求值**：任意精度浮点、区间算术、数值积分。
 - **JIT 编译**：将重复表达式编译为 Cranelift 或 LLVM 原生代码。

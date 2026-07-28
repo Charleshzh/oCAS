@@ -121,3 +121,44 @@ ocas_poly_fp_free(p);
 
 All polynomial functions are safe to call (no `unsafe` required). Passing
 `NULL` to any function sets the error code and returns `NULL` / error.
+
+## ODE API
+
+Since 0.20.1, `ocas-c` exposes ODE solving as string-in/string-out
+functions. All returned strings are heap-allocated and must be released
+with `ocas_string_free`.
+
+```c
+#include <ocas.h>
+#include <stdio.h>
+
+int main(void) {
+    int err = 0;
+
+    // Classify without solving.
+    char *types = ocas_ode_classify(
+        "Derivative(y(x), x) - y(x)", "y", "x", &err);
+    printf("methods: %s\n", types);   /* LinearFirst,Separable,PowerSeries */
+
+    // Solve (hint = NULL for auto classification).
+    char *sol = ocas_ode_dsolve(
+        "Derivative(y(x), x) - y(x)", "y", "x", NULL, &err);
+    printf("solution: %s\n", sol);    /* y = C1*exp(x) */
+
+    // Laplace IVP: y(0) = 1.
+    char *ivp = ocas_ode_dsolve_ivp(
+        "Derivative(y(x), x) - y(x)", "y", "x", "1", NULL, &err);
+    printf("ivp: %s\n", ivp);          /* y = exp(x) */
+
+    ocas_string_free(types);
+    ocas_string_free(sol);
+    ocas_string_free(ivp);
+    return 0;
+}
+```
+
+| Function | Purpose |
+|---|---|
+| `ocas_ode_classify` | Comma-separated applicable method names |
+| `ocas_ode_dsolve` | Symbolic solution string (`"y = ..."` or `"unsolved"`) |
+| `ocas_ode_dsolve_ivp` | Explicit IVP solution via Laplace transform |

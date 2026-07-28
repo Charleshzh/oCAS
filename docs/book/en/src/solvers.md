@@ -91,6 +91,103 @@ be solved by back-substitution.
 
 ---
 
+## Ordinary differential equations
+
+`dsolve` solves ordinary differential equations analytically. The ODE is
+given as an expression equal to zero, the unknown function (e.g. `y(x)`),
+and the independent variable (e.g. `x`).
+
+```rust
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &[x]);
+let dy = ctx.fun("Derivative", &[y, x]);
+// y' - y = 0
+let ode = ODE {
+    equation: ctx.add(&[dy, ctx.mul(&[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+let sol = dsolve(&ctx, ode, None);
+// ODESolution::Explicit(C1*exp(x))
+```
+
+`classify_ode` returns the applicable solving methods without solving:
+
+```rust
+let types = classify_ode(&ctx, ode);
+// [LinearFirst, Separable, PowerSeries]
+```
+
+### Supported ODE types
+
+| Type | Form | Method |
+|---|---|---|
+| Separable | $f(x)dx = g(y)dy$ | Direct integration |
+| Linear first-order | $y' + p(x)y = q(x)$ | Integrating factor $\mu = e^{\int p}$ |
+| Bernoulli | $y' + p(x)y = q(x)y^n$ | Substitution $v = y^{1-n}$ |
+| Exact | $M dx + N dy = 0$, $\partial M/\partial y = \partial N/\partial x$ | Potential function |
+| Homogeneous | $y' = f(y/x)$ | Substitution $v = y/x$ |
+| Integrating factors | non-exact first-order | $\mu(x)$ or $\mu(y)$ detection |
+| Constant coefficients | $ay'' + by' + cy = f(x)$ | Characteristic equation |
+| Cauchy-Euler | $ax^2y'' + bxy' + cy = f(x)$ | Indicial equation |
+| Reduction of order | second-order linear | $y_2 = y_1\int e^{-\int p}/y_1^2$ |
+| Variation of parameters | second-order non-homogeneous | Wronskian formula |
+| Undetermined coefficients | polynomial/exponential/trigonometric forcing | Coefficient matching + resonance |
+| Power series | ordinary point | Coefficient recursion |
+| Frobenius | regular singular point | Indicial equation + recursion |
+| Laplace IVP | first/second-order linear IVP | `dsolve_ivp` |
+| 2×2 systems | $\mathbf{Y}' = A\mathbf{Y}$ | `dsolve_system` (eigen-decomposition) |
+
+ODEs that cannot be solved analytically are returned as unevaluated
+`ODE(equation, func)` forms.
+
+### Initial value problems
+
+`dsolve_ivp` solves linear constant-coefficient IVPs via the Laplace
+transform:
+
+```rust
+// y' - y = 0, y(0) = 1  =>  y = exp(x)
+let sol = dsolve_ivp(&ctx, ode, ctx.num(1), None);
+```
+
+### Systems
+
+`dsolve_system` solves 2×2 constant-coefficient systems $\mathbf{Y}' = A\mathbf{Y}$:
+
+```rust
+// y1' = y2, y2' = -y1 (harmonic oscillator)
+let sol = dsolve_system(&ctx, &[eq1, eq2], &[y1, y2], Symbol::new("x"));
+// ODESolution::System([C1*sin(x) + C2*cos(x), C1*cos(x) - C2*sin(x)])
+```
+
+### Python
+
+```python
+import ocas
+
+e = ocas.Expression("Derivative(y(x), x) - y(x)")
+print(ocas.classify_ode(e, "y", "x"))     # ['LinearFirst', 'Separable', ...]
+print(ocas.dsolve(e, "y", "x"))            # y = C1*exp(x)
+print(ocas.dsolve_ivp(e, "y", "x", "1"))   # y = exp(x)
+```
+
+### C
+
+```c
+int err = 0;
+char *types = ocas_ode_classify("Derivative(y(x), x) - y(x)", "y", "x", &err);
+char *sol = ocas_ode_dsolve("Derivative(y(x), x) - y(x)", "y", "x", NULL, &err);
+char *ivp = ocas_ode_dsolve_ivp("Derivative(y(x), x) - y(x)", "y", "x", "1", NULL, &err);
+ocas_string_free(types);
+ocas_string_free(sol);
+ocas_string_free(ivp);
+```
+
+---
+
 ## Errors
 
 All solvers return `Result<T, SolveError>`. Common error variants:

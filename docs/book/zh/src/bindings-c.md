@@ -114,3 +114,43 @@ ocas_poly_fp_free(p);
 | `ocas_poly_factor_array_free` | 释放因子数组 |
 
 所有多项式函数均可安全调用（无需 `unsafe`）。传入 `NULL` 会设置错误码并返回 `NULL` / 错误。
+
+## ODE API
+
+自 0.20.1 起，`ocas-c` 以字符串进出方式暴露 ODE 求解。所有返回字符串
+均为堆分配，须用 `ocas_string_free` 释放。
+
+```c
+#include <ocas.h>
+#include <stdio.h>
+
+int main(void) {
+    int err = 0;
+
+    // 只分类不求解。
+    char *types = ocas_ode_classify(
+        "Derivative(y(x), x) - y(x)", "y", "x", &err);
+    printf("methods: %s\n", types);   /* LinearFirst,Separable,PowerSeries */
+
+    // 求解（hint = NULL 自动分类）。
+    char *sol = ocas_ode_dsolve(
+        "Derivative(y(x), x) - y(x)", "y", "x", NULL, &err);
+    printf("solution: %s\n", sol);    /* y = C1*exp(x) */
+
+    // Laplace 初值问题：y(0) = 1。
+    char *ivp = ocas_ode_dsolve_ivp(
+        "Derivative(y(x), x) - y(x)", "y", "x", "1", NULL, &err);
+    printf("ivp: %s\n", ivp);          /* y = exp(x) */
+
+    ocas_string_free(types);
+    ocas_string_free(sol);
+    ocas_string_free(ivp);
+    return 0;
+}
+```
+
+| 函数 | 用途 |
+|---|---|
+| `ocas_ode_classify` | 逗号分隔的可用方法名 |
+| `ocas_ode_dsolve` | 符号解字符串（`"y = ..."` 或 `"unsolved"`） |
+| `ocas_ode_dsolve_ivp` | Laplace 变换求显式 IVP 解 |

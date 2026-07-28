@@ -106,4 +106,10 @@ print(ocas.solve_linear_integer([[2, 1]], [3]))
 
 # Diophantine: a*x + b*y = c
 print(ocas.solve_diophantine(3, 5, 1))
+
+# ODE: dsolve with optional hint, Laplace IVP
+e = ocas.Expression("Derivative(y(x), x) - y(x)")
+print(ocas.classify_ode(e, "y", "x"))     # ['LinearFirst', 'Separable', ...]
+print(ocas.dsolve(e, "y", "x"))            # y = C1*exp(x)
+print(ocas.dsolve_ivp(e, "y", "x", "1"))   # y = exp(x)
 ```

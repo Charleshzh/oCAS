@@ -12,8 +12,9 @@
 It is designed to match or exceed the core performance of Symbolica and
 SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Beta (0.13.2). The full symbolic engine, polynomial algebra,
-> equation solvers, JIT/SIMD evaluation, and tri-language bindings (Rust,
+> **Status**: Beta (0.20.1). The full symbolic engine, polynomial algebra,
+> equation solvers, ODE solvers (first/second-order + systems + series +
+> Laplace IVP), JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. `pip install ocas` is available on PyPI.
 > See the
 > [documentation](https://charleshzh.github.io/ocas/latest/en/)
@@ -59,6 +60,10 @@ embeddable, and license-clean symbolic computation engine.
   resultants.
 - **Calculus**: symbolic differentiation, partial integration, Taylor/Laurent
   series.
+- **ODE solving**: first-order (separable/linear/Bernoulli/exact/homogeneous +
+  integrating factors), second-order (constant-coefficient/Cauchy-Euler +
+  variation of parameters + reduction of order), power series + Frobenius,
+  Laplace IVP, and 2×2 constant-coefficient systems.
 - **Equation solving**: linear systems, polynomial systems, algebraic numbers.
 - **Numerical evaluation**: arbitrary-precision floating point, interval
   arithmetic, numerical integration.
