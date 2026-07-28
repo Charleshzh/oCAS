@@ -8,8 +8,6 @@
 //!
 //! Enabled with the `fast-poly` feature flag.
 
-use fast_polynomial;
-
 /// Evaluate a polynomial at `x` using Estrin's scheme.
 ///
 /// `coeffs` are given from constant term upward: `a[0] + a[1]*x + a[2]*x^2 + ...`

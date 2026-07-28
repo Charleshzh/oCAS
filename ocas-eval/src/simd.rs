@@ -584,6 +584,7 @@ mod tests {
         let results = eval.evaluate(&params).unwrap();
 
         assert_eq!(results.len(), 2);
+        #[allow(clippy::needless_range_loop)]
         for i in 0..10 {
             let x = i as f64;
             assert!((results[0][i] - (x + 1.0)).abs() < 1e-10, "out0 at {i}");

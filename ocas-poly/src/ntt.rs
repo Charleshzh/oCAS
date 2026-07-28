@@ -23,7 +23,7 @@ pub fn is_ntt_friendly(p: u64, n: usize) -> bool {
     }
     // p - 1 must be divisible by n
     let pm1 = p - 1;
-    pm1 % (n as u64) == 0
+    pm1.is_multiple_of(n as u64)
 }
 
 /// Find the smallest primitive `n`-th root of unity in ℤ_p.
