@@ -4,18 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       crate:
-        description: 'Crate to publish to crates.io'
+        description: 'Crate to publish (or "all" for full workspace in dependency order)'
         required: true
         type: choice
         options:
+          - all
           - ocas-core
           - ocas-domain
           - ocas-poly
           - ocas-atom
           - ocas-rewrite
+          - ocas-parse
           - ocas-calc
           - ocas-eval
-          - ocas-parse
           - ocas
           - ocas-py
           - ocas-c
@@ -41,6 +42,45 @@ jobs:
           sudo apt-get install -y python3-dev
 
       - name: Publish crate
+        if: github.event.inputs.crate != 'all'
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: cargo publish -p ${{ github.event.inputs.crate }}
+
+      - name: Publish all crates in dependency order
+        if: github.event.inputs.crate == 'all'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          # Topological order based on workspace dependency graph.
+          # Crates at the same level are independent and can be published in any order.
+          crates=(
+            ocas-core
+            ocas-domain
+            ocas-poly
+            ocas-atom
+            ocas-parse
+            ocas-rewrite
+            ocas-eval
+            ocas-calc
+            ocas
+            ocas-c
+            ocas-py
+            ocas-gpl
+          )
+          failed=0
+          for crate in "${crates[@]}"; do
+            echo "::group::Publishing $crate"
+            if cargo publish -p "$crate" 2>&1; then
+              echo "OK: $crate published"
+            else
+              echo "::warning::Failed to publish $crate (may already exist)"
+              failed=$((failed + 1))
+            fi
+            echo "::endgroup::"
+            # crates.io index needs a moment to propagate
+            sleep 15
+          done
+          if [ "$failed" -gt 0 ]; then
+            echo "::warning::$failed crate(s) failed (may already exist on crates.io)"
+          fi

@@ -1,0 +1,53 @@
+name: create-release-tags
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-tags:
+    name: Create per-crate release tags
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read workspace version
+        id: version
+        run: |
+          WS_VERSION=$(grep -E '^version\s*=' Cargo.toml | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "version=$WS_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create per-crate tags
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          COMMIT=$(git rev-parse HEAD)
+          crates=(
+            ocas-core
+            ocas-domain
+            ocas-poly
+            ocas-atom
+            ocas-rewrite
+            ocas-parse
+            ocas-calc
+            ocas-eval
+            ocas
+            ocas-c
+            ocas-py
+            ocas-gpl
+          )
+          for crate in "${crates[@]}"; do
+            tag="${crate}-v${VERSION}"
+            echo "Creating tag $tag at $COMMIT"
+            git tag -f "$tag" "$COMMIT"
+          done
+          echo "Pushing tags..."
+          git push origin "${crates[@]/#/-f }" 2>&1 || true
+          # Push each tag individually for clarity
+          for crate in "${crates[@]}"; do
+            tag="${crate}-v${VERSION}"
+            git push origin "$tag" --force 2>&1
+          done
+          echo "All tags pushed."
