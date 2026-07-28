@@ -56,7 +56,8 @@ embeddable, and license-clean symbolic computation engine.
 - **Simplification & rewriting**: normalization, hash consing, and equality
   saturation via `egg`.
 - **Polynomial arithmetic**: dense and sparse multivariate polynomials, GCD,
-  univariate and bivariate factorization (Hensel lifting), Gröbner bases,
+  univariate and bivariate factorization (Hensel lifting), algebraic number
+  fields (Trager), Gröbner bases (Buchberger/F4/F5, WeightOrder, BlockOrder),
   resultants.
 - **Calculus**: symbolic differentiation, partial integration, Taylor/Laurent
   series.
@@ -66,7 +67,8 @@ embeddable, and license-clean symbolic computation engine.
   Laplace IVP, and 2×2 constant-coefficient systems.
 - **Equation solving**: linear systems, polynomial systems, algebraic numbers.
 - **Numerical evaluation**: arbitrary-precision floating point, interval
-  arithmetic, numerical integration.
+  arithmetic, adaptive Monte Carlo integration (Vegas).
+- **Automatic differentiation**: forward-mode via hyper-dual numbers.
 - **JIT compilation**: compile repeated expressions to native code with
   Cranelift or LLVM.
 - **Multi-language bindings**: Rust, Python, and C/C++ from a single codebase.
@@ -111,7 +113,7 @@ See [ARCHITECTURE_EN.md](docs/planning/ARCHITECTURE_EN.md) for the full design.
 
 ```toml
 [dependencies]
-ocas = "0.13"
+ocas = "0.20"
 ```
 
 ```rust

@@ -157,6 +157,29 @@ E-graph 方法同时探索多种等价形式，通过同余闭包组合重写。
 
 ---
 
+## Fuel 受限化简
+
+`simplify_with_fuel` 是 `simplify` 的变体，每次自底向上遍历消耗一个
+fuel 单元，预算耗尽时提前停止。适用于处理不可信或病态表达式，防止重写
+器无限循环。
+
+```rust
+use ocas_core::fuel::Fuel;
+use ocas_rewrite::simplify::simplify_with_fuel;
+
+let fuel = Fuel::new(100);
+let result = simplify_with_fuel(&ctx, e, &rules, 20, &fuel);
+match result {
+    Ok(expr) => println!("simplified: {}", expr),
+    Err(_) => println!("fuel exhausted before fixpoint"),
+}
+```
+
+`simplify_with_fuel` 仅在 fuel 耗尽未达不动点时返回 `Err`。旧的
+`simplify` API 保持可用，语义不变（无 fuel 限制）。
+
+---
+
 ## 局限性
 
 默认基于规则的化简器有意保持可预测性：

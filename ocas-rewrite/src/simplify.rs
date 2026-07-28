@@ -77,6 +77,20 @@ fn apply_rules<'a>(ctx: &'a AtomArena<'a>, atom: Atom<'a>, rules: &[Rule<'a>]) -
 ///
 /// Pass [`Fuel::default`](ocas_core::fuel::Fuel::default) for an effectively
 /// unlimited budget that still participates in nested accounting.
+///
+/// # Example
+///
+/// ```no_run
+/// use ocas_core::fuel::Fuel;
+/// use ocas_rewrite::simplify::simplify_with_fuel;
+///
+/// let fuel = Fuel::new(100);
+/// let result = simplify_with_fuel(&ctx, expr, &rules, 20, &fuel);
+/// match result {
+///     Ok(e) => println!("simplified: {}", e),
+///     Err(_) => println!("fuel exhausted"),
+/// }
+/// ```
 pub fn simplify_with_fuel<'a>(
     ctx: &'a AtomArena<'a>,
     atom: Atom<'a>,

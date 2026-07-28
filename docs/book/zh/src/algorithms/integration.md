@@ -120,6 +120,28 @@ let result = integrate(&ctx, parse(&ctx, "exp(-x^2)").unwrap(), Symbol::new("x")
 
 ---
 
+## Fuel 受限积分
+
+`integrate_with_fuel` 包装同一管线，但将 [`Fuel`] 预算贯穿到两个积分后
+化简阶段。病态结果（否则会导致重写器无限循环）可被确定性地截断。
+
+```rust
+use ocas_core::fuel::Fuel;
+use ocas_calc::integral::integrate_with_fuel;
+
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&ctx, expr, Symbol::new("x"), &fuel);
+match result {
+    Ok(r) => println!("{}", r),
+    Err(_) => println!("fuel exhausted during simplification"),
+}
+```
+
+仅在化简中途 fuel 耗尽时返回 `Err`。积分遍历本身使用内部深度限制；
+fuel 仅约束化简后的传递。
+
+---
+
 ## 绑定
 
 同一管线支撑 Python 与 C API：

@@ -154,6 +154,5 @@ let result = ev.evaluate(&[0.5, 1.0]).unwrap();
 ---
 
 ## 参见
-
-- [Rust API](./rust-api.md) — 构建用于求值的表达式
+- [数值积分](./numeric-integration.md) — 蒙特卡洛积分（Vegas）- [Rust API](./rust-api.md) — 构建用于求值的表达式
 - [基准与性能对比](./performance.md) — 三条路径的基准结果

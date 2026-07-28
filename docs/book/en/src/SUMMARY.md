@@ -21,6 +21,9 @@
 - [Rational Functions & Resultants](./algorithms/rational-functions.md)
 - [Gröbner Bases](./algorithms/groebner.md)
 - [Symbolic Integration](./algorithms/integration.md)
+- [Numeric Integration](./numeric-integration.md)
+- [Automatic Differentiation](./autodiff.md)
+- [Tensors](./tensors.md)
 
 # Performance & Quality
 

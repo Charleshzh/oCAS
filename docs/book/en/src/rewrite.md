@@ -168,6 +168,31 @@ in a specific order.
 
 ---
 
+## Fuel-bounded simplification
+
+`simplify_with_fuel` is a variant of `simplify` that consumes one fuel unit
+per bottom-up traversal pass and stops early when the budget is exhausted.
+This is useful when processing untrusted or pathological expressions that
+could cause the rewriter to spin indefinitely.
+
+```rust
+use ocas_core::fuel::Fuel;
+use ocas_rewrite::simplify::simplify_with_fuel;
+
+let fuel = Fuel::new(100);
+let result = simplify_with_fuel(&ctx, e, &rules, 20, &fuel);
+match result {
+    Ok(expr) => println!("simplified: {}", expr),
+    Err(_) => println!("fuel exhausted before fixpoint"),
+}
+```
+
+`simplify_with_fuel` returns `Err` only when fuel ran out before a fixpoint
+was reached. The old `simplify` API remains available with identical semantics
+(no fuel limit).
+
+---
+
 ## Limitations
 
 The default rule-based simplifier intentionally keeps things predictable:

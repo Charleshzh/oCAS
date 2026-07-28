@@ -137,6 +137,30 @@ let result = integrate(&ctx, parse(&ctx, "exp(-x^2)").unwrap(), Symbol::new("x")
 
 ---
 
+## Fuel-bounded integration
+
+`integrate_with_fuel` wraps the same pipeline but threads a [`Fuel`] budget
+through the two post-integration simplification stages. A pathological result
+that would otherwise spin the rewriter can be cut off deterministically.
+
+```rust
+use ocas_core::fuel::Fuel;
+use ocas_calc::integral::integrate_with_fuel;
+
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&ctx, expr, Symbol::new("x"), &fuel);
+match result {
+    Ok(r) => println!("{}", r),
+    Err(_) => println!("fuel exhausted during simplification"),
+}
+```
+
+Returns `Err` only when fuel was exhausted mid-simplification. The
+integration traversal itself uses the internal depth limit; fuel bounds
+only the post-simplification passes.
+
+---
+
 ## Bindings
 
 The same pipeline backs the Python and C APIs:

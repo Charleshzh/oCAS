@@ -107,3 +107,83 @@ print(ocas.classify_ode(e, "y", "x"))     # ['LinearFirst', 'Separable', ...]
 print(ocas.dsolve(e, "y", "x"))            # y = C1*exp(x)
 print(ocas.dsolve_ivp(e, "y", "x", "1"))   # y = exp(x)
 ```
+
+## 数值积分（Vegas）
+
+```python
+import ocas
+
+# 一维便捷函数
+result = ocas.integrate_1d(lambda x: x**2, 0, 1, n_samples=10000, iterations=10)
+print(result.integral, result.error)
+
+# 多维积分
+vegas = ocas.Vegas(n_dims=2, n_samples=10000, iterations=10)
+result = vegas.integrate(lambda coords: coords[0] * coords[1])
+print(result.integral, result.error)
+```
+
+`integrate_1d` 是便捷函数；`Vegas` 支持任意维度。详见
+[数值积分](./numeric-integration.md)。
+
+## 自动微分
+
+```python
+from ocas import DualShape, HyperDual, Rational
+
+shape = DualShape.first_order(2)
+x = HyperDual.variable(shape, 0, Rational(1))
+y = HyperDual.variable(shape, 1, Rational(2))
+
+f = x * y
+print(f.value())    # 2
+print(f.deriv(0))   # 2  (∂f/∂x)
+print(f.deriv(1))   # 1  (∂f/∂y)
+
+# 算术：__add__、__sub__、__mul__、__truediv__、__neg__
+g = x + y * x
+print(g.deriv(0))   # 3
+```
+
+仅支持 `Rational` 系数。详见[自动微分](./autodiff.md)。
+
+## 张量
+
+```python
+from ocas import Tensor, contract_tensors, tensor_symmetrise_sign
+
+A = Tensor("A", [("mu", "upper")])
+B = Tensor("B", [("mu", "lower")])
+
+# 缩并匹配指标
+result = contract_tensors(A, B)
+print(result)  # 标量表达式
+
+# 2 阶张量与对称性
+g = Tensor("g", [("mu", "upper"), ("nu", "lower")])
+print(g.rank())    # 2
+print(g.symmetry())  # None
+
+sign = tensor_symmetrise_sign(g)
+```
+
+指标按标签和相反位置匹配。详见[张量](./tensors.md)。
+
+## 代数数
+
+```python
+from ocas import AlgebraicExtension, AlgebraicPolynomial, FiniteField
+
+# Q(√2)
+ext = AlgebraicExtension("x^2 - 2")  # 极小多项式
+alpha = ext.alpha()
+print(ext.extension_degree())          # 2
+
+# 在 Q(√2) 上因式分解
+p = AlgebraicPolynomial(ext, [1, 0, -1])  # x^2 - 1
+for fac, mult in p.factor():
+    print(fac, mult)
+```
+
+`AlgebraicExtension` 支持 ℚ 和 GF(p^d) 上的扩域。算法细节见
+[因式分解](./algorithms/factorization.md) 章节。

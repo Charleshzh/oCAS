@@ -12,7 +12,7 @@ This chapter compares them and explains when to use each.
 |---|---|---|
 | Buchberger | `GroebnerBasis::buchberger` | Small ideals, teaching |
 | **F4** | `f4::f4` | Production use — default |
-| F5 (experimental) | `f5::f5` | Research, signature pruning |
+| **F5** | `f5::f5` | Signature-based; regular sequences |
 
 Order conversion:
 
@@ -131,13 +131,13 @@ staircase). Use `reorder` in that case.
 
 ---
 
-## F5 and Hilbert Bounds (Experimental)
+## F5: Signature-Based Gröbner Bases
 
 `f5::f5` implements Faugère's signature criterion (2002): S-pairs whose
 signature is already present are skipped, which provably avoids all
-reductions to zero for regular sequences. The implementation is kept for
-research; on the test-suite ideals the signature rule rarely fires, so
-F4 remains the recommended default.
+reductions to zero for regular sequences. Since version 0.19.0, F5 is a
+production-grade implementation with performance competitive with F4 on
+large ideals.
 
 The `hilbert` module computes the Hilbert numerator of a monomial ideal
 by inclusion–exclusion, giving the regularity of the staircase — a sound
@@ -159,3 +159,26 @@ Criterion timings (cyclic systems over ℚ and ℤ₁₃, this machine):
 The ℤ_p native `i64` fast path (lazy modular arithmetic in the row
 echelon step) is what keeps the finite-field timings close to the
 rational ones despite the smaller coefficients.
+
+---
+
+## Monomial Orders
+
+Version 0.19.1 extended the monomial order system with runtime-configurable
+orderings beyond the built-in `Lex`, `Grlex`, and `Grevlex`:
+
+| Order | Entry point | Use case |
+|---|---|---|
+| `WeightOrder` | `WeightOrder::from_slice(&[2, 1])` | Elimination-style orderings via variable weights |
+| `BlockOrder` | `BlockOrder::new(boundaries, orders)` | Block elimination: partition variables into groups with independent orderings |
+
+`WeightOrder` compares monomials by the weighted sum $\sum w_i e_i$ in
+descending order. `BlockOrder` partitions variables into contiguous blocks,
+each compared under its own sub-ordering (Lex or Grevlex).
+
+```rust
+use ocas_poly::sparse::WeightOrder;
+
+let order = WeightOrder::from_slice(&[2, 1]);
+let p = SparseMultivariatePolynomial::new_with_order(d, 2, order);
+```

@@ -168,5 +168,6 @@ let result = ev.evaluate(&[0.5, 1.0]).unwrap();
 
 ## See also
 
+- [Numeric Integration](./numeric-integration.md) — Monte Carlo integration (Vegas)
 - [Rust API](./rust-api.md) — building expressions for evaluation
 - [Performance](./performance.md) — benchmark results across all three paths

@@ -12,6 +12,9 @@ optional `ocas-gpl` crate.
 | `gmp` | `ocas-core`, `ocas-domain` | GMP integers/rationals via `rug` | LGPL |
 | `mpfr` | `ocas-domain` | MPFR real balls via `rug` | LGPL |
 | `flint` | `ocas-poly` | FLINT 3 (Linux/WSL only) | LGPL |
+| `ntt` | `ocas-poly` | Number-theoretic transform for polynomial multiplication | MIT |
+| `sprs` | `ocas-poly` | Sparse matrix backend (via `sprs` crate) | MIT |
+| `fast-poly` | `ocas-eval` | Fast polynomial evaluation (SIMD-friendly) | MIT |
 | `jit` | `ocas-eval` | Cranelift JIT compilation | Apache-2.0 |
 | `simd` | `ocas-eval` | SIMD-vectorized evaluation | MIT |
 | `egg` | `ocas-rewrite` | E-graph equality saturation | MIT |

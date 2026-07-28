@@ -8,6 +8,20 @@ use std::f64;
 
 /// Accumulator for a single iteration's samples and for the cross-iteration
 /// weighted average.
+///
+/// # Example
+///
+/// ```
+/// use ocas_eval::numeric::StatisticsAccumulator;
+///
+/// let mut acc = StatisticsAccumulator::new();
+/// acc.add_sample(1.0, 1.5);
+/// acc.add_sample(1.0, 1.8);
+/// acc.add_sample(1.0, 2.1);
+/// acc.finalize_iteration();
+///
+/// assert!(acc.samples() > 0);
+/// ```
 #[derive(Debug, Clone)]
 pub struct StatisticsAccumulator {
     /// Σ weight over samples in the current iteration.

@@ -11,7 +11,7 @@ oCAS 可在任意域上计算多元多项式理想的 Gröbner 基。提供三�
 |---|---|---|
 | Buchberger | `GroebnerBasis::buchberger` | 小理想、教学 |
 | **F4** | `f4::f4` | 生产环境 —— 默认 |
-| F5（实验性） | `f5::f5` | 研究、签名剪枝 |
+| **F5** | `f5::f5` | 基于签名；正则序列 |
 
 换序：
 
@@ -123,11 +123,11 @@ assert!(gb_grevlex.is_groebner_basis());
 
 ---
 
-## F5 与 Hilbert 界（实验性）
+## F5：基于签名的 Gröbner 基
 
 `f5::f5` 实现 Faugère 的签名判据（2002）：签名已出现的 S-对会被
-跳过，可证明对正则序列避免全部零约化。该实现保留用于研究；在测试
-套件的理想上签名规则很少触发，因此 F4 仍是推荐默认。
+跳过，可证明对正则序列避免全部零约化。自 0.19.0 版本起，F5 已是
+生产级实现，在大理想上性能与 F4 竞争。
 
 `hilbert` 模块通过容斥原理计算单项式理想的 Hilbert 分子，给出阶梯
 的正则性——一个可靠的次数界，F4 可将其用作提前终止提示。
@@ -147,3 +147,25 @@ Criterion 计时（cyclic 方程组，ℚ 与 ℤ₁₃ 上，本机）：
 
 ℤ_p 原生 `i64` 快速路径（行阶梯步骤中的惰性模算术）使有限域计时
 接近有理数计时，尽管系数更小。
+
+---
+
+## 单项式序
+
+0.19.1 版本扩展了单项式序系统，在内置 `Lex`、`Grlex` 和 `Grevlex`
+之外支持运行时可配置的序：
+
+| 序 | 入口 | 用途 |
+|---|---|---|
+| `WeightOrder` | `WeightOrder::from_slice(&[2, 1])` | 通过变量权重实现消元序 |
+| `BlockOrder` | `BlockOrder::new(boundaries, orders)` | 分块消元：将变量分组，各组独立排序 |
+
+`WeightOrder` 按加权和 $\sum w_i e_i$ 降序比较单项式。`BlockOrder`
+将变量划分为连续块，各块按独立子序（Lex 或 Grevlex）比较。
+
+```rust
+use ocas_poly::sparse::WeightOrder;
+
+let order = WeightOrder::from_slice(&[2, 1]);
+let p = SparseMultivariatePolynomial::new_with_order(d, 2, order);
+```

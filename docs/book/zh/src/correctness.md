@@ -110,8 +110,8 @@ cargo test -p ocas-tests --test correctness -- --generate-report
 |---|---|---|
 | Wilkinson n=10：10 个实根中仅找到 8 个 | `poly_sparse` / roots | 调查中 |
 | `sin(x)^2 + cos(x)^2 → 1` 需要 `egg` feature | `algebra` | 启用 `egg` feature 后正常 |
-| 部分启发式积分尚未实现 | `calculus_int` | 0.14（Risch）中扩展 |
-| 多项式因式分解限于 Z[x] | `poly_factor` | Q[x] 尚未支持 |
+| Bernoulli forcing y^n 使线性系数提取混淆 | `ode` | 已知限制 |
+| 积分器缺 tan/sec 表项 | `ode` / `calculus_int` | 计划中 |
 
 ---
 

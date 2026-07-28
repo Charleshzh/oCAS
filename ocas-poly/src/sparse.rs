@@ -298,6 +298,19 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
     }
 
     /// Create the zero polynomial with an explicit monomial ordering.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use ocas_domain::IntegerDomain;
+    /// use ocas_poly::sparse::{SparseMultivariatePolynomial, WeightOrder};
+    ///
+    /// let order = WeightOrder::from_slice(&[2, 1]);
+    /// let p = SparseMultivariatePolynomial::<_, WeightOrder>::new_with_order(
+    ///     IntegerDomain, 2, order,
+    /// );
+    /// assert_eq!(p.n_vars(), 2);
+    /// ```
     pub fn new_with_order(domain: D, n_vars: usize, order: O) -> Self {
         Self {
             terms: HashMap::default(),

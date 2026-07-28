@@ -43,6 +43,16 @@ pub enum ODEType {
 /// 6. Second-order constant coefficient
 /// 7. Cauchy-Euler
 /// 8. Power series (fallback for linear ODEs)
+///
+/// # Example
+///
+/// ```no_run
+/// use ocas_calc::ode::{classify_ode, ODE, ODEType};
+///
+/// let ode = ODE { equation: eq, func: y, var: x };
+/// let methods = classify_ode(&ctx, ode);
+/// assert!(methods.contains(&ODEType::LinearFirst));
+/// ```
 pub fn classify_ode<'a>(ctx: &'a AtomArena<'a>, ode: ODE<'a>) -> Vec<ODEType> {
     let ODE {
         equation,

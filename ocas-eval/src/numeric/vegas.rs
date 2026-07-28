@@ -32,6 +32,20 @@ pub trait Integrator {
 }
 
 /// Tuning knobs for [`Vegas`].
+///
+/// # Example
+///
+/// ```
+/// use ocas_eval::numeric::VegasOptions;
+///
+/// let opts = VegasOptions {
+///     n_bins: 50,
+///     n_samples: 10_000,
+///     iterations: 5,
+///     learning_rate: 1.5,
+///     seed: 42,
+/// };
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct VegasOptions {
     /// Number of bins per dimension (the grid is a product of 1-D grids).

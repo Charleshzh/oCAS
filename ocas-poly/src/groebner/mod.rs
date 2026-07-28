@@ -11,8 +11,7 @@
 //! - **F5** ([`f5::f5`]) — signature-based algorithm from Faugère (2002).
 //!   Rejects zero-reducers *before* matrix construction via syzygy
 //!   criteria, targeting order-of-magnitude speedups on difficult ideals
-//!   (e.g. cyclic-n). Currently a placeholder; full implementation
-//!   landing in 0.19.0.
+//!   (e.g. cyclic-n). Production-grade since 0.19.0.
 //!
 //! All algorithms produce a reduced Gröbner basis. [`Algorithm::Auto`]
 //! selects a backend by heuristic (currently F4).

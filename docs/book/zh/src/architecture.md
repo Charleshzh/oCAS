@@ -18,7 +18,7 @@ oCAS 由 12 个公共 crate（外加用于集成测试与基准测试的 `ocas-t
 **`ocas-poly::factor`** — 多项式因式分解，使用 Hensel 提升与有限域技术。
 支持无平方因子分解以及整数域与有理数域上的完全因式分解。
 
-**`ocas-poly::groebner`** — Gröbner 基计算（Buchberger 算法），支持可配置的单项式序（Lex、Grevlex）。
+**`ocas-poly::groebner`** — Gröbner 基计算，提供三种算法：Buchberger、F4（生产默认）和 F5（基于签名）。支持可配置的单项式序（Lex、Grevlex、WeightOrder、BlockOrder）以及零维理想的 FGLM 转换。
 
 **`ocas-poly::roots`** — 单变量多项式实根隔离。
 

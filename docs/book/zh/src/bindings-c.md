@@ -154,3 +154,148 @@ int main(void) {
 | `ocas_ode_classify` | 逗号分隔的可用方法名 |
 | `ocas_ode_dsolve` | 符号解字符串（`"y = ..."` 或 `"unsolved"`） |
 | `ocas_ode_dsolve_ivp` | Laplace 变换求显式 IVP 解 |
+
+## 数值积分 API（Vegas）
+
+自 0.18.0 起，`ocas-c` 通过不透明句柄提供蒙特卡洛积分。
+
+```c
+#include <ocas.h>
+#include <stdio.h>
+
+int main(void) {
+    int err = 0;
+
+    // 创建 2 维 Vegas 积分器（n_samples=10000, iterations=10）。
+    ocas_OcasVegas* v = ocas_vegas_create(2, 10000, 10, &err);
+
+    // 使用回调积分。
+    ocas_OcasIntegrateResult result;
+    ocas_integrate_1d(my_fn, NULL, 0.0, 1.0, 10000, 10, &result);
+    printf("integral = %f ± %f\n", result.integral, result.error);
+
+    ocas_vegas_free(v);
+    return 0;
+}
+```
+
+| 函数 | 用途 |
+|---|---|
+| `ocas_vegas_create(n_dims, n_samples, iterations, &err)` | 创建积分器 |
+| `ocas_vegas_integrate(vegas, fn, user_data, &err)` | 运行积分 |
+| `ocas_vegas_result(vegas)` | 获取 `OcasIntegrateResult` |
+| `ocas_integrate_1d(fn, user_data, a, b, n_samples, iterations, &result)` | 一维便捷函数 |
+
+## 双数 API（HyperDual）
+
+自 0.18.1 起，`ocas-c` 通过不透明句柄提供前向自动微分。系数为字符串
+（`"num"` 或 `"num/den"`）。
+
+```c
+#include <ocas.h>
+
+int main(void) {
+    int err = 0;
+    ocas_OcasDualShape* shape = ocas_dual_shape_new(2, &err);
+
+    // x = 1 + ε₁, y = 2 + ε₂
+    ocas_OcasHyperDual* x = ocas_dual_variable(shape, 0, "1", &err);
+    ocas_OcasHyperDual* y = ocas_dual_variable(shape, 1, "2", &err);
+
+    // f = x * y
+    ocas_OcasHyperDual* f = ocas_dual_mul(x, y, &err);
+    char* val = ocas_dual_value(f, &err);    /* "2" */
+    char* dx  = ocas_dual_deriv(f, 0, &err); /* "2" */
+
+    ocas_string_free(val);
+    ocas_string_free(dx);
+    ocas_hyperdual_free(f);
+    ocas_hyperdual_free(y);
+    ocas_hyperdual_free(x);
+    ocas_dual_shape_free(shape);
+    return 0;
+}
+```
+
+| 函数 | 用途 |
+|---|---|
+| `ocas_dual_shape_new(n_vars, &err)` | 一阶形状 |
+| `ocas_dual_variable(shape, i, coeff, &err)` | 带单位 ε 的变量 |
+| `ocas_dual_constant(shape, coeff, &err)` | 常量（无 ε） |
+| `ocas_dual_value(hd, &err)` | 标量值字符串 |
+| `ocas_dual_deriv(hd, i, &err)` | 第 i 阶导数字符串 |
+| `ocas_dual_add/sub/mul/div(a, b, &err)` | 算术运算 |
+
+## 张量 API
+
+自 0.18.1 起，`ocas-c` 提供张量创建、缩并与对称化。指标标签和位置以
+数组传入。
+
+```c
+#include <ocas.h>
+
+int main(void) {
+    int err = 0;
+
+    // 创建 A^μ（1 阶，上指标 "mu"）。
+    const char* labels[] = {"mu"};
+    int positions[] = {1};  /* 1 = upper */
+    ocas_OcasTensor* A = ocas_tensor_create("A", labels, positions, 1, &err);
+
+    int rank = ocas_tensor_rank(A, &err);  /* 1 */
+
+    // 缩并两个张量（返回缩并结果）。
+    ocas_OcasTensorContraction* c = ocas_tensor_contract(A, B, &err);
+    /* 通过 c->scalar / c->product 访问标量或自由因子 */
+
+    ocas_tensor_contraction_free(c);
+    ocas_tensor_free(A);
+    return 0;
+}
+```
+
+| 函数 | 用途 |
+|---|---|
+| `ocas_tensor_create(name, labels, positions, rank, &err)` | 创建张量 |
+| `ocas_tensor_rank(tensor, &err)` | 查询阶数 |
+| `ocas_tensor_symmetry(tensor, &err)` | 查询对称性（0=None, 1=Sym, 2=Anti） |
+| `ocas_tensor_symmetrise_sign(tensor, &err)` | 反对称化符号 |
+| `ocas_tensor_contract(a, b, &err)` | 缩并匹配指标 |
+| `ocas_tensor_to_string(tensor, &err)` | 字符串表示 |
+
+## 代数数 API
+
+自 0.17.1 起，`ocas-c` 通过不透明句柄提供代数数域运算。
+
+```c
+#include <ocas.h>
+
+int main(void) {
+    int err = 0;
+
+    // Q(√2)：极小多项式 x^2 - 2
+    ocas_OcasAlgebraicField* field =
+        ocas_algebraic_field_create("x^2 - 2", &err);
+    int deg = ocas_algebraic_field_degree(field, &err);  /* 2 */
+
+    // 在 Q(√2) 上创建多项式并因式分解。
+    ocas_OcasAlgebraicPoly* p =
+        ocas_algebraic_poly_create(field, coeffs, n_coeffs, &err);
+    ocas_OcasAlgebraicFactorArray factors;
+    ocas_algebraic_poly_factor(p, &factors, &err);
+
+    /* ... 遍历因子 ... */
+
+    ocas_algebraic_factor_array_free(&factors);
+    ocas_algebraic_poly_free(p);
+    ocas_algebraic_field_free(field);
+    return 0;
+}
+```
+
+| 函数 | 用途 |
+|---|---|
+| `ocas_algebraic_field_create(min_poly, &err)` | 从极小多项式创建 |
+| `ocas_algebraic_field_degree(field, &err)` | 扩张次数 |
+| `ocas_algebraic_poly_create(field, coeffs, n, &err)` | 域上多项式 |
+| `ocas_algebraic_poly_factor(poly, &factors, &err)` | 因式分解（Trager 算法） |

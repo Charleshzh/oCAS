@@ -20,8 +20,10 @@ cyclic dependencies are permitted.
 finite-field techniques. Supports square-free decomposition and full
 factorization over the integers and rationals.
 
-**`ocas-poly::groebner`** — Gröbner basis computation (Buchberger algorithm)
-with configurable monomial orders (Lex, Grevlex).
+**`ocas-poly::groebner`** — Gröbner basis computation with three algorithms:
+Buchberger, F4 (production default), and F5 (signature-based). Supports
+configurable monomial orders (Lex, Grevlex, WeightOrder, BlockOrder) and
+FGLM conversion for zero-dimensional ideals.
 
 **`ocas-poly::roots`** — Real root isolation for univariate polynomials.
 

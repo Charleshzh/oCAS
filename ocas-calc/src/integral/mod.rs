@@ -66,6 +66,21 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 /// point threads `fuel` through the two simplification stages so a pathological
 /// result that would otherwise spin the rewriter can be cut off determin-
 /// istically. Returns `Err` only when fuel was exhausted mid-simplification.
+///
+/// # Example
+///
+/// ```no_run
+/// use ocas_atom::Symbol;
+/// use ocas_core::fuel::Fuel;
+/// use ocas_calc::integral::integrate_with_fuel;
+///
+/// let fuel = Fuel::new(500);
+/// let result = integrate_with_fuel(&ctx, expr, Symbol::new("x"), &fuel);
+/// match result {
+///     Ok(r) => println!("{}", r),
+///     Err(_) => println!("fuel exhausted during simplification"),
+/// }
+/// ```
 pub fn integrate_with_fuel<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
