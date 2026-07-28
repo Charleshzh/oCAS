@@ -821,6 +821,13 @@ impl Rational {
         Self(RugRational::from(n.as_rug().clone()))
     }
 
+    /// Create a rational number from arbitrary-precision integers.
+    pub fn from_bigints(numer: num_bigint::BigInt, denom: num_bigint::BigInt) -> Self {
+        let n = Integer::from(numer);
+        let d = Integer::from(denom);
+        Self(RugRational::from((n.as_rug().clone(), d.as_rug().clone())))
+    }
+
     /// Numerator as an [`Integer`].
     pub fn numer(&self) -> Integer {
         Integer::from(self.0.numer().clone())
