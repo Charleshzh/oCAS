@@ -54,6 +54,7 @@ jobs:
         run: |
           # Topological order based on workspace dependency graph.
           # Crates at the same level are independent and can be published in any order.
+          # Topological order: ocas-gpl must precede ocas (which depends on it).
           crates=(
             ocas-core
             ocas-domain
@@ -63,10 +64,10 @@ jobs:
             ocas-rewrite
             ocas-eval
             ocas-calc
+            ocas-gpl
             ocas
             ocas-c
             ocas-py
-            ocas-gpl
           )
           failed=0
           for crate in "${crates[@]}"; do
