@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.20.1 @ 2026-07-28** (0.20.1 full ODE solver backfill: integrating factors + VOP + reduction of order + series recursion + Frobenius + Laplace IVP + 2×2 systems + Python/C bindings; ODE gap upgraded 🟡→🟢)
+> Last evaluated: **0.21.0 @ 2026-07-30** (0.21.0 number theory & computational algebra stack: multi-modulus CRT + BPSW + integer factorization (rho/p−1/p+1/ECM) + discrete logarithms + number-theoretic functions + modular GCD (Brown univariate + multivariate multi-prime) + Python/C bindings; the §3 large-coefficient GCD gap and the §5 #11 number-theory gap are both closed 🟢)
 
 ---
 
@@ -51,8 +51,11 @@ For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 | 0.17.1 | 1.0 Candidate | ✅ | ✅ Algebraic-number Python/C bindings: `AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial` Python classes + `OcasAlgebraicField`/`OcasAlgebraicPoly` opaque handles and `ocas_algebraic_*` C ABI; `RootOf(poly, idx)` parse confirmation |
 | 0.18.0 | 1.0 Candidate | ✅ | ✅ Numerical integration (Vegas adaptive Monte Carlo + `integrate_1d` + `StatisticsAccumulator` + `Integrator` trait), forward automatic differentiation (`HyperDual<T>` runtime shape + truncated product table + geometric-series inverse + `DualCoeff` trait, Rational dual-path), fuel resource control (`Fuel = Arc<AtomicUsize>` + `OutOfFuel` + `simplify_with_fuel`/`integrate_with_fuel`), tensor basics (independent `Tensor` type + index slots + explicit contraction + `symmetrise_sign`); added `rand`/`rand_xoshiro` |
 | 0.18.1 | 1.0 Candidate | ✅ | ✅ Patch: Python/C bindings backfill for the three 0.18.0 capabilities (`ocas-py::{numeric,tensor,dual}` + `ocas-c::{numeric,tensor,dual}` opaque handles and C ABI + `include/ocas.h` synced) + prelude re-exports for tensor / dual / `StatisticsAccumulator`; 41 Python tests + 31 C API tests added; `normalize` idempotency bug fixed (drop Num(0)/Num(1) after `merge_numbers` in Add/Mul) |
+| 0.19.0/0.19.1 | 1.0 Candidate | ✅ | ✅ F5 Gröbner signature reduction (cyclic-6 ℤ₁₃ 3670 s → 2.63 s, ~1400×); `MonomialOrder` trait refactor + `WeightOrder`/`BlockOrder` |
+| 0.20.0/0.20.1 | 1.0 Candidate | ✅ | ✅ Full ODE solver: five first-order methods + integrating factors; second-order constant-coefficient/Cauchy-Euler + VOP + reduction of order + extended undetermined coefficients; series recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 systems (`dsolve_system`); Python/C bindings; 31 substitution-verified correctness tests |
+| 0.21.0 | 1.0 Candidate | ✅ | ✅ Number theory & computational algebra stack: multi-modulus CRT accumulator, BPSW primality + deterministic MR below 2⁶⁴, integer factorization (trial / Brent rho / Pollard p−1 / Williams p+1 / ECM Suyama-Montgomery), BSGS + Pohlig-Hellman discrete logarithms, φ/μ/τ/σ_k/λ functions; univariate Brown modular GCD (`gcd::modular::gcd_modular_z`) + full Brown rewrite of the bivariate `gcd_modular` (content separation + monic interpolation images + multi-prime CRT + rational reconstruction); Python/C bindings (`ocas::ntheory` / `ocas_ntheory_*`); latent integer-sqrt performance bomb in `rational_reconstruction` fixed; ECM factors a 30-digit semiprime in 1.1 s (<10 s) |
 
-All 0.1–0.18.1 deliverables landed. The workspace is pinned at 0.18.1. Quality
+All 0.1–0.21.0 deliverables landed. The workspace is pinned at 0.21.0. Quality
 gates are green: `cargo fmt`, `clippy -D warnings`, workspace tests,
 `cargo deny`, pytest cases, `mdbook build`.
 
@@ -102,10 +105,11 @@ source of the gap.
 | Gröbner basis | F4 with real linear algebra (0.15.1) + F5 signature reduction (0.19.0: `Signature`/`SyzygySet` + native ℤ_p fast path `f5_fp`) + FGLM + unified `groebner_basis()` dispatch + native i64 ℤ_p pipeline; cyclic-6 ℤ₁₃ **2.63 s** (baseline 3670 s, ~1400×); cyclic-5 ℤ₁₃ 0.05 s | 🟢 F4 + F5 complete |
 | Symbolic integration | Risch (elementary transcendental towers + RDE polynomial fragment) + rational-function Hermite + trig exp(I·x) + special-function table (erf/Ei/Si/Ci/Fresnel); falls back to `Integral(...)` | 🟢 Risch done |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate); known gap: only 8/10 roots isolated on expanded Wilkinson n=10 | 🟡 Fairly complete |
-| Polynomial GCD | GCD + primitive part + extended GCD (0.12) + arbitrary-arity multivariate GCD via EEZ (0.16) + modular number-field GCD over GF(p^d) with CRT + rational reconstruction (0.17); no modular-GCD fast path for very large integer coefficients | 🟢 Usable, no HEVMGCD |
+| Polynomial GCD | GCD + primitive part + extended GCD (0.12) + arbitrary-arity multivariate GCD via EEZ (0.16) + modular number-field GCD over GF(p^d) with CRT + rational reconstruction (0.17) + univariate Brown modular GCD and bivariate multi-prime modular GCD (0.21, no coefficient explosion on large inputs) | 🟢 Complete (incl. modular fast path, no HEVMGCD) |
 | Linear solving | Rational/integer linear systems + bivariate Diophantine (`ax+by=c`) | 🟡 Usable, limited scale |
 | JIT evaluation | Cranelift backend; ≥10x speedup target met (per roadmap criterion) | 🟢 Complete |
 | ODE | `ocas-calc::ode`: `dsolve()` entry + `classify_ode()` classifier; 5 first-order + integrating factors; 2 second-order + VOP + reduction of order; series recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 systems (`dsolve_system`); Python/C bindings | 🟢 Complete (0.20.1) |
+| Number theory | Multi-modulus CRT, BPSW primality + deterministic MR below 2⁶⁴, integer factorization (rho/p−1/p+1/ECM, 30-digit semiprime in 1.1 s), BSGS + Pohlig-Hellman discrete logarithms, φ/μ/τ/σ_k/λ, quadratic-residue symbols and modular square roots; Python/C bindings (0.21) | 🟢 Core stack complete (0.21) |
 
 ---
 
@@ -151,7 +155,7 @@ SageMath is a "Swiss-army-knife" scientific environment. The gap is
 | Domain | oCAS | SageMath |
 |---|---|---|
 | Algebraic geometry | 🟡 basic Gröbner | ✅ Singular integration |
-| Number theory | 🟡 basic Diophantine | ✅ PARI/FLINT full stack |
+| Number theory | � core stack complete (0.21: CRT + factorization + primality + discrete log + number-theoretic functions) | ✅ PARI/FLINT full stack |
 | Differential equations | 🟢 first/second-order/systems/series/Laplace/bindings complete (0.20.1) | ✅ full ODE/PDE solvers |
 | Group / representation theory | 🔴 none | ✅ GAP integration |
 | Combinatorics | 🔴 none | ✅ complete |
@@ -209,7 +213,7 @@ breadth, and Post-1.0 topics.
 | 8 | ~~Algebraic-number-field factorization~~ (completed 0.17) | ✅ done — Trager algorithm (shifted norm + ℚ factorization + GF(p^d) modular GCD), univariate path; multivariate extension deferred |
 | 9 | ~~Numerical integration / dual numbers / tensor basics / fuel~~ (done in 0.18) | ✅ Done — Vegas + HyperDual + index contraction + fuel; 0.18.1 backfilled the Python/C bindings |
 | 10 | ~~ODE solvers~~ (0.20.1 complete) | ✅ Done — 5 first-order + integrating factors; 2 second-order + VOP + reduction of order; series recursion + Frobenius; Laplace IVP; 2×2 systems; Python/C bindings |
-| 11 | Number theory stack (Phase B++ 0.21) | 🟢 SageMath/PARI parity; modular GCD + integer factorization + primality + discrete log + CRT |
+| 11 | ~~Number theory stack~~ (done 0.21) | ✅ done — modular GCD (univariate Brown + bivariate multi-prime) + integer factorization (ECM: 30-digit semiprime in 1.1 s) + BPSW primality + discrete log + CRT + number-theoretic functions + Python/C bindings |
 | 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | 🟡 Symbolica's last bastion; needs graph-isomorphism engine |
 | 13 | Algebraic-geometry tooling (Phase B++ 0.23) | 🟢 SageMath/Singular parity; ideal ops + RUR + primary decomposition + Hilbert series |
 | 14 | PDE solvers (Post-1.0) | 🟢 high user demand; Poisson/heat/wave |

@@ -13,11 +13,13 @@
 
 use num_bigint::BigInt;
 use num_traits::{One, Signed, Zero};
+use ocas_domain::number_theory::{crt::crt_many, primes_from};
 use ocas_domain::{
     Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer, IntegerDomain,
 };
 
 use crate::dense::DenseUnivariatePolynomial;
+use crate::rational_reconstruction::rational_reconstruction;
 use crate::sparse::{Lex, SparseMultivariatePolynomial};
 
 /// Alias for sparse polynomials over the integers with lexicographic order.
@@ -419,6 +421,9 @@ pub fn bivariate_gcd_fp(a: &FpMPoly, b: &FpMPoly) -> Option<FpMPoly> {
             eval_val += 1;
             continue;
         }
+        // Normalize to monic so images across evaluation points (and across
+        // primes, for the multi-prime caller) are consistent associates.
+        let g_eval = monic_fp(&g_eval, &field);
         images.push((eval_val, g_eval));
         eval_val += 1;
     }
@@ -478,7 +483,7 @@ fn fp_univariate_gcd_x(a: &FpMPoly, b: &FpMPoly) -> FpMPoly {
     let field = a.domain().clone();
     let a_x = fp_extract_constant_in_y(a);
     let b_x = fp_extract_constant_in_y(b);
-    let g = a_x.gcd(&b_x);
+    let g = monic_fp(&a_x.gcd(&b_x), &field);
     let mut result = FpMPoly::new(field, a.n_vars());
     for (i, c) in g.coeffs().iter().enumerate() {
         if !c.value().is_zero() {
@@ -486,6 +491,19 @@ fn fp_univariate_gcd_x(a: &FpMPoly, b: &FpMPoly) -> FpMPoly {
         }
     }
     result
+}
+
+/// Normalize a dense univariate polynomial over a field to be monic.
+fn monic_fp(
+    g: &DenseUnivariatePolynomial<FiniteField>,
+    field: &FiniteField,
+) -> DenseUnivariatePolynomial<FiniteField> {
+    match g.leading_coeff() {
+        Some(lc) if !field.is_one(lc) => {
+            g.mul_scalar(&field.inv(lc).expect("nonzero field element"))
+        }
+        _ => g.clone(),
+    }
 }
 
 /// Extract terms with y-degree 0 as a univariate polynomial.
@@ -603,14 +621,18 @@ fn fp_lagrange_interpolate(
     Some(coeffs)
 }
 
-/// Modular bivariate GCD over ℤ.
+/// Modular bivariate GCD over ℤ (multi-prime Brown strategy).
 ///
-/// Reduces the input polynomials mod a suitable prime, computes the GCD in ℤ_p
-/// via evaluation-interpolation, then lifts the result back to ℤ.
-///
-/// This avoids coefficient growth that plagues direct integer GCD computation.
-/// For robustness with large coefficients, multiple primes + CRT should be used;
-/// this implementation uses a single prime as a first step.
+/// Separates the content with respect to the main variable `x` (a GCD of
+/// univariate polynomials in `y`), computes monic-in-`x` GCDs of the
+/// primitive parts modulo a sequence of primes, and reconstructs the
+/// rational coefficients of the true GCD via CRT plus rational
+/// reconstruction. The candidate is accepted only when it has full degree
+/// and divides both primitive parts exactly (checked by reduction to zero).
+/// Primes whose modular GCD has a larger degree in `x` than the current
+/// best ("unlucky" primes) are discarded; primes dividing the integer
+/// content of either leading coefficient are skipped, since they would
+/// corrupt the degree comparison.
 pub fn gcd_modular(a: &ZMPoly, b: &ZMPoly) -> Option<ZMPoly> {
     if a.is_zero() {
         return Some(b.primitive_part());
@@ -621,92 +643,179 @@ pub fn gcd_modular(a: &ZMPoly, b: &ZMPoly) -> Option<ZMPoly> {
     if a.n_vars() < 2 || b.n_vars() < 2 {
         return None;
     }
+    let n_vars = a.n_vars();
 
-    // Compute content GCD and work with primitive parts.
-    let content_a = a.content();
-    let content_b = b.content();
-    let content_gcd = IntegerDomain.gcd(&content_a, &content_b);
     let a_prim = a.primitive_part();
     let b_prim = b.primitive_part();
+    // Content with respect to x (a polynomial in y only).
+    let cont_a = content_in_x(&a_prim, n_vars);
+    let cont_b = content_in_x(&b_prim, n_vars);
+    let cont_g = gcd_poly_y(&cont_a, &cont_b, n_vars);
+    let pp_a = a_prim.checked_div_exact(&cont_a)?;
+    let pp_b = b_prim.checked_div_exact(&cont_b)?;
 
-    // Choose a suitable prime: must not divide any leading coefficient.
-    let prime = choose_prime(&a_prim, &b_prim)?;
-
-    // Reduce mod p.
-    let prime_bi = prime.to_bigint();
-    let a_p = reduce_mod(&a_prim, &prime_bi);
-    let b_p = reduce_mod(&b_prim, &prime_bi);
-
-    // Compute GCD in ℤ_p.
-    let g_p = bivariate_gcd_fp(&a_p, &b_p)?;
-
-    // Lift back to ℤ.
-    let g_z = lift_from_fp(&g_p);
-
-    // Multiply back by the content GCD and make primitive.
-    let g = g_z.mul_scalar(&content_gcd);
-    let g = g.primitive_part();
-
-    // Verify: g should divide both a and b (degree check).
-    let deg_g = g.total_degree().unwrap_or(0);
-    if deg_g > a.total_degree().unwrap_or(0) || deg_g > b.total_degree().unwrap_or(0) {
-        return None;
-    }
-
-    Some(g)
+    let deg_a = poly_degree_in(&pp_a, 0);
+    let deg_b = poly_degree_in(&pp_b, 0);
+    let pp_gcd = if deg_a == 0 && deg_b == 0 {
+        gcd_poly_y(&pp_a, &pp_b, n_vars)
+    } else if deg_a == 0 || deg_b == 0 {
+        // A y-only primitive part is coprime to any x-primitive polynomial.
+        pp_a.one()
+    } else {
+        modular_gcd_x(&pp_a, &pp_b, n_vars)?
+    };
+    Some(cont_g.mul(&pp_gcd).primitive_part())
 }
 
-/// Choose a prime that does not divide any coefficient of `a` or `b`.
-///
-/// This is conservative: the modular GCD only requires the prime to not
-/// divide the leading coefficient, but checking all coefficients avoids
-/// accidental term loss during reduction.
-fn choose_prime(a: &ZMPoly, b: &ZMPoly) -> Option<Integer> {
-    // Start with a small prime and try candidates.
-    let candidates: Vec<i64> = vec![
-        4_294_967_291, // large 32-bit prime
-        4_294_967_279,
-        4_294_967_231,
-        2_147_483_647, // Mersenne prime
-        1_000_000_007,
-        998_244_353,
-        1_000_003,
-        999_983,
-    ];
+/// Multi-prime modular GCD of the primitive parts (Brown's algorithm).
+fn modular_gcd_x(pp_a: &ZMPoly, pp_b: &ZMPoly, n_vars: usize) -> Option<ZMPoly> {
+    // Any prime that makes the x-leading coefficient of the true GCD vanish
+    // mod p divides this integer; skipping such primes keeps the degree
+    // comparison sound.
+    let bad = IntegerDomain.gcd(&lc_in_x(pp_a).content(), &lc_in_x(pp_b).content());
 
-    for &p in &candidates {
-        let prime = Integer::from(p);
-        let prime_bi = prime.to_bigint();
-        // Check that no leading coefficient is divisible by p.
-        let ok_a = a.terms_ref().values().all(|c| {
-            let rem = c.to_bigint() % &prime_bi;
-            !rem.is_zero()
-        });
-        let ok_b = b.terms_ref().values().all(|c| {
-            let rem = c.to_bigint() % &prime_bi;
-            !rem.is_zero()
-        });
-        if ok_a && ok_b {
-            return Some(prime);
+    let mut best_deg_x: Option<usize> = None;
+    let mut images: Vec<(Integer, FpMPoly)> = Vec::new();
+    let mut prime_iter = primes_from(&Integer::from(1_000_000_007));
+    for _ in 0..64 {
+        let p = prime_iter.next().expect("primes are inexhaustible");
+        if !bad.is_one() && bad.mod_floor(&p).is_zero() {
+            continue;
         }
-    }
-    // Fallback: try to find any prime that works.
-    for p in [1_000_003i64, 999_983, 999_979, 999_961] {
-        let prime = Integer::from(p);
-        let prime_bi = prime.to_bigint();
-        let ok = a
-            .terms_ref()
-            .values()
-            .chain(b.terms_ref().values())
-            .all(|c| {
-                let rem = c.to_bigint() % &prime_bi;
-                !rem.is_zero()
-            });
-        if ok {
-            return Some(prime);
+        let a_p = reduce_mod(pp_a, &p.to_bigint());
+        let b_p = reduce_mod(pp_b, &p.to_bigint());
+        let g_p = bivariate_gcd_fp(&a_p, &b_p)?;
+        let deg_x = fp_poly_degree_in(&g_p, 0);
+        let is_constant = g_p.total_degree() == Some(0);
+
+        match best_deg_x {
+            None => {
+                best_deg_x = Some(deg_x);
+                images.push((p, g_p));
+            }
+            Some(bd) if deg_x < bd => {
+                best_deg_x = Some(deg_x);
+                images.clear();
+                images.push((p, g_p));
+            }
+            Some(bd) if deg_x == bd => images.push((p, g_p)),
+            _ => continue, // unlucky prime
+        }
+        // A constant monic image means the primitive parts are coprime.
+        if best_deg_x == Some(0) && is_constant {
+            return Some(pp_a.one());
+        }
+        // Trial reconstruction: accept only a common divisor of full degree.
+        if let Some(cand) = reconstruct_rational(&images, n_vars) {
+            let cand = cand.primitive_part();
+            if poly_degree_in(&cand, 0) == best_deg_x.unwrap_or(0)
+                && pp_a.reduce(std::slice::from_ref(&cand)).is_zero()
+                && pp_b.reduce(std::slice::from_ref(&cand)).is_zero()
+            {
+                return Some(cand);
+            }
         }
     }
     None
+}
+
+/// CRT + rational-reconstruction pass over the per-prime monic images:
+/// combine each coefficient across primes, recover its rational value,
+/// and clear denominators to obtain an integer polynomial.
+fn reconstruct_rational(images: &[(Integer, FpMPoly)], n_vars: usize) -> Option<ZMPoly> {
+    let mut exps: std::collections::BTreeSet<Vec<usize>> = std::collections::BTreeSet::new();
+    for (_, img) in images {
+        for e in img.terms_ref().keys() {
+            exps.insert(e.to_vec());
+        }
+    }
+    let mut rationals: Vec<(Vec<usize>, Integer, Integer)> = Vec::with_capacity(exps.len());
+    for e in exps {
+        let cs: Vec<(Integer, Integer)> = images
+            .iter()
+            .map(|(p, img)| (Integer::from(img.coeff(&e).value().clone()), p.clone()))
+            .collect();
+        let (r, m) = crt_many(&cs)?;
+        let (n, d) = rational_reconstruction(&r, &m)?;
+        rationals.push((e, n, d));
+    }
+    // Clear denominators: multiply every numerator by lcm(d_i)/d_i.
+    let mut lcm = Integer::from(1);
+    for (_, _, d) in &rationals {
+        lcm = &lcm * &(d / &IntegerDomain.gcd(&lcm, d));
+    }
+    let mut result = ZMPoly::new(IntegerDomain, n_vars);
+    for (e, n, d) in rationals {
+        let coeff = &(&lcm / &d) * &n;
+        if !coeff.is_zero() {
+            result.set_term_external(e, coeff);
+        }
+    }
+    Some(result)
+}
+
+/// Convert a bivariate polynomial that only involves `y` into a dense
+/// univariate polynomial in `y`.
+fn zmpoly_to_dense_y(p: &ZMPoly) -> DenseUnivariatePolynomial<IntegerDomain> {
+    let mut coeffs: Vec<Integer> = Vec::new();
+    for (exp, c) in p.terms_ref() {
+        debug_assert_eq!(exp[0], 0, "expected a y-only polynomial");
+        let y = exp.get(1).copied().unwrap_or(0);
+        if coeffs.len() <= y {
+            coeffs.resize(y + 1, Integer::from(0));
+        }
+        coeffs[y] = Integer::from(coeffs[y].to_bigint() + c.to_bigint());
+    }
+    DenseUnivariatePolynomial::from_coeffs(IntegerDomain, coeffs)
+}
+
+/// Wrap a dense univariate-in-`y` polynomial as a bivariate polynomial.
+fn dense_y_to_zmpoly(g: &DenseUnivariatePolynomial<IntegerDomain>, n_vars: usize) -> ZMPoly {
+    let mut result = ZMPoly::new(IntegerDomain, n_vars);
+    for (j, c) in g.coeffs().iter().enumerate() {
+        if !c.is_zero() {
+            let mut exp = vec![0usize; n_vars];
+            if n_vars > 1 {
+                exp[1] = j;
+            }
+            result.set_term_external(exp, c.clone());
+        }
+    }
+    result
+}
+
+/// GCD of two y-only bivariate polynomials (dense univariate GCD in `y`).
+fn gcd_poly_y(f: &ZMPoly, g: &ZMPoly, n_vars: usize) -> ZMPoly {
+    let h = zmpoly_to_dense_y(f).gcd(&zmpoly_to_dense_y(g));
+    dense_y_to_zmpoly(&h, n_vars)
+}
+
+/// Content of `p` with respect to the main variable `x`: the GCD of the
+/// `y`-polynomial coefficients of `x^k` (itself a polynomial in `y` only).
+fn content_in_x(p: &ZMPoly, n_vars: usize) -> ZMPoly {
+    let deg_x = poly_degree_in(p, 0);
+    let mut acc = p.coeff_of_var_pow(0, 0);
+    for k in 1..=deg_x {
+        if acc.total_degree() == Some(0) {
+            break;
+        }
+        let ck = p.coeff_of_var_pow(0, k);
+        if ck.is_zero() {
+            continue;
+        }
+        if acc.is_zero() {
+            acc = ck;
+            continue;
+        }
+        acc = gcd_poly_y(&acc, &ck, n_vars);
+    }
+    acc
+}
+
+/// Leading coefficient of `p` with respect to the main variable `x`
+/// (a polynomial in `y` only).
+fn lc_in_x(p: &ZMPoly) -> ZMPoly {
+    p.coeff_of_var_pow(0, poly_degree_in(p, 0))
 }
 
 #[cfg(test)]
@@ -827,6 +936,63 @@ mod tests {
         let g = g.unwrap();
         // GCD should be x^2 + y (degree 2).
         assert!(reconstruct_check(&a, &b, &g), "GCD degree inconsistent");
+    }
+
+    #[test]
+    fn gcd_modular_large_coefficients_multi_prime() {
+        // Coefficients ~10^20 (67 bits) cannot be reconstructed from a
+        // single ~31-bit prime image: this exercises the multi-prime CRT
+        // path end to end.
+        let big1 = Integer::from(10i64).pow_u32(20);
+        let big2 = Integer::from(10i64).pow_u32(19);
+        // g = x + 2y + 1 (the shared factor).
+        let g = ZMPoly::from_terms(
+            IntegerDomain,
+            2,
+            vec![
+                (vec![1, 0], Integer::from(1)),
+                (vec![0, 1], Integer::from(2)),
+                (vec![0, 0], Integer::from(1)),
+            ],
+        );
+        // h1 = 10^20·x + 3y − 5, h2 = 7x − 10^19·y + 2.
+        let h1 = ZMPoly::from_terms(
+            IntegerDomain,
+            2,
+            vec![
+                (vec![1, 0], big1),
+                (vec![0, 1], Integer::from(3)),
+                (vec![0, 0], Integer::from(-5)),
+            ],
+        );
+        let h2 = ZMPoly::from_terms(
+            IntegerDomain,
+            2,
+            vec![
+                (vec![1, 0], Integer::from(7)),
+                (vec![0, 1], -big2),
+                (vec![0, 0], Integer::from(2)),
+            ],
+        );
+        let a = g.mul(&h1);
+        let b = g.mul(&h2);
+        let got = gcd_modular(&a, &b).expect("multi-prime CRT must succeed");
+        assert_eq!(got, g);
+        assert!(a.reduce(std::slice::from_ref(&got)).is_zero());
+        assert!(b.reduce(std::slice::from_ref(&got)).is_zero());
+    }
+
+    #[test]
+    fn gcd_modular_y_only_factor() {
+        // Shared factor depends only on y: g = 3y + 2.
+        let g = zmp2(&[(0, 1, 3), (0, 0, 2)]);
+        let a = g.mul(&zmp2(&[(1, 0, 1), (0, 1, 1), (0, 0, -1)]));
+        let b = g.mul(&zmp2(&[(2, 0, 1), (0, 0, 4)]));
+        let got = gcd_modular(&a, &b).expect("y-only factor GCD must succeed");
+        assert!(got.coeff(&[1, 0]).is_zero(), "GCD must not contain x");
+        assert!(a.reduce(std::slice::from_ref(&got)).is_zero());
+        assert!(b.reduce(std::slice::from_ref(&got)).is_zero());
+        assert!(poly_degree_in(&got, 1) == 1, "GCD must keep the y factor");
     }
 
     // --- Property tests ---

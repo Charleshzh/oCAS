@@ -70,10 +70,14 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 /// # Example
 ///
 /// ```no_run
-/// use ocas_atom::Symbol;
+/// use ocas_atom::{AtomArena, Symbol};
+/// use ocas_core::arena::Arena;
 /// use ocas_core::fuel::Fuel;
 /// use ocas_calc::integral::integrate_with_fuel;
 ///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let expr = ctx.var("x");
 /// let fuel = Fuel::new(500);
 /// let result = integrate_with_fuel(&ctx, expr, Symbol::new("x"), &fuel);
 /// match result {

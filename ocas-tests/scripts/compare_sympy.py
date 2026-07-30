@@ -33,8 +33,52 @@ def _normalize(expr) -> str:
     return str(expanded)
 
 
+def _make_ntheory_task(task: str, expr_str: str) -> Callable:
+    """Number-theory tasks (``nt_`` prefix). Results are canonical strings."""
+
+    if task == "nt_factorint":
+        d = sp.factorint(int(expr_str))
+        items = sorted(d.items())
+        return lambda: ",".join(f"{p}:{e}" for p, e in items)
+    if task == "nt_isprime":
+        return lambda: str(sp.isprime(int(expr_str)))
+    if task == "nt_nextprime":
+        return lambda: str(sp.nextprime(int(expr_str)))
+    if task == "nt_totient":
+        return lambda: str(sp.totient(int(expr_str)))
+    if task == "nt_mobius":
+        return lambda: str(sp.mobius(int(expr_str)))
+    if task == "nt_divisor_count":
+        return lambda: str(sp.divisor_count(int(expr_str)))
+    if task == "nt_divisor_sigma":
+        n_str, k_str = expr_str.split(";")
+        return lambda: str(sp.divisor_sigma(int(n_str), int(k_str)))
+    if task == "nt_liouville":
+        # SymPy 1.14 has no liouville: compute (-1)^Ω(n) from factorint.
+        n = int(expr_str)
+        d = sp.factorint(n)
+        omega = sum(e for p, e in d.items() if p != -1)
+        return lambda: str((-1) ** omega if n != 0 else 0)
+    if task == "nt_discrete_log":
+        # SymPy discrete_log(n, a, b) solves b^x ≡ a (mod n).
+        p_str, b_str, t_str = expr_str.split(";")
+        return lambda: str(sp.discrete_log(int(p_str), int(t_str), int(b_str)))
+    if task == "nt_crt":
+        m_part, r_part = expr_str.split("|")
+        ms = [int(t) for t in m_part.split(",")]
+        rs = [int(t) for t in r_part.split(",")]
+        return lambda: "{},{}".format(*sp.ntheory.modular.crt(ms, rs))
+    if task == "nt_jacobi":
+        a_str, n_str = expr_str.split(";")
+        return lambda: str(sp.jacobi_symbol(int(a_str), int(n_str)))
+    raise ValueError(f"unknown ntheory task: {task}")
+
+
 def _make_task(task: str, expr_str: str) -> Callable:
     x, y, z = _X, _Y, _Z
+
+    if task.startswith("nt_"):
+        return _make_ntheory_task(task, expr_str)
 
     if task == "series":
         # expr_str may encode the order as "expr:order" (default 10).
@@ -99,6 +143,8 @@ def compute_task(task: str, expr_str: str) -> str:
     """Run the task once and return a normalized string result."""
     stmt = _make_task(task, expr_str)
     result = stmt()
+    if task.startswith("nt_"):
+        return str(result)
     return _normalize(result)
 
 

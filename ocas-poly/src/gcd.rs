@@ -3,10 +3,15 @@
 //! Implements the Euclidean algorithm for dense univariate polynomials
 //! over any [`EuclideanDomain`]. For non-field domains (e.g. Z[x]),
 //! pseudo-remainders are used to avoid fractional coefficients.
+//!
+//! For large integer coefficients, prefer the modular Brown algorithm in
+//! [`modular`], which avoids the coefficient explosion of pseudo-remainders.
 
 use ocas_domain::EuclideanDomain;
 
 use crate::dense::DenseUnivariatePolynomial;
+
+pub mod modular;
 
 impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
     /// Compute the pseudo-remainder of `self` divided by `other`.

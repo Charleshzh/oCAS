@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-28 (0.20.1 released: full ODE solver backfill — integrating factors + VOP + reduction of order + series recursion + Frobenius + Laplace IVP + 2×2 systems + Python/C bindings; Phase B++ continues)**
+> Last revised: **2026-07-30 (0.21.0 released: number theory & computational algebra stack — multi-modulus CRT + BPSW + integer factorization (rho/p−1/p+1/ECM) + discrete logarithms + number-theoretic functions + modular GCD (Brown univariate + multivariate multi-prime) + Python/C bindings; Phase B++ continues)**
 
 ---
 
@@ -839,22 +839,49 @@ coefficients) and brings core number-theory tooling.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Modular polynomial GCD (Brown's algorithm / EZ-GCD for large ℤ coefficients — closes GAP_ANALYSIS §3 GCD gap) | Brown 1971; Symbolica `poly/gcd.rs` modular path | `ocas-poly::gcd::modular` | [ ] |
-| Chinese remainder theorem: polynomial + integer, full reconstruction | Crandall & Pomerance Ch. 2 | `ocas-domain::crt` | [ ] |
-| Integer factorization: trial (small primes), Pollard rho, Pollard p−1, Williams p+1, elliptic curve method (ECM) | Crandall & Pomerance Ch. 5–6 | `ocas-domain::factor::integer` | [ ] |
-| Primality: Miller-Rabin (probabilistic), BPSW, deterministic (APR-CL or AKS) | Crandall & Pomerance Ch. 4 | `ocas-domain::primes` | [ ] |
-| Discrete logarithm: baby-step giant-step, Pohlig-Hellman | Crandall & Pomerance Ch. 6 | `ocas-domain::dlog` | [ ] |
-| Number-theoretic functions: Euler totient, Möbius μ, divisor σ/τ, Liouville λ | Hardy & Wright | `ocas-domain::number_theory` (extend) | [ ] |
-| Quadratic residues: Legendre/Jacobi symbols, modular square root (Tonelli-Shanks) | Crandall & Pomerance §2.9 | `ocas-domain::residues` | [ ] |
-| Python/C bindings: `factorint`, `isprime`, `nextprime`, `discrete_log`, `crt`, `jacobi_symbol` | SymPy `ntheory` API parity | `ocas-py::ntheory`, `ocas-c::ntheory` | [ ] |
+| Modular polynomial GCD (Brown's algorithm / EZ-GCD for large ℤ coefficients — closes GAP_ANALYSIS §3 GCD gap) | Brown 1971; Symbolica `poly/gcd.rs` modular path | `ocas-poly::gcd::modular` | [x] (univariate Brown + multivariate multi-prime CRT + rational reconstruction) |
+| Chinese remainder theorem: polynomial + integer, full reconstruction | Crandall & Pomerance Ch. 2 | `ocas-domain::number_theory::crt` | [x] (`crt_many` multi-modulus accumulator; per-coefficient polynomial CRT inside the modular GCD) |
+| Integer factorization: trial (small primes), Pollard rho, Pollard p−1, Williams p+1, elliptic curve method (ECM) | Crandall & Pomerance Ch. 5–6 | `ocas-domain::number_theory::factor` | [x] (ECM: Suyama parametrization, Montgomery curves, stage 1) |
+| Primality: Miller-Rabin (probabilistic), BPSW, deterministic (APR-CL or AKS) | Crandall & Pomerance Ch. 4 | `ocas-domain::number_theory::primes` | [x] (BPSW + deterministic MR for n<2⁶⁴; APR-CL/AKS explicitly out of scope) |
+| Discrete logarithm: baby-step giant-step, Pohlig-Hellman | Crandall & Pomerance Ch. 6 | `ocas-domain::number_theory::dlog` | [x] |
+| Number-theoretic functions: Euler totient, Möbius μ, divisor σ/τ, Liouville λ | Hardy & Wright | `ocas-domain::number_theory::functions` | [x] |
+| Quadratic residues: Legendre/Jacobi symbols, modular square root (Tonelli-Shanks) | Crandall & Pomerance §2.9 | `ocas-domain::number_theory` | [x] (landed earlier; this release adds SymPy cross-verification) |
+| Python/C bindings: `factorint`, `isprime`, `nextprime`, `discrete_log`, `crt`, `jacobi_symbol` | SymPy `ntheory` API parity | `ocas-py::ntheory`, `ocas-c::ntheory` | [x] (plus `totient`/`mobius`/`divisor_count`/`divisor_sigma`/`liouville_lambda`) |
 
 **Acceptance**
 
-- SymPy `ntheory` cross-verification on ≥ 20 cases per sub-module.
-- ECM factors 30-digit semiprimes in < 10 s.
-- Modular polynomial GCD handles degree-50 integer-coefficient polynomials
-  with 100-digit coefficients without coefficient explosion.
-- BPSW primality: no known composites pass (deterministic for n < 2⁶⁴).
+- [x] SymPy `ntheory` cross-verification on ≥ 20 cases per sub-module
+  (correctness `ntheory.rs`: factorint 22, isprime 23, nextprime 20,
+  totient 20, mobius 20, divisor_count 20, divisor_sigma 20, liouville 20,
+  crt 20, jacobi 22, discrete_log 20 — all green).
+- [x] ECM factors 30-digit semiprimes in < 10 s (~1.1 s measured in release;
+  `#[ignore]` acceptance test `factor_integer_30_digit_semiprime_under_10s`).
+- [x] Modular polynomial GCD handles degree-50 integer-coefficient polynomials
+  with 100-digit coefficients without coefficient explosion
+  (`#[ignore]` acceptance test `modular_gcd_degree_50_100_digit_coeffs`).
+- [x] BPSW primality: no known composites pass (deterministic for n < 2⁶⁴;
+  Carmichael numbers and base-2 strong pseudoprimes all rejected; proptest
+  cross-agrees with the deterministic Miller–Rabin set).
+
+**Implementation notes**
+
+- **Multivariate modular GCD correctness**: evaluation–interpolation images
+  must be normalized monic (otherwise the stray scalar varies with the
+  evaluation point and poisons interpolation); when the leading coefficient
+  in the main variable is a polynomial in `y`, γ/lc scaling is impossible
+  (rational function), so monic images + CRT + rational reconstruction are
+  used instead; primes dividing the integer content of either leading
+  coefficient are skipped to keep the degree comparison sound.
+- **Latent performance bomb fixed**: the hand-rolled integer square root in
+  `rational_reconstruction` broke out of Newton iteration early on odd sums
+  and then decremented from `n` to `√n` one step at a time (~52 s per call
+  for 30-digit moduli); it now uses the backend-native `Integer::sqrt()`.
+- **Factorization strategy**: `find_factor` makes a single rho attempt
+  (expected cost `O(√p)`), then escalates p−1/p+1/ECM rounds with
+  B1 = 2000 → 8000 → 32000 → …; repeating rho each round was the main
+  reason the first 30-digit semiprime took 19 s (now ~1.1 s).
+- **Lucas sequence reuse**: the BPSW strong Lucas test and Williams' p+1
+  share the same `lucas_uv_mod` binary-chain implementation.
 
 ### 0.22.0 — Tensor Canonicalisation & Advanced Pattern Matching
 
@@ -964,7 +991,7 @@ when an item is met or beaten.
 | Partial fractions | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 done |
 | Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 done |
 | Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 F4 done (0.15.1) + LM index/sparse echelon (0.15.2); F5 signature reduction planned 0.19 |
-| GCD (modular) | Symbolica `poly/gcd.rs`; Brown 1971 | — | 🟡 basic; modular GCD for large ℤ coefficients planned 0.21 |
+| GCD (modular) | Symbolica `poly/gcd.rs`; Brown 1971 | — | � done 0.21 (univariate Brown + multivariate multi-prime CRT) |
 | GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 done |
 | Integration (Risch) | Bronstein book; SymPy Risch | — | 🟢 0.14 done |
 | Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 done |
@@ -978,7 +1005,7 @@ when an item is met or beaten.
 | Fast polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🟢 0.12.1 NTT (90× vs Karatsuba) |
 | Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🟢 mimalloc (0.11.2) + Arena/pool (0.15) done |
 | ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🔴 gap; ODE solvers planned 0.20 |
-| Number theory | SageMath/PARI; SymPy `ntheory` | Crandall & Pomerance | 🔴 gap; modular GCD + factorization + primality + dlog + CRT + number-theoretic functions planned 0.21 |
+| Number theory | SageMath/PARI; SymPy `ntheory` | Crandall & Pomerance | � done 0.21 (CRT + factorization + primality + dlog + number-theoretic functions) |
 | Algebraic geometry (ideals) | Singular; SageMath `ideal` | Cox-Little-O'Shea | 🔴 gap; ideal ops + RUR + primary decomposition + Hilbert series planned 0.23 |
 | Tensor canonicalisation | Symbolica `graphica` (Bliss) | Cadabra | 🔴 gap; graph-iso canonicalisation planned 0.22 |
 | Pattern transformers | Symbolica `Transformer::Partition` | — | 🔴 gap; planned 0.22 |
@@ -1013,3 +1040,5 @@ Refresh this plan:
 | 0.18.1 | 2026-07-23 | **Phase B++ "Competitive Alignment" (0.19.0→0.23.0) planned.** Two tracks: Track SP (Symbolica Performance) — 0.19 F5 Gröbner signature reduction (cyclic-6 <5s target), 0.22 tensor canonicalisation (graph-iso engine) + `Transformer::Partition`; Track SF (SageMath Feature) — 0.20 ODE solvers (first/second-order + systems + series + Laplace), 0.21 number theory (modular GCD + integer factorization + primality + dlog + CRT + number-theoretic functions), 0.23 algebraic geometry (ideal ops + RUR + primary decomposition + Hilbert series). Gantt updated with Phase B+ + B++ sections. Competitor reference index corrected: multivariate/ANF factorization 🟢, tensors/fuel/numerical-integration 🟢, ODE moved from post-1.0 to 0.20; new rows added for number theory, algebraic geometry, tensor canonicalisation, pattern transformers. Phase D adjusted (ODE→0.20; 1.1 re-scoped to PDE). |
 | 0.19.0 | 2026-07-23 | **F5 Gröbner basis (signature reduction) released.** Faugère 2002 F5 core: `Signature` (pot ordering), `SyzygySet` (syzygy criterion), signature-threaded matrix construction, sparse echelonization, incremental degree-by-degree loop with Gebauer–Moeller pair management (shared with F4). Generic-domain (BigInt) and native ℤ_p fast path (`f5_fp`, i64 modular arithmetic) both verified. Unified `groebner_basis()` dispatch + `Algorithm` enum. **Acceptance achieved: cyclic-6 ℤ₁₃ in 2.63 s** (baseline 3670 s, ~1400× speedup; target < 5 s); cyclic-5 in 0.05 s; cyclic-3/4 over ℚ/ℤ₁₃/ℤ₁₀₁ < 0.01 s; cyclic-7 tractable (> 5 min, `#[ignore]`d). Multi-order (item 6) marked `[~]`: dispatch layer + existing orders done; `WeightOrder`/`BlockOrder` deferred to 0.19.1 (trait refactor risk). Toolchain upgrade 1.89→1.97 merged. |
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait refactor + WeightOrder/BlockOrder released.** `Copy` + static dispatch → `Clone + Default` + method dispatch (`&self`); `PhantomData<O>` → `order: O` field; new `WeightOrder` (weighted) and `BlockOrder` (block) orderings with `SubOrder` enum; all 11 `O::cmp` call sites updated; `Signature::cmp_pot` signature updated with `order: &O` parameter. Multi-order support upgraded from `[~]` to `[x]`. |
+| 0.20.0/0.20.1 | 2026-07-27/28 | **ODE solver released and fully backfilled.** First-order classification engine (separable/linear/Bernoulli/exact/homogeneous) + integrating factors; second-order constant-coefficient/Cauchy-Euler/reduction of order/variation of parameters/undetermined coefficients (any-degree polynomial, exponential resonance, trigonometric forcing, superposition); power-series coefficient recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 constant-coefficient systems (`dsolve_system`); Python/C bindings. 7 core bugs fixed; 31 substitution-verified correctness tests (3 known limitations ignored). |
+| 0.21.0 | 2026-07-30 | **Number theory & computational algebra stack released (Track SF).** `number_theory` grew into a directory module: multi-modulus CRT accumulator `crt_many`; BPSW primality (base-2 MR + Selfridge strong Lucas) + deterministic `is_prime_u64` for n<2⁶⁴; integer factorization (trial / Brent rho / Pollard p−1 / Williams p+1 / ECM Suyama-Montgomery stage-1 with the escalating `factor_integer`); BSGS + Pohlig-Hellman discrete logarithms; φ/μ/τ/σ_k/λ number-theoretic functions. Modular GCD: univariate Brown (`gcd::modular::gcd_modular_z` — monic modular images + CRT symmetric reconstruction + trial division) replacing the naive PRS that explodes at degree ≳ 16; the bivariate `gcd_modular` was rewritten as the full Brown algorithm (content separation in the main variable, monic interpolation images, multi-prime CRT + rational reconstruction, bad-prime skipping). Python `ocas::ntheory` (12 functions) + C `ocas_ntheory_*` (11 functions) + `ocas.hpp` RAII wrappers. Two latent bugs fixed: the hand-rolled integer square root in `rational_reconstruction` decremented one-by-one (~52 s per call on 30-digit moduli → backend-native isqrt); the correctness harness `check` mode had its subcommand and arguments swapped. Acceptance all met: ECM factors a 30-digit semiprime in 1.1 s (<10 s); deg-50/100-digit modular GCD without explosion; ≥ 20 SymPy cross-verified cases per sub-module. Competitor index: GCD (modular) and number theory marked 🟢. |

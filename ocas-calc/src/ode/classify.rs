@@ -47,9 +47,16 @@ pub enum ODEType {
 /// # Example
 ///
 /// ```no_run
+/// use ocas_atom::{AtomArena, Symbol};
+/// use ocas_core::arena::Arena;
 /// use ocas_calc::ode::{classify_ode, ODE, ODEType};
 ///
-/// let ode = ODE { equation: eq, func: y, var: x };
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let x = ctx.var("x");
+/// let y = ctx.fun("y", &[x]);
+/// let eq = ctx.add(&[y, ctx.mul(&[ctx.num(-1), x])]);
+/// let ode = ODE { equation: eq, func: ctx.fun("y", &[x]), var: Symbol::new("x") };
 /// let methods = classify_ode(&ctx, ode);
 /// assert!(methods.contains(&ODEType::LinearFirst));
 /// ```

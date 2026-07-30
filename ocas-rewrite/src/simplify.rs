@@ -81,9 +81,16 @@ fn apply_rules<'a>(ctx: &'a AtomArena<'a>, atom: Atom<'a>, rules: &[Rule<'a>]) -
 /// # Example
 ///
 /// ```no_run
+/// use ocas_atom::AtomArena;
+/// use ocas_core::arena::Arena;
 /// use ocas_core::fuel::Fuel;
+/// use ocas_rewrite::rules::default_rules;
 /// use ocas_rewrite::simplify::simplify_with_fuel;
 ///
+/// let arena = Arena::new();
+/// let ctx = AtomArena::new(&arena);
+/// let expr = ctx.var("x");
+/// let rules = default_rules(&ctx, &());
 /// let fuel = Fuel::new(100);
 /// let result = simplify_with_fuel(&ctx, expr, &rules, 20, &fuel);
 /// match result {

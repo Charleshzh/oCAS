@@ -21,6 +21,7 @@
 - [有理函数与结式](./algorithms/rational-functions.md)
 - [Gröbner 基](./algorithms/groebner.md)
 - [符号积分](./algorithms/integration.md)
+- [数论](./algorithms/number-theory.md)
 - [数值积分](./numeric-integration.md)
 - [自动微分](./autodiff.md)
 - [张量](./tensors.md)

@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-28（0.20.1 已发布：ODE 求解器全量收尾——积分因子 + VOP + 降阶法 + 级数递推 + Frobenius + Laplace IVP + 2×2 系统 + Python/C 绑定；阶段 B++ 继续推进）**
+> 最后修订：**2026-07-30（0.21.0 已发布：数论与计算代数栈——CRT 多模 + BPSW + 整数分解（rho/p−1/p+1/ECM）+ 离散对数 + 数论函数 + 模 GCD（Brown 单变量 + 多元多素数）+ Python/C 绑定；阶段 B++ 继续推进）**
 
 ---
 
@@ -746,21 +746,42 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 | 条目 | 参考 | oCAS 落地 | 状态 |
 |---|---|---|---|
-| 模多项式 GCD（Brown 算法 / EZ-GCD，闭合 GAP_ANALYSIS §3 GCD 缺口） | Brown 1971；Symbolica `poly/gcd.rs` 模方法路径 | `ocas-poly::gcd::modular` | [ ] |
-| 中国剩余定理：多项式 + 整数，完整重构 | Crandall & Pomerance 第 2 章 | `ocas-domain::crt` | [ ] |
-| 整数分解：试除（小素数）、Pollard rho、Pollard p−1、Williams p+1、椭圆曲线法（ECM） | Crandall & Pomerance 第 5–6 章 | `ocas-domain::factor::integer` | [ ] |
-| 素性判定：Miller-Rabin（概率）、BPSW、确定性（APR-CL 或 AKS） | Crandall & Pomerance 第 4 章 | `ocas-domain::primes` | [ ] |
-| 离散对数：baby-step giant-step、Pohlig-Hellman | Crandall & Pomerance 第 6 章 | `ocas-domain::dlog` | [ ] |
-| 数论函数：Euler φ、Möbius μ、因子 σ/τ、Liouville λ | Hardy & Wright | `ocas-domain::number_theory`（扩展） | [ ] |
-| 二次剩余：Legendre/Jacobi 符号、模平方根（Tonelli-Shanks） | Crandall & Pomerance §2.9 | `ocas-domain::residues` | [ ] |
-| Python/C 绑定：`factorint`、`isprime`、`nextprime`、`discrete_log`、`crt`、`jacobi_symbol` | SymPy `ntheory` API 对齐 | `ocas-py::ntheory`, `ocas-c::ntheory` | [ ] |
+| 模多项式 GCD（Brown 算法 / EZ-GCD，闭合 GAP_ANALYSIS §3 GCD 缺口） | Brown 1971；Symbolica `poly/gcd.rs` 模方法路径 | `ocas-poly::gcd::modular` | [x]（单变量 Brown + 多元多素数 CRT + 有理重构） |
+| 中国剩余定理：多项式 + 整数，完整重构 | Crandall & Pomerance 第 2 章 | `ocas-domain::number_theory::crt` | [x]（`crt_many` 多模累加；多项式逐系数 CRT 在模 GCD 内） |
+| 整数分解：试除（小素数）、Pollard rho、Pollard p−1、Williams p+1、椭圆曲线法（ECM） | Crandall & Pomerance 第 5–6 章 | `ocas-domain::number_theory::factor` | [x]（ECM 为 Suyama + Montgomery stage-1） |
+| 素性判定：Miller-Rabin（概率）、BPSW、确定性（APR-CL 或 AKS） | Crandall & Pomerance 第 4 章 | `ocas-domain::number_theory::primes` | [x]（BPSW + n<2⁶⁴ 确定性 MR；APR-CL/AKS 明确不做） |
+| 离散对数：baby-step giant-step、Pohlig-Hellman | Crandall & Pomerance 第 6 章 | `ocas-domain::number_theory::dlog` | [x] |
+| 数论函数：Euler φ、Möbius μ、因子 σ/τ、Liouville λ | Hardy & Wright | `ocas-domain::number_theory::functions` | [x] |
+| 二次剩余：Legendre/Jacobi 符号、模平方根（Tonelli-Shanks） | Crandall & Pomerance §2.9 | `ocas-domain::number_theory` | [x]（0.20 前已存在，本版补 SymPy 交叉验证） |
+| Python/C 绑定：`factorint`、`isprime`、`nextprime`、`discrete_log`、`crt`、`jacobi_symbol` | SymPy `ntheory` API 对齐 | `ocas-py::ntheory`, `ocas-c::ntheory` | [x]（另含 `totient`/`mobius`/`divisor_count`/`divisor_sigma`/`liouville_lambda`） |
 
 **验收**
 
-- 与 SymPy `ntheory` 交叉验证，每个子模块 ≥ 20 例。
-- ECM 在 10 s 内分解 30 位半素数。
-- 模多项式 GCD 处理 100 位系数的 50 次整系数多项式，无系数爆炸。
-- BPSW 素性：无已知合数通过（n < 2⁶⁴ 确定性）。
+- [x] 与 SymPy `ntheory` 交叉验证，每个子模块 ≥ 20 例（correctness
+  `ntheory.rs`：factorint 22、isprime 23、nextprime 20、totient 20、
+  mobius 20、divisor_count 20、divisor_sigma 20、liouville 20、crt 20、
+  jacobi 22、discrete_log 20，全部通过）。
+- [x] ECM 在 10 s 内分解 30 位半素数（release 实测约 1.1 s；
+  `#[ignore]` 验收测试 `factor_integer_30_digit_semiprime_under_10s`）。
+- [x] 模多项式 GCD 处理 100 位系数的 50 次整系数多项式，无系数爆炸
+  （`#[ignore]` 验收测试 `modular_gcd_degree_50_100_digit_coeffs`）。
+- [x] BPSW 素性：无已知合数通过（n < 2⁶⁴ 确定性；Carmichael 数与
+  base-2 强伪素数全部拒绝，proptest 与确定性 MR 交叉一致）。
+
+**实现说明**
+
+- **多元模 GCD 的正确性要点**：求值-插值像必须归一为 monic（否则标量
+  因子随求值点变化污染插值）；主变量首项系数是 y 的多项式时不能用
+  γ/lc 缩放（有理函数），改走 monic 像 + CRT + 有理重构；并跳过整除
+  首项系数整数内容的"坏素数"以保次数比较有效。
+- **隐藏性能炸弹修复**：`rational_reconstruction` 的整数平方根在奇数
+  和处提前退出牛顿迭代后逐个减一校正（30 位模数约 52 s/次），改用
+  后端原生 `Integer::sqrt()`；该 bug 同时拖慢既有大模数重构路径。
+- **分解策略**：`find_factor` 只做一次 rho 尝试（√p 期望代价），随后
+  按 B1 = 2000 → 8000 → 32000 → … 轮次升级 p−1/p+1/ECM；重复 rho 是
+  初版 30 位半素数 19 s 的主因，剔除后约 1.1 s。
+- **Lucas 序列复用**：BPSW 强 Lucas 测试与 Williams p+1 共用同一
+  `lucas_uv_mod` 二进制链实现。
 
 ### 0.22.0 — 张量规范化与高级模式匹配
 
@@ -864,8 +885,8 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 有理多项式 | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 完成 |
 | 部分分式 | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 完成 |
 | 结式 | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 完成 |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | 🟡 F4 完成（0.15.1）+ LM 索引/稀疏 echelon（0.15.2）；F5 签名约简计划 0.19 |
-| GCD（模） | Symbolica `poly/gcd.rs`；Brown 1971 | — | 🟡 基础；大 ℤ 系数模 GCD 计划 0.21 |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | � F4（0.15.1）+ LM 索引/稀疏 echelon（0.15.2）+ F5 签名约简（0.19，cyclic-6 2.63 s） |
+| GCD（模） | Symbolica `poly/gcd.rs`；Brown 1971 | — | 🟢 0.21 完成（单变量 Brown + 多元多素数 CRT） |
 | GCD（模方法多变量） | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 完成 |
 | 积分（Risch） | Bronstein 著作；SymPy Risch | — | 🟢 0.14 完成 |
 | 多输出 JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 完成 |
@@ -879,7 +900,7 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 多项式快速乘法 | FLINT 3 SSA；Symbolica dense mul | — | 🟢 0.12.1 NTT（90× vs Karatsuba） |
 | 内存管理（mimalloc/对象池） | Symbolica Workspace；Maple 分层区域 | — | 🟢 mimalloc（0.11.2）+ Arena/对象池（0.15）已完成 |
 | ODE/PDE | SageMath `desolve`；SymPy `dsolve` | — | 🔴 缺口；ODE 求解器计划 0.20 |
-| 数论 | SageMath/PARI；SymPy `ntheory` | Crandall & Pomerance | 🔴 缺口；模 GCD + 分解 + 素性 + 离散对数 计划 0.21 |
+| 数论 | SageMath/PARI；SymPy `ntheory` | Crandall & Pomerance | � 0.21 完成（CRT + 分解 + 素性 + 离散对数 + 数论函数） |
 | 代数几何（理想） | Singular；SageMath `ideal` | Cox-Little-O'Shea | 🔴 缺口；理想运算 + RUR + 准素分解 + Hilbert 级数 |
 | 张量规范化 | Symbolica `graphica`（Bliss） | Cadabra | 🔴 缺口；图同构规范化 计划 0.22 |
 | 模式变换器 | Symbolica `Transformer::Partition` | — | 🔴 缺口；计划 0.22 |
@@ -914,3 +935,5 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 0.18.1 | 2026-07-23 | **阶段 B++ "竞品全面对齐"（0.19.0→0.23.0）规划完成。** 两条主线：主线 SP（Symbolica 性能）——0.19 F5 Gröbner 签名约简（cyclic-6 <5s 目标）、0.22 张量规范化（图同构引擎）+ `Transformer::Partition`；主线 SF（SageMath 功能）——0.20 ODE 求解器（一阶/二阶 + 系统 + 级数 + Laplace）、0.21 数论（模 GCD + 整数分解 + 素性 + 离散对数 + CRT + 数论函数）、0.23 代数几何（理想运算 + RUR + 准素分解 + Hilbert 级数）。Gantt 图更新（阶段 B+ + B++）；竞品参考索引修正：多元/代数数域因式分解标 🟢，张量/fuel/数值积分标 🟢，ODE 从 Post-1.0 移入 0.20；新增数论、代数几何、张量规范化、模式变换器行。阶段 D 调整（ODE→0.20；1.1 改为 PDE）。 |
 | 0.19.0 | 2026-07-23 | **F5 Gröbner 基（签名约简）发布。** Faugère 2002 F5 核心：`Signature`（pot 序）、`SyzygySet`（syzygy 判据）、签名贯穿的矩阵构造、稀疏 echelonization、逐次数增量主循环（与 F4 共享 Gebauer–Moeller 临界对管理）。通用域（BigInt）与原生 ℤ_p 快速路径（`f5_fp`，i64 模运算）均验证通过。统一 `groebner_basis()` 分派入口 + `Algorithm` 枚举。**验收达成：cyclic-6 ℤ₁₃ 2.63 s**（基线 3670 s，≈1400× 提速；目标 < 5 s）；cyclic-5 0.05 s；cyclic-3/4 over ℚ/ℤ₁₃/ℤ₁₀₁ < 0.01 s；cyclic-7 可解（> 5 分钟，`#[ignore]`）。多序（条目 6）标记 `[~]`：分派层 + 现有序完成；`WeightOrder`/`BlockOrder` 推迟到 0.19.1（trait 重构风险）。工具链升级 1.89→1.97 合并。 |
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait 重构 + WeightOrder/BlockOrder 发布。** `Copy` + 静态分派 → `Clone + Default` + 方法分派（`&self`）；`PhantomData<O>` → `order: O` 字段；新增 `WeightOrder`（加权序）与 `BlockOrder`（分块序）+ `SubOrder` 枚举；11 处 `O::cmp` 调用点全部更新；`Signature::cmp_pot` 签名新增 `order: &O` 参数。多序支持标记从 `[~]` 升级为 `[x]`。 |
+| 0.20.0/0.20.1 | 2026-07-27/28 | **ODE 求解器发布并全量收尾。** 一阶分类引擎（可分离/线性/Bernoulli/恰当/齐次）+ 积分因子；二阶常系数/Cauchy-Euler/降阶法/常数变易法/待定系数（任意次多项式、指数共振、三角 forcing、叠加）；常点幂级数系数递推 + Frobenius；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定。修复 7 个核心 bug；31 项代入验证正确性测试（3 项已知限制 ignore）。 |
+| 0.21.0 | 2026-07-30 | **数论与计算代数栈发布（主线 SF）。** `number_theory` 扩建为目录模块：CRT 多模累加 `crt_many`；BPSW 素性（base-2 MR + Selfridge 强 Lucas）+ n<2⁶⁴ 确定性 `is_prime_u64`；整数分解（试除/Brent rho/Pollard p−1/Williams p+1/ECM Suyama-Montgomery stage-1，`factor_integer` 自动升级）；BSGS + Pohlig-Hellman 离散对数；φ/μ/τ/σ_k/λ 数论函数。模 GCD：单变量 Brown（`gcd::modular::gcd_modular_z`，monic 模像 + CRT 对称重构 + 试除验证）替代 ≥16 次爆炸的朴素 PRS；二元 `gcd_modular` 重写为完整 Brown（主变量内容分离 + monic 插值像 + 多素数 CRT + 有理重构 + 坏素数跳过）。Python `ocas::ntheory` 12 函数 + C `ocas_ntheory_*` 11 函数 + `ocas.hpp` RAII。修复两个潜伏 bug：`rational_reconstruction` 整数平方根逐个减一校正（30 位模数 52 s/次 → 原生 isqrt）；correctness `check` 模式参数顺序颠倒。验收全达成：ECM 30 位半素数 1.1 s（<10 s）；deg-50/100 位系数模 GCD 无爆炸；每子模块 ≥ 20 例 SymPy 交叉验证。竞品索引更新：GCD（模）、数论标 🟢。 |

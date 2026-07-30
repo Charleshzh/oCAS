@@ -152,6 +152,113 @@ private:
     }
 };
 
+/// Number-theory helpers over the `ocas_ntheory_*` C API. Integers of
+/// arbitrary size are passed as decimal strings; string results are
+/// released automatically.
+namespace ntheory {
+namespace detail {
+    inline std::string last_error() {
+        const char* msg = ::ocas_error_last_message();
+        return msg != nullptr ? std::string(msg) : std::string("unknown oCAS error");
+    }
+
+    inline std::string take_string(char* s) {
+        if (s == nullptr) {
+            throw Error(last_error());
+        }
+        std::string out(s);
+        ::ocas_string_free(s);
+        return out;
+    }
+}  // namespace detail
+
+/// Factor `|n|` into primes as `"p1:e1,p2:e2,..."` (`"-1:1"` first when
+/// negative).
+inline std::string factorint(const std::string& n) {
+    int err = 0;
+    return detail::take_string(::ocas_ntheory_factorint(n.c_str(), &err));
+}
+
+/// BPSW probable-prime test.
+inline bool isprime(const std::string& n) {
+    int err = 0;
+    int r = ::ocas_ntheory_isprime(n.c_str(), &err);
+    if (r < 0) {
+        throw Error(detail::last_error());
+    }
+    return r != 0;
+}
+
+/// Smallest prime strictly greater than `n`.
+inline std::string nextprime(const std::string& n) {
+    int err = 0;
+    return detail::take_string(::ocas_ntheory_nextprime(n.c_str(), &err));
+}
+
+/// Solve `base^x ≡ target (mod p)`; throws when no logarithm exists.
+inline std::string discrete_log(const std::string& p,
+                                const std::string& base,
+                                const std::string& target) {
+    int err = 0;
+    return detail::take_string(
+        ::ocas_ntheory_discrete_log(p.c_str(), base.c_str(), target.c_str(), &err));
+}
+
+/// Chinese remainder theorem over comma-separated lists; returns `"r,m"`.
+inline std::string crt(const std::string& moduli, const std::string& residues) {
+    int err = 0;
+    return detail::take_string(::ocas_ntheory_crt(moduli.c_str(), residues.c_str(), &err));
+}
+
+/// The Jacobi symbol `(a / n)` for odd positive `n`.
+inline int jacobi(const std::string& a, const std::string& n) {
+    int err = 0;
+    int r = ::ocas_ntheory_jacobi(a.c_str(), n.c_str(), &err);
+    if (r == -2) {
+        throw Error(detail::last_error());
+    }
+    return r;
+}
+
+/// Euler's totient `φ(n)`.
+inline std::string totient(const std::string& n) {
+    int err = 0;
+    return detail::take_string(::ocas_ntheory_totient(n.c_str(), &err));
+}
+
+/// The Möbius function `μ(n)`.
+inline int mobius(const std::string& n) {
+    int err = 0;
+    int r = ::ocas_ntheory_mobius(n.c_str(), &err);
+    if (r == -2) {
+        throw Error(detail::last_error());
+    }
+    return r;
+}
+
+/// Number of positive divisors `τ(n)`.
+inline std::string divisor_count(const std::string& n) {
+    int err = 0;
+    return detail::take_string(::ocas_ntheory_divisor_count(n.c_str(), &err));
+}
+
+/// Sum of `k`-th powers of the positive divisors `σ_k(n)`.
+inline std::string divisor_sigma(const std::string& n, uint32_t k = 1) {
+    int err = 0;
+    return detail::take_string(::ocas_ntheory_divisor_sigma(n.c_str(), k, &err));
+}
+
+/// Liouville's function `λ(n)`.
+inline int liouville(const std::string& n) {
+    int err = 0;
+    int r = ::ocas_ntheory_liouville(n.c_str(), &err);
+    if (r == -2) {
+        throw Error(detail::last_error());
+    }
+    return r;
+}
+}  // namespace ntheory
+
 }  // namespace ocas
 
 #endif  // OCAS_HPP

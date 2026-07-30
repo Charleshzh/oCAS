@@ -21,6 +21,7 @@
 - [Rational Functions & Resultants](./algorithms/rational-functions.md)
 - [Gröbner Bases](./algorithms/groebner.md)
 - [Symbolic Integration](./algorithms/integration.md)
+- [Number Theory](./algorithms/number-theory.md)
 - [Numeric Integration](./numeric-integration.md)
 - [Automatic Differentiation](./autodiff.md)
 - [Tensors](./tensors.md)

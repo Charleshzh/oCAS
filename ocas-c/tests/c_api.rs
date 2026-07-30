@@ -14,14 +14,17 @@ use ocas_c::{
     ocas_dual_variable, ocas_error_clear, ocas_error_last_message, ocas_expr_clone, ocas_expr_diff,
     ocas_expr_free, ocas_expr_integrate, ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify,
     ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string, ocas_hyperdual_free,
-    ocas_integrate_1d, ocas_ode_classify, ocas_ode_dsolve, ocas_ode_dsolve_ivp,
-    ocas_poly_factor_array_free, ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree,
-    ocas_poly_fp_factor, ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone,
-    ocas_poly_z_create, ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free,
-    ocas_poly_z_to_string, ocas_string_free, ocas_tensor_contract, ocas_tensor_contraction_free,
-    ocas_tensor_create, ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank,
-    ocas_tensor_symmetrise_sign, ocas_tensor_symmetry, ocas_tensor_to_string, ocas_vegas_create,
-    ocas_vegas_free, ocas_vegas_integrate, ocas_vegas_iterations, ocas_vegas_result, ocas_version,
+    ocas_integrate_1d, ocas_ntheory_crt, ocas_ntheory_discrete_log, ocas_ntheory_divisor_count,
+    ocas_ntheory_divisor_sigma, ocas_ntheory_factorint, ocas_ntheory_isprime, ocas_ntheory_jacobi,
+    ocas_ntheory_liouville, ocas_ntheory_mobius, ocas_ntheory_nextprime, ocas_ntheory_totient,
+    ocas_ode_classify, ocas_ode_dsolve, ocas_ode_dsolve_ivp, ocas_poly_factor_array_free,
+    ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor,
+    ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create,
+    ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string,
+    ocas_string_free, ocas_tensor_contract, ocas_tensor_contraction_free, ocas_tensor_create,
+    ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank, ocas_tensor_symmetrise_sign,
+    ocas_tensor_symmetry, ocas_tensor_to_string, ocas_vegas_create, ocas_vegas_free,
+    ocas_vegas_integrate, ocas_vegas_iterations, ocas_vegas_result, ocas_version,
 };
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -1126,4 +1129,180 @@ fn ode_dsolve_ivp_second_order() {
     assert_eq!(err, OCAS_OK);
     let s = c_ode_result(ptr);
     assert!(s.contains("sin"), "IVP y''+y=0 y(0)=0 y'(0)=1 => sin: {s}");
+}
+
+// ------------------------------------------------------------------
+//  Number-theory C API tests
+// ------------------------------------------------------------------
+
+#[test]
+fn ntheory_factorint_basic() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_factorint(cstr("360").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "2:3,3:2,5:1");
+}
+
+#[test]
+fn ntheory_factorint_negative_and_edge() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_factorint(cstr("-12").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "-1:1,2:2,3:1");
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_factorint(cstr("1").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "");
+}
+
+#[test]
+fn ntheory_factorint_semiprime() {
+    let n = (1000003i64 * 1000033).to_string();
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_factorint(cstr(&n).as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "1000003:1,1000033:1");
+}
+
+#[test]
+fn ntheory_factorint_invalid_input() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_factorint(cstr("not_a_number").as_ptr(), &mut err) };
+    assert!(ptr.is_null());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn ntheory_isprime_values() {
+    for (n, want) in [
+        ("97", 1),
+        ("561", 0),
+        ("2305843009213693951", 1), // Mersenne M61
+        ("2047", 0),                // base-2 strong pseudoprime
+        ("1", 0),
+    ] {
+        let mut err: std::ffi::c_int = 0;
+        let got = unsafe { ocas_ntheory_isprime(cstr(n).as_ptr(), &mut err) };
+        assert_eq!(err, OCAS_OK);
+        assert_eq!(got, want, "isprime({n})");
+    }
+}
+
+#[test]
+fn ntheory_nextprime() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_nextprime(cstr("1000000").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "1000003");
+}
+
+#[test]
+fn ntheory_discrete_log_prime() {
+    // 2 is primitive mod 101; 2^83 ≡ 66 (mod 101).
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe {
+        ocas_ntheory_discrete_log(
+            cstr("101").as_ptr(),
+            cstr("2").as_ptr(),
+            cstr("66").as_ptr(),
+            &mut err,
+        )
+    };
+    assert_eq!(err, OCAS_OK);
+    // The returned logarithm must reproduce 66.
+    let s = c_string_to_string(ptr);
+    let x: i64 = s.parse().unwrap();
+    let mut pow: i64 = 1;
+    for _ in 0..x {
+        pow = (pow * 2) % 101;
+    }
+    assert_eq!(pow, 66);
+}
+
+#[test]
+fn ntheory_discrete_log_no_solution() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe {
+        ocas_ntheory_discrete_log(
+            cstr("23").as_ptr(),
+            cstr("2").as_ptr(),
+            cstr("5").as_ptr(),
+            &mut err,
+        )
+    };
+    assert!(ptr.is_null());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn ntheory_crt_sunzi() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_crt(cstr("3,5,7").as_ptr(), cstr("2,3,2").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "23,105");
+}
+
+#[test]
+fn ntheory_crt_inconsistent() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_crt(cstr("4,4").as_ptr(), cstr("1,2").as_ptr(), &mut err) };
+    assert!(ptr.is_null());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn ntheory_jacobi_values() {
+    for (a, n, want) in [("2", "7", 1), ("3", "7", -1), ("0", "7", 0), ("2", "15", 1)] {
+        let mut err: std::ffi::c_int = 0;
+        let got = unsafe { ocas_ntheory_jacobi(cstr(a).as_ptr(), cstr(n).as_ptr(), &mut err) };
+        assert_eq!(err, OCAS_OK);
+        assert_eq!(got, want, "jacobi({a}/{n})");
+    }
+    // Even modulus rejected.
+    let mut err: std::ffi::c_int = 0;
+    let got = unsafe { ocas_ntheory_jacobi(cstr("1").as_ptr(), cstr("4").as_ptr(), &mut err) };
+    assert_eq!(got, -2);
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn ntheory_functions_values() {
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_totient(cstr("36").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "12");
+
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_divisor_count(cstr("12").as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "6");
+
+    let mut err: std::ffi::c_int = 0;
+    let ptr = unsafe { ocas_ntheory_divisor_sigma(cstr("12").as_ptr(), 2, &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(c_string_to_string(ptr), "210");
+
+    let mut err: std::ffi::c_int = 0;
+    assert_eq!(
+        unsafe { ocas_ntheory_mobius(cstr("30").as_ptr(), &mut err) },
+        -1
+    );
+    assert_eq!(err, OCAS_OK);
+    let mut err: std::ffi::c_int = 0;
+    assert_eq!(
+        unsafe { ocas_ntheory_mobius(cstr("12").as_ptr(), &mut err) },
+        0
+    );
+    assert_eq!(err, OCAS_OK);
+
+    let mut err: std::ffi::c_int = 0;
+    assert_eq!(
+        unsafe { ocas_ntheory_liouville(cstr("12").as_ptr(), &mut err) },
+        -1
+    );
+    assert_eq!(err, OCAS_OK);
 }

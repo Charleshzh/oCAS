@@ -22,6 +22,7 @@ pub mod dual;
 pub mod eval;
 pub mod expression;
 pub mod matrix;
+pub mod ntheory;
 pub mod numeric;
 pub mod ode;
 pub mod polynomial;
@@ -36,6 +37,10 @@ pub use dual::{PyDualShape, PyHyperDual};
 pub use eval::PyExpressionEvaluator;
 pub use expression::Expression;
 pub use matrix::PyMatrix;
+pub use ntheory::{
+    py_crt, py_discrete_log, py_divisor_count, py_divisor_sigma, py_factorint, py_isprime,
+    py_isprime_u64, py_jacobi_symbol, py_liouville_lambda, py_mobius, py_nextprime, py_totient,
+};
 pub use numeric::{PyIntegrateResult, PyVegas, integrate_1d};
 pub use ode::{py_classify_ode, py_dsolve, py_dsolve_ivp};
 pub use polynomial::{PyPolynomial, PyPolynomialFactor};
@@ -80,6 +85,18 @@ fn ocas(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_classify_ode, m)?)?;
     m.add_function(wrap_pyfunction!(py_dsolve, m)?)?;
     m.add_function(wrap_pyfunction!(py_dsolve_ivp, m)?)?;
+    m.add_function(wrap_pyfunction!(py_factorint, m)?)?;
+    m.add_function(wrap_pyfunction!(py_isprime, m)?)?;
+    m.add_function(wrap_pyfunction!(py_isprime_u64, m)?)?;
+    m.add_function(wrap_pyfunction!(py_nextprime, m)?)?;
+    m.add_function(wrap_pyfunction!(py_discrete_log, m)?)?;
+    m.add_function(wrap_pyfunction!(py_crt, m)?)?;
+    m.add_function(wrap_pyfunction!(py_jacobi_symbol, m)?)?;
+    m.add_function(wrap_pyfunction!(py_totient, m)?)?;
+    m.add_function(wrap_pyfunction!(py_mobius, m)?)?;
+    m.add_function(wrap_pyfunction!(py_divisor_count, m)?)?;
+    m.add_function(wrap_pyfunction!(py_divisor_sigma, m)?)?;
+    m.add_function(wrap_pyfunction!(py_liouville_lambda, m)?)?;
 
     Ok(())
 }

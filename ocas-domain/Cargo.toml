@@ -19,6 +19,8 @@ num-integer = { workspace = true }
 num-bigint = { workspace = true }
 num-rational = { workspace = true }
 num-complex = { workspace = true }
+rand = { workspace = true }
+rand_xoshiro = { workspace = true }
 
 # Optional GMP/MPFR backends (LGPL).
 # On Windows/MinGW, enable the `system-libs` feature to link against MSYS2

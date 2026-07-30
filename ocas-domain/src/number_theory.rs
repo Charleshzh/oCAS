@@ -7,8 +7,19 @@
 //! These primitives underpin polynomial factorization (Berlekamp,
 //! Cantor–Zassenhaus, Hensel lifting, Zassenhaus), rational reconstruction,
 //! and modular GCD algorithms.
+//!
+//! Submodules add the 0.21.0 number-theory stack: [`crt`] (multi-modulus
+//! Chinese remaindering), [`primes`] (BPSW), [`factor`] (integer
+//! factorization: rho, p−1, p+1, ECM), [`functions`] (φ, μ, τ, σ, λ), and
+//! [`dlog`] (BSGS, Pohlig–Hellman).
 
 use crate::Integer;
+
+pub mod crt;
+pub mod dlog;
+pub mod factor;
+pub mod functions;
+pub mod primes;
 
 /// Small primes used as deterministic Miller–Rabin witnesses.
 ///
@@ -23,7 +34,7 @@ const MR_WITNESSES: [u64; 12] = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
 /// and check that `a^d ≡ 1 (mod n)` or `a^(d·2^j) ≡ -1 (mod n)` for some
 /// `j < r`. Returns `false` if `n` is a small prime divisor of `a` handled
 /// by the caller; here `1 < a < n` is assumed.
-fn mr_witness(n: &Integer, d: &Integer, r: u64, a: &Integer) -> bool {
+pub(crate) fn mr_witness(n: &Integer, d: &Integer, r: u64, a: &Integer) -> bool {
     let mut x = a.modpow(d, n);
     let one = Integer::from(1);
     let n_minus_one = n - &one;

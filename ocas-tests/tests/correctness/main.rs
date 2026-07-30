@@ -40,9 +40,9 @@ pub fn sympy_result(task: &str, expr: &str) -> Option<String> {
             "run",
             "python",
             "scripts/compare_sympy.py",
+            "check",
             task,
             expr,
-            "check",
         ])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
@@ -227,6 +227,7 @@ mod integral_risch;
 mod linear_solve;
 mod matrix;
 mod normalize;
+mod ntheory;
 mod ode;
 mod parse;
 mod partial_fraction;

@@ -5,7 +5,7 @@
 （纯 Python）。本文档为活文档，每次版本发布时必须更新。英文版见
 [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md)。
 
-> 最后评估：**0.20.1 @ 2026-07-28**（0.20.1 ODE 求解器全量收尾：积分因子 + VOP + 降阶法 + 级数递推 + Frobenius + Laplace IVP + 2×2 系统 + Python/C 绑定；ODE 缺口从 🟡 升级为 🟢）
+> 最后评估：**0.21.0 @ 2026-07-30**（0.21.0 数论与计算代数栈：CRT 多模 + BPSW + 整数分解（rho/p−1/p+1/ECM）+ 离散对数 + 数论函数 + 模 GCD（Brown 单变量 + 多元多素数）+ Python/C 绑定；§3 大整数系数 GCD 缺口与 §5 #11 数论缺口均闭合为 🟢）
 
 ---
 
@@ -50,8 +50,11 @@
 | 0.17.1 | 1.0 候选 | ✅ | ✅ 代数数域 Python/C 绑定：`AlgebraicExtension`/`AlgebraicElement`/`AlgebraicPolynomial` Python 类 + `OcasAlgebraicField`/`OcasAlgebraicPoly` 不透明句柄与 `ocas_algebraic_*` C ABI；`RootOf(poly, idx)` 解析确认 |
 | 0.18.0 | 1.0 候选 | ✅ | ✅ 数值积分（Vegas 自适应蒙特卡洛 + `integrate_1d` + `StatisticsAccumulator` + `Integrator` trait）、前向自动微分（`HyperDual<T>` 运行时形状 + 截断乘法表 + 几何级数求逆 + `DualCoeff` trait，Rational 双路径）、fuel 资源控制（`Fuel = Arc<AtomicUsize>` + `OutOfFuel` + `simplify_with_fuel`/`integrate_with_fuel`）、张量基础（独立 `Tensor` 类型 + 指标槽 + 显式收缩 + `symmetrise_sign`）；新增 `rand`/`rand_xoshiro` |
 | 0.18.1 | 1.0 候选 | ✅ | ✅ 补丁：0.18.0 三项能力（数值积分/双数 AD/张量基础）的 Python/C 绑定补齐（`ocas-py::{numeric,tensor,dual}` + `ocas-c::{numeric,tensor,dual}` 不透明句柄与 C ABI + `include/ocas.h` 同步）+ prelude 补齐张量/双数/`StatisticsAccumulator` 导出；新增 41 Python 测试 + 31 C API 测试；无算法变更，差距结论不变。 |
+| 0.19.0/0.19.1 | 1.0 候选 | ✅ | ✅ F5 Gröbner 签名约简（cyclic-6 ℤ₁₃ 3670 s → 2.63 s，≈1400×）；`MonomialOrder` trait 重构 + `WeightOrder`/`BlockOrder` |
+| 0.20.0/0.20.1 | 1.0 候选 | ✅ | ✅ ODE 求解器全量：一阶 5 种 + 积分因子；二阶常系数/Cauchy-Euler + VOP + 降阶法 + 待定系数扩展；级数递推 + Frobenius；Laplace IVP（`dsolve_ivp`）；2×2 系统（`dsolve_system`）；Python/C 绑定；31 项代入验证正确性测试 |
+| 0.21.0 | 1.0 候选 | ✅ | ✅ 数论与计算代数栈：CRT 多模累加、BPSW 素性 + 2⁶⁴ 确定性 MR、整数分解（试除/Brent rho/Pollard p−1/Williams p+1/ECM Suyama-Montgomery）、BSGS + Pohlig-Hellman 离散对数、φ/μ/τ/σ_k/λ 数论函数；单变量 Brown 模 GCD（`gcd::modular::gcd_modular_z`）+ 二元 `gcd_modular` 完整 Brown 重写（内容分离 + monic 插值像 + 多素数 CRT + 有理重构）；Python/C 绑定（`ocas::ntheory` / `ocas_ntheory_*`）；修复 `rational_reconstruction` 整数平方根性能炸弹；ECM 30 位半素数 1.1 s（<10 s） |
 
-0.1–0.18.1 交付物全部落地，workspace 版本锁定 0.18.1。质量门全绿：
+0.1–0.21.0 交付物全部落地，workspace 版本锁定 0.21.0。质量门全绿：
 `cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、pytest、
 `mdbook build`。
 
@@ -97,10 +100,11 @@ ocas-domain +~1.1k）、数值积分/流式求值（ocas-eval，+~0.5k），以�
 | Gröbner 基 | F4 真实线性代数（0.15.1）+ F5 签名约简（0.19.0：`Signature`/`SyzygySet` + ℤ_p 原生快速路径 `f5_fp`）+ FGLM + 统一 `groebner_basis()` 分派 + ℤ_p 原生 i64 管线；cyclic-6 ℤ₁₃ **2.63 s**（基线 3670 s，≈1400×）；cyclic-5 ℤ₁₃ 0.05 s | 🟢 F4 + F5 完成 |
 | 符号积分 | Risch（初等超越塔 + RDE 多项式片段）+ 有理函数 Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel）；回退 `Integral(...)` | 🟢 Risch 完成 |
 | 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量）；已知缺口：Wilkinson n=10 展开多项式仅隔离 8/10 根 | 🟡 较完整 |
-| 多项式 GCD | GCD + 本原部分 + 扩展 GCD（0.12）+ 经 EEZ 的任意元数多元 GCD（0.16）+ GF(p^d) 上模数域 GCD（CRT + 有理重构，0.17）；大整数系数尚无模 GCD 快速路径 | 🟢 可用，无 HEVMGCD |
+| 多项式 GCD | GCD + 本原部分 + 扩展 GCD（0.12）+ 经 EEZ 的任意元数多元 GCD（0.16）+ GF(p^d) 上模数域 GCD（CRT + 有理重构，0.17）+ 单变量 Brown 模 GCD 与二元多素数模 GCD（0.21，大整数系数无爆炸） | 🟢 完整（含模快速路径，无 HEVMGCD） |
 | 线性求解 | 有理/整数线性方程组 + 二元丢番图（`ax+by=c`） | 🟡 可用，规模有限 |
 | JIT 求值 | Cranelift 后端；≥10x 加速目标达成（按路线图标准） | 🟢 完整 |
 | 常微分方程 | `ocas-calc::ode`：`dsolve()` 入口 + `classify_ode()` 分类引擎；一阶 5 种（可分离/线性/Bernoulli/恰当/齐次）+ 积分因子检测；二阶 2 种（常系数/Cauchy-Euler）+ VOP + 降阶法；幂级数系数递推 + Frobenius（实有理指标根）；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定 | 🟢 完整（0.20.1） |
+| 数论 | CRT 多模累加、BPSW 素性 + 2⁶⁴ 确定性 MR、整数分解（rho/p−1/p+1/ECM，30 位半素数 1.1 s）、BSGS + Pohlig-Hellman 离散对数、φ/μ/τ/σ_k/λ、二次剩余符号与模平方根；Python/C 绑定（0.21） | 🟢 核心栈完整（0.21） |
 
 ---
 
@@ -141,7 +145,7 @@ SageMath 是"瑞士军刀"式科学计算环境，差距是**广度级**的。
 | 领域 | oCAS | SageMath |
 |---|---|---|
 | 代数几何 | 🟡 基础 Gröbner | ✅ Singular 集成 |
-| 数论 | 🟡 基础丢番图 | ✅ PARI/FLINT 全栈 |
+| 数论 | � 核心栈完整（0.21：CRT + 分解 + 素性 + 离散对数 + 数论函数） | ✅ PARI/FLINT 全栈 |
 | 微分方程 | 🟢 一阶/二阶/系统/级数/Laplace/绑定 完整（0.20.1） | ✅ 完整 ODE/PDE 求解器 |
 | 群论/表示论 | 🔴 无 | ✅ GAP 集成 |
 | 组合数学 | 🔴 无 | ✅ 完整 |
@@ -194,7 +198,7 @@ B+ "Symbolica 差距清零"（0.15.2–0.18.0）已完成——详见 EVOLUTION_
 | 8 | ~~代数数域因式分解~~（0.17 完成） | ✅ 已完成——Trager 算法（平移范数 + ℚ 分解 + GF(p^d) 模 GCD），一元路径；多元扩域留待后续 |
 | 9 | ~~数值积分 / 双数 / 张量基础 / fuel 资源控制~~（0.18 完成） | ✅ 已完成——Vegas + HyperDual + 指标收缩 + fuel；0.18.1 补齐 Python/C 绑定 |
 | 10 | ~~ODE 求解器~~（0.20.1 完成） | ✅ 已完成——一阶 5 种 + 积分因子；二阶 2 种 + VOP + 降阶法；级数递推 + Frobenius；Laplace IVP；2×2 系统；Python/C 绑定 |
-| 11 | 数论栈（阶段 B++ 0.21） | 🟢 SageMath/PARI 对齐；模 GCD + 整数分解 + 素性 + 离散对数 + CRT |
+| 11 | ~~数论栈~~（0.21 完成） | ✅ 已完成——模 GCD（单变量 Brown + 二元多素数）+ 整数分解（ECM 30 位半素数 1.1 s）+ BPSW 素性 + 离散对数 + CRT + 数论函数 + Python/C 绑定 |
 | 12 | 张量完整规范化 + 专用模式变换器（阶段 B++ 0.22） | 🟡 Symbolica 最后阵地；需图同构引擎 |
 | 13 | 代数几何工具（阶段 B++ 0.23） | 🟢 SageMath/Singular 对齐；理想运算 + RUR + 准素分解 + Hilbert 级数 |
 | 14 | PDE 求解器（Post-1.0） | 🟢 用户期望高；Poisson/热传导/波动 |

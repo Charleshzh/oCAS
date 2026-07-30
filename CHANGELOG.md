@@ -15,6 +15,104 @@ _No changes yet._
 
 ---
 
+## [0.21.0] - 2026-07-30
+
+### Added / 新增
+
+- **中国剩余定理多模累加**：`ocas_domain::number_theory::crt::crt_many`
+  将任意同余式列表合并为单一同余（模数无需两两互素，不一致时返回
+  `None`）/ **Multi-modulus CRT**: `number_theory::crt::crt_many` merges a
+  list of congruences into one (moduli need not be coprime; inconsistent
+  systems return `None`).
+- **BPSW 素性判定**：`number_theory::primes::is_prime_bpsw`（base-2 强
+  Miller–Rabin + Selfridge 参数强 Lucas 测试，无已知合数通过）与
+  `is_prime_u64`（$n < 2^{64}$ 确定性）/ **BPSW primality**:
+  `is_prime_bpsw` (base-2 strong Miller–Rabin plus a strong Lucas test
+  with Selfridge parameters; no known composite passes) and
+  `is_prime_u64` (deterministic for $n < 2^{64}$).
+- **整数分解**：`number_theory::factor` 提供试除、Pollard rho
+  （Brent 变体）、Pollard $p-1$、Williams $p+1$ 与 Lenstra ECM
+  （Suyama 参数化 + Montgomery 曲线 stage-1）；顶层 `factor_integer`
+  自动升级方法直至完全分解，30 位半素数 release 模式约 1.1 秒分解
+  （验收标准 <10 秒）/ **Integer factorization**: `number_theory::factor`
+  with trial division, Pollard's rho (Brent variant), Pollard's $p-1$,
+  Williams' $p+1$, and Lenstra's ECM (Suyama parametrization, Montgomery
+  curves, stage 1). The top-level `factor_integer` escalates methods until
+  fully factored; a 30-digit semiprime factors in ~1.1 s in release mode
+  (acceptance target <10 s).
+- **数论函数**：`euler_phi`、`moebius_mu`、`divisor_tau`、
+  `divisor_sigma(k)`、`liouville_lambda`（基于分解式）/
+  **Number-theory functions**: `euler_phi`, `moebius_mu`, `divisor_tau`,
+  `divisor_sigma(k)`, `liouville_lambda` (from the prime factorization).
+- **离散对数**：`dlog_bsgs`（小步大步）与 `dlog_pohlig_hellman`
+  （阶分解 + 子群 BSGS + CRT 合并）/ **Discrete logarithms**:
+  `dlog_bsgs` (baby-step giant-step) and `dlog_pohlig_hellman`
+  (order factorization, subgroup BSGS, CRT merge).
+- **模多项式 GCD（Brown）**：`ocas_poly::gcd::modular::gcd_modular_z`
+  为 $\mathbb{Z}[x]$ 提供多素数模 GCD——单模像 + CRT 对称重构 +
+  试除验证，消除了朴素伪余式 GCD 在 $\deg \gtrsim 16$ 时的系数爆炸；
+  可处理 100 位系数的 50 次多项式 / **Modular polynomial GCD (Brown)**:
+  `ocas_poly::gcd::modular::gcd_modular_z` computes univariate integer GCDs
+  via monic modular images, CRT with symmetric reconstruction, and exact
+  trial division, eliminating the coefficient explosion of the naive
+  pseudo-remainder GCD for $\deg \gtrsim 16$; handles degree-50 inputs with
+  100-digit coefficients.
+- **多元模 GCD 多素数化**：`gcd_modular`（二元）重写为完整 Brown
+  算法——主变量内容分离、monic 化求值-插值像、多素数 CRT +
+  有理重构（经 `rational_reconstruction`）、全次数试除验证与
+  坏素数跳过 / **Multivariate modular GCD, multi-prime**: the bivariate
+  `gcd_modular` was rewritten as the full Brown algorithm — content
+  separation in the main variable, monic evaluation-interpolation images,
+  multi-prime CRT with rational reconstruction, full-degree trial division,
+  and bad-prime skipping.
+- **Python 绑定**：`ocas.factorint`、`isprime`、`isprime_u64`、
+  `nextprime`、`discrete_log`、`crt`、`jacobi_symbol`、`totient`、
+  `mobius`、`divisor_count`、`divisor_sigma`、`liouville_lambda`
+  （任意精度 Python int 直收）/ **Python bindings**: `ocas.factorint`,
+  `isprime`, `isprime_u64`, `nextprime`, `discrete_log`, `crt`,
+  `jacobi_symbol`, `totient`, `mobius`, `divisor_count`, `divisor_sigma`,
+  `liouville_lambda` (arbitrary-precision Python ints).
+- **C 绑定**：`ocas_ntheory_*`（factorint/isprime/nextprime/
+  discrete_log/crt/jacobi/totient/mobius/divisor_count/divisor_sigma/
+  liouville，十进制字符串进出），`include/ocas.h` 同步并新增
+  `ocas.hpp` 的 `ocas::ntheory` RAII 包装 / **C bindings**: `ocas_ntheory_*`
+  (decimal strings in/out), `include/ocas.h` synced, plus `ocas::ntheory`
+  RAII wrappers in `ocas.hpp`.
+
+### Fixed / 修复
+
+- **有理重构隐藏性能炸弹**：`rational_reconstruction` 内部的整数平方根
+  在奇数和处提前退出牛顿迭代，随后从 $n$ 逐个减一校正至 $\sqrt n$
+  （30 位模数约 52 秒/次）；现改用后端原生 `Integer::sqrt()` /
+  **Latent performance bomb in rational reconstruction**: the hand-rolled
+  integer square root broke out of Newton iteration early on odd sums and
+  then decremented from $n$ down to $\sqrt n$ one step at a time (~52 s per
+  call for 30-digit moduli); it now uses the backend-native
+  `Integer::sqrt()`.
+- **SymPy 对比脚本参数顺序**：`correctness` 测试 `check` 模式的子命令
+  与参数顺序颠倒（该模式此前无调用方，属潜伏 bug）；同时新增
+  `nt_factorint`/`nt_isprime`/`nt_nextprime`/`nt_totient`/`nt_mobius`/
+  `nt_divisor_count`/`nt_divisor_sigma`/`nt_liouville`/`nt_discrete_log`/
+  `nt_crt`/`nt_jacobi` 数论对比任务 / **SymPy comparison script argument
+  order**: the `check` mode of the correctness harness passed the subcommand
+  last (latent bug — the mode had no callers); also adds `nt_*` number-theory
+  comparison tasks.
+
+### 测试 / Tests
+
+- ocas-domain 数论单元测试与 doctest 全绿；BPSW 对抗 Carmichael 数与
+  base-2 强伪素数；proptest 交叉验证三种素性判定一致 /
+  Unit tests and doctests green; BPSW adversarial coverage of Carmichael
+  numbers and base-2 strong pseudoprimes; proptest cross-checks of all three
+  primality tests.
+- `ocas-tests/tests/correctness/ntheory.rs`：每个子模块 ≥ 20 例与
+  SymPy `ntheory` 交叉验证 / `correctness/ntheory.rs`: ≥ 20 cross-checked
+  cases per submodule against SymPy `ntheory`.
+- Python：`tests/python/test_ntheory.py` 46 项；C API：12 项新
+  （共 80 项）/ Python: 46 tests; C API: 12 new (80 total).
+
+---
+
 ## [0.20.1] - 2026-07-27
 
 ### Added / 新增

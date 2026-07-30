@@ -604,6 +604,85 @@ char *ocas_ode_dsolve_ivp(const char *equation,
                           int *err);
 
 /**
+ * Factor `|n|` into primes, returned as `"p1:e1,p2:e2,..."` (ascending).
+ * A leading `"-1:1"` pair marks negative input. Returns `NULL` on failure.
+ *
+ * The returned string is heap-allocated; release it with
+ * [`ocas_string_free`].
+ */
+char *ocas_ntheory_factorint(const char *n, int *err_out);
+
+/**
+ * BPSW probable-prime test: returns 1 when `n` is (probably) prime, 0 when
+ * composite, and -1 on error (with `err_out` set).
+ */
+int ocas_ntheory_isprime(const char *n, int *err_out);
+
+/**
+ * Smallest prime strictly greater than `n`, as a decimal string.
+ * The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_ntheory_nextprime(const char *n, int *err_out);
+
+/**
+ * Solve `base^x ≡ target (mod p)`: Pohlig-Hellman for prime `p`, BSGS
+ * otherwise. Returns the logarithm as a decimal string, or `NULL` (with
+ * `err_out = OCAS_ERROR_RUNTIME`) when no logarithm exists. The caller must
+ * release the string with [`ocas_string_free`].
+ */
+char *ocas_ntheory_discrete_log(const char *p,
+                                const char *base,
+                                const char *target,
+                                int *err_out);
+
+/**
+ * Chinese remainder theorem over comma-separated decimal lists:
+ * `moduli = "m1,m2,..."`, `residues = "r1,r2,..."`. Returns `"r,m"` with
+ * `r ≡ residues[i] (mod moduli[i])`, or `NULL` for inconsistent systems or
+ * malformed input. The caller must release the string with
+ * [`ocas_string_free`].
+ */
+char *ocas_ntheory_crt(const char *moduli,
+                       const char *residues,
+                       int *err_out);
+
+/**
+ * The Jacobi symbol `(a / n)` for odd positive `n`: returns -1, 0, or 1;
+ * -2 with `err_out` set signals invalid input.
+ */
+int ocas_ntheory_jacobi(const char *a, const char *n, int *err_out);
+
+/**
+ * Euler's totient `φ(n)` as a decimal string. The caller must release it
+ * with [`ocas_string_free`].
+ */
+char *ocas_ntheory_totient(const char *n, int *err_out);
+
+/**
+ * The Möbius function `μ(n)`: returns -1, 0, or 1; -2 with `err_out` set
+ * signals invalid input.
+ */
+int ocas_ntheory_mobius(const char *n, int *err_out);
+
+/**
+ * Number of positive divisors `τ(n)` as a decimal string. The caller must
+ * release it with [`ocas_string_free`].
+ */
+char *ocas_ntheory_divisor_count(const char *n, int *err_out);
+
+/**
+ * Sum of `k`-th powers of the positive divisors `σ_k(n)` as a decimal
+ * string. The caller must release it with [`ocas_string_free`].
+ */
+char *ocas_ntheory_divisor_sigma(const char *n, uint32_t k, int *err_out);
+
+/**
+ * Liouville's function `λ(n) = (-1)^Ω(n)`: returns -1, 0, or 1; -2 with
+ * `err_out` set signals invalid input.
+ */
+int ocas_ntheory_liouville(const char *n, int *err_out);
+
+/**
  * Opaque handle for a tensor (named object with index slots).
  */
 struct ocas_OcasTensor {

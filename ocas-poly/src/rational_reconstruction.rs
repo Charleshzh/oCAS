@@ -108,35 +108,10 @@ fn abs_le(a: &Integer, b: &Integer) -> bool {
 ///
 /// Returns `floor(sqrt(n))` for `n >= 0`.
 fn integer_sqrt(n: &Integer) -> Integer {
-    let d = IntegerDomain;
-    if d.is_zero(n) {
-        return d.zero();
-    }
-    if n <= &Integer::from(1) {
-        return n.clone();
-    }
-
-    let two = Integer::from(2);
-    let mut x = n.clone();
-    loop {
-        // next = (x + n/x) / 2
-        let n_div_x = d.div(n, &x).unwrap_or(d.zero());
-        let sum = d.add(&x, &n_div_x);
-        let next = d.div(&sum, &two).unwrap_or(x.clone());
-
-        // Converged when next >= x (approaching from above).
-        if next >= x {
-            break;
-        }
-        x = next;
-    }
-    // Correction: Newton's method with integer division may overshoot.
-    // If x^2 > n, decrement until x^2 <= n.
-    let one = Integer::from(1);
-    while d.mul(&x, &x) > *n && x > one {
-        x = d.sub(&x, &one);
-    }
-    x
+    // Delegate to the backend-native floor square root (exact, both the
+    // num-bigint and GMP backends). A previous hand-rolled Newton loop
+    // broke early on odd sums and fell back to decrementing from n by one.
+    n.sqrt()
 }
 
 #[cfg(test)]

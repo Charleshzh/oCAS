@@ -18,9 +18,10 @@ use std::f64;
 /// acc.add_sample(1.0, 1.5);
 /// acc.add_sample(1.0, 1.8);
 /// acc.add_sample(1.0, 2.1);
-/// acc.finalize_iteration();
+/// assert_eq!(acc.samples(), 3);
 ///
-/// assert!(acc.samples() > 0);
+/// acc.finalize_iteration();
+/// assert_eq!(acc.iterations(), 1);
 /// ```
 #[derive(Debug, Clone)]
 pub struct StatisticsAccumulator {
