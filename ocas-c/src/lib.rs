@@ -46,6 +46,7 @@ pub mod algebraic;
 pub mod dual;
 pub mod error;
 pub mod expression;
+pub mod groebner;
 pub mod ntheory;
 pub mod numeric;
 pub mod ode;

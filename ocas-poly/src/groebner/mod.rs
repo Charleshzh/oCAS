@@ -322,6 +322,71 @@ pub fn groebner_basis<D: Domain + 'static, O: MonomialOrder>(
     }
 }
 
+/// Eliminate variables from an ideal.
+///
+/// Returns the Gröbner basis of `I ∩ k[x_{elim_vars}, ..., x_{n-1}]`, i.e.,
+/// the polynomials in the basis that do not involve the first `elim_vars`
+/// variables. Uses Lex ordering which is a natural elimination order:
+/// under Lex, the reduced GB of an ideal automatically contains the
+/// elimination ideal's generators.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{RationalDomain, Rational};
+/// use ocas_poly::sparse::Lex;
+/// use ocas_poly::{SparseMultivariatePolynomial, eliminate, Algorithm};
+///
+/// let d = RationalDomain;
+/// // Ideal: x + y + z, x*y + x*z in k[x,y,z]; eliminate x.
+/// let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+///     (vec![1, 0, 0], Rational::new(1, 1)),
+///     (vec![0, 1, 0], Rational::new(1, 1)),
+///     (vec![0, 0, 1], Rational::new(1, 1)),
+/// ]);
+/// let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+///     (vec![1, 1, 0], Rational::new(1, 1)),
+///     (vec![1, 0, 1], Rational::new(1, 1)),
+/// ]);
+/// let elim = eliminate(&[f1, f2], 1, Algorithm::Auto);
+/// // Result should be in k[y,z]
+/// for p in &elim.basis {
+///     assert!(p.degree_in(0) == 0, "eliminated variable x should not appear");
+/// }
+/// ```
+pub fn eliminate<D: Domain + 'static>(
+    ideal: &[SparseMultivariatePolynomial<D, crate::sparse::Lex>],
+    elim_vars: usize,
+    algo: Algorithm,
+) -> GroebnerBasis<D, crate::sparse::Lex> {
+    let n_vars = ideal.first().map(|p| p.n_vars()).unwrap_or(0);
+    assert!(
+        elim_vars <= n_vars,
+        "elim_vars ({elim_vars}) must be <= n_vars ({n_vars})"
+    );
+    if ideal.is_empty() {
+        return GroebnerBasis { basis: vec![] };
+    }
+
+    // Compute Gröbner basis under Lex ordering.
+    // Lex is a natural elimination order: polynomials in the GB that
+    // don't involve x_0,...,x_{s-1} form a GB of the elimination ideal.
+    let gb = groebner_basis(ideal, algo);
+
+    // Filter: keep only polynomials that don't involve the eliminated variables.
+    let filtered: Vec<SparseMultivariatePolynomial<D, crate::sparse::Lex>> = gb
+        .basis
+        .into_iter()
+        .filter(|p| {
+            p.terms_ref()
+                .keys()
+                .all(|exp| exp.iter().take(elim_vars).all(|&e| e == 0))
+        })
+        .collect();
+
+    GroebnerBasis { basis: filtered }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -376,5 +441,115 @@ mod tests {
         let gb = buchberger(&[f1, f2]);
         assert!(gb.is_groebner_basis());
         assert!(!gb.basis.is_empty());
+    }
+
+    // --- Step 1a: Lex order verification ---
+
+    #[test]
+    fn lex_cyclic_3() {
+        // Cyclic-3: x+y+z, xy+yz+zx, xyz-1 under Lex.
+        let d = RationalDomain;
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+            (vec![1, 0, 0], r(1, 1)),
+            (vec![0, 1, 0], r(1, 1)),
+            (vec![0, 0, 1], r(1, 1)),
+        ]);
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+            (vec![1, 1, 0], r(1, 1)),
+            (vec![0, 1, 1], r(1, 1)),
+            (vec![1, 0, 1], r(1, 1)),
+        ]);
+        let f3 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+            (vec![1, 1, 1], r(1, 1)),
+            (vec![0, 0, 0], r(-1, 1)),
+        ]);
+        let gb = groebner_basis(&[f1, f2, f3], Algorithm::F4);
+        assert!(gb.is_groebner_basis());
+        // Print basis for debugging.
+        for (i, p) in gb.basis.iter().enumerate() {
+            eprintln!("lex_cyclic_3 gb[{i}]: {p:?}");
+        }
+        // Under Lex, the GB should be triangular (each poly introduces
+        // one fewer variable). The smallest variable (z) should appear
+        // in a univariate polynomial.
+        let has_univariate_in_z = gb.basis.iter().any(|p| {
+            p.terms_ref()
+                .keys()
+                .all(|e| e[0] == 0 && e[1] == 0)
+        });
+        assert!(has_univariate_in_z, "Lex GB should contain a univariate poly in z");
+    }
+
+    #[test]
+    fn lex_two_variable_elimination() {
+        // Ideal: x^2 - y, x^3 - x in k[x,y] under Lex.
+        // Lex GB should eliminate x: expect y^2 - y, xy - x, x^2 - y.
+        let d = RationalDomain;
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+            (vec![2, 0], r(1, 1)),
+            (vec![0, 1], r(-1, 1)),
+        ]);
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+            (vec![3, 0], r(1, 1)),
+            (vec![1, 0], r(-1, 1)),
+        ]);
+        let gb = groebner_basis(&[f1, f2], Algorithm::F4);
+        assert!(gb.is_groebner_basis());
+        // The GB should be triangular: first poly in y only, then xy, then x^2.
+        // Find the univariate poly in y.
+        let y_poly = gb.basis.iter().find(|p| {
+            p.terms_ref().keys().all(|e| e[0] == 0)
+        });
+        assert!(y_poly.is_some(), "Lex GB should contain a univariate poly in y");
+    }
+
+    // --- Step 1c: eliminate() tests ---
+
+    #[test]
+    fn eliminate_simple() {
+        // Eliminate x from {x + y, x - y} in k[x,y].
+        // x + y = 0 and x - y = 0 ⟹ x = 0, y = 0.
+        // Eliminating x should give {y} (or just y = 0).
+        let d = RationalDomain;
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+            (vec![1, 0], r(1, 1)),
+            (vec![0, 1], r(1, 1)),
+        ]);
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+            (vec![1, 0], r(1, 1)),
+            (vec![0, 1], r(-1, 1)),
+        ]);
+        let elim = eliminate(&[f1, f2], 1, Algorithm::F4);
+        assert!(!elim.basis.is_empty());
+        // All result polynomials should be in y only.
+        for p in &elim.basis {
+            assert_eq!(p.degree_in(0), 0, "eliminated var x should not appear");
+        }
+    }
+
+    #[test]
+    fn eliminate_cox_little_oshea() {
+        // Cox-Little-O'Shea §3.1: eliminate x from {x+y+z-1, xy+xz, xyz}.
+        let d = RationalDomain;
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+            (vec![1, 0, 0], r(1, 1)),
+            (vec![0, 1, 0], r(1, 1)),
+            (vec![0, 0, 1], r(1, 1)),
+            (vec![0, 0, 0], r(-1, 1)),
+        ]);
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+            (vec![1, 1, 0], r(1, 1)),
+            (vec![1, 0, 1], r(1, 1)),
+        ]);
+        let f3 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 3, vec![
+            (vec![1, 1, 1], r(1, 1)),
+        ]);
+        let elim = eliminate(&[f1, f2, f3], 1, Algorithm::F4);
+        // All result polynomials should be in y, z only.
+        for p in &elim.basis {
+            assert_eq!(p.degree_in(0), 0, "x should be eliminated");
+        }
+        // Should contain y^2 + z^2 - y - z and yz + z^2 - z (or equivalent).
+        assert!(elim.basis.len() >= 2, "expected at least 2 generators, got {}", elim.basis.len());
     }
 }

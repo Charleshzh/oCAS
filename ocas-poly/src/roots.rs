@@ -245,9 +245,23 @@ where
 /// Convert a domain element to f64 for numerical evaluation.
 fn coeff_value(elem: &(impl Display + ?Sized)) -> f64 {
     let s = elem.to_string();
-    s.trim()
-        .parse::<f64>()
-        .unwrap_or_else(|_| s.trim().parse::<i64>().map(|v| v as f64).unwrap_or(0.0))
+    let trimmed = s.trim();
+    // Try direct f64 parse first.
+    if let Ok(v) = trimmed.parse::<f64>() {
+        return v;
+    }
+    // Try integer parse.
+    if let Ok(v) = trimmed.parse::<i64>() {
+        return v as f64;
+    }
+    // Try rational format "n/d".
+    if let Some((num_str, den_str)) = trimmed.split_once('/')
+        && let (Ok(n), Ok(d)) = (num_str.trim().parse::<f64>(), den_str.trim().parse::<f64>())
+        && d != 0.0
+    {
+        return n / d;
+    }
+    0.0
 }
 
 #[cfg(test)]

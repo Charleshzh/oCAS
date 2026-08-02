@@ -150,6 +150,110 @@ impl MonomialOrder for WeightOrder {
     }
 }
 
+/// Matrix ordering: compare monomials by multiplying exponent vectors by
+/// an integer matrix and comparing the results lexicographically.
+///
+/// Given an $n \times n$ matrix $M$, monomial $\alpha > \beta$ iff
+/// $M\alpha >_{\text{lex}} M\beta$. This generalizes all standard orderings
+/// and is particularly useful for constructing elimination orderings.
+///
+/// # Example
+///
+/// ```
+/// use ocas_poly::sparse::{MatrixOrder, MonomialOrder};
+///
+/// // 2×2 identity matrix = Lex order
+/// let ord = MatrixOrder::new(vec![vec![1, 0], vec![0, 1]]);
+/// assert_eq!(ord.cmp(&[1, 0], &[0, 1]), std::cmp::Ordering::Greater);
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MatrixOrder {
+    /// The ordering matrix (n×n, row-major).
+    matrix: Vec<Vec<i64>>,
+    /// Number of variables.
+    n_vars: usize,
+}
+
+impl MatrixOrder {
+    /// Create a new matrix ordering from an n×n matrix.
+    pub fn new(matrix: Vec<Vec<i64>>) -> Self {
+        let n_vars = matrix.len();
+        debug_assert!(matrix.iter().all(|row| row.len() == n_vars));
+        Self { matrix, n_vars }
+    }
+
+    /// Create an elimination ordering that eliminates the first `elim_vars`
+    /// variables. Equivalent to `BlockOrder([elim_vars in Lex, rest in
+    /// Grevlex])` but expressed as a weight matrix.
+    pub fn elimination_order(elim_vars: usize, n_vars: usize) -> Self {
+        debug_assert!(elim_vars <= n_vars);
+        let mut matrix = vec![vec![0i64; n_vars]; n_vars];
+        #[allow(clippy::needless_range_loop)]
+        {
+            // First `elim_vars` rows: high weight on eliminated variables.
+            for i in 0..elim_vars {
+                for j in 0..n_vars {
+                    if j <= i {
+                        matrix[i][j] = (n_vars * n_vars + n_vars) as i64;
+                    } else {
+                        matrix[i][j] = 0;
+                    }
+                }
+            }
+            // Remaining rows: total degree + reverse lex for remaining variables.
+            for i in elim_vars..n_vars {
+                for j in 0..n_vars {
+                    if j < elim_vars {
+                        matrix[i][j] = 0;
+                    } else {
+                        matrix[i][j] = 1;
+                    }
+                }
+                // Add reverse lex tiebreaker.
+                if i > elim_vars {
+                    let rev_idx = n_vars - 1 - (i - elim_vars);
+                    if rev_idx >= elim_vars {
+                        matrix[i][rev_idx] += 1;
+                    }
+                }
+            }
+        }
+        Self { matrix, n_vars }
+    }
+}
+
+impl Default for MatrixOrder {
+    /// Default: 1×1 identity (single variable).
+    fn default() -> Self {
+        Self {
+            matrix: vec![vec![1]],
+            n_vars: 1,
+        }
+    }
+}
+
+impl MonomialOrder for MatrixOrder {
+    fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
+        for row in &self.matrix {
+            let w_lhs: i64 = lhs
+                .iter()
+                .zip(row.iter())
+                .map(|(&e, &w)| w * e as i64)
+                .sum();
+            let w_rhs: i64 = rhs
+                .iter()
+                .zip(row.iter())
+                .map(|(&e, &w)| w * e as i64)
+                .sum();
+            match w_lhs.cmp(&w_rhs) {
+                std::cmp::Ordering::Equal => continue,
+                ord => return ord.reverse(), // higher weight = greater
+            }
+        }
+        std::cmp::Ordering::Equal
+    }
+}
+
 /// A sub-ordering used inside [`BlockOrder`] for each variable block.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SubOrder {
@@ -940,6 +1044,57 @@ impl<D: Domain, O: MonomialOrder> SparseMultivariatePolynomial<D, O> {
             let mut new_exp = SmallVec::with_capacity(new_n_vars);
             new_exp.push(0);
             new_exp.extend(exp.iter().copied());
+            result.terms.insert(new_exp, coeff.clone());
+        }
+        result
+    }
+
+    /// Drop variable `var_index` from the polynomial, producing a polynomial
+    /// in one fewer variable. Only safe when no term has a nonzero exponent
+    /// for `var_index` (otherwise those terms are silently dropped).
+    pub fn drop_variable(&self, var_index: usize) -> Self {
+        assert!(
+            var_index < self.n_vars,
+            "var_index ({var_index}) must be < n_vars ({})",
+            self.n_vars
+        );
+        let new_n_vars = self.n_vars - 1;
+        let mut result = Self::new(self.domain.clone(), new_n_vars);
+        result.order = self.order.clone();
+        for (exp, coeff) in &self.terms {
+            if exp.get(var_index).copied().unwrap_or(0) != 0 {
+                continue; // skip terms involving the dropped variable
+            }
+            let mut new_exp = SmallVec::with_capacity(new_n_vars);
+            for i in 0..self.n_vars {
+                if i != var_index {
+                    new_exp.push(exp[i]);
+                }
+            }
+            result.terms.insert(new_exp, coeff.clone());
+        }
+        result
+    }
+
+    /// Extend to `new_n_vars` variables by appending zero exponents.
+    ///
+    /// Requires `new_n_vars >= self.n_vars`. Existing variable indices
+    /// are unchanged; new variables are appended at the end.
+    pub fn extend_vars(&self, new_n_vars: usize) -> Self {
+        assert!(
+            new_n_vars >= self.n_vars,
+            "new_n_vars ({new_n_vars}) must be >= self.n_vars ({})",
+            self.n_vars
+        );
+        if new_n_vars == self.n_vars {
+            return self.clone();
+        }
+        let mut result = Self::new(self.domain.clone(), new_n_vars);
+        result.order = self.order.clone();
+        for (exp, coeff) in &self.terms {
+            let mut new_exp = SmallVec::with_capacity(new_n_vars);
+            new_exp.extend(exp.iter().copied());
+            new_exp.resize(new_n_vars, 0);
             result.terms.insert(new_exp, coeff.clone());
         }
         result

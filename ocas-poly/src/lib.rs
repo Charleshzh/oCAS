@@ -6,6 +6,7 @@ pub mod dense;
 pub mod factor;
 pub mod gcd;
 pub mod groebner;
+pub mod ideal;
 pub mod matrix;
 pub mod multivariate_gcd;
 pub mod rational;
@@ -24,12 +25,12 @@ pub mod ntt;
 pub mod sprs_backend;
 
 pub use dense::DenseUnivariatePolynomial;
-pub use groebner::{Algorithm, GroebnerBasis, buchberger, f4, f5, groebner_basis};
+pub use groebner::{Algorithm, GroebnerBasis, buchberger, eliminate, f4, f5, groebner_basis};
 pub use matrix::{Matrix, MatrixError};
 pub use multivariate_gcd::{bivariate_gcd, gcd_modular, lift_from_fp, reduce_mod};
 pub use rational::RationalPolynomial;
 pub use roots::RootInterval;
 pub use sparse::{
-    BlockOrder, Grevlex, Grlex, Lex, MonomialOrder, SparseMultivariatePolynomial, SubOrder,
+    BlockOrder, Grevlex, Grlex, Lex, MatrixOrder, MonomialOrder, SparseMultivariatePolynomial, SubOrder,
     WeightOrder, monomial_are_coprime, monomial_divides, monomial_lcm,
 };
