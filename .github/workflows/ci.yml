@@ -130,9 +130,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@1.97.1
-      - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: "bindings"
+      # No rust-cache here: maturin build --release must always compile from
+      # scratch to pick up source changes in lower-level crates like
+      # ocas-atom (cached fingerprints may go stale across runs).
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
