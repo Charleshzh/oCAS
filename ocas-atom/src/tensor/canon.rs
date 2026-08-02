@@ -42,11 +42,7 @@ pub fn canonicalize_tensors<'a>(
     expr: Atom<'a>,
     registry: &TensorRegistry,
 ) -> Result<CanonicalTensor<'a>, TensorCanonError> {
-    eprintln!(
-        "[canon-top] expr={} node={:?}",
-        expr,
-        std::mem::discriminant(&expr.node())
-    );
+    eprintln!("[canon-top] expr={}", expr);
     match expr.node() {
         AtomNode::Add(terms) => {
             let mut canon_terms: Vec<Atom<'a>> = Vec::new();
