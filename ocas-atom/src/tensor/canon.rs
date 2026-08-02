@@ -81,6 +81,30 @@ fn canonicalize_single_term<'a>(
     expr: Atom<'a>,
     registry: &TensorRegistry,
 ) -> Result<CanonicalTensor<'a>, TensorCanonError> {
+    // Fast path: single tensor with all-symmetric slots. Sort args
+    // alphabetically so the result is input-order-independent.
+    #[allow(clippy::collapsible_if)]
+    if let AtomNode::Fun(name, args) = expr.node() {
+        if let Some(spec) = registry.spec(*name) {
+            let all_symmetric = !spec.symmetric_subsets.is_empty()
+                && spec.antisymmetric_subsets.is_empty()
+                && spec.symmetric_subsets[0].len() == args.len();
+            if all_symmetric {
+                let mut sorted: Vec<Atom<'a>> = args.to_vec();
+                sorted.sort_by_key(|a| match a.node() {
+                    AtomNode::Var(s) => s.as_str().to_string(),
+                    _ => a.to_string(),
+                });
+                let result = ctx.fun(name.as_str(), &sorted);
+                return Ok(CanonicalTensor {
+                    canonical_form: result,
+                    external_indices: sorted,
+                    dummy_indices: Vec::new(),
+                });
+            }
+        }
+    }
+
     let (g, head_nodes, slot_labels) = tensor_to_graph(ctx, expr, registry)?;
     let cf = g.canonize();
     reconstruct(ctx, &cf, &head_nodes, &slot_labels, registry)
@@ -197,7 +221,19 @@ fn encode_factor<'a>(
                 let ha = spec.is_slot_hidden(pa);
                 let hb = spec.is_slot_hidden(pb);
                 match (ha, hb) {
-                    (true, true) => aa.to_string().cmp(&ab.to_string()),
+                    (true, true) => {
+                        // Compare by Symbol name to avoid platform-dependent
+                        // Display differences.
+                        let sa = match aa.node() {
+                            AtomNode::Var(s) => s.as_str(),
+                            _ => "",
+                        };
+                        let sb = match ab.node() {
+                            AtomNode::Var(s) => s.as_str(),
+                            _ => "",
+                        };
+                        sa.cmp(sb)
+                    }
                     (true, false) => std::cmp::Ordering::Less,
                     (false, true) => std::cmp::Ordering::Greater,
                     (false, false) => pa.cmp(&pb),
