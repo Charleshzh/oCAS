@@ -42,7 +42,6 @@ pub fn canonicalize_tensors<'a>(
     expr: Atom<'a>,
     registry: &TensorRegistry,
 ) -> Result<CanonicalTensor<'a>, TensorCanonError> {
-    eprintln!("[canon-top] expr={}", expr);
     match expr.node() {
         AtomNode::Add(terms) => {
             let mut canon_terms: Vec<Atom<'a>> = Vec::new();
@@ -86,24 +85,11 @@ fn canonicalize_single_term<'a>(
     // alphabetically so the result is input-order-independent.
     #[allow(clippy::collapsible_if)]
     if let AtomNode::Fun(name, args) = expr.node() {
-        eprintln!("[canon-1] Fun match: name={}", name.as_str());
         if let Some(spec) = registry.spec(*name) {
-            eprintln!(
-                "[canon-2] spec found: sym_subsets={}",
-                spec.symmetric_subsets.len()
-            );
-            let c1 = !spec.symmetric_subsets.is_empty();
-            let c2 = spec.antisymmetric_subsets.is_empty();
-            let subset0 = if c1 {
-                spec.symmetric_subsets[0].len()
-            } else {
-                0
-            };
-            let c3 = subset0 == args.len();
-            eprintln!("[canon-3] c1={} c2={} c3={}", c1, c2, c3);
-            let all_symmetric = c1 && c2 && c3;
+            let all_symmetric = !spec.symmetric_subsets.is_empty()
+                && spec.antisymmetric_subsets.is_empty()
+                && (0..args.len()).all(|pos| spec.is_slot_hidden(pos));
             if all_symmetric {
-                eprintln!("[canon-fast]");
                 let mut sorted: Vec<Atom<'a>> = args.to_vec();
                 sorted.sort_by_key(|a| match a.node() {
                     AtomNode::Var(s) => s.as_str().to_string(),

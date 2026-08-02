@@ -428,8 +428,10 @@ fn parse_symmetry_spec(s: &str) -> ocas_atom::tensor::spec::SymmetrySpec {
     use ocas_atom::tensor::spec::SymmetrySpec;
     match s {
         "none" => SymmetrySpec::none(),
-        "symmetric" => SymmetrySpec::fully_symmetric(0),
-        "antisymmetric" => SymmetrySpec::fully_antisymmetric(0),
+        // Use a large sentinel rank so that is_slot_hidden(pos) returns true
+        // for any reasonable tensor arity.
+        "symmetric" => SymmetrySpec::fully_symmetric(64),
+        "antisymmetric" => SymmetrySpec::fully_antisymmetric(64),
         _ => SymmetrySpec::none(),
     }
 }
