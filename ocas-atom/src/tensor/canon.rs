@@ -86,16 +86,18 @@ fn canonicalize_single_term<'a>(
     // alphabetically so the result is input-order-independent.
     #[allow(clippy::collapsible_if)]
     if let AtomNode::Fun(name, args) = expr.node() {
+        eprintln!("[canon-1] Fun match: name={}", name.as_str());
         if let Some(spec) = registry.spec(*name) {
+            eprintln!(
+                "[canon-2] spec found: sym_subsets={}",
+                spec.symmetric_subsets.len()
+            );
             let all_symmetric = !spec.symmetric_subsets.is_empty()
                 && spec.antisymmetric_subsets.is_empty()
                 && spec.symmetric_subsets[0].len() == args.len();
+            eprintln!("[canon-3] all_symmetric={}", all_symmetric);
             if all_symmetric {
-                eprintln!(
-                    "[canon-fast] {} args={:?}",
-                    name.as_str(),
-                    args.iter().map(|a| a.to_string()).collect::<Vec<_>>()
-                );
+                eprintln!("[canon-fast]");
                 let mut sorted: Vec<Atom<'a>> = args.to_vec();
                 sorted.sort_by_key(|a| match a.node() {
                     AtomNode::Var(s) => s.as_str().to_string(),
