@@ -247,7 +247,7 @@ impl MonomialOrder for MatrixOrder {
                 .sum();
             match w_lhs.cmp(&w_rhs) {
                 std::cmp::Ordering::Equal => continue,
-                ord => return ord.reverse(), // higher weight = greater
+                ord => return ord,
             }
         }
         std::cmp::Ordering::Equal
