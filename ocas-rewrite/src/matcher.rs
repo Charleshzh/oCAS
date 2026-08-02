@@ -532,6 +532,7 @@ fn match_nary_ac<'a>(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn enumerate_subsets<'a>(
     bindings: &mut Bindings<'a>,
     patterns: &[Pattern<'a>],
@@ -588,6 +589,7 @@ enum SubsetResult {
     BudgetExhausted,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn enumerate_combinations_step<'a>(
     bindings: &mut Bindings<'a>,
     patterns: &[Pattern<'a>],
