@@ -1,0 +1,1061 @@
+锘?026-08-02T14:34:47.0207034Z Current runner version: '2.336.0'
+2026-08-02T14:34:47.0230749Z ##[group]Runner Image Provisioner
+2026-08-02T14:34:47.0231538Z Hosted Compute Agent
+2026-08-02T14:34:47.0232246Z Version: 20260707.563
+2026-08-02T14:34:47.0232863Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-02T14:34:47.0233597Z Build Date: 2026-07-07T19:33:50Z
+2026-08-02T14:34:47.0234280Z Worker ID: {41b3e6df-3d45-4f21-9b47-8c8e738c2e69}
+2026-08-02T14:34:47.0234959Z Azure Region: eastus
+2026-08-02T14:34:47.0235600Z ##[endgroup]
+2026-08-02T14:34:47.0237322Z ##[group]Operating System
+2026-08-02T14:34:47.0238021Z Ubuntu
+2026-08-02T14:34:47.0239003Z 24.04.4
+2026-08-02T14:34:47.0239528Z LTS
+2026-08-02T14:34:47.0240131Z ##[endgroup]
+2026-08-02T14:34:47.0240662Z ##[group]Runner Image
+2026-08-02T14:34:47.0241222Z Image: ubuntu-24.04
+2026-08-02T14:34:47.0241839Z Version: 20260720.247.2
+2026-08-02T14:34:47.0243084Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-02T14:34:47.0244664Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-02T14:34:47.0245568Z ##[endgroup]
+2026-08-02T14:34:47.0247039Z ##[group]GITHUB_TOKEN Permissions
+2026-08-02T14:34:47.0249432Z Contents: read
+2026-08-02T14:34:47.0250127Z Metadata: read
+2026-08-02T14:34:47.0250661Z ##[endgroup]
+2026-08-02T14:34:47.0252728Z Secret source: Actions
+2026-08-02T14:34:47.0254087Z Prepare workflow directory
+2026-08-02T14:34:47.0629589Z Prepare all required actions
+2026-08-02T14:34:47.0676664Z Getting action download info
+2026-08-02T14:34:47.2625050Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-08-02T14:34:47.4634287Z Download action repository 'dtolnay/rust-toolchain@1.97.1' (SHA:46511b1c83438f0dd37c02d843619ece5a4abb5b)
+2026-08-02T14:34:47.5311796Z Download action repository 'actions/setup-python@v6' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-08-02T14:34:47.7353375Z Complete job name: Build language bindings
+2026-08-02T14:34:47.8113796Z ##[group]Run actions/checkout@v5
+2026-08-02T14:34:47.8114642Z with:
+2026-08-02T14:34:47.8115059Z   repository: Charleshzh/oCAS
+2026-08-02T14:34:47.8119167Z   token: ***
+2026-08-02T14:34:47.8119598Z   ssh-strict: true
+2026-08-02T14:34:47.8120002Z   ssh-user: git
+2026-08-02T14:34:47.8120423Z   persist-credentials: true
+2026-08-02T14:34:47.8120892Z   clean: true
+2026-08-02T14:34:47.8121314Z   sparse-checkout-cone-mode: true
+2026-08-02T14:34:47.8121816Z   fetch-depth: 1
+2026-08-02T14:34:47.8122227Z   fetch-tags: false
+2026-08-02T14:34:47.8122648Z   show-progress: true
+2026-08-02T14:34:47.8123084Z   lfs: false
+2026-08-02T14:34:47.8123473Z   submodules: false
+2026-08-02T14:34:47.8123891Z   set-safe-directory: true
+2026-08-02T14:34:47.8124373Z   allow-unsafe-pr-checkout: false
+2026-08-02T14:34:47.8125168Z env:
+2026-08-02T14:34:47.8125568Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:47.8126023Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:47.8126435Z ##[endgroup]
+2026-08-02T14:34:47.9065923Z Syncing repository: Charleshzh/oCAS
+2026-08-02T14:34:47.9067667Z ##[group]Getting Git version info
+2026-08-02T14:34:47.9068805Z Working directory is '/home/runner/work/oCAS/oCAS'
+2026-08-02T14:34:47.9069755Z [command]/usr/bin/git version
+2026-08-02T14:34:47.9140282Z git version 2.54.0
+2026-08-02T14:34:47.9192638Z ##[endgroup]
+2026-08-02T14:34:47.9205984Z Temporarily overriding HOME='/home/runner/work/_temp/f73f1a59-1d8c-4c1e-8a8a-ecf10c8f803a' before making global git config changes
+2026-08-02T14:34:47.9207423Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T14:34:47.9211196Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/oCAS/oCAS
+2026-08-02T14:34:47.9256636Z Deleting the contents of '/home/runner/work/oCAS/oCAS'
+2026-08-02T14:34:47.9260229Z ##[group]Initializing the repository
+2026-08-02T14:34:47.9264377Z [command]/usr/bin/git init /home/runner/work/oCAS/oCAS
+2026-08-02T14:34:47.9359783Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-02T14:34:47.9361440Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-02T14:34:47.9363604Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-02T14:34:47.9365353Z hint: call:
+2026-08-02T14:34:47.9366365Z hint:
+2026-08-02T14:34:47.9367456Z hint: 	git config --global init.defaultBranch <name>
+2026-08-02T14:34:47.9368918Z hint:
+2026-08-02T14:34:47.9370022Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-02T14:34:47.9371768Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-02T14:34:47.9373093Z hint:
+2026-08-02T14:34:47.9373794Z hint: 	git branch -m <name>
+2026-08-02T14:34:47.9374596Z hint:
+2026-08-02T14:34:47.9375718Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-02T14:34:47.9377510Z Initialized empty Git repository in /home/runner/work/oCAS/oCAS/.git/
+2026-08-02T14:34:47.9380564Z [command]/usr/bin/git remote add origin https://github.com/Charleshzh/oCAS
+2026-08-02T14:34:47.9418737Z ##[endgroup]
+2026-08-02T14:34:47.9420048Z ##[group]Disabling automatic garbage collection
+2026-08-02T14:34:47.9423388Z [command]/usr/bin/git config --local gc.auto 0
+2026-08-02T14:34:47.9451967Z ##[endgroup]
+2026-08-02T14:34:47.9453264Z ##[group]Setting up auth
+2026-08-02T14:34:47.9459211Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T14:34:47.9491727Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T14:34:47.9824109Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T14:34:47.9861294Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T14:34:48.0095823Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T14:34:48.0129087Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T14:34:48.0367373Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-08-02T14:34:48.0404006Z ##[endgroup]
+2026-08-02T14:34:48.0405085Z ##[group]Fetching the repository
+2026-08-02T14:34:48.0417199Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9195027baab0314abc95493db1c7a2b0acf2f126:refs/remotes/origin/main
+2026-08-02T14:34:48.3766602Z From https://github.com/Charleshzh/oCAS
+2026-08-02T14:34:48.3768232Z  * [new ref]         9195027baab0314abc95493db1c7a2b0acf2f126 -> origin/main
+2026-08-02T14:34:48.3803166Z ##[endgroup]
+2026-08-02T14:34:48.3804902Z ##[group]Determining the checkout info
+2026-08-02T14:34:48.3806827Z ##[endgroup]
+2026-08-02T14:34:48.3813181Z [command]/usr/bin/git sparse-checkout disable
+2026-08-02T14:34:48.3857905Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-08-02T14:34:48.3889498Z ##[group]Checking out the ref
+2026-08-02T14:34:48.3895011Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-08-02T14:34:48.4177606Z Switched to a new branch 'main'
+2026-08-02T14:34:48.4180068Z branch 'main' set up to track 'origin/main'.
+2026-08-02T14:34:48.4194028Z ##[endgroup]
+2026-08-02T14:34:48.4230377Z [command]/usr/bin/git log -1 --format=%H
+2026-08-02T14:34:48.4252323Z 9195027baab0314abc95493db1c7a2b0acf2f126
+2026-08-02T14:34:48.4870008Z ##[group]Run dtolnay/rust-toolchain@1.97.1
+2026-08-02T14:34:48.4871278Z with:
+2026-08-02T14:34:48.4872152Z env:
+2026-08-02T14:34:48.4873050Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:48.4874100Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:48.4875055Z ##[endgroup]
+2026-08-02T14:34:48.4987970Z ##[start-action display=Run : parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-08-02T14:34:48.5049714Z ##[group]Run : parse toolchain version
+2026-08-02T14:34:48.5050959Z [36;1m: parse toolchain version[0m
+2026-08-02T14:34:48.5052051Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-08-02T14:34:48.5053857Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-08-02T14:34:48.5055800Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-08-02T14:34:48.5056968Z [36;1m  exit 1[0m
+2026-08-02T14:34:48.5058251Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-08-02T14:34:48.5060046Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-08-02T14:34:48.5061943Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5063810Z [36;1m  else[0m
+2026-08-02T14:34:48.5065313Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5067009Z [36;1m  fi[0m
+2026-08-02T14:34:48.5068172Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-08-02T14:34:48.5070220Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5071907Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-08-02T14:34:48.5073792Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5075593Z [36;1melse[0m
+2026-08-02T14:34:48.5076622Z [36;1m  echo "toolchain=$toolchain" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5077789Z [36;1mfi[0m
+2026-08-02T14:34:48.5125797Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:48.5127094Z env:
+2026-08-02T14:34:48.5127920Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:48.5129373Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:48.5130279Z   toolchain: 1.97.1
+2026-08-02T14:34:48.5131155Z ##[endgroup]
+2026-08-02T14:34:48.5264068Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=27]
+2026-08-02T14:34:48.5292491Z ##[start-action display=Run : construct rustup command line;id=__dtolnay_rust-toolchain.flags]
+2026-08-02T14:34:48.5331889Z ##[group]Run : construct rustup command line
+2026-08-02T14:34:48.5333121Z [36;1m: construct rustup command line[0m
+2026-08-02T14:34:48.5334736Z [36;1mecho "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5336941Z [36;1mecho "components=$(for c in ${components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5338882Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:48.5379251Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:48.5380519Z env:
+2026-08-02T14:34:48.5381371Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:48.5382346Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:48.5383228Z   targets: 
+2026-08-02T14:34:48.5384053Z   components: 
+2026-08-02T14:34:48.5384894Z ##[endgroup]
+2026-08-02T14:34:48.5474188Z ##[end-action id=__dtolnay_rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=17]
+2026-08-02T14:34:48.5482182Z ##[start-action display=Run : set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-08-02T14:34:48.5520106Z ##[group]Run : set $CARGO_HOME
+2026-08-02T14:34:48.5521118Z [36;1m: set $CARGO_HOME[0m
+2026-08-02T14:34:48.5522357Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-08-02T14:34:48.5563361Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:48.5564603Z env:
+2026-08-02T14:34:48.5565411Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:48.5566357Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:48.5567221Z ##[endgroup]
+2026-08-02T14:34:48.5648864Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=16]
+2026-08-02T14:34:48.5655436Z ##[start-action display=Run : install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-08-02T14:34:48.5705011Z ##[group]Run : install rustup if needed
+2026-08-02T14:34:48.5706147Z [36;1m: install rustup if needed[0m
+2026-08-02T14:34:48.5707290Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-08-02T14:34:48.5709997Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-08-02T14:34:48.5712450Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-08-02T14:34:48.5713575Z [36;1mfi[0m
+2026-08-02T14:34:48.5753880Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:48.5755169Z env:
+2026-08-02T14:34:48.5755984Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:48.5756929Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:48.5757826Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:48.5759119Z ##[endgroup]
+2026-08-02T14:34:48.5838691Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=18]
+2026-08-02T14:34:48.5847166Z ##[start-action display=Run : install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-08-02T14:34:48.5861832Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-08-02T14:34:48.5872188Z ##[start-action display=rustup toolchain install 1.97.1;id=__dtolnay_rust-toolchain.__run_4]
+2026-08-02T14:34:48.5912600Z ##[group]Run rustup toolchain install 1.97.1 --profile minimal --no-self-update
+2026-08-02T14:34:48.5914435Z [36;1mrustup toolchain install 1.97.1 --profile minimal --no-self-update[0m
+2026-08-02T14:34:48.5955340Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:48.5956552Z env:
+2026-08-02T14:34:48.5957342Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:48.5958260Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:48.5959411Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:48.5960449Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-08-02T14:34:48.5961408Z ##[endgroup]
+2026-08-02T14:34:48.6455404Z info: syncing channel updates for 1.97.1-x86_64-unknown-linux-gnu
+2026-08-02T14:34:48.7516447Z info: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)
+2026-08-02T14:34:48.7529854Z info: downloading 3 components
+2026-08-02T14:34:56.2270343Z 
+2026-08-02T14:34:56.2337497Z   1.97.1-x86_64-unknown-linux-gnu installed - rustc 1.97.1 (8bab26f4f 2026-07-14)
+2026-08-02T14:34:56.2339107Z 
+2026-08-02T14:34:56.2397077Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=7652]
+2026-08-02T14:34:56.2405831Z ##[start-action display=Run rustup default 1.97.1;id=__dtolnay_rust-toolchain.__run_5]
+2026-08-02T14:34:56.2429694Z ##[group]Run rustup default 1.97.1
+2026-08-02T14:34:56.2430042Z [36;1mrustup default 1.97.1[0m
+2026-08-02T14:34:56.2475884Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.2476295Z env:
+2026-08-02T14:34:56.2476530Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.2476799Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.2477063Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.2477347Z ##[endgroup]
+2026-08-02T14:34:56.2591721Z info: using existing install for 1.97.1-x86_64-unknown-linux-gnu
+2026-08-02T14:34:56.2600258Z info: default toolchain set to 1.97.1-x86_64-unknown-linux-gnu
+2026-08-02T14:34:56.2600700Z 
+2026-08-02T14:34:56.2662130Z   1.97.1-x86_64-unknown-linux-gnu unchanged - rustc 1.97.1 (8bab26f4f 2026-07-14)
+2026-08-02T14:34:56.2662732Z 
+2026-08-02T14:34:56.2663646Z info: note that the toolchain '1.97.1-x86_64-unknown-linux-gnu' is currently in use (overridden by '/home/runner/work/oCAS/oCAS/rust-toolchain.toml')
+2026-08-02T14:34:56.2679464Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=27]
+2026-08-02T14:34:56.2684165Z ##[start-action display=Run : create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-08-02T14:34:56.2705470Z ##[group]Run : create cachekey
+2026-08-02T14:34:56.2705797Z [36;1m: create cachekey[0m
+2026-08-02T14:34:56.2706334Z [36;1mDATE=$(rustc +1.97.1 --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-08-02T14:34:56.2707033Z [36;1mHASH=$(rustc +1.97.1 --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-08-02T14:34:56.2707576Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-08-02T14:34:56.2750425Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.2750811Z env:
+2026-08-02T14:34:56.2751050Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.2751351Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.2751615Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.2751896Z ##[endgroup]
+2026-08-02T14:34:56.3081090Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=39]
+2026-08-02T14:34:56.3084119Z ##[start-action display=Run : disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-08-02T14:34:56.3104931Z ##[group]Run : disable incremental compilation
+2026-08-02T14:34:56.3105332Z [36;1m: disable incremental compilation[0m
+2026-08-02T14:34:56.3105710Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-08-02T14:34:56.3106086Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-08-02T14:34:56.3106412Z [36;1mfi[0m
+2026-08-02T14:34:56.3173133Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.3173531Z env:
+2026-08-02T14:34:56.3173767Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.3174044Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.3174311Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.3174596Z ##[endgroup]
+2026-08-02T14:34:56.3245531Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=16]
+2026-08-02T14:34:56.3248031Z ##[start-action display=Run : enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-08-02T14:34:56.3268103Z ##[group]Run : enable colors in Cargo output
+2026-08-02T14:34:56.3268782Z [36;1m: enable colors in Cargo output[0m
+2026-08-02T14:34:56.3269137Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-08-02T14:34:56.3269510Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-08-02T14:34:56.3269833Z [36;1mfi[0m
+2026-08-02T14:34:56.3314332Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.3314711Z env:
+2026-08-02T14:34:56.3314945Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.3315219Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.3315477Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.3315764Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:34:56.3316022Z ##[endgroup]
+2026-08-02T14:34:56.3386556Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=13]
+2026-08-02T14:34:56.3392399Z ##[start-action display=Run : enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-08-02T14:34:56.3413618Z ##[group]Run : enable Cargo sparse registry
+2026-08-02T14:34:56.3413993Z [36;1m: enable Cargo sparse registry[0m
+2026-08-02T14:34:56.3414402Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-08-02T14:34:56.3415165Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-08-02T14:34:56.3415919Z [36;1m  if rustc +1.97.1 --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-08-02T14:34:56.3416528Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-08-02T14:34:56.3417274Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-08-02T14:34:56.3417844Z [36;1m  elif rustc +1.97.1 --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-08-02T14:34:56.3418783Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-08-02T14:34:56.3419535Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-08-02T14:34:56.3419925Z [36;1m  fi[0m
+2026-08-02T14:34:56.3420152Z [36;1mfi[0m
+2026-08-02T14:34:56.3464109Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.3464497Z env:
+2026-08-02T14:34:56.3464730Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.3465002Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.3465259Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.3465551Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:34:56.3465802Z ##[endgroup]
+2026-08-02T14:34:56.3772439Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=37]
+2026-08-02T14:34:56.3777364Z ##[start-action display=Run : work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-08-02T14:34:56.3799569Z ##[group]Run : work around spurious network errors in curl 8.0
+2026-08-02T14:34:56.3800050Z [36;1m: work around spurious network errors in curl 8.0[0m
+2026-08-02T14:34:56.3800667Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-08-02T14:34:56.3801352Z [36;1mif rustc +1.97.1 --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-08-02T14:34:56.3801858Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-08-02T14:34:56.3802209Z [36;1mfi[0m
+2026-08-02T14:34:56.3850098Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.3850479Z env:
+2026-08-02T14:34:56.3850712Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.3850985Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.3851239Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.3851548Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:34:56.3851807Z ##[endgroup]
+2026-08-02T14:34:56.4039664Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=26]
+2026-08-02T14:34:56.4043669Z ##[start-action display=Run rustc +1.97.1 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-08-02T14:34:56.4064608Z ##[group]Run rustc +1.97.1 --version --verbose
+2026-08-02T14:34:56.4064984Z [36;1mrustc +1.97.1 --version --verbose[0m
+2026-08-02T14:34:56.4109988Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T14:34:56.4110374Z env:
+2026-08-02T14:34:56.4110607Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.4110876Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.4111134Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.4111428Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:34:56.4111682Z ##[endgroup]
+2026-08-02T14:34:56.4285564Z rustc 1.97.1 (8bab26f4f 2026-07-14)
+2026-08-02T14:34:56.4286717Z binary: rustc
+2026-08-02T14:34:56.4313944Z commit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452
+2026-08-02T14:34:56.4314605Z commit-date: 2026-07-14
+2026-08-02T14:34:56.4315066Z host: x86_64-unknown-linux-gnu
+2026-08-02T14:34:56.4315530Z release: 1.97.1
+2026-08-02T14:34:56.4315965Z LLVM version: 22.1.6
+2026-08-02T14:34:56.4321782Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=27]
+2026-08-02T14:34:56.4432979Z ##[group]Run actions/setup-python@v6
+2026-08-02T14:34:56.4433325Z with:
+2026-08-02T14:34:56.4433565Z   python-version: 3.12
+2026-08-02T14:34:56.4433833Z   check-latest: false
+2026-08-02T14:34:56.4436231Z   token: ***
+2026-08-02T14:34:56.4436484Z   update-environment: true
+2026-08-02T14:34:56.4436769Z   allow-prereleases: false
+2026-08-02T14:34:56.4437034Z   freethreaded: false
+2026-08-02T14:34:56.4437280Z env:
+2026-08-02T14:34:56.4437500Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.4437759Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.4438013Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.4438564Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:34:56.4438856Z ##[endgroup]
+2026-08-02T14:34:56.5688121Z ##[group]Installed versions
+2026-08-02T14:34:56.5784708Z Successfully set up CPython (3.12.13)
+2026-08-02T14:34:56.5785650Z ##[endgroup]
+2026-08-02T14:34:56.5890199Z ##[group]Run sudo apt-get update
+2026-08-02T14:34:56.5890563Z [36;1msudo apt-get update[0m
+2026-08-02T14:34:56.5891061Z [36;1msudo apt-get install -y python3-dev[0m
+2026-08-02T14:34:56.5952040Z shell: /usr/bin/bash -e {0}
+2026-08-02T14:34:56.5952341Z env:
+2026-08-02T14:34:56.5952577Z   CARGO_TERM_COLOR: always
+2026-08-02T14:34:56.5952855Z   RUST_BACKTRACE: 1
+2026-08-02T14:34:56.5953115Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:34:56.5953401Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:34:56.5953722Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:34:56.5954214Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-08-02T14:34:56.5954686Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:34:56.5955104Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:34:56.5955517Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:34:56.5955987Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-08-02T14:34:56.5956356Z ##[endgroup]
+2026-08-02T14:34:56.6863818Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-08-02T14:34:56.7267178Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-08-02T14:34:56.7319625Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-08-02T14:34:56.7361196Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-08-02T14:34:56.7384498Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-08-02T14:34:56.7403563Z Get:6 https://dl.google.com/linux/chrome-stable/deb stable InRelease [2548 B]
+2026-08-02T14:34:56.7476295Z Hit:7 https://packages.microsoft.com/repos/azure-cli noble InRelease
+2026-08-02T14:34:56.7526253Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-08-02T14:34:56.8734854Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1154 kB]
+2026-08-02T14:34:56.8900571Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [278 kB]
+2026-08-02T14:34:56.8914763Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+2026-08-02T14:34:56.8947080Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1680 kB]
+2026-08-02T14:34:56.9069945Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [334 kB]
+2026-08-02T14:34:56.9087677Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+2026-08-02T14:34:56.9123530Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1367 kB]
+2026-08-02T14:34:56.9206256Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [308 kB]
+2026-08-02T14:34:56.9245074Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [45.4 kB]
+2026-08-02T14:34:56.9271934Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [12.3 kB]
+2026-08-02T14:34:56.9704836Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+2026-08-02T14:34:56.9726351Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5764 B]
+2026-08-02T14:34:56.9741654Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [31.0 kB]
+2026-08-02T14:34:56.9757419Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [12.6 kB]
+2026-08-02T14:34:57.0122014Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [897 kB]
+2026-08-02T14:34:57.0189098Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [198 kB]
+2026-08-02T14:34:57.0215581Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [46.3 kB]
+2026-08-02T14:34:57.0290323Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1199 kB]
+2026-08-02T14:34:57.0382196Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [239 kB]
+2026-08-02T14:34:57.0396982Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+2026-08-02T14:34:57.0438009Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1273 kB]
+2026-08-02T14:34:57.0513126Z Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [290 kB]
+2026-08-02T14:34:57.0546650Z Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [40.3 kB]
+2026-08-02T14:34:57.0570037Z Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.6 kB]
+2026-08-02T14:34:57.1049725Z Get:33 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1409 B]
+2026-08-02T14:34:57.1999045Z Get:34 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [227 kB]
+2026-08-02T14:34:57.2051748Z Get:35 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [261 kB]
+2026-08-02T14:34:57.2090152Z Get:36 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
+2026-08-02T14:35:00.8014873Z Fetched 11.0 MB in 1s (8478 kB/s)
+2026-08-02T14:35:01.4456481Z Reading package lists...
+2026-08-02T14:35:01.4759626Z Reading package lists...
+2026-08-02T14:35:01.6071043Z Building dependency tree...
+2026-08-02T14:35:01.6081300Z Reading state information...
+2026-08-02T14:35:01.7510406Z python3-dev is already the newest version (3.12.3-0ubuntu2.1).
+2026-08-02T14:35:01.7510920Z 0 upgraded, 0 newly installed, 0 to remove and 79 not upgraded.
+2026-08-02T14:35:01.7557144Z ##[group]Run cargo build -p ocas-c
+2026-08-02T14:35:01.7557693Z [36;1mcargo build -p ocas-c[0m
+2026-08-02T14:35:01.7601536Z shell: /usr/bin/bash -e {0}
+2026-08-02T14:35:01.7601878Z env:
+2026-08-02T14:35:01.7602144Z   CARGO_TERM_COLOR: always
+2026-08-02T14:35:01.7611711Z   RUST_BACKTRACE: 1
+2026-08-02T14:35:01.7611972Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:35:01.7612236Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:35:01.7612539Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:35:01.7612973Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-08-02T14:35:01.7613390Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:35:01.7613766Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:35:01.7614144Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:35:01.7614522Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-08-02T14:35:01.7614870Z ##[endgroup]
+2026-08-02T14:35:01.8184369Z info: syncing channel updates for 1.97.1-x86_64-unknown-linux-gnu
+2026-08-02T14:35:01.9060568Z info: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)
+2026-08-02T14:35:01.9175682Z info: downloading component clippy
+2026-08-02T14:35:02.6185871Z [1m[92m    Updating[0m crates.io index
+2026-08-02T14:35:03.4399215Z [1m[92m Downloading[0m crates ...
+2026-08-02T14:35:03.6585853Z [1m[92m  Downloaded[0m anstyle-query v1.1.5
+2026-08-02T14:35:03.6626774Z [1m[92m  Downloaded[0m anstyle-parse v1.0.0
+2026-08-02T14:35:03.6644715Z [1m[92m  Downloaded[0m anstyle v1.0.14
+2026-08-02T14:35:03.6660641Z [1m[92m  Downloaded[0m autocfg v1.5.1
+2026-08-02T14:35:03.6680685Z [1m[92m  Downloaded[0m fastrand v2.4.1
+2026-08-02T14:35:03.6693931Z [1m[92m  Downloaded[0m anstream v1.0.0
+2026-08-02T14:35:03.6712960Z [1m[92m  Downloaded[0m ahash v0.8.12
+2026-08-02T14:35:03.6736356Z [1m[92m  Downloaded[0m rand_xoshiro v0.7.0
+2026-08-02T14:35:03.6756111Z [1m[92m  Downloaded[0m aho-corasick v1.1.4
+2026-08-02T14:35:03.6807367Z [1m[92m  Downloaded[0m allocator-api2 v0.2.21
+2026-08-02T14:35:03.6832890Z [1m[92m  Downloaded[0m ar_archive_writer v0.5.2
+2026-08-02T14:35:03.6865899Z [1m[92m  Downloaded[0m colorchoice v1.0.5
+2026-08-02T14:35:03.6875161Z [1m[92m  Downloaded[0m smallvec v1.15.2
+2026-08-02T14:35:03.6890764Z [1m[92m  Downloaded[0m bitflags v2.13.0
+2026-08-02T14:35:03.6940940Z [1m[92m  Downloaded[0m logos-codegen v0.16.1
+2026-08-02T14:35:03.6992107Z [1m[92m  Downloaded[0m getrandom v0.3.4
+2026-08-02T14:35:03.7041634Z [1m[92m  Downloaded[0m hashbrown v0.17.1
+2026-08-02T14:35:03.7113982Z [1m[92m  Downloaded[0m proc-macro2 v1.0.106
+2026-08-02T14:35:03.7148127Z [1m[92m  Downloaded[0m cc v1.2.65
+2026-08-02T14:35:03.7177135Z [1m[92m  Downloaded[0m shlex v2.0.1
+2026-08-02T14:35:03.7190319Z [1m[92m  Downloaded[0m chumsky v0.13.0
+2026-08-02T14:35:03.7257486Z [1m[92m  Downloaded[0m either v1.16.0
+2026-08-02T14:35:03.7272388Z [1m[92m  Downloaded[0m once_cell v1.21.4
+2026-08-02T14:35:03.7297078Z [1m[92m  Downloaded[0m equivalent v1.0.2
+2026-08-02T14:35:03.7307119Z [1m[92m  Downloaded[0m heck v0.5.0
+2026-08-02T14:35:03.7319381Z [1m[92m  Downloaded[0m getrandom v0.4.3
+2026-08-02T14:35:03.7356236Z [1m[92m  Downloaded[0m cbindgen v0.29.4
+2026-08-02T14:35:03.8277585Z [1m[92m  Downloaded[0m crossbeam-deque v0.8.6
+2026-08-02T14:35:03.8291952Z [1m[92m  Downloaded[0m fnv v1.0.7
+2026-08-02T14:35:03.8300716Z [1m[92m  Downloaded[0m foldhash v0.2.0
+2026-08-02T14:35:03.8312831Z [1m[92m  Downloaded[0m rand v0.9.4
+2026-08-02T14:35:03.8349930Z [1m[92m  Downloaded[0m errno v0.3.14
+2026-08-02T14:35:03.8364894Z [1m[92m  Downloaded[0m clap_lex v1.1.0
+2026-08-02T14:35:03.8375906Z [1m[92m  Downloaded[0m num-rational v0.4.2
+2026-08-02T14:35:03.8388096Z [1m[92m  Downloaded[0m quote v1.0.46
+2026-08-02T14:35:03.8415388Z [1m[92m  Downloaded[0m serde_json v1.0.150
+2026-08-02T14:35:03.8487347Z [1m[92m  Downloaded[0m rand_chacha v0.9.0
+2026-08-02T14:35:03.8499055Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-08-02T14:35:03.8514032Z [1m[92m  Downloaded[0m logos v0.16.1
+2026-08-02T14:35:03.8531835Z [1m[92m  Downloaded[0m serde_derive v1.0.228
+2026-08-02T14:35:03.8561781Z [1m[92m  Downloaded[0m winnow v0.7.15
+2026-08-02T14:35:03.8655709Z [1m[92m  Downloaded[0m logos-derive v0.16.1
+2026-08-02T14:35:03.8664327Z [1m[92m  Downloaded[0m rayon-core v1.13.0
+2026-08-02T14:35:03.8700974Z [1m[92m  Downloaded[0m rayon v1.12.0
+2026-08-02T14:35:03.8793367Z [1m[92m  Downloaded[0m num-traits v0.2.19
+2026-08-02T14:35:03.8819001Z [1m[92m  Downloaded[0m version_check v0.9.5
+2026-08-02T14:35:03.8831422Z [1m[92m  Downloaded[0m is_terminal_polyfill v1.70.2
+2026-08-02T14:35:03.8840581Z [1m[92m  Downloaded[0m zmij v1.0.21
+2026-08-02T14:35:03.8858361Z [1m[92m  Downloaded[0m crossbeam-epoch v0.9.20
+2026-08-02T14:35:03.8882920Z [1m[92m  Downloaded[0m log v0.4.33
+2026-08-02T14:35:03.8907441Z [1m[92m  Downloaded[0m strsim v0.11.1
+2026-08-02T14:35:03.8920712Z [1m[92m  Downloaded[0m hashbrown v0.15.5
+2026-08-02T14:35:03.8968396Z [1m[92m  Downloaded[0m thiserror v2.0.18
+2026-08-02T14:35:03.9032432Z [1m[92m  Downloaded[0m clap_builder v4.6.0
+2026-08-02T14:35:03.9094619Z [1m[92m  Downloaded[0m utf8parse v0.2.2
+2026-08-02T14:35:03.9104497Z [1m[92m  Downloaded[0m toml_parser v1.1.2+spec-1.1.0
+2026-08-02T14:35:03.9126387Z [1m[92m  Downloaded[0m find-msvc-tools v0.1.9
+2026-08-02T14:35:03.9142427Z [1m[92m  Downloaded[0m object v0.37.3
+2026-08-02T14:35:03.9248216Z [1m[92m  Downloaded[0m psm v0.1.31
+2026-08-02T14:35:03.9278746Z [1m[92m  Downloaded[0m libc v0.2.186
+2026-08-02T14:35:03.9664767Z [1m[92m  Downloaded[0m serde v1.0.228
+2026-08-02T14:35:03.9698638Z [1m[92m  Downloaded[0m tempfile v3.27.0
+2026-08-02T14:35:03.9724402Z [1m[92m  Downloaded[0m num-integer v0.1.46
+2026-08-02T14:35:03.9740480Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+2026-08-02T14:35:03.9767900Z [1m[92m  Downloaded[0m ppv-lite86 v0.2.21
+2026-08-02T14:35:03.9781057Z [1m[92m  Downloaded[0m stacker v0.1.24
+2026-08-02T14:35:03.9800539Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+2026-08-02T14:35:03.9813588Z [1m[92m  Downloaded[0m foldhash v0.1.5
+2026-08-02T14:35:03.9825677Z [1m[92m  Downloaded[0m crossbeam-utils v0.8.21
+2026-08-02T14:35:03.9851981Z [1m[92m  Downloaded[0m rand_core v0.9.5
+2026-08-02T14:35:03.9865821Z [1m[92m  Downloaded[0m clap v4.6.1
+2026-08-02T14:35:03.9960351Z [1m[92m  Downloaded[0m num-complex v0.4.6
+2026-08-02T14:35:03.9974449Z [1m[92m  Downloaded[0m memchr v2.8.2
+2026-08-02T14:35:04.0028495Z [1m[92m  Downloaded[0m serde_core v1.0.228
+2026-08-02T14:35:04.0055394Z [1m[92m  Downloaded[0m thiserror-impl v2.0.18
+2026-08-02T14:35:04.0071524Z [1m[92m  Downloaded[0m indexmap v2.14.0
+2026-08-02T14:35:04.0113581Z [1m[92m  Downloaded[0m toml v0.9.12+spec-1.1.0
+2026-08-02T14:35:04.0154399Z [1m[92m  Downloaded[0m num-bigint v0.4.6
+2026-08-02T14:35:04.0200305Z [1m[92m  Downloaded[0m toml_datetime v0.7.5+spec-1.1.0
+2026-08-02T14:35:04.0212440Z [1m[92m  Downloaded[0m regex-automata v0.4.14
+2026-08-02T14:35:04.0347412Z [1m[92m  Downloaded[0m unicode-segmentation v1.13.3
+2026-08-02T14:35:04.0376231Z [1m[92m  Downloaded[0m rustix v1.1.4
+2026-08-02T14:35:04.0645468Z [1m[92m  Downloaded[0m zerocopy v0.8.52
+2026-08-02T14:35:04.0856295Z [1m[92m  Downloaded[0m regex-syntax v0.8.11
+2026-08-02T14:35:04.0922141Z [1m[92m  Downloaded[0m toml_writer v1.1.1+spec-1.1.0
+2026-08-02T14:35:04.0936490Z [1m[92m  Downloaded[0m winnow v1.0.3
+2026-08-02T14:35:04.1032360Z [1m[92m  Downloaded[0m syn v2.0.118
+2026-08-02T14:35:04.1135541Z [1m[92m  Downloaded[0m serde_spanned v1.1.1
+2026-08-02T14:35:04.1147349Z [1m[92m  Downloaded[0m linux-raw-sys v0.12.1
+2026-08-02T14:35:04.2242706Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+2026-08-02T14:35:04.2243305Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-08-02T14:35:04.2243720Z [1m[92m   Compiling[0m quote v1.0.46
+2026-08-02T14:35:04.2244507Z [1m[92m   Compiling[0m cfg-if v1.0.4
+2026-08-02T14:35:04.2545135Z [1m[92m   Compiling[0m memchr v2.8.2
+2026-08-02T14:35:04.2999825Z [1m[92m   Compiling[0m libc v0.2.186
+2026-08-02T14:35:04.5690925Z [1m[92m   Compiling[0m getrandom v0.3.4
+2026-08-02T14:35:05.0534913Z [1m[92m   Compiling[0m crossbeam-utils v0.8.21
+2026-08-02T14:35:05.8490110Z [1m[92m   Compiling[0m syn v2.0.118
+2026-08-02T14:35:06.0337399Z [1m[92m   Compiling[0m zerocopy v0.8.52
+2026-08-02T14:35:06.2089631Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-08-02T14:35:07.1869728Z [1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+2026-08-02T14:35:07.3029678Z [1m[92m   Compiling[0m equivalent v1.0.2
+2026-08-02T14:35:07.7109752Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-08-02T14:35:08.5609939Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-08-02T14:35:08.6529987Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-08-02T14:35:08.8709925Z [1m[92m   Compiling[0m find-msvc-tools v0.1.9
+2026-08-02T14:35:08.9090154Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-08-02T14:35:09.4069840Z [1m[92m   Compiling[0m object v0.37.3
+2026-08-02T14:35:09.7519768Z [1m[92m   Compiling[0m cc v1.2.65
+2026-08-02T14:35:10.0370348Z [1m[92m   Compiling[0m ahash v0.8.12
+2026-08-02T14:35:10.1909766Z [1m[92m   Compiling[0m crossbeam-deque v0.8.6
+2026-08-02T14:35:10.3439779Z [1m[92m   Compiling[0m rand_core v0.9.5
+2026-08-02T14:35:10.5419993Z [1m[92m   Compiling[0m serde_core v1.0.228
+2026-08-02T14:35:11.0659874Z [1m[92m   Compiling[0m thiserror v2.0.18
+2026-08-02T14:35:11.2429690Z [1m[92m   Compiling[0m ppv-lite86 v0.2.21
+2026-08-02T14:35:14.2420145Z [1m[92m   Compiling[0m num-integer v0.1.46
+2026-08-02T14:35:14.7899823Z [1m[92m   Compiling[0m either v1.16.0
+2026-08-02T14:35:14.9430171Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-08-02T14:35:15.0409808Z [1m[92m   Compiling[0m allocator-api2 v0.2.21
+2026-08-02T14:35:15.3860128Z [1m[92m   Compiling[0m ar_archive_writer v0.5.2
+2026-08-02T14:35:15.9360557Z [1m[92m   Compiling[0m rayon v1.12.0
+2026-08-02T14:35:16.7719838Z [1m[92m   Compiling[0m num-bigint v0.4.6
+2026-08-02T14:35:18.6039757Z [1m[92m   Compiling[0m rand_chacha v0.9.0
+2026-08-02T14:35:19.3809631Z [1m[92m   Compiling[0m rand v0.9.4
+2026-08-02T14:35:20.0949762Z [1m[92m   Compiling[0m num-rational v0.4.2
+2026-08-02T14:35:20.4840159Z [1m[92m   Compiling[0m psm v0.1.31
+2026-08-02T14:35:21.9060597Z [1m[92m   Compiling[0m rand_xoshiro v0.7.0
+2026-08-02T14:35:21.9809768Z [1m[92m   Compiling[0m num-complex v0.4.6
+2026-08-02T14:35:22.3929932Z [1m[92m   Compiling[0m aho-corasick v1.1.4
+2026-08-02T14:35:22.4979914Z [1m[92m   Compiling[0m regex-syntax v0.8.11
+2026-08-02T14:35:22.8299812Z [1m[92m   Compiling[0m foldhash v0.2.0
+2026-08-02T14:35:23.9159705Z [1m[92m   Compiling[0m utf8parse v0.2.2
+2026-08-02T14:35:23.9660368Z [1m[92m   Compiling[0m anstyle-parse v1.0.0
+2026-08-02T14:35:24.1209619Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-08-02T14:35:24.8409646Z [1m[92m   Compiling[0m regex-automata v0.4.14
+2026-08-02T14:35:31.4125499Z [1m[92m   Compiling[0m stacker v0.1.24
+2026-08-02T14:35:31.6389973Z [1m[92m   Compiling[0m rustix v1.1.4
+2026-08-02T14:35:31.7520879Z [1m[92m   Compiling[0m zmij v1.0.21
+2026-08-02T14:35:32.0590175Z [1m[92m   Compiling[0m fnv v1.0.7
+2026-08-02T14:35:32.0993889Z [1m[92m   Compiling[0m getrandom v0.4.3
+2026-08-02T14:35:32.3170685Z [1m[92m   Compiling[0m anstyle v1.0.14
+2026-08-02T14:35:32.3750173Z [1m[92m   Compiling[0m colorchoice v1.0.5
+2026-08-02T14:35:32.4289786Z [1m[92m   Compiling[0m anstyle-query v1.1.5
+2026-08-02T14:35:32.4709982Z [1m[92m   Compiling[0m smallvec v1.15.2
+2026-08-02T14:35:32.5089839Z [1m[92m   Compiling[0m is_terminal_polyfill v1.70.2
+2026-08-02T14:35:32.5419738Z [1m[92m   Compiling[0m anstream v1.0.0
+2026-08-02T14:35:32.7379795Z [1m[92m   Compiling[0m logos-codegen v0.16.1
+2026-08-02T14:35:34.0024783Z [1m[92m   Compiling[0m foldhash v0.1.5
+2026-08-02T14:35:34.1960153Z [1m[92m   Compiling[0m clap_lex v1.1.0
+2026-08-02T14:35:34.4769736Z [1m[92m   Compiling[0m winnow v1.0.3
+2026-08-02T14:35:34.8779712Z [1m[92m   Compiling[0m serde v1.0.228
+2026-08-02T14:35:35.3830054Z [1m[92m   Compiling[0m serde_json v1.0.150
+2026-08-02T14:35:35.4949752Z [1m[92m   Compiling[0m linux-raw-sys v0.12.1
+2026-08-02T14:35:35.8189745Z [1m[92m   Compiling[0m strsim v0.11.1
+2026-08-02T14:35:36.6459734Z [1m[92m   Compiling[0m bitflags v2.13.0
+2026-08-02T14:35:38.4559819Z [1m[92m   Compiling[0m thiserror-impl v2.0.18
+2026-08-02T14:35:40.1639831Z [1m[92m   Compiling[0m serde_derive v1.0.228
+2026-08-02T14:35:44.5409794Z [1m[92m   Compiling[0m clap_builder v4.6.0
+2026-08-02T14:35:48.6990239Z [1m[92m   Compiling[0m logos-derive v0.16.1
+2026-08-02T14:35:48.9960236Z [1m[92m   Compiling[0m toml_parser v1.1.2+spec-1.1.0
+2026-08-02T14:35:50.5510298Z [1m[92m   Compiling[0m hashbrown v0.15.5
+2026-08-02T14:35:51.8809730Z [1m[92m   Compiling[0m toml_datetime v0.7.5+spec-1.1.0
+2026-08-02T14:35:52.2489641Z [1m[92m   Compiling[0m serde_spanned v1.1.1
+2026-08-02T14:35:53.1559770Z [1m[92m   Compiling[0m fastrand v2.4.1
+2026-08-02T14:35:53.3819776Z [1m[92m   Compiling[0m cbindgen v0.29.4
+2026-08-02T14:35:53.9340182Z [1m[92m   Compiling[0m winnow v0.7.15
+2026-08-02T14:35:54.5207413Z [1m[92m   Compiling[0m ocas-core v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-core)
+2026-08-02T14:35:54.8070431Z [1m[92m   Compiling[0m ocas-domain v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-domain)
+2026-08-02T14:35:55.8510363Z [1m[92m   Compiling[0m ocas-atom v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-atom)
+2026-08-02T14:35:55.9079916Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-08-02T14:35:56.1180326Z [1m[92m   Compiling[0m unicode-segmentation v1.13.3
+2026-08-02T14:35:56.8129794Z [1m[92m   Compiling[0m chumsky v0.13.0
+2026-08-02T14:35:59.2420244Z [1m[92m   Compiling[0m toml v0.9.12+spec-1.1.0
+2026-08-02T14:36:00.6229694Z [1m[92m   Compiling[0m tempfile v3.27.0
+2026-08-02T14:36:01.0145558Z [1m[92m   Compiling[0m indexmap v2.14.0
+2026-08-02T14:36:01.6280235Z [1m[92m   Compiling[0m logos v0.16.1
+2026-08-02T14:36:01.7210251Z [1m[92m   Compiling[0m clap v4.6.1
+2026-08-02T14:36:01.7467281Z [1m[92m   Compiling[0m heck v0.5.0
+2026-08-02T14:36:01.8349986Z [1m[92m   Compiling[0m log v0.4.33
+2026-08-02T14:36:01.9970348Z [1m[92m   Compiling[0m ocas-parse v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-parse)
+2026-08-02T14:36:02.1913471Z [1m[92m   Compiling[0m ocas-rewrite v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-rewrite)
+2026-08-02T14:36:02.7600045Z [1m[92m   Compiling[0m ocas-poly v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-poly)
+2026-08-02T14:36:02.8830421Z [1m[92m   Compiling[0m ocas-eval v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-eval)
+2026-08-02T14:36:04.1751452Z [1m[92m   Compiling[0m ocas-calc v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-calc)
+2026-08-02T14:36:14.8940492Z [1m[92m   Compiling[0m ocas-c v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-c)
+2026-08-02T14:36:18.3092332Z [1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 1m 15s
+2026-08-02T14:36:18.3607835Z ##[group]Run cargo check -p ocas-py
+2026-08-02T14:36:18.3608197Z [36;1mcargo check -p ocas-py[0m
+2026-08-02T14:36:18.3651407Z shell: /usr/bin/bash -e {0}
+2026-08-02T14:36:18.3651645Z env:
+2026-08-02T14:36:18.3651832Z   CARGO_TERM_COLOR: always
+2026-08-02T14:36:18.3652056Z   RUST_BACKTRACE: 1
+2026-08-02T14:36:18.3652265Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:36:18.3652518Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:36:18.3652793Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:18.3653237Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-08-02T14:36:18.3653665Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:18.3654042Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:18.3654413Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:18.3654782Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-08-02T14:36:18.3655123Z ##[endgroup]
+2026-08-02T14:36:18.4707905Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-08-02T14:36:18.4708899Z [1m[92m    Checking[0m libc v0.2.186
+2026-08-02T14:36:18.4709487Z [1m[92m    Checking[0m cfg-if v1.0.4
+2026-08-02T14:36:18.4747969Z [1m[92m    Checking[0m crossbeam-utils v0.8.21
+2026-08-02T14:36:18.4921362Z [1m[92m    Checking[0m zerocopy v0.8.52
+2026-08-02T14:36:18.5349509Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+2026-08-02T14:36:18.8850068Z [1m[92m    Checking[0m crossbeam-epoch v0.9.20
+2026-08-02T14:36:19.0730021Z [1m[92m   Compiling[0m quote v1.0.46
+2026-08-02T14:36:19.2759650Z [1m[92m   Compiling[0m syn v2.0.118
+2026-08-02T14:36:19.8259638Z [1m[92m    Checking[0m getrandom v0.3.4
+2026-08-02T14:36:19.9099881Z [1m[92m    Checking[0m num-traits v0.2.19
+2026-08-02T14:36:20.4990141Z [1m[92m    Checking[0m rand_core v0.9.5
+2026-08-02T14:36:20.6020869Z [1m[92m    Checking[0m crossbeam-deque v0.8.6
+2026-08-02T14:36:20.7119618Z [1m[92m    Checking[0m once_cell v1.21.4
+2026-08-02T14:36:20.8209815Z [1m[92m    Checking[0m rayon-core v1.13.0
+2026-08-02T14:36:20.9109843Z [1m[92m    Checking[0m num-integer v0.1.46
+2026-08-02T14:36:21.0991058Z [1m[92m   Compiling[0m target-lexicon v0.13.5
+2026-08-02T14:36:21.1315092Z [1m[92m    Checking[0m either v1.16.0
+2026-08-02T14:36:21.2401657Z [1m[92m    Checking[0m equivalent v1.0.2
+2026-08-02T14:36:21.2619809Z [1m[92m    Checking[0m allocator-api2 v0.2.21
+2026-08-02T14:36:21.4959769Z [1m[92m    Checking[0m rayon v1.12.0
+2026-08-02T14:36:21.8125464Z [1m[92m    Checking[0m ppv-lite86 v0.2.21
+2026-08-02T14:36:21.9799745Z [1m[92m    Checking[0m ahash v0.8.12
+2026-08-02T14:36:22.0800035Z [1m[92m    Checking[0m rand_chacha v0.9.0
+2026-08-02T14:36:22.1040044Z [1m[92m    Checking[0m num-bigint v0.4.6
+2026-08-02T14:36:22.2181602Z [1m[92m    Checking[0m rand v0.9.4
+2026-08-02T14:36:23.1496988Z [1m[92m    Checking[0m num-rational v0.4.2
+2026-08-02T14:36:23.1526434Z [1m[92m    Checking[0m rand_xoshiro v0.7.0
+2026-08-02T14:36:23.2231070Z [1m[92m    Checking[0m num-complex v0.4.6
+2026-08-02T14:36:23.3279826Z [1m[92m    Checking[0m foldhash v0.2.0
+2026-08-02T14:36:23.3879783Z [1m[92m    Checking[0m hashbrown v0.17.1
+2026-08-02T14:36:23.4079854Z [1m[92m   Compiling[0m pyo3-build-config v0.29.0
+2026-08-02T14:36:23.5680692Z [1m[92m    Checking[0m smallvec v1.15.2
+2026-08-02T14:36:23.6969840Z [1m[92m   Compiling[0m logos-codegen v0.16.1
+2026-08-02T14:36:23.8809775Z [1m[92m    Checking[0m psm v0.1.31
+2026-08-02T14:36:23.9129751Z [1m[92m    Checking[0m foldhash v0.1.5
+2026-08-02T14:36:23.9822245Z [1m[92m    Checking[0m hashbrown v0.15.5
+2026-08-02T14:36:24.4258783Z [1m[92m    Checking[0m stacker v0.1.24
+2026-08-02T14:36:24.5199863Z [1m[92m    Checking[0m unicode-segmentation v1.13.3
+2026-08-02T14:36:24.8139822Z [1m[92m    Checking[0m chumsky v0.13.0
+2026-08-02T14:36:27.9460121Z [1m[92m   Compiling[0m pyo3-macros-backend v0.29.0
+2026-08-02T14:36:28.0200077Z [1m[92m   Compiling[0m pyo3-ffi v0.29.0
+2026-08-02T14:36:28.5319685Z [1m[92m   Compiling[0m pyo3 v0.29.0
+2026-08-02T14:36:40.4780080Z [1m[92m   Compiling[0m thiserror-impl v2.0.18
+2026-08-02T14:36:46.0889979Z [1m[92m   Compiling[0m logos-derive v0.16.1
+2026-08-02T14:36:46.3499797Z [1m[92m    Checking[0m logos v0.16.1
+2026-08-02T14:36:47.2579766Z [1m[92m   Compiling[0m pyo3-macros v0.29.0
+2026-08-02T14:36:49.7110455Z [1m[92m    Checking[0m thiserror v2.0.18
+2026-08-02T14:36:49.7450347Z [1m[92m    Checking[0m ocas-core v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-core)
+2026-08-02T14:36:49.8122160Z [1m[92m    Checking[0m ocas-domain v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-domain)
+2026-08-02T14:36:50.1099957Z [1m[92m    Checking[0m ocas-atom v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-atom)
+2026-08-02T14:36:50.4060422Z [1m[92m    Checking[0m ocas-parse v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-parse)
+2026-08-02T14:36:50.5180980Z [1m[92m    Checking[0m ocas-rewrite v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-rewrite)
+2026-08-02T14:36:50.7259911Z [1m[92m    Checking[0m ocas-poly v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-poly)
+2026-08-02T14:36:52.0500029Z [1m[92m    Checking[0m ocas-calc v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-calc)
+2026-08-02T14:36:52.7991101Z [1m[92m    Checking[0m ocas-eval v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-eval)
+2026-08-02T14:36:54.5906066Z [1m[92m    Checking[0m ocas-py v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-py)
+2026-08-02T14:36:55.1746449Z [1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 36.77s
+2026-08-02T14:36:55.1853899Z ##[group]Run pip install maturin pytest
+2026-08-02T14:36:55.1854239Z [36;1mpip install maturin pytest[0m
+2026-08-02T14:36:55.1897092Z shell: /usr/bin/bash -e {0}
+2026-08-02T14:36:55.1897332Z env:
+2026-08-02T14:36:55.1897519Z   CARGO_TERM_COLOR: always
+2026-08-02T14:36:55.1897741Z   RUST_BACKTRACE: 1
+2026-08-02T14:36:55.1897950Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:36:55.1898188Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:36:55.1898694Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:55.1899116Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-08-02T14:36:55.1899551Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:55.1899944Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:55.1900355Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:55.1900734Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-08-02T14:36:55.1901080Z ##[endgroup]
+2026-08-02T14:36:55.9959803Z Collecting maturin
+2026-08-02T14:36:56.0452774Z   Downloading maturin-1.14.1-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl.metadata (16 kB)
+2026-08-02T14:36:56.0841304Z Collecting pytest
+2026-08-02T14:36:56.0873873Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-08-02T14:36:56.0989743Z Collecting iniconfig>=1.0.1 (from pytest)
+2026-08-02T14:36:56.1020856Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+2026-08-02T14:36:56.1166335Z Collecting packaging>=22 (from pytest)
+2026-08-02T14:36:56.1202907Z   Downloading packaging-26.2-py3-none-any.whl.metadata (3.5 kB)
+2026-08-02T14:36:56.1318004Z Collecting pluggy<2,>=1.5 (from pytest)
+2026-08-02T14:36:56.1358645Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+2026-08-02T14:36:56.1530984Z Collecting pygments>=2.7.2 (from pytest)
+2026-08-02T14:36:56.1564597Z   Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+2026-08-02T14:36:56.1639064Z Downloading maturin-1.14.1-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl (10.6 MB)
+2026-08-02T14:36:56.2319616Z    鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣 10.6/10.6 MB 203.8 MB/s  0:00:00
+2026-08-02T14:36:56.2354178Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-08-02T14:36:56.2417142Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+2026-08-02T14:36:56.2469099Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+2026-08-02T14:36:56.2521950Z Downloading packaging-26.2-py3-none-any.whl (100 kB)
+2026-08-02T14:36:56.2587112Z Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+2026-08-02T14:36:56.2657293Z    鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣 1.2/1.2 MB 202.7 MB/s  0:00:00
+2026-08-02T14:36:56.3067639Z Installing collected packages: pygments, pluggy, packaging, maturin, iniconfig, pytest
+2026-08-02T14:36:57.4522390Z 
+2026-08-02T14:36:57.4535638Z Successfully installed iniconfig-2.3.0 maturin-1.14.1 packaging-26.2 pluggy-1.6.0 pygments-2.20.0 pytest-9.1.1
+2026-08-02T14:36:57.4544571Z 
+2026-08-02T14:36:57.4545067Z [notice] A new release of pip is available: 26.1.2 -> 26.2
+2026-08-02T14:36:57.4545741Z [notice] To update, run: pip install --upgrade pip
+2026-08-02T14:36:57.5016430Z ##[group]Run rm -rf target/release
+2026-08-02T14:36:57.5016765Z [36;1mrm -rf target/release[0m
+2026-08-02T14:36:57.5017061Z [36;1mmaturin build --release -m ocas-py/Cargo.toml[0m
+2026-08-02T14:36:57.5017438Z [36;1mpip install --force-reinstall target/wheels/*.whl[0m
+2026-08-02T14:36:57.5060281Z shell: /usr/bin/bash -e {0}
+2026-08-02T14:36:57.5060515Z env:
+2026-08-02T14:36:57.5060698Z   CARGO_TERM_COLOR: always
+2026-08-02T14:36:57.5060922Z   RUST_BACKTRACE: 1
+2026-08-02T14:36:57.5061135Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:36:57.5061370Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:36:57.5061668Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:57.5062096Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-08-02T14:36:57.5062514Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:57.5062879Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:57.5063286Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:36:57.5063668Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-08-02T14:36:57.5063989Z ##[endgroup]
+2026-08-02T14:36:57.8401308Z 馃悕 Found CPython 3.12 at /opt/hostedtoolcache/Python/3.12.13/x64/bin/python3
+2026-08-02T14:36:57.8403139Z 馃敆 Found pyo3 bindings with abi3-py3.10 support
+2026-08-02T14:36:57.8403778Z 馃摗 Using build options features from pyproject.toml
+2026-08-02T14:36:58.0317425Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+2026-08-02T14:36:58.0320162Z [1m[92m   Compiling[0m libc v0.2.186
+2026-08-02T14:36:58.0321286Z [1m[92m   Compiling[0m quote v1.0.46
+2026-08-02T14:36:58.0322226Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-08-02T14:36:58.0949854Z [1m[92m   Compiling[0m cfg-if v1.0.4
+2026-08-02T14:36:58.1154314Z [1m[92m   Compiling[0m getrandom v0.3.4
+2026-08-02T14:36:58.1645958Z [1m[92m   Compiling[0m memchr v2.8.2
+2026-08-02T14:36:58.2729736Z [1m[92m   Compiling[0m zerocopy v0.8.52
+2026-08-02T14:36:58.4739989Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-08-02T14:36:58.7732497Z [1m[92m   Compiling[0m crossbeam-utils v0.8.21
+2026-08-02T14:36:58.7779364Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-08-02T14:36:58.8599762Z [1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+2026-08-02T14:36:58.8940394Z [1m[92m   Compiling[0m syn v2.0.118
+2026-08-02T14:36:59.7317873Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-08-02T14:36:59.8419855Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-08-02T14:36:59.9155105Z [1m[92m   Compiling[0m object v0.37.3
+2026-08-02T14:37:00.0279939Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-08-02T14:37:00.1199815Z [1m[92m   Compiling[0m find-msvc-tools v0.1.9
+2026-08-02T14:37:00.2267471Z [1m[92m   Compiling[0m ahash v0.8.12
+2026-08-02T14:37:00.2593297Z [1m[92m   Compiling[0m cc v1.2.65
+2026-08-02T14:37:00.3272510Z [1m[92m   Compiling[0m crossbeam-deque v0.8.6
+2026-08-02T14:37:00.4767462Z [1m[92m   Compiling[0m rand_core v0.9.5
+2026-08-02T14:37:00.6319823Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-08-02T14:37:00.7759574Z [1m[92m   Compiling[0m thiserror v2.0.18
+2026-08-02T14:37:01.8782088Z [1m[92m   Compiling[0m num-integer v0.1.46
+2026-08-02T14:37:02.2090161Z [1m[92m   Compiling[0m equivalent v1.0.2
+2026-08-02T14:37:02.2419892Z [1m[92m   Compiling[0m target-lexicon v0.13.5
+2026-08-02T14:37:02.5439896Z [1m[92m   Compiling[0m either v1.16.0
+2026-08-02T14:37:02.6860137Z [1m[92m   Compiling[0m allocator-api2 v0.2.21
+2026-08-02T14:37:02.8383261Z [1m[92m   Compiling[0m ppv-lite86 v0.2.21
+2026-08-02T14:37:03.1609808Z [1m[92m   Compiling[0m rand_chacha v0.9.0
+2026-08-02T14:37:03.2046374Z [1m[92m   Compiling[0m rayon v1.12.0
+2026-08-02T14:37:03.4820091Z [1m[92m   Compiling[0m thiserror-impl v2.0.18
+2026-08-02T14:37:03.5879794Z [1m[92m   Compiling[0m num-bigint v0.4.6
+2026-08-02T14:37:04.6279981Z [1m[92m   Compiling[0m ar_archive_writer v0.5.2
+2026-08-02T14:37:04.9790262Z [1m[92m   Compiling[0m num-rational v0.4.2
+2026-08-02T14:37:05.3970028Z [1m[92m   Compiling[0m psm v0.1.31
+2026-08-02T14:37:05.5859752Z [1m[92m   Compiling[0m ocas-core v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-core)
+2026-08-02T14:37:05.6659850Z [1m[92m   Compiling[0m rand v0.9.4
+2026-08-02T14:37:05.7809991Z [1m[92m   Compiling[0m rand_xoshiro v0.7.0
+2026-08-02T14:37:05.9079955Z [1m[92m   Compiling[0m num-complex v0.4.6
+2026-08-02T14:37:05.9114365Z [1m[92m   Compiling[0m aho-corasick v1.1.4
+2026-08-02T14:37:06.0869816Z [1m[92m   Compiling[0m regex-syntax v0.8.11
+2026-08-02T14:37:06.3019876Z [1m[92m   Compiling[0m foldhash v0.2.0
+2026-08-02T14:37:06.3523039Z [1m[92m   Compiling[0m ocas-domain v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-domain)
+2026-08-02T14:37:06.4112688Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-08-02T14:37:07.2612495Z [1m[92m   Compiling[0m pyo3-build-config v0.29.0
+2026-08-02T14:37:07.5909427Z [1m[92m   Compiling[0m stacker v0.1.24
+2026-08-02T14:37:07.6823209Z [1m[92m   Compiling[0m regex-automata v0.4.14
+2026-08-02T14:37:08.0682960Z [1m[92m   Compiling[0m fnv v1.0.7
+2026-08-02T14:37:08.0812815Z [1m[92m   Compiling[0m smallvec v1.15.2
+2026-08-02T14:37:08.1519829Z [1m[92m   Compiling[0m foldhash v0.1.5
+2026-08-02T14:37:08.2576834Z [1m[92m   Compiling[0m ocas-atom v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-atom)
+2026-08-02T14:37:08.2621462Z [1m[92m   Compiling[0m hashbrown v0.15.5
+2026-08-02T14:37:08.5180036Z [1m[92m   Compiling[0m pyo3-ffi v0.29.0
+2026-08-02T14:37:08.7060944Z [1m[92m   Compiling[0m unicode-segmentation v1.13.3
+2026-08-02T14:37:08.9340742Z [1m[92m   Compiling[0m heck v0.5.0
+2026-08-02T14:37:09.0790715Z [1m[92m   Compiling[0m chumsky v0.13.0
+2026-08-02T14:37:09.1529747Z [1m[92m   Compiling[0m pyo3-macros-backend v0.29.0
+2026-08-02T14:37:11.6275516Z [1m[92m   Compiling[0m logos-codegen v0.16.1
+2026-08-02T14:37:11.8399431Z [1m[92m   Compiling[0m pyo3 v0.29.0
+2026-08-02T14:37:12.2160133Z [1m[92m   Compiling[0m ocas-poly v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-poly)
+2026-08-02T14:37:13.1039544Z [1m[92m   Compiling[0m ocas-eval v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-eval)
+2026-08-02T14:37:13.1192385Z [1m[92m   Compiling[0m logos-derive v0.16.1
+2026-08-02T14:37:13.3152534Z [1m[92m   Compiling[0m logos v0.16.1
+2026-08-02T14:37:13.3912318Z [1m[92m   Compiling[0m ocas-parse v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-parse)
+2026-08-02T14:37:13.4959853Z [1m[92m   Compiling[0m pyo3-macros v0.29.0
+2026-08-02T14:37:13.6340317Z [1m[92m   Compiling[0m ocas-rewrite v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-rewrite)
+2026-08-02T14:37:14.5243418Z [1m[92m   Compiling[0m ocas-calc v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-calc)
+2026-08-02T14:37:23.0701818Z [1m[92m   Compiling[0m ocas-py v0.22.0 (/home/runner/work/oCAS/oCAS/ocas-py)
+2026-08-02T14:37:43.1896411Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 45.23s
+2026-08-02T14:37:43.7029586Z 馃摝 Built wheel for abi3 Python 鈮?3.10 to /home/runner/work/oCAS/oCAS/target/wheels/ocas-0.22.0-cp310-abi3-manylinux_2_34_x86_64.whl
+2026-08-02T14:37:44.0446775Z Processing ./target/wheels/ocas-0.22.0-cp310-abi3-manylinux_2_34_x86_64.whl
+2026-08-02T14:37:44.0594714Z Installing collected packages: ocas
+2026-08-02T14:37:44.0786292Z Successfully installed ocas-0.22.0
+2026-08-02T14:37:44.0795597Z 
+2026-08-02T14:37:44.0797537Z [notice] A new release of pip is available: 26.1.2 -> 26.2
+2026-08-02T14:37:44.0798489Z [notice] To update, run: pip install --upgrade pip
+2026-08-02T14:37:44.1192681Z ##[group]Run pytest ocas-tests/tests/python/ -v
+2026-08-02T14:37:44.1193057Z [36;1mpytest ocas-tests/tests/python/ -v[0m
+2026-08-02T14:37:44.1235903Z shell: /usr/bin/bash -e {0}
+2026-08-02T14:37:44.1236141Z env:
+2026-08-02T14:37:44.1236324Z   CARGO_TERM_COLOR: always
+2026-08-02T14:37:44.1236546Z   RUST_BACKTRACE: 1
+2026-08-02T14:37:44.1236755Z   CARGO_HOME: /home/runner/.cargo
+2026-08-02T14:37:44.1236998Z   CARGO_INCREMENTAL: 0
+2026-08-02T14:37:44.1237271Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:37:44.1237698Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-08-02T14:37:44.1238117Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:37:44.1238822Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:37:44.1239199Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-08-02T14:37:44.1239583Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-08-02T14:37:44.1240031Z ##[endgroup]
+2026-08-02T14:37:44.3762100Z ============================= test session starts ==============================
+2026-08-02T14:37:44.3763169Z platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.12.13/x64/bin/python
+2026-08-02T14:37:44.3764014Z cachedir: .pytest_cache
+2026-08-02T14:37:44.3764429Z rootdir: /home/runner/work/oCAS/oCAS/ocas-tests
+2026-08-02T14:37:44.3764920Z configfile: pyproject.toml
+2026-08-02T14:37:44.5570316Z collecting ... collected 191 items
+2026-08-02T14:37:44.5570779Z 
+2026-08-02T14:37:44.5581763Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_extension_degree PASSED [  0%]
+2026-08-02T14:37:44.5591913Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_extension_cbrt2 PASSED [  1%]
+2026-08-02T14:37:44.5602044Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_extension_rejects_non_monic PASSED [  1%]
+2026-08-02T14:37:44.5611986Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_extension_rejects_constant PASSED [  2%]
+2026-08-02T14:37:44.5622133Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_alpha_generator PASSED [  2%]
+2026-08-02T14:37:44.5632403Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_from_base_embeds_rational PASSED [  3%]
+2026-08-02T14:37:44.5642406Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_element_from_alpha_coeffs PASSED [  3%]
+2026-08-02T14:37:44.5652624Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_polynomial_degree_and_coeffs PASSED [  4%]
+2026-08-02T14:37:44.5662894Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_polynomial_with_alpha_coefficient PASSED [  4%]
+2026-08-02T14:37:44.5696911Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_polynomial_factor_sqrt2_splits PASSED [  5%]
+2026-08-02T14:37:44.5715671Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_polynomial_factor_with_alpha_irreducible PASSED [  5%]
+2026-08-02T14:37:44.5813193Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_polynomial_factor_cbrt2 PASSED [  6%]
+2026-08-02T14:37:44.5824641Z ocas-tests/tests/python/test_algebraic.py::test_algebraic_polynomial_to_string_nonempty PASSED [  6%]
+2026-08-02T14:37:44.5834902Z ocas-tests/tests/python/test_domain.py::test_integer_domain_construct PASSED [  7%]
+2026-08-02T14:37:44.5844971Z ocas-tests/tests/python/test_domain.py::test_rational_domain_construct PASSED [  7%]
+2026-08-02T14:37:44.5854794Z ocas-tests/tests/python/test_domain.py::test_finite_field_construct PASSED [  8%]
+2026-08-02T14:37:44.5865017Z ocas-tests/tests/python/test_domain.py::test_finite_field_rejects_small_modulus PASSED [  8%]
+2026-08-02T14:37:44.5874924Z ocas-tests/tests/python/test_domain.py::test_finite_field_modulus_getter PASSED [  9%]
+2026-08-02T14:37:44.5885841Z ocas-tests/tests/python/test_domain.py::test_all_domain_classes_exposed PASSED [  9%]
+2026-08-02T14:37:44.5895898Z ocas-tests/tests/python/test_dual.py::test_dual_shape_first_order PASSED [ 10%]
+2026-08-02T14:37:44.5906192Z ocas-tests/tests/python/test_dual.py::test_dual_shape_rejects_zero PASSED [ 10%]
+2026-08-02T14:37:44.5916099Z ocas-tests/tests/python/test_dual.py::test_variable_value_and_deriv PASSED [ 11%]
+2026-08-02T14:37:44.5926242Z ocas-tests/tests/python/test_dual.py::test_variable_rational_coefficient PASSED [ 12%]
+2026-08-02T14:37:44.5936227Z ocas-tests/tests/python/test_dual.py::test_constant_has_zero_derivatives PASSED [ 12%]
+2026-08-02T14:37:44.5946263Z ocas-tests/tests/python/test_dual.py::test_product_of_two_variables PASSED [ 13%]
+2026-08-02T14:37:44.5956364Z ocas-tests/tests/python/test_dual.py::test_sum_and_difference PASSED     [ 13%]
+2026-08-02T14:37:44.5966694Z ocas-tests/tests/python/test_dual.py::test_quotient_chain_rule PASSED    [ 14%]
+2026-08-02T14:37:44.5976540Z ocas-tests/tests/python/test_dual.py::test_negation PASSED               [ 14%]
+2026-08-02T14:37:44.5986672Z ocas-tests/tests/python/test_dual.py::test_division_by_zero_raises PASSED [ 15%]
+2026-08-02T14:37:44.5997033Z ocas-tests/tests/python/test_dual.py::test_shape_mismatch_arithmetic_raises PASSED [ 15%]
+2026-08-02T14:37:44.6007282Z ocas-tests/tests/python/test_dual.py::test_variable_index_out_of_range PASSED [ 16%]
+2026-08-02T14:37:44.6017400Z ocas-tests/tests/python/test_dual.py::test_chain_rule_polynomial PASSED  [ 16%]
+2026-08-02T14:37:44.6028807Z ocas-tests/tests/python/test_dual.py::test_mixed_partial_via_repeated_mul PASSED [ 17%]
+2026-08-02T14:37:44.6038847Z ocas-tests/tests/python/test_matrix.py::test_matrix_construct PASSED     [ 17%]
+2026-08-02T14:37:44.6048571Z ocas-tests/tests/python/test_matrix.py::test_matrix_shape PASSED         [ 18%]
+2026-08-02T14:37:44.6060349Z ocas-tests/tests/python/test_matrix.py::test_matrix_getitem PASSED       [ 18%]
+2026-08-02T14:37:44.6070194Z ocas-tests/tests/python/test_matrix.py::test_matrix_getitem_out_of_bounds PASSED [ 19%]
+2026-08-02T14:37:44.6080035Z ocas-tests/tests/python/test_matrix.py::test_matrix_transpose PASSED     [ 19%]
+2026-08-02T14:37:44.6089705Z ocas-tests/tests/python/test_matrix.py::test_matrix_trace PASSED         [ 20%]
+2026-08-02T14:37:44.6098975Z ocas-tests/tests/python/test_matrix.py::test_matrix_determinant_2x2 PASSED [ 20%]
+2026-08-02T14:37:44.6108582Z ocas-tests/tests/python/test_matrix.py::test_matrix_determinant_singular PASSED [ 21%]
+2026-08-02T14:37:44.6118721Z ocas-tests/tests/python/test_matrix.py::test_matrix_rank_full PASSED     [ 21%]
+2026-08-02T14:37:44.6128178Z ocas-tests/tests/python/test_matrix.py::test_matrix_rank_deficient PASSED [ 22%]
+2026-08-02T14:37:44.6137616Z ocas-tests/tests/python/test_matrix.py::test_matrix_matmul PASSED        [ 23%]
+2026-08-02T14:37:44.6147053Z ocas-tests/tests/python/test_matrix.py::test_matrix_matmul_identity PASSED [ 23%]
+2026-08-02T14:37:44.6156569Z ocas-tests/tests/python/test_matrix.py::test_matrix_add PASSED           [ 24%]
+2026-08-02T14:37:44.6166016Z ocas-tests/tests/python/test_matrix.py::test_matrix_sub PASSED           [ 24%]
+2026-08-02T14:37:44.6175669Z ocas-tests/tests/python/test_matrix.py::test_matrix_inverse_unimodular PASSED [ 25%]
+2026-08-02T14:37:44.6185386Z ocas-tests/tests/python/test_matrix.py::test_matrix_inverse_singular_errors PASSED [ 25%]
+2026-08-02T14:37:44.6194966Z ocas-tests/tests/python/test_matrix.py::test_matrix_solve PASSED         [ 26%]
+2026-08-02T14:37:44.6204567Z ocas-tests/tests/python/test_matrix.py::test_matrix_finite_field PASSED  [ 26%]
+2026-08-02T14:37:44.6214006Z ocas-tests/tests/python/test_matrix.py::test_matrix_rows PASSED          [ 27%]
+2026-08-02T14:37:44.6224668Z ocas-tests/tests/python/test_matrix.py::test_matrix_eq PASSED            [ 27%]
+2026-08-02T14:37:44.6234659Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_small PASSED [ 28%]
+2026-08-02T14:37:44.6244324Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_prime PASSED [ 28%]
+2026-08-02T14:37:44.6253998Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_prime_power PASSED [ 29%]
+2026-08-02T14:37:44.6263655Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_negative PASSED [ 29%]
+2026-08-02T14:37:44.6276850Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_semiprime PASSED [ 30%]
+2026-08-02T14:37:44.6286260Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_one_and_zero PASSED [ 30%]
+2026-08-02T14:37:44.6297135Z ocas-tests/tests/python/test_ntheory.py::TestFactorint::test_string_input PASSED [ 31%]
+2026-08-02T14:37:44.6308654Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[2] PASSED [ 31%]
+2026-08-02T14:37:44.6320207Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[3] PASSED [ 32%]
+2026-08-02T14:37:44.6331207Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[5] PASSED [ 32%]
+2026-08-02T14:37:44.6342385Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[97] PASSED [ 33%]
+2026-08-02T14:37:44.6353597Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[7919] PASSED [ 34%]
+2026-08-02T14:37:44.6364826Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[1000003] PASSED [ 34%]
+2026-08-02T14:37:44.6376149Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_primes[2305843009213693951] PASSED [ 35%]
+2026-08-02T14:37:44.6386965Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[0] PASSED [ 35%]
+2026-08-02T14:37:44.6397977Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[1] PASSED [ 36%]
+2026-08-02T14:37:44.6409001Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[4] PASSED [ 36%]
+2026-08-02T14:37:44.6420356Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[9] PASSED [ 37%]
+2026-08-02T14:37:44.6431389Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[561] PASSED [ 37%]
+2026-08-02T14:37:44.6442400Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[1105] PASSED [ 38%]
+2026-08-02T14:37:44.6453693Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[1729] PASSED [ 38%]
+2026-08-02T14:37:44.6464734Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[2047] PASSED [ 39%]
+2026-08-02T14:37:44.6475693Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[3277] PASSED [ 39%]
+2026-08-02T14:37:44.6486671Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[4033] PASSED [ 40%]
+2026-08-02T14:37:44.6497601Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[825265] PASSED [ 40%]
+2026-08-02T14:37:44.6508711Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_composites[1000036000099] PASSED [ 41%]
+2026-08-02T14:37:44.6520100Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_large_prime PASSED [ 41%]
+2026-08-02T14:37:44.6530137Z ocas-tests/tests/python/test_ntheory.py::TestIsprime::test_negative PASSED [ 42%]
+2026-08-02T14:37:44.6540333Z ocas-tests/tests/python/test_ntheory.py::TestNextprime::test_small PASSED [ 42%]
+2026-08-02T14:37:44.6551407Z ocas-tests/tests/python/test_ntheory.py::TestNextprime::test_large PASSED [ 43%]
+2026-08-02T14:37:44.6562410Z ocas-tests/tests/python/test_ntheory.py::TestDiscreteLog::test_small_group PASSED [ 43%]
+2026-08-02T14:37:44.6573966Z ocas-tests/tests/python/test_ntheory.py::TestDiscreteLog::test_smooth_prime PASSED [ 44%]
+2026-08-02T14:37:44.6586473Z ocas-tests/tests/python/test_ntheory.py::TestDiscreteLog::test_composite_modulus_bsgs PASSED [ 45%]
+2026-08-02T14:37:44.6597003Z ocas-tests/tests/python/test_ntheory.py::TestDiscreteLog::test_no_solution PASSED [ 45%]
+2026-08-02T14:37:44.6607226Z ocas-tests/tests/python/test_ntheory.py::TestCrt::test_sunzi PASSED      [ 46%]
+2026-08-02T14:37:44.6617380Z ocas-tests/tests/python/test_ntheory.py::TestCrt::test_non_coprime PASSED [ 46%]
+2026-08-02T14:37:44.6627592Z ocas-tests/tests/python/test_ntheory.py::TestCrt::test_inconsistent PASSED [ 47%]
+2026-08-02T14:37:44.6637812Z ocas-tests/tests/python/test_ntheory.py::TestCrt::test_large PASSED      [ 47%]
+2026-08-02T14:37:44.6648003Z ocas-tests/tests/python/test_ntheory.py::TestJacobiSymbol::test_values PASSED [ 48%]
+2026-08-02T14:37:44.6658768Z ocas-tests/tests/python/test_ntheory.py::TestJacobiSymbol::test_even_modulus_rejected PASSED [ 48%]
+2026-08-02T14:37:44.6670854Z ocas-tests/tests/python/test_ntheory.py::TestNumberTheoryFunctions::test_totient PASSED [ 49%]
+2026-08-02T14:37:44.6681132Z ocas-tests/tests/python/test_ntheory.py::TestNumberTheoryFunctions::test_mobius PASSED [ 49%]
+2026-08-02T14:37:44.6691603Z ocas-tests/tests/python/test_ntheory.py::TestNumberTheoryFunctions::test_divisor_count PASSED [ 50%]
+2026-08-02T14:37:44.6702328Z ocas-tests/tests/python/test_ntheory.py::TestNumberTheoryFunctions::test_divisor_sigma PASSED [ 50%]
+2026-08-02T14:37:44.6712605Z ocas-tests/tests/python/test_ntheory.py::TestNumberTheoryFunctions::test_liouville_lambda PASSED [ 51%]
+2026-08-02T14:37:44.6724957Z ocas-tests/tests/python/test_ntheory.py::TestNumberTheoryFunctions::test_isprime_u64 PASSED [ 51%]
+2026-08-02T14:37:44.6969730Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_linear PASSED [ 52%]
+2026-08-02T14:37:44.7232941Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_square PASSED [ 52%]
+2026-08-02T14:37:44.7255215Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_constant PASSED [ 53%]
+2026-08-02T14:37:44.7502610Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_shifted_interval PASSED [ 53%]
+2026-08-02T14:37:44.8159369Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_gaussian_peak PASSED [ 54%]
+2026-08-02T14:37:44.8320749Z ocas-tests/tests/python/test_numeric.py::test_integrate_result_fields_and_iteration PASSED [ 54%]
+2026-08-02T14:37:44.8331086Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_rejects_bad_bounds PASSED [ 55%]
+2026-08-02T14:37:44.8341251Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_rejects_zero_bins PASSED [ 56%]
+2026-08-02T14:37:44.8351687Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_rejects_nonpositive_learning_rate PASSED [ 56%]
+2026-08-02T14:37:44.8389697Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_callable_exception_propagates PASSED [ 57%]
+2026-08-02T14:37:44.8401677Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_callable_returning_non_float_propagates PASSED [ 57%]
+2026-08-02T14:37:44.8477473Z ocas-tests/tests/python/test_numeric.py::test_integrate_1d_seed_reproducible PASSED [ 58%]
+2026-08-02T14:37:44.8944823Z ocas-tests/tests/python/test_numeric.py::test_vegas_class_2d PASSED      [ 58%]
+2026-08-02T14:37:44.8956928Z ocas-tests/tests/python/test_numeric.py::test_vegas_class_rejects_zero_dims PASSED [ 59%]
+2026-08-02T14:37:44.8968163Z ocas-tests/tests/python/test_ocas.py::test_version_is_string PASSED      [ 59%]
+2026-08-02T14:37:44.8979453Z ocas-tests/tests/python/test_ocas.py::test_expression_equality PASSED    [ 60%]
+2026-08-02T14:37:44.8990836Z ocas-tests/tests/python/test_ocas.py::test_expression_inequality PASSED  [ 60%]
+2026-08-02T14:37:44.9001139Z ocas-tests/tests/python/test_ocas.py::test_expression_hash_consistent PASSED [ 61%]
+2026-08-02T14:37:44.9011234Z ocas-tests/tests/python/test_ocas.py::test_expression_hash_in_set PASSED [ 61%]
+2026-08-02T14:37:44.9021698Z ocas-tests/tests/python/test_ocas.py::test_expression_str PASSED         [ 62%]
+2026-08-02T14:37:44.9032084Z ocas-tests/tests/python/test_ocas.py::test_expression_repr PASSED        [ 62%]
+2026-08-02T14:37:44.9042232Z ocas-tests/tests/python/test_ocas.py::test_parse_invalid_raises PASSED   [ 63%]
+2026-08-02T14:37:44.9052704Z ocas-tests/tests/python/test_ocas.py::test_diff_basic PASSED             [ 63%]
+2026-08-02T14:37:44.9063101Z ocas-tests/tests/python/test_ocas.py::test_diff_constant PASSED          [ 64%]
+2026-08-02T14:37:44.9074035Z ocas-tests/tests/python/test_ocas.py::test_integrate_basic PASSED        [ 64%]
+2026-08-02T14:37:44.9085459Z ocas-tests/tests/python/test_ocas.py::test_taylor_exp PASSED             [ 65%]
+2026-08-02T14:37:44.9095759Z ocas-tests/tests/python/test_ocas.py::test_simplify_mul_zero PASSED      [ 65%]
+2026-08-02T14:37:44.9105813Z ocas-tests/tests/python/test_ocas.py::test_simplify_mul_one PASSED       [ 66%]
+2026-08-02T14:37:44.9116354Z ocas-tests/tests/python/test_ocas.py::test_substitute PASSED             [ 67%]
+2026-08-02T14:37:44.9126662Z ocas-tests/tests/python/test_ocas.py::test_substitute_numeric PASSED     [ 67%]
+2026-08-02T14:37:44.9136391Z ocas-tests/tests/python/test_ocas.py::test_add_operator PASSED           [ 68%]
+2026-08-02T14:37:44.9146078Z ocas-tests/tests/python/test_ocas.py::test_mul_operator PASSED           [ 68%]
+2026-08-02T14:37:44.9155720Z ocas-tests/tests/python/test_ocas.py::test_sub_operator PASSED           [ 69%]
+2026-08-02T14:37:44.9165293Z ocas-tests/tests/python/test_ocas.py::test_pow_operator PASSED           [ 69%]
+2026-08-02T14:37:44.9174893Z ocas-tests/tests/python/test_ocas.py::test_neg_operator PASSED           [ 70%]
+2026-08-02T14:37:44.9184425Z ocas-tests/tests/python/test_ocas.py::test_clone PASSED                  [ 70%]
+2026-08-02T14:37:44.9194691Z ocas-tests/tests/python/test_ocas.py::test_solve_linear_rational PASSED  [ 71%]
+2026-08-02T14:37:44.9204335Z ocas-tests/tests/python/test_ocas.py::test_solve_linear_integer_simple PASSED [ 71%]
+2026-08-02T14:37:44.9214045Z ocas-tests/tests/python/test_ocas.py::test_solve_linear_integer_no_solution PASSED [ 72%]
+2026-08-02T14:37:44.9223453Z ocas-tests/tests/python/test_ocas.py::test_solve_diophantine PASSED      [ 72%]
+2026-08-02T14:37:44.9233031Z ocas-tests/tests/python/test_ocas.py::test_solve_diophantine_no_solution PASSED [ 73%]
+2026-08-02T14:37:44.9242730Z ocas-tests/tests/python/test_ocas.py::test_evaluator_basic PASSED        [ 73%]
+2026-08-02T14:37:44.9252554Z ocas-tests/tests/python/test_ocas.py::test_evaluator_wrong_arity PASSED  [ 74%]
+2026-08-02T14:37:44.9262253Z ocas-tests/tests/python/test_ocas.py::test_evaluator_n_params PASSED     [ 74%]
+2026-08-02T14:37:44.9272017Z ocas-tests/tests/python/test_ocas.py::test_evaluator_sin PASSED          [ 75%]
+2026-08-02T14:37:44.9428423Z ocas-tests/tests/python/test_ocas.py::test_no_crash_parse_diff_cycle PASSED [ 75%]
+2026-08-02T14:37:44.9479151Z ocas-tests/tests/python/test_ocas.py::test_no_crash_evaluator_cycle PASSED [ 76%]
+2026-08-02T14:37:44.9489723Z ocas-tests/tests/python/test_ode.py::test_classify_first_order_linear PASSED [ 76%]
+2026-08-02T14:37:44.9499662Z ocas-tests/tests/python/test_ode.py::test_classify_second_order_constant_coeff PASSED [ 77%]
+2026-08-02T14:37:44.9510920Z ocas-tests/tests/python/test_ode.py::test_dsolve_first_order_linear PASSED [ 78%]
+2026-08-02T14:37:44.9523187Z ocas-tests/tests/python/test_ode.py::test_dsolve_separable PASSED        [ 78%]
+2026-08-02T14:37:44.9533867Z ocas-tests/tests/python/test_ode.py::test_dsolve_hint_linear_first PASSED [ 79%]
+2026-08-02T14:37:44.9544306Z ocas-tests/tests/python/test_ode.py::test_dsolve_ivp_first_order PASSED  [ 79%]
+2026-08-02T14:37:44.9554702Z ocas-tests/tests/python/test_ode.py::test_dsolve_ivp_second_order_trig PASSED [ 80%]
+2026-08-02T14:37:44.9567042Z ocas-tests/tests/python/test_ode.py::test_dsolve_ivp_distinct_roots PASSED [ 80%]
+2026-08-02T14:37:44.9576852Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_construct_integer PASSED [ 81%]
+2026-08-02T14:37:44.9586411Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_coeffs PASSED [ 81%]
+2026-08-02T14:37:44.9596131Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_eval_integer PASSED [ 82%]
+2026-08-02T14:37:44.9605749Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_add PASSED   [ 82%]
+2026-08-02T14:37:44.9615330Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_sub PASSED   [ 83%]
+2026-08-02T14:37:44.9624984Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_mul PASSED   [ 83%]
+2026-08-02T14:37:44.9634509Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_neg PASSED   [ 84%]
+2026-08-02T14:37:44.9644705Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_eq PASSED    [ 84%]
+2026-08-02T14:37:44.9654374Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_derivative PASSED [ 85%]
+2026-08-02T14:37:44.9664022Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_integral_rational PASSED [ 85%]
+2026-08-02T14:37:44.9673741Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_gcd PASSED   [ 86%]
+2026-08-02T14:37:44.9683214Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_div_rem PASSED [ 86%]
+2026-08-02T14:37:44.9693102Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_square_free_factorization PASSED [ 87%]
+2026-08-02T14:37:44.9702665Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_is_square_free PASSED [ 87%]
+2026-08-02T14:37:44.9712215Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_finite_field PASSED [ 88%]
+2026-08-02T14:37:44.9722158Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_domain_mismatch_add PASSED [ 89%]
+2026-08-02T14:37:44.9731654Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_primitive_part PASSED [ 89%]
+2026-08-02T14:37:44.9742453Z ocas-tests/tests/python/test_polynomial.py::test_polynomial_zero PASSED  [ 90%]
+2026-08-02T14:37:44.9752157Z ocas-tests/tests/python/test_tensor.py::test_tensor_rank_and_slots PASSED [ 90%]
+2026-08-02T14:37:44.9761776Z ocas-tests/tests/python/test_tensor.py::test_tensor_position_aliases PASSED [ 91%]
+2026-08-02T14:37:44.9771308Z ocas-tests/tests/python/test_tensor.py::test_tensor_symmetry_keywords PASSED [ 91%]
+2026-08-02T14:37:44.9780894Z ocas-tests/tests/python/test_tensor.py::test_tensor_rejects_bad_position PASSED [ 92%]
+2026-08-02T14:37:44.9790501Z ocas-tests/tests/python/test_tensor.py::test_tensor_rejects_bad_symmetry PASSED [ 92%]
+2026-08-02T14:37:44.9800055Z ocas-tests/tests/python/test_tensor.py::test_tensor_dummy_labels PASSED  [ 93%]
+2026-08-02T14:37:44.9809441Z ocas-tests/tests/python/test_tensor.py::test_tensor_to_string_atom PASSED [ 93%]
+2026-08-02T14:37:44.9819625Z ocas-tests/tests/python/test_tensor.py::test_contract_partial_produces_product PASSED [ 94%]
+2026-08-02T14:37:44.9829088Z ocas-tests/tests/python/test_tensor.py::test_contract_no_dummy_is_plain_product PASSED [ 94%]
+2026-08-02T14:37:44.9838694Z ocas-tests/tests/python/test_tensor.py::test_contract_full_produces_scalar PASSED [ 95%]
+2026-08-02T14:37:44.9848189Z ocas-tests/tests/python/test_tensor.py::test_symmetrise_sign_none_and_symmetric PASSED [ 95%]
+2026-08-02T14:37:44.9857690Z ocas-tests/tests/python/test_tensor.py::test_symmetrise_sign_antisymmetric_is_pm1 PASSED [ 96%]
+2026-08-02T14:37:44.9867089Z ocas-tests/tests/python/test_tensor.py::test_tensor_repr PASSED          [ 96%]
+2026-08-02T14:37:46.0803029Z Fatal Python error: Aborted
+2026-08-02T14:37:46.0803353Z 
+2026-08-02T14:37:46.0803610Z Current thread 0x00007f15f7784b80 (most recent call first):
+2026-08-02T14:37:46.0805087Z   File "/home/runner/work/oCAS/oCAS/ocas-tests/tests/python/test_tensor.py", line 115 in test_canonicalize_tensors_basic
+2026-08-02T14:37:46.0806885Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/python.py", line 167 in pytest_pyfunc_call
+2026-08-02T14:37:46.0808647Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_callers.py", line 121 in _multicall
+2026-08-02T14:37:46.0809875Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_manager.py", line 120 in _hookexec
+2026-08-02T14:37:46.0811041Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_hooks.py", line 512 in __call__
+2026-08-02T14:37:46.0812106Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/python.py", line 1707 in runtest
+2026-08-02T14:37:46.0813036Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/runner.py", line 184 in pytest_runtest_call
+2026-08-02T14:37:46.0813969Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_callers.py", line 121 in _multicall
+2026-08-02T14:37:46.0814846Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_manager.py", line 120 in _hookexec
+2026-08-02T14:37:46.0815919Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_hooks.py", line 512 in __call__
+2026-08-02T14:37:46.0816800Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/runner.py", line 250 in <lambda>
+2026-08-02T14:37:46.0817689Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/runner.py", line 361 in from_call
+2026-08-02T14:37:46.0818855Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/runner.py", line 249 in call_and_report
+2026-08-02T14:37:46.0819799Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/runner.py", line 139 in runtestprotocol
+2026-08-02T14:37:46.0820686Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/runner.py", line 118 in pytest_runtest_protocol
+2026-08-02T14:37:46.0821544Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_callers.py", line 121 in _multicall
+2026-08-02T14:37:46.0822353Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_manager.py", line 120 in _hookexec
+2026-08-02T14:37:46.0823142Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_hooks.py", line 512 in __call__
+2026-08-02T14:37:46.0823967Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/main.py", line 408 in pytest_runtestloop
+2026-08-02T14:37:46.0824788Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_callers.py", line 121 in _multicall
+2026-08-02T14:37:46.0825583Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_manager.py", line 120 in _hookexec
+2026-08-02T14:37:46.0826371Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_hooks.py", line 512 in __call__
+2026-08-02T14:37:46.0827139Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/main.py", line 384 in _main
+2026-08-02T14:37:46.0827939Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/main.py", line 330 in wrap_session
+2026-08-02T14:37:46.0829058Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/main.py", line 377 in pytest_cmdline_main
+2026-08-02T14:37:46.0829913Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_callers.py", line 121 in _multicall
+2026-08-02T14:37:46.0830716Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_manager.py", line 120 in _hookexec
+2026-08-02T14:37:46.0831506Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pluggy/_hooks.py", line 512 in __call__
+2026-08-02T14:37:46.0832315Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/config/__init__.py", line 229 in _main
+2026-08-02T14:37:46.0833185Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/_pytest/config/__init__.py", line 253 in _console_main
+2026-08-02T14:37:46.0833901Z   File "/opt/hostedtoolcache/Python/3.12.13/x64/bin/pytest", line 6 in <module>
+2026-08-02T14:37:46.5037367Z /home/runner/work/_temp/40f7bdd6-7e2f-4635-af21-990c4d0e7b4d.sh: line 1:  6680 Aborted                 (core dumped) pytest ocas-tests/tests/python/ -v
+2026-08-02T14:37:46.5039087Z ocas-tests/tests/python/test_tensor.py::test_canonicalize_tensors_basic 
+2026-08-02T14:37:46.5053161Z ##[error]Process completed with exit code 134.
+2026-08-02T14:37:46.5180526Z Post job cleanup.
+2026-08-02T14:37:46.6157946Z [command]/usr/bin/git version
+2026-08-02T14:37:46.6197841Z git version 2.54.0
+2026-08-02T14:37:46.6269417Z Temporarily overriding HOME='/home/runner/work/_temp/f3dc645f-beb8-4030-8512-4852031e55b5' before making global git config changes
+2026-08-02T14:37:46.6270759Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T14:37:46.6274412Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/oCAS/oCAS
+2026-08-02T14:37:46.6312527Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T14:37:46.6346586Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T14:37:46.6590350Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T14:37:46.6616550Z http.https://github.com/.extraheader
+2026-08-02T14:37:46.6626866Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-08-02T14:37:46.6669775Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T14:37:46.6968848Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T14:37:46.7006499Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T14:37:46.7392629Z Cleaning up orphan processes

@@ -94,15 +94,13 @@ fn canonicalize_single_term<'a>(
             );
             let c1 = !spec.symmetric_subsets.is_empty();
             let c2 = spec.antisymmetric_subsets.is_empty();
-            let c3 = spec.symmetric_subsets[0].len() == args.len();
-            eprintln!(
-                "[canon-3] c1={} c2={} c3={} args_len={} subset0_len={}",
-                c1,
-                c2,
-                c3,
-                args.len(),
+            let subset0 = if c1 {
                 spec.symmetric_subsets[0].len()
-            );
+            } else {
+                0
+            };
+            let c3 = subset0 == args.len();
+            eprintln!("[canon-3] c1={} c2={} c3={}", c1, c2, c3);
             let all_symmetric = c1 && c2 && c3;
             if all_symmetric {
                 eprintln!("[canon-fast]");
