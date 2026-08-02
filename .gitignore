@@ -58,3 +58,4 @@ package-lock.json
 CLAUDE.md
 
 .venv-sympy/
+ci_log.txt
