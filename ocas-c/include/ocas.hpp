@@ -259,6 +259,43 @@ inline int liouville(const std::string& n) {
 }
 }  // namespace ntheory
 
+/// Tensor algebra helpers (0.22.0) over the `ocas_tensor_*` C API.
+namespace tensor {
+
+/// Canonicalise a tensor expression via graph isomorphism.
+/// `specs` is a comma-separated `name:sym` string, e.g. `"T:none,U:antisymmetric"`.
+/// `groups` (optional) is a comma-separated `label:group` string.
+inline std::string canonicalize(const std::string& expr,
+                                const std::string& specs,
+                                const std::string& groups = "") {
+    int err = 0;
+    char* s = ::ocas_tensor_canonicalize(
+        expr.c_str(),
+        specs.c_str(),
+        groups.empty() ? nullptr : groups.c_str(),
+        &err);
+    return ntheory::detail::take_string(s);
+}
+
+/// Apply a Young tableau projector. `tableau` is a comma-separated list
+/// of row lengths, e.g. `"2,1"` for □□/□.
+inline std::string young_project(const std::string& expr,
+                                 const std::string& tableau) {
+    int err = 0;
+    char* s = ::ocas_young_project(expr.c_str(), tableau.c_str(), &err);
+    return ntheory::detail::take_string(s);
+}
+
+/// Refresh dummy indices in a tensor expression.
+inline std::string refresh_dummies(const std::string& expr,
+                                   const std::string& specs) {
+    int err = 0;
+    char* s = ::ocas_tensor_refresh_dummies(expr.c_str(), specs.c_str(), &err);
+    return ntheory::detail::take_string(s);
+}
+
+}  // namespace tensor
+
 }  // namespace ocas
 
 #endif  // OCAS_HPP

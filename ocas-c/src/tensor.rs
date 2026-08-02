@@ -546,3 +546,273 @@ pub extern "C" fn ocas_tensor_contraction_free(c: *mut OcasTensorContraction) {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Tensor canonicalisation (0.22.0)
+// ---------------------------------------------------------------------------
+
+/// Canonicalise a tensor expression.
+///
+/// `expr_str` — tensor product as string, e.g. `"T(i,j)*U(j,k)"`.
+/// `specs_str` — comma-separated `name:sym` pairs, e.g. `"T:none,U:none"`.
+/// `groups_str` — optional comma-separated `label:group` pairs, or NULL.
+/// Returns a newly-allocated string with the canonical form.
+/// The caller must free with [`ocas_string_free`].
+#[unsafe(no_mangle)]
+pub extern "C" fn ocas_tensor_canonicalize(
+    expr_str: *const c_char,
+    specs_str: *const c_char,
+    groups_str: *const c_char,
+    err: *mut c_int,
+) -> *mut c_char {
+    use ocas_atom::tensor::canon::canonicalize_tensors;
+    use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+    use ocas_parse;
+
+    if expr_str.is_null() || specs_str.is_null() {
+        set(
+            OCAS_ERROR_NULL_POINTER,
+            "expr_str and specs_str must not be NULL",
+        );
+        crate::error::write_last_code(err);
+        return ptr::null_mut();
+    }
+
+    let expr = match unsafe { CStr::from_ptr(expr_str) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, "expr_str is not valid UTF-8");
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+    let specs = match unsafe { CStr::from_ptr(specs_str) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, "specs_str is not valid UTF-8");
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let parsed = match ocas_parse::parse(&ctx, expr) {
+        Ok(a) => a,
+        Err(e) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, &format!("parse error: {e}"));
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+
+    let mut reg = TensorRegistry::new();
+    for pair in specs.split(',') {
+        let pair = pair.trim();
+        if let Some((name, sym)) = pair.split_once(':') {
+            let spec = match sym.trim() {
+                "none" => SymmetrySpec::none(),
+                "symmetric" => SymmetrySpec::fully_symmetric(0),
+                "antisymmetric" => SymmetrySpec::fully_antisymmetric(0),
+                _ => SymmetrySpec::none(),
+            };
+            reg.register(Symbol::new(name.trim()), spec);
+        }
+    }
+
+    if !groups_str.is_null()
+        && let Ok(groups) = unsafe { CStr::from_ptr(groups_str) }.to_str()
+    {
+        for pair in groups.split(',') {
+            let pair = pair.trim();
+            if let Some((label, group)) = pair.split_once(':')
+                && let Ok(g) = group.trim().parse::<u64>()
+            {
+                reg.set_index_group(Symbol::new(label.trim()), g);
+            }
+        }
+    }
+
+    match canonicalize_tensors(&ctx, parsed, &reg) {
+        Ok(ct) => {
+            let s = ct.canonical_form.to_string();
+            match CString::new(s) {
+                Ok(cs) => {
+                    crate::error::write_last_code(err);
+                    cs.into_raw()
+                }
+                Err(_) => {
+                    set(OCAS_ERROR_RUNTIME, "result contains NUL byte");
+                    crate::error::write_last_code(err);
+                    ptr::null_mut()
+                }
+            }
+        }
+        Err(e) => {
+            set(
+                OCAS_ERROR_RUNTIME,
+                &format!("canonicalisation error: {e:?}"),
+            );
+            crate::error::write_last_code(err);
+            ptr::null_mut()
+        }
+    }
+}
+
+/// Apply a Young projector to a tensor expression.
+///
+/// `tableau_str` — comma-separated row lengths, e.g. `"2,1"` for □□/□.
+/// Returns a newly-allocated string. Caller must free with [`ocas_string_free`].
+#[unsafe(no_mangle)]
+pub extern "C" fn ocas_young_project(
+    expr_str: *const c_char,
+    tableau_str: *const c_char,
+    err: *mut c_int,
+) -> *mut c_char {
+    use ocas_atom::tensor::young::{YoungTableau, young_project};
+    use ocas_parse;
+
+    if expr_str.is_null() || tableau_str.is_null() {
+        set(OCAS_ERROR_NULL_POINTER, "arguments must not be NULL");
+        crate::error::write_last_code(err);
+        return ptr::null_mut();
+    }
+
+    let expr = match unsafe { CStr::from_ptr(expr_str) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, "invalid UTF-8");
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+    let tableau = match unsafe { CStr::from_ptr(tableau_str) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, "invalid UTF-8");
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+
+    let row_lengths: Vec<usize> = tableau
+        .split(',')
+        .filter_map(|s| s.trim().parse().ok())
+        .collect();
+    if row_lengths.is_empty() {
+        set(
+            OCAS_ERROR_INVALID_ARGUMENT,
+            "tableau_str must be comma-separated row lengths",
+        );
+        crate::error::write_last_code(err);
+        return ptr::null_mut();
+    }
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let parsed = match ocas_parse::parse(&ctx, expr) {
+        Ok(a) => a,
+        Err(e) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, &format!("parse: {e}"));
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+
+    let t = YoungTableau::new(row_lengths);
+    let result = young_project(&ctx, parsed, &t);
+    let s = result.to_string();
+    match CString::new(s) {
+        Ok(cs) => {
+            crate::error::write_last_code(err);
+            cs.into_raw()
+        }
+        Err(_) => {
+            set(OCAS_ERROR_RUNTIME, "NUL byte in result");
+            crate::error::write_last_code(err);
+            ptr::null_mut()
+        }
+    }
+}
+
+/// Refresh dummy indices in a tensor expression.
+///
+/// Returns a newly-allocated string. Caller must free with [`ocas_string_free`].
+#[unsafe(no_mangle)]
+pub extern "C" fn ocas_tensor_refresh_dummies(
+    expr_str: *const c_char,
+    specs_str: *const c_char,
+    err: *mut c_int,
+) -> *mut c_char {
+    use ocas_atom::tensor::dummy::refresh_dummies;
+    use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+    use ocas_parse;
+
+    if expr_str.is_null() || specs_str.is_null() {
+        set(OCAS_ERROR_NULL_POINTER, "arguments must not be NULL");
+        crate::error::write_last_code(err);
+        return ptr::null_mut();
+    }
+
+    let expr = match unsafe { CStr::from_ptr(expr_str) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, "invalid UTF-8");
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+    let specs = match unsafe { CStr::from_ptr(specs_str) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, "invalid UTF-8");
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let parsed = match ocas_parse::parse(&ctx, expr) {
+        Ok(a) => a,
+        Err(e) => {
+            set(OCAS_ERROR_INVALID_ARGUMENT, &format!("parse: {e}"));
+            crate::error::write_last_code(err);
+            return ptr::null_mut();
+        }
+    };
+
+    let mut reg = TensorRegistry::new();
+    for pair in specs.split(',') {
+        if let Some((name, sym)) = pair.trim().split_once(':') {
+            let spec = match sym.trim() {
+                "symmetric" => SymmetrySpec::fully_symmetric(0),
+                "antisymmetric" => SymmetrySpec::fully_antisymmetric(0),
+                _ => SymmetrySpec::none(),
+            };
+            reg.register(Symbol::new(name.trim()), spec);
+        }
+    }
+
+    match refresh_dummies(&ctx, parsed, &reg) {
+        Ok(a) => {
+            let s = a.to_string();
+            match CString::new(s) {
+                Ok(cs) => {
+                    crate::error::write_last_code(err);
+                    cs.into_raw()
+                }
+                Err(_) => {
+                    set(OCAS_ERROR_RUNTIME, "NUL byte");
+                    crate::error::write_last_code(err);
+                    ptr::null_mut()
+                }
+            }
+        }
+        Err(e) => {
+            set(OCAS_ERROR_RUNTIME, &format!("dummy error: {e:?}"));
+            crate::error::write_last_code(err);
+            ptr::null_mut()
+        }
+    }
+}

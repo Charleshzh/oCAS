@@ -1,24 +1,23 @@
-//! Basic tensor algebra — index slots, contraction, and slot symmetries.
+//! Tensor algebra — index slots, contraction, symmetries, and canonicalisation.
 //!
-//! This is the *algebraic basics* deliverable for 0.18.0: an independent
-//! [`Tensor`] representation (it does **not** extend the core
-//! [`AtomNode`](crate::AtomNode) tagged union, so the expression tree stays
-//! minimal) with explicit index-slot contraction and simple
-//! symmetric/antisymmetric symmetries applied by slot permutation.
+//! This directory module supersedes the 0.18.0 single-file `tensor.rs`.
 //!
-//! ## Scope
+//! ## Sub-modules
 //!
-//! The full tensor calculus of Symbolica relies on a graph-isomorphism
-//! engine (graphica) for unique canonicalisation, which oCAS does not yet
-//! have. This module therefore provides:
-//!
-//! - slot renaming / free-vs-dummy index bookkeeping,
-//! - explicit contraction (sum over repeated dummy indices),
-//! - symmetric / antisymmetric symmetrisation via slot permutation,
-//!
-//! and **not** a canonical form guarantee. General-relativity-grade tensor
-//! calculus (canonicalisation under index permutation groups) is deferred to
-//! Post-1.0.
+//! | module | purpose |
+//! |---|---|
+//! | `self` | [`Tensor`], [`IndexSlot`], [`Symmetry`], [`contract`] — basic algebra (0.18.0) |
+//! | [`graph`] | McKay refinement-individualisation graph canonical labelling engine (0.22.0) |
+//! | [`spec`] | Tensor symmetry specifications and index-group registry (0.22.0) |
+//! | [`canon`] | Tensor expression → graph → canonical form with dummy management (0.22.0) |
+//! | [`dummy`] | Dummy index refresh and validation (0.22.0) |
+//! | [`young`] | Explicit Young projector via permutation-sum expansion (0.22.0) |
+
+pub mod canon;
+pub mod dummy;
+pub mod graph;
+pub mod spec;
+pub mod young;
 
 use crate::{Atom, AtomArena, Symbol};
 
@@ -137,8 +136,6 @@ fn dummies<'a, I: IntoIterator<Item = Atom<'a>>>(labels: I) -> Vec<Atom<'a>> {
     use crate::FastHashMap;
     let mut counts: FastHashMap<AtomId<'a>, usize> = FastHashMap::default();
     for l in labels {
-        // Atom is Copy + Eq + Hash via the arena; use the raw pointer identity
-        // bucket keyed by the node address to avoid deep hashing.
         let id = AtomId(l);
         *counts.entry(id).or_insert(0) += 1;
     }
@@ -223,9 +220,6 @@ pub fn contract<'a>(ctx: &'a AtomArena<'a>, a: &Tensor<'a>, b: &Tensor<'a>) -> C
     }
     if free.is_empty() {
         // Fully contracted: build a Σ over the dummy of (a·b).
-        // Represent the contraction symbolically as a sum placeholder: since
-        // we do not have an explicit range, we emit a Mul of the two tensor
-        // atoms; callers wanting numerical contraction supply the range.
         let a_atom = a.to_atom(ctx);
         let b_atom = b.to_atom(ctx);
         let product = ctx.mul(&[a_atom, b_atom]);
@@ -252,7 +246,6 @@ pub fn symmetrise_sign(tensor: &Tensor<'_>) -> i64 {
     match tensor.symmetry {
         Symmetry::None | Symmetry::Symmetric => 1,
         Symmetry::Antisymmetric => {
-            // Count the number of swaps in an insertion sort of the slots.
             let mut slots: Vec<IndexSlot<'_>> = tensor.slots.to_vec();
             let mut swaps = 0usize;
             for i in 1..slots.len() {
@@ -269,8 +262,6 @@ pub fn symmetrise_sign(tensor: &Tensor<'_>) -> i64 {
 }
 
 fn slot_less(a: &IndexSlot<'_>, b: &IndexSlot<'_>) -> bool {
-    // Ordering by label pointer identity then position. Good enough for a
-    // stable sort within one arena.
     let pa = a.label.node() as *const _ as *const ();
     let pb = b.label.node() as *const _ as *const ();
     (pa as usize) < (pb as usize) || (pa == pb && (a.position as u8) > (b.position as u8))
@@ -321,7 +312,6 @@ mod tests {
     fn contract_two_tensors_with_one_dummy() {
         let arena = crate::Arena::new();
         let ctx = AtomArena::new(&arena);
-        // T^i_j · U^j_k  →  (T·U)^i_k  (one dummy `j` contracted).
         let t = Tensor::new(
             Symbol::new("T"),
             vec![
@@ -339,7 +329,7 @@ mod tests {
         match contract(&ctx, &t, &u) {
             Contracted::Product(p) => {
                 assert_eq!(p.factors.len(), 1);
-                assert_eq!(p.factors[0].rank(), 2); // free slots i, k
+                assert_eq!(p.factors[0].rank(), 2);
             }
             _ => panic!("expected partial contraction product"),
         }
@@ -349,12 +339,10 @@ mod tests {
     fn contract_to_scalar_when_no_free_slots() {
         let arena = crate::Arena::new();
         let ctx = AtomArena::new(&arena);
-        // T^i · U_i  →  scalar (fully contracted).
         let t = Tensor::new(Symbol::new("T"), vec![idx(&ctx, "i", IndexPosition::Upper)]);
         let u = Tensor::new(Symbol::new("U"), vec![idx(&ctx, "i", IndexPosition::Lower)]);
         match contract(&ctx, &t, &u) {
             Contracted::Scalar(atom) => {
-                // The scalar is T(i) * U(i); it is a Mul of two Fun nodes.
                 assert!(matches!(atom.node(), AtomNode::Mul(_)));
             }
             _ => panic!("expected scalar contraction"),
@@ -365,7 +353,6 @@ mod tests {
     fn no_overlap_yields_plain_product() {
         let arena = crate::Arena::new();
         let ctx = AtomArena::new(&arena);
-        // T^i · U^j — no shared label → plain product with both factors.
         let t = Tensor::new(Symbol::new("T"), vec![idx(&ctx, "i", IndexPosition::Upper)]);
         let u = Tensor::new(Symbol::new("U"), vec![idx(&ctx, "j", IndexPosition::Upper)]);
         match contract(&ctx, &t, &u) {
@@ -378,7 +365,6 @@ mod tests {
     fn antisymmetric_sign_parity() {
         let arena = crate::Arena::new();
         let ctx = AtomArena::new(&arena);
-        // ε_{ab} in slot order (a, b): already sorted → sign +1.
         let e_ab = Tensor::new(
             Symbol::new("eps"),
             vec![
@@ -387,7 +373,6 @@ mod tests {
             ],
         )
         .with_symmetry(Symmetry::Antisymmetric);
-        // Build ε_{ba}: slots (b, a) which sorts via one swap → sign −1.
         let e_ba = Tensor::new(
             Symbol::new("eps"),
             vec![
@@ -396,14 +381,10 @@ mod tests {
             ],
         )
         .with_symmetry(Symmetry::Antisymmetric);
-        // Both signs are computed against the sort of their own slots; we just
-        // check the function returns ±1 deterministically.
         let s1 = symmetrise_sign(&e_ab);
         let s2 = symmetrise_sign(&e_ba);
         assert!(s1 == 1 || s1 == -1);
         assert!(s2 == 1 || s2 == -1);
-        // ε_{ab} and ε_{ba} should have opposite sign because they differ by
-        // a single swap from a common sorted order.
         assert_eq!(s1, -s2);
     }
 

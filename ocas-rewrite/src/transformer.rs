@@ -3,6 +3,74 @@ use ocas_atom::{Atom, AtomArena, AtomNode};
 #[cfg(test)]
 use ocas_core::arena::Arena;
 
+use crate::combinatorics;
+
+/// Partition an `arg(a₁, a₂, …, aₙ)` expression into named bins and return a
+/// sum of products `Σ coeff · f₁(…)·f₂(…)·…`.
+///
+/// Parameters mirror Symbolica's `Transformer::Partition`:
+/// * `bins` — list of `(function_name, capacity)`.
+/// * `fill_last` — surplus elements absorbed into the last bin.
+/// * `repeat` — repeat the bin pattern until all elements consumed.
+///
+/// Returns `ctx.num(0)` when no valid partition exists.
+pub fn partition_expr<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    bins: &[(ocas_atom::Symbol, usize)],
+    fill_last: bool,
+    repeat: bool,
+) -> Atom<'a> {
+    // Extract `arg(...)` args.
+    let args: &[Atom<'a>] = match expr.node() {
+        AtomNode::Fun(name, a) if name.as_str() == "arg" => a,
+        _ => return expr,
+    };
+
+    if args.is_empty() || bins.is_empty() {
+        return ctx.num(0);
+    }
+
+    let elements: Vec<i64> = args
+        .iter()
+        .filter_map(|a| match a.node() {
+            AtomNode::Num(n) => Some(*n),
+            _ => None,
+        })
+        .collect();
+
+    // If any arg is not a number, bail.
+    if elements.len() != args.len() {
+        return expr;
+    }
+
+    let bin_specs: Vec<(ocas_atom::Symbol, usize)> = bins.to_vec();
+    let sols = combinatorics::partitions(&elements, &bin_specs, fill_last, repeat);
+
+    if sols.is_empty() {
+        return ctx.num(0);
+    }
+
+    let mut terms: Vec<Atom<'a>> = Vec::new();
+    for sol in &sols {
+        let coeff_atom = ctx.num(sol.coefficient as i64);
+        let mut factors: Vec<Atom<'a>> = vec![coeff_atom];
+        for (name, content) in &sol.bins {
+            let content_atoms: Vec<Atom<'a>> = content.iter().map(|&n| ctx.num(n)).collect();
+            factors.push(ctx.fun(name.as_str(), &content_atoms));
+        }
+        terms.push(ctx.mul(&factors));
+    }
+
+    if terms.is_empty() {
+        ctx.num(0)
+    } else if terms.len() == 1 {
+        terms.pop().unwrap()
+    } else {
+        ctx.add(&terms)
+    }
+}
+
 /// Transform an atom tree bottom-up.
 ///
 /// The supplied function `f` is called on each node **after** its children

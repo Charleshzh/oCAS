@@ -214,7 +214,7 @@ breadth, and Post-1.0 topics.
 | 9 | ~~Numerical integration / dual numbers / tensor basics / fuel~~ (done in 0.18) | ✅ Done — Vegas + HyperDual + index contraction + fuel; 0.18.1 backfilled the Python/C bindings |
 | 10 | ~~ODE solvers~~ (0.20.1 complete) | ✅ Done — 5 first-order + integrating factors; 2 second-order + VOP + reduction of order; series recursion + Frobenius; Laplace IVP; 2×2 systems; Python/C bindings |
 | 11 | ~~Number theory stack~~ (done 0.21) | ✅ done — modular GCD (univariate Brown + bivariate multi-prime) + integer factorization (ECM: 30-digit semiprime in 1.1 s) + BPSW primality + discrete log + CRT + number-theoretic functions + Python/C bindings |
-| 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | 🟡 Symbolica's last bastion; needs graph-isomorphism engine |
+| 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | � delivered in 0.22.0: graph-iso canonical labelling + tensor canonical form + Young projector + Partition + multi-pattern replace |
 | 13 | Algebraic-geometry tooling (Phase B++ 0.23) | 🟢 SageMath/Singular parity; ideal ops + RUR + primary decomposition + Hilbert series |
 | 14 | PDE solvers (Post-1.0) | 🟢 high user demand; Poisson/heat/wave |
 

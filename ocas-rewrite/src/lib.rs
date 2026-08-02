@@ -3,24 +3,31 @@
 //! This crate builds on [`ocas_atom::Atom`] and provides:
 //!
 //! - A [`Pattern`] type with wildcards of three levels.
-//! - A [`match_pattern`] engine that binds
-//!   wildcards to sub-expressions.
-//! - A [`transform`] function for bottom-up
-//!   tree rewriting.
-//! - A [`Rule`] abstraction and a [`simplify()`](crate::simplify::simplify)
-//!   entry point.
+//! - A [`match_pattern`] engine that binds wildcards to sub-expressions.
+//! - A [`transform`] function for bottom-up tree rewriting.
+//! - A [`Rule`] abstraction and a [`simplify`] entry point.
+//! - A [`replace`] module for multi-pattern `replace_all` / `replace_once`.
+//! - A [`Transformer::Partition`](crate::transformer::partition_expr) combinator.
 
+pub mod combinatorics;
 pub mod matcher;
 pub mod pattern;
+pub mod replace;
 pub mod rules;
 pub mod simplify;
 pub mod transformer;
 
+#[cfg(feature = "egg")]
+pub mod egraph;
+
 pub use matcher::{Bindings, MatchError, match_pattern};
 pub use pattern::{Pattern, WildcardLevel};
+pub use replace::{
+    Condition, ReplaceSettings, Replacement, replace_all, replace_all_multiple, replace_once,
+};
 pub use rules::Rule;
 pub use simplify::{simplify, simplify_with_fuel};
-pub use transformer::transform;
+pub use transformer::{partition_expr, transform};
 
 #[cfg(test)]
 mod proptests {

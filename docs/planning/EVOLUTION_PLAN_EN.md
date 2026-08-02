@@ -894,12 +894,12 @@ transformers that round out Symbolica's rewriting surface.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Graph-isomorphism-based tensor canonicalisation (indices as vertices, contractions as edges, symmetries as automorphisms) | Symbolica `graphica` (Bliss-based); Port idea, not code | `ocas-atom::tensor::canon` | [ ] |
-| Dummy-index management: auto-pairing, introduction/elimination, trace detection | Cadabra; xAct | `tensor::dummy` | [ ] |
-| Symmetry-aware canonical form: Young tableaux (fully symmetric/antisymmetric), general Young projector for mixed symmetry | Waldmann; Fulton & Harris | `tensor::young` | [ ] |
-| `Transformer::Partition`: argument-sequence partitioning for pattern replacement | Symbolica `examples/partition.rs` | `ocas-rewrite::transformer::partition` | [ ] |
-| Multi-pattern replace with backtracking and condition guards | Symbolica `replace_all` with restrictions | `ocas-rewrite::replace::multi` | [ ] |
-| Python/C bindings: tensor canonicalisation API, `replace_all` with transformer | Symbolica API parity | `ocas-py::tensor` (extend), `ocas-c::tensor` (extend) | [ ] |
+| Graph-isomorphism-based tensor canonicalisation (indices as vertices, contractions as edges, symmetries as automorphisms) | Symbolica `graphica` (Bliss-based); Port idea, not code | `ocas-atom::tensor::canon` | [x] |
+| Dummy-index management: auto-pairing, introduction/elimination, trace detection | Cadabra; xAct | `tensor::dummy` | [x] |
+| Symmetry-aware canonical form: Young tableaux (fully symmetric/antisymmetric), general Young projector for mixed symmetry | Waldmann; Fulton & Harris | `tensor::young` | [x] |
+| `Transformer::Partition`: argument-sequence partitioning for pattern replacement | Symbolica `examples/partition.rs` | `ocas-rewrite::transformer::partition` | [x] |
+| Multi-pattern replace with backtracking and condition guards | Symbolica `replace_all` with restrictions | `ocas-rewrite::replace::multi` | [x] |
+| Python/C bindings: tensor canonicalisation API, `replace_all` with transformer | Symbolica API parity | `ocas-py::tensor` (extend), `ocas-c::tensor` (extend) | [x] |
 
 **Acceptance**
 

@@ -27,6 +27,7 @@ use ocas_core::arena::Arena;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
+use std::collections::HashMap;
 
 // ------------------------------------------------------------------
 //  Arena management (leaked pair, recovered on Drop)
@@ -384,4 +385,92 @@ pub fn contract_tensors<'py>(
 #[pyfunction]
 pub fn tensor_symmetrise_sign(tensor: &PyTensor) -> i64 {
     symmetrise_sign(&tensor.inner.tensor)
+}
+
+/// Canonicalise a tensor expression using the graph-isomorphism engine.
+///
+/// `specs` is a dict mapping tensor name → symmetry spec string:
+/// `"none"`, `"symmetric"`, `"antisymmetric"`.
+#[pyfunction]
+#[pyo3(signature = (expr, specs, index_groups=None))]
+pub fn canonicalize_tensors(
+    expr: &str,
+    specs: HashMap<String, String>,
+    index_groups: Option<HashMap<String, u64>>,
+) -> PyResult<String> {
+    use ocas_atom::tensor::canon::canonicalize_tensors as canon;
+    use ocas_atom::tensor::spec::TensorRegistry;
+    use ocas_parse;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let parsed = ocas_parse::parse(&ctx, expr)
+        .map_err(|e| PyValueError::new_err(format!("parse error: {e}")))?;
+
+    let mut reg = TensorRegistry::new();
+    for (name, spec_str) in &specs {
+        let spec = parse_symmetry_spec(spec_str);
+        reg.register(Symbol::new(name), spec);
+    }
+    if let Some(groups) = &index_groups {
+        for (label, group) in groups {
+            reg.set_index_group(Symbol::new(label), *group);
+        }
+    }
+
+    let ct = canon(&ctx, parsed, &reg)
+        .map_err(|e| PyValueError::new_err(format!("canonicalisation error: {e:?}")))?;
+
+    Ok(ct.canonical_form.to_string())
+}
+
+fn parse_symmetry_spec(s: &str) -> ocas_atom::tensor::spec::SymmetrySpec {
+    use ocas_atom::tensor::spec::SymmetrySpec;
+    match s {
+        "none" => SymmetrySpec::none(),
+        "symmetric" => SymmetrySpec::fully_symmetric(0),
+        "antisymmetric" => SymmetrySpec::fully_antisymmetric(0),
+        _ => SymmetrySpec::none(),
+    }
+}
+
+/// Apply a Young projector to a tensor expression.
+///
+/// `tableau` is a list of row lengths, e.g. `[2, 1]` for □□/□.
+#[pyfunction]
+pub fn young_project(expr: &str, tableau: Vec<usize>) -> PyResult<String> {
+    use ocas_atom::tensor::young::{YoungTableau, young_project as yp};
+    use ocas_parse;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let parsed = ocas_parse::parse(&ctx, expr)
+        .map_err(|e| PyValueError::new_err(format!("parse error: {e}")))?;
+
+    let t = YoungTableau::new(tableau);
+    let result = yp(&ctx, parsed, &t);
+    Ok(result.to_string())
+}
+
+/// Refresh (rename) dummy indices in a tensor expression.
+#[pyfunction]
+pub fn refresh_dummies(expr: &str, specs: HashMap<String, String>) -> PyResult<String> {
+    use ocas_atom::tensor::dummy::refresh_dummies as rd;
+    use ocas_atom::tensor::spec::TensorRegistry;
+    use ocas_parse;
+
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let parsed = ocas_parse::parse(&ctx, expr)
+        .map_err(|e| PyValueError::new_err(format!("parse error: {e}")))?;
+
+    let mut reg = TensorRegistry::new();
+    for (name, spec_str) in &specs {
+        let spec = parse_symmetry_spec(spec_str);
+        reg.register(Symbol::new(name), spec);
+    }
+
+    let result =
+        rd(&ctx, parsed, &reg).map_err(|e| PyValueError::new_err(format!("dummy error: {e:?}")))?;
+    Ok(result.to_string())
 }

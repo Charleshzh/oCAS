@@ -104,3 +104,47 @@ def test_tensor_repr():
     r = repr(t)
     assert "Tensor" in r
     assert "T" in r
+
+
+# ------------------------------------------------------------------
+#  Tensor canonicalisation / Young / dummy (0.22.0)
+# ------------------------------------------------------------------
+
+
+def test_canonicalize_tensors_basic():
+    result = ocas.canonicalize_tensors("T(i,j)", {"T": "none"})
+    assert "T" in result
+
+
+def test_canonicalize_tensors_with_contraction():
+    result = ocas.canonicalize_tensors("T(i,j)*U(j,k)", {"T": "none", "U": "none"})
+    # j is dummy — should get canonical name d0.
+    assert "d0" in result
+    assert "T" in result
+    assert "U" in result
+
+
+def test_canonicalize_tensors_symmetric_consistency():
+    # g(a,b) and g(b,a) should canonicalise identically.
+    r1 = ocas.canonicalize_tensors("g(a,b)", {"g": "symmetric"})
+    r2 = ocas.canonicalize_tensors("g(b,a)", {"g": "symmetric"})
+    assert r1 == r2, f"{r1} != {r2}"
+
+
+def test_young_project_antisymmetric():
+    result = ocas.young_project("f(a,b)", [1, 1])
+    # Should be f(a,b) - f(b,a).
+    assert "-" in result
+
+
+def test_young_project_symmetric():
+    result = ocas.young_project("f(a,b)", [2])
+    # Should be f(a,b) + f(b,a).
+    assert "+" in result
+
+
+def test_refresh_dummies_renames():
+    result = ocas.refresh_dummies("T(i,j)*U(j,i)", {"T": "none", "U": "none"})
+    # Both i and j appear exactly twice → both renamed to d0, d1.
+    assert "d0" in result
+    assert "d1" in result

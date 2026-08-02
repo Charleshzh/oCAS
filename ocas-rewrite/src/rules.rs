@@ -142,7 +142,9 @@ impl<'a> Rule<'a> {
                 }
                 Some((self.replacement)(&bindings, ctx))
             }
-            Err(MatchError::NoMatch) | Err(MatchError::InconsistentBinding) => None,
+            Err(MatchError::NoMatch)
+            | Err(MatchError::InconsistentBinding)
+            | Err(MatchError::BudgetExhausted) => None,
         }
     }
 }

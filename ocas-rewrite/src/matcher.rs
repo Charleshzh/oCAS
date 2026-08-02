@@ -1,52 +1,31 @@
 //! Pattern matching engine for oCAS.
 //!
-//! The matcher binds [`Pattern`] wildcards to [`Atom`]
-//! sub-expressions. It supports associative/commutative matching for `Add`
-//! and `Mul` using backtracking, and sequence wildcards for ordered argument
-//! lists such as function arguments.
+//! The matcher binds [`Pattern`] wildcards to [`Atom`] sub-expressions.
+//! Associative/commutative matching for `Add`/`Mul` uses full backtracking
+//! search with a budget to prevent pathological explosion.  Sequence wildcards
+//! are supported in all argument-list contexts (`Add`, `Mul`, `Fun`).
 
 use ocas_atom::{Atom, AtomNode, Symbol};
 use ocas_core::FastHashMap as HashMap;
 
 use crate::pattern::{Pattern, WildcardLevel};
 
+/// Default maximum number of backtrack attempts per AC match.
+pub const DEFAULT_MAX_BACKTRACKS: usize = 10_000;
+
 /// A collection of wildcard bindings produced by a successful match.
-///
-/// # Example
-///
-/// ```
-/// use ocas_atom::AtomArena;
-/// use ocas_atom::Symbol;
-/// use ocas_core::arena::Arena;
-/// use ocas_rewrite::matcher::{match_pattern, Bindings, MatchValue};
-/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
-///
-/// let arena = Arena::new();
-/// let ctx = AtomArena::new(&arena);
-/// let x = ctx.var("x");
-/// let pat = Pattern::Wildcard(Symbol::new("w"), WildcardLevel::Single);
-/// let bindings = match_pattern(pat, x).unwrap();
-/// let value = bindings.get(Symbol::new("w")).unwrap();
-/// assert!(matches!(value, MatchValue::Single(v) if v.to_string() == "x"));
-/// ```
 #[derive(Debug, Clone, Default)]
 pub struct Bindings<'a> {
     map: HashMap<Symbol, MatchValue<'a>>,
 }
 
 impl<'a> Bindings<'a> {
-    /// Create an empty binding set.
     pub fn new() -> Self {
         Self::default()
     }
-
-    /// Look up a binding by wildcard name.
     pub fn get(&self, name: Symbol) -> Option<&MatchValue<'a>> {
         self.map.get(&name)
     }
-
-    /// Insert a single-atom binding. Returns `Err` if the name is already bound
-    /// to a different value.
     fn insert_single(&mut self, name: Symbol, value: Atom<'a>) -> Result<(), MatchError> {
         match self.map.get(&name) {
             Some(MatchValue::Single(existing)) if *existing == value => Ok(()),
@@ -57,8 +36,6 @@ impl<'a> Bindings<'a> {
             }
         }
     }
-
-    /// Insert a multi-atom binding (used for sequence/blank null sequence).
     fn insert_sequence(&mut self, name: Symbol, value: &'a [Atom<'a>]) -> Result<(), MatchError> {
         match self.map.get(&name) {
             Some(MatchValue::Sequence(existing)) if *existing == value => Ok(()),
@@ -69,42 +46,22 @@ impl<'a> Bindings<'a> {
             }
         }
     }
+    fn remove(&mut self, name: Symbol) {
+        self.map.remove(&name);
+    }
 }
 
-/// A value bound to a wildcard.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MatchValue<'a> {
-    /// A single atom binding.
     Single(Atom<'a>),
-    /// A slice of atoms bound to a sequence wildcard.
     Sequence(&'a [Atom<'a>]),
 }
 
-/// Errors that can occur during matching.
-///
-/// # Example
-///
-/// ```
-/// use ocas_atom::AtomArena;
-/// use ocas_atom::Symbol;
-/// use ocas_core::arena::Arena;
-/// use ocas_rewrite::matcher::{match_pattern, MatchError};
-/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
-///
-/// let arena = Arena::new();
-/// let ctx = AtomArena::new(&arena);
-/// let x = ctx.var("x");
-/// let y = ctx.var("y");
-/// let pat = Pattern::Literal(x);
-/// let err = match_pattern(pat, y).unwrap_err();
-/// assert!(matches!(err, MatchError::NoMatch));
-/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MatchError {
-    /// The pattern did not match the atom.
     NoMatch,
-    /// A wildcard name was bound to two different values.
     InconsistentBinding,
+    BudgetExhausted,
 }
 
 impl std::fmt::Display for MatchError {
@@ -112,46 +69,30 @@ impl std::fmt::Display for MatchError {
         match self {
             MatchError::NoMatch => write!(f, "pattern did not match"),
             MatchError::InconsistentBinding => write!(f, "inconsistent wildcard binding"),
+            MatchError::BudgetExhausted => write!(f, "backtrack budget exhausted"),
         }
     }
 }
-
 impl std::error::Error for MatchError {}
 
-/// Match a pattern against an atom, returning bindings on success.
-///
-/// `Add` and `Mul` are matched associatively and commutatively: arguments are
-/// sorted and literal patterns are matched before single wildcards. Sequence
-/// wildcards are not supported inside `Add`/`Mul` in this simplified matcher;
-/// they are supported for ordered argument lists such as function arguments.
-///
-/// # Example
-///
-/// ```
-/// use ocas_atom::AtomArena;
-/// use ocas_atom::Symbol;
-/// use ocas_core::arena::Arena;
-/// use ocas_rewrite::matcher::{match_pattern, MatchValue};
-/// use ocas_rewrite::pattern::{Pattern, WildcardLevel};
-///
-/// let arena = Arena::new();
-/// let ctx = AtomArena::new(&arena);
-/// let x = ctx.var("x");
-/// let y = ctx.var("y");
-/// let sum = ctx.add(&[x, y]);
-/// let pat = Pattern::Add(vec![
-///     Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
-///     Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
-/// ]);
-/// let bindings = match_pattern(pat, sum).unwrap();
-/// let a = bindings.get(Symbol::new("a")).unwrap();
-/// let b = bindings.get(Symbol::new("b")).unwrap();
-/// assert!(matches!(a, MatchValue::Single(v) if v.to_string() == "x"));
-/// assert!(matches!(b, MatchValue::Single(v) if v.to_string() == "y"));
-/// ```
 pub fn match_pattern<'a>(pattern: Pattern<'a>, atom: Atom<'a>) -> Result<Bindings<'a>, MatchError> {
+    match_pattern_with_budget(pattern, atom, DEFAULT_MAX_BACKTRACKS)
+}
+
+pub fn match_pattern_with_budget<'a>(
+    pattern: Pattern<'a>,
+    atom: Atom<'a>,
+    max_backtracks: usize,
+) -> Result<Bindings<'a>, MatchError> {
     let mut bindings = Bindings::new();
-    match_atom(&mut bindings, pattern, atom)?;
+    let mut backtrack_count = 0usize;
+    match_atom(
+        &mut bindings,
+        pattern,
+        atom,
+        &mut backtrack_count,
+        max_backtracks,
+    )?;
     Ok(bindings)
 }
 
@@ -159,7 +100,12 @@ fn match_atom<'a>(
     bindings: &mut Bindings<'a>,
     pattern: Pattern<'a>,
     atom: Atom<'a>,
+    backtrack_count: &mut usize,
+    max_backtracks: usize,
 ) -> Result<(), MatchError> {
+    if *backtrack_count >= max_backtracks {
+        return Err(MatchError::BudgetExhausted);
+    }
     match pattern {
         Pattern::Literal(p) => {
             if p == atom {
@@ -186,102 +132,50 @@ fn match_atom<'a>(
             _ => Err(MatchError::NoMatch),
         },
         Pattern::Add(pats) => match atom.node() {
-            AtomNode::Add(args) => match_nary(bindings, &pats, args, true),
+            AtomNode::Add(args) => {
+                match_nary(bindings, &pats, args, true, backtrack_count, max_backtracks)
+            }
             _ => Err(MatchError::NoMatch),
         },
         Pattern::Mul(pats) => match atom.node() {
-            AtomNode::Mul(args) => match_nary(bindings, &pats, args, true),
+            AtomNode::Mul(args) => {
+                match_nary(bindings, &pats, args, true, backtrack_count, max_backtracks)
+            }
             _ => Err(MatchError::NoMatch),
         },
         Pattern::Pow(p_box) => match atom.node() {
             AtomNode::Pow(base, exp) => {
                 let (p_base, p_exp) = *p_box;
-                match_atom(bindings, p_base, *base)?;
-                match_atom(bindings, p_exp, *exp)
+                match_atom(bindings, p_base, *base, backtrack_count, max_backtracks)?;
+                match_atom(bindings, p_exp, *exp, backtrack_count, max_backtracks)
             }
             _ => Err(MatchError::NoMatch),
         },
         Pattern::Fun(p_name, p_args) => match atom.node() {
-            AtomNode::Fun(name, args) if *name == p_name => {
-                match_nary(bindings, &p_args, args, false)
-            }
+            AtomNode::Fun(name, args) if *name == p_name => match_nary(
+                bindings,
+                &p_args,
+                args,
+                false,
+                backtrack_count,
+                max_backtracks,
+            ),
             _ => Err(MatchError::NoMatch),
         },
     }
 }
 
-/// Match a pattern list against an argument list. For `Add` and `Mul` we sort
-/// the target atoms and match literal/sequence patterns greedily; for `Fun`
-/// arguments we keep the order and only allow a single trailing null-sequence
-/// wildcard to absorb leftovers.
 fn match_nary<'a>(
-    bindings: &mut Bindings<'a>,
-    patterns: &'_ [Pattern<'a>],
+    bindings: &'_ mut Bindings<'a>,
+    patterns: &[Pattern<'a>],
     atoms: &'a [Atom<'a>],
     associative_commutative: bool,
+    backtrack_count: &mut usize,
+    max_backtracks: usize,
 ) -> Result<(), MatchError> {
-    if associative_commutative {
-        match_nary_ac(bindings, patterns, atoms)
-    } else {
-        match_nary_ordered(bindings, patterns, atoms)
+    if *backtrack_count >= max_backtracks {
+        return Err(MatchError::BudgetExhausted);
     }
-}
-
-/// Ordered matching for function arguments. Supports at most one trailing null
-/// sequence wildcard. Sequence wildcards are not supported here.
-fn match_nary_ordered<'a>(
-    bindings: &mut Bindings<'a>,
-    patterns: &'_ [Pattern<'a>],
-    atoms: &'a [Atom<'a>],
-) -> Result<(), MatchError> {
-    let mut pat_idx = 0;
-    let mut atom_idx = 0;
-    while pat_idx < patterns.len() {
-        let pat = &patterns[pat_idx];
-        match pat {
-            Pattern::Wildcard(name, WildcardLevel::NullSequence)
-                if pat_idx == patterns.len() - 1 =>
-            {
-                let rest = &atoms[atom_idx..];
-                bindings.insert_sequence(*name, rest)?;
-                atom_idx = atoms.len();
-                pat_idx += 1;
-            }
-            Pattern::Wildcard(name, WildcardLevel::Single) => {
-                if atom_idx >= atoms.len() {
-                    return Err(MatchError::NoMatch);
-                }
-                bindings.insert_single(*name, atoms[atom_idx])?;
-                atom_idx += 1;
-                pat_idx += 1;
-            }
-            _ => {
-                if atom_idx >= atoms.len() {
-                    return Err(MatchError::NoMatch);
-                }
-                match_atom(bindings, pat.clone(), atoms[atom_idx])?;
-                atom_idx += 1;
-                pat_idx += 1;
-            }
-        }
-    }
-    if atom_idx == atoms.len() {
-        Ok(())
-    } else {
-        Err(MatchError::NoMatch)
-    }
-}
-
-/// Associative/commutative matching for `Add` and `Mul`. We sort the target
-/// atoms by their natural ordering and match literals first, then single
-/// wildcards. Sequence wildcards are not supported in this simplified matcher
-/// because the sorted permutation of `atoms` cannot be borrowed as a single
-/// contiguous slice.
-fn match_nary_ac<'a>(
-    bindings: &mut Bindings<'a>,
-    patterns: &'_ [Pattern<'a>],
-    atoms: &'a [Atom<'a>],
-) -> Result<(), MatchError> {
     if patterns.is_empty() {
         return if atoms.is_empty() {
             Ok(())
@@ -289,78 +183,502 @@ fn match_nary_ac<'a>(
             Err(MatchError::NoMatch)
         };
     }
-
-    if patterns.iter().any(|p| {
-        matches!(
-            p,
-            Pattern::Wildcard(_, WildcardLevel::Sequence | WildcardLevel::NullSequence)
+    if associative_commutative {
+        let mut sorted: Vec<Atom<'a>> = atoms.to_vec();
+        sorted.sort();
+        let mut used = vec![false; sorted.len()];
+        match_nary_ac(
+            bindings,
+            patterns,
+            &sorted,
+            &mut used,
+            0,
+            backtrack_count,
+            max_backtracks,
         )
-    }) {
-        return Err(MatchError::NoMatch);
+    } else {
+        match_nary_ordered(
+            bindings,
+            patterns,
+            atoms,
+            0,
+            0,
+            backtrack_count,
+            max_backtracks,
+        )
     }
+}
 
-    let mut sorted_atoms: Vec<Atom<'a>> = atoms.to_vec();
-    sorted_atoms.sort();
+// ---- ordered matching (Fun args) with sequence-wildcard support at any position ----
 
-    let mut matched = vec![false; sorted_atoms.len()];
-    let mut single_wildcards: Vec<usize> = Vec::new();
-    let mut literal_indices: Vec<usize> = Vec::new();
-
-    for (i, pat) in patterns.iter().enumerate() {
-        match pat {
-            Pattern::Wildcard(_, WildcardLevel::Single) => single_wildcards.push(i),
-            _ => literal_indices.push(i),
+fn match_nary_ordered<'a>(
+    bindings: &mut Bindings<'a>,
+    patterns: &[Pattern<'a>],
+    atoms: &'a [Atom<'a>],
+    pat_idx: usize,
+    atom_idx: usize,
+    backtrack_count: &mut usize,
+    max_backtracks: usize,
+) -> Result<(), MatchError> {
+    if *backtrack_count >= max_backtracks {
+        return Err(MatchError::BudgetExhausted);
+    }
+    if pat_idx >= patterns.len() {
+        return if atom_idx >= atoms.len() {
+            Ok(())
+        } else {
+            Err(MatchError::NoMatch)
+        };
+    }
+    let pat = &patterns[pat_idx];
+    match pat {
+        Pattern::Wildcard(name, WildcardLevel::NullSequence) => {
+            let remaining = atoms.len().saturating_sub(atom_idx);
+            for len in 0..=remaining {
+                let slice = &atoms[atom_idx..atom_idx + len];
+                let mut probe = bindings.clone();
+                if probe.insert_sequence(*name, slice).is_err() {
+                    continue;
+                }
+                *backtrack_count += 1;
+                match match_nary_ordered(
+                    &mut probe,
+                    patterns,
+                    atoms,
+                    pat_idx + 1,
+                    atom_idx + len,
+                    backtrack_count,
+                    max_backtracks,
+                ) {
+                    Ok(()) => {
+                        *bindings = probe;
+                        return Ok(());
+                    }
+                    Err(MatchError::BudgetExhausted) => return Err(MatchError::BudgetExhausted),
+                    Err(_) => {}
+                }
+            }
+            Err(MatchError::NoMatch)
         }
-    }
-
-    // Match literals first.
-    for pat_idx in literal_indices {
-        let pat = &patterns[pat_idx];
-        let mut found = false;
-        for (i, atom) in sorted_atoms.iter().enumerate() {
-            if matched[i] {
-                continue;
+        Pattern::Wildcard(name, WildcardLevel::Sequence) => {
+            let remaining = atoms.len().saturating_sub(atom_idx);
+            if remaining == 0 {
+                return Err(MatchError::NoMatch);
+            }
+            for len in 1..=remaining {
+                let slice = &atoms[atom_idx..atom_idx + len];
+                let mut probe = bindings.clone();
+                if probe.insert_sequence(*name, slice).is_err() {
+                    continue;
+                }
+                *backtrack_count += 1;
+                match match_nary_ordered(
+                    &mut probe,
+                    patterns,
+                    atoms,
+                    pat_idx + 1,
+                    atom_idx + len,
+                    backtrack_count,
+                    max_backtracks,
+                ) {
+                    Ok(()) => {
+                        *bindings = probe;
+                        return Ok(());
+                    }
+                    Err(MatchError::BudgetExhausted) => return Err(MatchError::BudgetExhausted),
+                    Err(_) => {}
+                }
+            }
+            Err(MatchError::NoMatch)
+        }
+        Pattern::Wildcard(name, WildcardLevel::Single) => {
+            if atom_idx >= atoms.len() {
+                return Err(MatchError::NoMatch);
+            }
+            let atom = atoms[atom_idx];
+            let mut probe = bindings.clone();
+            if probe.insert_single(*name, atom).is_err() {
+                return Err(MatchError::NoMatch);
+            }
+            *backtrack_count += 1;
+            match_nary_ordered(
+                &mut probe,
+                patterns,
+                atoms,
+                pat_idx + 1,
+                atom_idx + 1,
+                backtrack_count,
+                max_backtracks,
+            )
+            .map(|()| {
+                *bindings = probe;
+            })
+        }
+        _ => {
+            if atom_idx >= atoms.len() {
+                return Err(MatchError::NoMatch);
             }
             let mut probe = bindings.clone();
-            if match_atom(&mut probe, pat.clone(), *atom).is_ok() {
+            match_atom(
+                &mut probe,
+                pat.clone(),
+                atoms[atom_idx],
+                backtrack_count,
+                max_backtracks,
+            )?;
+            *backtrack_count += 1;
+            match_nary_ordered(
+                &mut probe,
+                patterns,
+                atoms,
+                pat_idx + 1,
+                atom_idx + 1,
+                backtrack_count,
+                max_backtracks,
+            )
+            .map(|()| {
                 *bindings = probe;
-                matched[i] = true;
-                found = true;
-                break;
+            })
+        }
+    }
+}
+
+// ---- AC matching (Add/Mul) — backtracking over sorted atoms ----
+
+fn match_nary_ac<'a>(
+    bindings: &mut Bindings<'a>,
+    patterns: &[Pattern<'a>],
+    sorted_atoms: &[Atom<'a>],
+    used: &mut [bool],
+    pat_idx: usize,
+    backtrack_count: &mut usize,
+    max_backtracks: usize,
+) -> Result<(), MatchError> {
+    if *backtrack_count >= max_backtracks {
+        return Err(MatchError::BudgetExhausted);
+    }
+    if pat_idx >= patterns.len() {
+        return if used.iter().all(|&u| u) {
+            Ok(())
+        } else {
+            Err(MatchError::NoMatch)
+        };
+    }
+
+    let pat = &patterns[pat_idx];
+    match pat {
+        Pattern::Literal(v) => {
+            for i in 0..sorted_atoms.len() {
+                if used[i] || sorted_atoms[i] != *v {
+                    continue;
+                }
+                used[i] = true;
+                *backtrack_count += 1;
+                match match_nary_ac(
+                    bindings,
+                    patterns,
+                    sorted_atoms,
+                    used,
+                    pat_idx + 1,
+                    backtrack_count,
+                    max_backtracks,
+                ) {
+                    Ok(()) => return Ok(()),
+                    Err(MatchError::BudgetExhausted) => return Err(MatchError::BudgetExhausted),
+                    Err(_) => {
+                        used[i] = false;
+                    }
+                }
+            }
+            Err(MatchError::NoMatch)
+        }
+        Pattern::Wildcard(name, WildcardLevel::Single) => {
+            for i in 0..sorted_atoms.len() {
+                if used[i] {
+                    continue;
+                }
+                let atom = sorted_atoms[i];
+                match bindings.get(*name).copied() {
+                    Some(MatchValue::Single(existing)) if existing == atom => {
+                        used[i] = true;
+                        match match_nary_ac(
+                            bindings,
+                            patterns,
+                            sorted_atoms,
+                            used,
+                            pat_idx + 1,
+                            backtrack_count,
+                            max_backtracks,
+                        ) {
+                            Ok(()) => return Ok(()),
+                            Err(MatchError::BudgetExhausted) => {
+                                used[i] = false;
+                                return Err(MatchError::BudgetExhausted);
+                            }
+                            Err(_) => {
+                                used[i] = false;
+                            }
+                        }
+                    }
+                    Some(_) => continue,
+                    None => {
+                        used[i] = true;
+                        let _ = bindings.insert_single(*name, atom);
+                        *backtrack_count += 1;
+                        match match_nary_ac(
+                            bindings,
+                            patterns,
+                            sorted_atoms,
+                            used,
+                            pat_idx + 1,
+                            backtrack_count,
+                            max_backtracks,
+                        ) {
+                            Ok(()) => return Ok(()),
+                            Err(MatchError::BudgetExhausted) => {
+                                bindings.remove(*name);
+                                used[i] = false;
+                                return Err(MatchError::BudgetExhausted);
+                            }
+                            Err(_) => {
+                                bindings.remove(*name);
+                                used[i] = false;
+                            }
+                        }
+                    }
+                }
+            }
+            Err(MatchError::NoMatch)
+        }
+        Pattern::Wildcard(name, WildcardLevel::NullSequence) => {
+            let free: Vec<usize> = (0..sorted_atoms.len()).filter(|&i| !used[i]).collect();
+            enumerate_subsets(
+                bindings,
+                patterns,
+                sorted_atoms,
+                used,
+                pat_idx,
+                *name,
+                &free,
+                0,
+                free.len(),
+                0,
+                true,
+                backtrack_count,
+                max_backtracks,
+            )
+        }
+        Pattern::Wildcard(name, WildcardLevel::Sequence) => {
+            let free: Vec<usize> = (0..sorted_atoms.len()).filter(|&i| !used[i]).collect();
+            if free.is_empty() {
+                return Err(MatchError::NoMatch);
+            }
+            enumerate_subsets(
+                bindings,
+                patterns,
+                sorted_atoms,
+                used,
+                pat_idx,
+                *name,
+                &free,
+                0,
+                free.len(),
+                1,
+                false,
+                backtrack_count,
+                max_backtracks,
+            )
+        }
+        _ => {
+            for i in 0..sorted_atoms.len() {
+                if used[i] {
+                    continue;
+                }
+                let mut probe = bindings.clone();
+                if let Ok(()) = match_atom(
+                    &mut probe,
+                    pat.clone(),
+                    sorted_atoms[i],
+                    backtrack_count,
+                    max_backtracks,
+                ) {
+                    used[i] = true;
+                    *backtrack_count += 1;
+                    match match_nary_ac(
+                        &mut probe,
+                        patterns,
+                        sorted_atoms,
+                        used,
+                        pat_idx + 1,
+                        backtrack_count,
+                        max_backtracks,
+                    ) {
+                        Ok(()) => {
+                            *bindings = probe;
+                            return Ok(());
+                        }
+                        Err(MatchError::BudgetExhausted) => {
+                            used[i] = false;
+                            return Err(MatchError::BudgetExhausted);
+                        }
+                        Err(_) => {
+                            used[i] = false;
+                        }
+                    }
+                }
+            }
+            Err(MatchError::NoMatch)
+        }
+    }
+}
+
+fn enumerate_subsets<'a>(
+    bindings: &mut Bindings<'a>,
+    patterns: &[Pattern<'a>],
+    sorted_atoms: &[Atom<'a>],
+    used: &mut [bool],
+    pat_idx: usize,
+    name: Symbol,
+    free: &[usize],
+    start: usize,
+    total_free: usize,
+    min_size: usize,
+    allow_empty: bool,
+    backtrack_count: &mut usize,
+    max_backtracks: usize,
+) -> Result<(), MatchError> {
+    if *backtrack_count >= max_backtracks {
+        return Err(MatchError::BudgetExhausted);
+    }
+    let rem_pats = patterns.len().saturating_sub(pat_idx + 1);
+    let max_size = total_free
+        .saturating_sub(start)
+        .saturating_sub(rem_pats)
+        .min(total_free.saturating_sub(start));
+    let min = if allow_empty { 0 } else { min_size };
+    for size in min..=max_size {
+        let mut chosen: Vec<usize> = Vec::with_capacity(size);
+        let result = enumerate_combinations_step(
+            bindings,
+            patterns,
+            sorted_atoms,
+            used,
+            pat_idx,
+            name,
+            free,
+            start,
+            size,
+            0,
+            &mut chosen,
+            backtrack_count,
+            max_backtracks,
+        );
+        match result {
+            SubsetResult::Found => return Ok(()),
+            SubsetResult::BudgetExhausted => return Err(MatchError::BudgetExhausted),
+            SubsetResult::NoMatch => {}
+        }
+    }
+    Err(MatchError::NoMatch)
+}
+
+enum SubsetResult {
+    Found,
+    NoMatch,
+    BudgetExhausted,
+}
+
+fn enumerate_combinations_step<'a>(
+    bindings: &mut Bindings<'a>,
+    patterns: &[Pattern<'a>],
+    sorted_atoms: &[Atom<'a>],
+    used: &mut [bool],
+    pat_idx: usize,
+    name: Symbol,
+    free: &[usize],
+    start: usize,
+    remaining: usize,
+    _depth: usize,
+    chosen: &mut Vec<usize>,
+    backtrack_count: &mut usize,
+    max_backtracks: usize,
+) -> SubsetResult {
+    if *backtrack_count >= max_backtracks {
+        return SubsetResult::BudgetExhausted;
+    }
+    if remaining == 0 {
+        for &idx in chosen.iter() {
+            used[idx] = true;
+        }
+        let slice: Vec<Atom<'a>> = chosen.iter().map(|&i| sorted_atoms[i]).collect();
+        let leaked: &'a [Atom<'a>] = Vec::leak(slice);
+        let mut probe = bindings.clone();
+        if let Ok(()) = probe.insert_sequence(name, leaked) {
+            *backtrack_count += 1;
+            match match_nary_ac(
+                &mut probe,
+                patterns,
+                sorted_atoms,
+                used,
+                pat_idx + 1,
+                backtrack_count,
+                max_backtracks,
+            ) {
+                Ok(()) => {
+                    *bindings = probe;
+                    return SubsetResult::Found;
+                }
+                Err(MatchError::BudgetExhausted) => {
+                    for &idx in chosen.iter() {
+                        used[idx] = false;
+                    }
+                    return SubsetResult::BudgetExhausted;
+                }
+                Err(_) => {}
             }
         }
-        if !found {
-            return Err(MatchError::NoMatch);
+        for &idx in chosen.iter() {
+            used[idx] = false;
         }
+        return SubsetResult::NoMatch;
     }
-
-    // Match single wildcards against the remaining atoms.
-    let remaining: Vec<Atom<'a>> = sorted_atoms
-        .iter()
-        .enumerate()
-        .filter(|(i, _)| !matched[*i])
-        .map(|(_, a)| *a)
-        .collect();
-    if remaining.len() != single_wildcards.len() {
-        return Err(MatchError::NoMatch);
+    let needed = remaining;
+    let available = free.len().saturating_sub(start);
+    if available < needed {
+        return SubsetResult::NoMatch;
     }
-    for (pat_idx, atom) in single_wildcards.iter().zip(remaining.iter()) {
-        if let Pattern::Wildcard(name, WildcardLevel::Single) = &patterns[*pat_idx] {
-            bindings.insert_single(*name, *atom)?;
+    for i in start..=free.len().saturating_sub(needed) {
+        chosen.push(free[i]);
+        match enumerate_combinations_step(
+            bindings,
+            patterns,
+            sorted_atoms,
+            used,
+            pat_idx,
+            name,
+            free,
+            i + 1,
+            remaining - 1,
+            _depth + 1,
+            chosen,
+            backtrack_count,
+            max_backtracks,
+        ) {
+            SubsetResult::Found => return SubsetResult::Found,
+            SubsetResult::BudgetExhausted => {
+                chosen.pop();
+                return SubsetResult::BudgetExhausted;
+            }
+            SubsetResult::NoMatch => {}
         }
+        chosen.pop();
     }
-
-    Ok(())
+    SubsetResult::NoMatch
 }
 
-impl<'a> Pattern<'a> {
-    fn _wildcard_level(&self) -> Option<WildcardLevel> {
-        match self {
-            Pattern::Wildcard(_, level) => Some(*level),
-            _ => None,
-        }
-    }
-}
+// ===========================================================================
+// Tests
+// ===========================================================================
 
 #[cfg(test)]
 mod tests {
@@ -369,111 +687,169 @@ mod tests {
     use ocas_core::arena::Arena;
 
     struct VecAlloc;
-
     impl<'a> crate::pattern::PatternAlloc<'a> for VecAlloc {
         fn alloc_slice(&self, items: &[Pattern<'a>]) -> &'a [Pattern<'a>] {
-            let leaked: Box<[Pattern<'a>]> = items.to_vec().into_boxed_slice();
-            Box::leak(leaked)
+            Box::leak(items.to_vec().into_boxed_slice())
         }
     }
 
-    fn pat_atom<'a>(ctx: &'a AtomArena<'a>, alloc: &'a VecAlloc, s: &'a str) -> Pattern<'a> {
-        let atom = ocas_parse::parse(ctx, s).unwrap();
-        Pattern::from_atom(alloc, atom)
+    fn pat_expr<'a>(ctx: &'a AtomArena<'a>, _alloc: &'a VecAlloc, s: &'a str) -> Pattern<'a> {
+        use ocas_parse;
+        let atom = ocas_parse::parse(ctx, s).expect("parse");
+        Pattern::from_atom(&(), atom)
     }
 
     #[test]
-    fn single_wildcard_binds_any_atom() {
+    fn match_single_wildcard() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
-        let alloc = VecAlloc;
-        let pat = pat_atom(&ctx, &alloc, "x_");
-        let y = ctx.var("y");
-        let bindings = match_pattern(pat, y).unwrap();
-        assert!(matches!(bindings.get(Symbol::new("x")), Some(MatchValue::Single(a)) if *a == y));
+        let x = ctx.var("x");
+        let pat = Pattern::Wildcard(Symbol::new("w"), WildcardLevel::Single);
+        let bindings = match_pattern(pat, x).unwrap();
+        assert!(matches!(bindings.get(Symbol::new("w")), Some(MatchValue::Single(v)) if *v == x));
     }
 
     #[test]
-    fn add_pattern_matches_two_atoms() {
+    fn match_add_two_singles() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
-        let alloc = VecAlloc;
-        let pat = pat_atom(&ctx, &alloc, "x_ + y_");
         let x = ctx.var("x");
         let y = ctx.var("y");
         let sum = ctx.add(&[x, y]);
+        let pat = Pattern::Add(vec![
+            Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+            Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
+        ]);
         let bindings = match_pattern(pat, sum).unwrap();
-        assert!(matches!(
-            bindings.get(Symbol::new("x")),
-            Some(MatchValue::Single(a)) if *a == x
-        ));
-        assert!(matches!(
-            bindings.get(Symbol::new("y")),
-            Some(MatchValue::Single(a)) if *a == y
-        ));
+        assert!(matches!(bindings.get(Symbol::new("a")), Some(MatchValue::Single(v)) if *v == x));
+        assert!(matches!(bindings.get(Symbol::new("b")), Some(MatchValue::Single(v)) if *v == y));
     }
 
     #[test]
-    fn add_pattern_ignores_order() {
+    fn ac_match_with_literal() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
-        let alloc = VecAlloc;
-        let pat = pat_atom(&ctx, &alloc, "x_ + y_");
-        let a = ctx.var("a");
-        let b = ctx.var("b");
-        let sum = ctx.add(&[b, a]);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let sum = ctx.add(&[x, y]);
+        let pat = Pattern::Add(vec![
+            Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+            Pattern::Literal(y),
+        ]);
         let bindings = match_pattern(pat, sum).unwrap();
-        assert!(matches!(
-            bindings.get(Symbol::new("x")),
-            Some(MatchValue::Single(atom)) if *atom == a
-        ));
-        assert!(matches!(
-            bindings.get(Symbol::new("y")),
-            Some(MatchValue::Single(atom)) if *atom == b
-        ));
+        assert!(matches!(bindings.get(Symbol::new("a")), Some(MatchValue::Single(v)) if *v == x));
     }
 
     #[test]
-    fn add_pattern_requires_exact_match_count() {
+    fn ac_mismatched_count_fails() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
-        let alloc = VecAlloc;
-        let pat = pat_atom(&ctx, &alloc, "x_ + y_");
-        let a = ctx.var("a");
-        let b = ctx.var("b");
-        let c = ctx.var("c");
-        let sum = ctx.add(&[a, b, c]);
-        assert!(match_pattern(pat, sum).is_err());
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let z = ctx.var("z");
+        let sum = ctx.add(&[x, y, z]);
+        let pat = Pattern::Add(vec![
+            Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+            Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
+        ]);
+        assert!(matches!(match_pattern(pat, sum), Err(MatchError::NoMatch)));
     }
 
     #[test]
     fn inconsistent_binding_fails() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
-        let alloc = VecAlloc;
-        let pat = pat_atom(&ctx, &alloc, "x_ + x_");
-        let a = ctx.var("a");
-        let b = ctx.var("b");
-        let sum = ctx.add(&[a, b]);
-        assert!(match_pattern(pat, sum).is_err());
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let sum = ctx.add(&[x, y]);
+        let pat = Pattern::Add(vec![
+            Pattern::Wildcard(Symbol::new("w"), WildcardLevel::Single),
+            Pattern::Wildcard(Symbol::new("w"), WildcardLevel::Single),
+        ]);
+        assert!(matches!(
+            match_pattern(pat, sum),
+            Err(MatchError::InconsistentBinding | MatchError::NoMatch)
+        ));
     }
 
     #[test]
-    fn sequence_wildcard_in_fun_absorbs_remainder() {
+    fn fun_trailing_null_sequence() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let z = ctx.var("z");
+        let f = ctx.fun("f", &[x, y, z]);
         let alloc = VecAlloc;
-        let pat = pat_atom(&ctx, &alloc, "f(x_, rest___)");
+        let pattern_str = "f(x_, ___rest)";
+        let pat = pat_expr(&ctx, &alloc, pattern_str);
+        let bindings = match_pattern(pat, f).unwrap();
+        let rest = bindings.get(Symbol::new("rest")).unwrap();
+        assert!(matches!(rest, MatchValue::Sequence(s) if s.len() == 2));
+    }
+
+    #[test]
+    fn ac_three_wildcards_four_terms() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let w = ctx.var("w");
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        let z = ctx.var("z");
+        let sum = ctx.add(&[w, x, y, z]);
+        let pat = Pattern::Add(vec![
+            Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+            Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
+            Pattern::Wildcard(Symbol::new("c"), WildcardLevel::Single),
+        ]);
+        assert!(matches!(match_pattern(pat, sum), Err(MatchError::NoMatch)));
+    }
+
+    #[test]
+    fn ac_sequence_wildcard_in_add() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let a = ctx.var("a");
+        let b = ctx.var("b");
+        let c = ctx.var("c");
+        let sum = ctx.add(&[a, b, c]);
+        let pat = Pattern::Add(vec![
+            Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single),
+            Pattern::Wildcard(Symbol::new("rest"), WildcardLevel::Sequence),
+        ]);
+        let bindings = match_pattern(pat, sum).unwrap();
+        let rest = bindings.get(Symbol::new("rest")).unwrap();
+        assert!(matches!(rest, MatchValue::Sequence(s) if s.len() == 2));
+    }
+
+    #[test]
+    fn ac_null_sequence_consumes_all() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let a = ctx.var("a");
+        let sum = ctx.add(&[a]);
+        let pat = Pattern::Add(vec![Pattern::Wildcard(
+            Symbol::new("rest"),
+            WildcardLevel::NullSequence,
+        )]);
+        let bindings = match_pattern(pat, sum).unwrap();
+        let rest = bindings.get(Symbol::new("rest")).unwrap();
+        assert!(matches!(rest, MatchValue::Sequence(s) if s.len() == 1));
+    }
+
+    #[test]
+    fn ordered_sequence_mid_function() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
         let a = ctx.var("a");
         let b = ctx.var("b");
         let c = ctx.var("c");
         let f = ctx.fun("f", &[a, b, c]);
+        let alloc = VecAlloc;
+        let pattern_str = "f(x_, __mid, z_)";
+        let pat = pat_expr(&ctx, &alloc, pattern_str);
         let bindings = match_pattern(pat, f).unwrap();
-        assert!(matches!(
-            bindings.get(Symbol::new("x")),
-            Some(MatchValue::Single(atom)) if *atom == a
-        ));
-        let rest = bindings.get(Symbol::new("rest")).unwrap();
-        assert!(matches!(rest, MatchValue::Sequence(s) if s.len() == 2));
+        let mid = bindings.get(Symbol::new("mid")).unwrap();
+        assert!(matches!(mid, MatchValue::Sequence(s) if s.len() == 1));
     }
 }

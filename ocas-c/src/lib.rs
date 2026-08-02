@@ -94,9 +94,10 @@ pub use polynomial::{
     ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string,
 };
 pub use tensor::{
-    OcasTensor, OcasTensorContraction, ocas_tensor_contract, ocas_tensor_contraction_free,
-    ocas_tensor_create, ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank,
-    ocas_tensor_symmetrise_sign, ocas_tensor_symmetry, ocas_tensor_to_string,
+    OcasTensor, OcasTensorContraction, ocas_tensor_canonicalize, ocas_tensor_contract,
+    ocas_tensor_contraction_free, ocas_tensor_create, ocas_tensor_free, ocas_tensor_name,
+    ocas_tensor_rank, ocas_tensor_refresh_dummies, ocas_tensor_symmetrise_sign,
+    ocas_tensor_symmetry, ocas_tensor_to_string, ocas_young_project,
 };
 
 /// Return the oCAS version string.

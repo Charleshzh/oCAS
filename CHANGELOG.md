@@ -15,6 +15,84 @@ _No changes yet._
 
 ---
 
+## [0.22.0] - 2026-08-02
+
+### Added / 新增
+
+- **图同构正则标号引擎**：`ocas_atom::tensor::graph` 实现 McKay 细化-个体化
+  搜索（1-WL 邻居签名细化 + 路径不变量剪枝 + 自同构轨道剪枝），为张量规范
+  化提供独立于指标命名的唯一规范形 / **Graph canonical labelling**:
+  `tensor::graph` implements McKay refinement-individualisation search
+  (1-WL neighbour-signature refinement, path-invariant pruning, automorphism-
+  orbit pruning), providing label-independent unique canonical forms for
+  tensor canonicalisation.
+
+- **张量表达式规范化**：`ocas_atom::tensor::canon` 将张量乘积编码为图、通过
+  图同构引擎求规范标号并重建为含规范哑指标名的表达式；支持对称/反对称槽位
+  子集的多项序重排 / **Tensor expression canonicalisation**:
+  `tensor::canon` encodes tensor products into graphs, canonicalises via the
+  graph-isomorphism engine, and reconstructs expressions with canonical dummy
+  names; supports slot-subset symmetric/antisymmetric reordering.
+
+- **张量对称性规格**：`ocas_atom::tensor::spec` 提供 `SymmetrySpec`
+  （symmetric/antisymmetric 子集、cyclic）与 `TensorRegistry`
+  （张量名→对称性 + 指标组）注册机制 / **Tensor symmetry specs**:
+  `tensor::spec` provides `SymmetrySpec` (symmetric/antisymmetric subsets,
+  cyclic) and `TensorRegistry` (name→symmetry + index groups).
+
+- **哑指标管理**：`ocas_atom::tensor::dummy::refresh_dummies` 将张量表达式
+  中的哑指标按维度组重命名为 `d0`, `d1`, … / **Dummy index management**:
+  `tensor::dummy::refresh_dummies` renames dummy indices per dimension group
+  to `d0`, `d1`, ….
+
+- **Young 投影子**：`ocas_atom::tensor::young::young_project` 按 Young 盘
+  对张量槽位进行显式置换和展开（行对称化 + 列反对称化）/ **Young projector**:
+  `tensor::young::young_project` performs explicit permutation-sum expansion
+  of tensor slots according to a Young tableau (row symmetrisation + column
+  antisymmetrisation).
+
+- **回溯模式匹配**：`ocas_rewrite::matcher` 的 AC 匹配器从贪心策略升级为全
+  回溯搜索，支持 Add/Mul/Fun 参数列表内任意位置的序列通配符（`x__`, `x___`），
+  并增加回溯预算上限防病态组合爆炸 / **Backtracking matcher**:
+  `ocas_rewrite::matcher` upgraded from greedy to full backtracking search for
+  AC contexts; sequence wildcards (`x__`, `x___`) now supported at any position
+  in Add/Mul/Fun argument lists; backtrack budget prevents pathological blow-up.
+
+- **多模式替换**：`ocas_rewrite::replace` 提供 `replace_once`、
+  `replace_all`、`replace_all_multiple`，支持条件守卫和遍历方向配置 /
+  **Multi-pattern replacement**: `ocas_rewrite::replace` provides
+  `replace_once`, `replace_all`, `replace_all_multiple` with condition guards
+  and traversal direction settings.
+
+- **Transformer::Partition**：`ocas_rewrite::transformer::partition_expr`
+  实现多重集分拆组合器（exact / collect_in_last / repeat 三种模式），
+  配套 `ocas_rewrite::combinatorics::partitions` 分拆枚举 /
+  **Transformer::Partition**: `transformer::partition_expr` implements the
+  multiset partition combinator with exact / collect_in_last / repeat modes,
+  backed by `combinatorics::partitions`.
+
+- **Python 绑定**：`ocas.canonicalize_tensors`、`ocas.young_project`、
+  `ocas.refresh_dummies` 三个新函数 / **Python bindings**: three new
+  functions `canonicalize_tensors`, `young_project`, `refresh_dummies`.
+
+- **C 绑定**：`ocas_tensor_canonicalize`、`ocas_young_project`、
+  `ocas_tensor_refresh_dummies` 三个新函数 + `ocas.hpp` RAII 封装 /
+  **C bindings**: three new functions `ocas_tensor_canonicalize`,
+  `ocas_young_project`, `ocas_tensor_refresh_dummies` + `ocas.hpp` RAII
+  wrappers.
+
+### Changed / 变更
+
+- `ocas_atom::tensor::tensor.rs` 拆分为目录模块 `tensor/`（`mod`,
+  `graph`, `spec`, `canon`, `dummy`, `young`）/ tensor.rs split into
+  directory module `tensor/`.
+- `ocas_rewrite::transformer` 新增 `partition_expr` 函数 /
+  `partition_expr` function added to `transformer`.
+- `ocas_rewrite::egraph` 模块从死代码状态恢复接线（`#[cfg(feature="egg")]`
+  ）/ egraph module wired into public API (was dead code).
+
+---
+
 ## [0.21.0] - 2026-07-30
 
 ### Added / 新增

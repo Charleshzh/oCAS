@@ -21,10 +21,11 @@ use ocas_c::{
     ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor,
     ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create,
     ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string,
-    ocas_string_free, ocas_tensor_contract, ocas_tensor_contraction_free, ocas_tensor_create,
-    ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank, ocas_tensor_symmetrise_sign,
-    ocas_tensor_symmetry, ocas_tensor_to_string, ocas_vegas_create, ocas_vegas_free,
-    ocas_vegas_integrate, ocas_vegas_iterations, ocas_vegas_result, ocas_version,
+    ocas_string_free, ocas_tensor_canonicalize, ocas_tensor_contract, ocas_tensor_contraction_free,
+    ocas_tensor_create, ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank,
+    ocas_tensor_refresh_dummies, ocas_tensor_symmetrise_sign, ocas_tensor_symmetry,
+    ocas_tensor_to_string, ocas_vegas_create, ocas_vegas_free, ocas_vegas_integrate,
+    ocas_vegas_iterations, ocas_vegas_result, ocas_version, ocas_young_project,
 };
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -870,6 +871,90 @@ fn tensor_contract_null_handles_return_error() {
 #[test]
 fn tensor_contraction_free_on_null_is_safe() {
     ocas_tensor_contraction_free(ptr::null_mut());
+}
+
+// ------------------------------------------------------------------
+//  Tensor canonicalisation / Young / dummy C API tests (0.22.0)
+// ------------------------------------------------------------------
+
+#[test]
+fn tensor_canonicalize_basic() {
+    let mut err: std::ffi::c_int = 0;
+    let result = ocas_tensor_canonicalize(
+        cstr("T(i,j)").as_ptr(),
+        cstr("T:none").as_ptr(),
+        ptr::null(),
+        &mut err,
+    );
+    assert_eq!(err, OCAS_OK);
+    assert!(!result.is_null());
+    let s = unsafe { CStr::from_ptr(result) }.to_str().unwrap();
+    assert!(s.contains("T"));
+    unsafe { ocas_string_free(result as *mut std::ffi::c_char) };
+}
+
+#[test]
+fn tensor_canonicalize_with_contraction() {
+    let mut err: std::ffi::c_int = 0;
+    // T(i,j) * U(j,k) — j is dummy.
+    let result = ocas_tensor_canonicalize(
+        cstr("T(i,j)*U(j,k)").as_ptr(),
+        cstr("T:none,U:none").as_ptr(),
+        ptr::null(),
+        &mut err,
+    );
+    assert_eq!(err, OCAS_OK);
+    assert!(!result.is_null());
+    let s = unsafe { CStr::from_ptr(result) }.to_str().unwrap();
+    assert!(s.contains("d0"), "expected dummy d0, got: {s}");
+    unsafe { ocas_string_free(result as *mut std::ffi::c_char) };
+}
+
+#[test]
+fn tensor_canonicalize_null_returns_error() {
+    let mut err: std::ffi::c_int = 0;
+    let result =
+        ocas_tensor_canonicalize(ptr::null(), cstr("T:none").as_ptr(), ptr::null(), &mut err);
+    assert_eq!(result, ptr::null_mut());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn young_project_antisymmetric() {
+    let mut err: std::ffi::c_int = 0;
+    let result = ocas_young_project(cstr("f(a,b)").as_ptr(), cstr("1,1").as_ptr(), &mut err);
+    assert_eq!(err, OCAS_OK);
+    assert!(!result.is_null());
+    let s = unsafe { CStr::from_ptr(result) }.to_str().unwrap();
+    // f(a,b) - f(b,a)
+    assert!(s.contains('-'), "expected subtraction: {s}");
+    unsafe { ocas_string_free(result as *mut std::ffi::c_char) };
+}
+
+#[test]
+fn young_project_null_returns_error() {
+    let mut err: std::ffi::c_int = 0;
+    let result = ocas_young_project(ptr::null(), ptr::null(), &mut err);
+    assert_eq!(result, ptr::null_mut());
+    assert_ne!(err, OCAS_OK);
+    ocas_error_clear();
+}
+
+#[test]
+fn tensor_refresh_dummies_basic() {
+    let mut err: std::ffi::c_int = 0;
+    // T(i,j)*U(j,i) — j is dummy.
+    let result = ocas_tensor_refresh_dummies(
+        cstr("T(i,j)*U(j,i)").as_ptr(),
+        cstr("T:none,U:none").as_ptr(),
+        &mut err,
+    );
+    assert_eq!(err, OCAS_OK);
+    assert!(!result.is_null());
+    let s = unsafe { CStr::from_ptr(result) }.to_str().unwrap();
+    assert!(s.contains("d0"), "expected dummy d0, got: {s}");
+    unsafe { ocas_string_free(result as *mut std::ffi::c_char) };
 }
 
 // ------------------------------------------------------------------

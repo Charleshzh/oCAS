@@ -793,12 +793,12 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 | 条目 | 参考 | oCAS 落地 | 状态 |
 |---|---|---|---|
-| 基于图同构的张量规范化（指标为顶点、收缩为边、对称性为自同构） | Symbolica `graphica`（基于 Bliss）；移植思想，不拷贝代码 | `ocas-atom::tensor::canon` | [ ] |
-| 哑指标管理：自动配对、引入/消除、迹检测 | Cadabra；xAct | `tensor::dummy` | [ ] |
-| 对称性感知规范型：Young 盘（全对称/反对称），混合对称的广义 Young 投影子 | Waldmann；Fulton & Harris | `tensor::young` | [ ] |
-| `Transformer::Partition`：模式替换中的参数序列分拆 | Symbolica `examples/partition.rs` | `ocas-rewrite::transformer::partition` | [ ] |
-| 带回溯与条件守卫的多模式替换 | Symbolica `replace_all`（带限制） | `ocas-rewrite::replace::multi` | [ ] |
-| Python/C 绑定：张量规范化 API、带变换器的 `replace_all` | Symbolica API 对齐 | `ocas-py::tensor`（扩展）、`ocas-c::tensor`（扩展） | [ ] |
+| 基于图同构的张量规范化（指标为顶点、收缩为边、对称性为自同构） | Symbolica `graphica`（基于 Bliss）；移植思想，不拷贝代码 | `ocas-atom::tensor::canon` | [x] |
+| 哑指标管理：自动配对、引入/消除、迹检测 | Cadabra；xAct | `tensor::dummy` | [x] |
+| 对称性感知规范型：Young 盘（全对称/反对称），混合对称的广义 Young 投影子 | Waldmann；Fulton & Harris | `tensor::young` | [x] |
+| `Transformer::Partition`：模式替换中的参数序列分拆 | Symbolica `examples/partition.rs` | `ocas-rewrite::transformer::partition` | [x] |
+| 带回溯与条件守卫的多模式替换 | Symbolica `replace_all`（带限制） | `ocas-rewrite::replace::multi` | [x] |
+| Python/C 绑定：张量规范化 API、带变换器的 `replace_all` | Symbolica API 对齐 | `ocas-py::tensor`（扩展）、`ocas-c::tensor`（扩展） | [x] |
 
 **验收**
 

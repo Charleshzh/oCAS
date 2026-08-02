@@ -782,6 +782,50 @@ int ocas_tensor_contract(const struct ocas_OcasTensor *a,
 void ocas_tensor_contraction_free(struct ocas_OcasTensorContraction *c);
 
 /**
+ * Canonicalise a tensor expression via graph isomorphism (0.22.0).
+ *
+ * @param expr_str       Tensor product string, e.g. `"T(i,j)*U(j,k)"`.
+ * @param specs_str      Comma-separated `name:sym` pairs, e.g. `"T:none,U:none"`.
+ * @param groups_str     Optional comma-separated `label:group` pairs, or NULL.
+ * @param err            Error code output (0 = success).
+ * @return               Newly-allocated canonical-form string; free with
+ *                       [`ocas_string_free`]. NULL on error.
+ */
+char *ocas_tensor_canonicalize(const char *expr_str,
+                               const char *specs_str,
+                               const char *groups_str,
+                               int *err);
+
+/**
+ * Apply a Young projector to a tensor expression (0.22.0).
+ *
+ * @param expr_str       Tensor expression string, e.g. `"f(a,b)"`.
+ * @param tableau_str    Comma-separated row lengths, e.g. `"2,1"` for □□/□.
+ * @param err            Error code output (0 = success).
+ * @return               Newly-allocated expanded expression string; free with
+ *                       [`ocas_string_free`]. NULL on error.
+ */
+char *ocas_young_project(const char *expr_str,
+                         const char *tableau_str,
+                         int *err);
+
+/**
+ * Refresh dummy indices in a tensor expression (0.22.0).
+ *
+ * Dummy indices (labels appearing exactly twice) are renamed to `d0`, `d1`, …
+ * to avoid naming conflicts.
+ *
+ * @param expr_str       Tensor expression string, e.g. `"T(i,j)*U(j,i)"`.
+ * @param specs_str      Comma-separated `name:sym` pairs, e.g. `"T:none,U:none"`.
+ * @param err            Error code output (0 = success).
+ * @return               Newly-allocated expression string with refreshed
+ *                       dummies; free with [`ocas_string_free`]. NULL on error.
+ */
+char *ocas_tensor_refresh_dummies(const char *expr_str,
+                                  const char *specs_str,
+                                  int *err);
+
+/**
  * Opaque handle for a dual-number shape (derivative layout).
  */
 struct ocas_OcasDualShape {

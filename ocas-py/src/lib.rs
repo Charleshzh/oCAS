@@ -47,7 +47,10 @@ pub use polynomial::{PyPolynomial, PyPolynomialFactor};
 pub use solve::{
     PyDiophantineSolution, py_solve_diophantine, py_solve_linear_integer, py_solve_linear_rational,
 };
-pub use tensor::{PyTensor, contract_tensors, tensor_symmetrise_sign};
+pub use tensor::{
+    PyTensor, canonicalize_tensors, contract_tensors, refresh_dummies, tensor_symmetrise_sign,
+    young_project,
+};
 
 /// The oCAS Python module entry point.
 ///
@@ -82,6 +85,9 @@ fn ocas(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(integrate_1d, m)?)?;
     m.add_function(wrap_pyfunction!(contract_tensors, m)?)?;
     m.add_function(wrap_pyfunction!(tensor_symmetrise_sign, m)?)?;
+    m.add_function(wrap_pyfunction!(canonicalize_tensors, m)?)?;
+    m.add_function(wrap_pyfunction!(young_project, m)?)?;
+    m.add_function(wrap_pyfunction!(refresh_dummies, m)?)?;
     m.add_function(wrap_pyfunction!(py_classify_ode, m)?)?;
     m.add_function(wrap_pyfunction!(py_dsolve, m)?)?;
     m.add_function(wrap_pyfunction!(py_dsolve_ivp, m)?)?;
