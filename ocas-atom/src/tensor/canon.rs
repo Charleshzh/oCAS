@@ -42,6 +42,11 @@ pub fn canonicalize_tensors<'a>(
     expr: Atom<'a>,
     registry: &TensorRegistry,
 ) -> Result<CanonicalTensor<'a>, TensorCanonError> {
+    eprintln!(
+        "[canon-top] expr={} node={:?}",
+        expr,
+        std::mem::discriminant(&expr.node())
+    );
     match expr.node() {
         AtomNode::Add(terms) => {
             let mut canon_terms: Vec<Atom<'a>> = Vec::new();
@@ -90,6 +95,11 @@ fn canonicalize_single_term<'a>(
                 && spec.antisymmetric_subsets.is_empty()
                 && spec.symmetric_subsets[0].len() == args.len();
             if all_symmetric {
+                eprintln!(
+                    "[canon-fast] {} args={:?}",
+                    name.as_str(),
+                    args.iter().map(|a| a.to_string()).collect::<Vec<_>>()
+                );
                 let mut sorted: Vec<Atom<'a>> = args.to_vec();
                 sorted.sort_by_key(|a| match a.node() {
                     AtomNode::Var(s) => s.as_str().to_string(),
