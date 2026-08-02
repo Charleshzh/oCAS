@@ -92,10 +92,18 @@ fn canonicalize_single_term<'a>(
                 "[canon-2] spec found: sym_subsets={}",
                 spec.symmetric_subsets.len()
             );
-            let all_symmetric = !spec.symmetric_subsets.is_empty()
-                && spec.antisymmetric_subsets.is_empty()
-                && spec.symmetric_subsets[0].len() == args.len();
-            eprintln!("[canon-3] all_symmetric={}", all_symmetric);
+            let c1 = !spec.symmetric_subsets.is_empty();
+            let c2 = spec.antisymmetric_subsets.is_empty();
+            let c3 = spec.symmetric_subsets[0].len() == args.len();
+            eprintln!(
+                "[canon-3] c1={} c2={} c3={} args_len={} subset0_len={}",
+                c1,
+                c2,
+                c3,
+                args.len(),
+                spec.symmetric_subsets[0].len()
+            );
+            let all_symmetric = c1 && c2 && c3;
             if all_symmetric {
                 eprintln!("[canon-fast]");
                 let mut sorted: Vec<Atom<'a>> = args.to_vec();
