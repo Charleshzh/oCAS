@@ -4,19 +4,97 @@
 //! an [`AtomLanguage`] implementation of [`egg::Language`] and a helper to
 //! simplify expressions via equality saturation.
 
-use egg::{AstSize, Extractor, Id, RecExpr, Runner, define_language, rewrite as rw};
+use std::fmt;
+
+use egg::{AstSize, Extractor, FromOp, Id, Language, RecExpr, Runner, rewrite as rw};
 
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 
-define_language! {
-    /// An `egg` language node for oCAS atoms.
-    pub enum AtomLanguage {
-        "num" = Num(i64),
-        "var" = Var(Symbol),
-        "fun" = Fun([Id]),
-        "add" = Add([Id]),
-        "mul" = Mul([Id]),
-        "pow" = Pow([Id; 2]),
+/// An `egg` language node for oCAS atoms.
+///
+/// Manually implements [`Language`] because `egg`'s `define_language!` macro
+/// only accepts types implementing `LanguageChildren` (i.e. `Id`, `[Id; N]`,
+/// `Vec<Id>`, `Box<[Id]>`). Our leaf types `i64` and `Symbol` don't qualify.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum AtomLanguage {
+    Num(i64),
+    Var(Symbol),
+    Fun(Vec<Id>),
+    Add(Vec<Id>),
+    Mul(Vec<Id>),
+    Pow([Id; 2]),
+}
+
+impl Language for AtomLanguage {
+    type Discriminant = std::mem::Discriminant<Self>;
+
+    fn discriminant(&self) -> Self::Discriminant {
+        std::mem::discriminant(self)
+    }
+
+    fn matches(&self, other: &Self) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(other)
+            && match (self, other) {
+                (Self::Num(a), Self::Num(b)) => a == b,
+                (Self::Var(a), Self::Var(b)) => a == b,
+                _ => true,
+            }
+    }
+
+    fn children(&self) -> &[Id] {
+        match self {
+            Self::Num(_) | Self::Var(_) => &[],
+            Self::Fun(ids) | Self::Add(ids) | Self::Mul(ids) => ids,
+            Self::Pow(ids) => ids,
+        }
+    }
+
+    fn children_mut(&mut self) -> &mut [Id] {
+        match self {
+            Self::Num(_) | Self::Var(_) => &mut [],
+            Self::Fun(ids) | Self::Add(ids) | Self::Mul(ids) => ids,
+            Self::Pow(ids) => ids,
+        }
+    }
+}
+
+impl fmt::Display for AtomLanguage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Num(n) => write!(f, "{}", n),
+            Self::Var(s) => write!(f, "{}", s.as_str()),
+            Self::Fun(_) => write!(f, "fun"),
+            Self::Add(_) => write!(f, "add"),
+            Self::Mul(_) => write!(f, "mul"),
+            Self::Pow(_) => write!(f, "pow"),
+        }
+    }
+}
+
+impl FromOp for AtomLanguage {
+    type Error = egg::FromOpError;
+
+    fn from_op(op: &str, children: Vec<Id>) -> Result<Self, egg::FromOpError> {
+        match op {
+            "add" => Ok(Self::Add(children)),
+            "mul" => Ok(Self::Mul(children)),
+            "pow" => {
+                if children.len() == 2 {
+                    Ok(Self::Pow([children[0], children[1]]))
+                } else {
+                    Err(egg::FromOpError::new(op, children))
+                }
+            }
+            "fun" => Ok(Self::Fun(children)),
+            _ if children.is_empty() => {
+                if let Ok(n) = op.parse::<i64>() {
+                    Ok(Self::Num(n))
+                } else {
+                    Ok(Self::Var(Symbol::new(op)))
+                }
+            }
+            _ => Err(egg::FromOpError::new(op, children)),
+        }
     }
 }
 
@@ -25,10 +103,10 @@ impl AtomLanguage {
     ///
     /// `cache` maps already-visited `Atom` nodes to their `Id` so that shared
     /// sub-expressions are represented once in the `RecExpr`.
-    pub fn to_recexpr(
-        atom: Atom,
+    pub fn to_recexpr<'b>(
+        atom: Atom<'b>,
         egraph: &mut egg::EGraph<Self, ()>,
-        cache: &mut Vec<(Atom, Id)>,
+        cache: &mut Vec<(Atom<'b>, Id)>,
     ) -> Id {
         for (a, id) in cache.iter() {
             if *a == atom {
@@ -42,21 +120,21 @@ impl AtomLanguage {
             AtomNode::Fun(name, args) => {
                 let mut ids = vec![egraph.add(AtomLanguage::Var(*name))];
                 ids.extend(args.iter().map(|a| Self::to_recexpr(*a, egraph, cache)));
-                AtomLanguage::Fun(ids.into_boxed_slice())
+                AtomLanguage::Fun(ids)
             }
             AtomNode::Add(args) => {
                 let ids: Vec<Id> = args
                     .iter()
                     .map(|a| Self::to_recexpr(*a, egraph, cache))
                     .collect();
-                AtomLanguage::Add(ids.into_boxed_slice())
+                AtomLanguage::Add(ids)
             }
             AtomNode::Mul(args) => {
                 let ids: Vec<Id> = args
                     .iter()
                     .map(|a| Self::to_recexpr(*a, egraph, cache))
                     .collect();
-                AtomLanguage::Mul(ids.into_boxed_slice())
+                AtomLanguage::Mul(ids)
             }
             AtomNode::Pow(base, exp) => {
                 let base_id = Self::to_recexpr(*base, egraph, cache);
@@ -125,9 +203,9 @@ fn rules() -> Vec<egg::Rewrite<AtomLanguage, ()>> {
         rw!("mul-one"; "(mul 1 ?a)" => "?a"),
         rw!("pow-zero"; "(pow ?a 0)" => "1"),
         rw!("pow-one"; "(pow ?a 1)" => "?a"),
-        rw!("pythagorean"; "(add (pow (sin ?x) 2) (pow (cos ?x) 2))" => "1"),
+        // sin(x) and cos(x) are stored as Fun nodes: Fun([Var("sin"), x]).
+        rw!("pythagorean"; "(add (pow (fun sin ?x) 2) (pow (fun cos ?x) 2))" => "1"),
     ]
-    .unwrap()
 }
 
 /// Simplify an expression using equality saturation.
@@ -151,7 +229,9 @@ pub fn simplify_with_egraph<'a>(
 
     let extractor = Extractor::new(&runner.egraph, AstSize);
     let (_, best_expr) = extractor.find_best(root);
-    AtomLanguage::from_recexpr(&best_expr, runner.roots[0], ocas_arena)
+    // `find_best` returns a self-contained RecExpr whose root is the last element.
+    let best_root = Id::from(best_expr.as_ref().len() - 1);
+    AtomLanguage::from_recexpr(&best_expr, best_root, ocas_arena)
 }
 
 #[cfg(test)]
