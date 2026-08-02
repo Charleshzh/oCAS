@@ -229,4 +229,46 @@ mod tests {
         // Should be an alternating sum with 6 terms.
         assert!(s.contains('+'), "expected sum: {s}");
     }
+
+    #[test]
+    fn identity_preserves_single_slot() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let a = ctx.var("a");
+        let f = ctx.fun("f", &[a]);
+        // Single slot: tableau [1] — identity projector.
+        let result = young_project(&ctx, f, &YoungTableau::new(vec![1]));
+        // Result should just be f(a) itself (identity permutation).
+        assert_eq!(result.to_string(), "f(a)");
+    }
+
+    #[test]
+    fn non_tensor_expression_passthrough() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // Non-Fun expression (variable) → passthrough unchanged.
+        let x = ctx.var("x");
+        let result = young_project(&ctx, x, &YoungTableau::new(vec![2]));
+        assert_eq!(result.to_string(), "x");
+    }
+
+    #[test]
+    fn rank_mismatch_returns_original() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let a = ctx.var("a");
+        let b = ctx.var("b");
+        let f = ctx.fun("f", &[a, b]);
+        // Tableau requires 3 slots but tensor has rank 2 → return original.
+        let result = young_project(&ctx, f, &YoungTableau::new(vec![1, 1, 1]));
+        assert_eq!(result.to_string(), "f(a, b)");
+    }
+
+    #[test]
+    fn total_boxes_returns_rank() {
+        let tableau = YoungTableau::new(vec![2, 1]);
+        assert_eq!(tableau.total_boxes(), 3);
+        let tableau2 = YoungTableau::new(vec![1, 1, 1]);
+        assert_eq!(tableau2.total_boxes(), 3);
+    }
 }
