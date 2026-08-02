@@ -5,7 +5,10 @@
 //! symbolic `Atom` representation and polynomial representations.
 
 use ocas::prelude::*;
+use ocas_atom::Symbol;
 use ocas_atom::normalize::normalize;
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
 use ocas_core::arena::Arena;
 
 fn parse_normalized(input: &str) -> String {
@@ -60,4 +63,26 @@ fn dense_polynomial_from_rational_domain() {
     assert_eq!(c.coeff(1).unwrap().numer(), Integer::from(3));
     assert_eq!(c.coeff(2).unwrap().numer(), Integer::from(3));
     assert_eq!(c.coeff(3).unwrap().numer(), Integer::from(1));
+}
+
+#[test]
+fn canon_symmetric_tensor_via_parser() {
+    // Reproduce the Python binding path: parse from string, then canonicalise.
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let mut reg = TensorRegistry::new();
+    reg.register(Symbol::new("g"), SymmetrySpec::fully_symmetric(2));
+
+    let g_ab = parse(&ctx, "g(a,b)").unwrap();
+    let g_ba = parse(&ctx, "g(b,a)").unwrap();
+
+    let ct1 = canonicalize_tensors(&ctx, g_ab, &reg).unwrap();
+    let ct2 = canonicalize_tensors(&ctx, g_ba, &reg).unwrap();
+    eprintln!("ct1 = {}", ct1.canonical_form);
+    eprintln!("ct2 = {}", ct2.canonical_form);
+    assert_eq!(
+        ct1.canonical_form.to_string(),
+        ct2.canonical_form.to_string(),
+        "symmetric slots via parser should canonicalise consistently"
+    );
 }
