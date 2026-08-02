@@ -10,9 +10,9 @@
 //! rational coefficient arrays (numerator/denominator pairs).
 
 use ocas_domain::{Rational, RationalDomain};
+use ocas_poly::ideal;
 use ocas_poly::sparse::Lex;
 use ocas_poly::{Algorithm, GroebnerBasis, SparseMultivariatePolynomial, groebner_basis};
-use ocas_poly::ideal;
 
 use crate::error;
 
@@ -63,7 +63,9 @@ fn build_polys(
         }
 
         result.push(SparseMultivariatePolynomial::from_terms(
-            RationalDomain, n_vars, terms,
+            RationalDomain,
+            n_vars,
+            terms,
         ));
     }
     Ok(result)
@@ -97,22 +99,35 @@ pub unsafe extern "C" fn ocas_groebner_basis(
         3 => Algorithm::Buchberger,
         _ => {
             error::set(-1, "invalid algorithm: expected 0-3");
-            unsafe { *err = -1; }
+            unsafe {
+                *err = -1;
+            }
             return std::ptr::null_mut();
         }
     };
 
-    let gens = match build_polys(n_polys, n_vars_array, n_terms_array, exponents, coeff_nums, coeff_dens) {
+    let gens = match build_polys(
+        n_polys,
+        n_vars_array,
+        n_terms_array,
+        exponents,
+        coeff_nums,
+        coeff_dens,
+    ) {
         Ok(g) => g,
         Err(e) => {
             error::set(-1, e);
-            unsafe { *err = -1; }
+            unsafe {
+                *err = -1;
+            }
             return std::ptr::null_mut();
         }
     };
 
     let gb = groebner_basis(&gens, algo);
-    unsafe { *err = 0; }
+    unsafe {
+        *err = 0;
+    }
     Box::into_raw(Box::new(OcasGroebnerBasis { inner: gb }))
 }
 
@@ -133,7 +148,11 @@ pub unsafe extern "C" fn ocas_groebner_basis_free(gb: *mut OcasGroebnerBasis) {
 /// `gb` must be a valid pointer.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ocas_groebner_basis_len(gb: *const OcasGroebnerBasis) -> usize {
-    if gb.is_null() { 0 } else { unsafe { &*gb }.inner.basis.len() }
+    if gb.is_null() {
+        0
+    } else {
+        unsafe { &*gb }.inner.basis.len()
+    }
 }
 
 /// Check if an ideal is zero-dimensional.
@@ -142,7 +161,11 @@ pub unsafe extern "C" fn ocas_groebner_basis_len(gb: *const OcasGroebnerBasis) -
 /// `gb` must be a valid pointer.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ocas_is_zero_dimensional(gb: *const OcasGroebnerBasis) -> bool {
-    if gb.is_null() { false } else { ideal::is_zero_dimensional(unsafe { &(*gb).inner }) }
+    if gb.is_null() {
+        false
+    } else {
+        ideal::is_zero_dimensional(unsafe { &(*gb).inner })
+    }
 }
 
 /// Solve a polynomial system from data arrays.
@@ -175,22 +198,35 @@ pub unsafe extern "C" fn ocas_solve_polynomial_system(
         3 => Algorithm::Buchberger,
         _ => {
             error::set(-1, "invalid algorithm");
-            unsafe { *err = -1; }
+            unsafe {
+                *err = -1;
+            }
             return std::ptr::null_mut();
         }
     };
 
-    let gens = match build_polys(n_polys, n_vars_array, n_terms_array, exponents, coeff_nums, coeff_dens) {
+    let gens = match build_polys(
+        n_polys,
+        n_vars_array,
+        n_terms_array,
+        exponents,
+        coeff_nums,
+        coeff_dens,
+    ) {
         Ok(g) => g,
         Err(e) => {
             error::set(-1, e);
-            unsafe { *err = -1; }
+            unsafe {
+                *err = -1;
+            }
             return std::ptr::null_mut();
         }
     };
 
     let sol = ideal::solve_polynomial_system(&gens, algo);
-    unsafe { *err = 0; }
+    unsafe {
+        *err = 0;
+    }
     Box::into_raw(Box::new(OcasSystemSolution { inner: sol }))
 }
 
@@ -202,7 +238,9 @@ pub unsafe extern "C" fn ocas_solve_polynomial_system(
 /// `sol` must be a valid pointer.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ocas_system_solution_count(sol: *const OcasSystemSolution) -> usize {
-    if sol.is_null() { return 0; }
+    if sol.is_null() {
+        return 0;
+    }
     match &unsafe { &*sol }.inner {
         ideal::PolynomialSystemSolution::ZeroDimensional(z) => z.solutions.len(),
         _ => 0,
@@ -221,10 +259,13 @@ pub unsafe extern "C" fn ocas_system_solution_value(
     sol_idx: usize,
     var_idx: usize,
 ) -> f64 {
-    if sol.is_null() { return 0.0; }
+    if sol.is_null() {
+        return 0.0;
+    }
     match &unsafe { &*sol }.inner {
         ideal::PolynomialSystemSolution::ZeroDimensional(z) => z
-            .solutions.get(sol_idx)
+            .solutions
+            .get(sol_idx)
             .and_then(|s| s.values.get(var_idx))
             .copied()
             .unwrap_or(0.0),

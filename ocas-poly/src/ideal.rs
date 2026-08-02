@@ -195,26 +195,28 @@ fn quotient_single_generator<D: Domain + 'static>(
     let domain = g.domain().clone();
 
     // Embed I into k[x₁,…,xₙ, w] (w is variable 0).
-    let embedded: Vec<SparseMultivariatePolynomial<D, Lex>> = generators_i
-        .iter()
-        .map(|p| p.embed_new_main())
-        .collect();
+    let embedded: Vec<SparseMultivariatePolynomial<D, Lex>> =
+        generators_i.iter().map(|p| p.embed_new_main()).collect();
 
     // Embed g and compute 1 - w·g.
     let g_embedded = g.embed_new_main();
     let w = {
         let mut exp = smallvec::SmallVec::<[usize; 4]>::from_elem(0, n_vars + 1);
         exp[0] = 1;
-        SparseMultivariatePolynomial::from_terms(domain.clone(), n_vars + 1, vec![
-            (exp.to_vec(), domain.one()),
-        ])
+        SparseMultivariatePolynomial::from_terms(
+            domain.clone(),
+            n_vars + 1,
+            vec![(exp.to_vec(), domain.one())],
+        )
     };
     let wg = w.mul(&g_embedded);
     let one_minus_wg = {
         let one_exp = smallvec::SmallVec::<[usize; 4]>::from_elem(0, n_vars + 1);
-        let one = SparseMultivariatePolynomial::from_terms(domain.clone(), n_vars + 1, vec![
-            (one_exp.to_vec(), domain.one()),
-        ]);
+        let one = SparseMultivariatePolynomial::from_terms(
+            domain.clone(),
+            n_vars + 1,
+            vec![(one_exp.to_vec(), domain.one())],
+        );
         one.sub(&wg)
     };
 
@@ -223,7 +225,11 @@ fn quotient_single_generator<D: Domain + 'static>(
 
     // Compute GB and eliminate w (variable 0), then strip w from result.
     let elim_gb = crate::groebner::eliminate(&combined, 1, Algorithm::Auto);
-    elim_gb.basis.into_iter().map(|p| p.drop_variable(0)).collect()
+    elim_gb
+        .basis
+        .into_iter()
+        .map(|p| p.drop_variable(0))
+        .collect()
 }
 
 /// Compute the intersection of two ideals given by their generators.
@@ -256,15 +262,19 @@ fn intersect_generators<D: Domain + 'static>(
     let t = {
         let mut exp = smallvec::SmallVec::<[usize; 4]>::from_elem(0, n_vars + 1);
         exp[0] = 1;
-        SparseMultivariatePolynomial::from_terms(domain.clone(), n_vars + 1, vec![
-            (exp.to_vec(), domain.one()),
-        ])
+        SparseMultivariatePolynomial::from_terms(
+            domain.clone(),
+            n_vars + 1,
+            vec![(exp.to_vec(), domain.one())],
+        )
     };
     let one_minus_t = {
         let one_exp = smallvec::SmallVec::<[usize; 4]>::from_elem(0, n_vars + 1);
-        let one = SparseMultivariatePolynomial::from_terms(domain.clone(), n_vars + 1, vec![
-            (one_exp.to_vec(), domain.one()),
-        ]);
+        let one = SparseMultivariatePolynomial::from_terms(
+            domain.clone(),
+            n_vars + 1,
+            vec![(one_exp.to_vec(), domain.one())],
+        );
         one.sub(&t)
     };
 
@@ -283,7 +293,11 @@ fn intersect_generators<D: Domain + 'static>(
 
     // Eliminate w (variable 0) and strip it from result polynomials.
     let elim_gb = crate::groebner::eliminate(&combined, 1, Algorithm::Auto);
-    elim_gb.basis.into_iter().map(|p| p.drop_variable(0)).collect()
+    elim_gb
+        .basis
+        .into_iter()
+        .map(|p| p.drop_variable(0))
+        .collect()
 }
 
 /// Ideal intersection: `I ∩ J`.
@@ -458,15 +472,12 @@ pub fn is_zero_dimensional(gb: &GroebnerBasis<RationalDomain, Lex>) -> bool {
 
     // For each variable, check that some leading monomial is a pure power.
     for var in 0..n_vars {
-        let has_pure_power = gb.basis.iter().any(|p| {
-            match p.leading_monomial() {
-                Some(lm) => {
-                    lm.iter()
-                        .enumerate()
-                        .all(|(i, &e)| if i == var { e > 0 } else { e == 0 })
-                }
-                None => false,
-            }
+        let has_pure_power = gb.basis.iter().any(|p| match p.leading_monomial() {
+            Some(lm) => lm
+                .iter()
+                .enumerate()
+                .all(|(i, &e)| if i == var { e > 0 } else { e == 0 }),
+            None => false,
         });
         if !has_pure_power {
             return false;
@@ -522,12 +533,9 @@ fn solve_univariate_f64(
     }
 
     // Convert to Rational coefficients and use Sturm-based root isolation.
-    let rational_coeffs: Vec<ocas_domain::Rational> = coeffs_f64
-        .iter()
-        .map(|&c| rational_approx(c))
-        .collect();
-    let unipoly =
-        crate::dense::DenseUnivariatePolynomial::from_coeffs(d, rational_coeffs);
+    let rational_coeffs: Vec<ocas_domain::Rational> =
+        coeffs_f64.iter().map(|&c| rational_approx(c)).collect();
+    let unipoly = crate::dense::DenseUnivariatePolynomial::from_coeffs(d, rational_coeffs);
     let intervals = unipoly.isolate_real_roots();
     intervals
         .iter()
@@ -671,9 +679,7 @@ fn compute_vector_space_dim(gb: &GroebnerBasis<RationalDomain, Lex>) -> Option<u
 
 /// Solve a triangular Lex GB by back-substitution.
 /// Starts from the last variable (smallest in Lex) and works backwards.
-fn solve_triangular(
-    gb: &GroebnerBasis<RationalDomain, Lex>,
-) -> Vec<RealSolution> {
+fn solve_triangular(gb: &GroebnerBasis<RationalDomain, Lex>) -> Vec<RealSolution> {
     let n_vars = match gb.basis.first() {
         Some(p) => p.n_vars(),
         None => return vec![],
@@ -702,11 +708,9 @@ fn solve_recursive(
     // (no higher variables involved).
     let univariate_poly = gb.basis.iter().find(|p| {
         p.degree_in(var_index) > 0
-            && p.terms_ref().keys().all(|e| {
-                e.iter()
-                    .enumerate()
-                    .all(|(i, &v)| i <= var_index || v == 0)
-            })
+            && p.terms_ref()
+                .keys()
+                .all(|e| e.iter().enumerate().all(|(i, &v)| i <= var_index || v == 0))
     });
 
     let roots = if let Some(poly) = univariate_poly {
@@ -817,17 +821,14 @@ pub fn ideal_radical(
 
 /// Compute the radical for a zero-dimensional ideal using squarefree
 /// decomposition of the univariate polynomials.
-fn radical_zero_dim(
-    gb: &GroebnerBasis<RationalDomain, Lex>,
-) -> GroebnerBasis<RationalDomain, Lex> {
+fn radical_zero_dim(gb: &GroebnerBasis<RationalDomain, Lex>) -> GroebnerBasis<RationalDomain, Lex> {
     let n_vars = match gb.basis.first() {
         Some(p) => p.n_vars(),
         None => return GroebnerBasis { basis: vec![] },
     };
 
     let domain = RationalDomain;
-    let mut radical_gens: Vec<SparseMultivariatePolynomial<RationalDomain, Lex>> =
-        Vec::new();
+    let mut radical_gens: Vec<SparseMultivariatePolynomial<RationalDomain, Lex>> = Vec::new();
 
     // For each variable, find the univariate polynomial and make it squarefree.
     for var in 0..n_vars {
@@ -858,8 +859,9 @@ fn radical_zero_dim(
                 })
                 .collect();
             if !terms.is_empty() {
-                radical_gens
-                    .push(SparseMultivariatePolynomial::from_terms(domain, n_vars, terms));
+                radical_gens.push(SparseMultivariatePolynomial::from_terms(
+                    domain, n_vars, terms,
+                ));
             }
         }
     }
@@ -999,9 +1001,7 @@ pub fn primary_decomposition(
 ///
 /// Factors the univariate polynomials in the Lex GB and uses the factors
 /// to separate primary components via saturation.
-fn primary_decomp_zero_dim(
-    gb: &GroebnerBasis<RationalDomain, Lex>,
-) -> Vec<PrimaryComponent> {
+fn primary_decomp_zero_dim(gb: &GroebnerBasis<RationalDomain, Lex>) -> Vec<PrimaryComponent> {
     if gb.basis.is_empty() {
         return vec![];
     }
@@ -1073,7 +1073,9 @@ fn primary_decomp_zero_dim(
     let mut components = Vec::new();
     for (i, fi) in factor_polys.iter().enumerate() {
         // Saturate by all other factors.
-        let mut saturated = GroebnerBasis { basis: gb.basis.clone() };
+        let mut saturated = GroebnerBasis {
+            basis: gb.basis.clone(),
+        };
         for (j, fj) in factor_polys.iter().enumerate() {
             if i == j {
                 continue;
@@ -1105,9 +1107,7 @@ fn primary_decomp_zero_dim(
 /// the variety, which is not yet implemented. This is a conservative
 /// approximation: it never returns a false positive (non-prime reported as
 /// prime), only false negatives (prime ideals reported as non-prime).
-pub fn is_prime_ideal(
-    generators: &[SparseMultivariatePolynomial<RationalDomain, Lex>],
-) -> bool {
+pub fn is_prime_ideal(generators: &[SparseMultivariatePolynomial<RationalDomain, Lex>]) -> bool {
     if generators.is_empty() {
         return false;
     }
@@ -1155,11 +1155,13 @@ fn is_prime_zero_dim(gb: &GroebnerBasis<RationalDomain, Lex>) -> bool {
             // if it has no rational roots (for degree 2-3) or more generally
             // if it can't be factored.
             // Simple check: if degree ≤ 3, check for rational roots.
-            if let Some(deg) = unipoly.degree() && deg <= 3 {
-                    let has_rational_root = check_rational_roots(&unipoly);
-                    if has_rational_root && deg > 1 {
-                        return false;
-                    }
+            if let Some(deg) = unipoly.degree()
+                && deg <= 3
+            {
+                let has_rational_root = check_rational_roots(&unipoly);
+                if has_rational_root && deg > 1 {
+                    return false;
+                }
             }
         }
     }
@@ -1189,9 +1191,7 @@ fn divisors_of(n: i64) -> Vec<i64> {
 /// Check if a univariate polynomial has rational roots using the
 /// rational root theorem: if $p/q$ is a root in lowest terms, then
 /// $p$ divides the constant term and $q$ divides the leading coefficient.
-fn check_rational_roots(
-    poly: &crate::dense::DenseUnivariatePolynomial<RationalDomain>,
-) -> bool {
+fn check_rational_roots(poly: &crate::dense::DenseUnivariatePolynomial<RationalDomain>) -> bool {
     let Some(deg) = poly.degree() else {
         return false;
     };
@@ -1240,9 +1240,7 @@ fn check_rational_roots(
 /// Test whether an ideal is primary.
 ///
 /// An ideal is primary iff it has exactly one associated prime.
-pub fn is_primary_ideal(
-    generators: &[SparseMultivariatePolynomial<RationalDomain, Lex>],
-) -> bool {
+pub fn is_primary_ideal(generators: &[SparseMultivariatePolynomial<RationalDomain, Lex>]) -> bool {
     let decomp = primary_decomposition(generators);
     decomp.len() <= 1
 }
@@ -1295,12 +1293,10 @@ mod tests {
     fn quotient_x2_xy_by_x() {
         // ⟨x², xy⟩ :⟨x⟩ = ⟨x⟩
         let d = RationalDomain;
-        let x2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-        ]);
-        let xy = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 1], r(1, 1)),
-        ]);
+        let x2 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![2, 0], r(1, 1))]);
+        let xy =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![1, 1], r(1, 1))]);
         let g = x();
         let gb = ideal_quotient(&[x2, xy], &[g]);
         // Result should be ⟨x⟩ — check that x is in the ideal.
@@ -1315,9 +1311,10 @@ mod tests {
         assert_eq!(gb.basis.len(), 1);
         // The single generator should be xy (up to scalar).
         let xy_exp = vec![1usize, 1];
-        let has_xy = gb.basis.iter().any(|p| {
-            p.terms_ref().len() == 1 && p.terms_ref().contains_key(xy_exp.as_slice())
-        });
+        let has_xy = gb
+            .basis
+            .iter()
+            .any(|p| p.terms_ref().len() == 1 && p.terms_ref().contains_key(xy_exp.as_slice()));
         assert!(has_xy, "expected xy in intersection basis");
     }
 
@@ -1325,12 +1322,10 @@ mod tests {
     fn saturate_x2y_xy2_by_x() {
         // ⟨x²y, xy²⟩ :⟨x⟩^∞
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 1], r(1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 2], r(1, 1)),
-        ]);
+        let f1 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![2, 1], r(1, 1))]);
+        let f2 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![1, 2], r(1, 1))]);
         let g = x();
         let gb = ideal_saturate(&[f1, f2], &[g]);
         // Result should be ⟨y⟩ (or contain y).
@@ -1344,14 +1339,16 @@ mod tests {
     fn is_zero_dim_positive() {
         // x² - 1, y - x → zero-dimensional
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-            (vec![0, 0], r(-1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![0, 1], r(1, 1)),
-            (vec![1, 0], r(-1, 1)),
-        ]);
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![2, 0], r(1, 1)), (vec![0, 0], r(-1, 1))],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![0, 1], r(1, 1)), (vec![1, 0], r(-1, 1))],
+        );
         let gb = groebner_basis(&[f1, f2], Algorithm::F4);
         assert!(is_zero_dimensional(&gb));
     }
@@ -1360,10 +1357,11 @@ mod tests {
     fn is_zero_dim_negative() {
         // x - y → positive-dimensional (line in 2D)
         let d = RationalDomain;
-        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 0], r(1, 1)),
-            (vec![0, 1], r(-1, 1)),
-        ]);
+        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![1, 0], r(1, 1)), (vec![0, 1], r(-1, 1))],
+        );
         let gb = groebner_basis(&[f], Algorithm::F4);
         assert!(!is_zero_dimensional(&gb));
     }
@@ -1372,15 +1370,20 @@ mod tests {
     fn solve_circle_line() {
         // x² + y² - 1, x - y → 2 solutions at (±1/√2, ±1/√2)
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-            (vec![0, 2], r(1, 1)),
-            (vec![0, 0], r(-1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 0], r(1, 1)),
-            (vec![0, 1], r(-1, 1)),
-        ]);
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![
+                (vec![2, 0], r(1, 1)),
+                (vec![0, 2], r(1, 1)),
+                (vec![0, 0], r(-1, 1)),
+            ],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![1, 0], r(1, 1)), (vec![0, 1], r(-1, 1))],
+        );
         let sol = solve_polynomial_system(&[f1, f2], Algorithm::Auto);
         match sol {
             PolynomialSystemSolution::ZeroDimensional(z) => {
@@ -1404,16 +1407,24 @@ mod tests {
     fn solve_empty_variety() {
         // x² + y² - 1, x² + y² - 2 → no solutions
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-            (vec![0, 2], r(1, 1)),
-            (vec![0, 0], r(-1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-            (vec![0, 2], r(1, 1)),
-            (vec![0, 0], r(-2, 1)),
-        ]);
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![
+                (vec![2, 0], r(1, 1)),
+                (vec![0, 2], r(1, 1)),
+                (vec![0, 0], r(-1, 1)),
+            ],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![
+                (vec![2, 0], r(1, 1)),
+                (vec![0, 2], r(1, 1)),
+                (vec![0, 0], r(-2, 1)),
+            ],
+        );
         let sol = solve_polynomial_system(&[f1, f2], Algorithm::Auto);
         assert!(matches!(sol, PolynomialSystemSolution::Empty));
     }
@@ -1424,20 +1435,16 @@ mod tests {
     fn radical_x2_y2() {
         // √(x², y²) = (x, y) — zero-dimensional
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![0, 2], r(1, 1)),
-        ]);
+        let f1 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![2, 0], r(1, 1))]);
+        let f2 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![0, 2], r(1, 1))]);
         let rad = ideal_radical(&[f1, f2]);
         // The radical should be (x, y).
-        let x_poly = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 0], r(1, 1)),
-        ]);
-        let y_poly = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![0, 1], r(1, 1)),
-        ]);
+        let x_poly =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![1, 0], r(1, 1))]);
+        let y_poly =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![0, 1], r(1, 1))]);
         assert!(ideal_contains(&rad.basis, &x_poly, Algorithm::Auto));
         assert!(ideal_contains(&rad.basis, &y_poly, Algorithm::Auto));
     }
@@ -1446,10 +1453,11 @@ mod tests {
     fn radical_of_prime_is_self() {
         // (x² - 2) is prime over ℚ, so √(x² - 2) = (x² - 2).
         let d = RationalDomain;
-        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 1, vec![
-            (vec![2], r(1, 1)),
-            (vec![0], r(-2, 1)),
-        ]);
+        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            1,
+            vec![(vec![2], r(1, 1)), (vec![0], r(-2, 1))],
+        );
         let rad = ideal_radical(std::slice::from_ref(&f));
         // Should be the same ideal.
         assert!(ideal_contains(&rad.basis, &f, Algorithm::Auto));
@@ -1459,12 +1467,10 @@ mod tests {
     fn primary_decomp_x2_xy() {
         // (x², xy) = (x) ∩ (x², y)
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], r(1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 1], r(1, 1)),
-        ]);
+        let f1 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![2, 0], r(1, 1))]);
+        let f2 =
+            SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![(vec![1, 1], r(1, 1))]);
         let decomp = primary_decomposition(&[f1, f2]);
         assert!(!decomp.is_empty());
         // Each component should have primary and prime generators.
@@ -1478,10 +1484,11 @@ mod tests {
     fn is_prime_x2_minus_2() {
         // x² - 2 is prime over ℚ.
         let d = RationalDomain;
-        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 1, vec![
-            (vec![2], r(1, 1)),
-            (vec![0], r(-2, 1)),
-        ]);
+        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            1,
+            vec![(vec![2], r(1, 1)), (vec![0], r(-2, 1))],
+        );
         assert!(is_prime_ideal(&[f]));
     }
 
@@ -1489,9 +1496,7 @@ mod tests {
     fn is_primary_x2() {
         // (x²) is primary (but not prime).
         let d = RationalDomain;
-        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 1, vec![
-            (vec![2], r(1, 1)),
-        ]);
+        let f = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 1, vec![(vec![2], r(1, 1))]);
         assert!(is_primary_ideal(&[f]));
     }
 }

@@ -146,11 +146,7 @@ impl HilbertSeries {
         let sum: i64 = poly.iter().sum();
         // Divide by (n-dim)! to get the degree.
         let factorial: i64 = (1..=(self.denominator_power - dim) as i64).product();
-        if factorial == 0 {
-            sum
-        } else {
-            sum / factorial
-        }
+        if factorial == 0 { sum } else { sum / factorial }
     }
 
     /// Compute the coefficients of the Hilbert polynomial $P(d)$ such that
@@ -323,17 +319,21 @@ mod tests {
         // (LMs: x^2 deg 2, xy deg 2. lcm(x^2,xy)=x^2y deg 3.)
         // N(t) = 1 - 2t^2 + t^3. H(t) = (1 - 2t^2 + t^3)/(1-t)^2.
         use crate::groebner::hilbert::hilbert_series;
-        use ocas_domain::{RationalDomain, Rational};
         use crate::sparse::Lex;
         use crate::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+        use ocas_domain::{Rational, RationalDomain};
 
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![2, 0], Rational::new(1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 1], Rational::new(1, 1)),
-        ]);
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![2, 0], Rational::new(1, 1))],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![1, 1], Rational::new(1, 1))],
+        );
         let gb = groebner_basis(&[f1, f2], Algorithm::F4);
         let hs = hilbert_series(&gb);
         // H(0) = 1 (the constant monomial).
@@ -346,17 +346,21 @@ mod tests {
     fn hilbert_series_linear_ideal() {
         // Ideal (x, y) in k[x,y] → R/I has dim 1 (just constants).
         use crate::groebner::hilbert::hilbert_series;
-        use ocas_domain::{RationalDomain, Rational};
         use crate::sparse::Lex;
         use crate::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+        use ocas_domain::{Rational, RationalDomain};
 
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 0], Rational::new(1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![0, 1], Rational::new(1, 1)),
-        ]);
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![1, 0], Rational::new(1, 1))],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![0, 1], Rational::new(1, 1))],
+        );
         let gb = groebner_basis(&[f1, f2], Algorithm::F4);
         let hs = hilbert_series(&gb);
         // H(0) = 1, H(d) = 0 for d > 0.
@@ -369,17 +373,21 @@ mod tests {
         // Ideal (x, y) in k[x,y]: dim=0, degree=1.
         // Hilbert polynomial = 1 (constant).
         use crate::groebner::hilbert::hilbert_series;
-        use ocas_domain::{RationalDomain, Rational};
         use crate::sparse::Lex;
         use crate::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+        use ocas_domain::{Rational, RationalDomain};
 
         let d = RationalDomain;
-        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![1, 0], Rational::new(1, 1)),
-        ]);
-        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
-            (vec![0, 1], Rational::new(1, 1)),
-        ]);
+        let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![1, 0], Rational::new(1, 1))],
+        );
+        let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
+            d,
+            2,
+            vec![(vec![0, 1], Rational::new(1, 1))],
+        );
         let gb = groebner_basis(&[f1, f2], Algorithm::F4);
         let hs = hilbert_series(&gb);
         let hp = hs.hilbert_polynomial();

@@ -37,6 +37,12 @@ pub use domain::{PyFiniteField, PyIntegerDomain, PyRationalDomain};
 pub use dual::{PyDualShape, PyHyperDual};
 pub use eval::PyExpressionEvaluator;
 pub use expression::Expression;
+pub use groebner::{
+    PyGroebnerBasis, PyHilbertSeries, PyMultivariatePolynomial, PyPolynomialSystemSolution,
+    PyPrimaryComponent, PyRealSolution, py_eliminate, py_groebner_basis, py_hilbert_series,
+    py_ideal_contains, py_ideal_radical, py_is_zero_dimensional, py_primary_decomposition,
+    py_solve_polynomial_system,
+};
 pub use matrix::PyMatrix;
 pub use ntheory::{
     py_crt, py_discrete_log, py_divisor_count, py_divisor_sigma, py_factorint, py_isprime,
@@ -45,12 +51,6 @@ pub use ntheory::{
 pub use numeric::{PyIntegrateResult, PyVegas, integrate_1d};
 pub use ode::{py_classify_ode, py_dsolve, py_dsolve_ivp};
 pub use polynomial::{PyPolynomial, PyPolynomialFactor};
-pub use groebner::{
-    PyGroebnerBasis, PyHilbertSeries, PyMultivariatePolynomial, PyPrimaryComponent,
-    PyPolynomialSystemSolution, PyRealSolution, py_eliminate, py_groebner_basis,
-    py_hilbert_series, py_ideal_contains, py_ideal_radical, py_is_zero_dimensional,
-    py_primary_decomposition, py_solve_polynomial_system,
-};
 pub use solve::{
     PyDiophantineSolution, py_solve_diophantine, py_solve_linear_integer, py_solve_linear_rational,
 };

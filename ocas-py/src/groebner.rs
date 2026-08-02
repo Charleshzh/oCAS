@@ -1,14 +1,10 @@
 //! Python bindings for Gröbner basis computation and ideal operations.
 
 use ocas_domain::{Domain, Rational, RationalDomain};
+use ocas_poly::ideal::{self, PolynomialSystemSolution};
 use ocas_poly::sparse::Lex;
 use ocas_poly::{
-    Algorithm, GroebnerBasis, SparseMultivariatePolynomial,
-    eliminate, groebner_basis,
-};
-use ocas_poly::ideal::{
-    self,
-    PolynomialSystemSolution,
+    Algorithm, GroebnerBasis, SparseMultivariatePolynomial, eliminate, groebner_basis,
 };
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
@@ -33,9 +29,9 @@ pub struct PyMultivariatePolynomial {
 impl PyMultivariatePolynomial {
     #[new]
     fn new(terms: &Bound<'_, PyAny>, n_vars: usize) -> PyResult<Self> {
-        let dict: &Bound<'_, pyo3::types::PyDict> = terms
-            .cast()
-            .map_err(|_| PyTypeError::new_err("expected a dict mapping exponent tuples to coefficients"))?;
+        let dict: &Bound<'_, pyo3::types::PyDict> = terms.cast().map_err(|_| {
+            PyTypeError::new_err("expected a dict mapping exponent tuples to coefficients")
+        })?;
 
         let domain = RationalDomain;
         let mut poly_terms: Vec<(Vec<usize>, Rational)> = Vec::new();
@@ -51,7 +47,8 @@ impl PyMultivariatePolynomial {
             if exp.len() != n_vars {
                 return Err(PyValueError::new_err(format!(
                     "exponent tuple length {} does not match n_vars={}",
-                    exp.len(), n_vars
+                    exp.len(),
+                    n_vars
                 )));
             }
 
@@ -65,9 +62,7 @@ impl PyMultivariatePolynomial {
                 let scaled = (f * (1i64 << bits) as f64).round() as i64;
                 Rational::new(scaled, 1i64 << bits)
             } else {
-                return Err(PyTypeError::new_err(
-                    "coefficients must be int or float",
-                ));
+                return Err(PyTypeError::new_err("coefficients must be int or float"));
             };
 
             if !domain.is_zero(&coeff) {
@@ -135,7 +130,9 @@ fn extract_multivariate_polys(
                         })
                         .collect();
                     result.push(SparseMultivariatePolynomial::from_terms(
-                        RationalDomain, n_vars, terms,
+                        RationalDomain,
+                        n_vars,
+                        terms,
                     ));
                 }
                 _ => {
@@ -168,11 +165,18 @@ impl PyGroebnerBasis {
     }
 
     fn __repr__(&self) -> String {
-        format!("GroebnerBasis({} elements, {} vars)", self.basis.len(), self.n_vars)
+        format!(
+            "GroebnerBasis({} elements, {} vars)",
+            self.basis.len(),
+            self.n_vars
+        )
     }
 
     fn is_groebner_basis(&self) -> bool {
-        GroebnerBasis { basis: self.basis.clone() }.is_groebner_basis()
+        GroebnerBasis {
+            basis: self.basis.clone(),
+        }
+        .is_groebner_basis()
     }
 }
 
@@ -189,7 +193,11 @@ pub struct PyRealSolution {
 impl PyRealSolution {
     fn __repr__(&self) -> String {
         let vals: Vec<String> = self.values.iter().map(|v| format!("{:.6}", v)).collect();
-        format!("RealSolution([{}], mult={})", vals.join(", "), self.multiplicity)
+        format!(
+            "RealSolution([{}], mult={})",
+            vals.join(", "),
+            self.multiplicity
+        )
     }
 }
 
@@ -355,7 +363,9 @@ pub fn py_solve_polynomial_system(
 
 #[pyfunction]
 pub fn py_hilbert_series(gb: &PyGroebnerBasis) -> PyResult<PyHilbertSeries> {
-    let gb_struct = GroebnerBasis { basis: gb.basis.clone() };
+    let gb_struct = GroebnerBasis {
+        basis: gb.basis.clone(),
+    };
     let hs = ocas_poly::groebner::hilbert::hilbert_series(&gb_struct);
     Ok(PyHilbertSeries { inner: hs })
 }
@@ -392,7 +402,9 @@ pub fn py_primary_decomposition(
 
 #[pyfunction]
 pub fn py_is_zero_dimensional(gb: &PyGroebnerBasis) -> bool {
-    let gb_struct = GroebnerBasis { basis: gb.basis.clone() };
+    let gb_struct = GroebnerBasis {
+        basis: gb.basis.clone(),
+    };
     ideal::is_zero_dimensional(&gb_struct)
 }
 
