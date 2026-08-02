@@ -81,9 +81,9 @@ fn canonicalize_single_term<'a>(
     expr: Atom<'a>,
     registry: &TensorRegistry,
 ) -> Result<CanonicalTensor<'a>, TensorCanonError> {
-    let (g, head_nodes) = tensor_to_graph(ctx, expr, registry)?;
+    let (g, head_nodes, slot_labels) = tensor_to_graph(ctx, expr, registry)?;
     let cf = g.canonize();
-    reconstruct(ctx, &cf, &head_nodes, registry)
+    reconstruct(ctx, &cf, &head_nodes, &slot_labels, registry)
 }
 
 // =========================================================================
@@ -112,24 +112,47 @@ struct HeadInfo {
     slot_verts: Vec<usize>,
 }
 
+/// slot_vertex_index → original label Atom for all slots.
 #[allow(clippy::type_complexity)]
 fn tensor_to_graph<'a>(
     _ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     registry: &TensorRegistry,
-) -> Result<(Graph<TgNode, usize, TgEdge>, Vec<HeadInfo>), TensorCanonError> {
+) -> Result<
+    (
+        Graph<TgNode, usize, TgEdge>,
+        Vec<HeadInfo>,
+        HashMap<usize, Atom<'a>>,
+    ),
+    TensorCanonError,
+> {
     let mut g: Graph<TgNode, usize, TgEdge> = Graph::new();
     let mut heads: Vec<HeadInfo> = Vec::new();
     let mut index_uses: HashMap<Atom<'a>, (Vec<usize>, usize)> = HashMap::new();
+    let mut slot_labels: HashMap<usize, Atom<'a>> = HashMap::new();
 
     match expr.node() {
         AtomNode::Mul(factors) => {
             for f in factors.iter() {
-                encode_factor(*f, registry, &mut g, &mut heads, &mut index_uses)?;
+                encode_factor(
+                    *f,
+                    registry,
+                    &mut g,
+                    &mut heads,
+                    &mut index_uses,
+                    &mut slot_labels,
+                )?;
             }
         }
         _ => {
-            encode_factor(expr, registry, &mut g, &mut heads, &mut index_uses)?;
+            encode_factor(
+                expr,
+                registry,
+                &mut g,
+                &mut heads,
+                &mut index_uses,
+                &mut slot_labels,
+            )?;
         }
     }
 
@@ -145,7 +168,7 @@ fn tensor_to_graph<'a>(
         }
     }
 
-    Ok((g, heads))
+    Ok((g, heads, slot_labels))
 }
 
 fn encode_factor<'a>(
@@ -154,6 +177,7 @@ fn encode_factor<'a>(
     g: &mut Graph<TgNode, usize, TgEdge>,
     heads: &mut Vec<HeadInfo>,
     index_uses: &mut HashMap<Atom<'a>, (Vec<usize>, usize)>,
+    slot_labels: &mut HashMap<usize, Atom<'a>>,
 ) -> Result<(), TensorCanonError> {
     match factor.node() {
         AtomNode::Fun(name, args) => {
@@ -167,6 +191,7 @@ fn encode_factor<'a>(
                 let label = *arg;
                 let hidden = if spec.is_slot_hidden(pos) { pos } else { 0 };
                 let slot_v = g.add_node(TgNode::Slot(hash(&label.to_string())), hidden);
+                slot_labels.insert(slot_v, label);
                 slot_verts.push(slot_v);
 
                 let kind = if spec.is_slot_hidden(pos) {
@@ -206,6 +231,7 @@ fn reconstruct<'a>(
     ctx: &'a AtomArena<'a>,
     cf: &CanonicalForm<TgNode, usize, TgEdge>,
     heads: &[HeadInfo],
+    slot_labels: &HashMap<usize, Atom<'a>>,
     _registry: &TensorRegistry,
 ) -> Result<CanonicalTensor<'a>, TensorCanonError> {
     let cg = &cf.graph;
@@ -291,10 +317,11 @@ fn reconstruct<'a>(
             }
         }
 
-        // Sort: hidden first (by hidden key), then visible (by position).
+        // Sort: hidden (symmetric) slots by canonical vertex index
+        // (deterministic), visible slots by original position.
         slot_infos.sort_by_key(|s| {
             if s.hidden {
-                (0, s.orig_pos)
+                (0, s.canon_slot_v)
             } else {
                 (1, s.orig_pos)
             }
@@ -314,11 +341,20 @@ fn reconstruct<'a>(
                     args.push(ctx.var("?"));
                 }
             } else {
-                // External index.
-                let label = ctx.var(&format!("ext{}", external_indices.len()));
-                args.push(label);
-                if !external_indices.contains(&label) {
-                    external_indices.push(label);
+                // External index: preserve original label from the graph encoding.
+                let orig_slot = orig_of[si.canon_slot_v];
+                if let Some(&orig_label) = slot_labels.get(&orig_slot) {
+                    args.push(orig_label);
+                    if !external_indices.contains(&orig_label) {
+                        external_indices.push(orig_label);
+                    }
+                } else {
+                    // Fallback: synthetic name.
+                    let label = ctx.var(&format!("ext{}", external_indices.len()));
+                    args.push(label);
+                    if !external_indices.contains(&label) {
+                        external_indices.push(label);
+                    }
                 }
             }
         }
