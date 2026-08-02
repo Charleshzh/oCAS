@@ -148,7 +148,7 @@ jobs:
         run: pip install maturin pytest
       - name: Build and install wheel
         run: |
-          rm -rf target/maturin
+          rm -rf target/release
           maturin build --release -m ocas-py/Cargo.toml
           pip install --force-reinstall target/wheels/*.whl
       - name: Run Python tests
