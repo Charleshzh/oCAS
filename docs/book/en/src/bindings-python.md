@@ -194,3 +194,54 @@ for fac, mult in p.factor():
 
 `AlgebraicExtension` supports extensions over ℚ and GF(p^d). See the
 [Factorization](./algorithms/factorization.md) chapter for algorithmic details.
+
+## Gröbner Bases and Ideal Operations
+
+```python
+from ocas import MultivariatePolynomial, groebner_basis, ideal_contains
+from ocas import solve_polynomial_system, ideal_radical, primary_decomposition
+from ocas import hilbert_series, is_zero_dimensional, eliminate
+
+# Create multivariate polynomials via dict format
+# x² + y² - 1 in k[x,y]
+circle = MultivariatePolynomial({(2, 0): 1, (0, 2): 1, (0, 0): -1}, n_vars=2)
+
+# x - y
+line = MultivariatePolynomial({(1, 0): 1, (0, 1): -1}, n_vars=2)
+
+# Compute Gröbner basis
+gb = groebner_basis([circle, line], n_vars=2)
+print(len(gb))           # 2
+
+# Membership testing
+print(ideal_contains([line], circle, n_vars=2))  # True
+
+# Solve polynomial system
+sol = solve_polynomial_system([circle, line], n_vars=2)
+print(sol.kind)          # "ZeroDimensional"
+for s in sol.real_solutions:
+    print(s.values)      # [0.707107, 0.707107], [-0.707107, -0.707107]
+
+# Hilbert series
+hs = hilbert_series(gb)
+print(hs.dimension())    # 0
+print(hs.degree())       # 2
+
+# Radical
+x2 = MultivariatePolynomial({(2, 0): 1}, n_vars=2)
+xy = MultivariatePolynomial({(1, 1): 1}, n_vars=2)
+rad = ideal_radical([x2, xy], n_vars=2)  # √(x², xy) = (x)
+
+# Primary decomposition
+decomp = primary_decomposition([x2, xy], n_vars=2)
+print(len(decomp))       # 2
+
+# Elimination
+# Eliminate x from {x² - y, x - z} → {y - z²}
+f1 = MultivariatePolynomial({(2, 0): 1, (0, 1): -1}, n_vars=2)  # x² - y
+f2 = MultivariatePolynomial({(1, 0): 1, (0, 1): -1}, n_vars=2)  # x - y
+result = eliminate([f1, f2], elim_vars=1, n_vars=2)
+```
+
+Coefficients can be `int`, `float`, or `(num, denom)` tuples for rationals.
+See [Gröbner Bases](./algorithms/groebner.md) for algorithmic details.

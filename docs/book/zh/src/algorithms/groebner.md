@@ -169,3 +169,130 @@ use ocas_poly::sparse::WeightOrder;
 let order = WeightOrder::from_slice(&[2, 1]);
 let p = SparseMultivariatePolynomial::new_with_order(d, 2, order);
 ```
+
+### MatrixOrder 与消元
+
+0.23.0 版本新增 `MatrixOrder`，基于权重矩阵的通用单项式序，支持消元：
+
+| 序 | 入口 | 用途 |
+|---|---|---|
+| `MatrixOrder` | `MatrixOrder::new(matrix)` | 通用权重矩阵序 |
+| 消元序 | `MatrixOrder::elimination_order(elim_vars, n_vars)` | 消去前 `elim_vars` 个变量 |
+
+```rust
+use ocas_poly::sparse::{MatrixOrder, MonomialOrder};
+
+// 消元序：先消去 x_0，剩余变量按 Grevlex 比较。
+let ord = MatrixOrder::elimination_order(1, 3);
+```
+
+---
+
+## 理想运算
+
+0.23.0 版本在 `ocas_poly::ideal` 中引入完整理想运算库。所有运算使用
+`Lex` 序以保持一致性。
+
+| 运算 | 入口 | 描述 |
+|---|---|---|
+| 成员判定 | `ideal_contains(gens, f, algo)` | 测试 $f \in I$ |
+| 和 | `ideal_sum(I, J)` | $I + J$ |
+| 积 | `ideal_product(I, J)` | $I \cdot J$ |
+| 商 | `ideal_quotient(I, J)` | $I : J$（Rabinowitsch 技巧）|
+| 饱和 | `ideal_saturate(I, J)` | $I : J^\infty$ |
+| 交集 | `ideal_intersection(I, J)` | $I \cap J$（辅助变量法）|
+| 消元 | `eliminate(gens, elim_vars, algo)` | 通过 Lex GB 消元 |
+
+```rust
+use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::{ideal_contains, ideal_saturate};
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]); // x² + y² - 1
+let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]); // x - y
+
+// 成员判定：x² + y² - 1 ∈ ⟨x - y, x² + y² - 1⟩
+assert!(ideal_contains(&[f2.clone()], &f1, Algorithm::Auto));
+```
+
+---
+
+## 零维求解
+
+`solve_polynomial_system` 对方程组分类并求实数解：
+
+| 解类型 | 描述 |
+|---|---|
+| `ZeroDimensional` | 有限个实数解，通过 Sturm 根隔离 |
+| `PositiveDimensional` | 无限解集；返回 Lex GB |
+| `Empty` | 无解（理想为 $\langle 1 \rangle$）|
+
+```rust
+use ocas_poly::ideal::solve_polynomial_system;
+
+// 圆 ∩ 直线：x² + y² = 1, x = y
+let sol = solve_polynomial_system(&[f1, f2], Algorithm::Auto);
+// 返回两个实数解 (±1/√2, ±1/√2)
+```
+
+使用 `is_zero_dimensional(&gb)` 检查维数而不求解。
+
+---
+
+## 准素分解与根式
+
+对零维理想，准素分解通过 Lex GB 中一元多项式的因式分解和饱和分离分量：
+
+```rust
+use ocas_poly::ideal::{primary_decomposition, ideal_radical};
+
+// (x², xy) = (x) ∩ (x², y)
+let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let decomp = primary_decomposition(&[f1, f2]);
+assert_eq!(decomp.len(), 2);
+```
+
+`ideal_radical` 计算 $\sqrt{I}$：
+- **零维**：一元多项式无平方分解
+- **正维**：Jacobian 饱和法（$\sqrt{I} = I : h^\infty$）
+
+```rust
+let rad = ideal_radical(&[f1, f2]);
+// √(x², xy) = (x)
+```
+
+---
+
+## Hilbert 级数
+
+`hilbert` 模块提供从 Gröbner 基计算完整 Hilbert 级数的功能：
+
+| 方法 | 描述 |
+|---|---|
+| `hilbert_function(d)` | $\dim_k (R/I)_d$ 在次数 $d$ 处的值 |
+| `dimension()` | $R/I$ 的 Krull 维数 |
+| `degree()` | 射影簇的次数 |
+| `hilbert_polynomial()` | 完整多项式系数（Lagrange 插值）|
+
+```rust
+use ocas_poly::groebner::hilbert::hilbert_series;
+
+let hs = hilbert_series(&gb);
+println!("H(5) = {}", hs.hilbert_function(5));
+println!("dim = {}", hs.dimension());
+println!("polynomial = {:?}", hs.hilbert_polynomial());
+```

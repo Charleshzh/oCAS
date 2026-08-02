@@ -12,7 +12,7 @@
 性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
 保持自由与开放。
 
-> **状态**：Beta (0.20.1)。完整的符号引擎、多项式代数、方程求解器、ODE
+> **状态**：Beta (0.23.0)。完整的符号引擎、多项式代数、方程求解器、ODE
 > 求解器（一阶/二阶 + 系统 + 级数 + Laplace 初值问题）、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。`pip install ocas`
 > 已在 PyPI 上线。详见
@@ -50,8 +50,10 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 - **符号表达式**：变量、函数、有理数、任意精度整数、浮点数与复数。
 - **快速解析与打印**：类 Mathematica 与 Python 语法，支持 LaTeX 输出。
 - **化简与重写**：规范化、hash consing，以及基于 `egg` 的等式饱和。
-- **多项式运算**：稠密与稀疏多元多项式、最大公因式、因式分解、代数数域（Trager）、Gröbner 基（Buchberger/F4/F5、WeightOrder、BlockOrder）、
+- **多项式运算**：稠密与稀疏多元多项式、最大公因式、因式分解、代数数域（Trager）、Gröbner 基（Buchberger/F4/F5、WeightOrder、BlockOrder、MatrixOrder）、
   结式。
+- **理想运算**：成员判定、和、积、商、饱和、交集、消元、零维求解、准素分解、根式计算与 Hilbert 级数。
+- **代数几何**：基于 Sturm 定理的零维方程组求解、通过 Lex GB 因式分解的准素分解、基于 Jacobian 的根式计算。
 - **微积分**：符号微分、部分积分、Taylor/Laurent 级数。
 - **ODE 求解**：一阶（可分离/线性/Bernoulli/恰当/齐次 + 积分因子）、
   二阶（常系数/Cauchy-Euler + 常数变易法 + 降阶法）、幂级数 + Frobenius、
@@ -100,7 +102,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 
 ```toml
 [dependencies]
-ocas = "0.20"
+ocas = "0.23"
 ```
 
 ```rust

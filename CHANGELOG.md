@@ -15,6 +15,41 @@ _No changes yet._
 
 ---
 
+## [0.23.0] - 2026-08-02
+
+### Added / 新增
+
+- **Gröbner 基与代数几何工具**：完整的理想运算库，包括理想成员判定、和、积、商（Rabinowitsch 技巧）、饱和、交集运算 / **Gröbner basis and algebraic geometry tools**: complete ideal arithmetic library including membership testing, sum, product, quotient (Rabinowitsch trick), saturation, and intersection.
+
+- **消元序与消元**：`MatrixOrder` 矩阵序实现，支持 `elimination_order` 构造和 `eliminate()` 消元函数（基于 Lex GB 过滤）/ **Elimination orders**: `MatrixOrder` matrix ordering with `elimination_order` constructor and `eliminate()` function via Lex GB filtering.
+
+- **零维求解**：`solve_polynomial_system` 基于 Sturm 定理的数值根隔离，返回实数解和解的分类（零维/正维/无解）/ **Zero-dimensional solving**: `solve_polynomial_system` with Sturm-based numerical root isolation, returning real solutions classified as zero-dimensional/positive-dimensional/empty.
+
+- **准素分解**：`primary_decomposition` 通过 Lex GB 中一元多项式的因式分解和饱和分离准素分量 / **Primary decomposition**: `primary_decomposition` via univariate polynomial factoring in Lex GB and saturation separation of primary components.
+
+- **根式计算**：`ideal_radical` 零维用无平方分解，正维用 Jacobian 饱和法 (√I = I : h^∞) / **Radical computation**: `ideal_radical` with squarefree decomposition (zero-dim) and Jacobian saturation √I = I : h^∞ (positive-dim).
+
+- **完整 Hilbert 级数**：`hilbert_function`、`dimension`、`degree`、`hilbert_polynomial`（Lagrange 插值）/ **Complete Hilbert series**: `hilbert_function`, `dimension`, `degree`, `hilbert_polynomial` (Lagrange interpolation).
+
+- **有理根定理**：`check_rational_roots` 完整枚举常数项/首项系数因子 / **Rational root theorem**: `check_rational_roots` with complete divisor enumeration.
+
+- **Python 多变量多项式**：`MultivariatePolynomial` 类，接受字典格式 `{(2,0): 1, (0,2): 1}` 输入 / **Python multivariate polynomial**: `MultivariatePolynomial` class accepting dict-format `{(2,0): 1, (0,2): 1}` input.
+
+- **C FFI 绑定**：`ocas_groebner_basis`、`ocas_ideal_contains`、`ocas_solve_system`、`ocas_eliminate` 等函数 / **C FFI bindings**: `ocas_groebner_basis`, `ocas_ideal_contains`, `ocas_solve_system`, `ocas_eliminate`, etc.
+
+- **变量扩展/收缩**：`extend_vars` 和 `drop_variable` 用于消元后的变量投影 / **Variable extension/contraction**: `extend_vars` and `drop_variable` for post-elimination variable projection.
+
+### Fixed / 修复
+
+- **`MatrixOrder::cmp` 排序方向**：移除错误的 `.reverse()`，高权单项式现在正确比较为 Greater / **`MatrixOrder::cmp` sort direction**: removed erroneous `.reverse()` so higher-weight monomials correctly compare as Greater.
+
+### 测试 / Tests
+
+- 212 单元测试通过，clippy `-D warnings` 干净 / 212 unit tests passing, clippy `-D warnings` clean.
+- 新增 3 个 Hilbert 多项式测试 / 3 new Hilbert polynomial tests.
+
+---
+
 ## [0.22.0] - 2026-08-02
 
 ### Added / 新增

@@ -147,6 +147,46 @@ for p in basis.polynomials() {
 }
 ```
 
+### Ideal operations (since 0.23.0)
+
+```rust
+use ocas_poly::ideal::*;
+use ocas_poly::sparse::Lex;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+
+// Ideal membership
+assert!(ideal_contains(&[f2.clone()], &f1, Algorithm::Auto));
+
+// Sum, product, quotient, saturation, intersection
+let sum = ideal_sum(&[f1.clone()], &[f2.clone()]);
+let sat = ideal_saturate(&[f1.clone()], &[f2.clone()]);
+
+// Elimination
+let eliminated = eliminate(&[f1.clone(), f2.clone()], 1, Algorithm::Auto);
+
+// Zero-dimensional solving
+let sol = solve_polynomial_system(&[f1, f2], Algorithm::Auto);
+
+// Primary decomposition and radical
+let decomp = primary_decomposition(&[/* ... */]);
+let rad = ideal_radical(&[/* ... */]);
+
+// Hilbert series
+let gb = groebner_basis(&[/* ... */], Algorithm::Auto);
+let hs = hilbert_series(&gb);
+println!("dim = {}", hs.dimension());
+```
+
 ### Root isolation
 
 ```rust

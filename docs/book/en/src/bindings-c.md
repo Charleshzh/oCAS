@@ -308,3 +308,60 @@ int main(void) {
 | `ocas_algebraic_field_degree(field, &err)` | Extension degree |
 | `ocas_algebraic_poly_create(field, coeffs, n, &err)` | Polynomial over the field |
 | `ocas_algebraic_poly_factor(poly, &factors, &err)` | Factor (Trager's algorithm) |
+
+## Gröbner Basis API
+
+Since 0.23.0, `ocas-c` provides Gröbner basis computation and ideal operations
+via coefficient arrays. Polynomials are represented as coefficient arrays with
+explicit exponent matrices.
+
+```c
+#include <ocas.h>
+#include <stdio.h>
+
+int main(void) {
+    int err = 0;
+
+    // Polynomials: x² + y² - 1 and x - y in k[x,y]
+    // Represented as coefficient arrays with exponent matrices.
+    double coeffs1[] = {1.0, 1.0, -1.0};
+    int exponents1[][2] = {{2, 0}, {0, 2}, {0, 0}};
+    int n_terms1 = 3;
+    int n_vars = 2;
+
+    double coeffs2[] = {1.0, -1.0};
+    int exponents2[][2] = {{1, 0}, {0, 1}};
+    int n_terms2 = 2;
+
+    // Compute Gröbner basis.
+    OcasGroebnerBasis* gb = ocas_groebner_basis(
+        coeffs1, exponents1, n_terms1,
+        coeffs2, exponents2, n_terms2,
+        n_vars, 0 /* algorithm: auto */, &err);
+
+    int gb_len = ocas_groebner_basis_len(gb, &err);
+    printf("GB has %d elements\n", gb_len);
+
+    // Test membership.
+    int contains = ocas_ideal_contains(
+        coeffs1, exponents1, n_terms1,
+        coeffs2, exponents2, n_terms2,
+        n_vars, &err);
+    printf("f in ideal: %d\n", contains);
+
+    ocas_groebner_basis_free(gb);
+    return 0;
+}
+```
+
+| Function | Purpose |
+|---|---|
+| `ocas_groebner_basis(...)` | Compute Gröbner basis |
+| `ocas_groebner_basis_len(gb, &err)` | Number of basis elements |
+| `ocas_groebner_basis_free(gb)` | Release basis |
+| `ocas_ideal_contains(...)` | Test ideal membership |
+| `ocas_eliminate(...)` | Eliminate variables |
+| `ocas_solve_system(...)` | Solve polynomial system |
+
+Coefficients are `double` arrays; exponents are `int` matrices (row-major).
+See [Gröbner Bases](./algorithms/groebner.md) for algorithmic details.

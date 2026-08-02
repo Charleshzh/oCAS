@@ -12,7 +12,7 @@
 It is designed to match or exceed the core performance of Symbolica and
 SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 
-> **Status**: Beta (0.20.1). The full symbolic engine, polynomial algebra,
+> **Status**: Beta (0.23.0). The full symbolic engine, polynomial algebra,
 > equation solvers, ODE solvers (first/second-order + systems + series +
 > Laplace IVP), JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. `pip install ocas` is available on PyPI.
@@ -57,8 +57,14 @@ embeddable, and license-clean symbolic computation engine.
   saturation via `egg`.
 - **Polynomial arithmetic**: dense and sparse multivariate polynomials, GCD,
   univariate and bivariate factorization (Hensel lifting), algebraic number
-  fields (Trager), Gröbner bases (Buchberger/F4/F5, WeightOrder, BlockOrder),
-  resultants.
+  fields (Trager), Gröbner bases (Buchberger/F4/F5, WeightOrder, BlockOrder,
+  MatrixOrder), resultants.
+- **Ideal operations**: membership testing, sum, product, quotient, saturation,
+  intersection, elimination, zero-dimensional solving, primary decomposition,
+  radical computation, and Hilbert series.
+- **Algebraic geometry**: zero-dimensional system solving with Sturm root
+  isolation, primary decomposition via Lex GB factoring, Jacobian-based
+  radical computation.
 - **Calculus**: symbolic differentiation, partial integration, Taylor/Laurent
   series.
 - **ODE solving**: first-order (separable/linear/Bernoulli/exact/homogeneous +
@@ -113,7 +119,7 @@ See [ARCHITECTURE_EN.md](docs/planning/ARCHITECTURE_EN.md) for the full design.
 
 ```toml
 [dependencies]
-ocas = "0.20"
+ocas = "0.23"
 ```
 
 ```rust

@@ -182,3 +182,132 @@ use ocas_poly::sparse::WeightOrder;
 let order = WeightOrder::from_slice(&[2, 1]);
 let p = SparseMultivariatePolynomial::new_with_order(d, 2, order);
 ```
+
+### MatrixOrder and Elimination
+
+Version 0.23.0 added `MatrixOrder`, a general matrix-based monomial ordering
+that supports elimination via weight matrices:
+
+| Order | Entry point | Use case |
+|---|---|---|
+| `MatrixOrder` | `MatrixOrder::new(matrix)` | General weight-matrix ordering |
+| Elimination | `MatrixOrder::elimination_order(elim_vars, n_vars)` | Eliminate first `elim_vars` variables |
+
+```rust
+use ocas_poly::sparse::{MatrixOrder, MonomialOrder};
+
+// Elimination order: eliminate x_0, then compare remaining by Grevlex.
+let ord = MatrixOrder::elimination_order(1, 3);
+```
+
+---
+
+## Ideal Operations
+
+Version 0.23.0 introduced a complete ideal arithmetic library in `ocas_poly::ideal`.
+All operations work over `Lex` ordering for consistency with elimination.
+
+| Operation | Entry point | Description |
+|---|---|---|
+| Membership | `ideal_contains(gens, f, algo)` | Test if $f \in I$ |
+| Sum | `ideal_sum(I, J)` | $I + J$ |
+| Product | `ideal_product(I, J)$ | $I \cdot J$ |
+| Quotient | `ideal_quotient(I, J)` | $I : J$ (Rabinowitsch trick) |
+| Saturation | `ideal_saturate(I, J)` | $I : J^\infty$ |
+| Intersection | `ideal_intersection(I, J)` | $I \cap J$ (auxiliary variable) |
+| Elimination | `eliminate(gens, elim_vars, algo)` | Eliminate variables via Lex GB |
+
+```rust
+use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::{ideal_contains, ideal_saturate};
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]); // x² + y² - 1
+let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]); // x - y
+
+// Test membership: x² + y² - 1 ∈ ⟨x - y, x² + y² - 1⟩
+assert!(ideal_contains(&[f2.clone()], &f1, Algorithm::Auto));
+```
+
+---
+
+## Zero-Dimensional Solving
+
+`solve_polynomial_system` classifies systems and finds real solutions:
+
+| Solution type | Description |
+|---|---|
+| `ZeroDimensional` | Finite number of real solutions via Sturm root isolation |
+| `PositiveDimensional` | Infinite solution set; returns Lex GB |
+| `Empty` | No solutions (ideal is $\langle 1 \rangle$) |
+
+```rust
+use ocas_poly::ideal::solve_polynomial_system;
+
+// Circle ∩ line: x² + y² = 1, x = y
+let sol = solve_polynomial_system(&[f1, f2], Algorithm::Auto);
+// Returns two real solutions at (±1/√2, ±1/√2)
+```
+
+Use `is_zero_dimensional(&gb)` to check dimensionality without solving.
+
+---
+
+## Primary Decomposition and Radical
+
+For zero-dimensional ideals, primary decomposition factors univariate polynomials
+in the Lex GB and separates components via saturation:
+
+```rust
+use ocas_poly::ideal::{primary_decomposition, ideal_radical};
+
+// (x², xy) = (x) ∩ (x², y)
+let f1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let decomp = primary_decomposition(&[f1, f2]);
+assert_eq!(decomp.len(), 2);
+```
+
+`ideal_radical` computes $\sqrt{I}$:
+- **Zero-dimensional**: squarefree decomposition of univariate polynomials
+- **Positive-dimensional**: Jacobian saturation ($\sqrt{I} = I : h^\infty$)
+
+```rust
+let rad = ideal_radical(&[f1, f2]);
+// √(x², xy) = (x)
+```
+
+---
+
+## Hilbert Series
+
+The `hilbert` module provides complete Hilbert series computation from Gröbner bases:
+
+| Method | Description |
+|---|---|
+| `hilbert_function(d)` | $\dim_k (R/I)_d$ at degree $d$ |
+| `dimension()` | Krull dimension of $R/I$ |
+| `degree()` | Degree of the projective variety |
+| `hilbert_polynomial()` | Full polynomial coefficients (Lagrange interpolation) |
+
+```rust
+use ocas_poly::groebner::hilbert::hilbert_series;
+
+let hs = hilbert_series(&gb);
+println!("H(5) = {}", hs.hilbert_function(5));
+println!("dim = {}", hs.dimension());
+println!("polynomial = {:?}", hs.hilbert_polynomial());
+```
