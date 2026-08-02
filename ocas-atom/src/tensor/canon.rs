@@ -204,9 +204,9 @@ fn encode_factor<'a>(
                 }
             });
 
-            for (pos, arg) in sorted_args {
+            for (sorted_idx, (orig_pos, arg)) in sorted_args.into_iter().enumerate() {
                 let label = arg;
-                let is_hidden = spec.is_slot_hidden(pos);
+                let is_hidden = spec.is_slot_hidden(orig_pos);
                 // Symmetric slots must share the same colour so the graph-
                 // isomorphism engine can freely permute them, ensuring
                 // canonicalise(g(a,b)) == canonicalise(g(b,a)).
@@ -219,10 +219,13 @@ fn encode_factor<'a>(
                 slot_labels.insert(slot_v, label);
                 slot_verts.push(slot_v);
 
-                let kind = if spec.is_slot_hidden(pos) {
-                    TgEdge::HeadToSlot(pos, 0)
+                // Use sorted index as edge pos so the graph encoding is
+                // identical for symmetric inputs like g(a,b) and g(b,a).
+                let edge_pos = if is_hidden { sorted_idx } else { orig_pos };
+                let kind = if is_hidden {
+                    TgEdge::HeadToSlot(edge_pos, 0)
                 } else {
-                    TgEdge::HeadToSlot(pos, 1)
+                    TgEdge::HeadToSlot(edge_pos, 1)
                 };
                 g.add_directed_edge(head_v, slot_v, kind);
 
