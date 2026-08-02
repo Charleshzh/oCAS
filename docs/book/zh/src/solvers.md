@@ -82,6 +82,42 @@ let sol = solve_polynomial_system(&ctx, &[eq1, eq2], &[Symbol::new("x"), Symbol:
 
 结果为三角形多项式系统，可通过回代求解。
 
+### 理想运算（0.23.0 起）
+
+`ocas_poly::ideal` 模块提供完整理想运算：
+
+| 运算 | 函数 | 描述 |
+|---|---|---|
+| 成员判定 | `ideal_contains(gens, f, algo)` | 测试 $f \in I$ |
+| 和 | `ideal_sum(I, J)` | $I + J$ |
+| 积 | `ideal_product(I, J)` | $I \cdot J$ |
+| 商 | `ideal_quotient(I, J)` | $I : J$ |
+| 饱和 | `ideal_saturate(I, J)` | $I : J^\infty$ |
+| 交集 | `ideal_intersection(I, J)` | $I \cap J$ |
+| 消元 | `eliminate(gens, elim_vars, algo)` | 消去变量 |
+| 根式 | `ideal_radical(gens)` | $\sqrt{I}$ |
+| 准素分解 | `primary_decomposition(gens)` | 分解为准素分量 |
+| Hilbert 级数 | `hilbert_series(&gb)` | 计算 Hilbert 级数 |
+
+```rust
+use ocas_poly::ideal::*;
+use ocas_poly::sparse::Lex;
+
+let d = RationalDomain;
+let circle = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let line = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+
+// 求解圆 ∩ 直线
+let sol = solve_polynomial_system(&[circle, line], Algorithm::Auto);
+```
+
 ---
 
 ## 常微分方程

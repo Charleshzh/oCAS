@@ -89,6 +89,42 @@ let sol = solve_polynomial_system(&ctx, &[eq1, eq2], &[Symbol::new("x"), Symbol:
 The result is a simplified polynomial system in triangular form, which can
 be solved by back-substitution.
 
+### Ideal operations (since 0.23.0)
+
+The `ocas_poly::ideal` module provides complete ideal arithmetic:
+
+| Operation | Function | Description |
+|---|---|---|
+| Membership | `ideal_contains(gens, f, algo)` | Test if $f \in I$ |
+| Sum | `ideal_sum(I, J)` | $I + J$ |
+| Product | `ideal_product(I, J)` | $I \cdot J$ |
+| Quotient | `ideal_quotient(I, J)` | $I : J$ |
+| Saturation | `ideal_saturate(I, J)` | $I : J^\infty$ |
+| Intersection | `ideal_intersection(I, J)` | $I \cap J$ |
+| Elimination | `eliminate(gens, elim_vars, algo)` | Eliminate variables |
+| Radical | `ideal_radical(gens)` | $\sqrt{I}$ |
+| Primary decomposition | `primary_decomposition(gens)` | Decompose into primary components |
+| Hilbert series | `hilbert_series(&gb)` | Compute Hilbert series |
+
+```rust
+use ocas_poly::ideal::*;
+use ocas_poly::sparse::Lex;
+
+let d = RationalDomain;
+let circle = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let line = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+
+// Solve circle ∩ line
+let sol = solve_polynomial_system(&[circle, line], Algorithm::Auto);
+```
+
 ---
 
 ## Ordinary differential equations
