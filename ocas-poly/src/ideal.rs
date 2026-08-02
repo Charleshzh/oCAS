@@ -1450,7 +1450,7 @@ mod tests {
             (vec![2], r(1, 1)),
             (vec![0], r(-2, 1)),
         ]);
-        let rad = ideal_radical(&[f.clone()]);
+        let rad = ideal_radical(std::slice::from_ref(&f));
         // Should be the same ideal.
         assert!(ideal_contains(&rad.basis, &f, Algorithm::Auto));
     }
