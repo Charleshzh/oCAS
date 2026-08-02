@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-07-30（0.21.0 已发布：数论与计算代数栈——CRT 多模 + BPSW + 整数分解（rho/p−1/p+1/ECM）+ 离散对数 + 数论函数 + 模 GCD（Brown 单变量 + 多元多素数）+ Python/C 绑定；阶段 B++ 继续推进）**
+> 最后修订：**2026-08-03（0.23.0 已发布；竞品全面调研完成；阶段 B+++ 规划为 0.24 积分广度 + 0.25 Gröbner 性能 + 0.26 线性代数）**
 
 ---
 
@@ -15,8 +15,8 @@
 
 1. **竞品优先学习**：在 oCAS 于某能力超越竞品前，对应的 Symbolica 模块 /
    SymPy 文件 / 引用论文即参考实现。研究其算法，移植思想，正面基准对比。
-2. **不嵌入专有代码**：参考代码只研究、不逐字复制（Symbolica 为 AGPL，本项目
-   为 LGPL）。只有算法与思想迁移，以 oCAS 风格重写。
+2. **不嵌入专有代码**：参考代码只研究、不逐字复制。只有算法与思想迁移，
+   以 oCAS 风格重写。
 3. **纵向切片**：每个版本交付一个完整的算法纵向（算法 + Rust API + Python/C
    绑定 + 测试 + 文档 + 基准），而非跨多算法的横向层。
 4. **API 冻结纪律**：0.10.0 已冻结公共 API 表面。新算法以现有类型上的新函数
@@ -45,10 +45,14 @@ gantt
     0.21 数论                :c21, after c20, 3M
     0.22 张量规范化+重写      :c22, after c21, 3M
     0.23 代数几何            :c23, after c22, 3M
+    section 竞品差距弥合
+    0.24 积分广度+DoubleFloat :g24, after c23, 3M
+    0.25 Gröbner 性能        :g25, after g24, 3M
+    0.26 线性代数+1.0准备    :g26, after g25, 3M
     section 稳定版
-    1.0.0 冻结+文档          :s10, after c23, 2M
+    1.0.0 冻结+文档          :s10, after g26, 2M
     section Post-1.0
-    LLVM、GPU、稠密 SIMD      :p1, after s10, 6M
+    LLVM、CUDA/WASM、PDE      :p1, after s10, 6M
 ```
 
 ---
@@ -940,3 +944,118 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 0.20.0/0.20.1 | 2026-07-27/28 | **ODE 求解器发布并全量收尾。** 一阶分类引擎（可分离/线性/Bernoulli/恰当/齐次）+ 积分因子；二阶常系数/Cauchy-Euler/降阶法/常数变易法/待定系数（任意次多项式、指数共振、三角 forcing、叠加）；常点幂级数系数递推 + Frobenius；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定。修复 7 个核心 bug；31 项代入验证正确性测试（3 项已知限制 ignore）。 |
 | 0.21.0 | 2026-07-30 | **数论与计算代数栈发布（主线 SF）。** `number_theory` 扩建为目录模块：CRT 多模累加 `crt_many`；BPSW 素性（base-2 MR + Selfridge 强 Lucas）+ n<2⁶⁴ 确定性 `is_prime_u64`；整数分解（试除/Brent rho/Pollard p−1/Williams p+1/ECM Suyama-Montgomery stage-1，`factor_integer` 自动升级）；BSGS + Pohlig-Hellman 离散对数；φ/μ/τ/σ_k/λ 数论函数。模 GCD：单变量 Brown（`gcd::modular::gcd_modular_z`，monic 模像 + CRT 对称重构 + 试除验证）替代 ≥16 次爆炸的朴素 PRS；二元 `gcd_modular` 重写为完整 Brown（主变量内容分离 + monic 插值像 + 多素数 CRT + 有理重构 + 坏素数跳过）。Python `ocas::ntheory` 12 函数 + C `ocas_ntheory_*` 11 函数 + `ocas.hpp` RAII。修复两个潜伏 bug：`rational_reconstruction` 整数平方根逐个减一校正（30 位模数 52 s/次 → 原生 isqrt）；correctness `check` 模式参数顺序颠倒。验收全达成：ECM 30 位半素数 1.1 s（<10 s）；deg-50/100 位系数模 GCD 无爆炸；每子模块 ≥ 20 例 SymPy 交叉验证。竞品索引更新：GCD（模）、数论标 🟢。 |
 | 0.23.0 | 2026-08-02 | **高级 Gröbner 与代数几何工具发布（主线 SF — 阶段 B++ 完成）。** `ocas-poly::ideal` 模块：ideal_contains、ideal_sum、ideal_product、ideal_quotient（Rabinowitsch 技巧）、ideal_saturate、ideal_intersection。MatrixOrder 消元序 + eliminate()（Lex GB 过滤）。零维求解（Sturm 根隔离）。准素分解（Lex GB 因式分解 + 饱和分离）。根式：无平方（零维）+ Jacobian 饱和（正维）。Hilbert 级数：hilbert_function/dimension/degree/hilbert_polynomial。有理根定理。Python MultivariatePolynomial + C FFI 绑定。212 测试通过。阶段 B++ 完成。 |
+
+---
+
+## 阶段 B+++ — 竞品差距弥合（0.24–0.26）
+
+> 基于 2026-08-03 竞品全面调研（GAP_ANALYSIS_CN.md §5），弥合 Symbolica 2.2
+> Rubi 积分、msolve Gröbner 性能、SymPy 1.14 DomainMatrix 三大差距。
+> 详见 [ROADMAP_CN.md](ROADMAP_CN.md) §4。
+
+### 0.24.0 — 符号积分广度 + DoubleFloat
+
+**目标**：缩小与 Symbolica Rubi 的积分覆盖面差距（P0）；引入 DoubleFloat 求值路径（P2）。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 分部积分（LIATE/ILATE 启发式） | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| 三角替换（√(a²−x²) 等 3 种） | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| Weierstrass 有理参数替换 | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| Euler 代换（二次根式有理化） | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| `DoubleFloat` 类型（~31 位，>3× 快于任意精度） | Symbolica 2.0 `double-float` | `ocas-domain::double_float` |
+| JIT/SIMD 求值器 DoubleFloat 管线 | Symbolica SymJIT | `ocas-eval::jit` |
+| Python/C 绑定 | — | `ocas-py`/`ocas-c` |
+
+**性能指标**
+
+- Rubi 1892 题子集覆盖率从当前水平提升 ≥30%（Risch-only → Risch + 启发式）
+- DoubleFloat 求值比任意精度快 ≥3×
+- `cargo test --workspace` 通过
+
+**验收**
+
+- [ ] 启发式积分在标准教科书用例上与 SymPy `manualintegrate` 输出一致
+- [ ] DoubleFloat 的 proptest：与任意精度结果在容差内一致
+- [ ] Rubi 1892 题子集基准运行并记录结果
+- [ ] Python `integrate()` 和 `DoubleFloat` 类型可从 Python 调用
+
+**风险**
+
+- 启发式积分可能产生非最简形式 → 用 SymPy 交叉验证缓解
+- DoubleFloat 的 JIT 管线需要修改 Cranelift 后端的类型系统
+
+---
+
+### 0.25.0 — Gröbner 大规模性能（Multi-Modular）
+
+**目标**：对齐 msolve 的 Gröbner 性能（P1），cyclic-6 ℤ₁₃ 从 2.63 s 降至 < 0.5 s。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| Multi-modular Gröbner 策略 | msolve F4 + multi-modular | `ocas-poly::groebner::multi_modular` |
+| 多素数并行 F5（rayon） | msolve | `groebner::multi_modular::parallel_f5` |
+| CRT 重建整数系数基 | msolve | `groebner::multi_modular::crt_reconstruct` |
+| 有理重构恢复 ℚ 系数 | msolve | `groebner::multi_modular::rat_reconstruct` |
+| Hensel 提升 ℤ_p → ℤ 基 | msolve | `groebner::multi_modular::hensel_lift` |
+| Brown 模 GCD 加速 | — | `ocas-poly::gcd::modular` 升级 |
+
+**性能指标**
+
+- cyclic-6 ℤ₁₃ < 0.5 s（当前 2.63 s，msolve 0.04 s）
+- cyclic-7 ℤ₁₃ 可解（当前未测）
+- katsura-6/7 基准运行并记录
+- 与 msolve 在同一数量级（< 10× 差距）
+
+**验收**
+
+- [ ] cyclic-6 ℤ₁₃ criterion 基准 < 0.5 s
+- [ ] cyclic-7 ℤ₁₃ 可解并验证 `is_groebner_basis`
+- [ ] multi-modular 路径与单素数 F5 路径结果一致（随机 100 例）
+- [ ] katsura-6/7 基准运行并记录
+
+**风险**
+
+- CRT 重建可能在大系数上溢出 → 用有理重构 + Hensel 提升缓解
+- 多素数选择策略影响性能 → 参考 msolve 的素数生成逻辑
+
+---
+
+### 0.26.0 — 线性代数增强 + 1.0 准备
+
+**目标**：缩小与 SymPy DomainMatrix 的线性代数差距（P2）；完成 1.0 冻结前准备。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 域感知矩阵引擎 `Matrix<D>` 泛型化 | SymPy DomainMatrix | `ocas-poly::matrix::domain_matrix` |
+| Dense 矩阵的域特化路径 | SymPy DomainMatrix + FLINT | `matrix::domain_matrix` |
+| Smith 标准形 | SymPy `Matrix.smith_normal_form()` | `matrix::smith_normal_form` |
+| Hermite 标准形 | SymPy | `matrix::hermite_normal_form` |
+| 矩阵性能基准（20×20/30×30） | SymPy DomainMatrix | `ocas-tests/benches/matrix.rs` |
+| API 审计 + 文档完整性 | — | 全 workspace |
+| 迁移指南草稿（Symbolica/SymPy → oCAS） | — | `docs/migration/` |
+| 跨平台 CI 验证 | — | GitHub Actions |
+
+**性能指标**
+
+- 20×20 整数矩阵 rref 与 SymPy DomainMatrix 在同一数量级
+- Smith 标准形正确性（与 SymPy 交叉验证）
+
+**验收**
+
+- [ ] Smith 标准形与 SymPy 输出一致（随机 100 例）
+- [ ] 20×20 整数矩阵 rref 性能基准运行并记录
+- [ ] API 审计：所有公共类型/函数有 rustdoc + 示例
+- [ ] 迁移指南草稿完成
+- [ ] Linux/macOS/Windows CI 全绿
+
+**风险**
+
+- `Matrix<D>` 泛型化可能破坏现有 API → 用 `Matrix<Domain>` 作为默认类型参数缓解
+- Smith 标准形算法复杂度 → 限制在 PID 域上（整数、有限域）

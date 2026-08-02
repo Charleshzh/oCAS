@@ -232,36 +232,122 @@
 
 ---
 
-## 阶段 4：稳定 1.0
+## 阶段 4：竞品差距弥合（0.24–0.26）
+
+> **目标**：弥合本次竞品调研发现的关键差距（GAP_ANALYSIS_CN.md §5），
+> 在 1.0.0 冻结前将 P0–P2 缺口降至可接受水平。
+> 
+> 背景：阶段 B++ “竞品全面对齐”（0.19–0.23）已于 2026-08-02 完成。
+> 但竞品在此期间有重大演进——Symbolica 2.2 移植 Rubi 7000+ 积分规则、
+> SymPy 1.14 DomainMatrix 10000× 加速、msolve Gröbner 性能标杆
+> cyclic-6 仅 0.04 s——导致原有“1.0 仅做冻结”的计划不再充分。
+> 新增阶段 B+++ 三个版本弥合差距，然后进入 1.0.0 冻结。
+
+### 0.24.0 — 符号积分广度 + DoubleFloat
+
+**目标**：缩小与 Symbolica Rubi 的积分覆盖面差距；引入 DoubleFloat 求值路径。
+
+**交付物**：
+
+- [ ] 积分启发式扩展：Risch 回退后的 `heuristic_integrate` 池
+  - 分部积分（LIATE/ILATE 启发式）
+  - 三角替换（$\sqrt{a^2 - x^2}$、$\sqrt{a^2 + x^2}$、$\sqrt{x^2 - a^2}$）
+  - 有理参数替换（Weierstrass $t = \tan(x/2)$）
+  - Euler 代换（二次根式下的有理化）
+  - 参考：SymPy `manualintegrate` 启发式池
+- [ ] DoubleFloat 求值路径（`DoubleF64`：~31 位，>3× 快于任意精度）
+  - 参考：Symbolica 2.0 `double-float` 实现
+  - 在 `ocas-domain` 新增 `DoubleFloat` 类型
+  - JIT/SIMD 求值器支持 DoubleFloat 管线
+- [ ] Python/C 绑定：`integrate_heuristic`、`DoubleFloat` 类型
+- [ ] 基准：Rubi 1892 题子集对标 symbolica-integrate
+
+**成功标准**：
+- Rubi 1892 题子集覆盖率从当前水平提升 ≥30%（从 Risch-only 到 Risch + 启发式）
+- DoubleFloat 求值比任意精度快 ≥3×
+- `cargo test --workspace` 通过
+
+### 0.25.0 — Gröbner 大规模性能（Multi-Modular）
+
+**目标**：对齐 msolve 的 Gröbner 性能，cyclic-6 ℤ₁₃ 从 2.63 s 降至 < 0.5 s。
+
+**交付物**：
+
+- [ ] 多模算术（multi-modular）策略
+  - 多个素数并行计算 Gröbner 基
+  - 中国剩余定理（CRT）重建整数系数基
+  - 有理重构（rational reconstruction）恢复 $\mathbb{Q}$ 系数
+  - 参考：msolve F4 + multi-modular + Hensel + BM
+- [ ] Hensel 提升 Gröbner 基
+  - 从 $\mathbb{F}_p$ 基提升到 $\mathbb{Z}$ 基
+  - 减少 CRT 重建的素数数量
+- [ ] 大系数多项式 GCD 加速
+  - Brown 模 GCD 利用 multi-modular 进一步加速
+- [ ] 基准：cyclic-6/7、katsura-6/7 对标 msolve
+
+**成功标准**：
+- cyclic-6 ℤ₁₃ < 0.5 s（当前 2.63 s，msolve 0.04 s）
+- cyclic-7 ℤ₁₃ 可解（当前未测）
+- 基准结果与 msolve 在同一数量级（< 10× 差距）
+
+### 0.26.0 — 线性代数增强 + 1.0 准备
+
+**目标**：缩小与 SymPy DomainMatrix 的线性代数差距；完成 1.0 冻结前准备。
+
+**交付物**：
+
+- [ ] 域感知矩阵引擎（`DomainMatrix` 类似物）
+  - `Matrix<D>` 泛型化：支持 `IntegerDomain`、`FiniteField`、`RationalDomain`
+  - Dense 矩阵的域特化路径（避免通用 `Domain` trait 开销）
+  - 参考：SymPy DomainMatrix + FLINT 后端
+- [ ] Smith 标准形
+  - 整数矩阵的 Smith 正规形
+  - 用于模结构分析和同调代数
+- [ ] Hermite 标准形
+  - 整数矩阵的 Hermite 正规形
+  - 用于线性丢番图方程
+- [ ] 矩阵性能基准：20×20/30×30 整数矩阵 rref/inv/det 对标 SymPy DomainMatrix
+- [ ] 1.0 冻结前准备
+  - API 审计：所有公共类型/函数的文档完整性
+  - 迁移指南草稿（从 Symbolica/SymPy 迁移到 oCAS）
+  - 跨平台 CI 验证（Linux/macOS/Windows）
+
+**成功标准**：
+- Smith 标准形正确性（与 SymPy 交叉验证）
+- 20×20 整数矩阵 rref 性能与 SymPy DomainMatrix 在同一数量级
+- 1.0 冻结前准备清单完成 ≥80%
+
+---
+
+## 阶段 5：稳定 1.0
 
 > **目标**：发布 API 稳定、后端支持广泛的成熟 CAS 库。
 
 ### 1.0.0 — 稳定发布
 
-**目标日期**：第 16 个月
+**目标日期**：0.26.0 之后
 
 **交付物**：
 
 - [ ] 稳定语义化版本保证
 - [ ] 完整的 Rust、Python 与 C/C++ API 覆盖
 - [ ] 综合测试套件（行覆盖率 >80%）
-- [ ] 已发布基准测试
+- [ ] 已发布基准测试（基于 BENCHMARK_SUITE_CN.md）
 - [ ] 从 Symbolica/SymPy 迁移指南
 - [ ] 签名发布产物
+- [ ] 竞品对标报告（基于 COMPETITIVE_MATRIX_CN.md 最终版）
 
 **成功标准**：
 
 - 1.x 期间无计划中的破坏性 API 变更。
-- 在核心基准上与 Symbolica 持平或更优。
+- P0 差距（符号积分广度）已显著缩小。
+- P1 差距（Gröbner 性能）已对齐 msolve 至同一数量级。
+- 在核心基准上性能全面领先 SymPy。
 
-> 从 Beta 到 1.0 的细粒度逐版本计划（0.11 因式分解 → 0.12 有理函数 →
-> 0.13 Gröbner F4 → 0.14 Risch 积分 → 0.15 多输出 JIT → 0.15.2 Gröbner
-> 大规模性能 → 0.16 任意多元因式分解 → 0.16.1 非常数首项系数强加 →
-> 0.17 代数数域因式分解 → 0.18 数值积分/双数/张量/fuel）详见
-> [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md)。0.15.2–0.18.0 为阶段 B+
-> "Symbolica 差距清零"（已完成）；0.19–0.23 为阶段 B++ "竞品全面对齐"
-> （F5 Gröbner → ODE 求解器 → 数论 → 张量规范化 → 代数几何）。阶段 B++
-> 之后，1.0.0 仅做冻结与打磨。
+> 细粒度逐版本计划详见 [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md)。
+> 阶段 A（Beta 硬代数 0.11–0.13）、阶段 B+（Symbolica 差距清零 0.15.2–0.18.1）、
+> 阶段 B++（竞品全面对齐 0.19–0.23）均已完成。
+> 阶段 B+++（竞品差距弥合 0.24–0.26）弥合本次调研发现的 P0–P2 差距。
 
 ---
 
@@ -272,8 +358,9 @@
 - 偏微分方程（PDE）求解器（Poisson、热传导、波动）
 - 微分 Galois 理论（研究序章）
 - 可选 GPL 后端（`ocas-gpl`）
-- GPU 加速（CUDA / HIP / Vulkan compute）
-- LLVM/Inkwell JIT 后端
+- LLVM/Inkwell JIT 后端（对标 Symbolica SymJIT）
+- CUDA/WASM 代码导出（对标 Symbolica SymJIT CUDA/WASM）
+- 二次筛整数分解（对标 SymPy qs_factor）
 - 领域专用工具包（物理、机器人、机器学习）
 
 ---
@@ -314,8 +401,11 @@
 | 0.20.1 | 1.0 候选 | 第 33 月 | ODE 补齐：积分因子 + 常数变易法 + 降阶法 + 级数递推 + Frobenius + Laplace IVP + 2×2 系统 + Python/C 绑定 + 31 项代入验证测试 ✅ |
 | 0.21.0 | 1.0 候选 | 第 36 月 | 数论与计算代数（模 GCD + 整数分解 + 素性 + 离散对数 + CRT + 数论函数）✅（另含 Python/C 绑定；ECM 30 位半素数 1.1 s） |
 | 0.22.0 | 1.0 候选 | 第 39 月 | 张量规范化（图同构引擎）+ 高级模式匹配（`Transformer::Partition`）✅ |
-| 0.23.0 | 1.0 候选 | 第 42 月 | 高级 Gröbner 与代数几何工具（理想运算 + RUR + 准素分解 + Hilbert 级数） |
-| 1.0.0 | Stable | 第 44 月 | 稳定版发布（阶段 B++ 竞品全面对齐完成后冻结：Symbolica 性能持平 + SageMath/SymPy 功能广度持平） |
+| 0.23.0 | 1.0 候选 | 第 42 月 | 高级 Gröbner 与代数几何工具（理想运算 + 准素分解 + Hilbert 级数）✅ |
+| 0.24.0 | Beta | 第 45 月 | 符号积分广度（启发式扩展）+ DoubleFloat 求值路径（P0 积分 + P2 DoubleFloat） |
+| 0.25.0 | Beta | 第 47 月 | Gröbner 大规模性能（multi-modular 对标 msolve，cyclic-6 < 0.5 s）（P1） |
+| 0.26.0 | Beta | 第 49 月 | 线性代数增强（DomainMatrix + Smith 标准形）+ 1.0 冻结准备（P2） |
+| 1.0.0 | Stable | 第 51 月 | 稳定版发布（阶段 B+++ 竞品差距弥合完成后冻结：P0 积分广度已缩小 + P1 Gröbner 对齐 msolve + 性能全面领先 SymPy） |
 
 ---
 

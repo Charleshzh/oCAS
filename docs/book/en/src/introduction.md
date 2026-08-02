@@ -12,7 +12,7 @@ performance of Symbolica and SageMath while remaining free and open under the
 | Feature | oCAS | Symbolica | SymPy | SageMath |
 |---|---|---|---|---|
 | Language | Rust | Rust | Python | Python/Cython |
-| License | LGPL-3.0+ | Proprietary / source-available | BSD | GPL |
+| License | LGPL-3.0+ | source-available / commercial | BSD | GPL |
 | Native speed | ✅ | ✅ | ❌ | ⚠️ |
 | Rust API | ✅ | ✅ | ❌ | ❌ |
 | Python API | ✅ | ✅ | ✅ | ✅ |
