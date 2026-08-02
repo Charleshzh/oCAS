@@ -189,8 +189,16 @@ fn encode_factor<'a>(
 
             for (pos, arg) in args.iter().enumerate() {
                 let label = *arg;
-                let hidden = if spec.is_slot_hidden(pos) { pos } else { 0 };
-                let slot_v = g.add_node(TgNode::Slot(hash(&label.to_string())), hidden);
+                let is_hidden = spec.is_slot_hidden(pos);
+                // Symmetric slots must share the same colour so the graph-
+                // isomorphism engine can freely permute them, ensuring
+                // canonicalise(g(a,b)) == canonicalise(g(b,a)).
+                let slot_colour = if is_hidden {
+                    TgNode::Slot(0)
+                } else {
+                    TgNode::Slot(hash(&label.to_string()))
+                };
+                let slot_v = g.add_node(slot_colour, 0);
                 slot_labels.insert(slot_v, label);
                 slot_verts.push(slot_v);
 
@@ -317,13 +325,20 @@ fn reconstruct<'a>(
             }
         }
 
-        // Sort: hidden (symmetric) slots by canonical vertex index
-        // (deterministic), visible slots by original position.
-        slot_infos.sort_by_key(|s| {
-            if s.hidden {
-                (0, s.canon_slot_v)
-            } else {
-                (1, s.orig_pos)
+        // Sort: hidden (symmetric) slots by label string (deterministic
+        // regardless of input order), visible slots by original position.
+        slot_infos.sort_by(|a, b| {
+            match (a.hidden, b.hidden) {
+                (true, true) => {
+                    let la = orig_of[a.canon_slot_v];
+                    let lb = orig_of[b.canon_slot_v];
+                    let sa = slot_labels.get(&la).map(|x| x.to_string()).unwrap_or_default();
+                    let sb = slot_labels.get(&lb).map(|x| x.to_string()).unwrap_or_default();
+                    sa.cmp(&sb)
+                }
+                (true, false) => std::cmp::Ordering::Less,
+                (false, true) => std::cmp::Ordering::Greater,
+                (false, false) => a.orig_pos.cmp(&b.orig_pos),
             }
         });
 
