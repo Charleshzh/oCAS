@@ -187,8 +187,25 @@ fn encode_factor<'a>(
             let head_v = g.add_node(TgNode::Head(hash(name.as_str())), 0);
             let mut slot_verts = Vec::with_capacity(args.len());
 
-            for (pos, arg) in args.iter().enumerate() {
-                let label = *arg;
+            // Pre-sort symmetric slots by label so the graph encoding is
+            // input-order-independent.  Non-symmetric slots keep their
+            // original position.
+            let mut sorted_args: Vec<(usize, Atom<'a>)> =
+                args.iter().enumerate().map(|(i, a)| (i, *a)).collect();
+            // Stable sort: symmetric slots sorted by label, others by pos.
+            sorted_args.sort_by(|&(pa, aa), &(pb, ab)| {
+                let ha = spec.is_slot_hidden(pa);
+                let hb = spec.is_slot_hidden(pb);
+                match (ha, hb) {
+                    (true, true) => aa.to_string().cmp(&ab.to_string()),
+                    (true, false) => std::cmp::Ordering::Less,
+                    (false, true) => std::cmp::Ordering::Greater,
+                    (false, false) => pa.cmp(&pb),
+                }
+            });
+
+            for (pos, arg) in sorted_args {
+                let label = arg;
                 let is_hidden = spec.is_slot_hidden(pos);
                 // Symmetric slots must share the same colour so the graph-
                 // isomorphism engine can freely permute them, ensuring
