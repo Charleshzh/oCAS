@@ -150,6 +150,86 @@ ocas_tensor_free(A);
 
 ---
 
+## 张量规范化（0.22.0）
+
+基于图同构的规范化为张量表达式提供**与指标命名无关的唯一规范形**。
+仅由指标重命名不同的两个张量乘积会得到相同的规范形。
+
+### 工作原理
+
+1. 将张量表达式编码为图：张量头成为头顶点，每个指标槽成为槽顶点，
+   缩并成为无向边，对称性编码为隐藏的位置数据。
+2. 对图运行 McKay 细化-个体化搜索（1-WL 颜色细化 + 带自同构轨道
+   剪枝的个体化 DFS）。
+3. 根据规范标号重建表达式，哑指标从按维度组的池中重命名（`d0`、
+   `d1`、…）。
+
+```rust
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+let prod = ctx.mul(&[ctx.fun("T", &[i, j]), ctx.fun("U", &[j, k])]);
+let ct = canonicalize_tensors(&ctx, prod, &reg).unwrap();
+println!("规范形: {}", ct.canonical_form);
+```
+
+### 对称性规格
+
+| 规格 | 含义 |
+|---|---|
+| `SymmetrySpec::none()` | 所有槽位独立 |
+| `SymmetrySpec::fully_symmetric(n)` | 槽位可互换（隐藏位置） |
+| `SymmetrySpec::fully_antisymmetric(n)` | 反对称（Ricci 恒等式验证） |
+| 自定义子集 | `symmetric_subsets` / `antisymmetric_subsets` / `cyclic` 字段 |
+
+### 哑指标管理
+
+`dummy::refresh_dummies` 将恰好出现两次的标签重命名为规范名称
+（`d0`、`d1`、…），按维度组分配：
+
+```rust
+use ocas_atom::tensor::dummy::refresh_dummies;
+let result = refresh_dummies(&ctx, expr, &reg)?;
+// "T(i,j)*U(j,i)" → "T(d0,d1)*U(d1,d0)"
+```
+
+### Young 投影子（显式展开）
+
+`young::young_project` 按 Young 盘将张量展开为置换和，列反对称：
+
+```rust
+use ocas_atom::tensor::young::{YoungTableau, young_project};
+
+// 全反对称 [1,1]: f(a,b) → f(a,b) - f(b,a)
+let result = young_project(&ctx, f_ab, &YoungTableau::new(vec![1, 1]));
+// 全对称 [2]: g(a,b) → g(a,b) + g(b,a)
+let result = young_project(&ctx, g_ab, &YoungTableau::new(vec![2]));
+```
+
+### Python API
+
+```python
+import ocas
+
+# 规范化
+result = ocas.canonicalize_tensors("T(i,j)*U(j,k)", {"T": "none", "U": "none"})
+
+# 对称规范化（g(b,a) == g(a,b)）
+result = ocas.canonicalize_tensors("g(b,a)", {"g": "symmetric"})
+
+# Young 投影
+result = ocas.young_project("f(a,b)", [1, 1])
+
+# 刷新哑指标
+result = ocas.refresh_dummies("T(i,j)*U(j,i)", {"T": "none", "U": "none"})
+```
+
+---
+
 ## 限制
 
 - 张量代数是显式的：指标按标签匹配，不使用爱因斯坦求和约定。必须手

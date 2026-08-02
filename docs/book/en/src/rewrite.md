@@ -208,3 +208,94 @@ For advanced simplification, enable the `egg` feature or write custom rules.
 
 - [Rust API](./rust-api.md) — building expressions and patterns from Rust
 - [Evaluation & JIT](./evaluation.md) — numeric evaluation after simplification
+
+---
+
+## Backtracking AC Matching (0.22.0)
+
+The matcher now uses **full backtracking search** for `Add`/`Mul` contexts,
+replacing the previous greedy algorithm.  This enables:
+
+- **Sequence wildcards inside Add/Mul**: `x_ + __rest` matches any sum
+  with at least one captured term.
+- **Multiple wildcards in AC**: `x_ + y_ + z_` against `a + b + c + d`
+  correctly binds each wildcard to a distinct term.
+- **Backtrack budget**: prevents pathological blow-up on adversarial
+  patterns (default 10,000 backtrack attempts).
+
+The default `match_pattern` uses the budget; to adjust:
+
+```rust
+use ocas_rewrite::matcher::match_pattern_with_budget;
+let bindings = match_pattern_with_budget(pattern, atom, 50_000)?;
+```
+
+---
+
+## Multi-pattern Replacement (0.22.0)
+
+`ocas_rewrite::replace` provides controlled replacements with condition
+guards and traversal settings.
+
+### `replace_once` / `replace_all`
+
+```rust
+use ocas_rewrite::replace::{replace_once, replace_all};
+
+// Replace the first occurrence of x anywhere in the tree:
+let result = replace_once(&ctx, expr, Pattern::Literal(x), |_, ctx| ctx.num(42));
+
+// Replace all occurrences of x:
+let result = replace_all(&ctx, expr, Pattern::Literal(x), |_, ctx| ctx.num(42));
+```
+
+### `replace_all_multiple` — first-match-wins
+
+```rust
+use ocas_rewrite::replace::{replace_all_multiple, Replacement};
+
+let replacements = vec![
+    Replacement { pattern: pat1, replacement: rhs1, condition: None },
+    Replacement { pattern: pat2, replacement: rhs2, condition: Some(cond) },
+];
+let result = replace_all_multiple(&ctx, expr, &replacements);
+```
+
+At each node, replacements are tried in order; the first match wins.
+
+### Conditions
+
+A `Condition` is a predicate on `Bindings`:
+
+```rust
+use ocas_rewrite::replace::Condition;
+
+let cond = Condition::new(|bindings| {
+    // Only apply when bound atom is a number
+    match bindings.get(Symbol::new("x_")) {
+        Some(MatchValue::Single(a)) => matches!(a.node(), AtomNode::Num(_)),
+        _ => false,
+    }
+});
+```
+
+---
+
+## Transformer::Partition (0.22.0)
+
+Partitions a `arg(a, b, c, …)` expression into named bins of given
+capacities, returning a sum over all valid ways to distribute the elements.
+
+```rust
+use ocas_rewrite::transformer::partition_expr;
+use ocas_atom::Symbol;
+
+// arg(1, 3, 2, 3, 1) with bins [(f,2), (g,2), (f,1)]
+let result = partition_expr(&ctx, expr, &[(Symbol::new("f"), 2), (Symbol::new("g"), 2), (Symbol::new("f"), 1)], false, false);
+// Returns Σ coeff · f(…)*g(…)*f(…) for all valid partitions.
+```
+
+The three modes:
+- **exact** (both flags false): total bin capacity must equal element count.
+- **fill_last**: surplus elements absorbed into the last bin.
+- **repeat**: bin pattern repeated until all elements consumed.

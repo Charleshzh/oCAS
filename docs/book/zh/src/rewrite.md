@@ -195,3 +195,78 @@ match result {
 
 - [Rust API](./rust-api.md) — 从 Rust 构建表达式与模式
 - [求值与 JIT](./evaluation.md) — 化简后的数值求值
+
+---
+
+## 回溯 AC 匹配（0.22.0）
+
+匹配器现在对 `Add`/`Mul` 上下文使用**全回溯搜索**，取代之前的贪心
+算法。这带来：
+
+- **Add/Mul 内序列通配符**：`x_ + __rest` 匹配任意和，至少捕获一项。
+- **AC 内多通配符**：`x_ + y_ + z_` 对 `a + b + c + d` 正确绑定。
+- **回溯预算**：防止病态模式的组合爆炸（默认 10,000 次尝试）。
+
+```rust
+use ocas_rewrite::matcher::match_pattern_with_budget;
+let bindings = match_pattern_with_budget(pattern, atom, 50_000)?;
+```
+
+---
+
+## 多模式替换（0.22.0）
+
+`ocas_rewrite::replace` 提供带条件守卫和遍历设置的受控替换。
+
+### `replace_once` / `replace_all`
+
+```rust
+use ocas_rewrite::replace::{replace_once, replace_all};
+
+// 替换树中第一个 x 出现：
+let result = replace_once(&ctx, expr, Pattern::Literal(x), |_, ctx| ctx.num(42));
+// 替换所有 x：
+let result = replace_all(&ctx, expr, Pattern::Literal(x), |_, ctx| ctx.num(42));
+```
+
+### `replace_all_multiple` — 首匹配获胜
+
+```rust
+use ocas_rewrite::replace::{replace_all_multiple, Replacement};
+let replacements = vec![
+    Replacement { pattern: pat1, replacement: rhs1, condition: None },
+    Replacement { pattern: pat2, replacement: rhs2, condition: Some(cond) },
+];
+let result = replace_all_multiple(&ctx, expr, &replacements);
+```
+
+### 条件
+
+`Condition` 是对 `Bindings` 的谓词：
+
+```rust
+use ocas_rewrite::replace::Condition;
+let cond = Condition::new(|bindings| {
+    match bindings.get(Symbol::new("x_")) {
+        Some(MatchValue::Single(a)) => matches!(a.node(), AtomNode::Num(_)),
+        _ => false,
+    }
+});
+```
+
+---
+
+## Transformer::Partition（0.22.0）
+
+将 `arg(a, b, c, …)` 表达式按指定容量的命名桶分拆，返回所有合法
+分配方式的求和。
+
+```rust
+use ocas_rewrite::transformer::partition_expr;
+let result = partition_expr(&ctx, expr, &[(Symbol::new("f"), 2), (Symbol::new("g"), 2), (Symbol::new("f"), 1)], false, false);
+```
+
+三种模式：
+- **exact**：桶总容量必须等于元素数量。
+- **fill_last**：剩余元素吸收到最后一个桶。
+- **repeat**：桶模式重复直到所有元素消耗完毕。
