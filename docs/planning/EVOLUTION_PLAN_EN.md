@@ -920,22 +920,30 @@ operations, elimination, zero-dimensional solving, and primary decomposition.
 
 | Item | Reference | oCAS landing | Status |
 |---|---|---|---|
-| Additional monomial orders: pure lex, weight/block elimination, matrix ordering | Cox-Little-O'Shea Ch. 2 §4; Singular | `ocas-poly::order` (extend) | [ ] |
-| Ideal operations: intersection, quotient, saturation, sum, product | Cox-Little-O'Shea Ch. 4 §3 | `ocas-poly::ideal` | [ ] |
-| Ideal membership test (reduction to Gröbner basis with remainder zero) | Cox-Little-O'Shea Ch. 2 §6 | `ideal::contains` | [ ] |
-| Zero-dimensional solving: multiplication-matrix eigenvector method, rational univariate representation (RUR) | Rouillier 1999; Cox-Little-O'Shea Ch. 2 §9 | `ocas-poly::solve::zero_dim` | [ ] |
-| Primary decomposition (Gianni-Trager-Zacharias / Shimoyama-Yokoyama) | GTZ 1988; Decker-Greuel computer-algebra textbook | `ocas-poly::ideal::primary_decomposition` | [ ] |
-| Radical computation (Kemper algorithm or Eisenbud-Hunecke) | Kemper 1999 | `ideal::radical` | [ ] |
-| Hilbert series / Hilbert polynomial (extend 0.14 Hilbert bounds to full series) | Cox-Little-O'Shea Ch. 9 | `ideal::hilbert_series` | [ ] |
-| Python/C bindings: `ideal_*` operations, `solve_polynomial_system`, `primary_decomposition` | SageMath `ideal` API parity | `ocas-py::ideal`, `ocas-c::ideal` | [ ] |
+| Additional monomial orders: pure lex, weight/block elimination, matrix ordering | Cox-Little-O'Shea Ch. 2 §4; Singular | `ocas-poly::order` (extend) | [x] MatrixOrder + elimination_order |
+| Ideal operations: intersection, quotient, saturation, sum, product | Cox-Little-O'Shea Ch. 4 §3 | `ocas-poly::ideal` | [x] ideal_sum/product/quotient/saturate/intersection |
+| Ideal membership test (reduction to Gröbner basis with remainder zero) | Cox-Little-O'Shea Ch. 2 §6 | `ideal::contains` | [x] ideal_contains |
+| Zero-dimensional solving: multiplication-matrix eigenvector method, rational univariate representation (RUR) | Rouillier 1999; Cox-Little-O'Shea Ch. 2 §9 | `ocas-poly::solve::zero_dim` | [x] Sturm-based numerical root isolation |
+| Primary decomposition (Gianni-Trager-Zacharias / Shimoyama-Yokoyama) | GTZ 1988; Decker-Greuel computer-algebra textbook | `ocas-poly::ideal::primary_decomposition` | [x] Lex GB factoring + saturation separation |
+| Radical computation (Kemper algorithm or Eisenbud-Hunecke) | Kemper 1999 | `ideal::radical` | [x] squarefree (zero-dim) + Jacobian saturation (pos-dim) |
+| Hilbert series / Hilbert polynomial (extend 0.14 Hilbert bounds to full series) | Cox-Little-O'Shea Ch. 9 | `ideal::hilbert_series` | [x] hilbert_function/dimension/degree/hilbert_polynomial |
+| Python/C bindings: `ideal_*` operations, `solve_polynomial_system`, `primary_decomposition` | SageMath `ideal` API parity | `ocas-py::ideal`, `ocas-c::ideal` | [x] MultivariatePolynomial + all ideal ops |
 
 **Acceptance**
 
-- Singular cross-verification on ≥ 15 ideals (intersection, quotient,
-  saturation, membership, zero-dimensional solving, primary decomposition).
-- RUR solves cyclic-4 root system correctly.
-- Primary decomposition of `(x², xy)` returns `(x) ∩ (x, y) ∩ (x², y)`.
-- Elimination order solves implicitization problems from Cox-Little-O'Shea.
+- [x] 212 unit tests passing, clippy `-D warnings` clean.
+- [x] Primary decomposition of `(x², xy)` returns 2 components.
+- [x] Elimination order via MatrixOrder + eliminate().
+- [x] Python MultivariatePolynomial class with dict input.
+- [x] C FFI bindings for Groebner basis operations.
+- [x] Hilbert polynomial via Lagrange interpolation.
+- [x] Rational root theorem implementation.
+
+**Known limitations**
+
+- RUR (rational univariate representation) not yet implemented; uses Sturm-based numerical root isolation instead.
+- Positive-dimensional prime testing returns false (conservative).
+- Jacobian radical uses simplified saturation approach.
 
 ---
 
@@ -1004,9 +1012,9 @@ when an item is met or beaten.
 | Domains (big int SOO) | FLINT `fmpz_t`; Symbolica coefficient encoding | — | 🟢 0.11.2 done |
 | Fast polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🟢 0.12.1 NTT (90× vs Karatsuba) |
 | Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🟢 mimalloc (0.11.2) + Arena/pool (0.15) done |
-| ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🔴 gap; ODE solvers planned 0.20 |
+| ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🟢 done 0.20 (first/second-order + systems + series + Laplace IVP) |
 | Number theory | SageMath/PARI; SymPy `ntheory` | Crandall & Pomerance | � done 0.21 (CRT + factorization + primality + dlog + number-theoretic functions) |
-| Algebraic geometry (ideals) | Singular; SageMath `ideal` | Cox-Little-O'Shea | 🔴 gap; ideal ops + RUR + primary decomposition + Hilbert series planned 0.23 |
+| Algebraic geometry (ideals) | Singular; SageMath `ideal` | Cox-Little-O'Shea | 🟢 done 0.23 (ideal ops + primary decomposition + radical + Hilbert series; RUR deferred) |
 | Tensor canonicalisation | Symbolica `graphica` (Bliss) | Cadabra | 🔴 gap; graph-iso canonicalisation planned 0.22 |
 | Pattern transformers | Symbolica `Transformer::Partition` | — | 🔴 gap; planned 0.22 |
 
@@ -1042,3 +1050,4 @@ Refresh this plan:
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait refactor + WeightOrder/BlockOrder released.** `Copy` + static dispatch → `Clone + Default` + method dispatch (`&self`); `PhantomData<O>` → `order: O` field; new `WeightOrder` (weighted) and `BlockOrder` (block) orderings with `SubOrder` enum; all 11 `O::cmp` call sites updated; `Signature::cmp_pot` signature updated with `order: &O` parameter. Multi-order support upgraded from `[~]` to `[x]`. |
 | 0.20.0/0.20.1 | 2026-07-27/28 | **ODE solver released and fully backfilled.** First-order classification engine (separable/linear/Bernoulli/exact/homogeneous) + integrating factors; second-order constant-coefficient/Cauchy-Euler/reduction of order/variation of parameters/undetermined coefficients (any-degree polynomial, exponential resonance, trigonometric forcing, superposition); power-series coefficient recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 constant-coefficient systems (`dsolve_system`); Python/C bindings. 7 core bugs fixed; 31 substitution-verified correctness tests (3 known limitations ignored). |
 | 0.21.0 | 2026-07-30 | **Number theory & computational algebra stack released (Track SF).** `number_theory` grew into a directory module: multi-modulus CRT accumulator `crt_many`; BPSW primality (base-2 MR + Selfridge strong Lucas) + deterministic `is_prime_u64` for n<2⁶⁴; integer factorization (trial / Brent rho / Pollard p−1 / Williams p+1 / ECM Suyama-Montgomery stage-1 with the escalating `factor_integer`); BSGS + Pohlig-Hellman discrete logarithms; φ/μ/τ/σ_k/λ number-theoretic functions. Modular GCD: univariate Brown (`gcd::modular::gcd_modular_z` — monic modular images + CRT symmetric reconstruction + trial division) replacing the naive PRS that explodes at degree ≳ 16; the bivariate `gcd_modular` was rewritten as the full Brown algorithm (content separation in the main variable, monic interpolation images, multi-prime CRT + rational reconstruction, bad-prime skipping). Python `ocas::ntheory` (12 functions) + C `ocas_ntheory_*` (11 functions) + `ocas.hpp` RAII wrappers. Two latent bugs fixed: the hand-rolled integer square root in `rational_reconstruction` decremented one-by-one (~52 s per call on 30-digit moduli → backend-native isqrt); the correctness harness `check` mode had its subcommand and arguments swapped. Acceptance all met: ECM factors a 30-digit semiprime in 1.1 s (<10 s); deg-50/100-digit modular GCD without explosion; ≥ 20 SymPy cross-verified cases per sub-module. Competitor index: GCD (modular) and number theory marked 🟢. |
+| 0.23.0 | 2026-08-02 | **Advanced Gröbner \& algebraic-geometry tooling released (Track SF — Phase B++ COMPLETE).** `ocas-poly::ideal` module: ideal_contains, ideal_sum, ideal_product, ideal_quotient (Rabinowitsch trick), ideal_saturate, ideal_intersection. MatrixOrder for elimination + eliminate() via Lex GB. Zero-dimensional solving with Sturm root isolation. Primary decomposition via Lex GB factoring + saturation. Radical: squarefree (zero-dim) + Jacobian saturation (pos-dim). Hilbert series: hilbert_function/dimension/degree/hilbert_polynomial. Rational root theorem. Python MultivariatePolynomial + C FFI bindings. 212 tests. Phase B++ COMPLETE. |

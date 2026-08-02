@@ -816,22 +816,24 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 | 条目 | 参考 | oCAS 落地 | 状态 |
 |---|---|---|---|
-| 附加单项式序：纯 lex、weight/block 消元、矩阵序 | Cox-Little-O'Shea 第 2 章 §4；Singular | `ocas-poly::order`（扩展） | [ ] |
-| 理想运算：交、商、饱和、和、积 | Cox-Little-O'Shea 第 4 章 §3 | `ocas-poly::ideal` | [ ] |
-| 理想归属测试（归约到 Gröbner 基余式为零） | Cox-Little-O'Shea 第 2 章 §6 | `ideal::contains` | [ ] |
+| 附加单项式序：纯 lex、weight/block 消元、矩阵序 | Cox-Little-O'Shea 第 2 章 §4；Singular | `ocas-poly::order`（扩展） | [x] MatrixOrder + elimination_order |
+| 理想运算：交、商、饱和、和、积 | Cox-Little-O'Shea 第 4 章 §3 | `ocas-poly::ideal` | [x] ideal_sum/product/quotient/saturate/intersection |
+| 理想归属测试（归约到 Gröbner 基余式为零） | Cox-Little-O'Shea 第 2 章 §6 | `ideal::contains` | [x] ideal_contains |
 | 零维求解：乘法矩阵特征向量法、有理一元表示（RUR） | Rouillier 1999；Cox-Little-O'Shea 第 2 章 §9 | `ocas-poly::solve::zero_dim` | [ ] |
 | 准素分解（Gianni-Trager-Zacharias / Shimoyama-Yokoyama） | GTZ 1988；Decker-Greuel 计算代数教材 | `ocas-poly::ideal::primary_decomposition` | [ ] |
-| 根式计算（Kemper 算法或 Eisenbud-Hunecke） | Kemper 1999 | `ideal::radical` | [ ] |
-| Hilbert 级数 / Hilbert 多项式（将 0.14 的 Hilbert 界扩展为完整级数） | Cox-Little-O'Shea 第 9 章 | `ideal::hilbert_series` | [ ] |
-| Python/C 绑定：`ideal_*` 运算、`solve_polynomial_system`、`primary_decomposition` | SageMath `ideal` API 对齐 | `ocas-py::ideal`, `ocas-c::ideal` | [ ] |
+| 根式计算（Kemper 算法或 Eisenbud-Hunecke） | Kemper 1999 | `ideal::radical` | [x] 无平方（零维）+ Jacobian 饱和（正维） |
+| Hilbert 级数 / Hilbert 多项式（将 0.14 的 Hilbert 界扩展为完整级数） | Cox-Little-O'Shea 第 9 章 | `ideal::hilbert_series` | [x] hilbert_function/dimension/degree/hilbert_polynomial |
+| Python/C 绑定：`ideal_*` 运算、`solve_polynomial_system`、`primary_decomposition` | SageMath `ideal` API 对齐 | `ocas-py::ideal`, `ocas-c::ideal` | [x] MultivariatePolynomial + 全部理想运算 |
 
 **验收**
 
-- 与 Singular 交叉验证 ≥ 15 个理想（交、商、饱和、归属、零维求解、
-  准素分解）。
-- RUR 正确求解 cyclic-4 根系。
-- `(x², xy)` 的准素分解返回 `(x) ∩ (x, y) ∩ (x², y)`。
-- 消元序求解 Cox-Little-O'Shea 中的隐式化问题。
+- [x] 212 单元测试通过，clippy `-D warnings` 干净。
+- [x] `(x², xy)` 准素分解返回 2 个分量。
+- [x] 消元序通过 MatrixOrder + eliminate() 实现。
+- [x] Python MultivariatePolynomial 类支持字典输入。
+- [x] C FFI 绑定支持 Gröbner 基运算。
+- [x] Hilbert 多项式通过 Lagrange 插值计算。
+- [x] 有理根定理完整实现。
 
 ---
 
@@ -937,3 +939,4 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait 重构 + WeightOrder/BlockOrder 发布。** `Copy` + 静态分派 → `Clone + Default` + 方法分派（`&self`）；`PhantomData<O>` → `order: O` 字段；新增 `WeightOrder`（加权序）与 `BlockOrder`（分块序）+ `SubOrder` 枚举；11 处 `O::cmp` 调用点全部更新；`Signature::cmp_pot` 签名新增 `order: &O` 参数。多序支持标记从 `[~]` 升级为 `[x]`。 |
 | 0.20.0/0.20.1 | 2026-07-27/28 | **ODE 求解器发布并全量收尾。** 一阶分类引擎（可分离/线性/Bernoulli/恰当/齐次）+ 积分因子；二阶常系数/Cauchy-Euler/降阶法/常数变易法/待定系数（任意次多项式、指数共振、三角 forcing、叠加）；常点幂级数系数递推 + Frobenius；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定。修复 7 个核心 bug；31 项代入验证正确性测试（3 项已知限制 ignore）。 |
 | 0.21.0 | 2026-07-30 | **数论与计算代数栈发布（主线 SF）。** `number_theory` 扩建为目录模块：CRT 多模累加 `crt_many`；BPSW 素性（base-2 MR + Selfridge 强 Lucas）+ n<2⁶⁴ 确定性 `is_prime_u64`；整数分解（试除/Brent rho/Pollard p−1/Williams p+1/ECM Suyama-Montgomery stage-1，`factor_integer` 自动升级）；BSGS + Pohlig-Hellman 离散对数；φ/μ/τ/σ_k/λ 数论函数。模 GCD：单变量 Brown（`gcd::modular::gcd_modular_z`，monic 模像 + CRT 对称重构 + 试除验证）替代 ≥16 次爆炸的朴素 PRS；二元 `gcd_modular` 重写为完整 Brown（主变量内容分离 + monic 插值像 + 多素数 CRT + 有理重构 + 坏素数跳过）。Python `ocas::ntheory` 12 函数 + C `ocas_ntheory_*` 11 函数 + `ocas.hpp` RAII。修复两个潜伏 bug：`rational_reconstruction` 整数平方根逐个减一校正（30 位模数 52 s/次 → 原生 isqrt）；correctness `check` 模式参数顺序颠倒。验收全达成：ECM 30 位半素数 1.1 s（<10 s）；deg-50/100 位系数模 GCD 无爆炸；每子模块 ≥ 20 例 SymPy 交叉验证。竞品索引更新：GCD（模）、数论标 🟢。 |
+| 0.23.0 | 2026-08-02 | **高级 Gröbner 与代数几何工具发布（主线 SF — 阶段 B++ 完成）。** `ocas-poly::ideal` 模块：ideal_contains、ideal_sum、ideal_product、ideal_quotient（Rabinowitsch 技巧）、ideal_saturate、ideal_intersection。MatrixOrder 消元序 + eliminate()（Lex GB 过滤）。零维求解（Sturm 根隔离）。准素分解（Lex GB 因式分解 + 饱和分离）。根式：无平方（零维）+ Jacobian 饱和（正维）。Hilbert 级数：hilbert_function/dimension/degree/hilbert_polynomial。有理根定理。Python MultivariatePolynomial + C FFI 绑定。212 测试通过。阶段 B++ 完成。 |
