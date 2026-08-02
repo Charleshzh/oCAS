@@ -327,19 +327,23 @@ fn reconstruct<'a>(
 
         // Sort: hidden (symmetric) slots by label string (deterministic
         // regardless of input order), visible slots by original position.
-        slot_infos.sort_by(|a, b| {
-            match (a.hidden, b.hidden) {
-                (true, true) => {
-                    let la = orig_of[a.canon_slot_v];
-                    let lb = orig_of[b.canon_slot_v];
-                    let sa = slot_labels.get(&la).map(|x| x.to_string()).unwrap_or_default();
-                    let sb = slot_labels.get(&lb).map(|x| x.to_string()).unwrap_or_default();
-                    sa.cmp(&sb)
-                }
-                (true, false) => std::cmp::Ordering::Less,
-                (false, true) => std::cmp::Ordering::Greater,
-                (false, false) => a.orig_pos.cmp(&b.orig_pos),
+        slot_infos.sort_by(|a, b| match (a.hidden, b.hidden) {
+            (true, true) => {
+                let la = orig_of[a.canon_slot_v];
+                let lb = orig_of[b.canon_slot_v];
+                let sa = slot_labels
+                    .get(&la)
+                    .map(|x| x.to_string())
+                    .unwrap_or_default();
+                let sb = slot_labels
+                    .get(&lb)
+                    .map(|x| x.to_string())
+                    .unwrap_or_default();
+                sa.cmp(&sb)
             }
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            (false, false) => a.orig_pos.cmp(&b.orig_pos),
         });
 
         let mut args: Vec<Atom<'a>> = Vec::new();
