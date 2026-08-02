@@ -144,13 +144,11 @@ jobs:
         run: cargo build -p ocas-c
       - name: Check Python bindings compile
         run: cargo check -p ocas-py
-      - name: Build Python bindings
-        run: cargo build -p ocas-py
       - name: Install maturin and pytest
         run: pip install maturin pytest
       - name: Build and install wheel
         run: |
-          cargo clean --release
+          rm -rf target/release
           maturin build --release -m ocas-py/Cargo.toml
           pip install --force-reinstall target/wheels/*.whl
       - name: Run Python tests
