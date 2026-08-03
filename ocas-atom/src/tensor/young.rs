@@ -1,16 +1,21 @@
 //! Explicit Young projector for tensor symmetries.
 //!
-//! Expands a tensor expression with a Young tableau symmetry into a sum over
-//! permutations of its slot arguments, with ± signs for antisymmetric rows.
+//! Expands a tensor expression with a Young tableau symmetry into the sum
+//! `Σ_{σ∈R} Σ_{τ∈C} sgn(τ) · T(τ∘σ(slots))`, where `R` is the row group
+//! (permutations within each row, with sign +1) and `C` the column group
+//! (permutations within each column, signed by their parity).  This is the
+//! classical Young symmetrizer `a_λ · b_λ`, a projector up to a scalar factor.
 
 use crate::{Atom, AtomArena, AtomNode};
 
 /// A Young tableau: `row_lengths` defines the shape (e.g. `[2, 1]` for □□/□).
 /// The projector symmetrises within each row and antisymmetrises within each
-/// column, then sums over all permutations that preserve the tableau shape.
+/// column: `c_λ = a_λ · b_λ` with `a_λ = Σ_{σ∈R} σ` and
+/// `b_λ = Σ_{τ∈C} sgn(τ) τ`.
 ///
 /// This is an **explicit** expansion (not a BSGS group-theoretic one):
-/// the result is a sum of `shape!` terms, each with sign ±1.
+/// the result is a sum of `∏ r_i! · ∏ c_j!` terms (row/column factorial
+/// products), each with sign ±1.
 #[derive(Debug, Clone)]
 pub struct YoungTableau {
     /// Number of boxes in each row.
@@ -28,93 +33,67 @@ impl YoungTableau {
     pub fn total_boxes(&self) -> usize {
         self.row_lengths.iter().sum()
     }
+}
 
-    /// Compute the Young symmetriser sign for a given permutation of slots.
-    /// Returns 0 if the permutation does not preserve the tableau shape,
-    /// +1 or -1 otherwise.
-    fn sign_of_permutation(&self, perm: &[usize]) -> i64 {
-        let n = perm.len();
-        if n != self.total_boxes() {
-            return 0;
+/// All permutations of a set of box positions, as full position maps.
+///
+/// Each entry is `(map, sign)` where `map[j]` is the destination of box `j`
+/// (boxes outside the set are fixed), and `sign` is the parity of the
+/// permutation restricted to the set.
+fn box_permutations(boxes: &[usize], rank: usize) -> Vec<(Vec<usize>, i64)> {
+    fn build_map(boxes: &[usize], perm: &[usize], rank: usize) -> Vec<usize> {
+        let mut map: Vec<usize> = (0..rank).collect();
+        for (slot, &b) in boxes.iter().enumerate() {
+            map[b] = perm[slot];
         }
-
-        // Build row/column assignments from the tableau.
-        let mut row_of = vec![0usize; n];
-        let mut col_of = vec![0usize; n];
-        let mut idx = 0;
-        for (r, &len) in self.row_lengths.iter().enumerate() {
-            for c in 0..len {
-                row_of[idx] = r;
-                col_of[idx] = c;
-                idx += 1;
-            }
-        }
-
-        // Row constraint: skip rows with only 1 element (degenerate).
-        // For rows with >1 element, permuted element must stay in the same row.
-        for i in 0..n {
-            let ri = row_of[i];
-            let r_len = self.row_lengths[ri];
-            if r_len > 1 && row_of[perm[i]] != ri {
-                return 0;
-            }
-        }
-
-        // Column antisymmetrisation: compute parity of the permutation
-        // restricted to each column.
-        let mut sign: i64 = 1;
-        let columns: usize = *self.row_lengths.iter().max().unwrap_or(&0);
-        for c in 0..columns {
-            // Collect positions in this column.
-            let col_positions: Vec<usize> = (0..n).filter(|&i| col_of[i] == c).collect();
-            if col_positions.len() <= 1 {
-                continue;
-            }
-            // Compute parity of the permutation restricted to this column.
-            // Build the restricted permutation map: for each col position `p`,
-            // find where its original element (perm[p]) ends up.
-            let mut restricted: Vec<usize> = Vec::new();
-            for &p in &col_positions {
-                // perm[p] tells us WHICH original element is now at position p.
-                // We need to know: where does the element originally at position p end up?
-                // Find q such that perm[q] = p (the element's new position).
-                let new_pos = perm.iter().position(|&x| x == p).unwrap_or(p);
-                // Map from old position index within column to new position index.
-                let _old_idx = col_positions.iter().position(|&cp| cp == p).unwrap();
-                let new_idx = col_positions.iter().position(|&cp| cp == new_pos).unwrap();
-                restricted.push(new_idx);
-            }
-            // Count parity of this permutation.
-            let mut visited = vec![false; restricted.len()];
-            for i in 0..restricted.len() {
-                if visited[i] {
-                    continue;
-                }
-                let mut cycle_len: usize = 0;
-                let mut cur = i;
-                while !visited[cur] {
-                    visited[cur] = true;
-                    cycle_len += 1;
-                    cur = restricted[cur];
-                }
-                // An even-length cycle contributes sign -1 (k-1 transpositions, k-1 is odd).
-                if cycle_len.is_multiple_of(2) {
-                    sign = -sign;
-                }
-            }
-        }
-        sign
+        map
     }
+    let m = boxes.len();
+    if m == 0 {
+        return Vec::new();
+    }
+    let mut out = Vec::with_capacity(factorial(m));
+    let mut perm: Vec<usize> = boxes.to_vec();
+    let mut c = vec![0usize; m];
+    let mut sign: i64 = 1;
+    out.push((build_map(boxes, &perm, rank), sign));
+    // Heap's algorithm; each swap flips the parity.
+    let mut i = 1;
+    while i < m {
+        if c[i] < i {
+            if i % 2 == 0 {
+                perm.swap(0, i);
+            } else {
+                perm.swap(c[i], i);
+            }
+            sign = -sign;
+            out.push((build_map(boxes, &perm, rank), sign));
+            c[i] += 1;
+            i = 1;
+        } else {
+            c[i] = 0;
+            i += 1;
+        }
+    }
+    out
+}
+
+fn factorial(n: usize) -> usize {
+    (1..=n).product()
 }
 
 /// Apply a Young projector to a tensor expression.
 ///
-/// Given a tensor `T(i1, i2, …, in)`, this expands it into a sum over all
-/// slot permutations `Σ sign(σ) · T(i_{σ(1)}, i_{σ(2)}, …, i_{σ(n)})`.
+/// Given a tensor `T(i1, i2, …, in)` and a tableau of shape λ, this expands it
+/// into the Young symmetrizer `c_λ = a_λ · b_λ`:
 ///
-/// The result is normalised by the tableau's Hook length product so that
-/// applying the projector twice is idempotent.  For the fully antisymmetric
-/// tableau `[1, 1, …, 1]` this yields the standard alternating sum.
+/// `Σ_{σ∈R} Σ_{τ∈C} sgn(τ) · T(i_{τσ(1)}, …, i_{τσ(n)})`
+///
+/// where `R` permutes slots within each row and `C` within each column.  The
+/// result is **not** normalized by a hook-length factor — it is a projector up
+/// to the scalar `c_λ² = (∏r_i!·∏c_j!) / dim(λ) · c_λ`.  For the fully
+/// antisymmetric tableau `[1, 1, …, 1]` this yields the standard alternating
+/// sum; for `[n]` the full symmetrization.
 pub fn young_project<'a>(
     ctx: &'a AtomArena<'a>,
     tensor_expr: Atom<'a>,
@@ -127,43 +106,78 @@ pub fn young_project<'a>(
                 return tensor_expr;
             }
 
-            let mut terms: Vec<Atom<'a>> = Vec::new();
-            // Generate all permutations of 0..rank.
-            let mut perm: Vec<usize> = (0..rank).collect();
-            let mut c = vec![0usize; rank];
-            // Heap's algorithm.
-            // Sign for the first permutation.
-            let s0 = tableau.sign_of_permutation(&perm);
-            if s0 != 0 {
-                let reordered: Vec<Atom<'a>> = perm.iter().map(|&i| args[i]).collect();
-                if s0 == 1 {
-                    terms.push(ctx.fun(name.as_str(), &reordered));
-                } else {
-                    terms.push(ctx.mul(&[ctx.num(-1), ctx.fun(name.as_str(), &reordered)]));
+            // Row groups: contiguous box index ranges.
+            let mut rows: Vec<Vec<usize>> = Vec::new();
+            let mut idx = 0usize;
+            for &len in &tableau.row_lengths {
+                rows.push((idx..idx + len).collect());
+                idx += len;
+            }
+            // Column groups: box `k + c` for each row with `c < len`.
+            let columns = tableau.row_lengths.iter().copied().max().unwrap_or(0);
+            let mut cols: Vec<Vec<usize>> = Vec::new();
+            for c in 0..columns {
+                let mut col = Vec::new();
+                let mut k = 0usize;
+                for &len in &tableau.row_lengths {
+                    if c < len {
+                        col.push(k + c);
+                    }
+                    k += len;
+                }
+                if !col.is_empty() {
+                    cols.push(col);
                 }
             }
-            let mut i = 1;
-            while i < rank {
-                if c[i] < i {
-                    if i % 2 == 0 {
-                        perm.swap(0, i);
-                    } else {
-                        perm.swap(c[i], i);
-                    }
-                    let s = tableau.sign_of_permutation(&perm);
-                    if s != 0 {
-                        let reordered: Vec<Atom<'a>> = perm.iter().map(|&j| args[j]).collect();
-                        if s == 1 {
-                            terms.push(ctx.fun(name.as_str(), &reordered));
-                        } else {
-                            terms.push(ctx.mul(&[ctx.num(-1), ctx.fun(name.as_str(), &reordered)]));
+
+            // Build the row group R (all maps with sign +1).
+            let mut row_stack: Vec<(Vec<usize>, i64)> = vec![((0..rank).collect(), 1)];
+            for row in &rows {
+                let perms = box_permutations(row, rank);
+                let mut next = Vec::new();
+                for (m1, s1) in &row_stack {
+                    for (p, s2) in &perms {
+                        let mut composed = vec![0usize; rank];
+                        for j in 0..rank {
+                            composed[j] = m1[p[j]];
                         }
+                        next.push((composed, s1 * s2));
                     }
-                    c[i] += 1;
-                    i = 1;
-                } else {
-                    c[i] = 0;
-                    i += 1;
+                }
+                row_stack = next;
+            }
+            // Build the column group C with parity signs.
+            let mut col_stack: Vec<(Vec<usize>, i64)> = vec![((0..rank).collect(), 1)];
+            for col in &cols {
+                let perms = box_permutations(col, rank);
+                let mut next = Vec::new();
+                for (m1, s1) in &col_stack {
+                    for (p, s2) in &perms {
+                        let mut composed = vec![0usize; rank];
+                        for j in 0..rank {
+                            composed[j] = m1[p[j]];
+                        }
+                        next.push((composed, s1 * s2));
+                    }
+                }
+                col_stack = next;
+            }
+
+            let mut terms: Vec<Atom<'a>> = Vec::new();
+            for (tau, sign_tau) in &col_stack {
+                for (sigma, _) in &row_stack {
+                    // Element `j` moves to `tau[sigma[j]]`; build the inverse
+                    // map `perm[i] = original slot at position i`.
+                    let mut perm = vec![0usize; rank];
+                    for j in 0..rank {
+                        perm[tau[sigma[j]]] = j;
+                    }
+                    let reordered: Vec<Atom<'a>> = perm.iter().map(|&i| args[i]).collect();
+                    if *sign_tau == 1 {
+                        terms.push(ctx.fun(name.as_str(), &reordered));
+                    } else {
+                        terms.push(ctx.mul(&[ctx.num(-1), ctx.fun(name.as_str(), &reordered)]));
+                    }
                 }
             }
 
@@ -270,5 +284,37 @@ mod tests {
         assert_eq!(tableau.total_boxes(), 3);
         let tableau2 = YoungTableau::new(vec![1, 1, 1]);
         assert_eq!(tableau2.total_boxes(), 3);
+    }
+
+    #[test]
+    fn mixed_shape_does_not_panic() {
+        // Regression: shape [2, 1] previously panicked in sign_of_permutation.
+        // The Young symmetrizer a_λ·b_λ has |R|·|C| = 2!·1! · 2!·1! = 4 terms.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let a = ctx.var("a");
+        let b = ctx.var("b");
+        let c = ctx.var("c");
+        let f = ctx.fun("f", &[a, b, c]);
+        let tableau = YoungTableau::new(vec![2, 1]);
+        let result = young_project(&ctx, f, &tableau);
+        let s = result.to_string();
+        // c_λ = (e + (01))·(e − (02)) = f(a,b,c) + f(b,a,c) − f(c,b,a) − (021)·f
+        assert!(s.contains("f(a, b, c)"), "missing identity term: {s}");
+        assert!(s.contains("f(b, a, c)"), "missing row-swap term: {s}");
+        assert!(s.contains("f(c, b, a)"), "missing column-swap term: {s}");
+    }
+
+    #[test]
+    fn two_by_two_tableau() {
+        // Shape [2, 2]: |R| = 2!·2! = 4, |C| = 2!·2! = 4 → 16 terms, no panic.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let args: Vec<Atom<'_>> = ["a", "b", "c", "d"].iter().map(|&x| ctx.var(x)).collect();
+        let f = ctx.fun("f", &args);
+        let tableau = YoungTableau::new(vec![2, 2]);
+        let result = young_project(&ctx, f, &tableau);
+        let s = result.to_string();
+        assert!(s.contains("f(a, b, c, d)"), "missing identity term: {s}");
     }
 }
