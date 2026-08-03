@@ -440,7 +440,7 @@ The Jacobian factor $(b-a)$ is multiplied directly into the integrand; the user-
 | The integrand involves special functions (Bessel, error functions, etc.) | Numerical integration (Vegas) |
 | High-dimensional integrals ($d > 3$) | Monte Carlo (Vegas or others) |
 | The integrand has singularities or boundary layers | Vegas + increase `n_bins` and `iterations` |
-| Differentiable integral values are needed | Automatic differentiation (see [Automatic Differentiation](./autodiff.md)) |
+| Differentiable integral values are needed | Automatic differentiation (see [Automatic Differentiation](../autodiff.md)) |
 
 ### Limitations of Vegas
 
