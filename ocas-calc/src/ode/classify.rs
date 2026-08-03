@@ -37,15 +37,19 @@ pub enum ODEType {
 /// The priority order is chosen to try the most specific methods first.
 /// First-order ODEs are checked in this order (matching the push order in
 /// `classify_ode`):
+///
 /// 1. First-order linear
 /// 2. Bernoulli
 /// 3. Separable
 /// 4. Exact
 /// 5. Homogeneous
+///
 /// Second-order ODEs additionally check:
+///
 /// 6. Constant coefficient
 /// 7. Cauchy-Euler
 /// 8. Reduction of order
+///
 /// Finally, every linear ODE of order ≥ 1 gets the power-series fallback.
 ///
 /// # Example
