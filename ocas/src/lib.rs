@@ -65,15 +65,18 @@ pub mod prelude {
         self, DiophantineSolution, SolveError, solve_diophantine, solve_linear_integer,
         solve_linear_rational, solve_polynomial_system,
     };
-    pub use ocas_calc::{apart, diff, integrate, integrate_with_fuel, substitute, taylor};
+    pub use ocas_calc::{
+        apart, diff, integrate, integrate_heuristic, integrate_with_fuel, substitute, taylor,
+    };
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};
     pub use ocas_core::fuel::Fuel;
     pub use ocas_domain::dual::{DualCoeff, DualShape, HyperDual, new_first_order};
     pub use ocas_domain::{
         AlgebraicElement, AlgebraicExtension, AlgebraicNumberField, Assumption, Assumptions,
-        Complex, ComplexDomain, Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer,
-        IntegerDomain, Rational, RationalDomain, RealBall, RealBallDomain, SymbolAssumptions,
+        Complex, ComplexDomain, Domain, DoubleF64, DoubleF64Domain, EuclideanDomain, FiniteField,
+        FiniteFieldElement, Integer, IntegerDomain, Rational, RationalDomain, RealBall,
+        RealBallDomain, SymbolAssumptions,
     };
     #[cfg(feature = "simd")]
     pub use ocas_eval::VectorEvaluator;
@@ -122,14 +125,15 @@ pub use ocas_rewrite;
 // Re-export the most common types and functions at the crate root as well.
 pub use prelude::{
     Arena, Assumption, Assumptions, Atom, AtomArena, AtomNode, Bindings, BlockOrder, Complex,
-    ComplexDomain, DenseUnivariatePolynomial, DiophantineSolution, Domain, EuclideanDomain,
-    EvalTree, EvaluationDomain, EvaluationError, ExpressionEvaluator, FiniteField,
-    FiniteFieldElement, FunctionMap, Grevlex, GroebnerBasis, Instr, Instruction, Integer,
-    IntegerDomain, Lex, MatchError, Matrix, MatrixError, MonomialOrder, OcasError, ParseError,
-    Pattern, PowfExtension, Rational, RationalDomain, RationalPolynomial, RealBall, RealBallDomain,
-    Result, RootInterval, Rule, Slot, SolveError, SparseMultivariatePolynomial, SubOrder, Symbol,
-    SymbolAssumptions, WeightOrder, WildcardLevel, apart, buchberger, diff, integrate,
-    match_pattern, monomial_are_coprime, monomial_divides, monomial_lcm, normalize, parse,
-    simplify, solve_diophantine, solve_linear_integer, solve_linear_rational,
-    solve_polynomial_system, substitute, taylor, transform,
+    ComplexDomain, DenseUnivariatePolynomial, DiophantineSolution, Domain, DoubleF64,
+    DoubleF64Domain, EuclideanDomain, EvalTree, EvaluationDomain, EvaluationError,
+    ExpressionEvaluator, FiniteField, FiniteFieldElement, FunctionMap, Grevlex, GroebnerBasis,
+    Instr, Instruction, Integer, IntegerDomain, Lex, MatchError, Matrix, MatrixError,
+    MonomialOrder, OcasError, ParseError, Pattern, PowfExtension, Rational, RationalDomain,
+    RationalPolynomial, RealBall, RealBallDomain, Result, RootInterval, Rule, Slot, SolveError,
+    SparseMultivariatePolynomial, SubOrder, Symbol, SymbolAssumptions, WeightOrder, WildcardLevel,
+    apart, buchberger, diff, integrate, integrate_heuristic, match_pattern, monomial_are_coprime,
+    monomial_divides, monomial_lcm, normalize, parse, simplify, solve_diophantine,
+    solve_linear_integer, solve_linear_rational, solve_polynomial_system, substitute, taylor,
+    transform,
 };

@@ -15,6 +15,48 @@ _No changes yet._
 
 ---
 
+## [0.24.0] - 2026-08-03
+
+### Added / 新增
+
+- **启发式积分模块**（`ocas-calc/src/integral/heuristic.rs`）：新增四种积分技术，接入 `try_risch_or_fallback` 调度链（在 `special_integrate` 和 `fallback` 之间）：
+  - **分部积分**（LIATE/ILATE 启发式）：`try_parts` 函数，对 `∫ u·v' dx` 型乘积按 LIATE 优先级选取 `u`（对数→反三角→代数→三角→指数），递归计算，最多 2 层深度。
+  - **三角换元**：`try_trig_substitution` 函数，直接匹配 `√(a²−x²)`、`√(a²+x²)`、`√(x²−a²)` 及其倒数形式，返回已知原函数（`asin`、`asinh`、`acosh` 等）。
+  - **Weierstrass 换元**（`t = tan(u/2)`）：`try_weierstrass` 函数，对 `sin(u)` 和 `cos(u)` 的有理函数进行万能换元。
+  - **Euler 换元**：`try_euler_substitution` 函数，匹配 `√(ax²+bx+c)` 模式（占位，返回 `None`）。
+- **Heuristic integration module** (`ocas-calc/src/integral/heuristic.rs`): four new integration techniques wired into `try_risch_or_fallback` (between `special_integrate` and `fallback`):
+  - **Integration by parts** (LIATE heuristic): `try_parts`, max 2-level recursion depth.
+  - **Trigonometric substitution**: direct pattern-matched antiderivatives for `√(a²±x²)` and `√(x²−a²)` forms.
+  - **Weierstrass substitution** (`t = tan(u/2)`): `try_weierstrass` for trig-rational integrands.
+  - **Euler substitution**: `try_euler_substitution` for `√(ax²+bx+c)` (placeholder, returns `None`).
+
+- **`integrate_heuristic` 公共 API**：`ocas_calc::integrate_heuristic(ctx, expr, var)` 包装启发式积分，失败时返回 `Integral(...)` / **`integrate_heuristic` public API**: `ocas_calc::integrate_heuristic(ctx, expr, var)` wrapper.
+
+- **DoubleF64 双精度浮点类型**（`ocas-domain/src/double_float.rs`）：Dekker/Knuth 双双精度算术（~31 位扩展精度，~84 位二进制尾数），包括：
+  - 核心算术：`TwoSum`、`TwoProd`（FMA 优先）、`add`/`sub`/`mul`/`div`、`powi`。
+  - 超越函数：`sin`、`cos`、`tan`、`exp`、`ln`、`sqrt`。
+  - `EvaluationDomain` + `PowfExtension` trait 实现。
+  - `Display`、标准 ops traits、`DoubleF64Domain` newtype。
+- **DoubleF64 double-precision float** (`ocas-domain/src/double_float.rs`): Dekker/Knuth double-float arithmetic (~31 decimal digits, ~84 binary bits), including:
+  - Core arithmetic: `TwoSum`, `TwoProd` (FMA-preferred), `add`/`sub`/`mul`/`div`, `powi`.
+  - Transcendental functions: `sin`, `cos`, `tan`, `exp`, `ln`, `sqrt`.
+  - `EvaluationDomain` + `PowfExtension` trait implementations.
+  - `Display`, standard ops traits, `DoubleF64Domain` newtype.
+
+- **Python 绑定**：`DoubleF64` 类（算术、超越函数）和 `Expression.integrate_heuristic()` 方法 / **Python bindings**: `DoubleF64` class and `Expression.integrate_heuristic()`.
+- **C 绑定**：`ocas_expr_integrate_heuristic` 函数 / **C bindings**: `ocas_expr_integrate_heuristic`.
+
+### Tests / 测试
+
+- 11 个启发式积分测试通过：分部积分（`x·exp(x)`、`x·sin(x)`、`x²·sin(x)`、`log(x)`、`x·log(x)`）、三角换元（`1/√(1-x²)`）、Weierstrass、反面测试。
+- 14 个 DoubleF64 测试通过：算术、精度增益、`powi`、`sqrt`、`exp`、`ln`、`sin`/`cos`、`Domain` trait。
+- 13 个 `EvaluationDomain` 测试通过（含 DoubleF64）。
+- 11 heuristic integration tests passing: parts (x·exp(x), x·sin(x), x²·sin(x), log(x), x·log(x)), trig sub (1/√(1-x²)), Weierstrass, negative tests.
+- 14 DoubleF64 tests passing: arithmetic, precision gain, powi, sqrt, exp, ln, sin/cos, Domain trait.
+- 13 EvaluationDomain tests passing (including DoubleF64).
+
+---
+
 ## [0.23.0] - 2026-08-02
 
 ### Added / 新增

@@ -5,7 +5,7 @@
 //! reference lifetime entanglement between Python objects.
 
 use ocas_atom::{Atom, AtomArena, Symbol, normalize::normalize};
-use ocas_calc::{diff, integrate, substitute, taylor};
+use ocas_calc::{diff, integrate, integrate_heuristic, substitute, taylor};
 use ocas_core::arena::Arena;
 use ocas_parse::parse;
 use ocas_rewrite::rules::default_rules;
@@ -292,6 +292,22 @@ impl Expression {
         let var_sym = Symbol::new(var);
         ExprInner::build(|ctx| match parse(ctx, static_src) {
             Ok(a) => Ok(integrate(ctx, a, var_sym)),
+            Err(e) => Err(e.to_string()),
+        })
+        .map(|inner| Expression { inner })
+    }
+
+    /// Integrate using heuristic techniques (integration by parts,
+    /// trigonometric substitution, Weierstrass, Euler).
+    ///
+    /// Returns the antiderivative if a heuristic succeeds, or the
+    /// unevaluated ``Integral(expr, var)`` form otherwise.
+    fn integrate_heuristic(&self, var: &str) -> PyResult<Expression> {
+        let src = self.inner.atom.to_string();
+        let static_src = unsafe { extend_str_lifetime(&src) };
+        let var_sym = Symbol::new(var);
+        ExprInner::build(|ctx| match parse(ctx, static_src) {
+            Ok(a) => Ok(integrate_heuristic(ctx, a, var_sym)),
             Err(e) => Err(e.to_string()),
         })
         .map(|inner| Expression { inner })

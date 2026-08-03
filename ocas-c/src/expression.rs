@@ -14,7 +14,7 @@ use std::ptr;
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, Symbol};
-use ocas_calc::{diff, integrate, substitute, taylor};
+use ocas_calc::{diff, integrate, integrate_heuristic, substitute, taylor};
 use ocas_core::arena::Arena;
 use ocas_parse::parse;
 use ocas_rewrite::rules::default_rules;
@@ -526,6 +526,24 @@ pub unsafe extern "C" fn ocas_expr_integrate(
     err_out: *mut c_int,
 ) -> *mut OcasExpr {
     unary_op(handle, var, err_out, |ctx, a, sym| integrate(ctx, a, sym))
+}
+
+/// Integrate `handle` using heuristic techniques (parts, trig substitution,
+/// Weierstrass, Euler). Returns a new expression handle or `NULL` on
+/// failure. If no heuristic succeeds, the result is the unevaluated form.
+///
+/// # Safety
+///
+/// See [`ocas_expr_diff`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ocas_expr_integrate_heuristic(
+    handle: *const OcasExpr,
+    var: *const c_char,
+    err_out: *mut c_int,
+) -> *mut OcasExpr {
+    unary_op(handle, var, err_out, |ctx, a, sym| {
+        integrate_heuristic(ctx, a, sym)
+    })
 }
 
 /// Compute the Taylor series of `handle` around `point` up to `order`.

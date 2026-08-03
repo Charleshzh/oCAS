@@ -18,6 +18,7 @@ use pyo3::prelude::*;
 
 pub mod algebraic;
 pub mod domain;
+pub mod double_float;
 pub mod dual;
 pub mod eval;
 pub mod expression;
@@ -34,6 +35,7 @@ pub use algebraic::{
     PyAlgebraicElement, PyAlgebraicExtension, PyAlgebraicFactor, PyAlgebraicPolynomial,
 };
 pub use domain::{PyFiniteField, PyIntegerDomain, PyRationalDomain};
+pub use double_float::PyDoubleF64;
 pub use dual::{PyDualShape, PyHyperDual};
 pub use eval::PyExpressionEvaluator;
 pub use expression::Expression;
@@ -85,6 +87,7 @@ fn ocas(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyTensor>()?;
     m.add_class::<PyDualShape>()?;
     m.add_class::<PyHyperDual>()?;
+    m.add_class::<PyDoubleF64>()?;
     m.add_class::<PyGroebnerBasis>()?;
     m.add_class::<PyRealSolution>()?;
     m.add_class::<PyPolynomialSystemSolution>()?;

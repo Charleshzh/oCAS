@@ -9,6 +9,7 @@
 
 #![allow(clippy::collapsible_if)]
 
+pub(crate) mod heuristic;
 pub mod rational;
 pub(crate) mod rde;
 pub(crate) mod risch;
@@ -100,7 +101,24 @@ pub fn integrate_with_fuel<'a>(
     Ok(normalize(ctx, after_calc))
 }
 
-fn integrate_raw<'a>(
+/// Try heuristic integration techniques (parts, trig substitution,
+/// Weierstrass, Euler) on `expr`.
+///
+/// Returns the integrated expression if a heuristic succeeds, or the
+/// unevaluated `Integral(expr, var)` form if none do.
+pub fn integrate_heuristic<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+    let normalized = normalize(ctx, expr);
+    if let Some(r) = heuristic::heuristic_integrate(ctx, normalized, var) {
+        let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
+        let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+        let after_default = simplify(ctx, r, &default_rules, 20);
+        let after_calc = simplify(ctx, after_default, &calc_rules, 10);
+        return normalize(ctx, after_calc);
+    }
+    fallback(ctx, expr, var)
+}
+
+pub(crate) fn integrate_raw<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
@@ -181,15 +199,19 @@ fn try_risch_or_fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol
     if let Some(r) = special::special_integrate(ctx, expr, ctx.var(var.as_str())) {
         return r;
     }
+    // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
+    if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var) {
+        return r;
+    }
     fallback(ctx, expr, var)
 }
 
-fn fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+pub(crate) fn fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
     ctx.fun("Integral", &[expr, ctx.var(var.as_str())])
 }
 
 /// True if `expr` does not contain `var`.
-fn is_constant<'a>(expr: Atom<'a>, var: Symbol) -> bool {
+pub(crate) fn is_constant<'a>(expr: Atom<'a>, var: Symbol) -> bool {
     match expr.node() {
         AtomNode::Num(_) => true,
         AtomNode::Var(v) => *v != var,
@@ -241,7 +263,7 @@ fn integrate_product<'a>(
     ctx.mul(&result_factors)
 }
 
-fn is_fallback<'a>(atom: &Atom<'a>) -> bool {
+pub(crate) fn is_fallback<'a>(atom: &Atom<'a>) -> bool {
     matches!(atom.node(), AtomNode::Fun(name, _) if name.as_str() == "Integral")
 }
 

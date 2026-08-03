@@ -186,6 +186,109 @@ impl PowfExtension for f64 {
     }
 }
 
+// =========================================================================
+// DoubleF64 implementation
+// =========================================================================
+
+use ocas_domain::DoubleF64;
+
+impl EvaluationDomain for DoubleF64 {
+    #[inline]
+    fn from_f64(value: f64) -> Self {
+        DoubleF64::from_f64(value)
+    }
+
+    #[inline]
+    fn zero() -> Self {
+        DoubleF64::ZERO
+    }
+
+    #[inline]
+    fn one() -> Self {
+        DoubleF64::ONE
+    }
+
+    #[inline]
+    fn add_ref(&self, other: &Self) -> Self {
+        *self + *other
+    }
+
+    #[inline]
+    fn sub_ref(&self, other: &Self) -> Self {
+        *self - *other
+    }
+
+    #[inline]
+    fn mul_ref(&self, other: &Self) -> Self {
+        *self * *other
+    }
+
+    #[inline]
+    fn div_ref(&self, other: &Self) -> Result<Self> {
+        if other.hi == 0.0 && other.lo == 0.0 {
+            Err(EvaluationError::DivisionByZero)
+        } else {
+            Ok(*self / *other)
+        }
+    }
+
+    #[inline]
+    fn neg_ref(&self) -> Self {
+        -*self
+    }
+
+    #[inline]
+    fn powi_ref(&self, exp: i64) -> Self {
+        self.powi(exp)
+    }
+
+    fn resolve_builtin(name: &str, arg: &Self) -> Result<Self> {
+        match name.to_lowercase().as_str() {
+            "sin" => Ok(arg.sin()),
+            "cos" => Ok(arg.cos()),
+            "tan" => Ok(arg.tan()),
+            "sec" => Ok(DoubleF64::ONE / arg.cos()),
+            "csc" => Ok(DoubleF64::ONE / arg.sin()),
+            "cot" => Ok(DoubleF64::ONE / arg.tan()),
+            "exp" => Ok(arg.exp()),
+            "log" => {
+                if arg.hi <= 0.0 {
+                    Err(EvaluationError::UnsupportedOperation {
+                        message: "log of non-positive number".into(),
+                    })
+                } else {
+                    Ok(arg.ln())
+                }
+            }
+            "sqrt" => {
+                if arg.hi < 0.0 {
+                    Err(EvaluationError::UnsupportedOperation {
+                        message: "sqrt of negative number".into(),
+                    })
+                } else {
+                    Ok(arg.sqrt())
+                }
+            }
+            "abs" => Ok(arg.dabs()),
+            _ => Err(EvaluationError::FunctionNotFound {
+                name: name.to_string(),
+            }),
+        }
+    }
+}
+
+impl PowfExtension for DoubleF64 {
+    fn powf_ref(&self, exp: &Self) -> Result<Self> {
+        // a^b = exp(b * ln(a))
+        if self.hi <= 0.0 {
+            return Err(EvaluationError::UnsupportedOperation {
+                message: "powf with non-positive base".into(),
+            });
+        }
+        Ok(exp.mul(self.ln()).exp())
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
