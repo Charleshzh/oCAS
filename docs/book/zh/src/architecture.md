@@ -10,7 +10,7 @@ oCAS 由 12 个公共 crate（外加用于集成测试与基准测试的 `ocas-t
 | 4 应用 | `ocas-calc`、`ocas-eval`、`ocas-parse` | 微积分、求值、解析 |
 | 3 符号引擎 | `ocas-atom`、`ocas-rewrite` | Atom、转换器、模式匹配、e-graph |
 | 2 代数核 | `ocas-domain`、`ocas-poly` | 域、多项式、数论 |
-| 1 数值后端 | `ocas-core` | GMP/FLINT 封装 |
+| 1 数值后端 | `ocas-core` | GMP 封装（FLINT 后端位于 `ocas-poly`） |
 | 0 运行时 | `ocas-core` | arena、错误、线程池、FFI |
 
 ## 重点模块
@@ -22,6 +22,6 @@ oCAS 由 12 个公共 crate（外加用于集成测试与基准测试的 `ocas-t
 
 **`ocas-poly::roots`** — 单变量多项式实根隔离。
 
-**`ocas-tests::correctness`** — 交叉验证框架，包含 82 项测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica 进行对比。
+**`ocas-tests::correctness`** — 交叉验证框架，包含 201 项 `#[test]` 测试，覆盖 19 个数学模块（截至 0.24.0），将 oCAS 结果与 SymPy、SageMath、Symbolica 进行对比。
 
 完整设计文档见仓库中的 [ARCHITECTURE_CN.md](https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_CN.md)。

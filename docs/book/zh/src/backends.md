@@ -6,10 +6,10 @@ oCAS 默认提供纯 Rust 构建（使用 `num-bigint`/`num-rational`），并�
 
 | Feature | Crate | 后端 | 许可证 |
 |---|---|---|---|
-| `gmp` | `ocas-core`、`ocas-domain` | 经 `rug` 的 GMP 整数/有理数 | LGPL |
+| `gmp` | `ocas-core`、`ocas-domain`、`ocas-poly` | 经 `rug` 的 GMP 整数/有理数 | LGPL |
 | `mpfr` | `ocas-domain` | 经 `rug` 的 MPFR 实数球 | LGPL |
 | `flint` | `ocas-poly` | FLINT 3（仅 Linux/WSL） | LGPL |
-| `ntt` | `ocas-poly` | 数论变换多项式乘法 | MIT |
+| `ntt` | `ocas-poly` | 数论变换多项式乘法（oCAS 自研实现） | LGPL |
 | `sprs` | `ocas-poly` | 稀疏矩阵后端（`sprs` crate） | MIT |
 | `fast-poly` | `ocas-eval` | 快速多项式求值（SIMD 友好） | MIT |
 | `jit` | `ocas-eval` | Cranelift JIT 编译 | Apache-2.0 |

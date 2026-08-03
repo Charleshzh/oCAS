@@ -12,7 +12,7 @@ oCAS 实现了整数和素有限域上一元与二元多项式的因式分解。
 |---|---|---|
 | $\mathbb{Z}[x]$ | 一元 | 无平方分解、Berlekamp–Zassenhaus、Hensel 提升 |
 | $\mathbb{F}_p[x]$ | 一元 | 无平方分解、Berlekamp |
-| $\mathbb{Z}[x,y]$ | 二元（关于 $x$ 首一） | Wang Hensel 提升 |
+| $\mathbb{Z}[x,y]$ | 二元（常数 LC 快速路径；非常数 LC 自动转 EEZ） | Wang Hensel 提升 |
 | $\mathbb{F}_p[x,y]$ | 二元（关于 $x$ 首一） | 有限域上的 Hensel 提升 |
 | $\mathbb{Z}[x_1,\dots,x_n]$ | 任意多元 | Wang EEZ Hensel 提升 + 首项系数预处理 + Zassenhaus 重组 |
 | $\mathbb{F}_p[x_1,\dots,x_n]$ | 任意多元 | EEZ Hensel 提升（含特征 $p$ 的 $p$ 次幂处理；非常数 LC 走域版 Wang 预处理） |
@@ -24,7 +24,7 @@ oCAS 实现了整数和素有限域上一元与二元多项式的因式分解。
 
 ## 有限域上的一元因式分解
 
-对于素域 $\mathbb{F}_p$，oCAS 使用 **Berlekamp 算法**。首先将多项式化为无平方形式，然后计算 Frobenius 矩阵 $Q - I$ 的核空间。核空间的每个基向量通过与非平凡元素的 gcd 给出因子分解。
+对于素域 $\mathbb{F}_p$，oCAS 使用 **Berlekamp 算法**。首先将多项式化为无平方形式，然后构造 Frobenius 矩阵 $Q$（$Q[i][j]$ = $x^{ip} \bmod f$ 中 $x^j$ 的系数），计算 $Q^T - I$ 的核空间。每个非平凡核向量 $v$ 满足 $v^p \equiv v \pmod f$，通过 $\gcd(f, v - a)$（$a \in \mathbb{F}_p$）给出因子分解。小素数（$p \le 1000$）走 Berlekamp 矩阵路径；大素数使用 Cantor–Zassenhaus。
 
 ```rust
 use ocas_domain::{FiniteField, Integer};
@@ -50,8 +50,17 @@ let factors = f.factor();
 1. 计算内容并约化为本原多项式。
 2. 计算无平方分解。
 3. 选取一个小素数 $p$，使得模 $p$ 约化后仍无平方且次数与原多项式相同。
-4. 使用 Berlekamp 在模 $p$ 下分解。
+4. 使用 Cantor–Zassenhaus（小素数 $p \le 1000$ 内部采用 Berlekamp 矩阵法）
+   在模 $p$ 下分解。
 5. 通过 Hensel 提升将模 $p$ 因子提升为 $\mathbb{Z}[x]$ 上的因子。
+
+实际调用链为：`factor()` → `factor_primitive`（Yun 无平方分解，因子按
+重数升序输出，$k = 1$ 的因子在前）→ 对每个无平方分量 `factor_square_free`
+（**首项系数变换**：对首项系数 $a$、次数 $d$，构造首一多项式
+$g(x) = a^{d-1} f(x/a)$；$|a| = 1$ 时直接进入 monic 路径）→
+`factor_square_free_monic`（Mignotte 系数界 $B$、模 $p$ 分解、Hensel
+提升至 $p^k > 2B$、Zassenhaus 子集重组）。变换路径的每个首一因子 $G$
+经本原部分 $\operatorname{pp}(G(a x))$ 映射回 $\mathbb{Z}[x]$。
 
 ```rust
 use ocas_domain::IntegerDomain;
@@ -189,7 +198,6 @@ let f = SparseMultivariatePolynomial::<IntegerDomain, Lex>::from_terms(
         (vec![1, 0, 1], Integer::from(3)),
         (vec![0, 1, 1], Integer::from(1)),
         (vec![0, 2, 0], Integer::from(-1)),
-        (vec![0, 1, 0], Integer::from(0)),
         (vec![0, 0, 2], Integer::from(2)),
     ],
 );

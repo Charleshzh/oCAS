@@ -15,10 +15,15 @@ oCAS 提供带显式指标管理的基础张量代数。`Tensor` 携带命名指
 | `position` | `IndexPosition` | `Upper`（逆变）或 `Lower`（协变） |
 
 ```rust
+use ocas_core::arena::Arena;
+use ocas_atom::AtomArena;
 use ocas_atom::tensor::{IndexSlot, IndexPosition};
 
-let mu = IndexSlot::new("mu", IndexPosition::Upper);
-let nu = IndexSlot::new("nu", IndexPosition::Lower);
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+
+let mu = IndexSlot::new(ctx.var("mu"), IndexPosition::Upper);
+let nu = IndexSlot::new(ctx.var("nu"), IndexPosition::Lower);
 ```
 
 ---
@@ -28,11 +33,16 @@ let nu = IndexSlot::new("nu", IndexPosition::Lower);
 `Tensor` 由名称（`Symbol`）和指标槽向量定义：
 
 ```rust
+use ocas_core::arena::Arena;
+use ocas_atom::{AtomArena, Symbol};
 use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry};
 
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+
 let slots = vec![
-    IndexSlot::new("mu", IndexPosition::Upper),
-    IndexSlot::new("nu", IndexPosition::Lower),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
 ];
 let t = Tensor::new(Symbol::new("g"), slots);
 
@@ -57,14 +67,19 @@ let antisymmetric = t.clone().with_symmetry(Symmetry::Antisymmetric);
 指标的 `TensorProduct`：
 
 ```rust
-use ocas_atom::tensor::{contract, Contracted};
+use ocas_core::arena::Arena;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_atom::tensor::{contract, Contracted, IndexSlot, IndexPosition, Tensor};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
 
 // 缩并两个 1 阶张量：A^μ B_μ → 标量
 let a = Tensor::new(Symbol::new("A"), vec![
-    IndexSlot::new("mu", IndexPosition::Upper),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
 ]);
 let b = Tensor::new(Symbol::new("B"), vec![
-    IndexSlot::new("mu", IndexPosition::Lower),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
 ]);
 
 match contract(&ctx, &a, &b) {
@@ -134,19 +149,18 @@ sign = tensor_symmetrise_sign(g)
 ```c
 #include <ocas.h>
 
-/* 创建张量 A^μ */
-const char* labels[] = {"mu"};
-int positions[] = {1};  /* 1 = upper */
-ocas_OcasTensor* A = ocas_tensor_create("A", labels, positions, 1, &err);
+int err = 0;
+/* 创建张量 A^μ（slots 为 "label,position;..." 字符串，symmetry 可传 NULL） */
+struct ocas_OcasTensor *A = ocas_tensor_create("A", "mu,upper", NULL, &err);
 
 /* 查询阶数 */
-int rank = ocas_tensor_rank(A, &err);  /* 1 */
+size_t rank = ocas_tensor_rank(A);  /* 1 */
 
 ocas_tensor_free(A);
 ```
 
-完整的绑定文档见 [Python API](./bindings-python.md) 和
-[C/C++ API](./bindings-c.md) 章节。
+完整的绑定文档见 [Python API](./api/python.md) 和
+[C/C++ API](./api/c.md) 章节。
 
 ---
 
@@ -165,16 +179,27 @@ ocas_tensor_free(A);
    `d1`、…）。
 
 ```rust
+use ocas_core::arena::Arena;
+use ocas_atom::{AtomArena, Symbol};
 use ocas_atom::tensor::canon::canonicalize_tensors;
 use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
 
 let mut reg = TensorRegistry::new();
 reg.register(Symbol::new("T"), SymmetrySpec::none());
 reg.register(Symbol::new("U"), SymmetrySpec::none());
 
-let prod = ctx.mul(&[ctx.fun("T", &[i, j]), ctx.fun("U", &[j, k])]);
+let i = ctx.var("i");
+let j = ctx.var("j");
+let k = ctx.var("k");
+let t = ctx.fun("T", &[i, j]);
+let u = ctx.fun("U", &[j, k]);
+let prod = ctx.mul(&[t, u]);
+
 let ct = canonicalize_tensors(&ctx, prod, &reg).unwrap();
-println!("规范形: {}", ct.canonical_form);
+println!("规范形: {}", ct.canonical_form); // T(i,d0) * U(d0,k)
 ```
 
 ### 对称性规格
@@ -234,6 +259,9 @@ result = ocas.refresh_dummies("T(i,j)*U(j,i)", {"T": "none", "U": "none"})
 
 - 张量代数是显式的：指标按标签匹配，不使用爱因斯坦求和约定。必须手
   动调用 `contract`。
-- 基于图的规范化（自动对称性强制、Wick 缩并）推迟到 1.0 之后。
-- 仅支持 `Symmetric` 和 `Antisymmetric` 对称类型，不支持混合或循环
-  对称。
+- `Tensor` 的 `Symmetry` 元数据仅支持 `Symmetric` 与 `Antisymmetric`；
+  更细粒度的对称性（子集对称 `symmetric_subsets`、循环对称 `cyclic`）
+  通过 0.22.0 的 `SymmetrySpec`/`TensorRegistry` 在图规范化中表达。
+- 图规范化需要先用 `TensorRegistry` 注册各张量的对称性规格；未注册的
+  张量按无对称处理。
+- 基于图的规范化不执行自动对称性强制的 Wick 缩并等物理语义操作。

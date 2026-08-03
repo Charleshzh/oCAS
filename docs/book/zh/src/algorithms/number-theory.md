@@ -73,6 +73,10 @@ live in the parent module.
 
 ## Python 绑定 / Python Bindings
 
+注意两个函数的参数顺序：`discrete_log(p, base, target)` 模数在前
+（求 `base^x ≡ target (mod p)` 的 `x`）；`crt(moduli, residues)` 模数
+列表在前、余数列表在后。
+
 ```python
 import ocas
 

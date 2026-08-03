@@ -32,7 +32,7 @@ let opts = VegasOptions {
     n_samples: 10_000,
     iterations: 5,
     learning_rate: 1.5,
-    seed: Some(42),
+    seed: 42,
 };
 let result = integrate_1d(|x| x.sin(), 0.0, std::f64::consts::PI, opts);
 println!("integral = {:.6} ± {:.6}", result.integral, result.error);
@@ -53,7 +53,7 @@ let opts = VegasOptions {
     n_samples: 10_000,
     iterations: 10,
     learning_rate: 1.5,
-    seed: Some(0),
+    seed: 0,
 };
 let mut vegas = Vegas::new(2, opts);
 
@@ -71,11 +71,11 @@ println!("integral = {:.6} ± {:.6}", result.integral, result.error);
 
 | 字段 | 默认值 | 作用 |
 |---|---|---|
-| `n_bins` | 50 | 每个维度的网格分箱数 |
+| `n_bins` | 64 | 每个维度的网格分箱数 |
 | `n_samples` | 10,000 | 每次迭代的采样数 |
-| `iterations` | 5 | 自适应迭代次数 |
+| `iterations` | 10 | 自适应迭代次数 |
 | `learning_rate` | 1.5 | 网格自适应速度（1.0–2.0） |
-| `seed` | `None` | 随机数种子，用于可重现性 |
+| `seed` | `0x0C45`（`u64`） | 随机数种子，用于可重现性 |
 
 增加迭代和采样次数可降低方差估计但增加运行时间。学习率控制网格对被积
 函数结构的自适应强度。
@@ -125,14 +125,15 @@ print(result.integral)
 ```c
 #include <ocas.h>
 
-/* 一维便捷函数 */
-ocas_OcasIntegrateResult result;
-ocas_integrate_1d(my_fn, NULL, 0.0, 1.0, 10000, 10, &result);
+/* 一维便捷函数（opts 传 NULL 使用库默认参数） */
+int err = 0;
+struct ocas_OcasIntegrateResult result =
+    ocas_integrate_1d(my_fn, NULL, 0.0, 1.0, NULL, &err);
 printf("integral = %f ± %f\n", result.integral, result.error);
 ```
 
-完整的绑定文档见 [Python API](./bindings-python.md) 和
-[C/C++ API](./bindings-c.md) 章节。
+完整的绑定文档见 [Python API](./api/python.md) 和
+[C/C++ API](./api/c.md) 章节。
 
 ---
 

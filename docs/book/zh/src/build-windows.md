@@ -6,7 +6,7 @@ Windows 推荐工具链为 MSYS2 MINGW64（GNU 目标），可为可选数值后
 
 ```bash
 # 在 MSYS2 MINGW64 shell 中
-pacman -S mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
 ```
 
 然后带后端构建：

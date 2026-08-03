@@ -67,24 +67,37 @@ $$
 
 ## 多项式系统（基于 Gröbner 基）
 
-`solve_polynomial_system` 首先计算 Gröbner 基，然后进行回代，求解多项式方程组。
-它使用 Buchberger 算法，支持可配置的单项式序。
+`solve_polynomial_system` 求解多项式方程组：内部先计算 Gröbner 基
+（默认 F4，可通过 `Algorithm` 选择 Buchberger/F4/F5），对零维理想再做
+Sturm 实根隔离与回代。
 
 ```rust
-let arena = Arena::new();
-let ctx = AtomArena::new(&arena);
+use ocas_domain::{Rational, RationalDomain};
+use ocas_poly::groebner::Algorithm;
+use ocas_poly::ideal::solve_polynomial_system;
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
 
-// x + y = 0, x*y - 1 = 0  →  x + y = 0, y^2 + 1 = 0
-let eq1 = parse(&ctx, "x + y").unwrap();
-let eq2 = parse(&ctx, "x*y - 1").unwrap();
-let sol = solve_polynomial_system(&ctx, &[eq1, eq2], &[Symbol::new("x"), Symbol::new("y")]);
+let d = RationalDomain;
+// x + y = 0, x*y - 1 = 0
+let eq1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let eq2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+
+let sol = solve_polynomial_system(&[eq1, eq2], Algorithm::Auto);
 ```
 
-结果为三角形多项式系统，可通过回代求解。
+结果为 `PolynomialSystemSolution`：零维时包含实数解列表
+（`ZeroDimSolutions`），正维时返回 Gröbner 基（`PositiveDimensional`），
+无解时为 `Empty`。
 
 ### 理想运算（0.23.0 起）
 
-`ocas_poly::ideal` 模块提供完整理想运算：
+理想运算由 `ocas_poly::ideal` 与 `ocas_poly::groebner` 模块提供：
 
 | 运算 | 函数 | 描述 |
 |---|---|---|
@@ -94,14 +107,16 @@ let sol = solve_polynomial_system(&ctx, &[eq1, eq2], &[Symbol::new("x"), Symbol:
 | 商 | `ideal_quotient(I, J)` | $I : J$ |
 | 饱和 | `ideal_saturate(I, J)` | $I : J^\infty$ |
 | 交集 | `ideal_intersection(I, J)` | $I \cap J$ |
-| 消元 | `eliminate(gens, elim_vars, algo)` | 消去变量 |
+| 消元 | `eliminate(gens, elim_vars, algo)`（`ocas_poly::groebner`） | 消去变量 |
 | 根式 | `ideal_radical(gens)` | $\sqrt{I}$ |
 | 准素分解 | `primary_decomposition(gens)` | 分解为准素分量 |
-| Hilbert 级数 | `hilbert_series(&gb)` | 计算 Hilbert 级数 |
+| Hilbert 级数 | `hilbert_series(&gb)`（`ocas_poly::groebner::hilbert`） | 计算 Hilbert 级数 |
 
 ```rust
+use ocas_domain::{Rational, RationalDomain};
+use ocas_poly::groebner::Algorithm;
 use ocas_poly::ideal::*;
-use ocas_poly::sparse::Lex;
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
 
 let d = RationalDomain;
 let circle = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
@@ -145,7 +160,7 @@ let sol = dsolve(&ctx, ode, None);
 
 ```rust
 let types = classify_ode(&ctx, ode);
-// [LinearFirst, Separable, PowerSeries]
+// [LinearFirst, Separable, Homogeneous, PowerSeries]
 ```
 
 ### 支持的 ODE 类型
@@ -216,12 +231,14 @@ ocas_string_free(ivp);
 
 ## 错误
 
-所有求解器返回 `Result<T, SolveError>`。常见错误变体：
+线性求解器返回 `Result<T, SolveError>`；`solve_diophantine` 返回
+`Option<DiophantineSolution>`（无解时为 `None`）；`solve_polynomial_system`
+返回 `PolynomialSystemSolution`。常见错误变体：
 
 | 错误 | 含义 |
 |---|---|
 | `EmptySystem` | 未提供方程 |
-| `NonLinear` | 系统对请求变量非线程 |
+| `NonLinear` | 系统对请求变量非线性 |
 | `NonSquare` | 方程数与未知数个数不匹配 |
 | `Inconsistent` | 无解 |
 | `Underdetermined { rank }` | 无穷多解 |
@@ -231,6 +248,6 @@ ocas_string_free(ivp);
 
 ## 参见
 
-- [Rust API](./rust-api.md) — 系数域类型与多项式操作
+- [Rust API](./api/rust.md) — 系数域类型与多项式操作
 - [重写与化简](./rewrite.md) — 化简求解结果
 - [基准与性能对比](./performance.md) — Gröbner 基基准结果

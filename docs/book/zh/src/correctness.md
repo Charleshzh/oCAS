@@ -7,7 +7,7 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 
 ## 框架概述
 
-正确性套件位于 `ocas-tests/tests/correctness/`，包含 **82 项测试，覆盖 16 个数学模块**。每项测试：
+正确性套件位于 `ocas-tests/tests/correctness/`，包含 **201 项 `#[test]` 测试，覆盖 19 个数学模块**（截至 0.24.0；其中 35 项标记 `#[ignore]` 记录已知差距）。每项测试：
 
 1. 生成输入（表达式、多项式、方程组等）
 2. 使用 oCAS 计算结果
@@ -18,38 +18,33 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 
 | 模块 | 测试数 | 覆盖 |
 |---|---|---|
-| `algebra` | 8 | 化简、恒等律 |
-| `calculus_diff` | 7 | 符号微分 |
-| `calculus_int` | 5 | 启发式积分 |
-| `calculus_series` | 4 | Taylor 级数展开 |
-| `domain_integer` | 5 | 整数运算、GCD |
-| `domain_rational` | 4 | 有理数运算 |
-| `domain_finite_field` | 3 | 有限域运算 |
+| `calculus` | 16 | 微分、Taylor、积分（SymPy 对比） |
 | `evaluation` | 6 | 数值求值 |
-| `groebner` | 4 | Gröbner 基计算 |
-| `linear_algebra` | 6 | 矩阵运算、线性求解 |
-| `parsing` | 5 | 表达式解析与输出 |
-| `poly_dense` | 5 | 稠密多项式运算 |
-| `poly_factor` | 4 | 无平方因子与完全因式分解 |
+| `finite_field` | 5 | 有限域运算 |
+| `groebner` | 18 | Gröbner 基计算 |
+| `integral_risch` | 15 | Risch 符号积分 |
+| `linear_solve` | 5 | 线性求解器 |
+| `matrix` | 5 | 矩阵运算 |
+| `normalize` | 8 | 表达式规范化 |
+| `ntheory` | 11 | 数论（与 SymPy `ntheory` 交叉验证） |
+| `ode` | 34 | ODE 求解 |
+| `parse` | 6 | 表达式解析与输出 |
+| `partial_fraction` | 8 | 部分分式分解 |
+| `poly_arithmetic` | 6 | 稠密/稀疏多项式运算 |
+| `poly_factor` | 12 | 无平方与完全因式分解 |
+| `poly_factor_anf` | 21 | 代数数域因式分解 |
 | `poly_gcd` | 5 | 多项式 GCD |
-| `poly_sparse` | 5 | 稀疏多元多项式运算 |
-| `solvers` | 6 | 线性与丢番图求解器 |
+| `resultant` | 8 | 结式 |
+| `rewrite` | 8 | 重写与化简 |
+| `root_isolation` | 4 | 实根隔离 |
 
 ---
 
-## 难度分级
+## 忽略的测试（已知差距）
 
-测试按难度分类，便于定位调试目标：
-
-| 级别 | 描述 | 数量 |
-|---|---|---|
-| Trivial | 基本健全性检查（如 `x + 0 = x`） | ~20 |
-| Easy | 单步操作（如 `d/dx x^3`） | ~30 |
-| Medium | 多步或中等复杂度 | ~20 |
-| Hard | 大型表达式、边界情况 | ~8 |
-| Extreme | 已知会触及限制 | ~4 |
-
-Extreme 级测试**预期失败**，用于记录已知差距（如 Wilkinson 多项式求根：10 个实根中仅找到 8 个）。
+部分测试标记 `#[ignore]`（当前 36 项），用于记录已知差距——它们预期失败，
+仅在需要复现/推进时手动运行（`cargo test -p ocas-tests --test correctness
+-- --ignored`）。例如 Wilkinson 多项式求根：10 个实根中仅找到 8 个。
 
 ---
 
@@ -59,8 +54,11 @@ Extreme 级测试**预期失败**，用于记录已知差距（如 Wilkinson 多
 # 运行全部正确性测试
 cargo test -p ocas-tests --test correctness
 
-# 运行特定模块
-cargo test -p ocas-tests --test correctness algebra
+# 运行特定模块（如 ODE 求解）
+cargo test -p ocas-tests --test correctness ode
+
+# 运行被忽略的测试（已知差距）
+cargo test -p ocas-tests --test correctness -- --ignored
 
 # 详细输出以检查失败
 cargo test -p ocas-tests --test correctness -- --nocapture
@@ -90,17 +88,18 @@ cargo run --release --example factorization
 
 ## 审计报告
 
-运行完整套件可生成 `correctness_report.md`，包含每个模块的通过/失败统计及已知限制注释。
+`ocas-tests/scripts/generate_audit_report.py` 会运行全部测试（含 `--ignored`
+部分）并生成审计报告：
 
 ```bash
-cargo test -p ocas-tests --test correctness -- --generate-report
+cd ocas-tests
+python scripts/generate_audit_report.py
 ```
 
-报告包含：
-- 每个模块的通过/失败计数
-- 失败测试列表及预期与实际结果对比
-- 难度级别分解
-- 已知差距注释及跟踪 issue 链接
+报告写入 `docs/planning/correctness/audit-<日期>.md`，包含：
+- 普通测试与被忽略测试的通过/失败/忽略计数摘要
+- 失败测试列表
+- 与 Symbolica 的因式分解计时对比
 
 ---
 
@@ -108,15 +107,15 @@ cargo test -p ocas-tests --test correctness -- --generate-report
 
 | 问题 | 模块 | 状态 |
 |---|---|---|
-| Wilkinson n=10：10 个实根中仅找到 8 个 | `poly_sparse` / roots | 调查中 |
-| `sin(x)^2 + cos(x)^2 → 1` 需要 `egg` feature | `algebra` | 启用 `egg` feature 后正常 |
-| Bernoulli forcing y^n 使线性系数提取混淆 | `ode` | 已知限制 |
-| 积分器缺 tan/sec 表项 | `ode` / `calculus_int` | 计划中 |
+| Wilkinson n=10：10 个实根中仅找到 8 个 | `root_isolation` | 已知差距（`#[ignore]`） |
+| `sin(x)^2 + cos(x)^2 → 1` 需要 `egg` feature | `rewrite` | 启用 `egg` feature 后可化简 |
+| Bernoulli forcing y^n 使线性系数提取混淆 | `ode` | 已知限制（`#[ignore]`） |
+| 积分器缺 tan/sec 表项 | `ode` | 计划中（`#[ignore]`） |
 
 ---
 
 ## 参见
 
 - [基准与性能对比](./performance.md) — 基准套件详情
-- [Rust API](./rust-api.md) — 测试中使用的核心类型
+- [Rust API](./api/rust.md) — 测试中使用的核心类型
 - [贡献](./contributing.md) — 如何添加新的正确性测试

@@ -10,16 +10,20 @@ oCAS 通过分层管线进行积分：快速启发式表、有理函数积分器
 
 `integrate(expr, var)` 按顺序尝试：
 
-1. **启发式表** —— 幂法则、线性参数的 `sin`/`cos`/`exp`/`log`、线性
-   替换。快速且总是最先尝试。
+1. **快速表** —— 结构内联的幂法则（$x^n$、$(ax+b)^n$，含分数指数）、
+   线性参数 `sin`/`cos`/`exp` 的替换、以及 `log(x)` 等直接表项。快速且
+   总是最先尝试。
 2. **有理函数积分器** —— Hermite 约化加对数部分（对数导数恒等式、
    配方、Rothstein–Trager）。处理 `x` 的任意有理函数。
-3. **Risch 算法** —— 由 `log` 和 `exp` 构建的初等超越塔。
+3. **Risch 算法** —— 由 `log` 和 `exp` 构建的初等超越塔（塔深受
+   `MAX_RISCH_DEPTH = 16` 上限约束）。
 4. **三角重写** —— `sin`/`cos`/`tan`/… 重写为 `exp(I·x)` 后由 Risch
    积分，再尽力转换回实数形式。
 5. **特殊函数表** —— 具有 `erf`、`Ei`、`Si`、Ci、Fresnel `S`/`C` 等
    闭式的非初等积分。
-6. **未求值形式** —— `Integral(expr, var)`。
+6. **启发式技巧** —— 分部积分、三角替换、Weierstrass $t = \tan(x/2)$、
+   Euler 替换。在特殊函数表之后、未求值形式之前尝试。
+7. **未求值形式** —— `Integral(expr, var)`。
 
 ---
 
@@ -54,6 +58,9 @@ let result = integrate(&ctx, expr, Symbol::new("x"));
 - 多项式部分在 `log` 层用待定系数、在 `exp` 层用 Risch 微分方程
   `Dq + f·q = g` 积分；
 - 基域 `ℚ(x)` 委托给有理函数积分器。
+
+塔递归深度受 `MAX_RISCH_DEPTH = 16` 上限约束：超过该深度时 Risch 层
+直接放弃，把被积函数交给下一层（防止病态被积函数造成无限递归）。
 
 ```rust
 use ocas::prelude::*;
@@ -126,9 +133,14 @@ let result = integrate(&ctx, parse(&ctx, "exp(-x^2)").unwrap(), Symbol::new("x")
 化简阶段。病态结果（否则会导致重写器无限循环）可被确定性地截断。
 
 ```rust
+use ocas_core::arena::Arena;
 use ocas_core::fuel::Fuel;
+use ocas_atom::{AtomArena, Symbol};
 use ocas_calc::integral::integrate_with_fuel;
 
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+let expr = ctx.var("x");
 let fuel = Fuel::new(500);
 let result = integrate_with_fuel(&ctx, expr, Symbol::new("x"), &fuel);
 match result {

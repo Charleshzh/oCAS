@@ -59,7 +59,7 @@ cargo build -p ocas --features jit
 ```
 
 JIT 路径将解释器使用的同一 IR 翻译为本机 x86-64 或 aarch64 代码。对于需要数千次求值的表达式，
-最高可比解释器快 **97 倍**（见[基准](./performance.md#jit--evaluation)）。
+最高可比解释器快 **97 倍**（见[基准](./performance.md#jit-与求值)）。
 
 ### 多输出 JIT
 
@@ -103,22 +103,24 @@ cargo build -p ocas --features simd
 ```rust
 #[cfg(feature = "simd")]
 {
+    use ocas::prelude::*;
+
     let arena = Arena::new();
     let ctx = AtomArena::new(&arena);
     let e = parse(&ctx, "x^2 + y").unwrap();
 
-    let ev = VectorEvaluator::<f64>::compile(e).unwrap();
-    let results = ev.evaluate_batch(&[
-        vec![1.0, 0.0],   // 1^2 + 0 = 1
-        vec![2.0, 1.0],   // 2^2 + 1 = 5
-        vec![3.0, 2.0],   // 3^2 + 2 = 11
-        vec![0.0, 5.0],   // 0^2 + 5 = 5
+    let ev: ExpressionEvaluator<f64> = ExpressionEvaluator::compile(e).unwrap();
+    let vec = ev.compile_vector_evaluator().unwrap();
+    // 每个 vec 是一个参数在所有输入行上的取值
+    let results = vec.evaluate(&[
+        vec![1.0, 2.0, 3.0, 0.0],   // x：1² + 0 = 1, 2² + 1 = 5, …
+        vec![0.0, 1.0, 2.0, 5.0],   // y
     ]).unwrap();
-    // results = [1.0, 5.0, 11.0, 5.0]
+    // results[0] = [1.0, 5.0, 11.0, 5.0]（每个输出一行；单输出时仅一行）
 }
 ```
 
-SIMD 求值并行处理四组参数，适用于参数扫描、绘图和 Monte Carlo 工作负载。
+SIMD 求值并行处理多行输入（批量通道数由运行时检测的 SIMD 宽度决定），适用于参数扫描、绘图和 Monte Carlo 工作负载。
 
 ---
 
@@ -154,5 +156,6 @@ let result = ev.evaluate(&[0.5, 1.0]).unwrap();
 ---
 
 ## 参见
-- [数值积分](./numeric-integration.md) — 蒙特卡洛积分（Vegas）- [Rust API](./rust-api.md) — 构建用于求值的表达式
+- [数值积分](./numeric-integration.md) — 蒙特卡洛积分（Vegas）
+- [Rust API](./api/rust.md) — 构建用于求值的表达式
 - [基准与性能对比](./performance.md) — 三条路径的基准结果

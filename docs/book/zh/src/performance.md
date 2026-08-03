@@ -14,8 +14,8 @@ cargo bench --workspace
 cargo bench --bench poly_gcd
 cargo bench --bench poly_factor
 cargo bench --bench groebner
-cargo bench --bench poly_multivariate_gcd
-cargo bench --bench roots
+cargo bench --bench integrate
+cargo bench --bench ntt_poly_mul
 
 # 更快但精度较低的运行
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
@@ -26,14 +26,16 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 | `arena` | Arena 分配吞吐 |
 | `parse` / `normalize` | 表达式解析与规范化 |
 | `poly_dense` / `poly_sparse` | 多项式运算 |
-| `poly_gcd` | 一元多项式 GCD |
-| `poly_multivariate_gcd` | 多元多项式 GCD |
-| `poly_factor` | 无平方因子分解 |
-| `hensel_factor` | Hensel 提升完全因式分解 |
-| `roots` | 实根隔离 |
+| `poly_gcd` | 一元与二元多项式 GCD |
+| `poly_factor` | 无平方与完全因式分解（ℤ/𝔽_p/多元/代数数域） |
 | `groebner` | Gröbner 基（cyclic-n 理想） |
 | `calculus` / `rewrite` | 微分、Taylor、规则化简 |
+| `integrate` | 符号积分（有理/Risch/特殊函数） |
 | `eval_interpreter` / `eval_jit` / `eval_simd` | 数值求值路径 |
+| `eval_streaming` | 流式求值（恒定内存） |
+| `eval_estrin` / `eval_pulp` | 快速多项式求值（Estrin / pulp SIMD） |
+| `ntt_poly_mul` | NTT 多项式乘法 |
+| `gmp_integer` | GMP 整数运算 |
 | `sympy_comparison` | 与 SymPy 直接对比 |
 
 ---
@@ -73,6 +75,9 @@ sage scripts/bench_sage.py factor "x^30 - 1" 100
 |---|---|---|---|
 | 多项式（单输出） | 221 µs | 2.27 µs | **97×** |
 | 三角函数 3 输出 | 479 µs | 22.4 µs | **21×** |
+
+> 表中数字来自 0.15.0 的测量（criterion `iter_custom`，各 1000 次调用），
+> 随版本演进可能略有变化。
 
 ```bash
 cargo bench --bench eval_jit --features jit
@@ -127,8 +132,8 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 ## 正确性对比
 
 除性能外，oCAS 还在 `ocas-tests/tests/correctness/` 中提供了正确性交叉验证框架。
-它运行 82 项自动化测试，覆盖 16 个数学模块，将 oCAS 结果与 SymPy、SageMath、Symbolica
-进行对比。详见[正确性](./correctness.md)章节。
+它运行 201 项自动化测试，覆盖 19 个数学模块（截至 0.24.0），将 oCAS 结果与 SymPy、
+SageMath、Symbolica 进行对比。详见[正确性](./correctness.md)章节。
 
 ---
 

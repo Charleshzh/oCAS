@@ -64,6 +64,7 @@ match bindings.get(Symbol::new("a_")).unwrap() {
 `MatchError` 变体：
 - `NoMatch` — 模式不匹配
 - `InconsistentBinding` — 同一通配符名称绑定到不同值
+- `BudgetExhausted` — 回溯预算耗尽
 
 ---
 
@@ -193,7 +194,7 @@ match result {
 
 ## 参见
 
-- [Rust API](./rust-api.md) — 从 Rust 构建表达式与模式
+- [Rust API](./api/rust.md) — 从 Rust 构建表达式与模式
 - [求值与 JIT](./evaluation.md) — 化简后的数值求值
 
 ---
@@ -263,6 +264,8 @@ let cond = Condition::new(|bindings| {
 
 ```rust
 use ocas_rewrite::transformer::partition_expr;
+use ocas_atom::Symbol;
+
 let result = partition_expr(&ctx, expr, &[(Symbol::new("f"), 2), (Symbol::new("g"), 2), (Symbol::new("f"), 1)], false, false);
 ```
 

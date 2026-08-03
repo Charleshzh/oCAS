@@ -45,9 +45,9 @@ let rat = RationalPolynomial::from_num_den(x_plus_1, x_minus_1);
 | 加法 | `a.add(&b)` | 交叉相乘，然后规范化 |
 | 减法 | `a.sub(&b)` | 通过取反 + 加法 |
 | 乘法 | `a.mul(&b)` | 交叉消去 GCD，然后相乘 |
-| 除法 | `a.div(&b)` | 通过逆元 + 乘法 |
+| 除法 | `a.div(&b)` | 委托 `b.inv()` 后相乘；`b` 的分子为零时返回 `None` |
 | 取反 | `a.neg()` | 取反分子 |
-| 逆元 | `a.inv()` | 交换分子分母 |
+| 逆元 | `a.inv()` | 交换分子分母；分子为零时返回 `None` |
 | 幂 | `a.pow(n)` | 快速幂 |
 
 ---
@@ -98,7 +98,7 @@ let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
 ]);
 let (poly_part, terms) = apart(&num, &den);
 // poly_part 为 None（真分式）
-// terms 包含分解后的分式
+// x^2 - 1 是无平方的 → terms 恰好一个项（1/(x^2 - 1)，exp = 1）
 ```
 
 ### 算法
@@ -110,7 +110,8 @@ let (poly_part, terms) = apart(&num, &den);
 3. **Diophantine CRT**：对多个因子，求解多项式中国剩余定理以拆分分式。
 4. **p-adic 展开**：对重因子（$e_i > 1$），对分子做 p-adic 展开得到各项。
 
-`together` 函数执行逆操作，将各项合并回单个有理函数。
+`together(poly_part, &terms)` 函数执行逆操作，返回合并后的
+`(分子, 分母)` 二元组。
 
 ---
 
