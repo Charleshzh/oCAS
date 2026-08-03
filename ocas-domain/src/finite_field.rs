@@ -121,8 +121,19 @@ impl FiniteField {
     /// # Panics
     ///
     /// Panics if the prime does not fit in a `u64`.
+    /// The prime `p` as a `u64`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the prime does not fit in a `u64`.
     pub fn prime_u64(&self) -> u64 {
-        self.prime.to_u64_digits().1[0]
+        let (_, digits) = self.prime.to_u64_digits();
+        assert!(
+            digits.len() <= 1,
+            "prime {} does not fit in a u64",
+            self.prime
+        );
+        digits.first().copied().unwrap_or(0)
     }
 
     /// Convert a field element to `i64` in `[0, p)`.
@@ -131,6 +142,8 @@ impl FiniteField {
     ///
     /// Panics if the prime does not fit in a `u64`.
     pub fn to_i64(&self, a: &FiniteFieldElement) -> i64 {
+        // Enforce the documented contract: panic when the prime does not fit.
+        self.prime_u64();
         let (_, digits) = a.value.to_u64_digits();
         if digits.is_empty() {
             0
