@@ -32,9 +32,12 @@ factorization over algebraic number fields is supported (Trager).
 ## Univariate Factorization over a Finite Field
 
 For a prime field $\mathbb{F}_p$, oCAS uses **Berlekamp's algorithm**. The
-polynomial is first made square-free, then the kernel of the Frobenius matrix
-$Q - I$ is computed. Each basis vector of the kernel gives a non-trivial
-factorization via gcds with elements of the kernel.
+polynomial is first made square-free, then the Frobenius matrix $Q$ is built
+($Q[i][j]$ = coefficient of $x^j$ in $x^{ip} \bmod f$) and the nullspace of
+$Q^T - I$ is computed. Every non-trivial nullspace vector $v$ satisfies
+$v^p \equiv v \pmod f$ and yields a splitting via
+$\gcd(f, v - a)$ ($a \in \mathbb{F}_p$). Small primes ($p \le 1000$) take
+the Berlekamp matrix path; larger primes use Cantor–Zassenhaus.
 
 ```rust
 use ocas_domain::{FiniteField, Integer};
@@ -63,9 +66,21 @@ For $\mathbb{Z}[x]$, oCAS combines **square-free factorization** with
 2. Compute the square-free decomposition.
 3. Choose a small prime $p$ such that the reduction stays square-free and has
 the same degree as the input.
-4. Factor modulo $p$ using Berlekamp.
+4. Factor modulo $p$ using Cantor–Zassenhaus (which internally uses the
+Berlekamp matrix method for small primes $p \le 1000$).
 5. Lift the modular factors to factors over $\mathbb{Z}[x]$ using Hensel
 lifting.
+
+The actual call chain is: `factor()` → `factor_primitive` (Yun square-free
+decomposition; factors are emitted in ascending multiplicity order, so
+$k = 1$ factors come first) → for each square-free component
+`factor_square_free` (**leading-coefficient transformation**: for leading
+coefficient $a$ and degree $d$, build the monic polynomial
+$g(x) = a^{d-1} f(x/a)$; for $|a| = 1$ it goes straight to the monic path)
+→ `factor_square_free_monic` (Mignotte coefficient bound $B$, modular
+factorization, Hensel lifting up to $p^k > 2B$, Zassenhaus subset
+recombination). Each monic factor $G$ of the transformed path is mapped
+back to $\mathbb{Z}[x]$ via the primitive part $\operatorname{pp}(G(a x))$.
 
 ```rust
 use ocas_domain::IntegerDomain;

@@ -17,10 +17,15 @@ Each index on a tensor has:
 | `position` | `IndexPosition` | `Upper` (contravariant) or `Lower` (covariant) |
 
 ```rust
+use ocas_core::arena::Arena;
+use ocas_atom::AtomArena;
 use ocas_atom::tensor::{IndexSlot, IndexPosition};
 
-let mu = IndexSlot::new("mu", IndexPosition::Upper);
-let nu = IndexSlot::new("nu", IndexPosition::Lower);
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+
+let mu = IndexSlot::new(ctx.var("mu"), IndexPosition::Upper);
+let nu = IndexSlot::new(ctx.var("nu"), IndexPosition::Lower);
 ```
 
 ---
@@ -30,11 +35,16 @@ let nu = IndexSlot::new("nu", IndexPosition::Lower);
 A `Tensor` is defined by a name (`Symbol`) and a vector of index slots:
 
 ```rust
+use ocas_core::arena::Arena;
+use ocas_atom::{AtomArena, Symbol};
 use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry};
 
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+
 let slots = vec![
-    IndexSlot::new("mu", IndexPosition::Upper),
-    IndexSlot::new("nu", IndexPosition::Lower),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
 ];
 let t = Tensor::new(Symbol::new("g"), slots);
 
@@ -60,14 +70,19 @@ algebra operations do not automatically symmetrize.
 contract) or a `TensorProduct` with the remaining free indices:
 
 ```rust
-use ocas_atom::tensor::{contract, Contracted};
+use ocas_core::arena::Arena;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_atom::tensor::{contract, Contracted, IndexSlot, IndexPosition, Tensor};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
 
 // Contract two rank-1 tensors: A^μ B_μ → scalar
 let a = Tensor::new(Symbol::new("A"), vec![
-    IndexSlot::new("mu", IndexPosition::Upper),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
 ]);
 let b = Tensor::new(Symbol::new("B"), vec![
-    IndexSlot::new("mu", IndexPosition::Lower),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
 ]);
 
 match contract(&ctx, &a, &b) {
@@ -141,18 +156,17 @@ sign = tensor_symmetrise_sign(g)
 ```c
 #include <ocas.h>
 
-/* Create tensor A^μ */
-const char* labels[] = {"mu"};
-int positions[] = {1};  /* 1 = upper */
-ocas_OcasTensor* A = ocas_tensor_create("A", labels, positions, 1, &err);
+int err = 0;
+/* Create tensor A^μ (slots is a "label,position;..." string; symmetry may be NULL) */
+struct ocas_OcasTensor *A = ocas_tensor_create("A", "mu,upper", NULL, &err);
 
 /* Query rank */
-int rank = ocas_tensor_rank(A, &err);  /* 1 */
+size_t rank = ocas_tensor_rank(A);  /* 1 */
 
 ocas_tensor_free(A);
 ```
 
-See the [Python API](./bindings-python.md) and [C/C++ API](./bindings-c.md)
+See the [Python API](./api/python.md) and [C/C++ API](./api/c.md)
 chapters for full documentation.
 
 ---
@@ -161,10 +175,15 @@ chapters for full documentation.
 
 - Tensor algebra is explicit: indices are matched by label, not by
   Einstein summation convention. You must call `contract` manually.
-- Graph-based canonicalization (automatic symmetry enforcement, Wick
-  contractions) is deferred to post-1.0.
-- Only `Symmetric` and `Antisymmetric` symmetry types are supported;
-  no mixed or cyclic symmetries.
+- The `Tensor` `Symmetry` metadata supports only `Symmetric` and
+  `Antisymmetric`; finer-grained symmetries (subset symmetries
+  `symmetric_subsets`, cyclic `cyclic`) are expressed through the
+  0.22.0 `SymmetrySpec`/`TensorRegistry` in graph canonicalization.
+- Graph canonicalization requires registering each tensor's symmetry
+  spec in a `TensorRegistry` first; unregistered tensors are treated
+  as having no symmetry.
+- Graph-based canonicalization does not perform physics-level semantics
+  such as automatic symmetry enforcement in Wick contractions.
 
 ---
 

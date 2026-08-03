@@ -72,26 +72,40 @@ for any integer $t$.
 
 ## Polynomial systems (via Gröbner bases)
 
-`solve_polynomial_system` solves systems of polynomial equations by computing
-a Gröbner basis and then performing back-substitution. It uses the Buchberger
-algorithm with configurable monomial order.
+`solve_polynomial_system` solves systems of polynomial equations: it computes
+a Gröbner basis (default F4; the `Algorithm` enum selects Buchberger/F4/F5),
+then performs Sturm real-root isolation and back-substitution for
+zero-dimensional ideals.
 
 ```rust
-let arena = Arena::new();
-let ctx = AtomArena::new(&arena);
+use ocas_domain::{Rational, RationalDomain};
+use ocas_poly::groebner::Algorithm;
+use ocas_poly::ideal::solve_polynomial_system;
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
 
-// x + y = 0, x*y - 1 = 0  →  x + y = 0, y^2 + 1 = 0
-let eq1 = parse(&ctx, "x + y").unwrap();
-let eq2 = parse(&ctx, "x*y - 1").unwrap();
-let sol = solve_polynomial_system(&ctx, &[eq1, eq2], &[Symbol::new("x"), Symbol::new("y")]);
+let d = RationalDomain;
+// x + y = 0, x*y - 1 = 0
+let eq1 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let eq2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+
+let sol = solve_polynomial_system(&[eq1, eq2], Algorithm::Auto);
 ```
 
-The result is a simplified polynomial system in triangular form, which can
-be solved by back-substitution.
+The result is a `PolynomialSystemSolution`: a list of real solutions
+(`ZeroDimSolutions`) for zero-dimensional ideals, the Gröbner basis
+(`PositiveDimensional`) for positive-dimensional ones, or `Empty` when no
+solution exists.
 
 ### Ideal operations (since 0.23.0)
 
-The `ocas_poly::ideal` module provides complete ideal arithmetic:
+Ideal arithmetic is provided by the `ocas_poly::ideal` and
+`ocas_poly::groebner` modules:
 
 | Operation | Function | Description |
 |---|---|---|
@@ -101,14 +115,16 @@ The `ocas_poly::ideal` module provides complete ideal arithmetic:
 | Quotient | `ideal_quotient(I, J)` | $I : J$ |
 | Saturation | `ideal_saturate(I, J)` | $I : J^\infty$ |
 | Intersection | `ideal_intersection(I, J)` | $I \cap J$ |
-| Elimination | `eliminate(gens, elim_vars, algo)` | Eliminate variables |
+| Elimination | `eliminate(gens, elim_vars, algo)` (`ocas_poly::groebner`) | Eliminate variables |
 | Radical | `ideal_radical(gens)` | $\sqrt{I}$ |
 | Primary decomposition | `primary_decomposition(gens)` | Decompose into primary components |
-| Hilbert series | `hilbert_series(&gb)` | Compute Hilbert series |
+| Hilbert series | `hilbert_series(&gb)` (`ocas_poly::groebner::hilbert`) | Compute Hilbert series |
 
 ```rust
+use ocas_domain::{Rational, RationalDomain};
+use ocas_poly::groebner::Algorithm;
 use ocas_poly::ideal::*;
-use ocas_poly::sparse::Lex;
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
 
 let d = RationalDomain;
 let circle = SparseMultivariatePolynomial::<_, Lex>::from_terms(d, 2, vec![
@@ -153,7 +169,7 @@ let sol = dsolve(&ctx, ode, None);
 
 ```rust
 let types = classify_ode(&ctx, ode);
-// [LinearFirst, Separable, PowerSeries]
+// [LinearFirst, Separable, Homogeneous, PowerSeries]
 ```
 
 ### Supported ODE types
@@ -226,7 +242,10 @@ ocas_string_free(ivp);
 
 ## Errors
 
-All solvers return `Result<T, SolveError>`. Common error variants:
+The linear solvers return `Result<T, SolveError>`; `solve_diophantine`
+returns `Option<DiophantineSolution>` (`None` when no solution exists); and
+`solve_polynomial_system` returns `PolynomialSystemSolution`. Common error
+variants:
 
 | Error | Meaning |
 |---|---|
@@ -241,6 +260,6 @@ All solvers return `Result<T, SolveError>`. Common error variants:
 
 ## See also
 
-- [Rust API](./rust-api.md) — domain types and polynomial operations
+- [Rust API](./api/rust.md) — domain types and polynomial operations
 - [Rewrite & Simplification](./rewrite.md) — simplifying solved expressions
 - [Performance](./performance.md) — Gröbner basis benchmark results

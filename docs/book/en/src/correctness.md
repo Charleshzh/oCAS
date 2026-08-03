@@ -10,7 +10,8 @@ current known limitations.
 ## Framework overview
 
 The correctness suite lives in `ocas-tests/tests/correctness/` and contains
-**82 tests across 16 mathematical modules**. Each test:
+**201 `#[test]` tests across 19 mathematical modules** (as of 0.24.0; 35 of
+them are marked `#[ignore]` to track known gaps). Each test:
 
 1. Generates an input (expression, polynomial, system of equations, etc.)
 2. Computes a result using oCAS
@@ -21,39 +22,35 @@ The modules cover the full breadth of oCAS functionality:
 
 | Module | Tests | Covers |
 |---|---|---|
-| `algebra` | 8 | Simplification, identity laws |
-| `calculus_diff` | 7 | Symbolic differentiation |
-| `calculus_int` | 5 | Heuristic integration |
-| `calculus_series` | 4 | Taylor series expansion |
-| `domain_integer` | 5 | Integer arithmetic, GCD |
-| `domain_rational` | 4 | Rational arithmetic |
-| `domain_finite_field` | 3 | Finite field arithmetic |
+| `calculus` | 16 | Differentiation, Taylor, integration (SymPy-checked) |
 | `evaluation` | 6 | Numeric evaluation |
-| `groebner` | 4 | Gröbner basis computation |
-| `linear_algebra` | 6 | Matrix operations, linear solving |
-| `parsing` | 5 | Expression parsing and printing |
-| `poly_dense` | 5 | Dense polynomial arithmetic |
-| `poly_factor` | 4 | Square-free and full factorization |
+| `finite_field` | 5 | Finite field arithmetic |
+| `groebner` | 18 | Gröbner basis computation |
+| `integral_risch` | 15 | Risch symbolic integration |
+| `linear_solve` | 5 | Linear solvers |
+| `matrix` | 5 | Matrix operations |
+| `normalize` | 8 | Expression normalization |
+| `ntheory` | 11 | Number theory (cross-checked against SymPy `ntheory`) |
+| `ode` | 34 | ODE solving |
+| `parse` | 6 | Expression parsing and printing |
+| `partial_fraction` | 8 | Partial fraction decomposition |
+| `poly_arithmetic` | 6 | Dense/sparse polynomial arithmetic |
+| `poly_factor` | 12 | Square-free and full factorization |
+| `poly_factor_anf` | 21 | Algebraic number field factorization |
 | `poly_gcd` | 5 | Polynomial GCD |
-| `poly_sparse` | 5 | Sparse multivariate arithmetic |
-| `solvers` | 6 | Linear and Diophantine solvers |
+| `resultant` | 8 | Resultants |
+| `rewrite` | 8 | Rewriting and simplification |
+| `root_isolation` | 4 | Real root isolation |
 
 ---
 
-## Difficulty tiers
+## Ignored tests (known gaps)
 
-Tests are classified by difficulty to help target debugging effort:
-
-| Tier | Description | Count |
-|---|---|---|
-| Trivial | Basic sanity checks (e.g. `x + 0 = x`) | ~20 |
-| Easy | Single-step operations (e.g. `d/dx x^3`) | ~30 |
-| Medium | Multi-step or moderate complexity | ~20 |
-| Hard | Large expressions, edge cases | ~8 |
-| Extreme | Known to exercise limitations | ~4 |
-
-Extreme-tier tests are expected to **fail** and track known gaps
-(e.g., Wilkinson polynomial root-finding: 8 of 10 real roots found).
+Some tests are marked `#[ignore]` (35 in total) to track known gaps — they
+are expected to fail and are only run manually when reproducing or
+advancing the issue (`cargo test -p ocas-tests --test correctness
+-- --ignored`). For example, Wilkinson polynomial root-finding: only 8 of
+the 10 real roots are found.
 
 ---
 
@@ -63,8 +60,11 @@ Extreme-tier tests are expected to **fail** and track known gaps
 # Run all correctness tests
 cargo test -p ocas-tests --test correctness
 
-# Run a specific module
-cargo test -p ocas-tests --test correctness algebra
+# Run a specific module (e.g. ODE solving)
+cargo test -p ocas-tests --test correctness ode
+
+# Run the ignored tests (known gaps)
+cargo test -p ocas-tests --test correctness -- --ignored
 
 # Run with verbose output to inspect failures
 cargo test -p ocas-tests --test correctness -- --nocapture
@@ -98,18 +98,19 @@ development and are maintained for manual regression testing.
 
 ## Audit report
 
-Running the full suite generates `correctness_report.md` with a per-module
-summary of pass/fail counts and annotations for known limitations.
+`ocas-tests/scripts/generate_audit_report.py` runs the full suite (including
+the `--ignored` tests) and generates an audit report:
 
 ```bash
-cargo test -p ocas-tests --test correctness -- --generate-report
+cd ocas-tests
+python scripts/generate_audit_report.py
 ```
 
-The report includes:
-- Pass/fail counts per module
-- List of failing tests with expected vs actual results
-- Difficulty-tier breakdown
-- Annotated known gaps with links to tracking issues
+The report is written to `docs/planning/correctness/audit-<date>.md` and
+includes:
+- Pass/fail/ignored count summaries for the regular and ignored test runs
+- A list of failing tests
+- A factorization-timing comparison against Symbolica
 
 ---
 
@@ -117,15 +118,15 @@ The report includes:
 
 | Issue | Module | Status |
 |---|---|---|
-| Wilkinson n=10: only 8 of 10 real roots found | `poly_sparse` / roots | Under investigation |
-| `sin(x)^2 + cos(x)^2 → 1` requires `egg` feature | `algebra` | Works with `egg` feature |
-| Bernoulli forcing y^n confuses linear coefficient extraction | `ode` | Known limitation |
-| Integrator missing tan/sec table entries | `ode` / `calculus_int` | Planned |
+| Wilkinson n=10: only 8 of 10 real roots found | `root_isolation` | Known gap (`#[ignore]`) |
+| `sin(x)^2 + cos(x)^2 → 1` requires `egg` feature | `rewrite` | Simplifies with the `egg` feature |
+| Bernoulli forcing y^n confuses linear coefficient extraction | `ode` | Known limitation (`#[ignore]`) |
+| Integrator missing tan/sec table entries | `ode` | Planned (`#[ignore]`) |
 
 ---
 
 ## See also
 
 - [Performance](./performance.md) — benchmark suite details
-- [Rust API](./rust-api.md) — core types used in tests
+- [Rust API](./api/rust.md) — core types used in tests
 - [Contributing](./contributing.md) — how to add new correctness tests

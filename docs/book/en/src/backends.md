@@ -9,10 +9,10 @@ optional `ocas-gpl` crate.
 
 | Feature | Crate | Backend | License |
 |---|---|---|---|
-| `gmp` | `ocas-core`, `ocas-domain` | GMP integers/rationals via `rug` | LGPL |
+| `gmp` | `ocas-core`, `ocas-domain`, `ocas-poly` | GMP integers/rationals via `rug` | LGPL |
 | `mpfr` | `ocas-domain` | MPFR real balls via `rug` | LGPL |
 | `flint` | `ocas-poly` | FLINT 3 (Linux/WSL only) | LGPL |
-| `ntt` | `ocas-poly` | Number-theoretic transform for polynomial multiplication | MIT |
+| `ntt` | `ocas-poly` | Number-theoretic transform for polynomial multiplication (self-implemented) | LGPL |
 | `sprs` | `ocas-poly` | Sparse matrix backend (via `sprs` crate) | MIT |
 | `fast-poly` | `ocas-eval` | Fast polynomial evaluation (SIMD-friendly) | MIT |
 | `jit` | `ocas-eval` | Cranelift JIT compilation | Apache-2.0 |

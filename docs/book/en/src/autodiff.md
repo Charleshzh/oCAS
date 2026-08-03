@@ -31,17 +31,16 @@ the standard build).
 ## Quick Start
 
 ```rust
-use std::sync::Arc;
 use ocas_domain::Rational;
 use ocas_domain::dual::{new_first_order, HyperDual};
 
 // First-order dual for 2 variables
-let shape = new_first_order(2);
+let shape = new_first_order::<Rational>(2);
 
 // x = 1 + ε₁ (variable 0, unit coefficient)
-let x = HyperDual::variable(&shape, 0, Rational::from(1));
+let x = HyperDual::variable(&shape, 0, Rational::new(1, 1));
 // y = 2 + ε₂ (variable 1, unit coefficient)
-let y = HyperDual::variable(&shape, 1, Rational::from(2));
+let y = HyperDual::variable(&shape, 1, Rational::new(2, 1));
 
 // f = x * y  →  value = 2, ∂f/∂x = 2, ∂f/∂y = 1
 let f = x * y;
@@ -84,11 +83,11 @@ for the common case.
 ### Python
 
 ```python
-from ocas import DualShape, HyperDual, Rational
+from ocas import DualShape, HyperDual
 
 shape = DualShape.first_order(2)
-x = HyperDual.variable(shape, 0, Rational(1))
-y = HyperDual.variable(shape, 1, Rational(2))
+x = HyperDual.variable(shape, 0, 1)
+y = HyperDual.variable(shape, 1, 2)
 
 f = x * y
 print(f.value())    # 2
@@ -105,13 +104,14 @@ print(g.deriv(0))   # 3  (1 + y = 1 + 2)
 ```c
 #include <ocas.h>
 
-ocas_OcasDualShape* shape = ocas_dual_shape_new(2, &err);
-ocas_OcasHyperDual* x = ocas_dual_variable(shape, 0, "1", &err);
-ocas_OcasHyperDual* y = ocas_dual_variable(shape, 1, "2", &err);
+int err = 0;
+struct ocas_OcasDualShape *shape = ocas_dual_shape_new(2, &err);
+struct ocas_OcasHyperDual *x = ocas_dual_variable(shape, 0, "1", &err);
+struct ocas_OcasHyperDual *y = ocas_dual_variable(shape, 1, "2", &err);
 
-ocas_OcasHyperDual* f = ocas_dual_mul(x, y, &err);
-char* val = ocas_dual_value(f, &err);    /* "2" */
-char* dx  = ocas_dual_deriv(f, 0, &err); /* "2" */
+struct ocas_OcasHyperDual *f = ocas_dual_mul(x, y, &err);
+char *val = ocas_dual_value(f, &err);    /* "2" */
+char *dx  = ocas_dual_deriv(f, 0, &err); /* "2" */
 
 ocas_string_free(val);
 ocas_string_free(dx);
@@ -121,7 +121,7 @@ ocas_hyperdual_free(x);
 ocas_dual_shape_free(shape);
 ```
 
-See the [Python API](./bindings-python.md) and [C/C++ API](./bindings-c.md)
+See the [Python API](./api/python.md) and [C/C++ API](./api/c.md)
 chapters for full documentation.
 
 ---

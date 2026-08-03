@@ -35,7 +35,7 @@ let opts = VegasOptions {
     n_samples: 10_000,
     iterations: 5,
     learning_rate: 1.5,
-    seed: Some(42),
+    seed: 42,
 };
 let result = integrate_1d(|x| x.sin(), 0.0, std::f64::consts::PI, opts);
 println!("integral = {:.6} ± {:.6}", result.integral, result.error);
@@ -56,7 +56,7 @@ let opts = VegasOptions {
     n_samples: 10_000,
     iterations: 10,
     learning_rate: 1.5,
-    seed: Some(0),
+    seed: 0,
 };
 let mut vegas = Vegas::new(2, opts);
 
@@ -74,11 +74,11 @@ already mapped to the unit hypercube `[0, 1]ⁿ`.
 
 | Field | Default | Effect |
 |---|---|---|
-| `n_bins` | 50 | Number of grid bins per dimension |
+| `n_bins` | 64 | Number of grid bins per dimension |
 | `n_samples` | 10,000 | Samples per iteration |
-| `iterations` | 5 | Number of adaptive iterations |
+| `iterations` | 10 | Number of adaptive iterations |
 | `learning_rate` | 1.5 | Grid adaptation speed (1.0–2.0) |
-| `seed` | `None` | RNG seed for reproducibility |
+| `seed` | `0x0C45` (`u64`) | RNG seed for reproducibility |
 
 More iterations and samples reduce the variance estimate but increase
 runtime. The learning rate controls how aggressively the grid adapts to
@@ -130,13 +130,14 @@ print(result.integral)
 ```c
 #include <ocas.h>
 
-/* 1-D convenience */
-ocas_OcasIntegrateResult result;
-ocas_integrate_1d(my_fn, NULL, 0.0, 1.0, 10000, 10, &result);
+/* 1-D convenience (pass NULL for opts to use the library defaults) */
+int err = 0;
+struct ocas_OcasIntegrateResult result =
+    ocas_integrate_1d(my_fn, NULL, 0.0, 1.0, NULL, &err);
 printf("integral = %f ± %f\n", result.integral, result.error);
 ```
 
-See the [Python API](./bindings-python.md) and [C/C++ API](./bindings-c.md)
+See the [Python API](./api/python.md) and [C/C++ API](./api/c.md)
 chapters for full binding documentation.
 
 ---

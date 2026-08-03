@@ -50,9 +50,9 @@ All standard operations are supported:
 | Addition | `a.add(&b)` | Cross-multiply, then canonicalize |
 | Subtraction | `a.sub(&b)` | Via negation + addition |
 | Multiplication | `a.mul(&b)` | Cross-cancel GCDs, then multiply |
-| Division | `a.div(&b)` | Via inverse + multiplication |
+| Division | `a.div(&b)` | Via `b.inv()` + multiplication; returns `None` when the numerator of `b` is zero |
 | Negation | `a.neg()` | Negate numerator |
-| Inverse | `a.inv()` | Swap numerator/denominator |
+| Inverse | `a.inv()` | Swap numerator/denominator; returns `None` when the numerator is zero |
 | Power | `a.pow(n)` | Repeated squaring |
 
 ---
@@ -105,7 +105,7 @@ let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
 ]);
 let (poly_part, terms) = apart(&num, &den);
 // poly_part is None (proper fraction)
-// terms contains the decomposed fractions
+// x^2 - 1 is square-free → exactly one term (1/(x^2 - 1), exp = 1)
 ```
 
 ### Algorithm
@@ -121,8 +121,8 @@ The decomposition proceeds in steps:
 4. **p-adic expansion**: For repeated factors ($e_i > 1$), expand the
    numerator with respect to each factor to get individual terms.
 
-The `together` function reverses the decomposition, combining terms back into
-a single rational function.
+The `together(poly_part, &terms)` function reverses the decomposition,
+returning the combined `(numerator, denominator)` pair.
 
 ---
 

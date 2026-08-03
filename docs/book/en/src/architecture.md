@@ -11,7 +11,7 @@ cyclic dependencies are permitted.
 | 4 Application | `ocas-calc`, `ocas-eval`, `ocas-parse` | Calculus, evaluation, parsing |
 | 3 Symbol engine | `ocas-atom`, `ocas-rewrite` | Atom, converters, pattern matching, e-graph |
 | 2 Algebra kernel | `ocas-domain`, `ocas-poly` | Domains, polynomials, number theory |
-| 1 Numerical backend | `ocas-core` | GMP/FLINT encapsulation |
+| 1 Numerical backend | `ocas-core` | GMP encapsulation (the FLINT backend lives in `ocas-poly`) |
 | 0 Runtime | `ocas-core` | Arena, errors, thread pool, FFI |
 
 ## Notable modules
@@ -27,9 +27,9 @@ FGLM conversion for zero-dimensional ideals.
 
 **`ocas-poly::roots`** — Real root isolation for univariate polynomials.
 
-**`ocas-tests::correctness`** — Cross-validation framework with 82 tests
-across 16 mathematical modules, comparing oCAS results against SymPy,
-SageMath, and Symbolica.
+**`ocas-tests::correctness`** — Cross-validation framework with 201 `#[test]`
+tests across 19 mathematical modules (as of 0.24.0), comparing oCAS results
+against SymPy, SageMath, and Symbolica.
 
 See [ARCHITECTURE_EN.md](https://github.com/charleshzh/ocas/blob/main/docs/planning/ARCHITECTURE_EN.md)
 in the repository for the full design document.

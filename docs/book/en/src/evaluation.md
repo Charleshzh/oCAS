@@ -114,23 +114,27 @@ cargo build -p ocas --features simd
 ```rust
 #[cfg(feature = "simd")]
 {
+    use ocas::prelude::*;
+
     let arena = Arena::new();
     let ctx = AtomArena::new(&arena);
     let e = parse(&ctx, "x^2 + y").unwrap();
 
-    let ev = VectorEvaluator::<f64>::compile(e).unwrap();
-    let results = ev.evaluate_batch(&[
-        vec![1.0, 0.0],   // 1^2 + 0 = 1
-        vec![2.0, 1.0],   // 2^2 + 1 = 5
-        vec![3.0, 2.0],   // 3^2 + 2 = 11
-        vec![0.0, 5.0],   // 0^2 + 5 = 5
+    let ev: ExpressionEvaluator<f64> = ExpressionEvaluator::compile(e).unwrap();
+    let vec = ev.compile_vector_evaluator().unwrap();
+    // Each vec holds one parameter's values across all input rows
+    let results = vec.evaluate(&[
+        vec![1.0, 2.0, 3.0, 0.0],   // x: 1² + 0 = 1, 2² + 1 = 5, …
+        vec![0.0, 1.0, 2.0, 5.0],   // y
     ]).unwrap();
-    // results = [1.0, 5.0, 11.0, 5.0]
+    // results[0] = [1.0, 5.0, 11.0, 5.0] (one row per output; a single
+    // output yields exactly one row)
 }
 ```
 
-SIMD evaluation processes batches of four parameter sets in parallel,
-ideal for parameter sweeps, plotting, and Monte Carlo workloads.
+SIMD evaluation processes many input rows in parallel (the batch lane
+count is the runtime-detected SIMD width), ideal for parameter sweeps,
+plotting, and Monte Carlo workloads.
 
 ---
 
@@ -169,5 +173,5 @@ let result = ev.evaluate(&[0.5, 1.0]).unwrap();
 ## See also
 
 - [Numeric Integration](./numeric-integration.md) — Monte Carlo integration (Vegas)
-- [Rust API](./rust-api.md) — building expressions for evaluation
+- [Rust API](./api/rust.md) — building expressions for evaluation
 - [Performance](./performance.md) — benchmark results across all three paths

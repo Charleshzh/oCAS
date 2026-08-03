@@ -17,8 +17,8 @@ cargo bench --workspace
 cargo bench --bench poly_gcd
 cargo bench --bench poly_factor
 cargo bench --bench groebner
-cargo bench --bench poly_multivariate_gcd
-cargo bench --bench roots
+cargo bench --bench integrate
+cargo bench --bench ntt_poly_mul
 
 # Faster, less precise runs
 cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
@@ -29,14 +29,16 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 | `arena` | Arena allocation throughput |
 | `parse` / `normalize` | Expression parsing and normalization |
 | `poly_dense` / `poly_sparse` | Polynomial arithmetic |
-| `poly_gcd` | Univariate polynomial GCD |
-| `poly_multivariate_gcd` | Multivariate polynomial GCD |
-| `poly_factor` | Square-free factorization |
-| `hensel_factor` | Hensel-lifting full factorization |
-| `roots` | Real root isolation |
+| `poly_gcd` | Univariate and bivariate polynomial GCD |
+| `poly_factor` | Square-free and full factorization (ℤ/𝔽_p/multivariate/ANF) |
 | `groebner` | Gröbner bases (cyclic-n ideals) |
 | `calculus` / `rewrite` | Differentiation, Taylor, rule-based simplification |
+| `integrate` | Symbolic integration (rational/Risch/special functions) |
 | `eval_interpreter` / `eval_jit` / `eval_simd` | Numeric evaluation paths |
+| `eval_streaming` | Streaming evaluation (constant memory) |
+| `eval_estrin` / `eval_pulp` | Fast polynomial evaluation (Estrin / pulp SIMD) |
+| `ntt_poly_mul` | NTT polynomial multiplication |
+| `gmp_integer` | GMP integer arithmetic |
 | `sympy_comparison` | Head-to-head vs SymPy |
 
 ---
@@ -82,6 +84,10 @@ interpreter on single- and multi-output workloads (1000 calls each, criterion
 |---|---|---|---|
 | Polynomial (single output) | 221 µs | 2.27 µs | **97×** |
 | Trig 3-output | 479 µs | 22.4 µs | **21×** |
+
+> The figures above are from the 0.15.0 measurements (criterion
+> `iter_custom`, 1000 calls each) and may drift slightly with later
+> releases.
 
 ```bash
 cargo bench --bench eval_jit --features jit
@@ -146,9 +152,10 @@ cargo bench --bench poly_gcd -- --warm-up-time 0.5 --measurement-time 1
 ## Correctness comparison
 
 Beyond performance, oCAS ships a correctness cross-validation framework in
-`ocas-tests/tests/correctness/`. It runs 82 automated tests across 16
-mathematical modules, comparing oCAS results against SymPy, SageMath, and
-Symbolica. See the [Correctness](./correctness.md) chapter for details.
+`ocas-tests/tests/correctness/`. It runs 201 automated tests across 19
+mathematical modules (as of 0.24.0), comparing oCAS results against SymPy,
+SageMath, and Symbolica. See the [Correctness](./correctness.md) chapter for
+details.
 
 ---
 

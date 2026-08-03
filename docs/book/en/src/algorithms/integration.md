@@ -13,19 +13,25 @@ wins. This chapter explains each layer and when the unevaluated
 
 `integrate(expr, var)` tries, in order:
 
-1. **Heuristic table** — power rules, `sin`/`cos`/`exp`/`log` of linear
-   arguments, linear substitutions. Fast and always attempted first.
+1. **Fast table** — inline structural rules: power rules (`x^n`,
+   `(ax+b)^n`, including fractional exponents), `sin`/`cos`/`exp` of
+   linear arguments, and direct table entries such as `log(x)`. Fast and
+   always attempted first.
 2. **Rational-function integrator** — Hermite reduction plus the
    logarithmic part (logarithmic-derivative identity, completing the
    square, Rothstein–Trager). Handles every rational function of `x`.
 3. **Risch algorithm** — elementary transcendental towers built from
-   `log` and `exp`.
+   `log` and `exp` (the tower recursion is capped by
+   `MAX_RISCH_DEPTH = 16`).
 4. **Trigonometric rewrite** — `sin`/`cos`/`tan`/… rewritten into
    `exp(I·x)` and re-integrated by Risch, then converted back to real
    form on a best-effort basis.
 5. **Special-function table** — non-elementary integrals with closed
    forms in terms of `erf`, `Ei`, `Si`, `Ci`, Fresnel `S`/`C`, …
-6. **Unevaluated form** — `Integral(expr, var)`.
+6. **Heuristic techniques** — integration by parts, trigonometric
+   substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions. Tried
+   after the special-function table, just before the unevaluated form.
+7. **Unevaluated form** — `Integral(expr, var)`.
 
 ---
 
@@ -64,6 +70,10 @@ Elementary transcendental integrands are handled by building a
   `log` levels and by the Risch differential equation `Dq + f·q = g`
   at `exp` levels;
 - the base `ℚ(x)` delegates to the rational-function integrator.
+
+The tower recursion is capped by `MAX_RISCH_DEPTH = 16`: beyond that
+depth the Risch layer gives up and hands the integrand to the next
+layer (this keeps pathological integrands from recursing forever).
 
 ```rust
 use ocas::prelude::*;
@@ -144,9 +154,14 @@ through the two post-integration simplification stages. A pathological result
 that would otherwise spin the rewriter can be cut off deterministically.
 
 ```rust
+use ocas_core::arena::Arena;
 use ocas_core::fuel::Fuel;
+use ocas_atom::{AtomArena, Symbol};
 use ocas_calc::integral::integrate_with_fuel;
 
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+let expr = ctx.var("x");
 let fuel = Fuel::new(500);
 let result = integrate_with_fuel(&ctx, expr, Symbol::new("x"), &fuel);
 match result {

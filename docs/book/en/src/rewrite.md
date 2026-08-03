@@ -68,6 +68,7 @@ match bindings.get(Symbol::new("a_")).unwrap() {
 `MatchError` variants:
 - `NoMatch` — pattern does not match
 - `InconsistentBinding` — same wildcard name bound to different values
+- `BudgetExhausted` — backtrack budget exhausted
 
 ---
 
@@ -206,7 +207,7 @@ For advanced simplification, enable the `egg` feature or write custom rules.
 
 ## See also
 
-- [Rust API](./rust-api.md) — building expressions and patterns from Rust
+- [Rust API](./api/rust.md) — building expressions and patterns from Rust
 - [Evaluation & JIT](./evaluation.md) — numeric evaluation after simplification
 
 ---

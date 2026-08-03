@@ -8,7 +8,7 @@ the pure-Rust default (no backends) configuration.
 
 ```bash
 # In the MSYS2 MINGW64 shell
-pacman -S mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
 ```
 
 Then build with backends:
