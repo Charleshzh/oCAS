@@ -219,9 +219,7 @@ pub fn f5<D: Domain + 'static, O: MonomialOrder>(
 
     // ℤ_p fast path: run the entire F5 pipeline on native i64 residues,
     // converting to/from the BigInt-backed domain only at the boundaries.
-    if std::any::TypeId::of::<D>() == std::any::TypeId::of::<ocas_domain::FiniteField>() {
-        let domain_ptr = ideal[0].domain() as *const D;
-        let ff = unsafe { &*domain_ptr.cast::<ocas_domain::FiniteField>() };
+    if let Some(ff) = (ideal[0].domain() as &dyn std::any::Any).downcast_ref::<ocas_domain::FiniteField>() {
         return f5_fp(ideal, ff.prime_u64() as i64);
     }
 

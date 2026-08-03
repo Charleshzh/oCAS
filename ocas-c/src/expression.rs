@@ -62,22 +62,6 @@ impl Drop for ExprBox {
     }
 }
 
-/// Extend a string slice's lifetime to `'static`.
-///
-/// # Safety
-///
-/// Safe in practice for our use because oCAS atoms never retain borrows of
-/// the input string — the parser copies all characters into arena-owned
-/// nodes. We only need the longer lifetime to satisfy `parse`'s signature.
-unsafe fn extend_str_lifetime(s: &str) -> &'static str {
-    unsafe { std::mem::transmute::<&str, &'static str>(s) }
-}
-
-/// `pub(crate)` wrapper for sibling modules (ode bindings).
-pub(crate) unsafe fn extend_str_lifetime_pub(s: &str) -> &'static str {
-    unsafe { extend_str_lifetime(s) }
-}
-
 /// Leak a fresh arena and a fresh `AtomArena<'static>` borrowing it. Returns
 /// raw pointers suitable for storage in [`ExprBox`].
 fn leak_arena_and_ctx() -> (*mut Arena, *mut AtomArena<'static>) {
@@ -179,8 +163,7 @@ impl ExprBox {
 
     /// Parse `input` into a new `ExprBox`.
     fn from_parse(input: &str) -> Result<Box<Self>, String> {
-        let static_input = unsafe { extend_str_lifetime(input) };
-        Self::build(|ctx| match parse(ctx, static_input) {
+        Self::build(|ctx| match parse(ctx, input) {
             Ok(a) => Ok(a),
             Err(e) => Err(e.to_string()),
         })
@@ -188,8 +171,7 @@ impl ExprBox {
 
     /// Rebuild from the string form of `src` into a fresh arena.
     fn from_expr_string(src: String) -> Result<Box<Self>, String> {
-        let static_src = unsafe { extend_str_lifetime(&src) };
-        Self::build(|ctx| match parse(ctx, static_src) {
+        Self::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(a),
             Err(e) => Err(e.to_string()),
         })
@@ -203,8 +185,7 @@ impl ExprBox {
     ) -> Result<Box<Self>, String> {
         let var_sym = Symbol::new(var);
         let src = self.atom.to_string();
-        let static_src = unsafe { extend_str_lifetime(&src) };
-        Self::build(|ctx| match parse(ctx, static_src) {
+        Self::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(op(ctx, a, var_sym)),
             Err(e) => Err(e.to_string()),
         })
@@ -215,11 +196,9 @@ impl ExprBox {
         let var_sym = Symbol::new(var);
         let expr_src = self.atom.to_string();
         let repl_src = replacement.atom.to_string();
-        let static_expr = unsafe { extend_str_lifetime(&expr_src) };
-        let static_repl = unsafe { extend_str_lifetime(&repl_src) };
         Self::build(|ctx| {
-            let e = parse(ctx, static_expr).map_err(|e| e.to_string())?;
-            let r = parse(ctx, static_repl).map_err(|e| e.to_string())?;
+            let e = parse(ctx, &expr_src).map_err(|e| e.to_string())?;
+            let r = parse(ctx, &repl_src).map_err(|e| e.to_string())?;
             Ok(substitute(ctx, e, var_sym, r))
         })
     }
@@ -229,11 +208,9 @@ impl ExprBox {
         let var_sym = Symbol::new(var);
         let expr_src = self.atom.to_string();
         let point_src = point.atom.to_string();
-        let static_expr = unsafe { extend_str_lifetime(&expr_src) };
-        let static_point = unsafe { extend_str_lifetime(&point_src) };
         Self::build(|ctx| {
-            let e = parse(ctx, static_expr).map_err(|e| e.to_string())?;
-            let p = parse(ctx, static_point).map_err(|e| e.to_string())?;
+            let e = parse(ctx, &expr_src).map_err(|e| e.to_string())?;
+            let p = parse(ctx, &point_src).map_err(|e| e.to_string())?;
             Ok(taylor(ctx, e, var_sym, p, order))
         })
     }
@@ -241,9 +218,8 @@ impl ExprBox {
     /// Simplify using the default rule set.
     fn simplify_default(&self) -> Result<Box<Self>, String> {
         let src = self.atom.to_string();
-        let static_src = unsafe { extend_str_lifetime(&src) };
         Self::build(|ctx| {
-            let a = parse(ctx, static_src).map_err(|e| e.to_string())?;
+            let a = parse(ctx, &src).map_err(|e| e.to_string())?;
             let rules = default_rules(ctx, &());
             Ok(simplify(ctx, a, &rules, 20))
         })
@@ -251,6 +227,13 @@ impl ExprBox {
 }
 
 /// Convert a C string pointer to a Rust `&str`, setting an error on failure.
+///
+/// # Safety contract (FFI boundary)
+///
+/// The returned `&str` borrows from the memory behind `s`. The caller must
+/// ensure `s` remains valid for the lifetime of the returned reference.
+/// In practice this is the standard FFI borrow pattern — the C caller owns
+/// the string and the Rust side borrows it for the duration of the FFI call.
 fn cstr_to_str<'a>(s: *const c_char, what: &str) -> Option<&'a str> {
     if s.is_null() {
         set(OCAS_ERROR_NULL_POINTER, &format!("{what} is null"));
@@ -306,20 +289,20 @@ fn finish_op(
         Ok(Err(msg)) => {
             set(OCAS_ERROR_RUNTIME, &msg);
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             return ptr::null_mut();
         }
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "panic during operation");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             return ptr::null_mut();
         }
     };
     if !err_out.is_null() {
-        unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+        unsafe { *err_out = crate::error::OCAS_OK };
     }
     Box::into_raw(boxed).cast::<OcasExpr>()
 }
@@ -352,21 +335,21 @@ pub unsafe extern "C" fn ocas_expr_parse(
     match result {
         Ok(Ok(b)) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             Box::into_raw(b).cast::<OcasExpr>()
         }
         Ok(Err(msg)) => {
             set(OCAS_ERROR_PARSE, &msg);
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_PARSE) };
+                unsafe { *err_out = OCAS_ERROR_PARSE };
             }
             ptr::null_mut()
         }
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "panic during parse");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             ptr::null_mut()
         }
@@ -404,7 +387,7 @@ pub unsafe extern "C" fn ocas_expr_clone(
     crate::error::clear();
     let Some(expr) = as_expr(handle) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
@@ -431,7 +414,7 @@ pub unsafe extern "C" fn ocas_expr_to_string(
     crate::error::clear();
     let Some(expr) = as_expr(handle) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
@@ -439,14 +422,14 @@ pub unsafe extern "C" fn ocas_expr_to_string(
     match CString::new(s) {
         Ok(c) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             c.into_raw()
         }
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "expression contained a NUL byte");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             ptr::null_mut()
         }
@@ -482,7 +465,7 @@ pub unsafe extern "C" fn ocas_expr_normalize(handle: *mut OcasExpr, err_out: *mu
     if handle.is_null() {
         set(OCAS_ERROR_NULL_POINTER, "expression handle is null");
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return OCAS_ERROR_NULL_POINTER;
     }
@@ -491,7 +474,7 @@ pub unsafe extern "C" fn ocas_expr_normalize(handle: *mut OcasExpr, err_out: *mu
     let ctx = unsafe { static_ctx(expr.ctx_ptr) };
     expr.atom = normalize(ctx, expr.atom);
     if !err_out.is_null() {
-        unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+        unsafe { *err_out = crate::error::OCAS_OK };
     }
     crate::error::OCAS_OK
 }
@@ -563,13 +546,13 @@ pub unsafe extern "C" fn ocas_expr_taylor(
     crate::error::clear();
     let Some(expr) = as_expr(handle) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
     let Some(point_expr) = as_expr(point) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
@@ -599,7 +582,7 @@ pub unsafe extern "C" fn ocas_expr_simplify(
     crate::error::clear();
     let Some(expr) = as_expr(handle) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
@@ -625,13 +608,13 @@ pub unsafe extern "C" fn ocas_expr_substitute(
     crate::error::clear();
     let Some(expr) = as_expr(handle) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
     let Some(repl) = as_expr(replacement) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };
@@ -657,7 +640,7 @@ fn unary_op(
     crate::error::clear();
     let Some(expr) = as_expr(handle) else {
         if !err_out.is_null() {
-            unsafe { ptr::write(err_out, OCAS_ERROR_NULL_POINTER) };
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
         }
         return ptr::null_mut();
     };

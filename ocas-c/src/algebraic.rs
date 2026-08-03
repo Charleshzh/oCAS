@@ -485,13 +485,10 @@ pub extern "C" fn ocas_algebraic_poly_factor(
     let factors_ptr = array.as_mut_ptr();
     std::mem::forget(array);
     unsafe {
-        ptr::write(
-            out,
-            OcasAlgebraicFactorArray {
-                factors: factors_ptr,
-                len,
-            },
-        );
+        *out = OcasAlgebraicFactorArray {
+            factors: factors_ptr,
+            len,
+        };
     }
     crate::error::write_last_code(err);
     OCAS_OK

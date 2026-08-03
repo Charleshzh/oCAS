@@ -40,7 +40,7 @@ pub enum ParseError {
 /// let expr = parse(&ctx, "x^2 + 2*x + 1").unwrap();
 /// assert_eq!(expr.to_string(), "((x^2) + (2*x)) + 1");
 /// ```
-pub fn parse<'a>(ctx: &'a AtomArena<'a>, input: &'a str) -> Result<Atom<'a>, ParseError> {
+pub fn parse<'a>(ctx: &'a AtomArena<'a>, input: &str) -> Result<Atom<'a>, ParseError> {
     let tokens = lex(input)?;
     let mut parser = Parser::new(ctx, &tokens);
     parser.parse()

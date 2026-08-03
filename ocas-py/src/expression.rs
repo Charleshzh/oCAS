@@ -13,24 +13,6 @@ use ocas_rewrite::simplify::simplify;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-/// Extend a string's lifetime to `'static`. Safe because oCAS atoms never
-/// retain borrows of the input string — the parser copies characters into
-/// arena-owned nodes.
-///
-/// # Safety
-///
-/// See above; only safe when the result is not stored beyond the input's
-/// actual lifetime by code that depends on the borrow.
-unsafe fn extend_str_lifetime(s: &str) -> &'static str {
-    unsafe { std::mem::transmute::<&str, &'static str>(s) }
-}
-
-/// `pub(crate)` wrapper for sibling modules (ode bindings) that need to
-/// parse inside an expression's arena.
-pub(crate) unsafe fn extend_str_lifetime_pub(s: &str) -> &'static str {
-    unsafe { extend_str_lifetime(s) }
-}
-
 /// Internal storage behind an [`Expression`]: a leaked arena pair recovered
 /// on drop.
 struct ExprInner {
@@ -134,8 +116,7 @@ impl ExprInner {
 
     /// Parse a string.
     fn from_str(input: &str) -> PyResult<Box<Self>> {
-        let static_input = unsafe { extend_str_lifetime(input) };
-        Self::build(|ctx| match parse(ctx, static_input) {
+        Self::build(|ctx| match parse(ctx, input) {
             Ok(a) => Ok(a),
             Err(e) => Err(format!("parse error: {e}")),
         })
@@ -143,8 +124,7 @@ impl ExprInner {
 
     /// Rebuild from the string form of `src`.
     fn from_string_src(src: String) -> PyResult<Box<Self>> {
-        let static_src = unsafe { extend_str_lifetime(&src) };
-        Self::build(|ctx| match parse(ctx, static_src) {
+        Self::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(a),
             Err(e) => Err(format!("parse error: {e}")),
         })
@@ -264,9 +244,8 @@ impl Expression {
     /// Simplify using the default rule set.
     fn simplify(&self) -> PyResult<Expression> {
         let src = self.inner.atom.to_string();
-        let static_src = unsafe { extend_str_lifetime(&src) };
         ExprInner::build(|ctx| {
-            let a = parse(ctx, static_src).map_err(|e| e.to_string())?;
+            let a = parse(ctx, &src).map_err(|e| e.to_string())?;
             let rules = default_rules(ctx, &());
             Ok(simplify(ctx, a, &rules, 20))
         })
@@ -276,9 +255,8 @@ impl Expression {
     /// Differentiate with respect to `var`.
     fn diff(&self, var: &str) -> PyResult<Expression> {
         let src = self.inner.atom.to_string();
-        let static_src = unsafe { extend_str_lifetime(&src) };
         let var_sym = Symbol::new(var);
-        ExprInner::build(|ctx| match parse(ctx, static_src) {
+        ExprInner::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(diff(ctx, a, var_sym)),
             Err(e) => Err(e.to_string()),
         })
@@ -288,9 +266,8 @@ impl Expression {
     /// Integrate with respect to `var`.
     fn integrate(&self, var: &str) -> PyResult<Expression> {
         let src = self.inner.atom.to_string();
-        let static_src = unsafe { extend_str_lifetime(&src) };
         let var_sym = Symbol::new(var);
-        ExprInner::build(|ctx| match parse(ctx, static_src) {
+        ExprInner::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(integrate(ctx, a, var_sym)),
             Err(e) => Err(e.to_string()),
         })
@@ -304,9 +281,8 @@ impl Expression {
     /// unevaluated ``Integral(expr, var)`` form otherwise.
     fn integrate_heuristic(&self, var: &str) -> PyResult<Expression> {
         let src = self.inner.atom.to_string();
-        let static_src = unsafe { extend_str_lifetime(&src) };
         let var_sym = Symbol::new(var);
-        ExprInner::build(|ctx| match parse(ctx, static_src) {
+        ExprInner::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(integrate_heuristic(ctx, a, var_sym)),
             Err(e) => Err(e.to_string()),
         })
@@ -317,12 +293,10 @@ impl Expression {
     fn taylor(&self, var: &str, point: &Expression, order: usize) -> PyResult<Expression> {
         let expr_src = self.inner.atom.to_string();
         let point_src = point.inner.atom.to_string();
-        let static_expr = unsafe { extend_str_lifetime(&expr_src) };
-        let static_point = unsafe { extend_str_lifetime(&point_src) };
         let var_sym = Symbol::new(var);
         ExprInner::build(|ctx| {
-            let e = parse(ctx, static_expr).map_err(|e| e.to_string())?;
-            let p = parse(ctx, static_point).map_err(|e| e.to_string())?;
+            let e = parse(ctx, &expr_src).map_err(|e| e.to_string())?;
+            let p = parse(ctx, &point_src).map_err(|e| e.to_string())?;
             Ok(taylor(ctx, e, var_sym, p, order))
         })
         .map(|inner| Expression { inner })
@@ -332,12 +306,10 @@ impl Expression {
     fn substitute(&self, var: &str, replacement: &Expression) -> PyResult<Expression> {
         let expr_src = self.inner.atom.to_string();
         let repl_src = replacement.inner.atom.to_string();
-        let static_expr = unsafe { extend_str_lifetime(&expr_src) };
-        let static_repl = unsafe { extend_str_lifetime(&repl_src) };
         let var_sym = Symbol::new(var);
         ExprInner::build(|ctx| {
-            let e = parse(ctx, static_expr).map_err(|e| e.to_string())?;
-            let r = parse(ctx, static_repl).map_err(|e| e.to_string())?;
+            let e = parse(ctx, &expr_src).map_err(|e| e.to_string())?;
+            let r = parse(ctx, &repl_src).map_err(|e| e.to_string())?;
             Ok(substitute(ctx, e, var_sym, r))
         })
         .map(|inner| Expression { inner })

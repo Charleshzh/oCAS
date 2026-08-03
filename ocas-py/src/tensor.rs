@@ -33,12 +33,6 @@ use std::collections::HashMap;
 //  Arena management (leaked pair, recovered on Drop)
 // ------------------------------------------------------------------
 
-/// Extend a string's lifetime to `'static`. Safe because atoms never retain
-/// borrows of the input string.
-unsafe fn extend_str_lifetime(s: &str) -> &'static str {
-    unsafe { std::mem::transmute::<&str, &'static str>(s) }
-}
-
 /// Internal storage behind a [`PyTensor`]: a leaked arena pair recovered on
 /// drop. See [`crate::expression::ExprInner`] for the same pattern.
 struct TensorInner {
@@ -192,14 +186,12 @@ impl PyTensor {
                 Ok((label, parse_position(&pos)?))
             })
             .collect::<PyResult<_>>()?;
-        let static_name = unsafe { extend_str_lifetime(name) };
-        let symbol = Symbol::new(static_name);
+        let symbol = Symbol::new(name);
         let inner = TensorInner::build(|ctx| {
             let slots: Vec<IndexSlot<'static>> = parsed
                 .iter()
                 .map(|(label, pos)| {
-                    let static_label = unsafe { extend_str_lifetime(label) };
-                    IndexSlot::new(ctx.var(static_label), *pos)
+                    IndexSlot::new(ctx.var(label), *pos)
                 })
                 .collect();
             Tensor::new(symbol, slots).with_symmetry(sym)
@@ -271,16 +263,14 @@ fn rebuild_tensor(
     sym: Symmetry,
     slots: &[(String, IndexPosition)],
 ) -> PyResult<PyTensor> {
-    let static_name = unsafe { extend_str_lifetime(name) };
     let inner = TensorInner::build(|ctx| {
         let slots: Vec<IndexSlot<'static>> = slots
             .iter()
             .map(|(label, pos)| {
-                let static_label = unsafe { extend_str_lifetime(label) };
-                IndexSlot::new(ctx.var(static_label), *pos)
+                IndexSlot::new(ctx.var(label), *pos)
             })
             .collect();
-        Tensor::new(Symbol::new(static_name), slots).with_symmetry(sym)
+        Tensor::new(Symbol::new(name), slots).with_symmetry(sym)
     })?;
     Ok(PyTensor { inner })
 }
@@ -336,24 +326,22 @@ pub fn contract_tensors<'py>(
     let a_slots: Vec<IndexSlot<'static>> = a_slots_data
         .iter()
         .map(|(label, pos)| {
-            let static_label = unsafe { extend_str_lifetime(label) };
-            IndexSlot::new(ctx.var(static_label), *pos)
+            IndexSlot::new(ctx.var(label), *pos)
         })
         .collect();
     let b_slots: Vec<IndexSlot<'static>> = b_slots_data
         .iter()
         .map(|(label, pos)| {
-            let static_label = unsafe { extend_str_lifetime(label) };
-            IndexSlot::new(ctx.var(static_label), *pos)
+            IndexSlot::new(ctx.var(label), *pos)
         })
         .collect();
     let a_rebuilt = Tensor::new(
-        Symbol::new(unsafe { extend_str_lifetime(&a_name) }),
+        Symbol::new(&a_name),
         a_slots,
     )
     .with_symmetry(a_sym);
     let b_rebuilt = Tensor::new(
-        Symbol::new(unsafe { extend_str_lifetime(&b_name) }),
+        Symbol::new(&b_name),
         b_slots,
     )
     .with_symmetry(b_sym);

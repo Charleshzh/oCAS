@@ -1,30 +1,22 @@
 use std::io::Write;
 use std::process::Command;
-use std::sync::Once;
+use std::sync::OnceLock;
 
 use ocas::prelude::*;
 use ocas_atom::normalize::normalize;
 use ocas_core::arena::Arena;
 use ocas_rewrite::rules::default_rules;
 
-static UV_CHECK: Once = Once::new();
-static mut UV_AVAILABLE: bool = false;
-
-fn ensure_uv_available() {
-    UV_CHECK.call_once(|| {
-        let output = Command::new("uv").arg("--version").output();
-        let available = output.map(|o| o.status.success()).unwrap_or(false);
-        // SAFETY: written only once under Once.
-        unsafe {
-            UV_AVAILABLE = available;
-        }
-    });
-}
+static UV_AVAILABLE: OnceLock<bool> = OnceLock::new();
 
 fn is_uv_available() -> bool {
-    ensure_uv_available();
-    // SAFETY: read after Once initialization.
-    unsafe { UV_AVAILABLE }
+    *UV_AVAILABLE.get_or_init(|| {
+        Command::new("uv")
+            .arg("--version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    })
 }
 
 /// Run the SymPy comparison script and return the normalized result string.

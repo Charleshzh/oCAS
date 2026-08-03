@@ -62,12 +62,6 @@ pub struct OcasTensorContraction {
 //  Arena management
 // ------------------------------------------------------------------
 
-/// Extend a string's lifetime to `'static`. Safe because atoms never retain
-/// borrows of the input string.
-unsafe fn extend_str_lifetime(s: &str) -> &'static str {
-    unsafe { std::mem::transmute::<&str, &'static str>(s) }
-}
-
 /// Storage behind an [`OcasTensor`]: a leaked arena pair recovered on drop.
 struct TensorInner {
     arena_ptr: *mut Arena,
@@ -171,13 +165,11 @@ fn build_tensor_inner(
 ) -> Box<TensorInner> {
     let (arena_ptr, ctx_ptr) = leak_arena_and_ctx();
     let ctx: &'static AtomArena<'static> = unsafe { &*ctx_ptr };
-    let static_name = unsafe { extend_str_lifetime(name) };
-    let symbol = Symbol::new(static_name);
+    let symbol = Symbol::new(name);
     let slots: Vec<IndexSlot<'static>> = slots
         .iter()
         .map(|(label, pos)| {
-            let static_label = unsafe { extend_str_lifetime(label) };
-            IndexSlot::new(ctx.var(static_label), *pos)
+            IndexSlot::new(ctx.var(label), *pos)
         })
         .collect();
     let tensor = Tensor::new(symbol, slots).with_symmetry(symmetry);
@@ -445,24 +437,22 @@ pub extern "C" fn ocas_tensor_contract(
     let a_slots: Vec<IndexSlot<'static>> = a_slots_data
         .iter()
         .map(|(label, pos)| {
-            let static_label = unsafe { extend_str_lifetime(label) };
-            IndexSlot::new(ctx.var(static_label), *pos)
+            IndexSlot::new(ctx.var(label), *pos)
         })
         .collect();
     let b_slots: Vec<IndexSlot<'static>> = b_slots_data
         .iter()
         .map(|(label, pos)| {
-            let static_label = unsafe { extend_str_lifetime(label) };
-            IndexSlot::new(ctx.var(static_label), *pos)
+            IndexSlot::new(ctx.var(label), *pos)
         })
         .collect();
     let a_rebuilt = Tensor::new(
-        Symbol::new(unsafe { extend_str_lifetime(&a_name) }),
+        Symbol::new(&a_name),
         a_slots,
     )
     .with_symmetry(a_sym);
     let b_rebuilt = Tensor::new(
-        Symbol::new(unsafe { extend_str_lifetime(&b_name) }),
+        Symbol::new(&b_name),
         b_slots,
     )
     .with_symmetry(b_sym);
@@ -483,15 +473,12 @@ pub extern "C" fn ocas_tensor_contract(
             let raw = boxed.as_mut_ptr();
             std::mem::forget(boxed);
             unsafe {
-                ptr::write(
-                    out,
-                    OcasTensorContraction {
-                        kind: 0,
-                        tensors: raw,
-                        n_tensors: n,
-                        scalar_str: ptr::null_mut(),
-                    },
-                );
+                *out = OcasTensorContraction {
+                    kind: 0,
+                    tensors: raw,
+                    n_tensors: n,
+                    scalar_str: ptr::null_mut(),
+                };
             }
             crate::error::write_last_code(err);
             crate::error::OCAS_OK
@@ -502,15 +489,12 @@ pub extern "C" fn ocas_tensor_contract(
                 Ok(cs) => {
                     let raw = cs.into_raw();
                     unsafe {
-                        ptr::write(
-                            out,
-                            OcasTensorContraction {
-                                kind: 1,
-                                tensors: ptr::null_mut(),
-                                n_tensors: 0,
-                                scalar_str: raw,
-                            },
-                        );
+                        *out = OcasTensorContraction {
+                            kind: 1,
+                            tensors: ptr::null_mut(),
+                            n_tensors: 0,
+                            scalar_str: raw,
+                        };
                     }
                     crate::error::write_last_code(err);
                     OCAS_OK

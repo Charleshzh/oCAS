@@ -93,7 +93,7 @@ pub unsafe extern "C" fn ocas_ntheory_isprime(n: *const c_char, err_out: *mut c_
     match result {
         Ok(b) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             i32::from(b)
         }
@@ -247,7 +247,7 @@ pub unsafe extern "C" fn ocas_ntheory_jacobi(
     match result {
         Ok(v) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             c_int::from(v)
         }
@@ -292,7 +292,7 @@ pub unsafe extern "C" fn ocas_ntheory_mobius(n: *const c_char, err_out: *mut c_i
     match result {
         Ok(v) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             c_int::from(v)
         }
@@ -355,7 +355,7 @@ pub unsafe extern "C" fn ocas_ntheory_liouville(n: *const c_char, err_out: *mut 
     match result {
         Ok(v) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             c_int::from(v)
         }
@@ -378,7 +378,7 @@ fn finish_string(result: std::thread::Result<String>, err_out: *mut c_int) -> *m
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "panic during ntheory operation");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             return ptr::null_mut();
         }
@@ -386,14 +386,14 @@ fn finish_string(result: std::thread::Result<String>, err_out: *mut c_int) -> *m
     match CString::new(s) {
         Ok(cs) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             cs.into_raw()
         }
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "result string contains NUL");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             ptr::null_mut()
         }

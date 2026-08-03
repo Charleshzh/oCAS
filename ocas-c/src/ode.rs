@@ -18,7 +18,7 @@ use ocas_calc::ode::{
 };
 
 use crate::error::{OCAS_ERROR_RUNTIME, set};
-use crate::expression::{cstr_to_str_pub, expr_ctx_atom, extend_str_lifetime_pub};
+use crate::expression::{cstr_to_str_pub, expr_ctx_atom};
 
 /// Classify an ODE and return the applicable method names as a
 /// comma-separated string (e.g. `"LinearFirst,Separable,PowerSeries"`).
@@ -183,7 +183,6 @@ fn with_ode_str(
     var: &str,
     f: impl for<'a> FnOnce(&'a ocas_atom::AtomArena<'a>, ODE<'a>) -> String,
 ) -> String {
-    let equation = unsafe { extend_str_lifetime_pub(equation) };
     expr_ctx_atom(|ctx| {
         let x = ctx.var(var);
         let func_atom = ctx.fun(func, &[x]);
@@ -204,7 +203,7 @@ fn finish_string(result: std::thread::Result<String>, err_out: *mut c_int) -> *m
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "panic during ODE operation");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             return ptr::null_mut();
         }
@@ -212,14 +211,14 @@ fn finish_string(result: std::thread::Result<String>, err_out: *mut c_int) -> *m
     match CString::new(s) {
         Ok(cs) => {
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, crate::error::OCAS_OK) };
+                unsafe { *err_out = crate::error::OCAS_OK };
             }
             cs.into_raw()
         }
         Err(_) => {
             set(OCAS_ERROR_RUNTIME, "solution string contains NUL");
             if !err_out.is_null() {
-                unsafe { ptr::write(err_out, OCAS_ERROR_RUNTIME) };
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
             }
             ptr::null_mut()
         }

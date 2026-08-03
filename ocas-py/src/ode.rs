@@ -99,8 +99,7 @@ fn build_ode(
 }
 
 fn parse_in<'a>(ctx: &'a ocas_atom::AtomArena<'a>, input: &str) -> PyResult<ocas_atom::Atom<'a>> {
-    let static_input = unsafe { crate::expression::extend_str_lifetime_pub(input) };
-    ocas_parse::parse(ctx, static_input)
+    ocas_parse::parse(ctx, input)
         .map_err(|e| PyValueError::new_err(format!("parse error: {e}")))
 }
 

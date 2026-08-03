@@ -414,13 +414,10 @@ pub extern "C" fn ocas_poly_z_factor(
     let factors_ptr = array.as_mut_ptr();
     std::mem::forget(array);
     unsafe {
-        ptr::write(
-            out,
-            OcasPolyFactorArray {
-                factors: factors_ptr,
-                len,
-            },
-        );
+        *out = OcasPolyFactorArray {
+            factors: factors_ptr,
+            len,
+        };
     }
     crate::error::write_last_code(err);
     OCAS_OK
@@ -580,13 +577,10 @@ pub extern "C" fn ocas_poly_fp_factor(
     let factors_ptr = array.as_mut_ptr();
     std::mem::forget(array);
     unsafe {
-        ptr::write(
-            out,
-            OcasPolyFactorArray {
-                factors: factors_ptr,
-                len,
-            },
-        );
+        *out = OcasPolyFactorArray {
+            factors: factors_ptr,
+            len,
+        };
     }
     crate::error::write_last_code(err);
     OCAS_OK

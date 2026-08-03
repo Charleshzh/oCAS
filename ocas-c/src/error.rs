@@ -74,6 +74,6 @@ pub fn write_last_code(err_out: *mut std::ffi::c_int) {
     if !err_out.is_null() {
         // SAFETY: caller-provided pointer; we only write if non-null.
         // This matches the C convention where err_out is an out-parameter.
-        unsafe { std::ptr::write(err_out, last_code()) };
+        unsafe { *err_out = last_code() };
     }
 }

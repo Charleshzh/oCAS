@@ -72,7 +72,7 @@ impl<D: Domain> ComplexDomain<D> {
     }
 }
 
-impl<D: Domain> Domain for ComplexDomain<D> {
+impl<D: Domain + 'static> Domain for ComplexDomain<D> {
     type Element = Complex<D>;
 
     fn zero(&self) -> Self::Element {

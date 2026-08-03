@@ -24,7 +24,7 @@
 /// ```
 pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
     /// The type of elements in the domain.
-    type Element: Clone + PartialEq + Eq + std::fmt::Debug;
+    type Element: Clone + PartialEq + Eq + std::fmt::Debug + 'static;
 
     /// The additive identity.
     fn zero(&self) -> Self::Element;

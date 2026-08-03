@@ -187,9 +187,7 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
 
     // ℤ_p fast path: run the entire F4 pipeline on native i64 residues,
     // converting to/from the BigInt-backed domain only at the boundaries.
-    if std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>() {
-        let domain_ptr = ideal[0].domain() as *const D;
-        let ff = unsafe { &*domain_ptr.cast::<FiniteField>() };
+    if let Some(ff) = (ideal[0].domain() as &dyn std::any::Any).downcast_ref::<FiniteField>() {
         return f4_fp(ideal, ff.prime_u64() as i64);
     }
 
@@ -1400,9 +1398,7 @@ fn make_monic<D: Domain, O: MonomialOrder>(p: &mut SparseMultivariatePolynomial<
 }
 
 pub(super) fn domain_to_i64_fp<D: Domain + 'static>(elem: &D::Element, prime: i64) -> i64 {
-    if std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>() {
-        let ff_elem =
-            unsafe { &*(elem as *const D::Element as *const <FiniteField as Domain>::Element) };
+    if let Some(ff_elem) = (elem as &dyn std::any::Any).downcast_ref::<<FiniteField as Domain>::Element>() {
         let val = ff_elem.value();
         let (_, digits) = val.to_u64_digits();
         if digits.is_empty() {
@@ -1420,13 +1416,13 @@ pub(super) fn i64_to_domain_fp<D: Domain + 'static>(
     val: i64,
     prime: i64,
 ) -> D::Element {
-    if std::any::TypeId::of::<D>() == std::any::TypeId::of::<FiniteField>() {
-        let ff_domain = unsafe { &*(domain as *const D as *const FiniteField) };
+    if let Some(ff) = (domain as &dyn std::any::Any).downcast_ref::<FiniteField>() {
         let v = ((val % prime) + prime) % prime;
-        let elem = ff_domain.element(num_bigint::BigInt::from(v));
-        unsafe {
-            (&*(&elem as *const <FiniteField as Domain>::Element as *const D::Element)).clone()
-        }
+        let elem = ff.element(num_bigint::BigInt::from(v));
+        // SAFETY: we confirmed D == FiniteField, so D::Element == FiniteFieldElement.
+        // The box+downcast roundtrip is the safe equivalent of the previous pointer cast.
+        let boxed: Box<dyn std::any::Any> = Box::new(elem);
+        *boxed.downcast::<D::Element>().unwrap()
     } else {
         domain.zero()
     }
