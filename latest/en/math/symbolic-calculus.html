@@ -1,0 +1,540 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Advanced: Symbolic Calculus - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html" class="active"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/symbolic-calculus.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="advanced-symbolic-calculus"><a class="header" href="#advanced-symbolic-calculus">Advanced: Symbolic Calculus</a></h1>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<ul>
+<li>Calculus basics: definition of the derivative, basic differentiation rules, the concept of Taylor series</li>
+<li>Expression trees and recursive data structures (see <a href="./polynomial-algebra.html">Polynomial Algebra</a>)</li>
+<li>The oCAS expression system (<code>Atom</code>, <code>AtomNode</code>, <code>AtomArena</code>)</li>
+</ul>
+<p>Suggested reading: <a href="./polynomial-algebra.html">Polynomial Algebra</a>, <a href="./linear-algebra.html">Linear Algebra</a>.</p>
+<hr />
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="symbolic-calculus-on-expression-trees"><a class="header" href="#symbolic-calculus-on-expression-trees">Symbolic Calculus on Expression Trees</a></h3>
+<p>In symbolic computation, a function $f(x)$ is represented as an <strong>expression tree</strong>. The leaf nodes are constants or variables; the internal nodes are operators (<code>Add</code>, <code>Mul</code>, <code>Pow</code>) or function calls (<code>sin</code>, <code>exp</code>, <code>log</code>, etc.).</p>
+<p>For example, the expression tree of $f(x) = x^2 + \sin(x)$ is:</p>
+<pre><code>Add
+├── Pow
+│   ├── Var("x")
+│   └── Num(2)
+└── Fun("sin", [Var("x")])
+</code></pre>
+<p>The core idea of symbolic differentiation is <strong>pattern matching</strong>: for each node of the expression tree, apply the differentiation rule corresponding to its type, recursively building the derivative expression tree.</p>
+<h3 id="basic-differentiation-rules"><a class="header" href="#basic-differentiation-rules">Basic Differentiation Rules</a></h3>
+<p>Given differentiable functions $f(x)$ and $g(x)$:</p>
+<div class="table-wrapper"><table><thead><tr><th>Rule</th><th>Formula</th></tr></thead><tbody>
+<tr><td>Constant</td><td>$\frac{d}{dx}[c] = 0$</td></tr>
+<tr><td>Identity</td><td>$\frac{d}{dx}[x] = 1$</td></tr>
+<tr><td>Sum</td><td>$\frac{d}{dx}[f + g] = f' + g'$</td></tr>
+<tr><td>Product</td><td>$\frac{d}{dx}[f \cdot g] = f' \cdot g + f \cdot g'$</td></tr>
+<tr><td>Chain</td><td>$\frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x)$</td></tr>
+<tr><td>Power (constant exponent $n$)</td><td>$\frac{d}{dx}[f^n] = n \cdot f^{n-1} \cdot f'$</td></tr>
+<tr><td>Exponential (constant base $a$)</td><td>$\frac{d}{dx}[a^g] = a^g \cdot \ln a \cdot g'$</td></tr>
+<tr><td>General power</td><td>$\frac{d}{dx}[f^g] = f^g \cdot (\ln f \cdot g' + g \cdot f'/f)$</td></tr>
+</tbody></table>
+</div>
+<h3 id="derivatives-of-elementary-functions"><a class="header" href="#derivatives-of-elementary-functions">Derivatives of Elementary Functions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>$f(u)$</th><th>$f'(u)$</th></tr></thead><tbody>
+<tr><td>$\sin u$</td><td>$\cos u$</td></tr>
+<tr><td>$\cos u$</td><td>$-\sin u$</td></tr>
+<tr><td>$\exp u$</td><td>$\exp u$</td></tr>
+<tr><td>$\ln u$</td><td>$u^{-1}$</td></tr>
+<tr><td>$\sqrt{u}$</td><td>$(2\sqrt{u})^{-1}$</td></tr>
+<tr><td>$\tan u$</td><td>$\sec^2 u$</td></tr>
+<tr><td>$\sec u$</td><td>$\sec u \cdot \tan u$</td></tr>
+<tr><td>$\arctan u$</td><td>$(1 + u^2)^{-1}$</td></tr>
+</tbody></table>
+</div>
+<p>Note: the table gives $f'(u)$ (the derivative with respect to $u$); in fact $\frac{d}{dx}[f(u(x))] = f'(u) \cdot u'(x)$, i.e. one still has to multiply by the chain-rule factor $u'(x)$.</p>
+<h3 id="taylor-series"><a class="header" href="#taylor-series">Taylor Series</a></h3>
+<p>Suppose $f$ is infinitely differentiable in a neighbourhood of the point $a$. The <strong>Taylor series</strong> of $f$ at $a$ is:</p>
+<p>$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(a)}{n!} (x - a)^n
+$$</p>
+<p>where $f^{(n)}(a)$ is the $n$-th derivative of $f$ at $a$. Truncating at order $N$ yields the <strong>Taylor polynomial</strong>:</p>
+<p>$$
+T_N(x) = \sum_{n=0}^{N} \frac{f^{(n)}(a)}{n!} (x - a)^n
+$$</p>
+<p>Common expansions (at $a = 0$, i.e. Maclaurin series):</p>
+<p>$$
+e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots
+$$</p>
+<p>$$
+\sin x = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \cdots
+$$</p>
+<p>$$
+\cos x = 1 - \frac{x^2}{2!} + \frac{x^4}{4!} - \cdots
+$$</p>
+<p>$$
+\ln(1+x) = x - \frac{x^2}{2} + \frac{x^3}{3} - \cdots \quad (|x| &lt; 1)
+$$</p>
+<hr />
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="recursive-differentiation-on-expression-trees"><a class="header" href="#recursive-differentiation-on-expression-trees">Recursive Differentiation on Expression Trees</a></h3>
+<p>The core algorithm of symbolic differentiation is <strong>structural recursion</strong> over the expression tree. For each node type, the corresponding differentiation rule is applied and the subexpressions are differentiated recursively.</p>
+<p><strong>Algorithm</strong> <code>diff(expr, var)</code>:</p>
+<ol>
+<li><strong>Constant</strong> <code>Num(c)</code>: return <code>Num(0)</code>.</li>
+<li><strong>Variable</strong> <code>Var(v)</code>: if $v = \text{var}$, return <code>Num(1)</code>; otherwise return <code>Num(0)</code>.</li>
+<li><strong>Sum</strong> <code>Add(a₁, a₂, …, aₙ)</code>: differentiate term by term, returning <code>Add(diff(a₁), diff(a₂), …, diff(aₙ))</code>.</li>
+<li><strong>Product</strong> <code>Mul(a₁, a₂, …, aₙ)</code>: apply the generalised product rule. For the product $a_1 a_2 \cdots a_n$ of $n$ factors:</li>
+</ol>
+<p>$$
+\frac{d}{dx}\left[\prod_{i=1}^n a_i\right] = \sum_{i=1}^n \left(\frac{d a_i}{dx} \cdot \prod_{j \neq i} a_j\right)
+$$</p>
+<p>That is, for each position $i$, replace the $i$-th factor by its derivative, keep the other factors unchanged, and sum the $n$ results.</p>
+<ol start="5">
+<li>
+<p><strong>Power</strong> <code>Pow(base, exp)</code>: three cases —</p>
+<ul>
+<li>Constant exponent $n$: $\frac{d}{dx}[b^n] = n \cdot b^{n-1} \cdot b'$</li>
+<li>Constant base $a$: $\frac{d}{dx}[a^u] = a^u \cdot \ln a \cdot u'$</li>
+<li>General case (generalised power rule): $\frac{d}{dx}[b^e] = b^e \cdot (\ln b \cdot e' + e \cdot b'/b)$</li>
+</ul>
+</li>
+<li>
+<p><strong>Function call</strong> <code>Fun(name, [u])</code>: look up $f'(u)$ in the table, then multiply by $u'$ (chain rule).</p>
+</li>
+<li>
+<p><strong>Unknown function</strong>: return the unevaluated form <code>Derivative(f(x), x)</code>.</p>
+</li>
+</ol>
+<p><strong>Key property</strong>: because oCAS expressions use hash-consing (structural sharing), the intermediate expressions produced by recursive differentiation automatically share identical subtrees. After differentiation, the rewrite engine simplifies the result (e.g. $0 \cdot f \to 0$, $1 \cdot f \to f$), eliminating redundant terms.</p>
+<h3 id="the-recurrence-algorithm-for-taylor-expansion"><a class="header" href="#the-recurrence-algorithm-for-taylor-expansion">The Recurrence Algorithm for Taylor Expansion</a></h3>
+<p>A direct implementation of Taylor expansion can exploit <strong>successive differentiation</strong>:</p>
+<p><strong>Algorithm</strong> <code>taylor(expr, var, point, order)</code>:</p>
+<ol>
+<li>Let <code>current = expr</code>, <code>sum = 0</code>.</li>
+<li>For $n = 0, 1, \dots, \text{order}$:
+<ul>
+<li>Compute $f^{(n)}(\text{point})$: replace <code>var</code> in <code>current</code> by <code>point</code> (i.e. evaluate).</li>
+<li>Compute the coefficient $c_n = f^{(n)}(\text{point}) / n!$.</li>
+<li>If $n = 0$ the term is $c_0$; otherwise the term is $c_n \cdot (x - \text{point})^n$.</li>
+<li>Accumulate: $\text{sum} \mathrel{+}= \text{term}$.</li>
+<li>If $n &lt; \text{order}$, update <code>current = diff(current, var)</code>.</li>
+</ul>
+</li>
+<li>Simplify and return <code>sum</code>.</li>
+</ol>
+<p><strong>Handling factorials</strong>: $1/n!$ is represented as a power $n!^{-1}$ to avoid introducing floating-point numbers. The <code>mul_by_factorial_inverse</code> function computes $n!$ (using <code>i64</code> multiplication, safe for $n \leq 20$) and then constructs $c \cdot (n!)^{-1}$.</p>
+<p><strong>Complexity</strong>: in the loop $n = 0, \dots, N$, each step performs one substitution (evaluation), but a symbolic differentiation is performed only when $n &lt; N$. Symbolic differentiation itself is $O(|\text{expr}|)$ ($|\text{expr}|$ being the size of the expression tree), but simplification may add nodes. Overall, a Taylor expansion of order $N$ requires $N$ differentiations and $N+1$ substitutions.</p>
+<h3 id="semantics-of-substitution"><a class="header" href="#semantics-of-substitution">Semantics of Substitution</a></h3>
+<p><code>substitute(expr, var, replacement)</code> replaces every free occurrence of the variable <code>var</code> in the expression by <code>replacement</code>.</p>
+<p><strong>Implementation strategy</strong>: oCAS uses a <strong>bottom-up transform</strong> — the <code>transform</code> function walks the expression tree, and for each leaf node checks whether it is the variable to be replaced. If so it returns <code>replacement</code>; otherwise the node is left unchanged.</p>
+<p><strong>Deep copy vs. references</strong>:</p>
+<ul>
+<li>oCAS's <code>Atom</code> is a <strong>Copy handle</strong> (a pointer) into an arena, not an owning value. <code>transform</code> allocates new nodes on the arena to build the result, but unmodified subtrees reuse the original handles (zero copy).</li>
+<li>This makes <code>substitute</code> <strong>purely functional</strong>: the original expression is unchanged, and the result is a newly allocated expression tree in which the replaced paths point to new nodes while unaffected subtrees are shared with the original tree.</li>
+<li>Unlike "destructive modification", this guarantees referential transparency: substituting into the same expression repeatedly does not interfere.</li>
+</ul>
+<p><strong>Limitations of substitution</strong>: <code>substitute</code> is a <strong>syntactic</strong> substitution, not a semantic one. It replaces the literal variable name, not its "value". For example, replacing $t \to y$ inside $\int_0^x f(t), dt$ would wrongly change the integration variable — such semantic replacements require finer-grained binding analysis.</p>
+<hr />
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<h3 id="diff-symbolic-differentiation"><a class="header" href="#diff-symbolic-differentiation"><code>diff</code>: Symbolic Differentiation</a></h3>
+<p><strong>File</strong>: <code>ocas-calc/src/derivative.rs</code></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn diff&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Structure of the implementation</strong>:</p>
+<p><code>diff</code> is the entry point: it calls the internal <code>diff_raw</code> to perform the actual recursion, then simplifies the result with <code>simplify</code>, and finally normalizes it with <code>normalize</code>.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn diff&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt; {
+    let rules = calculus_rules(ctx, &amp;crate::pattern_alloc::VecAlloc);
+    let raw = diff_raw(ctx, expr, var);
+    let simplified = simplify(ctx, raw, &amp;rules, 20);
+    normalize(ctx, simplified)
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>diff_raw</code> pattern-matches on every variant of <code>AtomNode</code>:</p>
+<ul>
+<li><strong><code>Num(_)</code></strong>: constant, derivative 0.</li>
+<li><strong><code>Var(v)</code></strong>: derivative 1 if <code>v == var</code>, otherwise 0.</li>
+<li><strong><code>Add(args)</code></strong>: call <code>diff_raw</code> on each argument and collect the results into a new <code>Add</code> node.</li>
+<li><strong><code>Mul(args)</code></strong>: the generalised product rule — for $n$ factors, generate $n$ product terms (each with one factor replaced by its derivative), then add them.</li>
+<li><strong><code>Pow(base, exp)</code></strong>: three cases (constant exponent / constant base / general), as above.</li>
+<li><strong><code>Fun(name, args)</code></strong>: delegate to <code>diff_function</code>.</li>
+</ul>
+<p><code>diff_function</code> maintains a <strong>hard-coded derivative table</strong> covering the eight functions <code>sin</code>, <code>cos</code>, <code>exp</code>, <code>log</code>, <code>sqrt</code>, <code>tan</code>, <code>sec</code>, <code>atan</code>. For each function $f(u)$ the table stores $f'(u)$ (the derivative with respect to $u$), which is then multiplied by the chain-rule factor $\frac{du}{dx}$.</p>
+<p>For functions not in the table, an <strong>unevaluated form</strong> is returned:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>ctx.fun("Derivative", &amp;[ctx.fun(name_str, args), ctx.var(var.as_str())])
+<span class="boring">}</span></code></pre></pre>
+<p>namely <code>Derivative(f(x), x)</code>, representing a derivative that could not be computed automatically.</p>
+<p><strong>Simplification pipeline</strong>: the raw derivative produced by <code>diff</code> may contain redundancy (such as <code>0 * sin(x)</code>, <code>1 * cos(x)</code>). <code>simplify</code> runs <code>calculus_rules</code> (calculus-specific rules plus the default simplification rules) for at most 20 rounds of fixpoint simplification, and then <code>normalize</code> brings the result into canonical form.</p>
+<h3 id="taylor-taylor-expansion"><a class="header" href="#taylor-taylor-expansion"><code>taylor</code>: Taylor Expansion</a></h3>
+<p><strong>File</strong>: <code>ocas-calc/src/series.rs</code></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn taylor&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    point: Atom&lt;'a&gt;,
+    order: usize,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Implementation details</strong>:</p>
+<ol>
+<li>Precompute <code>(x - point)</code> as the common subexpression <code>x_minus_p</code>.</li>
+<li>Loop $n = 0, \dots, \text{order}$:
+<ul>
+<li><code>substitute(ctx, current, var, point)</code> evaluates $f^{(n)}(a)$.</li>
+<li><code>mul_by_factorial_inverse</code> computes $f^{(n)}(a) / n!$.</li>
+<li>Build the term $c_n \cdot (x - a)^n$ (the power factor is omitted for $n = 0$).</li>
+<li>Accumulate into <code>sum</code>.</li>
+<li>If $n &lt; \text{order}$, <code>current = diff(ctx, current, var)</code> computes the next derivative.</li>
+</ul>
+</li>
+<li>Simplify and normalize.</li>
+</ol>
+<p><strong><code>mul_by_factorial_inverse</code></strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn mul_by_factorial_inverse&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, n: usize) -&gt; Atom&lt;'a&gt; {
+    if n == 0 { return expr; }
+    let mut fact: i64 = 1;
+    for i in 2..=n {
+        fact = fact.checked_mul(i as i64).expect("factorial fits in i64");
+    }
+    ctx.mul(&amp;[expr, ctx.pow(ctx.num(fact), ctx.num(-1))])
+}
+<span class="boring">}</span></code></pre></pre>
+<p>$1/n!$ is represented as $(n!)^{-1}$, i.e. <code>Pow(Num(n!), Num(-1))</code>, preserving an exact rational representation. <code>checked_mul</code> guarantees $n \leq 20$ ($20! = 2,432,902,008,176,640,000 &lt; 2^{63}$).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// expand e^x at x=0 to order 3
+let x = ctx.var("x");
+let expr = ctx.fun("exp", &amp;[x]);
+let result = taylor(&amp;ctx, expr, Symbol::new("x"), ctx.num(0), 3);
+// result = "1 + x + ((2^-1)*(x^2)) + ((6^-1)*(x^3))"
+// i.e. 1 + x + x²/2 + x³/6
+
+// expand sin(x) at x=0 to order 5
+let sin_x = ctx.fun("sin", &amp;[x]);
+let result = taylor(&amp;ctx, sin_x, Symbol::new("x"), ctx.num(0), 5);
+// result = "x + (-1*(6^-1)*(x^3)) + ((120^-1)*(x^5))"
+// i.e. x - x³/6 + x⁵/120 (the even-order coefficients vanish automatically)
+<span class="boring">}</span></code></pre></pre>
+<h3 id="substitute-variable-substitution"><a class="header" href="#substitute-variable-substitution"><code>substitute</code>: Variable Substitution</a></h3>
+<p><strong>File</strong>: <code>ocas-calc/src/series.rs</code></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    replacement: Atom&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    replacement: Atom&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt; {
+    transform(ctx, expr, |a| match a.node() {
+        AtomNode::Var(v) if *v == var =&gt; Some(replacement),
+        _ =&gt; None,
+    })
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The <code>transform</code> function (bottom-up transform) walks the expression tree. The closure checks each node: if it is <code>Var(v)</code> with <code>v == var</code>, it returns <code>Some(replacement)</code> (replace); otherwise <code>None</code> (leave unchanged).</p>
+<p><strong>Key properties</strong>:</p>
+<ul>
+<li><strong>Purely functional</strong>: the original expression is not modified; a new tree is returned. Unmodified subtrees are shared through <code>Atom</code>'s Copy semantics.</li>
+<li><strong>Deep substitution</strong>: all free occurrences are replaced, including those nested in function arguments (such as the <code>x</code> in <code>sin(x)</code>).</li>
+<li><strong>No capture check</strong>: there is no check whether the substitution causes variable capture — this is a syntactic-level substitution.</li>
+</ul>
+<h3 id="integrate-symbolic-integration"><a class="header" href="#integrate-symbolic-integration"><code>integrate</code>: Symbolic Integration</a></h3>
+<p><strong>File</strong>: <code>ocas-calc/src/integral/mod.rs</code></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>oCAS's integrator uses a <strong>layered pipeline</strong> architecture (see <a href="../algorithms/integration.html">Symbolic Integration Algorithms</a> and <a href="./risch-algorithm.html">The Risch Algorithm</a>):</p>
+<ol>
+<li><strong>Direct lookup layer</strong> (<code>integrate_raw</code>): direct integration rules for constants, variables, sums, and simple products/powers/functions.</li>
+<li><strong>Rational function layer</strong> (<code>rational.rs</code>): partial fraction decomposition + Hermite reduction + the logarithmic part (logarithmic-derivative identity, completing the square, Rothstein–Trager).</li>
+<li><strong>Risch algorithm layer</strong> (<code>risch.rs</code>): structural theorems over the differential field tower $\mathbb{Q}(x, t_1, \dots, t_n)$.</li>
+<li><strong>Trigonometric layer</strong> (<code>trig.rs</code>): rewriting via Euler's formula into complex exponentials ($t = e^{ix}$) → retry Risch on the rewritten form → <code>realify</code> back to real form.</li>
+<li><strong>Special functions layer</strong> (<code>special.rs</code>): tables of special functions such as erf, erfi, Ei, Si, Ci, Shi, Chi, Fresnel.</li>
+<li><strong>Heuristic layer</strong> (<code>heuristic.rs</code>): integration by parts (LIATE ordering), trigonometric substitution ($\sqrt{a^2 - x^2} \to a\sin\theta$), Weierstrass rationalization $t = \tan(x/2)$, Euler substitution.</li>
+<li><strong>Fallback</strong>: return the unevaluated form <code>Integral(expr, var)</code>.</li>
+</ol>
+<p>The <code>integrate_with_fuel</code> variant accepts a <code>Fuel</code> budget to prevent infinite loops in the simplification phase. The integration traversal itself is bounded by the internal recursion depth limit <code>MAX_DEPTH = 8</code> (the Risch layer has its own <code>MAX_RISCH_DEPTH = 16</code>):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_with_fuel&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    fuel: &amp;Fuel,
+) -&gt; Result&lt;Atom&lt;'a&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="advanced-topics"><a class="header" href="#advanced-topics">Advanced Topics</a></h2>
+<h3 id="the-interaction-of-differentiation-and-simplification"><a class="header" href="#the-interaction-of-differentiation-and-simplification">The Interaction of Differentiation and Simplification</a></h3>
+<p>The correctness of <code>diff</code> depends not only on the differentiation rules themselves but also on the quality of simplification. For example:</p>
+<ul>
+<li>$\frac{d}{dx}[x^2 + 3x] = 2x + 3$ — this requires simplifying $1 \cdot 3$ to $3$.</li>
+<li>$\frac{d}{dx}[e^{\ln x}] = e^{\ln x} \cdot \frac{1}{x} = 1$ — this requires simplifying $e^{\ln x} \to x$.</li>
+</ul>
+<p>oCAS handles such cases through multi-round simplification with <code>calculus_rules</code> and the default rules. However, some identities (such as $\sin^2 x + \cos^2 x = 1$) may require dedicated trigonometric simplification rules.</p>
+<h3 id="unevaluated-derivatives-and-integrals"><a class="header" href="#unevaluated-derivatives-and-integrals">Unevaluated Derivatives and Integrals</a></h3>
+<p>When <code>diff</code> encounters an unknown function (a function not in the derivative table), it returns <code>Derivative(f, x)</code>. Similarly, <code>integrate</code> returns <code>Integral(f, x)</code> for integrals it cannot handle.</p>
+<p>These unevaluated forms are <strong>valid expression nodes</strong> — they can participate in subsequent symbolic operations. For example, $\frac{d}{dx}[\text{Derivative}(f, x)]$ returns <code>Derivative(Derivative(f, x), x)</code>, representing the second derivative.</p>
+<h3 id="bridging-to-numerical-evaluation"><a class="header" href="#bridging-to-numerical-evaluation">Bridging to Numerical Evaluation</a></h3>
+<p>Expressions produced by symbolic differentiation can be passed to the <code>ExpressionEvaluator</code> (see <a href="../api/rust-evaluation.html">Evaluation and JIT</a>) for efficient numerical evaluation. A typical workflow:</p>
+<ol>
+<li>Symbolic differentiation: <code>diff(&amp;ctx, f, x)</code> → the derivative expression $f'(x)$.</li>
+<li>Compile the evaluator: <code>ExpressionEvaluator::compile(f')</code>.</li>
+<li>Numerical evaluation: <code>evaluator.evaluate(&amp;[x_val])</code> → $f'(x_{\text{val}})$.</li>
+</ol>
+<p>This is far more accurate than numerical differentiation (finite differences) and avoids the problem of step-size selection.</p>
+<hr />
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li><strong>Geddes, K. O., Czapor, S. R. &amp; Labahn, G.</strong> <em>Algorithms for Computer Algebra.</em> Kluwer Academic Publishers, 1992. — Chapter 11, "Symbolic Differentiation", covers recursive differentiation on expression trees, simplification strategies, and derivative-table design.</li>
+<li><strong>Bronstein, M.</strong> <em>Symbolic Integration I: Transcendental Functions.</em> Springer, 2005. — The authoritative reference on the Risch algorithm and the design basis of oCAS's integrator.</li>
+<li><strong>Cohen, H.</strong> <em>A Course in Computational Algebraic Number Theory.</em> Springer, 1993. — Chapter 1 contains general methodology for complexity analysis of algorithms.</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/number-theory-algorithms.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/ode-theory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/number-theory-algorithms.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/ode-theory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

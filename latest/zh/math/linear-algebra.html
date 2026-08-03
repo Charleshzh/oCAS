@@ -1,0 +1,648 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>基础：线性代数 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html" class="active"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/linear-algebra.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="基础线性代数"><a class="header" href="#基础线性代数">基础：线性代数</a></h1>
+<p>本章介绍 oCAS 中矩阵运算的数学基础。oCAS 的 <code>Matrix</code> 类型工作在
+<code>EuclideanDomain</code> 上——不只是浮点数或有理数，而是任意满足欧几里得除法
+的代数结构。这意味着我们需要一种<strong>不产生分数</strong>的消元算法。</p>
+<hr />
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<p>在阅读本章之前，你需要了解：</p>
+<ul>
+<li>环与域的基本概念（参见<a href="./finite-fields.html">有限域与模算术</a>）</li>
+<li>欧几里得域：支持 <code>add</code>、<code>mul</code>、<code>sub</code>、<code>neg</code>、<code>div</code>（带余除法）、<code>gcd</code>、<code>rem</code> 的代数结构</li>
+<li>向量空间的基本直觉：向量加法与标量乘法</li>
+</ul>
+<p>不需要线性代数的系统训练——本章从零开始构建。</p>
+<hr />
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="矩阵"><a class="header" href="#矩阵">矩阵</a></h3>
+<p>一个 $m \times n$ <strong>矩阵</strong>是一个按 $m$ 行 $n$ 列排列的元素矩形阵列：</p>
+<p>$$
+A = \begin{pmatrix}
+a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1n} \
+a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2n} \
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \
+a_{m1} &amp; a_{m2} &amp; \cdots &amp; a_{mn}
+\end{pmatrix}
+$$</p>
+<p>元素 $a_{ij}$ 位于第 $i$ 行第 $j$ 列。在 oCAS 中，元素存储在行优先的
+一维数组中：<code>data[i * ncols + j]</code> 对应 $a_{i+1,,j+1}$（零索引）。</p>
+<h3 id="矩阵运算"><a class="header" href="#矩阵运算">矩阵运算</a></h3>
+<p><strong>加法</strong>：两个同形矩阵逐元素相加：</p>
+<p>$$
+(A + B)<em>{ij} = a</em>{ij} + b_{ij}
+$$</p>
+<p><strong>标量乘法</strong>：</p>
+<p>$$
+(cA)<em>{ij} = c \cdot a</em>{ij}
+$$</p>
+<p><strong>矩阵乘法</strong>：$A$（$m \times n$）与 $B$（$n \times p$）的积 $C = AB$
+是 $m \times p$ 矩阵：</p>
+<p>$$
+c_{ij} = \sum_{k=1}^{n} a_{ik} \cdot b_{kj}
+$$</p>
+<p>乘法要求 $A$ 的列数等于 $B$ 的行数。注意矩阵乘法一般<strong>不满足交换律</strong>
+（$AB \neq BA$），但满足<strong>结合律</strong>（$(AB)C = A(BC)$）。</p>
+<p><strong>转置</strong>：交换行与列：</p>
+<p>$$
+(A^\top)<em>{ij} = a</em>{ji}
+$$</p>
+<p>性质：$(AB)^\top = B^\top A^\top$，$(A^\top)^\top = A$。</p>
+<p><strong>迹</strong>（trace）：方阵对角元素之和：</p>
+<p>$$
+\operatorname{tr}(A) = \sum_{i=1}^{n} a_{ii}
+$$</p>
+<p>性质：$\operatorname{tr}(AB) = \operatorname{tr}(BA)$（当乘积有定义时）。</p>
+<h3 id="行列式"><a class="header" href="#行列式">行列式</a></h3>
+<p><strong>行列式</strong>是方阵的一个标量值，是线性代数中最核心的概念之一。对
+$n \times n$ 矩阵 $A$，行列式 $\det(A)$ 有以下等价定义：</p>
+<p><strong>递归定义（Laplace 展开）</strong>：沿第 $i$ 行展开：</p>
+<p>$$
+\det(A) = \sum_{j=1}^{n} (-1)^{i+j} , a_{ij} , M_{ij}
+$$</p>
+<p>其中 $M_{ij}$ 是删去第 $i$ 行第 $j$ 列后的 $(n-1)\times(n-1)$ 子矩阵
+的行列式（<strong>余子式</strong>）。对 $1\times 1$ 矩阵，$\det(a_{11}) = a_{11}$。</p>
+<p><strong>几何定义</strong>：$|\det(A)|$ 是矩阵列向量所张成的平行多面体的"有向体积"。
+$\det(A) &gt; 0$ 表示保持定向，$\det(A) &lt; 0$ 表示翻转定向。</p>
+<h4 id="行列式的关键性质"><a class="header" href="#行列式的关键性质">行列式的关键性质</a></h4>
+<ol>
+<li><strong>乘法性</strong>：$\det(AB) = \det(A) \cdot \det(B)$</li>
+<li><strong>转置不变性</strong>：$\det(A^\top) = \det(A)$</li>
+<li><strong>行交换变号</strong>：交换两行，行列式变号</li>
+<li><strong>行倍乘</strong>：某行乘以 $c$，行列式乘以 $c$</li>
+<li><strong>行加法不变</strong>：将一行的倍数加到另一行，行列式不变</li>
+<li><strong>奇异判定</strong>：$\det(A) = 0$ 当且仅当 $A$ 不可逆（奇异）</li>
+<li><strong>上/下三角矩阵</strong>：$\det(A) = \prod_{i=1}^{n} a_{ii}$（对角元素之积）</li>
+</ol>
+<p>这些性质直接引出了用<strong>消元法</strong>计算行列式的思路：通过行变换将矩阵化为
+三角矩阵，行列式就是对角元素之积（乘以行交换的符号因子）。</p>
+<hr />
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="问题域上的分数膨胀"><a class="header" href="#问题域上的分数膨胀">问题：域上的分数膨胀</a></h3>
+<p>经典的高斯消元在有理数域上工作良好——我们可以自由地进行除法。但 oCAS 的
+<code>Matrix&lt;D: EuclideanDomain&gt;</code> 要求在<strong>任意</strong>欧几里得域上工作，包括：</p>
+<ul>
+<li><strong>整数环 $\mathbb{Z}$</strong>：$3 \div 2$ 无意义（不存在整数商）</li>
+<li><strong>多项式环 $\mathbb{F}[x]$</strong>：$x^2 \div (x+1)$ 不是多项式</li>
+<li><strong>有限域 $\mathbb{F}_p$</strong>：可以除，但每次除法产生模逆运算，且中间结果可能溢出</li>
+</ul>
+<p>即使在有理数上，经典消元也会产生越来越大的分母。例如对整数矩阵：</p>
+<p>$$
+A = \begin{pmatrix} 2 &amp; 3 \ 5 &amp; 7 \end{pmatrix}
+$$</p>
+<p>经典消元需要计算 $7 - \frac{5 \cdot 3}{2} = 7 - \frac{15}{2} = -\frac{1}{2}$——
+出现了分数。对 $n \times n$ 矩阵，分数的分子分母可能增长到 $O(n!)$ 量级。</p>
+<h3 id="bareiss-无分数行列式算法"><a class="header" href="#bareiss-无分数行列式算法">Bareiss 无分数行列式算法</a></h3>
+<p><strong>Bareiss 算法</strong>（1968）的核心洞察：在整数（或更一般的欧几里得域）上，
+消元过程中的所有中间值都可以通过除以前一个主元来保持为整数。</p>
+<h4 id="算法描述"><a class="header" href="#算法描述">算法描述</a></h4>
+<p>对 $n \times n$ 矩阵 $A$，Bareiss 算法产生上三角矩阵，其最后一个对角
+元素 $a_{nn}^{(n-1)}$ 就是 $\det(A)$（可能需要乘以 $-1$ 来补偿行交换）。</p>
+<p>初始化：令 $a_{ij}^{(0)} = a_{ij}$，$p_0 = 1$。</p>
+<p>对 $k = 0, 1, \ldots, n-2$：</p>
+<ol>
+<li>
+<p><strong>选主元</strong>：若 $a_{kk}^{(k)} = 0$，寻找 $i &gt; k$ 使 $a_{ik}^{(k)} \neq 0$，
+交换第 $k$ 行与第 $i$ 行（记录符号翻转）。若找不到，$\det(A) = 0$。</p>
+</li>
+<li>
+<p><strong>消元</strong>：对 $i = k+1, \ldots, n-1$ 和 $j = k+1, \ldots, n-1$：</p>
+</li>
+</ol>
+<p>$$
+a_{ij}^{(k+1)} = \frac{a_{ij}^{(k)} \cdot a_{kk}^{(k)} - a_{ik}^{(k)} \cdot a_{kj}^{(k)}}{p_k}
+$$</p>
+<ol start="3">
+<li><strong>更新除数</strong>：$p_{k+1} = a_{kk}^{(k)}$</li>
+</ol>
+<p>最终：</p>
+<p>$$
+\det(A) = \begin{cases}
+a_{nn}^{(n-1)} &amp; \text{若无行交换或偶数次交换} \
+-a_{nn}^{(n-1)} &amp; \text{若有奇数次行交换}
+\end{cases}
+$$</p>
+<h4 id="为什么除法是精确的"><a class="header" href="#为什么除法是精确的">为什么除法是精确的</a></h4>
+<p><strong>定理</strong>（Bareiss 1968）：上述公式中，$p_k$ 精确整除分子
+$a_{ij}^{(k)} \cdot a_{kk}^{(k)} - a_{ik}^{(k)} \cdot a_{kj}^{(k)}$。</p>
+<p>直觉上，这来自 Sylvester 行列式恒等式。消元矩阵的 $(k+1)$ 步更新
+等价于计算一个 $(k+2) \times (k+2)$ 子矩阵的行列式，而 Schur 补公式
+保证除以前一个主元的结果仍是整数。</p>
+<h4 id="复杂度与数值行为"><a class="header" href="#复杂度与数值行为">复杂度与数值行为</a></h4>
+<ul>
+<li><strong>时间复杂度</strong>：$O(n^3)$ 次域运算——与经典高斯消元相同</li>
+<li><strong>中间值大小</strong>：对整数矩阵，中间值 $a_{ij}^{(k)}$ 的位数增长为
+$O(n \log n)$——远优于经典消元的 $O(n!)$ 量级增长</li>
+<li><strong>无舍入误差</strong>：在整数和多项式上，所有运算精确，无浮点近似</li>
+</ul>
+<h3 id="高斯消元与行阶梯形"><a class="header" href="#高斯消元与行阶梯形">高斯消元与行阶梯形</a></h3>
+<p>高斯消元将矩阵化为<strong>行阶梯形</strong>（Row Echelon Form, REF）：</p>
+<p>$$
+\begin{pmatrix}
+\boxed{a_{11}} &amp; a_{12} &amp; a_{13} &amp; a_{14} \
+0 &amp; \boxed{a_{22}} &amp; a_{23} &amp; a_{24} \
+0 &amp; 0 &amp; 0 &amp; \boxed{a_{34}} \
+0 &amp; 0 &amp; 0 &amp; 0
+\end{pmatrix}
+$$</p>
+<p>带框的元素是<strong>主元</strong>（pivots）。行阶梯形满足：</p>
+<ol>
+<li>所有非零行在所有零行之上</li>
+<li>每个主元所在列在其下方行中全为零</li>
+<li>每个主元严格在其上方行的主元右侧</li>
+</ol>
+<p>继续消元可得<strong>简化行阶梯形</strong>（Reduced Row Echelon Form, RREF）——
+每个主元为 1，且主元所在列的其余元素全为 0。</p>
+<h4 id="主元选取"><a class="header" href="#主元选取">主元选取</a></h4>
+<p>欧几里得域上未必有"绝对值"概念（例如 $\mathbb{F}[x]$），因此 oCAS 的消元不使用数值线性代数中的<strong>部分主元选取</strong>（partial pivoting）。<code>row_echelon</code> 与 <code>determinant</code> 都选择当前列中<strong>第一个非零元素</strong>作为主元；若当前列全为零则跳过该列（不交换行）。中间值的膨胀由<strong>内容剥离</strong>（content stripping，见下文）控制——消元后立即提取主元行的 GCD 并整行除以它。</p>
+<h3 id="分数无关回代"><a class="header" href="#分数无关回代">分数无关回代</a></h3>
+<p>消元后需要<strong>回代</strong>（back-substitution）来求解线性系统。oCAS 的回代也是
+分数无关的：从最后一行开始向上，用 GCD 缩放避免引入分数。</p>
+<p>对行阶梯形中的第 $i$ 行（主元在第 $j$ 列）和第 $k &lt; i$ 行（第 $j$ 列
+有非零元素 $a_{kj}$）：</p>
+<p>$$
+g = \gcd(a_{ij}, a_{kj}), \quad s_p = \frac{a_{kj}}{g}, \quad s_r = \frac{a_{ij}}{g}
+$$</p>
+<p>更新第 $k$ 行：对每个 $l &gt; j$：</p>
+<p>$$
+a_{kl} \leftarrow s_r \cdot a_{kl} - s_p \cdot a_{il}
+$$</p>
+<p>$$
+a_{kj} \leftarrow 0
+$$</p>
+<p>这与 Bareiss 消元的无分数性质完全一致。</p>
+<h3 id="内容剥离"><a class="header" href="#内容剥离">内容剥离</a></h3>
+<p>消元过程中，行的系数可能包含公共因子。oCAS 在每一步主元处理后执行
+<strong>内容剥离</strong>（content stripping）：计算主元行从主元列到最后一列的
+GCD，然后整行除以该 GCD。</p>
+<p>$$
+g = \gcd(a_{ij}, a_{i,j+1}, \ldots, a_{i,n-1})
+$$</p>
+<p>$$
+a_{il} \leftarrow \frac{a_{il}}{g}, \quad l = j, j+1, \ldots, n-1
+$$</p>
+<p>这个优化对于多项式环尤其关键——否则中间多项式的次数会指数增长。</p>
+<h3 id="逆矩阵"><a class="header" href="#逆矩阵">逆矩阵</a></h3>
+<p>方阵 $A$ 的<strong>逆矩阵</strong> $A^{-1}$ 满足：</p>
+<p>$$
+AA^{-1} = A^{-1}A = I
+$$</p>
+<p>其中 $I$ 是单位矩阵。逆存在的充要条件是 $\det(A) \neq 0$（$A$ 非奇异）。</p>
+<p>计算方法：将 $[A \mid I]$ 做行变换化为 $[I \mid A^{-1}]$。在 oCAS 中，
+<code>inverse()</code> 通过对单位矩阵的每一列 $e_j$ 求解 $Ax_j = e_j$ 来得到
+$A^{-1}$ 的第 $j$ 列。</p>
+<hr />
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<h3 id="matrixd-euclideandomain-结构"><a class="header" href="#matrixd-euclideandomain-结构"><code>Matrix&lt;D: EuclideanDomain&gt;</code> 结构</a></h3>
+<p>oCAS 的矩阵是<strong>泛型</strong>的——它接受任何 <code>EuclideanDomain</code> 作为系数域：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{EuclideanDomain, IntegerDomain, Integer};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::new(2, 2, vec![
+    Integer::from(2), Integer::from(3),
+    Integer::from(5), Integer::from(7),
+], d);
+<span class="boring">}</span></code></pre></pre>
+<p>内部存储为行优先的 <code>Vec&lt;D::Element&gt;</code>，加上行数、列数和系数域实例
+（<code>domain: D</code> 按值存储，而非引用）。这使得所有算术操作通过域的 trait
+方法（<code>add</code>、<code>mul</code>、<code>sub</code>、<code>div</code>、<code>gcd</code>）进行，完全不依赖具体类型。</p>
+<h3 id="为什么选择-bareiss-而非-laplace-展开"><a class="header" href="#为什么选择-bareiss-而非-laplace-展开">为什么选择 Bareiss 而非 Laplace 展开</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>时间复杂度</th><th>空间复杂度</th><th>分数膨胀</th><th>域兼容性</th></tr></thead><tbody>
+<tr><td>Laplace 展开</td><td>$O(n!)$</td><td>$O(n^2)$（递归深度 $O(n)$）</td><td>无</td><td>任意交换环（实际不可行）</td></tr>
+<tr><td>经典高斯消元</td><td>$O(n^3)$</td><td>$O(n^2)$</td><td>严重</td><td>仅域</td></tr>
+<tr><td><strong>Bareiss</strong></td><td>$O(n^3)$</td><td>$O(n^2)$</td><td><strong>无</strong></td><td><strong>欧几里得域</strong></td></tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>Laplace 展开</strong>的 $O(n!)$ 复杂度使其对 $n &gt; 10$ 完全不可用</li>
+<li><strong>经典消元</strong>需要分数运算，不适用于 $\mathbb{Z}$ 或 $\mathbb{F}[x]$</li>
+<li><strong>Bareiss 算法</strong>兼得两者之长：$O(n^3)$ 效率 + 无分数 + 支持任意欧几里得域</li>
+</ul>
+<p>这是 oCAS 选择 Bareiss 的根本原因——它是一个<strong>通用符号计算系统</strong>，
+矩阵元素可能是整数、多项式、有限域元素，甚至代数数域元素。</p>
+<h3 id="行阶梯化row_echelon"><a class="header" href="#行阶梯化row_echelon">行阶梯化：<code>row_echelon</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 分数无关高斯消元，返回秩
+pub fn row_echelon(&amp;mut self, max_col: usize) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><code>row_echelon</code> 对前 <code>max_col</code> 列执行分数无关消元，返回矩阵的秩。算法步骤：</p>
+<ol>
+<li>对每列 $j$，选择当前列中第一个非零元素作为主元（若全列为零则跳过该列）</li>
+<li><strong>内容剥离</strong>：提取主元行的 GCD 并整行除以它</li>
+<li><strong>消元</strong>：对主元下方的每行，用 GCD 缩放后的减法消除第 $j$ 列（$a_{ij}$ 为主元，$a_{kj}$ 为被消元元素，$s_r$、$s_p$ 须在清零前计算）：</li>
+</ol>
+<p>$$
+g = \gcd(a_{ij}, a_{kj}), \quad s_r = \frac{a_{ij}}{g}, \quad s_p = \frac{a_{kj}}{g}
+$$</p>
+<p>$$
+a_{kj} \leftarrow 0, \qquad a_{kl} \leftarrow s_r \cdot a_{kl} - s_p \cdot a_{il} \quad (l &gt; j)
+$$</p>
+<p>这保证所有中间值保持在域内，无分数产生。</p>
+<h3 id="行列式determinant"><a class="header" href="#行列式determinant">行列式：<code>determinant</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(vec![
+    vec![Integer::from(1), Integer::from(2)],
+    vec![Integer::from(3), Integer::from(4)],
+], d);
+assert_eq!(a.determinant().unwrap(), Integer::from(-2));
+<span class="boring">}</span></code></pre></pre>
+<p><code>determinant</code> 内部直接实现 Bareiss 算法：</p>
+<ol>
+<li>初始化：复制数据到工作数组，$p_0 = 1$，符号标记 $\epsilon = 1$</li>
+<li>对 $k = 0, \ldots, n-2$：
+<ul>
+<li>若主元为零，寻找下方非零行并交换（翻转 $\epsilon$）</li>
+<li>更新：$a_{ij}^{(k+1)} = (a_{ij}^{(k)} \cdot a_{kk}^{(k)} - a_{ik}^{(k)} \cdot a_{kj}^{(k)}) / p_k$</li>
+<li>更新除数：$p_{k+1} = a_{kk}^{(k)}$</li>
+</ul>
+</li>
+<li>返回 $\epsilon \cdot a_{n-1,n-1}^{(n-1)}$</li>
+</ol>
+<p>特殊情况：$n = 0$ 返回 $1$（空矩阵行列式），$n = 1$ 直接返回唯一元素。</p>
+<h3 id="线性系统求解solve"><a class="header" href="#线性系统求解solve">线性系统求解：<code>solve</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = Matrix::from_rows(vec![
+    vec![Integer::from(1), Integer::from(1)],
+    vec![Integer::from(1), Integer::from(-1)],
+], d);
+let b = vec![Integer::from(3), Integer::from(-1)];
+let x = a.solve(&amp;b).unwrap();
+assert_eq!(x, vec![Integer::from(1), Integer::from(2)]);
+<span class="boring">}</span></code></pre></pre>
+<p><code>solve</code> 的完整流程：</p>
+<ol>
+<li><strong>增广</strong>：将 $b$ 拼接为 $[A \mid b]$</li>
+<li><strong>消元</strong>：<code>row_echelon(nvars)</code> 化为行阶梯形</li>
+<li><strong>一致性检查</strong>：若主元行之后有非零的 $b$ 分量，系统矛盾，返回
+<code>MatrixError::Inconsistent</code></li>
+<li><strong>回代</strong>：<code>back_substitution(nvars)</code> 分数无关回代</li>
+<li><strong>秩检查</strong>：若秩 $&lt; n$，系统欠定，返回 <code>MatrixError::Underdetermined</code></li>
+<li><strong>最终除法</strong>：每个解分量除以其对应主元</li>
+</ol>
+<h4 id="错误类型"><a class="header" href="#错误类型">错误类型</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>错误</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>ShapeMismatch</code></td><td>$A$ 不是方阵，或 $b$ 的长度不等于行数</td></tr>
+<tr><td><code>RightHandSideIsNotVector</code></td><td>$b$ 不是列向量</td></tr>
+<tr><td><code>Inconsistent</code></td><td>系统无解（增广矩阵秩 &gt; 系数矩阵秩）</td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td>系统有无穷多解（秩 &lt; 未知数个数）</td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td>解不在域中（整数矩阵可能产生有理数解）</td></tr>
+</tbody></table>
+</div>
+<h3 id="秩与逆矩阵"><a class="header" href="#秩与逆矩阵">秩与逆矩阵</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 秩：行阶梯形的主元个数
+let rank = a.rank();
+
+// 逆矩阵：逐列求解 Ax_j = e_j
+let inv = a.inverse()?;
+<span class="boring">}</span></code></pre></pre>
+<p><code>rank</code> 将矩阵克隆后调用 <code>row_echelon</code>，返回主元个数。</p>
+<p><code>inverse</code> 对单位矩阵的每一列求解线性系统，得到逆矩阵的各列。这要求
+矩阵非奇异且解在域内——例如整数矩阵的逆一般不在 $\mathbb{Z}$ 中，
+除非 $\det(A) = \pm 1$（幺模矩阵）：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 幺模矩阵：det = 1，整数逆存在
+let a = Matrix::from_rows(vec![
+    vec![Integer::from(1), Integer::from(2)],
+    vec![Integer::from(0), Integer::from(1)],
+], d);
+let inv = a.inverse().unwrap();
+assert_eq!(inv[(0, 0)], Integer::from(1));
+assert_eq!(inv[(0, 1)], Integer::from(-2));
+assert_eq!(inv[(1, 0)], Integer::from(0));
+assert_eq!(inv[(1, 1)], Integer::from(1));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="矩阵乘法与转置"><a class="header" href="#矩阵乘法与转置">矩阵乘法与转置</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 乘法：C = A · B
+let c = a.matmul(&amp;b)?;
+
+// 转置
+let at = a.transpose();
+
+// 迹（方阵对角元素之和）
+let tr = a.trace()?;
+<span class="boring">}</span></code></pre></pre>
+<p><code>matmul</code> 使用标准的三重循环 $O(n^3)$ 算法，所有运算通过域的 trait 方法。
+<code>transpose</code> 通过重新排列数据实现。<code>trace</code> 对方阵求对角元素之和。</p>
+<h3 id="完整示例求解整数线性系统"><a class="header" href="#完整示例求解整数线性系统">完整示例：求解整数线性系统</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+
+// 方程组：
+//   2x + 3y = 8
+//   5x + 7y = 19
+let a = Matrix::from_rows(vec![
+    vec![Integer::from(2), Integer::from(3)],
+    vec![Integer::from(5), Integer::from(7)],
+], d);
+let b = vec![Integer::from(8), Integer::from(19)];
+
+let x = a.solve(&amp;b).unwrap();
+// x = [1, 2]
+assert_eq!(x[0], Integer::from(1));
+assert_eq!(x[1], Integer::from(2));
+
+// 验证：Ax = b
+let x_matrix = Matrix::new(2, 1, x, d);
+let result = a.matmul(&amp;x_matrix).unwrap();
+assert_eq!(result[(0, 0)], Integer::from(8));
+assert_eq!(result[(1, 0)], Integer::from(19));
+
+// 行列式：2·7 - 3·5 = -1
+assert_eq!(a.determinant().unwrap(), Integer::from(-1));
+<span class="boring">}</span></code></pre></pre>
+<p>消元过程中的中间值全部保持为整数——Bareiss 算法保证了这一点。</p>
+<hr />
+<h2 id="进阶话题"><a class="header" href="#进阶话题">进阶话题</a></h2>
+<h3 id="bareiss-算法的推广"><a class="header" href="#bareiss-算法的推广">Bareiss 算法的推广</a></h3>
+<p>Bareiss 算法可以推广到计算<strong>子矩阵的行列式</strong>（所有 $k \times k$ 阶子式），
+这在计算 Smith 标准形和 Hermite 标准形时很有用。</p>
+<p>对多项式矩阵，Bareiss 通过 GCD 缩放有效地控制了系数膨胀，使得
+多项式矩阵的行列式计算在实践中可行。</p>
+<h3 id="与-lu-分解的关系"><a class="header" href="#与-lu-分解的关系">与 LU 分解的关系</a></h3>
+<p>Bareiss 算法可以看作是<strong>无分数 LU 分解</strong>的变体。经典 LU 分解将矩阵
+分解为 $A = LU$，其中 $L$ 是下三角、$U$ 是上三角。Bareiss 产生
+的是类似的分解，但所有中间值保持在域内。</p>
+<p>$\det(A) = \det(L) \cdot \det(U) = \prod_{i} l_{ii} \cdot \prod_{i} u_{ii}$。</p>
+<h3 id="符号计算中的矩阵"><a class="header" href="#符号计算中的矩阵">符号计算中的矩阵</a></h3>
+<p>在符号计算中，矩阵元素可能是<strong>多项式</strong>或<strong>有理函数</strong>。此时 Bareiss
+算法的 GCD 缩放尤为关键——它将多项式系数的次数增长控制在 $O(n)$ 而非
+指数增长。</p>
+<p>oCAS 的 Gröbner 基 F4 算法内部大量使用矩阵行阶梯化——将多元多项式的
+消元问题转化为系数域上的矩阵问题，再用 Bareiss 或其 <code>ℤ_p</code> 快速路径
+（惰性模算术）来高效处理。</p>
+<hr />
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li>
+<p><strong>Axler, S.</strong> <em>Linear Algebra Done Right</em>, 3rd ed. Springer, 2015.
+Chapters 4–6: 行列式、特征值与内积空间。</p>
+</li>
+<li>
+<p><strong>Bareiss, E. H.</strong> "Sylvester's Identity and Multistep
+Integer-Preserving Gaussian Elimination." <em>Mathematics of Computation</em>,
+22(103):565–578, 1968.
+Bareiss 算法的原始论文。</p>
+</li>
+<li>
+<p><strong>Cox, D., Little, J., O'Shea, D.</strong> <em>Ideals, Varieties, and Algorithms</em>,
+4th ed. Springer, 2015.
+多项式矩阵与 Gröbner 基中的线性代数。</p>
+</li>
+<li>
+<p><strong>Geddes, K. O., Czapor, S. R., Labahn, G.</strong> <em>Algorithms for Computer
+Algebra</em>. Kluwer, 1992.
+第 5 章：矩阵上的符号消元算法。</p>
+</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/finite-fields.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/poly-gcd-factoring.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/finite-fields.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/poly-gcd-factoring.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

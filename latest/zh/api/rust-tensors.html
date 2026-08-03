@@ -1,0 +1,1176 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>张量 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html" class="active"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-tensors.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考张量"><a class="header" href="#rust-api-参考张量">Rust API 参考：张量</a></h1>
+<p>oCAS 提供带显式指标管理的基础张量代数。<code>Tensor</code> 携带命名指标槽（上标/下标）、可选的对称性元数据，并可转换为 <code>Atom</code> 表达式进行符号处理。自 0.22.0 起，额外提供基于图同构的规范化引擎和 Young 投影子。</p>
+<p><strong>模块路径</strong>：<code>ocas_atom::tensor</code>（<code>mod.rs</code>）、<code>ocas_atom::tensor::spec</code>、<code>ocas_atom::tensor::canon</code>、<code>ocas_atom::tensor::dummy</code>、<code>ocas_atom::tensor::young</code></p>
+<p><strong>导入方式</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{
+    IndexPosition, IndexSlot, Symmetry, Tensor,
+    contract, Contracted, TensorProduct,
+    symmetrise_sign,
+};
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::{canonicalize_tensors, CanonicalTensor, TensorCanonError};
+use ocas_atom::tensor::dummy::{refresh_dummies, DummyError};
+use ocas_atom::tensor::young::{YoungTableau, young_project};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="indexposition"><a class="header" href="#indexposition">IndexPosition</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum IndexPosition {
+    Upper,
+    Lower,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：指标在张量中的位置（方差）。<code>Upper</code> 表示逆变指标（上标），<code>Lower</code> 表示协变指标（下标）。缩并要求两个相同标签的指标具有相反的位置。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>Upper</code></td><td>逆变指标（上标），物理中对应反变向量</td></tr>
+<tr><td><code>Lower</code></td><td>协变指标（下标），物理中对应协变向量</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::IndexPosition;
+
+assert_eq!(IndexPosition::Upper, IndexPosition::Upper);
+assert_ne!(IndexPosition::Upper, IndexPosition::Lower);
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="indexslot"><a class="header" href="#indexslot">IndexSlot</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct IndexSlot&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：张量的单个指标槽，由指标标签（<code>Atom</code>）和位置（<code>IndexPosition</code>）组成。<code>Copy</code> 类型，可廉价复制。</p>
+<h3 id="indexslotnew"><a class="header" href="#indexslotnew">IndexSlot::new</a></h3>
+<p><strong>签名</strong>：<code>pub fn new(label: Atom&lt;'a&gt;, position: IndexPosition) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建一个新的指标槽。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Atom&lt;'a&gt;</code></td><td>指标标签表达式（通常为变量名如 <code>mu</code>、<code>i</code>）</td></tr>
+<tr><td><code>position</code></td><td><code>IndexPosition</code></td><td>指标位置：<code>Upper</code> 或 <code>Lower</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>IndexSlot&lt;'a&gt;</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{IndexSlot, IndexPosition};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mu = IndexSlot::new(ctx.var("mu"), IndexPosition::Upper);
+let nu = IndexSlot::new(ctx.var("nu"), IndexPosition::Lower);
+assert_eq!(mu.position(), IndexPosition::Upper);
+assert_eq!(nu.position(), IndexPosition::Lower);
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="indexslotlabel"><a class="header" href="#indexslotlabel">IndexSlot::label</a></h3>
+<p><strong>签名</strong>：<code>pub fn label(&amp;self) -&gt; Atom&lt;'a&gt;</code></p>
+<p><strong>功能</strong>：返回指标标签表达式。</p>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 指标标签的 <code>Atom</code> 句柄。</p>
+<h3 id="indexslotposition"><a class="header" href="#indexslotposition">IndexSlot::position</a></h3>
+<p><strong>签名</strong>：<code>pub fn position(&amp;self) -&gt; IndexPosition</code></p>
+<p><strong>功能</strong>：返回指标的位置（<code>Upper</code> 或 <code>Lower</code>）。</p>
+<p><strong>返回值</strong>：<code>IndexPosition</code></p>
+<p><strong>参见</strong>：<a href="#indexposition">IndexPosition</a></p>
+<hr />
+<h2 id="symmetry"><a class="header" href="#symmetry">Symmetry</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Symmetry {
+    None,
+    Symmetric,
+    Antisymmetric,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：张量指标槽的对称性。这是<strong>建议性</strong>元数据——<code>contract</code> 等运算不会自动对称化；对称性由下游消费者（如规范化引擎或 Young 投影子）使用。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>None</code></td><td>无对称性（一般张量）</td></tr>
+<tr><td><code>Symmetric</code></td><td>对称：任意交换指标槽不改变张量</td></tr>
+<tr><td><code>Antisymmetric</code></td><td>反对称：交换任意两个指标槽改变符号</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::Symmetry;
+
+assert_eq!(Symmetry::None, Symmetry::None);
+assert_ne!(Symmetry::Symmetric, Symmetry::Antisymmetric);
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensor"><a class="header" href="#tensor">Tensor</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Tensor&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：命名张量对象，由名称（<code>Symbol</code>）、指标槽列表（<code>Vec&lt;IndexSlot&gt;</code>）和对称性（<code>Symmetry</code>）组成。可通过 <code>to_atom</code> 降级为标准 <code>Atom</code> 表达式节点。</p>
+<h3 id="tensornew"><a class="header" href="#tensornew">Tensor::new</a></h3>
+<p><strong>签名</strong>：<code>pub fn new(name: Symbol, slots: Vec&lt;IndexSlot&lt;'a&gt;&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建一个新张量，默认对称性为 <code>Symmetry::None</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>张量名称（interned 字符串，如 <code>"g"</code>、<code>"Riemann"</code>）</td></tr>
+<tr><td><code>slots</code></td><td><code>Vec&lt;IndexSlot&lt;'a&gt;&gt;</code></td><td>指标槽列表，顺序有意义</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Tensor&lt;'a&gt;</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let slots = vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+];
+let t = Tensor::new(Symbol::new("g"), slots);
+assert_eq!(t.rank(), 2);
+assert_eq!(t.name().as_str(), "g");
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorwith_symmetry"><a class="header" href="#tensorwith_symmetry">Tensor::with_symmetry</a></h3>
+<p><strong>签名</strong>：<code>pub fn with_symmetry(mut self, symmetry: Symmetry) -&gt; Self</code></p>
+<p><strong>功能</strong>：Builder 方法，设置张量的对称性。消费并返回 <code>self</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>symmetry</code></td><td><code>Symmetry</code></td><td>目标对称性</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Self</code> — 设置了对称性的张量。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let slots = vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Upper),
+];
+let sym = Tensor::new(Symbol::new("g"), slots.clone())
+    .with_symmetry(Symmetry::Symmetric);
+let anti = Tensor::new(Symbol::new("epsilon"), slots)
+    .with_symmetry(Symmetry::Antisymmetric);
+
+assert_eq!(sym.symmetry(), Symmetry::Symmetric);
+assert_eq!(anti.symmetry(), Symmetry::Antisymmetric);
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorname"><a class="header" href="#tensorname">Tensor::name</a></h3>
+<p><strong>签名</strong>：<code>pub fn name(&amp;self) -&gt; Symbol</code></p>
+<p><strong>功能</strong>：返回张量名称。</p>
+<p><strong>返回值</strong>：<code>Symbol</code> — interned 字符串句柄。</p>
+<h3 id="tensorslots"><a class="header" href="#tensorslots">Tensor::slots</a></h3>
+<p><strong>签名</strong>：<code>pub fn slots(&amp;self) -&gt; &amp;[IndexSlot&lt;'a&gt;]</code></p>
+<p><strong>功能</strong>：返回指标槽的切片引用。</p>
+<p><strong>返回值</strong>：<code>&amp;[IndexSlot&lt;'a&gt;]</code></p>
+<h3 id="tensorsymmetry"><a class="header" href="#tensorsymmetry">Tensor::symmetry</a></h3>
+<p><strong>签名</strong>：<code>pub fn symmetry(&amp;self) -&gt; Symmetry</code></p>
+<p><strong>功能</strong>：返回张量的对称性。</p>
+<p><strong>返回值</strong>：<code>Symmetry</code></p>
+<h3 id="tensorrank"><a class="header" href="#tensorrank">Tensor::rank</a></h3>
+<p><strong>签名</strong>：<code>pub fn rank(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回张量的阶（指标槽数量）。</p>
+<p><strong>返回值</strong>：<code>usize</code></p>
+<h3 id="tensordummy_labels"><a class="header" href="#tensordummy_labels">Tensor::dummy_labels</a></h3>
+<p><strong>签名</strong>：<code>pub fn dummy_labels(&amp;self) -&gt; Vec&lt;Atom&lt;'a&gt;&gt;</code></p>
+<p><strong>功能</strong>：返回哑指标标签列表。哑指标定义为在所有槽中恰好出现两次的标签（一次 <code>Upper</code>、一次 <code>Lower</code>），即缩并候选。</p>
+<p><strong>返回值</strong>：<code>Vec&lt;Atom&lt;'a&gt;&gt;</code> — 哑指标标签列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// A^μ_μ：mu 出现两次（Upper + Lower）→ 哑指标
+let t = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
+]);
+assert_eq!(t.dummy_labels().len(), 1);
+// 输出：1 个哑指标
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorto_atom"><a class="header" href="#tensorto_atom">Tensor::to_atom</a></h3>
+<p><strong>签名</strong>：<code>pub fn to_atom(&amp;self, ctx: &amp;'a AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt;</code></p>
+<p><strong>功能</strong>：将张量降级为标准 <code>Atom</code> 函数节点 <code>name(slot₁, slot₂, …)</code>。不应用对称化——原子保留 <code>self</code> 的槽顺序。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 函数节点表达式。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let t = Tensor::new(Symbol::new("g"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+]);
+let atom = t.to_atom(&amp;ctx);
+println!("{}", atom);  // g(mu, nu)
+// 输出：g(mu, nu)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="./rust-expressions.html#atom">Atom</a></p>
+<hr />
+<h2 id="contract"><a class="header" href="#contract">contract</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn contract&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    a: &amp;Tensor&lt;'a&gt;,
+    b: &amp;Tensor&lt;'a&gt;,
+) -&gt; Contracted&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：通过求和共享哑指标来缩并两个张量。两个具有相同标签但相反位置的槽会缩并。结果保留存活的自由指标，顺序为 <code>(a 的自由槽, b 的自由槽)</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>a</code></td><td><code>&amp;Tensor&lt;'a&gt;</code></td><td>第一个张量</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Tensor&lt;'a&gt;</code></td><td>第二个张量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Contracted&lt;'a&gt;</code></p>
+<ul>
+<li>无缩并对时返回 <code>Contracted::Product</code>，包含原始两个张量</li>
+<li>部分缩并时返回 <code>Contracted::Product</code>，包含一个携带自由槽的新张量</li>
+<li>完全缩并（无自由槽）时返回 <code>Contracted::Scalar</code></li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, contract, Contracted};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// A^μ B_μ → 标量
+let a = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+]);
+let b = Tensor::new(Symbol::new("B"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
+]);
+match contract(&amp;ctx, &amp;a, &amp;b) {
+    Contracted::Scalar(expr) =&gt; println!("scalar: {}", expr),
+    Contracted::Product(tp) =&gt; {
+        for f in &amp;tp.factors {
+            println!("free: {} (rank {})", f.name().as_str(), f.rank());
+        }
+    }
+}
+// 输出：scalar: A(mu)*B(mu)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#contracted">Contracted</a>、<a href="#tensorproduct">TensorProduct</a></p>
+<hr />
+<h2 id="contracted"><a class="header" href="#contracted">Contracted</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Contracted&lt;'a&gt; {
+    Product(TensorProduct&lt;'a&gt;),
+    Scalar(Atom&lt;'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：缩并两个张量的结果。当无自由指标存活时为标量表达式；否则为含自由槽的张量积。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Product</code></td><td><code>TensorProduct&lt;'a&gt;</code></td><td>部分缩并或无缩并，含自由指标的张量积</td></tr>
+<tr><td><code>Scalar</code></td><td><code>Atom&lt;'a&gt;</code></td><td>完全缩并为标量表达式</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, contract, Contracted};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// A^μ_ν B^ν_ρ → 部分缩并，剩余 A^μ_ρ
+let a = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+]);
+let b = Tensor::new(Symbol::new("B"), vec![
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("rho"), IndexPosition::Lower),
+]);
+match contract(&amp;ctx, &amp;a, &amp;b) {
+    Contracted::Product(tp) =&gt; {
+        assert_eq!(tp.factors.len(), 1);
+        assert_eq!(tp.factors[0].rank(), 2); // mu, rho
+    }
+    Contracted::Scalar(_) =&gt; panic!("expected partial contraction"),
+}
+// 输出：部分缩并，剩余 2 个自由指标
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensorproduct"><a class="header" href="#tensorproduct">TensorProduct</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TensorProduct&lt;'a&gt; {
+    pub factors: Vec&lt;Tensor&lt;'a&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：缩并后保留自由槽的张量积。<code>factors</code> 包含缩并后的存活张量，其槽按 <code>(a 的自由槽, b 的自由槽)</code> 顺序拼接。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>factors</code></td><td><code>Vec&lt;Tensor&lt;'a&gt;&gt;</code></td><td>缩并后的张量因子列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>参见</strong>：<a href="#contract">contract</a>、<a href="#contracted">Contracted</a></p>
+<hr />
+<h2 id="symmetrise_sign"><a class="header" href="#symmetrise_sign">symmetrise_sign</a></h2>
+<p><strong>签名</strong>：<code>pub fn symmetrise_sign(tensor: &amp;Tensor&lt;'_&gt;) -&gt; i64</code></p>
+<p><strong>功能</strong>：对张量的指标槽按标签升序排列，并返回反对称化的符号。</p>
+<ul>
+<li><code>Symmetry::None</code> 或 <code>Symmetry::Symmetric</code>：返回 <code>+1</code></li>
+<li><code>Symmetry::Antisymmetric</code>：返回排列奇偶性（偶排列 <code>+1</code>，奇排列 <code>-1</code>）</li>
+</ul>
+<p><strong>注意</strong>：这不是置换群下的完全规范化（那需要图同构）；仅为对称张量提供稳定的等价比较顺序。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>tensor</code></td><td><code>&amp;Tensor&lt;'_&gt;</code></td><td>输入张量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>i64</code> — <code>+1</code> 或 <code>-1</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry, symmetrise_sign};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let slots = vec![
+    IndexSlot::new(ctx.var("a"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("b"), IndexPosition::Upper),
+];
+let anti = Tensor::new(Symbol::new("epsilon"), slots)
+    .with_symmetry(Symmetry::Antisymmetric);
+
+let sign = symmetrise_sign(&amp;anti);
+// 若 a &lt; b 则排列不变，sign = +1
+// 输出：+1
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="symmetryspec"><a class="header" href="#symmetryspec">SymmetrySpec</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Default)]
+pub struct SymmetrySpec {
+    pub symmetric_subsets: Vec&lt;Vec&lt;usize&gt;&gt;,
+    pub antisymmetric_subsets: Vec&lt;Vec&lt;usize&gt;&gt;,
+    pub cyclic: Option&lt;Vec&lt;usize&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：张量的细粒度对称性规格，用于规范化引擎。比 <code>Symmetry</code> 枚举更灵活——可以为不同的槽位子集指定不同的对称行为。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>symmetric_subsets</code></td><td><code>Vec&lt;Vec&lt;usize&gt;&gt;</code></td><td>对称的槽位子集列表。同一子集内的槽位可互换</td></tr>
+<tr><td><code>antisymmetric_subsets</code></td><td><code>Vec&lt;Vec&lt;usize&gt;&gt;</code></td><td>反对称的槽位子集列表。交换子集内两个槽位翻转符号</td></tr>
+<tr><td><code>cyclic</code></td><td><code>Option&lt;Vec&lt;usize&gt;&gt;</code></td><td>循环置换的槽位子集</td></tr>
+</tbody></table>
+</div>
+<h3 id="symmetryspecnone"><a class="header" href="#symmetryspecnone">SymmetrySpec::none</a></h3>
+<p><strong>签名</strong>：<code>pub fn none() -&gt; Self</code></p>
+<p><strong>功能</strong>：无对称性——所有槽位独立。</p>
+<p><strong>返回值</strong>：<code>SymmetrySpec</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::none();
+assert!(spec.symmetric_subsets.is_empty());
+assert!(spec.antisymmetric_subsets.is_empty());
+assert!(spec.cyclic.is_none());
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symmetryspecfully_symmetric"><a class="header" href="#symmetryspecfully_symmetric">SymmetrySpec::fully_symmetric</a></h3>
+<p><strong>签名</strong>：<code>pub fn fully_symmetric(rank: usize) -&gt; Self</code></p>
+<p><strong>功能</strong>：所有槽位完全对称。创建一个包含全部 <code>0..rank</code> 槽位的对称子集。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rank</code></td><td><code>usize</code></td><td>张量阶数（槽位总数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>SymmetrySpec</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::fully_symmetric(3);
+assert_eq!(spec.symmetric_subsets, vec![vec![0, 1, 2]]);
+// 输出：对称子集 = [[0, 1, 2]]
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symmetryspecfully_antisymmetric"><a class="header" href="#symmetryspecfully_antisymmetric">SymmetrySpec::fully_antisymmetric</a></h3>
+<p><strong>签名</strong>：<code>pub fn fully_antisymmetric(rank: usize) -&gt; Self</code></p>
+<p><strong>功能</strong>：所有槽位完全反对称。创建一个包含全部 <code>0..rank</code> 槽位的反对称子集。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rank</code></td><td><code>usize</code></td><td>张量阶数（槽位总数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>SymmetrySpec</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::fully_antisymmetric(4);
+assert_eq!(spec.antisymmetric_subsets, vec![vec![0, 1, 2, 3]]);
+// 输出：反对称子集 = [[0, 1, 2, 3]]
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symmetryspecis_slot_hidden"><a class="header" href="#symmetryspecis_slot_hidden">SymmetrySpec::is_slot_hidden</a></h3>
+<p><strong>签名</strong>：<code>pub fn is_slot_hidden(&amp;self, pos: usize) -&gt; bool</code></p>
+<p><strong>功能</strong>：检查给定槽位位置是否应在图编码中"隐藏"（即不参与规范化比较）。对称槽位和循环槽位被隐藏。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>pos</code></td><td><code>usize</code></td><td>槽位位置索引</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code> — <code>true</code> 表示该槽位隐藏。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::fully_symmetric(2);
+assert!(spec.is_slot_hidden(0));   // 在对称子集中
+assert!(spec.is_slot_hidden(1));   // 在对称子集中
+
+let none = SymmetrySpec::none();
+assert!(!none.is_slot_hidden(0));  // 不在任何子集中
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensorregistry"><a class="header" href="#tensorregistry">TensorRegistry</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Default)]
+pub struct TensorRegistry { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：张量规范化的完整注册表。记录哪些函数头是张量以及它们的对称性规格，同时管理指标维度组分配（防止跨维度的哑指标重命名冲突）。</p>
+<h3 id="tensorregistrynew"><a class="header" href="#tensorregistrynew">TensorRegistry::new</a></h3>
+<p><strong>签名</strong>：<code>pub fn new() -&gt; Self</code></p>
+<p><strong>功能</strong>：创建空注册表。</p>
+<p><strong>返回值</strong>：<code>TensorRegistry</code></p>
+<h3 id="tensorregistryregister"><a class="header" href="#tensorregistryregister">TensorRegistry::register</a></h3>
+<p><strong>签名</strong>：<code>pub fn register(&amp;mut self, name: Symbol, spec: SymmetrySpec)</code></p>
+<p><strong>功能</strong>：注册一个张量名称及其对称性规格。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>张量函数头名称</td></tr>
+<tr><td><code>spec</code></td><td><code>SymmetrySpec</code></td><td>对称性规格</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::Symbol;
+
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("g"), SymmetrySpec::fully_symmetric(2));
+reg.register(Symbol::new("Riemann"), SymmetrySpec::none());
+reg.register(Symbol::new("epsilon"), SymmetrySpec::fully_antisymmetric(4));
+// 输出：注册了 3 个张量
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorregistryset_index_group"><a class="header" href="#tensorregistryset_index_group">TensorRegistry::set_index_group</a></h3>
+<p><strong>签名</strong>：<code>pub fn set_index_group(&amp;mut self, label: Symbol, group: u64)</code></p>
+<p><strong>功能</strong>：设置指标标签的维度组标识符。不同组的哑指标不会被重命名为相同的规范名，从而避免跨维度冲突。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Symbol</code></td><td>指标标签（如 <code>"mu"</code>、<code>"i"</code>）</td></tr>
+<tr><td><code>group</code></td><td><code>u64</code></td><td>组标识符。<code>0</code> 表示默认/未分组</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::TensorRegistry;
+use ocas_atom::Symbol;
+
+let mut reg = TensorRegistry::new();
+reg.set_index_group(Symbol::new("mu"), 1);  // 时空指标
+reg.set_index_group(Symbol::new("i"), 2);   // 内部指标
+assert_eq!(reg.index_group(Symbol::new("mu")), 1);
+assert_eq!(reg.index_group(Symbol::new("i")), 2);
+assert_eq!(reg.index_group(Symbol::new("other")), 0); // 默认组
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorregistryspec"><a class="header" href="#tensorregistryspec">TensorRegistry::spec</a></h3>
+<p><strong>签名</strong>：<code>pub fn spec(&amp;self, name: Symbol) -&gt; Option&lt;&amp;SymmetrySpec&gt;</code></p>
+<p><strong>功能</strong>：查找已注册张量的对称性规格。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>张量名称</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;&amp;SymmetrySpec&gt;</code> — 未注册时返回 <code>None</code>。</p>
+<h3 id="tensorregistryindex_group"><a class="header" href="#tensorregistryindex_group">TensorRegistry::index_group</a></h3>
+<p><strong>签名</strong>：<code>pub fn index_group(&amp;self, label: Symbol) -&gt; u64</code></p>
+<p><strong>功能</strong>：查找指标标签的维度组。未设置的标签返回 <code>0</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Symbol</code></td><td>指标标签</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>u64</code> — 组标识符。</p>
+<p><strong>参见</strong>：<a href="#symmetryspec">SymmetrySpec</a></p>
+<hr />
+<h2 id="canonicalize_tensors"><a class="header" href="#canonicalize_tensors">canonicalize_tensors</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn canonicalize_tensors&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    registry: &amp;TensorRegistry,
+) -&gt; Result&lt;CanonicalTensor&lt;'a&gt;, TensorCanonError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将张量表达式规范化为与指标命名无关的唯一规范形。内部将表达式编码为图（张量头→头顶点、指标槽→槽顶点、缩并→边），运行 McKay 细化-个体化算法计算规范标号，然后重建表达式并重命名哑指标。</p>
+<p>对于和表达式（<code>Add</code>），逐项规范化并验证所有项具有相同的自由指标集。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待规范化的张量表达式（<code>Mul</code> of <code>Fun</code> 节点）</td></tr>
+<tr><td><code>registry</code></td><td><code>&amp;TensorRegistry</code></td><td>张量注册表（对称性规格 + 指标组）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;CanonicalTensor&lt;'a&gt;, TensorCanonError&gt;</code></p>
+<p><strong>错误</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>错误变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ContractedMoreThanOnce(Symbol)</code></td><td>某个指标标签被缩并超过两次</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>两个相同标签的槽具有相同位置（不是上/下对）</td></tr>
+<tr><td><code>NotATensor(Symbol)</code></td><td>表达式中出现未在注册表中注册的函数头</td></tr>
+<tr><td><code>InconsistentOpenIndices</code></td><td>和表达式中各项的自由指标不一致</td></tr>
+<tr><td><code>UnsupportedPower</code></td><td>表达式中出现不支持的幂次节点</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+
+// T(i, j) 和 T(j, i) 是不同的（无对称性）
+let t_ij = ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]);
+let t_ji = ctx.fun("T", &amp;[ctx.var("j"), ctx.var("i")]);
+
+let ct1 = canonicalize_tensors(&amp;ctx, t_ij, &amp;reg).unwrap();
+let ct2 = canonicalize_tensors(&amp;ctx, t_ji, &amp;reg).unwrap();
+// 无对称性时，T(i,j) ≠ T(j,i)
+// 注意：无对称性时 T(i,j) 与 T(j,i) 的规范形不同
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#canonicaltensor">CanonicalTensor</a>、<a href="#tensorcanonerror">TensorCanonError</a>、<a href="#tensorregistry">TensorRegistry</a></p>
+<hr />
+<h2 id="canonicaltensor"><a class="header" href="#canonicaltensor">CanonicalTensor</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct CanonicalTensor&lt;'a&gt; {
+    pub canonical_form: Atom&lt;'a&gt;,
+    pub external_indices: Vec&lt;Atom&lt;'a&gt;&gt;,
+    pub dummy_indices: Vec&lt;Atom&lt;'a&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：张量规范化的结果。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>canonical_form</code></td><td><code>Atom&lt;'a&gt;</code></td><td>规范化后的表达式（哑指标已重命名）</td></tr>
+<tr><td><code>external_indices</code></td><td><code>Vec&lt;Atom&lt;'a&gt;&gt;</code></td><td>自由（外部）指标列表</td></tr>
+<tr><td><code>dummy_indices</code></td><td><code>Vec&lt;Atom&lt;'a&gt;&gt;</code></td><td>哑指标列表（已重命名为 <code>d0</code>、<code>d1</code>、…）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+let prod = ctx.mul(&amp;[ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]),
+                      ctx.fun("U", &amp;[ctx.var("j"), ctx.var("k")])]);
+let ct = canonicalize_tensors(&amp;ctx, prod, &amp;reg).unwrap();
+
+println!("规范形: {}", ct.canonical_form);
+println!("外部指标: {:?}", ct.external_indices);
+println!("哑指标: {:?}", ct.dummy_indices);
+// 输出：规范形含重命名后的哑指标，外部指标为 i, k
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensorcanonerror"><a class="header" href="#tensorcanonerror">TensorCanonError</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TensorCanonError {
+    ContractedMoreThanOnce(Symbol),
+    BadContraction(Symbol),
+    NotATensor(Symbol),
+    InconsistentOpenIndices,
+    UnsupportedPower,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：张量规范化过程中可能产生的错误。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ContractedMoreThanOnce(Symbol)</code></td><td>指标标签被缩并超过两次（出现 3 次以上）</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>两个相同标签的槽具有相同方差（不是有效的上/下对）</td></tr>
+<tr><td><code>NotATensor(Symbol)</code></td><td>出现未在 <code>TensorRegistry</code> 中注册的函数头</td></tr>
+<tr><td><code>InconsistentOpenIndices</code></td><td>和表达式中各项的自由指标集不一致</td></tr>
+<tr><td><code>UnsupportedPower</code></td><td>表达式中出现不支持的幂次节点</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="refresh_dummies"><a class="header" href="#refresh_dummies">refresh_dummies</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn refresh_dummies&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    registry: &amp;TensorRegistry,
+) -&gt; Result&lt;Atom&lt;'a&gt;, DummyError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：重命名张量表达式中的哑指标以避免与外部（自由）指标冲突。恰好出现两次的标签（一次上标、一次下标）被替换为按维度组分配的新名称（<code>d0</code>、<code>d1</code>、…）。外部指标保持不变。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待处理的张量表达式</td></tr>
+<tr><td><code>registry</code></td><td><code>&amp;TensorRegistry</code></td><td>张量注册表（用于维度组分配）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;Atom&lt;'a&gt;, DummyError&gt;</code></p>
+<p><strong>错误</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>错误变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>OverContracted(Symbol)</code></td><td>某个指标标签出现超过两次</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>两个相同标签的槽具有相同方差</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::dummy::refresh_dummies;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+// T(i,j) * U(j,i)：i 和 j 都恰好出现两次 → 哑指标
+let expr = ctx.mul(&amp;[ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]),
+                      ctx.fun("U", &amp;[ctx.var("j"), ctx.var("i")])]);
+let refreshed = refresh_dummies(&amp;ctx, expr, &amp;reg).unwrap();
+println!("{}", refreshed);
+// 输出：哑指标被重命名为 d0, d1（按维度组分配）
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#dummyerror">DummyError</a>、<a href="#tensorregistry">TensorRegistry</a></p>
+<hr />
+<h2 id="dummyerror"><a class="header" href="#dummyerror">DummyError</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DummyError {
+    OverContracted(Symbol),
+    BadContraction(Symbol),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：哑指标操作的错误类型。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>OverContracted(Symbol)</code></td><td>指标标签出现超过两次（不是合法的缩并候选）</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>两个相同标签的槽具有相同方差（不是上/下对）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="youngtableau"><a class="header" href="#youngtableau">YoungTableau</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct YoungTableau {
+    pub row_lengths: Vec&lt;usize&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：Young 盘，由行长度列表定义形状（如 <code>[2, 1]</code> 表示 □□/□）。Young 投影子实现经典对称子 $c_\lambda = a_\lambda \cdot b_\lambda$：对行内置换 $\sigma \in R$ 与列内置换 $\tau \in C$ 的所有组合求和，每项带列置换奇偶符号 $\operatorname{sgn}(\tau)$。</p>
+<p>这是<strong>显式</strong>展开（非 BSGS 群论实现）：结果是 $\prod r_i! \cdot \prod c_j!$ 个项的和（行、列阶乘之积），每项符号 ±1，不做 Hook 长度归一化。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>row_lengths</code></td><td><code>Vec&lt;usize&gt;</code></td><td>每行的格子数</td></tr>
+</tbody></table>
+</div>
+<h3 id="youngtableaunew"><a class="header" href="#youngtableaunew">YoungTableau::new</a></h3>
+<p><strong>签名</strong>：<code>pub fn new(row_lengths: Vec&lt;usize&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：从行长度创建 Young 盘。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>row_lengths</code></td><td><code>Vec&lt;usize&gt;</code></td><td>每行的格子数列表。总格子数应等于张量阶数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>YoungTableau</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::young::YoungTableau;
+
+// [2, 1] = □□/□（3 格）
+let tab = YoungTableau::new(vec![2, 1]);
+assert_eq!(tab.total_boxes(), 3);
+
+// [1, 1, 1] = 全反对称
+let anti = YoungTableau::new(vec![1, 1, 1]);
+assert_eq!(anti.total_boxes(), 3);
+
+// [3] = 全对称
+let sym = YoungTableau::new(vec![3]);
+assert_eq!(sym.total_boxes(), 3);
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="youngtableautotal_boxes"><a class="header" href="#youngtableautotal_boxes">YoungTableau::total_boxes</a></h3>
+<p><strong>签名</strong>：<code>pub fn total_boxes(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回盘中总格子数（等于张量阶数）。</p>
+<p><strong>返回值</strong>：<code>usize</code></p>
+<hr />
+<h2 id="young_project"><a class="header" href="#young_project">young_project</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn young_project&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    tensor_expr: Atom&lt;'a&gt;,
+    tableau: &amp;YoungTableau,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：对张量表达式应用 Young 投影子。将 $T(i_1, i_2, \dots, i_n)$ 展开为置换和：</p>
+<p>$$\sum_\sigma \text{sign}(\sigma) \cdot T(i_{\sigma(1)}, i_{\sigma(2)}, \dots, i_{\sigma(n)})$$</p>
+<p>当前实现<strong>不做</strong> Hook 长度积归一化——每项系数仅为 $\pm 1$。对于全反对称盘 <code>[1, 1, …, 1]</code>，得到标准交替和。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>tensor_expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>张量表达式（<code>Fun</code> 节点）</td></tr>
+<tr><td><code>tableau</code></td><td><code>&amp;YoungTableau</code></td><td>Young 盘形状</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 投影后的表达式（<code>Add</code> 节点，各项带符号）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::young::{YoungTableau, young_project};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// 全反对称 [1, 1]：f(a, b) → f(a, b) - f(b, a)
+let f_ab = ctx.fun("f", &amp;[ctx.var("a"), ctx.var("b")]);
+let result = young_project(&amp;ctx, f_ab, &amp;YoungTableau::new(vec![1, 1]));
+println!("{}", result);
+// 输出：f(a,b) - f(b,a)
+
+// 全对称 [2]：g(a, b) → g(a, b) + g(b, a)
+let g_ab = ctx.fun("g", &amp;[ctx.var("a"), ctx.var("b")]);
+let result = young_project(&amp;ctx, g_ab, &amp;YoungTableau::new(vec![2]));
+println!("{}", result);
+// 输出：g(a,b) + g(b,a)
+
+// 全反对称 [1, 1, 1]：h(a, b, c) → 6 项交错和（系数 ±1，未归一化）
+let h = ctx.fun("h", &amp;[ctx.var("a"), ctx.var("b"), ctx.var("c")]);
+let result = young_project(&amp;ctx, h, &amp;YoungTableau::new(vec![1, 1, 1]));
+println!("{}", result);
+// 输出：h(a,b,c) - h(b,a,c) - ...（6 项，各项系数 ±1）
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#youngtableau">YoungTableau</a>、<a href="#symmetryspec">SymmetrySpec</a></p>
+<hr />
+<h2 id="设计不变量"><a class="header" href="#设计不变量">设计不变量</a></h2>
+<h3 id="atom-是-copy-的-arena-句柄"><a class="header" href="#atom-是-copy-的-arena-句柄">Atom 是 Copy 的 arena 句柄</a></h3>
+<p><code>Atom&lt;'a&gt;</code> 是指向 arena 中节点的 Copy 句柄。<code>IndexSlot&lt;'a&gt;</code> 也是 Copy。这意味着张量可以廉价复制和比较——结构相等等价于指针相等（hash-consing）。</p>
+<h3 id="显式指标匹配"><a class="header" href="#显式指标匹配">显式指标匹配</a></h3>
+<p>oCAS 的张量代数使用<strong>显式指标匹配</strong>而非爱因斯坦求和约定。缩并必须手动调用 <code>contract</code>，指标按标签和位置（上/下）配对。</p>
+<h3 id="对称性是建议性的"><a class="header" href="#对称性是建议性的">对称性是建议性的</a></h3>
+<p><code>Symmetry</code> 枚举和 <code>SymmetrySpec</code> 是元数据，不会被 <code>contract</code> 等基础运算自动使用。完全的对称性处理需要：</p>
+<ol>
+<li>规范化（<code>canonicalize_tensors</code>）—— 图同构级别的对称性强制</li>
+<li>Young 投影（<code>young_project</code>）—— 显式置换展开</li>
+</ol>
+<h3 id="图同构引擎"><a class="header" href="#图同构引擎">图同构引擎</a></h3>
+<p>0.22.0 的规范化基于 McKay 细化-个体化图同构算法（实现在 <code>tensor::graph</code> 模块）。该引擎是一个独立的 nauty 实现，提供：</p>
+<ul>
+<li>1-WL 颜色细化（邻居签名 + 边数据 + 方向）</li>
+<li>公平划分 + 个体化-细化 DFS</li>
+<li>路径不变量剪枝 + 自同构轨道</li>
+<li>规范形 = 字典序最大证书</li>
+</ul>
+<hr />
+<h2 id="完整示例"><a class="header" href="#完整示例">完整示例</a></h2>
+<pre><pre class="playground"><code class="language-rust">use ocas_atom::tensor::{
+    IndexPosition, IndexSlot, Symmetry, Tensor,
+    contract, Contracted, symmetrise_sign,
+};
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::tensor::dummy::refresh_dummies;
+use ocas_atom::tensor::young::{YoungTableau, young_project};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+fn main() {
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+
+    // 1. 创建带对称性的度规张量 g_μν
+    let g = Tensor::new(Symbol::new("g"), vec![
+        IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
+        IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+    ]).with_symmetry(Symmetry::Symmetric);
+    println!("g rank = {}, symmetry = {:?}", g.rank(), g.symmetry());
+    // 输出：g rank = 2, symmetry = Symmetric
+
+    // 2. 缩并 g^μν A_ν → 部分缩并
+    let g_inv = Tensor::new(Symbol::new("g"), vec![
+        IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+        IndexSlot::new(ctx.var("nu"), IndexPosition::Upper),
+    ]);
+    let a = Tensor::new(Symbol::new("A"), vec![
+        IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+    ]);
+    match contract(&amp;ctx, &amp;g_inv, &amp;a) {
+        Contracted::Product(tp) =&gt; {
+            println!("缩并后自由指标数: {}", tp.factors[0].rank());
+            // 输出：缩并后自由指标数: 1 (mu)
+        }
+        _ =&gt; {}
+    }
+
+    // 3. 规范化：T(i,j)*U(j,k) 中 j 被重命名
+    let mut reg = TensorRegistry::new();
+    reg.register(Symbol::new("T"), SymmetrySpec::none());
+    reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+    let prod = ctx.mul(&amp;[
+        ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]),
+        ctx.fun("U", &amp;[ctx.var("j"), ctx.var("k")]),
+    ]);
+    let ct = canonicalize_tensors(&amp;ctx, prod, &amp;reg).unwrap();
+    println!("规范形: {}", ct.canonical_form);
+    // 输出：规范形含 d0, d1 等哑指标
+
+    // 4. Young 投影：全反对称化 f(a, b)
+    let f = ctx.fun("f", &amp;[ctx.var("a"), ctx.var("b")]);
+    let anti = young_project(&amp;ctx, f, &amp;YoungTableau::new(vec![1, 1]));
+    println!("反对称化: {}", anti);
+    // 输出：f(a,b) - f(b,a)
+}</code></pre></pre>
+<hr />
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./rust-expressions.html">表达式系统</a> — <code>Atom</code>、<code>AtomArena</code>、<code>Symbol</code> 基础类型</li>
+<li><a href="./rust-rewrite.html">重写与化简</a> — 基于模式匹配的表达式变换</li>
+<li><a href="../math/linear-algebra.html">线性代数</a> — 矩阵运算（张量的低阶特例）</li>
+<li><a href="../math/tensor-canonicalization.html">张量代数与规范化</a> — 数学理论基础</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-autodiff.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-ntheory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-autodiff.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-ntheory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

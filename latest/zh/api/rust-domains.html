@@ -1,0 +1,1304 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>系数域 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html" class="active"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-domains.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考系数域"><a class="header" href="#rust-api-参考系数域">Rust API 参考：系数域</a></h1>
+<p>系数域是 oCAS 所有多项式、矩阵和求解器算法的基础抽象。每个域描述一组元素及其算术运算，通过 <code>Domain</code> 和 <code>EuclideanDomain</code> trait 统一接口。</p>
+<p><strong>模块路径</strong>：<code>ocas_domain</code></p>
+<p><strong>导入方式</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{
+    Domain, EuclideanDomain,
+    Integer, IntegerDomain,
+    Rational, RationalDomain,
+    FiniteField, FiniteFieldElement,
+    RealBall, RealBallDomain,
+    Complex, ComplexDomain,
+    DoubleF64, DoubleF64Domain,
+    AlgebraicExtension, AlgebraicNumberField, AlgebraicElement,
+};
+use ocas_domain::assumptions::{Assumption, Assumptions, SymbolAssumptions};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="domain-trait"><a class="header" href="#domain-trait">Domain trait</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Domain: Clone + PartialEq + Eq + std::fmt::Debug + Sized {
+    type Element: Clone + PartialEq + Eq + std::fmt::Debug + 'static;
+
+    fn zero(&amp;self) -&gt; Self::Element;
+    fn one(&amp;self) -&gt; Self::Element;
+    fn add(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Self::Element;
+    fn sub(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Self::Element;
+    fn neg(&amp;self, a: &amp;Self::Element) -&gt; Self::Element;
+    fn mul(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Self::Element;
+    fn div(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Option&lt;Self::Element&gt;;
+    fn inv(&amp;self, a: &amp;Self::Element) -&gt; Option&lt;Self::Element&gt;;
+    fn is_zero(&amp;self, a: &amp;Self::Element) -&gt; bool;
+    fn is_one(&amp;self, a: &amp;Self::Element) -&gt; bool;
+    fn mul_assign(&amp;self, a: &amp;mut Self::Element, b: &amp;Self::Element);
+    fn sub_mul_assign(&amp;self, a: &amp;mut Self::Element, b: &amp;Self::Element, c: &amp;Self::Element);
+    fn pow(&amp;self, a: &amp;Self::Element, n: u64) -&gt; Self::Element;
+    fn cast_u64(&amp;self, n: u64) -&gt; Self::Element;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：系数域的核心 trait。域对象本身可以携带参数（如有限域的模数），因此所有运算通过 <code>&amp;self</code> 进行。这与 Flint、SymPy <code>Domain</code> 等 CAS 库的"域对象"模式一致。</p>
+<p><strong>关联类型</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>关联类型</th><th>约束</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Element</code></td><td><code>Clone + PartialEq + Eq + Debug + 'static</code></td><td>域中元素的类型</td></tr>
+</tbody></table>
+</div>
+<p><strong>方法</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>签名</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>zero</code></td><td><code>fn zero(&amp;self) -&gt; Self::Element</code></td><td>加法单位元</td></tr>
+<tr><td><code>one</code></td><td><code>fn one(&amp;self) -&gt; Self::Element</code></td><td>乘法单位元</td></tr>
+<tr><td><code>add</code></td><td><code>fn add(&amp;self, a, b) -&gt; Self::Element</code></td><td>加法</td></tr>
+<tr><td><code>sub</code></td><td><code>fn sub(&amp;self, a, b) -&gt; Self::Element</code></td><td>减法</td></tr>
+<tr><td><code>neg</code></td><td><code>fn neg(&amp;self, a) -&gt; Self::Element</code></td><td>取反</td></tr>
+<tr><td><code>mul</code></td><td><code>fn mul(&amp;self, a, b) -&gt; Self::Element</code></td><td>乘法</td></tr>
+<tr><td><code>div</code></td><td><code>fn div(&amp;self, a, b) -&gt; Option&lt;Self::Element&gt;</code></td><td>除法。<code>b</code> 为零或除法不精确时返回 <code>None</code></td></tr>
+<tr><td><code>inv</code></td><td><code>fn inv(&amp;self, a) -&gt; Option&lt;Self::Element&gt;</code></td><td>乘法逆元。<code>a</code> 为零时返回 <code>None</code></td></tr>
+<tr><td><code>is_zero</code></td><td><code>fn is_zero(&amp;self, a) -&gt; bool</code></td><td>判断是否为加法单位元（默认 <code>*a == self.zero()</code>）</td></tr>
+<tr><td><code>is_one</code></td><td><code>fn is_one(&amp;self, a) -&gt; bool</code></td><td>判断是否为乘法单位元（默认 <code>*a == self.one()</code>）</td></tr>
+<tr><td><code>mul_assign</code></td><td><code>fn mul_assign(&amp;self, a: &amp;mut E, b: &amp;E)</code></td><td>原地乘法 <code>*a *= b</code>。默认创建新元素；GMP 等高性能域可覆盖</td></tr>
+<tr><td><code>sub_mul_assign</code></td><td><code>fn sub_mul_assign(&amp;self, a: &amp;mut E, b: &amp;E, c: &amp;E)</code></td><td>融合减乘 <code>*a -= b * c</code>。F4 行阶梯化中广泛使用</td></tr>
+<tr><td><code>pow</code></td><td><code>fn pow(&amp;self, a, n: u64) -&gt; Self::Element</code></td><td>非负整数次幂。默认使用二进制快速幂；有限域覆盖为 <code>modpow</code></td></tr>
+<tr><td><code>cast_u64</code></td><td><code>fn cast_u64(&amp;self, n: u64) -&gt; Self::Element</code></td><td>将 <code>u64</code> 转换为域元素。默认逐次加一</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Domain, Integer, IntegerDomain};
+
+let domain = IntegerDomain;
+let a = Integer::from(3);
+let b = Integer::from(5);
+assert_eq!(domain.add(&amp;a, &amp;b), Integer::from(8));
+assert_eq!(domain.mul(&amp;a, &amp;b), Integer::from(15));
+assert_eq!(domain.pow(&amp;a, 3), Integer::from(27));
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#euclideandomain-trait">EuclideanDomain</a></p>
+<hr />
+<h2 id="euclideandomain-trait"><a class="header" href="#euclideandomain-trait">EuclideanDomain trait</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait EuclideanDomain: Domain {
+    fn div_rem(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element)
+        -&gt; Option&lt;(Self::Element, Self::Element)&gt;;
+    fn gcd(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Self::Element;
+    fn extended_gcd(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element)
+        -&gt; (Self::Element, Self::Element, Self::Element);
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：支持带余除法的欧几里得域。<code>Domain</code> 的扩展，额外提供 <code>div_rem</code>（带余除法）、<code>gcd</code>（最大公因子）和 <code>extended_gcd</code>（扩展欧几里得算法）。</p>
+<p><strong>方法</strong>：</p>
+<h3 id="div_rem"><a class="header" href="#div_rem">div_rem</a></h3>
+<p><strong>签名</strong>：<code>fn div_rem(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Option&lt;(Self::Element, Self::Element)&gt;</code></p>
+<p><strong>功能</strong>：带余除法，返回 <code>(商, 余数)</code>，满足 <code>a = 商 * b + 余数</code>，且 <code>余数 == 0</code> 或 <code>deg(余数) &lt; deg(b)</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Self::Element</code></td><td>被除数</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Self::Element</code></td><td>除数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Some((quotient, remainder))</code>，<code>b</code> 为零时返回 <code>None</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{EuclideanDomain, Integer, IntegerDomain};
+
+let domain = IntegerDomain;
+let a = Integer::from(17);
+let b = Integer::from(5);
+let (q, r) = domain.div_rem(&amp;a, &amp;b).unwrap();
+assert_eq!(q, Integer::from(3));
+assert_eq!(r, Integer::from(2));
+// 输出：17 = 3 × 5 + 2
+<span class="boring">}</span></code></pre></pre>
+<h3 id="gcd"><a class="header" href="#gcd">gcd</a></h3>
+<p><strong>签名</strong>：<code>fn gcd(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; Self::Element</code></p>
+<p><strong>功能</strong>：计算最大公因子。默认实现使用欧几里得算法。</p>
+<p><strong>返回值</strong>：<code>gcd(a, b)</code>。对于域（如 <code>FiniteField</code>），两个非零元素的 GCD 退化为 1。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{EuclideanDomain, Integer, IntegerDomain};
+
+let domain = IntegerDomain;
+let a = Integer::from(12);
+let b = Integer::from(8);
+let g = domain.gcd(&amp;a, &amp;b);
+assert_eq!(g, Integer::from(4));
+// 输出：gcd(12, 8) = 4
+<span class="boring">}</span></code></pre></pre>
+<h3 id="extended_gcd"><a class="header" href="#extended_gcd">extended_gcd</a></h3>
+<p><strong>签名</strong>：<code>fn extended_gcd(&amp;self, a: &amp;Self::Element, b: &amp;Self::Element) -&gt; (Self::Element, Self::Element, Self::Element)</code></p>
+<p><strong>功能</strong>：扩展欧几里得算法，返回 <code>(g, x, y)</code> 满足 <code>g = gcd(a, b) = a * x + b * y</code>。</p>
+<p><strong>返回值</strong>：三元组 <code>(g, x, y)</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{EuclideanDomain, Integer, IntegerDomain};
+
+let domain = IntegerDomain;
+let a = Integer::from(35);
+let b = Integer::from(15);
+let (g, x, y) = domain.extended_gcd(&amp;a, &amp;b);
+// g = 5, x = 1, y = -2，满足 5 = 35×1 + 15×(-2)
+assert_eq!(g, Integer::from(5));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a></p>
+<hr />
+<h2 id="integer--integerdomain"><a class="header" href="#integer--integerdomain">Integer / IntegerDomain</a></h2>
+<h3 id="integerdomain"><a class="header" href="#integerdomain">IntegerDomain</a></h3>
+<p><strong>签名</strong>：<code>pub struct IntegerDomain;</code></p>
+<p><strong>功能</strong>：整数域 $\mathbb{Z}$，元素类型为 <code>Integer</code>。实现 <code>Domain</code> 和 <code>EuclideanDomain</code>。</p>
+<p><strong>特征</strong>：</p>
+<ul>
+<li><code>div</code> 要求精确除法（余数为零），否则返回 <code>None</code></li>
+<li><code>inv</code> 仅对 $\pm 1$ 返回结果，其余返回 <code>None</code></li>
+<li><code>pow</code> 使用二进制快速幂</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Domain, EuclideanDomain, Integer, IntegerDomain};
+
+let domain = IntegerDomain;
+let a = Integer::from(10);
+let b = Integer::from(3);
+
+// 精确除法：10/3 不精确
+assert!(domain.div(&amp;a, &amp;b).is_none());
+
+// 带余除法
+let (q, r) = domain.div_rem(&amp;a, &amp;b).unwrap();
+assert_eq!(q, Integer::from(3));
+assert_eq!(r, Integer::from(1));
+
+// 逆元：只有 ±1 有逆
+assert!(domain.inv(&amp;Integer::from(1)).is_some());
+assert!(domain.inv(&amp;Integer::from(5)).is_none());
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h3 id="integer"><a class="header" href="#integer">Integer</a></h3>
+<p><strong>签名</strong>：<code>pub struct Integer(BigInt);</code></p>
+<p><strong>功能</strong>：任意精度整数。默认构建使用 <code>num-bigint</code> 的 <code>BigInt</code>；启用 <code>gmp</code> feature 时使用 GMP 后端。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash</code></p>
+<h4 id="构造与转换"><a class="header" href="#构造与转换">构造与转换</a></h4>
+<h5 id="integernew"><a class="header" href="#integernew">Integer::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new&lt;T: Into&lt;BigInt&gt;&gt;(value: T) -&gt; Self</code></p>
+<p><strong>功能</strong>：从机器整数或 <code>BigInt</code> 创建任意精度整数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>value</code></td><td><code>T: Into&lt;BigInt&gt;</code></td><td>整数值（<code>i32</code>、<code>i64</code>、<code>u64</code>、<code>BigInt</code> 等）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+
+let a = Integer::new(42);
+let b = Integer::new(100_i64);
+assert_eq!(a.to_string(), "42");
+// 输出：42
+<span class="boring">}</span></code></pre></pre>
+<h5 id="integerfrom"><a class="header" href="#integerfrom">Integer::from</a></h5>
+<p><strong>签名</strong>：<code>impl From&lt;i64&gt; for Integer</code> / <code>impl From&lt;BigInt&gt; for Integer</code></p>
+<p><strong>功能</strong>：从 <code>i64</code> 或 <code>BigInt</code> 转换。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+
+let a = Integer::from(42);
+assert_eq!(a.to_string(), "42");
+// 输出：42
+<span class="boring">}</span></code></pre></pre>
+<h4 id="访问器"><a class="header" href="#访问器">访问器</a></h4>
+<h5 id="integerinner"><a class="header" href="#integerinner">Integer::inner</a></h5>
+<p><strong>签名</strong>：<code>pub fn inner(&amp;self) -&gt; &amp;BigInt</code></p>
+<p><strong>功能</strong>：访问底层 <code>BigInt</code> 引用。</p>
+<h5 id="integerto_bigint"><a class="header" href="#integerto_bigint">Integer::to_bigint</a></h5>
+<p><strong>签名</strong>：<code>pub fn to_bigint(&amp;self) -&gt; BigInt</code></p>
+<p><strong>功能</strong>：克隆为 <code>BigInt</code>（不论后端）。</p>
+<h5 id="integerto_i64"><a class="header" href="#integerto_i64">Integer::to_i64</a></h5>
+<p><strong>签名</strong>：<code>pub fn to_i64(&amp;self) -&gt; Option&lt;i64&gt;</code></p>
+<p><strong>功能</strong>：尝试转换为 <code>i64</code>。溢出时返回 <code>None</code>。</p>
+<h4 id="运算方法"><a class="header" href="#运算方法">运算方法</a></h4>
+<h5 id="integerpow_u32"><a class="header" href="#integerpow_u32">Integer::pow_u32</a></h5>
+<p><strong>签名</strong>：<code>pub fn pow_u32(&amp;self, exp: u32) -&gt; Self</code></p>
+<p><strong>功能</strong>：计算 $n^{exp}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>exp</code></td><td><code>u32</code></td><td>非负指数</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+
+let a = Integer::from(2);
+assert_eq!(a.pow_u32(10).to_string(), "1024");
+// 输出：1024
+<span class="boring">}</span></code></pre></pre>
+<h5 id="integermodpow"><a class="header" href="#integermodpow">Integer::modpow</a></h5>
+<p><strong>签名</strong>：<code>pub fn modpow(&amp;self, exp: &amp;Integer, modulus: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>功能</strong>：模幂运算 $self^{exp} \bmod modulus$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>exp</code></td><td><code>&amp;Integer</code></td><td>指数（非负）</td></tr>
+<tr><td><code>modulus</code></td><td><code>&amp;Integer</code></td><td>模数（正）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+
+let base = Integer::from(3);
+let exp = Integer::from(100);
+let modulus = Integer::from(7);
+let result = base.modpow(&amp;exp, &amp;modulus);
+assert_eq!(result.to_string(), "4");
+// 输出：3^100 mod 7 = 4
+<span class="boring">}</span></code></pre></pre>
+<h5 id="integermod_floor"><a class="header" href="#integermod_floor">Integer::mod_floor</a></h5>
+<p><strong>签名</strong>：<code>pub fn mod_floor(&amp;self, modulus: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>功能</strong>：地板模运算，结果 $r$ 满足 $0 \leq r &lt; |modulus|$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+
+let a = Integer::from(-7);
+let m = Integer::from(3);
+assert_eq!(a.mod_floor(&amp;m).to_string(), "2");
+// 输出：-7 mod_floor 3 = 2
+<span class="boring">}</span></code></pre></pre>
+<h5 id="integerdiv_rem"><a class="header" href="#integerdiv_rem">Integer::div_rem</a></h5>
+<p><strong>签名</strong>：<code>pub fn div_rem(&amp;self, other: &amp;Integer) -&gt; (Integer, Integer)</code></p>
+<p><strong>功能</strong>：带余除法 <code>(商, 余数)</code>。注意：与 <code>EuclideanDomain::div_rem</code> 不同，此方法不要求 <code>other</code> 非零（行为由底层 <code>BigInt</code> 决定）。</p>
+<h5 id="integeris_even"><a class="header" href="#integeris_even">Integer::is_even</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_even(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为偶数。</p>
+<h5 id="integeris_negative"><a class="header" href="#integeris_negative">Integer::is_negative</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_negative(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为负数。</p>
+<h5 id="integeris_zero"><a class="header" href="#integeris_zero">Integer::is_zero</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_zero(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为零。</p>
+<h5 id="integeris_one"><a class="header" href="#integeris_one">Integer::is_one</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_one(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为一。</p>
+<h5 id="integerabs"><a class="header" href="#integerabs">Integer::abs</a></h5>
+<p><strong>签名</strong>：<code>pub fn abs(&amp;self) -&gt; Integer</code></p>
+<p><strong>功能</strong>：绝对值。</p>
+<h5 id="integersqrt"><a class="header" href="#integersqrt">Integer::sqrt</a></h5>
+<p><strong>签名</strong>：<code>pub fn sqrt(&amp;self) -&gt; Integer</code></p>
+<p><strong>功能</strong>：整数平方根（向下取整）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+
+let a = Integer::from(10);
+assert_eq!(a.sqrt().to_string(), "3");
+// 输出：sqrt(10) = 3
+<span class="boring">}</span></code></pre></pre>
+<h4 id="运算符"><a class="header" href="#运算符">运算符</a></h4>
+<p><code>Integer</code> 实现了以下标准运算符 trait（支持所有引用组合：owned × owned、owned × &amp;、&amp; × owned、&amp; × &amp;）：</p>
+<div class="table-wrapper"><table><thead><tr><th>Trait</th><th>运算</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td><code>+</code></td></tr>
+<tr><td><code>Sub</code></td><td><code>-</code></td></tr>
+<tr><td><code>Mul</code></td><td><code>*</code></td></tr>
+<tr><td><code>Div</code></td><td><code>/</code>（整数除法，截断向零）</td></tr>
+<tr><td><code>Rem</code></td><td><code>%</code></td></tr>
+<tr><td><code>Neg</code></td><td>一元 <code>-</code></td></tr>
+<tr><td><code>Shr&lt;u32&gt;</code> / <code>ShrAssign&lt;u32&gt;</code></td><td>右移</td></tr>
+<tr><td><code>AddAssign&lt;&amp;Integer&gt;</code> / <code>SubAssign&lt;&amp;Integer&gt;</code> / <code>MulAssign&lt;&amp;Integer&gt;</code> / <code>DivAssign&lt;&amp;Integer&gt;</code></td><td>复合赋值</td></tr>
+</tbody></table>
+</div>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a>、<a href="#rational--rationaldomain">Rational</a>、<a href="rust-ntheory.html">数论函数</a></p>
+<hr />
+<h2 id="rational--rationaldomain"><a class="header" href="#rational--rationaldomain">Rational / RationalDomain</a></h2>
+<h3 id="rationaldomain"><a class="header" href="#rationaldomain">RationalDomain</a></h3>
+<p><strong>签名</strong>：<code>pub struct RationalDomain;</code></p>
+<p><strong>功能</strong>：有理数域 $\mathbb{Q}$，元素类型为 <code>Rational</code>。实现 <code>Domain</code> 和 <code>EuclideanDomain</code>。</p>
+<p><strong>特征</strong>：</p>
+<ul>
+<li><code>div</code> 对所有非零除数精确返回结果</li>
+<li><code>inv</code> 对所有非零元素返回结果</li>
+<li><code>EuclideanDomain</code> 的 <code>div_rem</code> 对有理数域退化：余数恒为零</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Domain, Rational, RationalDomain};
+
+let domain = RationalDomain;
+let a = Rational::new(1, 2);
+let b = Rational::new(1, 3);
+let sum = domain.add(&amp;a, &amp;b);
+assert_eq!(sum, Rational::new(5, 6));
+// 输出：1/2 + 1/3 = 5/6
+<span class="boring">}</span></code></pre></pre>
+<h3 id="rational"><a class="header" href="#rational">Rational</a></h3>
+<p><strong>签名</strong>：<code>pub struct Rational(BigRational);</code></p>
+<p><strong>功能</strong>：任意精度有理数。默认构建使用 <code>num-rational</code> 的 <code>BigRational</code>；启用 <code>gmp</code> feature 时使用 GMP 后端。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, Hash</code></p>
+<h4 id="构造"><a class="header" href="#构造">构造</a></h4>
+<h5 id="rationalnew"><a class="header" href="#rationalnew">Rational::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new(numer: i64, denom: i64) -&gt; Self</code></p>
+<p><strong>功能</strong>：从分子和分母（<code>i64</code>）创建有理数。自动约简至最简分数。分母为零时行为由底层库决定。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>numer</code></td><td><code>i64</code></td><td>分子</td></tr>
+<tr><td><code>denom</code></td><td><code>i64</code></td><td>分母（非零）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Rational;
+
+let a = Rational::new(3, 6);
+assert_eq!(a.to_string(), "1/2");
+// 输出：3/6 自动约简为 1/2
+<span class="boring">}</span></code></pre></pre>
+<h5 id="rationalfrom_bigints"><a class="header" href="#rationalfrom_bigints">Rational::from_bigints</a></h5>
+<p><strong>签名</strong>：<code>pub fn from_bigints(numer: BigInt, denom: BigInt) -&gt; Self</code></p>
+<p><strong>功能</strong>：从任意精度整数分子和分母创建有理数。</p>
+<h5 id="rationalfrom_integer"><a class="header" href="#rationalfrom_integer">Rational::from_integer</a></h5>
+<p><strong>签名</strong>：<code>pub fn from_integer(n: Integer) -&gt; Self</code></p>
+<p><strong>功能</strong>：从整数创建有理数（分母 = 1）。</p>
+<h4 id="访问器-1"><a class="header" href="#访问器-1">访问器</a></h4>
+<h5 id="rationalinner"><a class="header" href="#rationalinner">Rational::inner</a></h5>
+<p><strong>签名</strong>：<code>pub fn inner(&amp;self) -&gt; &amp;BigRational</code></p>
+<p><strong>功能</strong>：访问底层 <code>BigRational</code> 引用。</p>
+<h5 id="rationalnumer"><a class="header" href="#rationalnumer">Rational::numer</a></h5>
+<p><strong>签名</strong>：<code>pub fn numer(&amp;self) -&gt; Integer</code></p>
+<p><strong>功能</strong>：返回分子（作为 <code>Integer</code>）。</p>
+<h5 id="rationaldenom"><a class="header" href="#rationaldenom">Rational::denom</a></h5>
+<p><strong>签名</strong>：<code>pub fn denom(&amp;self) -&gt; Integer</code></p>
+<p><strong>功能</strong>：返回分母（作为 <code>Integer</code>，始终为正）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Rational;
+
+let r = Rational::new(3, 4);
+assert_eq!(r.numer().to_string(), "3");
+assert_eq!(r.denom().to_string(), "4");
+// 输出：分子 = 3，分母 = 4
+<span class="boring">}</span></code></pre></pre>
+<h4 id="运算符-1"><a class="header" href="#运算符-1">运算符</a></h4>
+<p><code>Rational</code> 实现了以下标准运算符 trait：</p>
+<div class="table-wrapper"><table><thead><tr><th>Trait</th><th>运算</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td><code>+</code></td></tr>
+<tr><td><code>Sub</code></td><td><code>-</code></td></tr>
+<tr><td><code>Mul</code></td><td><code>*</code></td></tr>
+<tr><td><code>Div</code></td><td><code>/</code></td></tr>
+<tr><td><code>Neg</code></td><td>一元 <code>-</code></td></tr>
+<tr><td><code>AddAssign</code> / <code>SubAssign</code> / <code>MulAssign</code> / <code>DivAssign</code></td><td>复合赋值</td></tr>
+</tbody></table>
+</div>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a>、<a href="#integer--integerdomain">Integer</a></p>
+<hr />
+<h2 id="finitefield--finitefieldelement"><a class="header" href="#finitefield--finitefieldelement">FiniteField / FiniteFieldElement</a></h2>
+<h3 id="finitefield"><a class="header" href="#finitefield">FiniteField</a></h3>
+<p><strong>签名</strong>：<code>pub struct FiniteField { /* prime: BigInt, ... */ }</code></p>
+<p><strong>功能</strong>：素数有限域 $\mathbb{Z}/p\mathbb{Z}$。算术使用任意精度整数，支持大素数。实现 <code>Domain</code> 和 <code>EuclideanDomain</code>。</p>
+<h4 id="构造-1"><a class="header" href="#构造-1">构造</a></h4>
+<h5 id="finitefieldnew"><a class="header" href="#finitefieldnew">FiniteField::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new(prime: BigInt) -&gt; Self</code></p>
+<p><strong>功能</strong>：以给定素数为模创建有限域。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>prime</code></td><td><code>BigInt</code></td><td>模数（要求 $\geq 2$，不验证素性）</td></tr>
+</tbody></table>
+</div>
+<p><strong>错误</strong>：debug 模式下若 <code>prime &lt; 2</code> 会 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+
+let f = FiniteField::new(BigInt::from(7));
+let a = f.element(3);
+let b = f.element(5);
+assert_eq!(f.add(&amp;a, &amp;b), f.element(1));   // 3 + 5 = 1 (mod 7)
+assert_eq!(f.mul(&amp;a, &amp;b), f.element(1));   // 3 × 5 = 1 (mod 7)
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h4 id="元素构造"><a class="header" href="#元素构造">元素构造</a></h4>
+<h5 id="finitefieldelement"><a class="header" href="#finitefieldelement">FiniteField::element</a></h5>
+<p><strong>签名</strong>：<code>pub fn element(&amp;self, value: impl Into&lt;BigInt&gt;) -&gt; FiniteFieldElement</code></p>
+<p><strong>功能</strong>：从任意整数创建域元素。值自动规约到 $[0, p-1]$ 范围。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>value</code></td><td><code>impl Into&lt;BigInt&gt;</code></td><td>整数值（可超出 $[0, p-1]$，自动取模）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+
+let f = FiniteField::new(BigInt::from(7));
+let a = f.element(10);
+assert_eq!(a.value().to_string(), "3");
+// 输出：10 mod 7 = 3
+<span class="boring">}</span></code></pre></pre>
+<h5 id="finitefieldfrom_i64"><a class="header" href="#finitefieldfrom_i64">FiniteField::from_i64</a></h5>
+<p><strong>签名</strong>：<code>pub fn from_i64(&amp;self, val: i64) -&gt; FiniteFieldElement</code></p>
+<p><strong>功能</strong>：从 <code>i64</code> 创建域元素（规约 mod p）。</p>
+<h4 id="访问器-2"><a class="header" href="#访问器-2">访问器</a></h4>
+<h5 id="finitefieldprime"><a class="header" href="#finitefieldprime">FiniteField::prime</a></h5>
+<p><strong>签名</strong>：<code>pub fn prime(&amp;self) -&gt; &amp;BigInt</code></p>
+<p><strong>功能</strong>：返回域的模数。</p>
+<h5 id="finitefieldprime_u64"><a class="header" href="#finitefieldprime_u64">FiniteField::prime_u64</a></h5>
+<p><strong>签名</strong>：<code>pub fn prime_u64(&amp;self) -&gt; u64</code></p>
+<p><strong>功能</strong>：将模数作为 <code>u64</code> 返回。</p>
+<p><strong>错误</strong>：若素数不适用 <code>u64</code> 表示则 panic。</p>
+<h5 id="finitefieldto_i64"><a class="header" href="#finitefieldto_i64">FiniteField::to_i64</a></h5>
+<p><strong>签名</strong>：<code>pub fn to_i64(&amp;self, a: &amp;FiniteFieldElement) -&gt; i64</code></p>
+<p><strong>功能</strong>：将域元素转换为 <code>i64</code>（范围 $[0, p)$）。</p>
+<p><strong>错误</strong>：若素数不适用 <code>u64</code> 表示则 panic。</p>
+<h4 id="domain-实现"><a class="header" href="#domain-实现">Domain 实现</a></h4>
+<ul>
+<li><code>div</code> 通过 Fermat 小定理求逆：$a^{-1} \equiv a^{p-2} \pmod{p}$</li>
+<li><code>inv</code> 同上，零元素返回 <code>None</code></li>
+<li><code>pow</code> 使用 <code>modpow</code> 优化（远快于默认二进制幂）</li>
+</ul>
+<h4 id="euclideandomain-实现"><a class="header" href="#euclideandomain-实现">EuclideanDomain 实现</a></h4>
+<ul>
+<li><code>div_rem</code>：域中除法精确，余数恒为零</li>
+<li><code>gcd</code>：域中 GCD 退化——两者均为零时返回 0，否则返回 1</li>
+</ul>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a>、<a href="../math/finite-fields.html">有限域数学基础</a></p>
+<hr />
+<h3 id="finitefieldelement-1"><a class="header" href="#finitefieldelement-1">FiniteFieldElement</a></h3>
+<p><strong>签名</strong>：<code>pub struct FiniteFieldElement { value: BigInt }</code></p>
+<p><strong>功能</strong>：素数有限域的元素。值始终在 $[0, p-1]$ 范围内。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, Hash</code></p>
+<h4 id="finitefieldelementvalue"><a class="header" href="#finitefieldelementvalue">FiniteFieldElement::value</a></h4>
+<p><strong>签名</strong>：<code>pub fn value(&amp;self) -&gt; &amp;BigInt</code></p>
+<p><strong>功能</strong>：返回 $[0, p-1]$ 范围内的标准代表元。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::FiniteField;
+
+let f = FiniteField::new(BigInt::from(7));
+let a = f.element(-3);
+assert_eq!(a.value().to_string(), "4");
+// 输出：-3 mod 7 = 4
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#finitefield--finitefieldelement">FiniteField</a></p>
+<hr />
+<h2 id="realball--realballdomain"><a class="header" href="#realball--realballdomain">RealBall / RealBallDomain</a></h2>
+<h3 id="realballdomain"><a class="header" href="#realballdomain">RealBallDomain</a></h3>
+<p><strong>签名</strong>：<code>pub struct RealBallDomain;</code></p>
+<p><strong>功能</strong>：实数球（区间）域。元素类型为 <code>RealBall</code>。仅实现 <code>Domain</code>（不实现 <code>EuclideanDomain</code>，因为实数球不支持精确带余除法）。</p>
+<p><strong>注意</strong>：默认构建使用轻量 <code>f64</code> 球，适合模板和演示。启用 <code>mpfr</code> feature 后使用 <code>rug::Float</code> 和有向舍入产生严格区间。</p>
+<h3 id="realball"><a class="header" href="#realball">RealBall</a></h3>
+<p><strong>签名</strong>：<code>pub struct RealBall { mid: f64, rad: f64 }</code>（默认构建）</p>
+<p><strong>功能</strong>：实数球：中点 ± 半径。真实值保证包含在 $[mid - rad, mid + rad]$ 中。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq</code>；默认构建额外实现 <code>Copy</code>。</p>
+<h4 id="构造-2"><a class="header" href="#构造-2">构造</a></h4>
+<h5 id="realballnew"><a class="header" href="#realballnew">RealBall::new</a></h5>
+<p><strong>签名</strong>（默认）：<code>pub fn new(mid: f64, rad: f64) -&gt; Self</code></p>
+<p><strong>功能</strong>：从中点和半径创建球。半径被钳制为非负。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>mid</code></td><td><code>f64</code>（或 <code>rug::Float</code>）</td><td>中点</td></tr>
+<tr><td><code>rad</code></td><td><code>f64</code>（或 <code>rug::Float</code>）</td><td>半径（$\geq 0$）</td></tr>
+</tbody></table>
+</div>
+<h5 id="realballfrom_f64"><a class="header" href="#realballfrom_f64">RealBall::from_f64</a></h5>
+<p><strong>签名</strong>：<code>pub fn from_f64(value: f64) -&gt; Self</code></p>
+<p><strong>功能</strong>：从 <code>f64</code> 值创建零半径球（精确值）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::RealBall;
+
+let ball = RealBall::from_f64(3.14);
+assert_eq!(ball.mid(), 3.14);
+assert_eq!(ball.rad(), 0.0);
+// 输出：精确球
+<span class="boring">}</span></code></pre></pre>
+<h4 id="访问器-3"><a class="header" href="#访问器-3">访问器</a></h4>
+<h5 id="realballmid"><a class="header" href="#realballmid">RealBall::mid</a></h5>
+<p><strong>签名</strong>：<code>pub fn mid(&amp;self) -&gt; f64</code>（默认） / <code>pub fn mid(&amp;self) -&gt; &amp;rug::Float</code>（mpfr）</p>
+<p><strong>功能</strong>：返回中点。</p>
+<h5 id="realballrad"><a class="header" href="#realballrad">RealBall::rad</a></h5>
+<p><strong>签名</strong>：<code>pub fn rad(&amp;self) -&gt; f64</code>（默认） / <code>pub fn rad(&amp;self) -&gt; &amp;rug::Float</code>（mpfr）</p>
+<p><strong>功能</strong>：返回半径。</p>
+<h5 id="realballlower"><a class="header" href="#realballlower">RealBall::lower</a></h5>
+<p><strong>签名</strong>：<code>pub fn lower(&amp;self) -&gt; f64</code>（默认） / <code>pub fn lower(&amp;self) -&gt; rug::Float</code>（mpfr）</p>
+<p><strong>功能</strong>：返回保守下界 $mid - rad$（mpfr 版本使用向下舍入）。</p>
+<h5 id="realballupper"><a class="header" href="#realballupper">RealBall::upper</a></h5>
+<p><strong>签名</strong>：<code>pub fn upper(&amp;self) -&gt; f64</code>（默认） / <code>pub fn upper(&amp;self) -&gt; rug::Float</code>（mpfr）</p>
+<p><strong>功能</strong>：返回保守上界 $mid + rad$（mpfr 版本使用向上舍入）。</p>
+<h5 id="realballprecision"><a class="header" href="#realballprecision">RealBall::precision</a></h5>
+<p><strong>签名</strong>：<code>pub fn precision(&amp;self) -&gt; u32</code>（仅 <code>mpfr</code> feature）</p>
+<p><strong>功能</strong>：返回 MPFR 后端的精度（位数）。</p>
+<h4 id="domain-实现-1"><a class="header" href="#domain-实现-1">Domain 实现</a></h4>
+<ul>
+<li><code>add</code>：$(a \pm r_a) + (b \pm r_b) = (a+b) \pm (r_a + r_b)$（mpfr 版本额外加舍入误差）</li>
+<li><code>sub</code>：类似加法，半径相加</li>
+<li><code>mul</code>：四角法——计算四个极端乘积 $a_lo \cdot b_lo$、$a_lo \cdot b_hi$ 等，取最小/最大值得到新区间</li>
+<li><code>div</code>：$a / b = a \cdot b^{-1}$，当球包含零时返回 <code>None</code></li>
+<li><code>inv</code>：$1/(mid \pm rad)$，当球包含零时返回 <code>None</code></li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Domain, RealBall, RealBallDomain};
+
+let domain = RealBallDomain;
+let a = RealBall::from_f64(2.0);
+let b = RealBall::from_f64(3.0);
+let prod = domain.mul(&amp;a, &amp;b);
+assert!(prod.lower() &lt;= 6.0 &amp;&amp; 6.0 &lt;= prod.upper());
+// 输出：乘积球包含真值 6.0
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a></p>
+<hr />
+<h2 id="complex--complexdomain"><a class="header" href="#complex--complexdomain">Complex / ComplexDomain</a></h2>
+<h3 id="complexdomain"><a class="header" href="#complexdomain">ComplexDomain</a></h3>
+<p><strong>签名</strong>：<code>pub struct ComplexDomain&lt;D: Domain&gt; { base: D, ... }</code></p>
+<p><strong>功能</strong>：在任意基域 $D$ 上构造的复数域。元素类型为 <code>Complex&lt;D&gt;</code>。仅实现 <code>Domain</code>。</p>
+<h4 id="构造-3"><a class="header" href="#构造-3">构造</a></h4>
+<h5 id="complexdomainnew"><a class="header" href="#complexdomainnew">ComplexDomain::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new(base: D) -&gt; Self</code></p>
+<p><strong>功能</strong>：在基域 <code>base</code> 上创建复数域。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>D: Domain</code></td><td>基域（如 <code>IntegerDomain</code>、<code>RationalDomain</code>）</td></tr>
+</tbody></table>
+</div>
+<h5 id="complexdomainbase"><a class="header" href="#complexdomainbase">ComplexDomain::base</a></h5>
+<p><strong>签名</strong>：<code>pub fn base(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>功能</strong>：返回基域引用。</p>
+<h5 id="complexdomainreal_element"><a class="header" href="#complexdomainreal_element">ComplexDomain::real_element</a></h5>
+<p><strong>签名</strong>：<code>pub fn real_element(&amp;self, re: D::Element) -&gt; Complex&lt;D&gt;</code></p>
+<p><strong>功能</strong>：创建纯实数元素。</p>
+<h5 id="complexdomainimag_element"><a class="header" href="#complexdomainimag_element">ComplexDomain::imag_element</a></h5>
+<p><strong>签名</strong>：<code>pub fn imag_element(&amp;self, im: D::Element) -&gt; Complex&lt;D&gt;</code></p>
+<p><strong>功能</strong>：创建纯虚数元素。</p>
+<h4 id="domain-实现-2"><a class="header" href="#domain-实现-2">Domain 实现</a></h4>
+<ul>
+<li><code>mul</code>：$(a+bi)(c+di) = (ac-bd) + (ad+bc)i$</li>
+<li><code>div</code>：$(a+bi)/(c+di) = \frac{(ac+bd)+(bc-ad)i}{c^2+d^2}$，分母为零时返回 <code>None</code></li>
+<li><code>inv</code>：通过 <code>div(one, a)</code> 实现</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Complex, ComplexDomain, Domain, Integer, IntegerDomain};
+
+let domain = ComplexDomain::new(IntegerDomain);
+let a = Complex::new(Integer::from(1), Integer::from(2));
+let b = Complex::new(Integer::from(3), Integer::from(4));
+let sum = domain.add(&amp;a, &amp;b);
+assert_eq!(*sum.re(), Integer::from(4));
+assert_eq!(*sum.im(), Integer::from(6));
+// 输出：(1+2i) + (3+4i) = 4+6i
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a></p>
+<hr />
+<h3 id="complex"><a class="header" href="#complex">Complex</a></h3>
+<p><strong>签名</strong>：<code>pub struct Complex&lt;D: Domain&gt; { inner: NumComplex&lt;D::Element&gt; }</code></p>
+<p><strong>功能</strong>：复数，实部和虚部属于基域 $D$。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, Hash</code></p>
+<h4 id="构造与访问"><a class="header" href="#构造与访问">构造与访问</a></h4>
+<h5 id="complexnew"><a class="header" href="#complexnew">Complex::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new(real: D::Element, imag: D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：从实部和虚部创建复数。</p>
+<h5 id="complexre"><a class="header" href="#complexre">Complex::re</a></h5>
+<p><strong>签名</strong>：<code>pub fn re(&amp;self) -&gt; &amp;D::Element</code></p>
+<p><strong>功能</strong>：返回实部引用。</p>
+<h5 id="complexim"><a class="header" href="#complexim">Complex::im</a></h5>
+<p><strong>签名</strong>：<code>pub fn im(&amp;self) -&gt; &amp;D::Element</code></p>
+<p><strong>功能</strong>：返回虚部引用。</p>
+<h5 id="complexinner"><a class="header" href="#complexinner">Complex::inner</a></h5>
+<p><strong>签名</strong>：<code>pub fn inner(&amp;self) -&gt; &amp;NumComplex&lt;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回底层 <code>num_complex::Complex</code> 引用。</p>
+<p><strong>参见</strong>：<a href="#complexdomain">ComplexDomain</a></p>
+<hr />
+<h2 id="doublef64--doublef64domain"><a class="header" href="#doublef64--doublef64domain">DoubleF64 / DoubleF64Domain</a></h2>
+<h3 id="doublef64domain"><a class="header" href="#doublef64domain">DoubleF64Domain</a></h3>
+<p><strong>签名</strong>：<code>pub struct DoubleF64Domain;</code></p>
+<p><strong>功能</strong>：双精度浮点域。元素类型为 <code>DoubleF64</code>。仅实现 <code>Domain</code>。</p>
+<h3 id="doublef64"><a class="header" href="#doublef64">DoubleF64</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct DoubleF64 {
+    pub hi: f64,  // 高阶分量（主值）
+    pub lo: f64,  // 低阶分量（误差项）
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：双精度浮点数，表示为 $hi + lo$，满足 $|lo| \leq 0.5 \cdot \text{ulp}(hi)$。提供约 31 位十进制有效数字（~84 位二进制），约为单个 <code>f64</code> 精度的两倍。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, Copy, PartialEq</code>；实现 <code>Eq</code>。</p>
+<p>算术基于 Dekker 和 Knuth 的无误差变换算法（TwoSum、TwoProd），显著快于 MPFR 等任意精度替代方案。</p>
+<h4 id="常量"><a class="header" href="#常量">常量</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>常量</th><th>值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>DoubleF64::ZERO</code></td><td><code>{ hi: 0.0, lo: 0.0 }</code></td><td>零</td></tr>
+<tr><td><code>DoubleF64::ONE</code></td><td><code>{ hi: 1.0, lo: 0.0 }</code></td><td>一</td></tr>
+</tbody></table>
+</div>
+<h4 id="构造与转换-1"><a class="header" href="#构造与转换-1">构造与转换</a></h4>
+<h5 id="doublef64new"><a class="header" href="#doublef64new">DoubleF64::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new(hi: f64, lo: f64) -&gt; Self</code></p>
+<p><strong>功能</strong>：从高阶和低阶分量创建。调用者需确保 $|lo| \leq 0.5 \cdot \text{ulp}(hi)$ 以保证正确性。</p>
+<h5 id="doublef64from_f64"><a class="header" href="#doublef64from_f64">DoubleF64::from_f64</a></h5>
+<p><strong>签名</strong>：<code>pub fn from_f64(x: f64) -&gt; Self</code></p>
+<p><strong>功能</strong>：从单个 <code>f64</code> 创建（$lo = 0$）。</p>
+<h5 id="doublef64to_f64"><a class="header" href="#doublef64to_f64">DoubleF64::to_f64</a></h5>
+<p><strong>签名</strong>：<code>pub fn to_f64(self) -&gt; f64</code></p>
+<p><strong>功能</strong>：提取高阶分量。</p>
+<h5 id="fromf64"><a class="header" href="#fromf64">From&lt;f64&gt;</a></h5>
+<p><strong>签名</strong>：<code>impl From&lt;f64&gt; for DoubleF64</code></p>
+<p><strong>功能</strong>：等价于 <code>from_f64</code>。</p>
+<h4 id="无误差变换"><a class="header" href="#无误差变换">无误差变换</a></h4>
+<h5 id="doublef64quick_two_sum"><a class="header" href="#doublef64quick_two_sum">DoubleF64::quick_two_sum</a></h5>
+<p><strong>签名</strong>：<code>pub fn quick_two_sum(a: f64, b: f64) -&gt; Self</code></p>
+<p><strong>功能</strong>：当 $|a| \geq |b|$ 时的无误差求和。比 <code>two_sum</code> 快但有前提条件。</p>
+<h5 id="doublef64two_sum"><a class="header" href="#doublef64two_sum">DoubleF64::two_sum</a></h5>
+<p><strong>签名</strong>：<code>pub fn two_sum(a: f64, b: f64) -&gt; Self</code></p>
+<p><strong>功能</strong>：Dekker TwoSum——无误差求和，舍入误差精确捕获到 <code>lo</code> 分量。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::DoubleF64;
+
+let s = DoubleF64::two_sum(1.0, f64::EPSILON);
+assert_eq!(s.hi, 1.0 + f64::EPSILON);
+// s.lo 捕获了舍入误差
+<span class="boring">}</span></code></pre></pre>
+<h4 id="查询"><a class="header" href="#查询">查询</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>签名</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>abs</code></td><td><code>pub fn abs(self) -&gt; Self</code></td><td>绝对值</td></tr>
+<tr><td><code>is_nan</code></td><td><code>pub fn is_nan(self) -&gt; bool</code></td><td>是否为 NaN</td></tr>
+<tr><td><code>is_infinite</code></td><td><code>pub fn is_infinite(self) -&gt; bool</code></td><td>是否为无穷</td></tr>
+<tr><td><code>is_finite</code></td><td><code>pub fn is_finite(self) -&gt; bool</code></td><td>是否有限</td></tr>
+</tbody></table>
+</div>
+<h4 id="算术运算"><a class="header" href="#算术运算">算术运算</a></h4>
+<h5 id="doublef64add--sub--mul--div"><a class="header" href="#doublef64add--sub--mul--div">DoubleF64::add / sub / mul / div</a></h5>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn add(self, other: Self) -&gt; Self
+pub fn sub(self, other: Self) -&gt; Self
+pub fn mul(self, other: Self) -&gt; Self
+pub fn div(self, other: Self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：双精度加减乘除。内部使用 TwoSum/TwoProd 捕获舍入误差。</p>
+<h5 id="doublef64powi"><a class="header" href="#doublef64powi">DoubleF64::powi</a></h5>
+<p><strong>签名</strong>：<code>pub fn powi(self, n: i64) -&gt; Self</code></p>
+<p><strong>功能</strong>：整数次幂，使用二进制快速幂。支持负指数。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::DoubleF64;
+
+let x = DoubleF64::from_f64(3.0);
+assert_eq!(x.powi(3).hi, 27.0);
+assert_eq!(x.powi(-1).hi, 1.0 / 3.0);
+// 输出：3^3 = 27, 3^(-1) = 0.333...
+<span class="boring">}</span></code></pre></pre>
+<h4 id="超越函数"><a class="header" href="#超越函数">超越函数</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>签名</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>sqrt</code></td><td><code>pub fn sqrt(self) -&gt; Self</code></td><td>Newton 迭代平方根。负数返回 NaN</td></tr>
+<tr><td><code>exp</code></td><td><code>pub fn exp(self) -&gt; Self</code></td><td>指数函数，Taylor 级数 + 参数规约（$\ln 2$ 缩减）</td></tr>
+<tr><td><code>ln</code></td><td><code>pub fn ln(self) -&gt; Self</code></td><td>自然对数，Newton 迭代。非正数返回 NaN</td></tr>
+<tr><td><code>sin</code></td><td><code>pub fn sin(self) -&gt; Self</code></td><td>正弦，Taylor 级数 + $[-\pi, \pi]$ 规约</td></tr>
+<tr><td><code>cos</code></td><td><code>pub fn cos(self) -&gt; Self</code></td><td>余弦，$\cos(x) = \sin(\pi/2 - x)$</td></tr>
+<tr><td><code>tan</code></td><td><code>pub fn tan(self) -&gt; Self</code></td><td>正切，$\sin(x)/\cos(x)$</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::DoubleF64;
+
+let x = DoubleF64::from_f64(1.0);
+let e = x.exp();
+// e ≈ 2.718281828...
+assert!((e.hi - std::f64::consts::E).abs() &lt; 1e-15);
+
+let pi = DoubleF64::from_f64(std::f64::consts::PI);
+let s = pi.sin();
+assert!(s.hi.abs() &lt; 1e-15); // sin(π) ≈ 0
+// 输出：exp(1) ≈ e, sin(π) ≈ 0
+<span class="boring">}</span></code></pre></pre>
+<h4 id="运算符-2"><a class="header" href="#运算符-2">运算符</a></h4>
+<p><code>DoubleF64</code> 实现了 <code>Add</code>、<code>Sub</code>、<code>Mul</code>、<code>Div</code>、<code>Neg</code>、<code>AddAssign</code>、<code>SubAssign</code>、<code>MulAssign</code>、<code>DivAssign</code>、<code>PartialOrd</code>、<code>Zero</code>（<code>num_traits</code>）。</p>
+<h4 id="display"><a class="header" href="#display">Display</a></h4>
+<p>当 <code>lo == 0</code> 时显示 <code>hi</code> 值；否则以 31 位科学计数法显示 $hi + lo$ 的和。</p>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a>、<a href="#realball--realballdomain">RealBall</a></p>
+<hr />
+<h2 id="algebraicextension--algebraicnumberfield--algebraicelement"><a class="header" href="#algebraicextension--algebraicnumberfield--algebraicelement">AlgebraicExtension / AlgebraicNumberField / AlgebraicElement</a></h2>
+<h3 id="algebraicextension"><a class="header" href="#algebraicextension">AlgebraicExtension</a></h3>
+<p><strong>签名</strong>：<code>pub struct AlgebraicExtension&lt;D: Domain&gt; { base: D, min_poly: Vec&lt;D::Element&gt; }</code></p>
+<p><strong>功能</strong>：代数扩张 $D[\alpha]/(m(\alpha))$，其中 $m$ 是首一多项式。当基域 $D$ 是域且 $m$ 不可约时，商环是域：</p>
+<ul>
+<li><code>AlgebraicExtension&lt;RationalDomain&gt;</code> = 代数数域 $\mathbb{Q}(\alpha)$</li>
+<li><code>AlgebraicExtension&lt;FiniteField&gt;</code> = Galois 域 $\mathrm{GF}(p^d)$</li>
+</ul>
+<p>元素是剩余类，由次数小于 $\deg(m)$ 的唯一多项式代表表示。逆元使用基域上的扩展欧几里得算法。</p>
+<p><strong>⚠️ 注意</strong>：不检查极小多项式的不可约性。在可约模下，环有零因子，<code>Domain::inv</code> 对非单位返回 <code>None</code>。</p>
+<p><strong>实现</strong>：<code>Domain</code>、<code>EuclideanDomain</code></p>
+<h4 id="构造-4"><a class="header" href="#构造-4">构造</a></h4>
+<h5 id="algebraicextensionnew"><a class="header" href="#algebraicextensionnew">AlgebraicExtension::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new(base: D, min_poly: Vec&lt;D::Element&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：从基域和首一极小多项式创建代数扩张。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>D: Domain</code></td><td>基域</td></tr>
+<tr><td><code>min_poly</code></td><td><code>Vec&lt;D::Element&gt;</code></td><td>极小多项式，升序排列，首一（最高次系数为 1），次数 $\geq 1$</td></tr>
+</tbody></table>
+</div>
+<p><strong>错误</strong>：debug 模式下检查：(1) 次数 $\geq 1$（即 <code>min_poly.len() &gt;= 2</code>）；(2) 首一性。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicExtension, Domain, Rational, RationalDomain};
+
+// ℚ(√2)：极小多项式 α² − 2
+let two = Rational::new(2, 1);
+let neg_two = RationalDomain.neg(&amp;two);
+let field = AlgebraicExtension::new(
+    RationalDomain,
+    vec![neg_two, Rational::new(0, 1), Rational::new(1, 1)],
+);
+let sqrt2 = field.alpha();
+// √2 · √2 = 2
+assert_eq!(field.mul(&amp;sqrt2, &amp;sqrt2), field.from_base(two));
+// 输出：α² = 2
+<span class="boring">}</span></code></pre></pre>
+<h4 id="访问器-4"><a class="header" href="#访问器-4">访问器</a></h4>
+<h5 id="algebraicextensionbase_domain"><a class="header" href="#algebraicextensionbase_domain">AlgebraicExtension::base_domain</a></h5>
+<p><strong>签名</strong>：<code>pub fn base_domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>功能</strong>：返回基域引用。</p>
+<h5 id="algebraicextensionmin_poly"><a class="header" href="#algebraicextensionmin_poly">AlgebraicExtension::min_poly</a></h5>
+<p><strong>签名</strong>：<code>pub fn min_poly(&amp;self) -&gt; &amp;[D::Element]</code></p>
+<p><strong>功能</strong>：返回极小多项式系数（升序，首一）。</p>
+<h5 id="algebraicextensionextension_degree"><a class="header" href="#algebraicextensionextension_degree">AlgebraicExtension::extension_degree</a></h5>
+<p><strong>签名</strong>：<code>pub fn extension_degree(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回扩张次数 $\deg(m)$。</p>
+<h4 id="元素构造-1"><a class="header" href="#元素构造-1">元素构造</a></h4>
+<h5 id="algebraicextensionfrom_base"><a class="header" href="#algebraicextensionfrom_base">AlgebraicExtension::from_base</a></h5>
+<p><strong>签名</strong>：<code>pub fn from_base(&amp;self, c: D::Element) -&gt; AlgebraicElement&lt;D::Element&gt;</code></p>
+<p><strong>功能</strong>：将基域常量嵌入扩张域。</p>
+<h5 id="algebraicextensionalpha"><a class="header" href="#algebraicextensionalpha">AlgebraicExtension::alpha</a></h5>
+<p><strong>签名</strong>：<code>pub fn alpha(&amp;self) -&gt; AlgebraicElement&lt;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回扩张的生成元 $\alpha$。</p>
+<h5 id="algebraicextensionelement"><a class="header" href="#algebraicextensionelement">AlgebraicExtension::element</a></h5>
+<p><strong>签名</strong>：<code>pub fn element(&amp;self, coeffs: Vec&lt;D::Element&gt;) -&gt; AlgebraicElement&lt;D::Element&gt;</code></p>
+<p><strong>功能</strong>：从系数（升序）创建元素，自动规约模极小多项式。</p>
+<h4 id="domain-实现-3"><a class="header" href="#domain-实现-3">Domain 实现</a></h4>
+<ul>
+<li><code>mul</code>：先多项式乘法，再规约模 $m(\alpha)$</li>
+<li><code>inv</code>：使用扩展欧几里得算法——若 $\gcd(a, m) = 1$（常数），则 $a^{-1} = s \bmod m$</li>
+<li><code>div</code>：$a/b = a \cdot b^{-1}$</li>
+<li><code>is_zero</code>：系数向量为空</li>
+</ul>
+<h4 id="euclideandomain-实现-1"><a class="header" href="#euclideandomain-实现-1">EuclideanDomain 实现</a></h4>
+<ul>
+<li><code>div_rem</code>：域上除法精确，余数恒为零</li>
+<li><code>gcd</code>：域中退化——两者均零返回 0，否则返回 1</li>
+</ul>
+<p><strong>示例</strong>（Galois 域 $\mathrm{GF}(3^2)$）：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicExtension, Domain};
+use ocas_domain::FiniteField;
+use num_bigint::BigInt;
+
+let base = FiniteField::new(BigInt::from(3));
+let field = AlgebraicExtension::new(
+    base.clone(),
+    vec![base.element(1), base.element(0), base.element(1)], // α² + 1
+);
+let alpha = field.alpha();
+// α² = −1 = 2 (mod 3)
+assert_eq!(field.mul(&amp;alpha, &amp;alpha), field.from_base(base.element(2)));
+// 乘法群阶为 8：(1+α)⁸ = 1
+let a = field.add(&amp;field.one(), &amp;alpha);
+assert_eq!(field.pow(&amp;a, 8), field.one());
+// 输出：α² = 2, (1+α)⁸ = 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#domain-trait">Domain</a>、<a href="../math/algebraic-number-fields.html">代数数域数学基础</a></p>
+<hr />
+<h3 id="algebraicnumberfield"><a class="header" href="#algebraicnumberfield">AlgebraicNumberField</a></h3>
+<p><strong>签名</strong>：<code>pub type AlgebraicNumberField = AlgebraicExtension&lt;RationalDomain&gt;;</code></p>
+<p><strong>功能</strong>：$\mathbb{Q}(\alpha)$ 的类型别名。</p>
+<hr />
+<h3 id="algebraicelement"><a class="header" href="#algebraicelement">AlgebraicElement</a></h3>
+<p><strong>签名</strong>：<code>pub struct AlgebraicElement&lt;E&gt; { coeffs: Vec&lt;E&gt; }</code></p>
+<p><strong>功能</strong>：代数扩张的元素——$\alpha$ 的多项式剩余类，次数小于扩张次数。系数升序存储，尾随零被裁剪。零元素的系数向量为空。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, Hash</code></p>
+<h4 id="algebraicelementcoeffs"><a class="header" href="#algebraicelementcoeffs">AlgebraicElement::coeffs</a></h4>
+<p><strong>签名</strong>：<code>pub fn coeffs(&amp;self) -&gt; &amp;[E]</code></p>
+<p><strong>功能</strong>：返回系数切片（升序，尾随零已裁剪）。</p>
+<h4 id="display-1"><a class="header" href="#display-1">Display</a></h4>
+<p>显示格式：<code>0</code>（零元素）、<code>c</code>（纯常数）、<code>(c1)·α + c0</code>、<code>(c2)·α^2 + (c1)·α + c0</code> 等（常数项不加括号，各次项之间以 <code>+</code> 连接）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicExtension, Domain, Rational, RationalDomain};
+
+// ℚ(i)：极小多项式 α² + 1
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(1, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+let i = field.alpha();
+let one_plus_i = field.add(&amp;field.one(), &amp;i);
+// (1+i)⁻¹ = (1-i)/2
+let inv = field.inv(&amp;one_plus_i).unwrap();
+assert_eq!(inv.coeffs(), &amp;[Rational::new(1, 2), Rational::new(-1, 2)]);
+// 输出：1/(1+i) = (1/2) - (1/2)·α
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#algebraicextension--algebraicnumberfield--algebraicelement">AlgebraicExtension</a></p>
+<hr />
+<h2 id="assumptions-系统"><a class="header" href="#assumptions-系统">Assumptions 系统</a></h2>
+<p>假设系统用于声明符号变量的性质（如"x 是实数"、"n 是正整数"）。求解器和化简器通过假设来选择算法和验证解。</p>
+<p><strong>模块路径</strong>：<code>ocas_domain::assumptions</code></p>
+<hr />
+<h3 id="assumption"><a class="header" href="#assumption">Assumption</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Assumption {
+    Real, Complex, Integer, Rational,
+    Positive, Negative, NonNegative, NonPositive, NonZero, Finite,
+    Even, Odd, Prime,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：可对符号变量声明的单一谓词。假设相互独立——一个变量可同时携带多个假设（如 <code>Positive | Integer</code>）。</p>
+<h4 id="变体说明"><a class="header" href="#变体说明">变体说明</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>含义</th><th>Display</th></tr></thead><tbody>
+<tr><td><code>Real</code></td><td>实数</td><td><code>"real"</code></td></tr>
+<tr><td><code>Complex</code></td><td>复数</td><td><code>"complex"</code></td></tr>
+<tr><td><code>Integer</code></td><td>整数</td><td><code>"integer"</code></td></tr>
+<tr><td><code>Rational</code></td><td>有理数</td><td><code>"rational"</code></td></tr>
+<tr><td><code>Positive</code></td><td>严格正（$&gt; 0$）</td><td><code>"positive"</code></td></tr>
+<tr><td><code>Negative</code></td><td>严格负（$&lt; 0$）</td><td><code>"negative"</code></td></tr>
+<tr><td><code>NonNegative</code></td><td>非负（$\geq 0$）</td><td><code>"non-negative"</code></td></tr>
+<tr><td><code>NonPositive</code></td><td>非正（$\leq 0$）</td><td><code>"non-positive"</code></td></tr>
+<tr><td><code>NonZero</code></td><td>非零</td><td><code>"non-zero"</code></td></tr>
+<tr><td><code>Finite</code></td><td>有限（非 $\pm\infty$）</td><td><code>"finite"</code></td></tr>
+<tr><td><code>Even</code></td><td>偶数</td><td><code>"even"</code></td></tr>
+<tr><td><code>Odd</code></td><td>奇数</td><td><code>"odd"</code></td></tr>
+<tr><td><code>Prime</code></td><td>素数</td><td><code>"prime"</code></td></tr>
+</tbody></table>
+</div>
+<h4 id="assumptionimplied"><a class="header" href="#assumptionimplied">Assumption::implied</a></h4>
+<p><strong>签名</strong>：<code>pub fn implied(&amp;self) -&gt; &amp;'static [Assumption]</code></p>
+<p><strong>功能</strong>：返回此假设逻辑蕴含的其他假设列表。插入假设时，其蕴含会自动传播。</p>
+<p><strong>蕴含关系表</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>假设</th><th>蕴含</th></tr></thead><tbody>
+<tr><td><code>Positive</code></td><td><code>NonNegative</code>, <code>NonZero</code>, <code>Real</code></td></tr>
+<tr><td><code>Negative</code></td><td><code>NonPositive</code>, <code>NonZero</code>, <code>Real</code></td></tr>
+<tr><td><code>NonNegative</code></td><td><code>Real</code></td></tr>
+<tr><td><code>NonPositive</code></td><td><code>Real</code></td></tr>
+<tr><td><code>Integer</code></td><td><code>Rational</code>, <code>Real</code></td></tr>
+<tr><td><code>Rational</code></td><td><code>Real</code></td></tr>
+<tr><td><code>Complex</code></td><td><code>Real</code></td></tr>
+<tr><td><code>Even</code></td><td><code>Integer</code></td></tr>
+<tr><td><code>Odd</code></td><td><code>Integer</code></td></tr>
+<tr><td><code>Prime</code></td><td><code>Integer</code>, <code>Positive</code></td></tr>
+<tr><td><code>Real</code>, <code>NonZero</code>, <code>Finite</code></td><td>（无额外蕴含）</td></tr>
+</tbody></table>
+</div>
+<h4 id="assumptionconflicts"><a class="header" href="#assumptionconflicts">Assumption::conflicts</a></h4>
+<p><strong>签名</strong>：<code>pub fn conflicts(&amp;self) -&gt; &amp;'static [Assumption]</code></p>
+<p><strong>功能</strong>：返回与之矛盾的假设列表。同时包含一个假设及其冲突项的集合是不一致的。</p>
+<p><strong>冲突关系表</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>假设</th><th>与之冲突</th></tr></thead><tbody>
+<tr><td><code>Positive</code></td><td><code>Negative</code>, <code>NonPositive</code></td></tr>
+<tr><td><code>Negative</code></td><td><code>Positive</code>, <code>NonNegative</code></td></tr>
+<tr><td><code>NonNegative</code></td><td><code>Negative</code></td></tr>
+<tr><td><code>NonPositive</code></td><td><code>Positive</code></td></tr>
+<tr><td><code>Even</code></td><td><code>Odd</code></td></tr>
+<tr><td><code>Odd</code></td><td><code>Even</code></td></tr>
+</tbody></table>
+</div>
+<p>其他假设无冲突项。</p>
+<h4 id="bitor-支持"><a class="header" href="#bitor-支持">BitOr 支持</a></h4>
+<p><code>Assumption | Assumption</code> 返回 <code>Assumptions</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::assumptions::{Assumption, Assumptions};
+
+let a = Assumption::Positive | Assumption::Integer;
+assert!(a.implies(Assumption::Real));
+// 输出：Positive | Integer 蕴含 Real
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#assumptions">Assumptions</a>、<a href="#symbolassumptions">SymbolAssumptions</a></p>
+<hr />
+<h3 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h3>
+<p><strong>签名</strong>：<code>pub struct Assumptions { inner: Vec&lt;Assumption&gt; }</code></p>
+<p><strong>功能</strong>：关于一个符号变量的假设集合。内部以排序、去重向量存储以优化小规模效率。操作在逻辑蕴含下封闭——插入 <code>Positive</code> 会使 <code>NonNegative</code> 和 <code>Real</code> 可用。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, Default</code></p>
+<h4 id="构造-5"><a class="header" href="#构造-5">构造</a></h4>
+<h5 id="assumptionsnew"><a class="header" href="#assumptionsnew">Assumptions::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new() -&gt; Self</code></p>
+<p><strong>功能</strong>：创建空假设集。</p>
+<h5 id="assumptionssingle"><a class="header" href="#assumptionssingle">Assumptions::single</a></h5>
+<p><strong>签名</strong>：<code>pub fn single(a: Assumption) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建包含单个假设（及其蕴含）的集合。</p>
+<h4 id="查询-1"><a class="header" href="#查询-1">查询</a></h4>
+<h5 id="assumptionslen"><a class="header" href="#assumptionslen">Assumptions::len</a></h5>
+<p><strong>签名</strong>：<code>pub fn len(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回显式存储的假设数量。</p>
+<h5 id="assumptionsis_empty"><a class="header" href="#assumptionsis_empty">Assumptions::is_empty</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_empty(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：是否为空集。</p>
+<h5 id="assumptionscontains"><a class="header" href="#assumptionscontains">Assumptions::contains</a></h5>
+<p><strong>签名</strong>：<code>pub fn contains(&amp;self, a: Assumption) -&gt; bool</code></p>
+<p><strong>功能</strong>：检查假设是否被此集合蕴含（直接成员或逻辑蕴含）。</p>
+<h5 id="assumptionsimplies"><a class="header" href="#assumptionsimplies">Assumptions::implies</a></h5>
+<p><strong>签名</strong>：<code>pub fn implies(&amp;self, other: Assumption) -&gt; bool</code></p>
+<p><strong>功能</strong>：检查此集合是否逻辑蕴含 <code>other</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::assumptions::{Assumption, Assumptions};
+
+let mut a = Assumptions::new();
+a.insert(Assumption::Positive);
+a.insert(Assumption::Integer);
+assert!(a.contains(Assumption::Real));      // Positive 蕴含 Real
+assert!(a.implies(Assumption::NonZero));    // Positive 蕴含 NonZero
+assert!(!a.implies(Assumption::Even));      // 不蕴含 Even
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<h4 id="修改"><a class="header" href="#修改">修改</a></h4>
+<h5 id="assumptionsinsert"><a class="header" href="#assumptionsinsert">Assumptions::insert</a></h5>
+<p><strong>签名</strong>：<code>pub fn insert(&amp;mut self, a: Assumption) -&gt; bool</code></p>
+<p><strong>功能</strong>：插入假设及其所有逻辑蕴含。返回 <code>false</code> 若插入导致矛盾（不一致假设仍被存储，应检查 <code>is_consistent</code>）。</p>
+<h5 id="assumptionsremove"><a class="header" href="#assumptionsremove">Assumptions::remove</a></h5>
+<p><strong>签名</strong>：<code>pub fn remove(&amp;mut self, a: Assumption)</code></p>
+<p><strong>功能</strong>：移除假设。不移除由被移除假设所蕴含的其他假设（它们可能仍由其他存储的假设蕴含）。</p>
+<h5 id="assumptionsis_consistent"><a class="header" href="#assumptionsis_consistent">Assumptions::is_consistent</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_consistent(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：检查集合是否一致（无矛盾假设）。</p>
+<h5 id="assumptionsiter"><a class="header" href="#assumptionsiter">Assumptions::iter</a></h5>
+<p><strong>签名</strong>：<code>pub fn iter(&amp;self) -&gt; impl Iterator&lt;Item = Assumption&gt; + '_</code></p>
+<p><strong>功能</strong>：遍历存储的假设。</p>
+<h4 id="运算符-3"><a class="header" href="#运算符-3">运算符</a></h4>
+<ul>
+<li><code>Assumption | Assumption</code> → <code>Assumptions</code></li>
+<li><code>Assumptions | Assumption</code> → <code>Assumptions</code></li>
+<li><code>Assumptions | Assumptions</code> → <code>Assumptions</code>（并集）</li>
+<li><code>FromIterator&lt;Assumption&gt;</code> → <code>Assumptions</code></li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::assumptions::{Assumption, Assumptions};
+
+let a: Assumptions = [Assumption::Positive, Assumption::Integer].into_iter().collect();
+assert!(a.is_consistent());
+
+let b = Assumption::Positive | Assumption::Negative;
+assert!(!b.is_consistent());
+// 输出：Positive + Integer 一致；Positive + Negative 不一致
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#assumption">Assumption</a>、<a href="#symbolassumptions">SymbolAssumptions</a></p>
+<hr />
+<h3 id="symbolassumptions"><a class="header" href="#symbolassumptions">SymbolAssumptions</a></h3>
+<p><strong>签名</strong>：<code>pub struct SymbolAssumptions { entries: Vec&lt;(String, Assumptions)&gt; }</code></p>
+<p><strong>功能</strong>：符号名到假设的映射。求解器和化简器用此确定合法变换。例如 $\sqrt{x^2} \to x$ 仅在 $x$ 被假设为 <code>NonNegative</code> 时有效。</p>
+<p><strong>Derive</strong>：<code>Debug, Clone, PartialEq, Eq, Default</code></p>
+<h4 id="构造-6"><a class="header" href="#构造-6">构造</a></h4>
+<h5 id="symbolassumptionsnew"><a class="header" href="#symbolassumptionsnew">SymbolAssumptions::new</a></h5>
+<p><strong>签名</strong>：<code>pub fn new() -&gt; Self</code></p>
+<p><strong>功能</strong>：创建空映射。</p>
+<h4 id="查询与修改"><a class="header" href="#查询与修改">查询与修改</a></h4>
+<h5 id="symbolassumptionsset"><a class="header" href="#symbolassumptionsset">SymbolAssumptions::set</a></h5>
+<p><strong>签名</strong>：<code>pub fn set(&amp;mut self, symbol: &amp;str, assumptions: Assumptions)</code></p>
+<p><strong>功能</strong>：为符号设置假设（替换已有条目）。</p>
+<h5 id="symbolassumptionsget"><a class="header" href="#symbolassumptionsget">SymbolAssumptions::get</a></h5>
+<p><strong>签名</strong>：<code>pub fn get(&amp;self, symbol: &amp;str) -&gt; Option&lt;&amp;Assumptions&gt;</code></p>
+<p><strong>功能</strong>：获取符号的假设。</p>
+<h5 id="symbolassumptionsremove"><a class="header" href="#symbolassumptionsremove">SymbolAssumptions::remove</a></h5>
+<p><strong>签名</strong>：<code>pub fn remove(&amp;mut self, symbol: &amp;str)</code></p>
+<p><strong>功能</strong>：移除符号的假设。</p>
+<h5 id="symbolassumptionscheck"><a class="header" href="#symbolassumptionscheck">SymbolAssumptions::check</a></h5>
+<p><strong>签名</strong>：<code>pub fn check(&amp;self, symbol: &amp;str, assumption: Assumption) -&gt; bool</code></p>
+<p><strong>功能</strong>：检查符号是否满足特定假设。</p>
+<h5 id="symbolassumptionslen"><a class="header" href="#symbolassumptionslen">SymbolAssumptions::len</a></h5>
+<p><strong>签名</strong>：<code>pub fn len(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回有假设的符号数量。</p>
+<h5 id="symbolassumptionsis_empty"><a class="header" href="#symbolassumptionsis_empty">SymbolAssumptions::is_empty</a></h5>
+<p><strong>签名</strong>：<code>pub fn is_empty(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：是否无符号有假设。</p>
+<h5 id="symbolassumptionsiter"><a class="header" href="#symbolassumptionsiter">SymbolAssumptions::iter</a></h5>
+<p><strong>签名</strong>：<code>pub fn iter(&amp;self) -&gt; impl Iterator&lt;Item = &amp;(String, Assumptions)&gt;</code></p>
+<p><strong>功能</strong>：遍历所有 <code>(符号名, 假设集)</code> 对。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::assumptions::{Assumption, Assumptions, SymbolAssumptions};
+
+let mut sa = SymbolAssumptions::new();
+sa.set("x", Assumptions::single(Assumption::Positive));
+sa.set("n", Assumption::Integer | Assumption::Positive);
+
+assert!(sa.check("x", Assumption::Real));      // Positive 蕴含 Real
+assert!(sa.check("n", Assumption::NonZero));   // Positive 蕴含 NonZero
+assert!(!sa.check("x", Assumption::Integer));  // 不蕴含 Integer
+// 输出：所有断言通过
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#assumptions">Assumptions</a>、<a href="#assumption">Assumption</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-expressions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-polynomials.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-expressions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-polynomials.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

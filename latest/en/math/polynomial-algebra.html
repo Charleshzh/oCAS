@@ -1,0 +1,625 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Foundations: Polynomial Algebra - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html" class="active"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/polynomial-algebra.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="foundations-polynomial-algebra"><a class="header" href="#foundations-polynomial-algebra">Foundations: Polynomial Algebra</a></h1>
+<p>Polynomial algebra is the cornerstone of symbolic computation. This chapter starts from the basic definitions of polynomial rings, progressively introduces monomial orders, the multivariate division algorithm, and Hilbert's basis theorem, and explains how oCAS implements these concepts in Rust.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before reading this chapter, the following background is recommended:</p>
+<ul>
+<li><strong>Abstract algebra</strong>: basic notions of groups, rings, and fields (identity element, zero divisors, integral domains)</li>
+<li><strong>Linear algebra</strong>: vector spaces, linear independence, bases</li>
+<li><strong>Mathematical induction</strong>: used to prove termination of division algorithms</li>
+</ul>
+<p>For review, see the learning-path recommendations in the <a href="./overview.html">Mathematics Overview</a>.</p>
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="univariate-polynomial-rings"><a class="header" href="#univariate-polynomial-rings">Univariate Polynomial Rings</a></h3>
+<p>Let $\mathbb{F}$ be a field (such as $\mathbb{Q}$ or $\mathbb{F}_p$). The <strong>univariate polynomial ring</strong> $\mathbb{F}[x]$ is the set of all expressions of the form</p>
+<p>$$f(x) = a_0 + a_1 x + a_2 x^2 + \cdots + a_n x^n$$</p>
+<p>where $a_i \in \mathbb{F}$ and $n \geq 0$.</p>
+<p><strong>Definition (degree)</strong>. For a nonzero polynomial $f = \sum_{i=0}^n a_i x^i$ ($a_n \neq 0$), its <strong>degree</strong> is</p>
+<p>$$\deg(f) = n$$</p>
+<p>The degree of the zero polynomial $f = 0$ is conventionally $-\infty$ (represented as <code>None</code> in implementations).</p>
+<p><strong>Definition (leading coefficient)</strong>. The <strong>leading coefficient</strong> of $f$ is $\text{lc}(f) = a_n$. When $\text{lc}(f) = 1$, $f$ is called <strong>monic</strong>.</p>
+<p><strong>Properties</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Degree relation</th></tr></thead><tbody>
+<tr><td>$f + g$</td><td>$\deg(f+g) \leq \max(\deg f, \deg g)$</td></tr>
+<tr><td>$f \cdot g$</td><td>$\deg(f \cdot g) = \deg f + \deg g$</td></tr>
+<tr><td>$f / g$ (division with remainder)</td><td>$\deg(r) &lt; \deg(g)$</td></tr>
+</tbody></table>
+</div>
+<h3 id="multivariate-polynomial-rings"><a class="header" href="#multivariate-polynomial-rings">Multivariate Polynomial Rings</a></h3>
+<p>Let $\mathbb{F}$ be a field and $x_1, x_2, \ldots, x_n$ be $n$ indeterminates. The <strong>multivariate polynomial ring</strong> $\mathbb{F}[x_1, \ldots, x_n]$ is the set of all finite sums</p>
+<p>$$f = \sum_{\alpha \in \mathbb{N}^n} c_\alpha , \mathbf{x}^\alpha$$</p>
+<p>where $\alpha = (\alpha_1, \ldots, \alpha_n) \in \mathbb{N}^n$ is called an <strong>exponent vector</strong>, $\mathbf{x}^\alpha = x_1^{\alpha_1} x_2^{\alpha_2} \cdots x_n^{\alpha_n}$ is called a <strong>monomial</strong>, and $c_\alpha \in \mathbb{F}$ is called a <strong>coefficient</strong>.</p>
+<p><strong>Definition (total degree)</strong>. The <strong>total degree</strong> of a monomial $\mathbf{x}^\alpha$ is $|\alpha| = \alpha_1 + \cdots + \alpha_n$. The total degree of a polynomial $f$ is $\deg(f) = \max{|\alpha| : c_\alpha \neq 0}$.</p>
+<p><strong>Definition (partial degree)</strong>. The <strong>partial degree</strong> of a polynomial $f$ with respect to the variable $x_i$ is $\deg_{x_i}(f) = \max{\alpha_i : c_\alpha \neq 0}$.</p>
+<blockquote>
+<p><strong>Important distinction</strong>: The univariate polynomial ring $\mathbb{F}[x]$ is a principal ideal domain (PID) — every ideal is generated by a single polynomial. The multivariate polynomial ring $\mathbb{F}[x_1, \ldots, x_n]$ ($n \geq 2$) is no longer a PID; this is the starting point of Gröbner basis theory — see <a href="./groebner-theory.html">Gröbner Basis Theory</a>.</p>
+</blockquote>
+<h3 id="internal-representations-of-polynomials"><a class="header" href="#internal-representations-of-polynomials">Internal Representations of Polynomials</a></h3>
+<p>There are two basic computer representations of polynomials:</p>
+<div class="table-wrapper"><table><thead><tr><th>Representation</th><th>Storage</th><th>Use cases</th></tr></thead><tbody>
+<tr><td><strong>Dense representation</strong></td><td>Coefficient vector $[a_0, a_1, \ldots, a_n]$</td><td>Univariate, moderate degrees</td></tr>
+<tr><td><strong>Sparse representation</strong></td><td>Stores only the nonzero-term pairs ${(\alpha, c_\alpha)}$</td><td>Multivariate, many zero terms</td></tr>
+</tbody></table>
+</div>
+<p>In oCAS, <code>DenseUnivariatePolynomial</code> uses the dense representation, while <code>SparseMultivariatePolynomial</code> uses the sparse representation. See <a href="#implementation-in-ocas">§ Implementation in oCAS</a>.</p>
+<h2 id="monomial-orders"><a class="header" href="#monomial-orders">Monomial Orders</a></h2>
+<p>In a multivariate polynomial ring, "who is the leading term" is no longer obvious — we need a rule for comparing monomials.</p>
+<p><strong>Definition (monomial order)</strong>. A <strong>monomial order</strong> on $\mathbb{N}^n$ is a total order $\succ$ satisfying:</p>
+<ol>
+<li><strong>Well-ordering</strong>: every nonempty subset of $\mathbb{N}^n$ has a least element (equivalently: $0 \preceq \alpha$ for all $\alpha$)</li>
+<li><strong>Compatibility</strong>: if $\alpha \succ \beta$, then $\alpha + \gamma \succ \beta + \gamma$ for all $\gamma \in \mathbb{N}^n$</li>
+</ol>
+<p>These two conditions guarantee termination of polynomial division. The three most commonly used monomial orders are introduced below.</p>
+<h3 id="lexicographic-order-lex"><a class="header" href="#lexicographic-order-lex">Lexicographic Order (Lex)</a></h3>
+<p>$x^\alpha \succ_{\text{lex}} x^\beta$ if and only if the leftmost nonzero component of $\alpha - \beta$ is positive.</p>
+<p>Equivalent description: compare the exponent vectors component by component from left to right; the first position where they differ decides the order.</p>
+<p><strong>Example</strong>: In $\mathbb{F}[x, y, z]$, ordered lexicographically:</p>
+<p>$$x^2 y^3 z \succ_{\text{lex}} x^2 y^2 z^3 \succ_{\text{lex}} x y^5 \succ_{\text{lex}} y^{100} \succ_{\text{lex}} z^{100}$$</p>
+<p>The characteristic of the lexicographic order is "elimination": if $x_1 \succ x_2 \succ \cdots \succ x_n$, then the leading term under the lexicographic order has maximal degree in $x_1$. This makes lexicographic bases naturally elimination-oriented.</p>
+<h3 id="graded-lexicographic-order-grlex"><a class="header" href="#graded-lexicographic-order-grlex">Graded Lexicographic Order (Grlex)</a></h3>
+<p>$x^\alpha \succ_{\text{grlex}} x^\beta$ if and only if:</p>
+<ol>
+<li>$|\alpha| &gt; |\beta|$, or</li>
+<li>$|\alpha| = |\beta|$ and $\alpha \succ_{\text{lex}} \beta$</li>
+</ol>
+<p>That is, sort by total degree first; within the same total degree, sort lexicographically.</p>
+<p><strong>Example</strong>: In $\mathbb{F}[x, y]$, $\deg(x^2) = 2$, $\deg(xy) = 2$, $\deg(y^3) = 3$, hence</p>
+<p>$$y^3 \succ_{\text{grlex}} x^2 \succ_{\text{grlex}} xy$$</p>
+<h3 id="graded-reverse-lexicographic-order-grevlex"><a class="header" href="#graded-reverse-lexicographic-order-grevlex">Graded Reverse Lexicographic Order (Grevlex)</a></h3>
+<p>$x^\alpha \succ_{\text{grevlex}} x^\beta$ if and only if:</p>
+<ol>
+<li>$|\alpha| &gt; |\beta|$, or</li>
+<li>$|\alpha| = |\beta|$ and the <strong>rightmost</strong> nonzero component of $\alpha - \beta$ is <strong>negative</strong></li>
+</ol>
+<p>That is, sort by total degree first; within the same total degree, compare from right to left, and the <strong>smaller</strong> one is greater.</p>
+<p><strong>Example</strong>: In $\mathbb{F}[x, y, z]$, $x^2 y$ and $x y^2$ both have total degree 3. $\alpha - \beta = (1, -1, 0)$; the rightmost nonzero component is $-1$ (negative), hence</p>
+<p>$$x^2 y \succ_{\text{grevlex}} x y^2$$</p>
+<p>The key advantage of Grevlex is computational: among monomials of the same total degree, Grevlex tends to keep the exponents of low-indexed variables smaller, which produces smaller intermediate polynomials in Gröbner basis computations.</p>
+<h3 id="comparing-the-three-orders"><a class="header" href="#comparing-the-three-orders">Comparing the Three Orders</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Monomial</th><th>Lex</th><th>Grlex</th><th>Grevlex</th></tr></thead><tbody>
+<tr><td>$x^2$ ($\alpha = (2,0)$)</td><td>1</td><td>2</td><td>2</td></tr>
+<tr><td>$xy$ ($\alpha = (1,1)$)</td><td>2</td><td>3</td><td>3</td></tr>
+<tr><td>$y^3$ ($\alpha = (0,3)$)</td><td>3</td><td><strong>1</strong> (highest degree)</td><td><strong>1</strong> (highest degree)</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>Note</strong>: In the table above, rank 1 means "largest" under the corresponding order. Both Grlex and Grevlex sort by total degree first, so $y^3$ (total degree 3) comes before $x^2$ and $xy$ (total degree 2). In two variables, Grlex and Grevlex <strong>coincide</strong>: for $x^2$ and $xy$, the rightmost nonzero component of $(2,0) - (1,1) = (1, -1)$ is $-1 &lt; 0$, so both orders give $x^2 \succ xy$. The two orders differ only from $n \geq 3$ variables onward; for example, compare $xz^2$ and $y^3$ (total degree 3 each): under Grlex, $xz^2 \succ y^3$ (lexicographic tie-break: $(1,0,2) &gt; (0,3,0)$), while under Grevlex, $(0,3,0) - (1,0,2) = (-1,3,-2)$ has rightmost nonzero component $-2 &lt; 0$, so $y^3 \succ_{\text{grevlex}} xz^2$.</p>
+<p>Re-verify the Grevlex tie-break: $x^2 y$ vs $x y^2$: $(2,1) - (1,2) = (1, -1)$; the rightmost nonzero component is $-1 &lt; 0$, so $x^2 y \succ_{\text{grevlex}} xy^2$.</p>
+</blockquote>
+<h3 id="extended-orders"><a class="header" href="#extended-orders">Extended Orders</a></h3>
+<p>Besides the three basic orders above, oCAS also supports the following parameterized orders:</p>
+<p><strong>Weight order</strong> (WeightOrder): assigns a weight $w_i$ to each variable and orders by the decreasing value of $\sum w_i \alpha_i$. When the weight vector is $(1, 1, \ldots, 1)$, this degenerates to the total-degree order.</p>
+<p><strong>Matrix order</strong> (MatrixOrder): given an $n \times n$ integer matrix $M$, $\alpha \succ \beta$ if and only if $M\alpha &gt;_{\text{lex}} M\beta$. The matrix order is the complete generalization of all linear monomial orders. In particular, an elimination order can be constructed via <code>MatrixOrder::elimination_order(elim_vars, n_vars)</code>, which is used to eliminate variables from polynomial systems.</p>
+<p><strong>Block order</strong> (BlockOrder): partitions the variables into contiguous blocks, each block using an independent sub-order (Lex, Grlex, or Grevlex). The standard form of an elimination order is "the first $k$ variables use Lex, the rest use Grevlex".</p>
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="univariate-division-with-remainder"><a class="header" href="#univariate-division-with-remainder">Univariate Division with Remainder</a></h3>
+<p><strong>Theorem (division with remainder)</strong>. Let $\mathbb{F}$ be a field and $f, g \in \mathbb{F}[x]$ with $g \neq 0$. There exist unique $q, r \in \mathbb{F}[x]$ such that</p>
+<p>$$f = q \cdot g + r, \quad \deg(r) &lt; \deg(g)$$</p>
+<p><strong>Algorithm</strong> (successive elimination of leading terms):</p>
+<pre><code>Input: f, g (g ≠ 0)
+Output: quotient q, remainder r
+
+q ← 0, r ← f
+while r ≠ 0 and deg(r) ≥ deg(g):
+    t ← lc(r) / lc(g) · x^(deg(r) - deg(g))
+    q ← q + t
+    r ← r - t · g
+return (q, r)
+</code></pre>
+<p><strong>Termination</strong>: at each step $\deg(r)$ strictly decreases (or $r$ becomes zero), so the algorithm always terminates.</p>
+<blockquote>
+<p><strong>Generalization to integral domains</strong>: When the coefficient ring is a Euclidean domain (such as $\mathbb{Z}$), division with remainder still exists, but pseudo-division is needed to avoid fractions. In oCAS, <code>DenseUnivariatePolynomial::div_rem</code> implements this by performing division with remainder on the leading coefficients via <code>EuclideanDomain::div_rem</code>.</p>
+</blockquote>
+<h3 id="multivariate-division-with-remainder"><a class="header" href="#multivariate-division-with-remainder">Multivariate Division with Remainder</a></h3>
+<p>The multivariate case is far more complicated than the univariate one — <strong>the quotient and remainder are not unique</strong>; they depend on the monomial order and the order of division.</p>
+<p><strong>Theorem (multivariate division algorithm)</strong>. Let $\mathbb{F}$ be a field and $f, g_1, \ldots, g_s \in \mathbb{F}[x_1, \ldots, x_n]$ with $g_i \neq 0$. Fix a monomial order. There is an algorithm that computes $q_1, \ldots, q_s, r \in \mathbb{F}[x_1, \ldots, x_n]$ such that</p>
+<p>$$f = q_1 g_1 + q_2 g_2 + \cdots + q_s g_s + r$$</p>
+<p>where no nonzero term of $r$ is divisible by any $\text{lt}(g_i)$. Such an $r$ is called the <strong>remainder</strong> (or <strong>normal form</strong>) of $f$ with respect to ${g_1, \ldots, g_s}$.</p>
+<p><strong>Algorithm</strong>:</p>
+<pre><code>Input: f, G = [g1, ..., gs]
+Output: q1, ..., qs, r
+
+r ← 0, p ← f
+while p ≠ 0:
+    if ∃ i such that lt(gi) | lt(p):
+        choose the smallest such i
+        qi ← qi + lt(p) / lt(gi)
+        p ← p - (lt(p) / lt(gi)) · gi
+    else:
+        r ← r + lt(p)
+        p ← p - lt(p)
+return (q1, ..., qs, r)
+</code></pre>
+<p><strong>Key properties</strong>:</p>
+<ol>
+<li><strong>Termination</strong>: guaranteed by the well-ordering of the monomial order</li>
+<li><strong>Non-uniqueness</strong>: the remainder $r$ depends on the order of division $g_1, \ldots, g_s$. Different orders may produce different remainders</li>
+<li><strong>The key role of Gröbner bases</strong>: when ${g_1, \ldots, g_s}$ forms a Gröbner basis, the remainder $r$ is <strong>unique</strong> — this is one of the core values of Gröbner bases</li>
+</ol>
+<blockquote>
+<p><strong>Example</strong>: Take $f = x^2 y + x y^2 + y^2$, $g_1 = xy - 1$, $g_2 = y^2 - 1$, using the Grevlex order.</p>
+<p>Step 1: $\text{lt}(f) = x^2 y$, and $\text{lt}(g_1) = xy$ divides $x^2 y$.</p>
+<p>$$f \leftarrow f - x \cdot g_1 = x^2 y + x y^2 + y^2 - x(xy - 1) = x y^2 + y^2 + x$$</p>
+<p>Step 2: $\text{lt}(p) = x y^2$, and $\text{lt}(g_1) = xy$ divides $x y^2$.</p>
+<p>$$p \leftarrow x y^2 + y^2 + x - y \cdot g_1 = x y^2 + y^2 + x - y(xy - 1) = y^2 + x + y$$</p>
+<p>Step 3: $\text{lt}(p) = y^2$, and $\text{lt}(g_2) = y^2$ divides $y^2$.</p>
+<p>$$p \leftarrow y^2 + x + y - 1 \cdot g_2 = y^2 + x + y - (y^2 - 1) = x + y + 1$$</p>
+<p>At this point $\text{lt}(p) = x$ is not divisible by $xy$ or $y^2$, so it moves into the remainder: $r = x + y + 1$.</p>
+</blockquote>
+<h3 id="s-polynomials"><a class="header" href="#s-polynomials">S-Polynomials</a></h3>
+<p>The S-polynomial is the core building block of Gröbner basis algorithms.</p>
+<p><strong>Definition</strong>. Let $f, g$ be nonzero polynomials and $\gamma = \text{lcm}(\text{lm}(f), \text{lm}(g))$ (componentwise maximum of the exponent vectors). The <strong>S-polynomial</strong> of $f$ and $g$ is</p>
+<p>$$S(f, g) = \frac{\gamma}{\text{lt}(f)} \cdot f - \frac{\gamma}{\text{lt}(g)} \cdot g = \frac{x^\gamma}{\text{lm}(f)} \cdot f - \frac{x^\gamma}{\text{lm}(g)} \cdot g$$</p>
+<p>The intuition behind the S-polynomial is "canceling the leading terms of $f$ and $g$". The Buchberger algorithm repeatedly constructs S-polynomials and reduces them until all S-polynomials reduce to zero — the resulting polynomial set is then a Gröbner basis.</p>
+<h3 id="dicksons-lemma"><a class="header" href="#dicksons-lemma">Dickson's Lemma</a></h3>
+<p>Dickson's lemma is a finite-generation theorem for monomial ideals and the foundation of Hilbert's basis theorem.</p>
+<p><strong>Lemma (Dickson)</strong>. Every subset $S$ of $\mathbb{N}^n$ has a finite set of "minimal elements" $M \subseteq S$ such that for every $\alpha \in S$ there exists $\beta \in M$ with $\beta \leq \alpha$ (componentwise).</p>
+<p>Equivalent statement: every ideal of $\mathbb{F}[x_1, \ldots, x_n]$ generated by monomials is generated by finitely many monomials.</p>
+<p><strong>Intuition</strong>: In $\mathbb{N}^n$, a "downward-closed" set can only be generated by finitely many "minimal elements". This is analogous to well-ordering in $\mathbb{N}$, but generalized to higher dimensions.</p>
+<h3 id="hilberts-basis-theorem"><a class="header" href="#hilberts-basis-theorem">Hilbert's Basis Theorem</a></h3>
+<p><strong>Theorem (Hilbert's basis theorem)</strong>. Every ideal $I$ of $\mathbb{F}[x_1, \ldots, x_n]$ is finitely generated. That is, there exist $f_1, \ldots, f_s \in I$ such that $I = \langle f_1, \ldots, f_s \rangle$.</p>
+<p><strong>Proof sketch</strong>: Let $J = \langle f_1, \ldots, f_s \rangle$. Consider the leading-term ideal $L(I) = \langle \text{lm}(f) : f \in I \rangle$. By Dickson's lemma, $L(I) = \langle \text{lm}(f_1), \ldots, \text{lm}(f_s) \rangle$, hence $L(J) \supseteq L(I)$. If $J \subsetneq I$, pick $f \in I \setminus J$ whose leading monomial $\text{lm}(f)$ is minimal with respect to $\succ$. Since $\text{lm}(f) \in L(I) \subseteq L(J)$, the defining property of monomial ideals yields some $f_i$ with $\text{lm}(f_i) \mid \text{lm}(f)$; eliminating the leading term of $f$ with $f_i$ gives $f' = f - c, \mathbf{x}^\gamma f_i \in I \setminus J$ with $\text{lm}(f') \prec \text{lm}(f)$ — contradicting the minimality of $\text{lm}(f)$ (well-ordering forbids infinite descending chains). Hence $J = I$.</p>
+<blockquote>
+<p><strong>Significance</strong>: Hilbert's basis theorem guarantees the existence of Gröbner bases — the Gröbner basis of every ideal is a finite set. The Buchberger algorithm further provides a constructive proof.</p>
+</blockquote>
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<h3 id="dense-univariate-polynomials"><a class="header" href="#dense-univariate-polynomials">Dense Univariate Polynomials</a></h3>
+<p><code>DenseUnivariatePolynomial&lt;D&gt;</code> stores the coefficients from the constant term to the leading coefficient in one contiguous vector:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct DenseUnivariatePolynomial&lt;D: Domain&gt; {
+    coeffs: Vec&lt;D::Element&gt;,  // [a0, a1, ..., an]
+    domain: D,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Design decisions</strong>:</p>
+<ul>
+<li><strong>Trailing-zero trimming</strong>: trailing zero coefficients are removed automatically at construction; the zero polynomial is represented by the empty vector</li>
+<li><strong>Inlined coefficient domain</strong>: the <code>domain</code> field is stored inside the polynomial, avoiding the need to pass it to every operation</li>
+<li><strong>Polynomial type parameter</strong>: the <code>D: Domain</code> generic allows a unified implementation over the integer ring $\mathbb{Z}$, the rational field $\mathbb{Q}$, finite fields $\mathbb{F}_p$, and so on</li>
+</ul>
+<p><strong>Multiplication strategies</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Condition</th><th>Algorithm</th><th>Complexity</th></tr></thead><tbody>
+<tr><td>$\min(\deg f, \deg g) + 1 &lt; 32$ (number of coefficients)</td><td>Schoolbook (term-by-term multiplication)</td><td>$O(n \cdot m)$</td></tr>
+<tr><td>$\min(\deg f, \deg g) + 1 \geq 32$</td><td>Karatsuba</td><td>$O(n^{1.585})$</td></tr>
+<tr><td>Finite field + NTT-friendly prime + $\geq 256$ coefficients (<code>mul_ntt</code>)</td><td>Number theoretic transform</td><td>$O(n \log n)$</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>Note</strong>: the generic <code>mul</code> takes one of the first two rows (Karatsuba/Schoolbook; the threshold <code>KARATSUBA_THRESHOLD = 32</code> is applied to the number of coefficients, i.e. degree $\geq 31$). The NTT is enabled through <code>DenseUnivariatePolynomial&lt;FiniteField&gt;::mul_ntt</code>, which internally checks <code>NTT_THRESHOLD = 256</code> (number of coefficients) and whether the prime is NTT-friendly, and otherwise falls back to Karatsuba/Schoolbook.</p>
+</blockquote>
+<p>The core idea of Karatsuba is to split the polynomials at the midpoint $m = n/2$:</p>
+<p>$$a = a_0 + a_1 x^m, \quad b = b_0 + b_1 x^m$$</p>
+<p>The product is computed via three half-size multiplications (instead of four):</p>
+<p>$$z_0 = a_0 b_0, \quad z_2 = a_1 b_1, \quad z_1 = (a_0 + a_1)(b_0 + b_1) - z_0 - z_2$$</p>
+<p>$$a \cdot b = z_0 + z_1 x^m + z_2 x^{2m}$$</p>
+<p><strong>EuclideanDomain methods</strong> (available when $D: \text{EuclideanDomain}$):</p>
+<ul>
+<li><code>div_rem(&amp;self, divisor)</code> — division with remainder, returns <code>Option&lt;(quotient, remainder)&gt;</code></li>
+<li><code>gcd(&amp;self, other)</code> — polynomial GCD (via a pseudo-remainder PRS chain)</li>
+<li><code>extended_gcd_poly(&amp;self, other)</code> — extended GCD, returns $(g, s, t)$ with $s \cdot f + t \cdot g = \text{gcd}(f, g)$</li>
+<li><code>content()</code> — the content (GCD of all coefficients)</li>
+<li><code>primitive_part()</code> — the primitive part $f / \text{content}(f)$</li>
+<li><code>square_free_factorization()</code> — square-free factorization</li>
+<li><code>resultant(&amp;self, other)</code> — the resultant (Brown's PRS algorithm)</li>
+<li><code>pow(n)</code> — fast exponentiation (repeated squaring)</li>
+<li><code>p_adic_expansion(p)</code> — the $p$-adic expansion</li>
+</ul>
+<p><strong>Univariate polynomial evaluation</strong> uses Horner's rule, in $O(n)$ time:</p>
+<p>$$f(x) = a_0 + x(a_1 + x(a_2 + \cdots + x \cdot a_n))$$</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Horner's method
+let mut result = domain.zero();
+for coeff in self.coeffs.iter().rev() {
+    result = domain.mul(&amp;result, x);
+    result = domain.add(&amp;result, coeff);
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="sparse-multivariate-polynomials"><a class="header" href="#sparse-multivariate-polynomials">Sparse Multivariate Polynomials</a></h3>
+<p><code>SparseMultivariatePolynomial&lt;D, O&gt;</code> stores only nonzero terms, mapping exponent vectors to coefficients with a HashMap:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct SparseMultivariatePolynomial&lt;D: Domain, O: MonomialOrder = Grevlex&gt; {
+    terms: HashMap&lt;SmallVec&lt;[usize; 4]&gt;, D::Element&gt;,
+    domain: D,
+    n_vars: usize,
+    pub order: O,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Design points</strong>:</p>
+<ul>
+<li><strong>Exponent vectors</strong>: <code>SmallVec&lt;[usize; 4]&gt;</code> — stored inline for small variable counts (no heap allocation for ≤ 4 variables), spilling to the heap for large variable counts</li>
+<li><strong>Default order</strong>: <code>O = Grevlex</code> — the most commonly used order for Gröbner basis computations, since it produces the smallest intermediate expressions</li>
+<li><strong>Order as a type parameter</strong>: the monomial order is determined at compile time, a zero-cost abstraction. <code>Lex</code>, <code>Grlex</code>, <code>Grevlex</code> are zero-sized types (ZSTs) occupying no runtime space; <code>WeightOrder</code>, <code>MatrixOrder</code>, <code>BlockOrder</code> carry runtime configuration</li>
+</ul>
+<p><strong>The MonomialOrder trait</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait MonomialOrder: Clone + PartialEq + Eq + Debug + Default {
+    fn cmp(&amp;self, lhs: &amp;[usize], rhs: &amp;[usize]) -&gt; std::cmp::Ordering;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The single method <code>cmp</code> compares two exponent vectors. The implementations for each order:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Lexicographic order: compare exponent vectors directly
+impl MonomialOrder for Lex {
+    fn cmp(&amp;self, lhs: &amp;[usize], rhs: &amp;[usize]) -&gt; Ordering {
+        lhs.cmp(rhs)
+    }
+}
+
+// Graded reverse lexicographic: total degree first (descending), then reverse lex
+impl MonomialOrder for Grevlex {
+    fn cmp(&amp;self, lhs: &amp;[usize], rhs: &amp;[usize]) -&gt; Ordering {
+        let deg_lhs: usize = lhs.iter().sum();
+        let deg_rhs: usize = rhs.iter().sum();
+        deg_rhs.cmp(&amp;deg_lhs)
+            .then_with(|| rhs.iter().rev().cmp(lhs.iter().rev()))
+    }
+}
+
+// Graded lexicographic: total degree first (descending), then lex
+impl MonomialOrder for Grlex {
+    fn cmp(&amp;self, lhs: &amp;[usize], rhs: &amp;[usize]) -&gt; Ordering {
+        let deg_lhs: usize = lhs.iter().sum();
+        let deg_rhs: usize = rhs.iter().sum();
+        deg_rhs.cmp(&amp;deg_lhs)
+            .then_with(|| lhs.cmp(rhs))
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<blockquote>
+<p><strong>Implementation detail</strong>: <code>deg_rhs.cmp(&amp;deg_lhs)</code> rather than <code>deg_lhs.cmp(&amp;deg_rhs)</code> — because in Rust's <code>Ordering</code>, <code>Less</code> means "comes first", and we need the higher degree to come first (i.e. <code>Less</code>), so we compare <code>deg_rhs</code> against <code>deg_lhs</code>. Similarly, in Grevlex, <code>rhs.iter().rev().cmp(lhs.iter().rev())</code> implements the "reverse" lexicographic order.</p>
+</blockquote>
+<p><strong>Multivariate division</strong> is implemented via <code>reduce(&amp;self, basis: &amp;[Self])</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn reduce(&amp;self, basis: &amp;[Self]) -&gt; Self {
+    let mut remainder = self.clone();
+    let mut result = self.zero();
+
+    // Cache each basis element's leading term.
+    let basis_lts: Vec&lt;_&gt; = basis
+        .iter()
+        .filter_map(|g| g.leading_term().map(|(e, c)| (g, e.clone(), c.clone())))
+        .collect();
+
+    let max_iter = 10000;
+    for _ in 0..max_iter {
+        if remainder.is_zero() {
+            break;
+        }
+        let (rm, rc) = match remainder.leading_term() {
+            Some((e, c)) =&gt; (e, c),
+            None =&gt; break,
+        };
+
+        let mut reduced = false;
+        for (g, lm, lc) in &amp;basis_lts {
+            // lm | rm (componentwise rm[i] ≥ lm[i])
+            if monomial_divides(&amp;rm, lm) {
+                // compute the quotient monomial
+                let qm: SmallVec&lt;[usize; 4]&gt; =
+                    rm.iter().zip(lm.iter()).map(|(a, b)| a - b).collect();
+                let qc = match self.domain.div(&amp;rc, lc) {
+                    Some(q) =&gt; q,
+                    None =&gt; break,
+                };
+                remainder = remainder.sub(&amp;g.mul_monomial(&amp;qm).mul_scalar(&amp;qc));
+                reduced = true;
+                break;
+            }
+        }
+
+        if !reduced {
+            result.terms.insert(rm, rc);
+            remainder.terms.remove(&amp;rm);
+        }
+    }
+    result
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Helper functions</strong> (monomial operations):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// whether x^b divides x^a (componentwise a[i] ≥ b[i])
+pub fn monomial_divides(a: &amp;[usize], b: &amp;[usize]) -&gt; bool
+
+// least common multiple monomial (componentwise max)
+pub fn monomial_lcm(a: &amp;[usize], b: &amp;[usize]) -&gt; SmallVec&lt;[usize; 4]&gt;
+
+// whether two monomials are coprime (no common variable)
+pub fn monomial_are_coprime(a: &amp;[usize], b: &amp;[usize]) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<h3 id="dense-vs-sparse-a-selection-guide"><a class="header" href="#dense-vs-sparse-a-selection-guide">Dense vs. Sparse: A Selection Guide</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Consideration</th><th>Dense <code>DenseUnivariatePolynomial</code></th><th>Sparse <code>SparseMultivariatePolynomial</code></th></tr></thead><tbody>
+<tr><td>Number of variables</td><td>Univariate</td><td>Multivariate ($n$ variables)</td></tr>
+<tr><td>Storage</td><td>Contiguous Vec, $O(\deg f + 1)$</td><td>HashMap, $O(\text{number of nonzero terms})$</td></tr>
+<tr><td>Multiplication</td><td>Karatsuba / NTT</td><td>Term-by-term expansion</td></tr>
+<tr><td>Division</td><td>Unique quotient and remainder</td><td>Depends on the monomial order; remainder not unique</td></tr>
+<tr><td>GCD</td><td>Euclid's algorithm / PRS</td><td>Requires Gröbner basis techniques</td></tr>
+<tr><td>Supported coefficient domains</td><td><code>EuclideanDomain</code></td><td><code>Domain</code> (division requires a field)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Rule of thumb</strong>: use the dense representation for univariate polynomials; use the sparse representation for two or more variables. Even a multivariate polynomial with only a few nonzero terms (such as $x^{100} + y^{100}$) needs only two stored terms in the sparse representation, whereas the dense representation would require a $100 \times 100$ coefficient array.</p>
+<h2 id="advanced-topics"><a class="header" href="#advanced-topics">Advanced Topics</a></h2>
+<h3 id="equivalence-and-unification-of-monomial-orders"><a class="header" href="#equivalence-and-unification-of-monomial-orders">Equivalence and Unification of Monomial Orders</a></h3>
+<p>Every standard monomial order can be represented uniformly as a matrix order. For $n$ variables:</p>
+<ul>
+<li><strong>Lex</strong> $=$ $M = I_n$ (the identity matrix)</li>
+<li><strong>Grlex</strong> $=$ the first row all ones, the remaining rows the lexicographic unit vectors in order ($e_1, e_2, \ldots, e_n$ — total degree first, then compare components left to right)</li>
+<li><strong>Grevlex</strong> $=$ the first row all ones, the remaining rows the negative reverse-lexicographic unit vectors ($-e_n, -e_{n-1}, \ldots, -e_1$ — total degree first, then compare right to left, the smaller one being greater)</li>
+</ul>
+<p>The elimination order constructed by <code>MatrixOrder::elimination_order(k, n)</code> is equivalent to a <code>BlockOrder</code> where the first $k$ variables use Lex and the rest use Grevlex, but the matrix form is more concise.</p>
+<h3 id="limitations-of-division"><a class="header" href="#limitations-of-division">Limitations of Division</a></h3>
+<p>One important limitation of multivariate division with remainder: the remainder depends on the order of the divisors. For example, dividing $f$ by $(g_1, g_2)$ and by $(g_2, g_1)$ may produce different remainders. The introduction of Gröbner bases precisely solves this problem — division by a Gröbner basis yields a unique remainder.</p>
+<h3 id="polynomials-over-the-integers"><a class="header" href="#polynomials-over-the-integers">Polynomials over the Integers</a></h3>
+<p>When the coefficient ring is $\mathbb{Z}$ (rather than a field), division with remainder needs adjustment. The <code>div_rem</code> of <code>DenseUnivariatePolynomial&lt;IntegerDomain&gt;</code> implements pseudo-division by performing integer division with remainder on the leading coefficients. Concretely, for $f = q \cdot g + r$, the coefficients of $q$ and $r$ may be larger than those of $f$, because division in $\mathbb{Z}$ is not always exact. GCD computation instead uses a pseudo-remainder sequence (PRS) to avoid fraction explosion; for very large integer coefficients the modular GCD can be used instead (<code>gcd/modular.rs</code>, Brown's algorithm). The subresultant PRS is used for resultant computation (<code>resultant.rs</code>).</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li>
+<p><strong>Cox, D., Little, J., O'Shea, D.</strong> <em>Ideals, Varieties, and Algorithms</em> (4th ed.). Springer, 2015.</p>
+<ul>
+<li>Chapter 1: basic properties of polynomial rings</li>
+<li>Chapter 2: introduction to Gröbner bases and the Buchberger algorithm</li>
+</ul>
+</li>
+<li>
+<p><strong>Gathen, J. von zur, Gerhard, J.</strong> <em>Modern Computer Algebra</em> (3rd ed.). Cambridge University Press, 2013.</p>
+<ul>
+<li>Chapter 6: polynomial multiplication algorithms (Karatsuba, FFT, NTT)</li>
+<li>Chapter 21: multivariate polynomial GCD</li>
+</ul>
+</li>
+<li>
+<p><strong>Adams, W. W., Loustaunau, P.</strong> <em>An Introduction to Gröbner Bases</em>. AMS, 1994.</p>
+<ul>
+<li>Chapter 1: monomial orders and multivariate division</li>
+</ul>
+</li>
+</ol>
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="./groebner-theory.html">Gröbner Basis Theory</a> — the solution to the non-uniqueness of division</li>
+<li><a href="./poly-gcd-factoring.html">Polynomial GCD and Factorization</a> — univariate and multivariate GCD algorithms</li>
+<li><a href="./finite-fields.html">Finite Fields and Modular Arithmetic</a> — polynomial arithmetic over finite fields</li>
+<li><a href="./linear-algebra.html">Linear Algebra</a> — Bareiss's fraction-free determinant and Gaussian elimination</li>
+<li><a href="../api/rust-polynomials.html">Rust API: Polynomials</a> — the complete API of <code>DenseUnivariatePolynomial</code> and <code>SparseMultivariatePolynomial</code></li>
+<li><a href="../api/rust-domains.html">Rust API: Coefficient Domains</a> — the <code>Domain</code> and <code>EuclideanDomain</code> traits</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/finite-fields.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/finite-fields.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,1798 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>C/C++ API 参考 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html" class="active"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/c.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="cc-api-参考"><a class="header" href="#cc-api-参考">C/C++ API 参考</a></h1>
+<blockquote>
+<p><strong>⚠️ 重要提示：头文件 <code>ocas.h</code> 已过时</strong></p>
+<p>由 cbindgen 自动生成的 <code>ocas-c/include/ocas.h</code> 缺少以下 9 个函数：</p>
+<ul>
+<li><code>ocas_expr_integrate_heuristic</code>（表达式域）</li>
+<li>8 个 Gröbner 域导出（<code>ocas_groebner_basis</code>、<code>ocas_groebner_basis_free</code>、<code>ocas_groebner_basis_len</code>、<code>ocas_is_zero_dimensional</code>、<code>ocas_solve_polynomial_system</code>、<code>ocas_system_solution_count</code>、<code>ocas_system_solution_value</code>、<code>ocas_system_solution_free</code>）</li>
+</ul>
+<p>本文档基于 <code>ocas-c/src/*.rs</code> 中的 <strong>实际导出</strong>，而非头文件。使用缺失函数时需自行声明函数原型。</p>
+</blockquote>
+<blockquote>
+<p><strong>⚠️ Gröbner 模块注意事项</strong></p>
+<p>Gröbner 模块使用<strong>非标准</strong> <code>-1</code> 错误码（而非 <code>OCAS_*</code> 常量），且 <code>OcasGroebnerBasis</code> 和 <code>OcasSystemSolution</code> 句柄<strong>未标记</strong> <code>#[repr(C)]</code>——它们在当前 Rust 版本中工作正常，但 ABI 稳定性不由编译器保证。</p>
+</blockquote>
+<blockquote>
+<p><strong>⚠️ C++ 包装覆盖范围</strong></p>
+<p><code>ocas.hpp</code> 仅覆盖三个域（共 22 个包装函数）：</p>
+<ul>
+<li><strong>表达式</strong>：<code>ocas::Expression</code> 类（8 个成员：2 个构造函数 + 6 个方法）</li>
+<li><strong>数论</strong>：<code>ocas::ntheory::*</code>（11 个内联函数）</li>
+<li><strong>张量</strong>：<code>ocas::tensor::*</code>（3 个内联函数）</li>
+</ul>
+<p>其余 69 个导出无 C++ RAII 包装，需直接调用 C API。</p>
+</blockquote>
+<hr />
+<h2 id="通用约定"><a class="header" href="#通用约定">通用约定</a></h2>
+<h3 id="错误处理"><a class="header" href="#错误处理">错误处理</a></h3>
+<p>所有 fallible 函数遵循以下模式：</p>
+<pre><code class="language-c">int err = 0;
+OcasExpr *e = ocas_expr_parse("x^2 + 1", &amp;err);
+if (e == NULL) {
+    fprintf(stderr, "错误 %d: %s\n", err, ocas_error_last_message());
+    ocas_error_clear();
+    return 1;
+}
+</code></pre>
+<ul>
+<li><code>err_out</code> 参数可为 <code>NULL</code>（忽略错误码）。</li>
+<li>返回指针的函数：失败返回 <code>NULL</code>。</li>
+<li>返回 <code>int</code> 的函数：失败返回非零值（具体含义见各函数文档）。</li>
+<li>返回 <code>size_t</code> 的函数：失败返回 <code>0</code>。</li>
+<li>返回 <code>int</code> 的数论函数使用特殊哨兵值 <code>-1</code>（<code>isprime</code>）或 <code>-2</code>（<code>jacobi</code>/<code>mobius</code>/<code>liouville</code>）表示错误。</li>
+</ul>
+<h3 id="内存管理"><a class="header" href="#内存管理">内存管理</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>返回类型</th><th>释放函数</th></tr></thead><tbody>
+<tr><td><code>char*</code>（字符串）</td><td><code>ocas_string_free()</code></td></tr>
+<tr><td><code>OcasExpr*</code></td><td><code>ocas_expr_free()</code></td></tr>
+<tr><td><code>OcasPolyZ*</code></td><td><code>ocas_poly_z_free()</code></td></tr>
+<tr><td><code>OcasPolyFp*</code></td><td><code>ocas_poly_fp_free()</code></td></tr>
+<tr><td><code>OcasPolyFactorArray</code></td><td><code>ocas_poly_factor_array_free()</code>（仅释放数组结构，不释放内部多项式句柄）</td></tr>
+<tr><td><code>OcasAlgebraicField*</code></td><td><code>ocas_algebraic_field_free()</code></td></tr>
+<tr><td><code>OcasAlgebraicPoly*</code></td><td><code>ocas_algebraic_poly_free()</code></td></tr>
+<tr><td><code>OcasAlgebraicFactorArray</code></td><td><code>ocas_algebraic_factor_array_free()</code>（同上，仅释放数组）</td></tr>
+<tr><td><code>OcasVegas*</code></td><td><code>ocas_vegas_free()</code></td></tr>
+<tr><td><code>OcasTensor*</code></td><td><code>ocas_tensor_free()</code></td></tr>
+<tr><td><code>OcasTensorContraction</code></td><td><code>ocas_tensor_contraction_free()</code>（释放数组/字符串，不释放内部张量句柄）</td></tr>
+<tr><td><code>OcasDualShape*</code></td><td><code>ocas_dual_shape_free()</code></td></tr>
+<tr><td><code>OcasHyperDual*</code></td><td><code>ocas_hyperdual_free()</code></td></tr>
+<tr><td><code>OcasGroebnerBasis*</code></td><td><code>ocas_groebner_basis_free()</code></td></tr>
+<tr><td><code>OcasSystemSolution*</code></td><td><code>ocas_system_solution_free()</code></td></tr>
+</tbody></table>
+</div>
+<p>所有 <code>*_free</code> 函数对 <code>NULL</code> 参数安全（no-op）。</p>
+<hr />
+<h2 id="1-错误工具3-个函数"><a class="header" href="#1-错误工具3-个函数">1. 错误/工具（3 个函数）</a></h2>
+<h3 id="ocas_version"><a class="header" href="#ocas_version"><code>ocas_version</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">const char *ocas_version(void);
+</code></pre>
+<p><strong>功能</strong>：返回 oCAS 版本字符串。</p>
+<p><strong>返回值</strong>：程序生命周期内有效的静态字符串指针。<strong>调用方不得释放或修改</strong>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">printf("oCAS 版本: %s\n", ocas_version());
+// 输出：oCAS 版本: 0.24.x
+</code></pre>
+<hr />
+<h3 id="ocas_error_last_message"><a class="header" href="#ocas_error_last_message"><code>ocas_error_last_message</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">const char *ocas_error_last_message(void);
+</code></pre>
+<p><strong>功能</strong>：返回调用线程上最后一次错误的消息，无错误时返回 <code>NULL</code>。</p>
+<p><strong>返回值</strong>：库拥有的字符串指针。<strong>不得释放或修改</strong>。在同一线程上调用任何可能设置错误的函数或 <code>ocas_error_clear()</code> 后失效。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">ocas_expr_parse("invalid !!!", NULL);
+const char *msg = ocas_error_last_message();
+if (msg) printf("错误: %s\n", msg);
+ocas_error_clear();
+</code></pre>
+<hr />
+<h3 id="ocas_error_clear"><a class="header" href="#ocas_error_clear"><code>ocas_error_clear</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_error_clear(void);
+</code></pre>
+<p><strong>功能</strong>：清除调用线程上的最后错误状态。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">ocas_error_clear(); // 重置错误状态
+</code></pre>
+<hr />
+<h2 id="2-表达式12-个函数"><a class="header" href="#2-表达式12-个函数">2. 表达式（12 个函数）</a></h2>
+<p>表达式是 oCAS 的核心类型。每个 <code>OcasExpr*</code> 句柄拥有私有 arena、一个 <code>AtomArena</code> 和一个规范化的根 <code>Atom</code>。句柄可移动；堆地址在句柄生命周期内不变。</p>
+<h3 id="ocas_expr_parse"><a class="header" href="#ocas_expr_parse"><code>ocas_expr_parse</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_parse(const char *input, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：将输入字符串解析为新的表达式句柄。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>const char*</code></td><td>以 null 结尾的表达式字符串，如 <code>"x^2 + 2*x + 1"</code></td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code>；非空时写入错误码</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：成功返回 <code>OcasExpr*</code>；失败返回 <code>NULL</code>（<code>OCAS_ERROR_PARSE</code>）。</p>
+<p><strong>内存</strong>：调用方负责用 <code>ocas_expr_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">int err = 0;
+OcasExpr *e = ocas_expr_parse("sin(x)^2 + cos(x)^2", &amp;err);
+assert(err == OCAS_OK &amp;&amp; e != NULL);
+ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_free"><a class="header" href="#ocas_expr_free"><code>ocas_expr_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_expr_free(OcasExpr *handle);
+</code></pre>
+<p><strong>功能</strong>：释放表达式句柄。<code>NULL</code> 安全（no-op）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>OcasExpr*</code></td><td>由 <code>ocas_expr_parse</code> 或其他表达式函数返回的句柄</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">ocas_expr_free(e);     // 释放
+ocas_expr_free(NULL);  // no-op
+</code></pre>
+<hr />
+<h3 id="ocas_expr_clone"><a class="header" href="#ocas_expr_clone"><code>ocas_expr_clone</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_clone(const OcasExpr *handle, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：克隆表达式到新 arena。返回独立副本。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>const OcasExpr*</code></td><td>非空表达式句柄</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：新句柄或 <code>NULL</code>（<code>OCAS_ERROR_RUNTIME</code>）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasExpr *copy = ocas_expr_clone(original, NULL);
+// copy 和 original 独立，互不影响
+ocas_expr_free(copy);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_to_string"><a class="header" href="#ocas_expr_to_string"><code>ocas_expr_to_string</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_expr_to_string(const OcasExpr *handle, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：将表达式渲染为 null 结尾的 C 字符串。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>const OcasExpr*</code></td><td>非空表达式句柄</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：堆分配的字符串（调用方用 <code>ocas_string_free()</code> 释放），或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *s = ocas_expr_to_string(e, NULL);
+printf("表达式: %s\n", s);
+ocas_string_free(s);
+</code></pre>
+<hr />
+<h3 id="ocas_string_free"><a class="header" href="#ocas_string_free"><code>ocas_string_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_string_free(char *s);
+</code></pre>
+<p><strong>功能</strong>：释放由 <code>ocas_expr_to_string</code> 或其他返回 <code>char*</code> 的函数分配的字符串。<code>NULL</code> 安全。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>char*</code></td><td>堆分配的字符串指针</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="ocas_expr_normalize"><a class="header" href="#ocas_expr_normalize"><code>ocas_expr_normalize</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_expr_normalize(OcasExpr *handle, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：就地重新规范化表达式句柄。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>OcasExpr*</code></td><td>非空表达式句柄（<strong>修改</strong>）</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OCAS_OK</code>（0）成功；非零失败。</p>
+<hr />
+<h3 id="ocas_expr_diff"><a class="header" href="#ocas_expr_diff"><code>ocas_expr_diff</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_diff(const OcasExpr *handle, const char *var, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：对表达式关于变量 <code>var</code> 求导。返回新句柄。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>const OcasExpr*</code></td><td>非空表达式句柄</td></tr>
+<tr><td><code>var</code></td><td><code>const char*</code></td><td>变量名，如 <code>"x"</code></td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：导数表达式句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasExpr *e = ocas_expr_parse("x^3 + 2*x", NULL);
+OcasExpr *de = ocas_expr_diff(e, "x", NULL);
+char *s = ocas_expr_to_string(de, NULL);
+printf("d/dx = %s\n", s);  // 输出：2 + (3*(x^2))
+ocas_string_free(s);
+ocas_expr_free(de);
+ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_integrate"><a class="header" href="#ocas_expr_integrate"><code>ocas_expr_integrate</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：对表达式关于变量 <code>var</code> 积分。若无法解析求解，返回未求值形式 <code>Integral(expr, var)</code>。</p>
+<p><strong>参数</strong>：同 <code>ocas_expr_diff</code>。</p>
+<p><strong>返回值</strong>：积分表达式句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasExpr *e = ocas_expr_parse("3*x^2", NULL);
+OcasExpr *ie = ocas_expr_integrate(e, "x", NULL);
+char *s = ocas_expr_to_string(ie, NULL);
+printf("∫ = %s\n", s);  // 输出：3*(3^-1)*(x^3)
+ocas_string_free(s);
+ocas_expr_free(ie);
+ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_integrate_heuristic"><a class="header" href="#ocas_expr_integrate_heuristic"><code>ocas_expr_integrate_heuristic</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_integrate_heuristic(const OcasExpr *handle, const char *var, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：使用启发式技术（分部积分、三角替换、Weierstrass 有理化、Euler 替换）积分。若无启发式成功，返回未求值形式。</p>
+<blockquote>
+<p><strong>⚠️ 注意</strong>：此函数<strong>未包含在 <code>ocas.h</code> 头文件中</strong>。使用时需自行声明：</p>
+<pre><code class="language-c">extern OcasExpr *ocas_expr_integrate_heuristic(const OcasExpr *handle,
+                                                const char *var,
+                                                int *err_out);
+</code></pre>
+</blockquote>
+<p><strong>参数</strong>：同 <code>ocas_expr_diff</code>。</p>
+<p><strong>返回值</strong>：积分表达式句柄或 <code>NULL</code>。</p>
+<hr />
+<h3 id="ocas_expr_taylor"><a class="header" href="#ocas_expr_taylor"><code>ocas_expr_taylor</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_taylor(const OcasExpr *handle, const char *var,
+                           const OcasExpr *point, uint32_t order, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：计算表达式在 <code>point</code> 处关于 <code>var</code> 的 <code>order</code> 阶 Taylor 展开。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>const OcasExpr*</code></td><td>非空表达式句柄</td></tr>
+<tr><td><code>var</code></td><td><code>const char*</code></td><td>展开变量</td></tr>
+<tr><td><code>point</code></td><td><code>const OcasExpr*</code></td><td>展开点（表达式句柄）</td></tr>
+<tr><td><code>order</code></td><td><code>uint32_t</code></td><td>展开阶数</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：Taylor 展开句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasExpr *f = ocas_expr_parse("exp(x)", NULL);
+OcasExpr *zero = ocas_expr_parse("0", NULL);
+OcasExpr *t = ocas_expr_taylor(f, "x", zero, 4, NULL);
+char *s = ocas_expr_to_string(t, NULL);
+printf("Taylor = %s\n", s);  // 输出：1 + x + ((2^-1)*(x^2)) + ((6^-1)*(x^3)) + ((24^-1)*(x^4))
+ocas_string_free(s);
+ocas_expr_free(t);
+ocas_expr_free(zero);
+ocas_expr_free(f);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_simplify"><a class="header" href="#ocas_expr_simplify"><code>ocas_expr_simplify</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_simplify(const OcasExpr *handle, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：使用默认规则集化简表达式。返回新句柄。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>const OcasExpr*</code></td><td>非空表达式句柄</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：化简后的表达式句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasExpr *e = ocas_expr_parse("x + x", NULL);
+OcasExpr *simplified = ocas_expr_simplify(e, NULL);
+char *s = ocas_expr_to_string(simplified, NULL);
+printf("化简 = %s\n", s);  // 输出：2*x
+ocas_string_free(s);
+ocas_expr_free(simplified);
+ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_substitute"><a class="header" href="#ocas_expr_substitute"><code>ocas_expr_substitute</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_substitute(const OcasExpr *handle, const char *var,
+                                const OcasExpr *replacement, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：将表达式中所有 <code>var</code> 的出现替换为 <code>replacement</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td><code>const OcasExpr*</code></td><td>非空表达式句柄</td></tr>
+<tr><td><code>var</code></td><td><code>const char*</code></td><td>被替换的变量名</td></tr>
+<tr><td><code>replacement</code></td><td><code>const OcasExpr*</code></td><td>替换表达式（非空）</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：替换后的表达式句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasExpr *e = ocas_expr_parse("x^2 + y", NULL);
+OcasExpr *val = ocas_expr_parse("3", NULL);
+OcasExpr *result = ocas_expr_substitute(e, "x", val, NULL);
+char *s = ocas_expr_to_string(result, NULL);
+printf("替换后 = %s\n", s);  // 输出：y + (3^2)
+ocas_string_free(s);
+ocas_expr_free(result);
+ocas_expr_free(val);
+ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="c-包装ocasexpression"><a class="header" href="#c-包装ocasexpression">C++ 包装：<code>ocas::Expression</code></a></h3>
+<p><code>ocas.hpp</code> 提供 RAII 包装类，自动管理句柄生命周期：</p>
+<pre><code class="language-cpp">#include &lt;ocas.h&gt;
+#include &lt;ocas.hpp&gt;
+
+try {
+    ocas::Expression e("x^2 + 1");
+    ocas::Expression d = e.diff("x");
+    std::cout &lt;&lt; "d/dx = " &lt;&lt; d.to_string() &lt;&lt; std::endl;
+    // 自动释放所有句柄
+} catch (const ocas::Error&amp; ex) {
+    std::cerr &lt;&lt; "错误: " &lt;&lt; ex.what() &lt;&lt; std::endl;
+}
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>C++ 方法</th><th>对应 C 函数</th></tr></thead><tbody>
+<tr><td><code>Expression(input)</code></td><td><code>ocas_expr_parse</code></td></tr>
+<tr><td><code>Expression(other)</code></td><td><code>ocas_expr_clone</code></td></tr>
+<tr><td><code>to_string()</code></td><td><code>ocas_expr_to_string</code> + <code>ocas_string_free</code></td></tr>
+<tr><td><code>diff(var)</code></td><td><code>ocas_expr_diff</code></td></tr>
+<tr><td><code>integrate(var)</code></td><td><code>ocas_expr_integrate</code></td></tr>
+<tr><td><code>simplify()</code></td><td><code>ocas_expr_simplify</code></td></tr>
+<tr><td><code>substitute(var, rep)</code></td><td><code>ocas_expr_substitute</code></td></tr>
+<tr><td><code>raw()</code></td><td>获取原始 <code>OcasExpr*</code>（不转移所有权）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="3-整数多项式6-个函数"><a class="header" href="#3-整数多项式6-个函数">3. 整数多项式（6 个函数）</a></h2>
+<p>处理双变量（<code>x</code>, <code>y</code>）整数多项式 <code>ℤ[x,y]</code>。从字符串解析，支持因式分解。</p>
+<h3 id="ocas_poly_z_create"><a class="header" href="#ocas_poly_z_create"><code>ocas_poly_z_create</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasPolyZ *ocas_poly_z_create(const char *input, int *err);
+</code></pre>
+<p><strong>功能</strong>：从字符串创建双变量整数多项式。输入可含变量 <code>x</code>、<code>y</code>，整数系数，加法、乘法和非负整数幂。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>const char*</code></td><td>多项式字符串，如 <code>"x^2*y + 3*x - 1"</code></td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasPolyZ*</code> 句柄或 <code>NULL</code>（<code>OCAS_ERROR_PARSE</code>）。</p>
+<p><strong>内存</strong>：调用方用 <code>ocas_poly_z_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">int err = 0;
+OcasPolyZ *p = ocas_poly_z_create("x^2 + y^2 - 1", &amp;err);
+assert(p != NULL);
+ocas_poly_z_free(p);
+</code></pre>
+<hr />
+<h3 id="ocas_poly_z_free"><a class="header" href="#ocas_poly_z_free"><code>ocas_poly_z_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_poly_z_free(OcasPolyZ *poly);
+</code></pre>
+<p><strong>功能</strong>：释放整数多项式句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_poly_z_clone"><a class="header" href="#ocas_poly_z_clone"><code>ocas_poly_z_clone</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasPolyZ *ocas_poly_z_clone(const OcasPolyZ *poly);
+</code></pre>
+<p><strong>功能</strong>：克隆整数多项式。返回新句柄（调用方释放）。</p>
+<p><strong>返回值</strong>：新 <code>OcasPolyZ*</code> 或 <code>NULL</code>（输入为 <code>NULL</code> 或内存不足）。</p>
+<hr />
+<h3 id="ocas_poly_z_degree"><a class="header" href="#ocas_poly_z_degree"><code>ocas_poly_z_degree</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_poly_z_degree(const OcasPolyZ *poly);
+</code></pre>
+<p><strong>功能</strong>：返回多项式的<strong>总次数</strong>。零多项式返回 <code>0</code>。<code>NULL</code> 句柄返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_poly_z_to_string"><a class="header" href="#ocas_poly_z_to_string"><code>ocas_poly_z_to_string</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_poly_z_to_string(const OcasPolyZ *poly, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回多项式的堆分配字符串表示。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<p><strong>返回值</strong>：字符串或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *s = ocas_poly_z_to_string(p, NULL);
+printf("多项式: %s\n", s);
+ocas_string_free(s);
+</code></pre>
+<hr />
+<h3 id="ocas_poly_z_factor"><a class="header" href="#ocas_poly_z_factor"><code>ocas_poly_z_factor</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_poly_z_factor(const OcasPolyZ *poly, OcasPolyFactorArray *out, int *err);
+</code></pre>
+<p><strong>功能</strong>：对双变量整数多项式进行因式分解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>poly</code></td><td><code>const OcasPolyZ*</code></td><td>非空多项式句柄</td></tr>
+<tr><td><code>out</code></td><td><code>OcasPolyFactorArray*</code></td><td>输出结构体（成功时填充）</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OCAS_OK</code>（0）成功；非零失败（<code>out</code> 不变）。</p>
+<p><strong>内存</strong>：成功时，<code>out.factors[i].poly</code> 是 <code>void*</code>，需转换为 <code>OcasPolyZ*</code> 并用 <code>ocas_poly_z_free()</code> 释放。数组本身用 <code>ocas_poly_factor_array_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasPolyZ *p = ocas_poly_z_create("x^2 - y^2", NULL);
+OcasPolyFactorArray arr = {0};
+if (ocas_poly_z_factor(p, &amp;arr, NULL) == OCAS_OK) {
+    for (size_t i = 0; i &lt; arr.len; i++) {
+        OcasPolyZ *f = (OcasPolyZ *)arr.factors[i].poly;
+        char *s = ocas_poly_z_to_string(f, NULL);
+        printf("因子: %s (重数 %zu)\n", s, arr.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_poly_z_free(f);
+    }
+    ocas_poly_factor_array_free(&amp;arr);
+}
+ocas_poly_z_free(p);
+</code></pre>
+<hr />
+<h2 id="4-有限域多项式6-个函数"><a class="header" href="#4-有限域多项式6-个函数">4. 有限域多项式（6 个函数）</a></h2>
+<p>处理双变量多项式 $𝔽_p[x,y]$。</p>
+<h3 id="ocas_poly_fp_create"><a class="header" href="#ocas_poly_fp_create"><code>ocas_poly_fp_create</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasPolyFp *ocas_poly_fp_create(const char *input, const char *prime, int *err);
+</code></pre>
+<p><strong>功能</strong>：在素数域 $𝔽_p$ 上创建双变量多项式。字符串中的系数自动取模 $p$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>const char*</code></td><td>多项式字符串</td></tr>
+<tr><td><code>prime</code></td><td><code>const char*</code></td><td>素数 $p$ 的十进制字符串</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasPolyFp*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>内存</strong>：调用方用 <code>ocas_poly_fp_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasPolyFp *p = ocas_poly_fp_create("x^2 + 2*x + 1", "7", NULL);
+// 系数在 𝔽₇ 中：x² + 2x + 1
+ocas_poly_fp_free(p);
+</code></pre>
+<hr />
+<h3 id="ocas_poly_fp_free"><a class="header" href="#ocas_poly_fp_free"><code>ocas_poly_fp_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_poly_fp_free(OcasPolyFp *poly);
+</code></pre>
+<p><strong>功能</strong>：释放有限域多项式句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_poly_fp_clone"><a class="header" href="#ocas_poly_fp_clone"><code>ocas_poly_fp_clone</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasPolyFp *ocas_poly_fp_clone(const OcasPolyFp *poly);
+</code></pre>
+<p><strong>功能</strong>：克隆有限域多项式。返回新句柄。</p>
+<hr />
+<h3 id="ocas_poly_fp_degree"><a class="header" href="#ocas_poly_fp_degree"><code>ocas_poly_fp_degree</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_poly_fp_degree(const OcasPolyFp *poly);
+</code></pre>
+<p><strong>功能</strong>：返回多项式的总次数。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_poly_fp_to_string"><a class="header" href="#ocas_poly_fp_to_string"><code>ocas_poly_fp_to_string</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_poly_fp_to_string(const OcasPolyFp *poly, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回多项式的堆分配字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<hr />
+<h3 id="ocas_poly_fp_factor"><a class="header" href="#ocas_poly_fp_factor"><code>ocas_poly_fp_factor</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_poly_fp_factor(const OcasPolyFp *poly, OcasPolyFactorArray *out, int *err);
+</code></pre>
+<p><strong>功能</strong>：对有限域多项式进行因式分解。返回值和内存管理同 <code>ocas_poly_z_factor</code>，但 <code>out.factors[i].poly</code> 需转换为 <code>OcasPolyFp*</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasPolyFp *p = ocas_poly_fp_create("x^2 - 1", "5", NULL);
+OcasPolyFactorArray arr = {0};
+if (ocas_poly_fp_factor(p, &amp;arr, NULL) == OCAS_OK) {
+    for (size_t i = 0; i &lt; arr.len; i++) {
+        OcasPolyFp *f = (OcasPolyFp *)arr.factors[i].poly;
+        char *s = ocas_poly_fp_to_string(f, NULL);
+        printf("因子: %s (重数 %zu)\n", s, arr.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_poly_fp_free(f);
+    }
+    ocas_poly_factor_array_free(&amp;arr);
+}
+ocas_poly_fp_free(p);
+</code></pre>
+<hr />
+<h2 id="5-因子数组1-个函数"><a class="header" href="#5-因子数组1-个函数">5. 因子数组（1 个函数）</a></h2>
+<h3 id="ocas_poly_factor_array_free"><a class="header" href="#ocas_poly_factor_array_free"><code>ocas_poly_factor_array_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_poly_factor_array_free(OcasPolyFactorArray *arr);
+</code></pre>
+<p><strong>功能</strong>：释放因子数组结构本身及内部的 <code>OcasPolyFactor</code> 对象，但<strong>不释放</strong>各因子的多项式句柄。</p>
+<blockquote>
+<p><strong>⚠️ 内存陷阱</strong>：必须先用 <code>ocas_poly_z_free()</code> / <code>ocas_poly_fp_free()</code> 释放每个 <code>arr-&gt;factors[i].poly</code>，再调用此函数。顺序颠倒会导致 use-after-free。</p>
+</blockquote>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>arr</code></td><td><code>OcasPolyFactorArray*</code></td><td>由 <code>ocas_poly_z_factor</code> 或 <code>ocas_poly_fp_factor</code> 填充的数组</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="6-代数数域9-个函数"><a class="header" href="#6-代数数域9-个函数">6. 代数数域（9 个函数）</a></h2>
+<p>处理代数数域 $ℚ(α)$ 上的多项式。支持 Trager 因式分解算法。</p>
+<h3 id="数据格式"><a class="header" href="#数据格式">数据格式</a></h3>
+<p><strong>极小多项式</strong>：单变量字符串，变量必须为 <code>x</code>，如 <code>"x^2 - 2"</code> 表示 $ℚ(\sqrt{2})$。</p>
+<p><strong>系数列表</strong>：分号分隔（常数项在前），每个系数是逗号分隔的有理数列表（$α$-多项式，升序）。例如在 $ℚ(\sqrt{2})$ 上：</p>
+<ul>
+<li><code>"-2;0;1"</code> — $x^2 - 2$（所有系数在基域中）</li>
+<li><code>"0;0;0,1"</code> — $x^2 - α$（$x^2$ 系数为 $0 + 1 \cdot α$）</li>
+</ul>
+<p>单个有理数可省略逗号。</p>
+<h3 id="ocas_algebraic_field_create"><a class="header" href="#ocas_algebraic_field_create"><code>ocas_algebraic_field_create</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasAlgebraicField *ocas_algebraic_field_create(const char *min_poly, int *err);
+</code></pre>
+<p><strong>功能</strong>：从首一极小多项式创建代数数域。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>min_poly</code></td><td><code>const char*</code></td><td>极小多项式字符串，如 <code>"x^2 - 2"</code></td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasAlgebraicField*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>内存</strong>：调用方用 <code>ocas_algebraic_field_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasAlgebraicField *q_sqrt2 = ocas_algebraic_field_create("x^2 - 2", NULL);
+printf("扩张次数: %zu\n", ocas_algebraic_field_degree(q_sqrt2));
+// 输出：扩张次数: 2
+ocas_algebraic_field_free(q_sqrt2);
+</code></pre>
+<hr />
+<h3 id="ocas_algebraic_field_free"><a class="header" href="#ocas_algebraic_field_free"><code>ocas_algebraic_field_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_algebraic_field_free(OcasAlgebraicField *field);
+</code></pre>
+<p><strong>功能</strong>：释放代数数域句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_algebraic_field_degree"><a class="header" href="#ocas_algebraic_field_degree"><code>ocas_algebraic_field_degree</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_algebraic_field_degree(const OcasAlgebraicField *field);
+</code></pre>
+<p><strong>功能</strong>：返回扩张次数 $\deg(m) = [ℚ(α):ℚ]$。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_algebraic_poly_create"><a class="header" href="#ocas_algebraic_poly_create"><code>ocas_algebraic_poly_create</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasAlgebraicPoly *ocas_algebraic_poly_create(const OcasAlgebraicField *field,
+                                              const char *coeffs, int *err);
+</code></pre>
+<p><strong>功能</strong>：在代数数域上创建多项式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>field</code></td><td><code>const OcasAlgebraicField*</code></td><td>非空数域句柄</td></tr>
+<tr><td><code>coeffs</code></td><td><code>const char*</code></td><td>系数列表字符串（见上文格式）</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasAlgebraicPoly*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasAlgebraicField *fld = ocas_algebraic_field_create("x^2 - 2", NULL);
+// 创建多项式 x² - α（即 x² - √2）
+OcasAlgebraicPoly *p = ocas_algebraic_poly_create(fld, "0;0;0,1", NULL);
+printf("次数: %zu\n", ocas_algebraic_poly_degree(p));
+ocas_algebraic_poly_free(p);
+ocas_algebraic_field_free(fld);
+</code></pre>
+<hr />
+<h3 id="ocas_algebraic_poly_free"><a class="header" href="#ocas_algebraic_poly_free"><code>ocas_algebraic_poly_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_algebraic_poly_free(OcasAlgebraicPoly *poly);
+</code></pre>
+<p><strong>功能</strong>：释放代数域多项式句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_algebraic_poly_degree"><a class="header" href="#ocas_algebraic_poly_degree"><code>ocas_algebraic_poly_degree</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_algebraic_poly_degree(const OcasAlgebraicPoly *poly);
+</code></pre>
+<p><strong>功能</strong>：返回多项式次数。零多项式返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_algebraic_poly_to_string"><a class="header" href="#ocas_algebraic_poly_to_string"><code>ocas_algebraic_poly_to_string</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_algebraic_poly_to_string(const OcasAlgebraicPoly *poly, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回多项式的堆分配字符串。格式为 <code>[c0] + [c1]*x + [c2]*x^2 + ...</code>，其中 <code>[ci]</code> 是逗号分隔的 $α$-多项式有理数。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<hr />
+<h3 id="ocas_algebraic_poly_factor"><a class="header" href="#ocas_algebraic_poly_factor"><code>ocas_algebraic_poly_factor</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_algebraic_poly_factor(const OcasAlgebraicPoly *poly,
+                               OcasAlgebraicFactorArray *out, int *err);
+</code></pre>
+<p><strong>功能</strong>：使用 Trager 算法在代数数域上因式分解多项式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>poly</code></td><td><code>const OcasAlgebraicPoly*</code></td><td>非空多项式句柄</td></tr>
+<tr><td><code>out</code></td><td><code>OcasAlgebraicFactorArray*</code></td><td>输出数组（成功时填充）</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OCAS_OK</code>（0）成功。</p>
+<p><strong>内存</strong>：<code>out-&gt;factors[i].poly</code>（<code>void*</code>）需转换为 <code>OcasAlgebraicPoly*</code> 并用 <code>ocas_algebraic_poly_free()</code> 释放。数组用 <code>ocas_algebraic_factor_array_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasAlgebraicField *fld = ocas_algebraic_field_create("x^2 - 2", NULL);
+OcasAlgebraicPoly *p = ocas_algebraic_poly_create(fld, "-2;0;1", NULL);
+OcasAlgebraicFactorArray arr = {0};
+if (ocas_algebraic_poly_factor(p, &amp;arr, NULL) == OCAS_OK) {
+    for (size_t i = 0; i &lt; arr.len; i++) {
+        OcasAlgebraicPoly *f = (OcasAlgebraicPoly *)arr.factors[i].poly;
+        char *s = ocas_algebraic_poly_to_string(f, NULL);
+        printf("因子: %s (重数 %zu)\n", s, arr.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_algebraic_poly_free(f);
+    }
+    ocas_algebraic_factor_array_free(&amp;arr);
+}
+ocas_algebraic_poly_free(p);
+ocas_algebraic_field_free(fld);
+</code></pre>
+<hr />
+<h3 id="ocas_algebraic_factor_array_free"><a class="header" href="#ocas_algebraic_factor_array_free"><code>ocas_algebraic_factor_array_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_algebraic_factor_array_free(OcasAlgebraicFactorArray *arr);
+</code></pre>
+<p><strong>功能</strong>：释放因子数组的存储。<strong>不释放</strong>各因子的多项式句柄——必须先单独释放。</p>
+<hr />
+<h2 id="7-数值积分6-个函数"><a class="header" href="#7-数值积分6-个函数">7. 数值积分（6 个函数）</a></h2>
+<p>Vegas 自适应蒙特卡洛积分器。</p>
+<h3 id="积分子函数签名"><a class="header" href="#积分子函数签名">积分子函数签名</a></h3>
+<pre><code class="language-c">typedef double (*ocas_integrand_t)(double x, void *user_data);
+</code></pre>
+<p><code>user_data</code> 从调用方原样传递到积分子。</p>
+<blockquote>
+<p><strong>⚠️ 注意</strong>：当前 C API 的积分子只接收采样点的<strong>第一个坐标</strong>（一维积分友好接口）。即使以 <code>n_dims &gt; 1</code> 创建积分器，积分子的 <code>x</code> 参数也仅代表第一个维度；完整的多维 <code>const double*</code>/<code>size_t</code> 签名留待后续版本。</p>
+</blockquote>
+<h3 id="ocas_vegas_create"><a class="header" href="#ocas_vegas_create"><code>ocas_vegas_create</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasVegas *ocas_vegas_create(size_t n_dims, const OcasVegasOptions *opts, int *err);
+</code></pre>
+<p><strong>功能</strong>：创建 <code>n_dims</code> 维 Vegas 积分器。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_dims</code></td><td><code>size_t</code></td><td>积分维度</td></tr>
+<tr><td><code>opts</code></td><td><code>const OcasVegasOptions*</code></td><td>可为 <code>NULL</code>（使用默认值）</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong><code>OcasVegasOptions</code> 字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_bins</code></td><td><code>size_t</code></td><td>64</td><td>每维度 bin 数</td></tr>
+<tr><td><code>n_samples</code></td><td><code>size_t</code></td><td>10000</td><td>每次迭代采样数</td></tr>
+<tr><td><code>iterations</code></td><td><code>size_t</code></td><td>10</td><td>自适应迭代次数</td></tr>
+<tr><td><code>learning_rate</code></td><td><code>double</code></td><td>1.5</td><td>网格平滑/学习率</td></tr>
+<tr><td><code>seed</code></td><td><code>uint64_t</code></td><td>0x0C45</td><td>随机数种子</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasVegas*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>内存</strong>：调用方用 <code>ocas_vegas_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasVegasOptions opts = {
+    .n_bins = 50, .n_samples = 20000, .iterations = 8,
+    .learning_rate = 1.5, .seed = 42
+};
+int err = 0;
+OcasVegas *v = ocas_vegas_create(1, &amp;opts, &amp;err);
+</code></pre>
+<hr />
+<h3 id="ocas_vegas_free"><a class="header" href="#ocas_vegas_free"><code>ocas_vegas_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_vegas_free(OcasVegas *v);
+</code></pre>
+<p><strong>功能</strong>：释放 Vegas 积分器句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_vegas_integrate"><a class="header" href="#ocas_vegas_integrate"><code>ocas_vegas_integrate</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasIntegrateResult ocas_vegas_integrate(OcasVegas *v, ocas_integrand_t f,
+                                         void *user_data, int *err);
+</code></pre>
+<p><strong>功能</strong>：在单位超立方体上对 <code>f</code> 积分（积分子仅接收第一个坐标，见上文注意）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>v</code></td><td><code>OcasVegas*</code></td><td>非空积分器句柄</td></tr>
+<tr><td><code>f</code></td><td><code>ocas_integrand_t</code></td><td>积分子函数</td></tr>
+<tr><td><code>user_data</code></td><td><code>void*</code></td><td>传递给积分子的用户数据</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasIntegrateResult { double integral; double error; }</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">static double f(double x, void *ud) { return x * x; }
+
+OcasIntegrateResult r = ocas_vegas_integrate(v, f, NULL, &amp;err);
+printf("∫₀¹ x² dx ≈ %g ± %g\n", r.integral, r.error);
+// 输出（示例值，随种子与采样数而定）：∫₀¹ x² dx ≈ 0.333 ± 0.001
+</code></pre>
+<hr />
+<h3 id="ocas_vegas_result"><a class="header" href="#ocas_vegas_result"><code>ocas_vegas_result</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasIntegrateResult ocas_vegas_result(const OcasVegas *v);
+</code></pre>
+<p><strong>功能</strong>：返回最近一次 <code>ocas_vegas_integrate</code> 的累计估计值和误差。</p>
+<hr />
+<h3 id="ocas_vegas_iterations"><a class="header" href="#ocas_vegas_iterations"><code>ocas_vegas_iterations</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_vegas_iterations(const OcasVegas *v);
+</code></pre>
+<p><strong>功能</strong>：返回已完成的迭代次数。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_integrate_1d"><a class="header" href="#ocas_integrate_1d"><code>ocas_integrate_1d</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasIntegrateResult ocas_integrate_1d(ocas_integrand_t f, void *user_data,
+                                      double a, double b,
+                                      const OcasVegasOptions *opts, int *err);
+</code></pre>
+<p><strong>功能</strong>：一维数值积分的便捷函数——在 $[a, b]$ 上使用 Vegas 积分。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>ocas_integrand_t</code></td><td>积分子</td></tr>
+<tr><td><code>user_data</code></td><td><code>void*</code></td><td>用户数据</td></tr>
+<tr><td><code>a</code></td><td><code>double</code></td><td>积分下限</td></tr>
+<tr><td><code>b</code></td><td><code>double</code></td><td>积分上限</td></tr>
+<tr><td><code>opts</code></td><td><code>const OcasVegasOptions*</code></td><td>可为 <code>NULL</code></td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasIntegrateResult</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasIntegrateResult r = ocas_integrate_1d(f, NULL, 0.0, 1.0, NULL, &amp;err);
+printf("结果: %g ± %g\n", r.integral, r.error);
+</code></pre>
+<hr />
+<h2 id="8-ode3-个函数"><a class="header" href="#8-ode3-个函数">8. ODE（3 个函数）</a></h2>
+<p>符号常微分方程求解。所有输入输出均为字符串。</p>
+<h3 id="ocas_ode_classify"><a class="header" href="#ocas_ode_classify"><code>ocas_ode_classify</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ode_classify(const char *equation, const char *func,
+                        const char *var, int *err);
+</code></pre>
+<p><strong>功能</strong>：分类 ODE 并返回适用的求解方法名列表（逗号分隔）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>const char*</code></td><td>ODE 等于零的表达式，如 <code>"Derivative(y(x), x) - y(x)"</code></td></tr>
+<tr><td><code>func</code></td><td><code>const char*</code></td><td>未知函数名，如 <code>"y"</code></td></tr>
+<tr><td><code>var</code></td><td><code>const char*</code></td><td>自变量，如 <code>"x"</code></td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：堆分配字符串如 <code>"LinearFirst,PowerSeries"</code>，调用方用 <code>ocas_string_free()</code> 释放。失败返回 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *methods = ocas_ode_classify("Derivative(y(x),x) - y(x)", "y", "x", NULL);
+printf("可用方法: %s\n", methods);
+// 输出：可用方法: LinearFirst,PowerSeries
+ocas_string_free(methods);
+</code></pre>
+<hr />
+<h3 id="ocas_ode_dsolve"><a class="header" href="#ocas_ode_dsolve"><code>ocas_ode_dsolve</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ode_dsolve(const char *equation, const char *func,
+                      const char *var, const char *hint, int *err);
+</code></pre>
+<p><strong>功能</strong>：符号求解 ODE。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>const char*</code></td><td>ODE 表达式</td></tr>
+<tr><td><code>func</code></td><td><code>const char*</code></td><td>未知函数名</td></tr>
+<tr><td><code>var</code></td><td><code>const char*</code></td><td>自变量</td></tr>
+<tr><td><code>hint</code></td><td><code>const char*</code></td><td>可为 <code>NULL</code>（自动分类）；或 <code>ocas_ode_classify</code> 返回的方法名之一</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：解字符串如 <code>"y = C1*exp(x)"</code> 或 <code>"unsolved"</code>。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *sol = ocas_ode_dsolve("Derivative(y(x),x) - y(x)", "y", "x", NULL, NULL);
+printf("解: %s\n", sol);  // 输出：解: y = C1*exp(x)
+ocas_string_free(sol);
+</code></pre>
+<hr />
+<h3 id="ocas_ode_dsolve_ivp"><a class="header" href="#ocas_ode_dsolve_ivp"><code>ocas_ode_dsolve_ivp</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ode_dsolve_ivp(const char *equation, const char *func,
+                          const char *var, const char *y0,
+                          const char *y1, int *err);
+</code></pre>
+<p><strong>功能</strong>：通过 Laplace 变换求解一阶或二阶线性常系数 ODE 的初值问题。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>const char*</code></td><td>ODE 表达式</td></tr>
+<tr><td><code>func</code></td><td><code>const char*</code></td><td>未知函数名</td></tr>
+<tr><td><code>var</code></td><td><code>const char*</code></td><td>自变量</td></tr>
+<tr><td><code>y0</code></td><td><code>const char*</code></td><td>$y(0)$ 的表达式字符串，如 <code>"1"</code></td></tr>
+<tr><td><code>y1</code></td><td><code>const char*</code></td><td>$y'(0)$（可为 <code>NULL</code>，仅二阶需要）</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：无自由常数的显式解字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">// y'' + y = 0, y(0) = 1, y'(0) = 0 → y = cos(x)
+char *sol = ocas_ode_dsolve_ivp(
+    "Derivative(y(x),x,2) + y(x)", "y", "x", "1", "0", NULL);
+printf("IVP 解: %s\n", sol);
+ocas_string_free(sol);
+</code></pre>
+<hr />
+<h2 id="9-数论11-个函数"><a class="header" href="#9-数论11-个函数">9. 数论（11 个函数）</a></h2>
+<p>任意精度整数通过十进制字符串传递。字符串结果由调用方用 <code>ocas_string_free()</code> 释放。</p>
+<h3 id="ocas_ntheory_factorint"><a class="header" href="#ocas_ntheory_factorint"><code>ocas_ntheory_factorint</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_factorint(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：对 $|n|$ 进行素因数分解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>const char*</code></td><td>十进制整数字符串</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>"p1:e1,p2:e2,..."</code>（升序），负数开头含 <code>"-1:1"</code>。失败返回 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *f = ocas_ntheory_factorint("360", NULL);
+printf("360 = %s\n", f);  // 输出：360 = 2:3,3:2,5:1
+ocas_string_free(f);
+
+f = ocas_ntheory_factorint("-12", NULL);
+printf("-12 = %s\n", f);  // 输出：-12 = -1:1,2:2,3:1
+ocas_string_free(f);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_isprime"><a class="header" href="#ocas_ntheory_isprime"><code>ocas_ntheory_isprime</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_ntheory_isprime(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：BPSW 概率素性测试。</p>
+<p><strong>返回值</strong>：<code>1</code> = (很可能) 素数，<code>0</code> = 合数，<code>-1</code> = 错误。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">int r = ocas_ntheory_isprime("997", NULL);
+printf("997 是素数？%s\n", r == 1 ? "是" : "否");
+// 输出：997 是素数？是
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_nextprime"><a class="header" href="#ocas_ntheory_nextprime"><code>ocas_ntheory_nextprime</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_nextprime(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：返回严格大于 <code>n</code> 的最小素数。</p>
+<p><strong>返回值</strong>：十进制字符串或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *p = ocas_ntheory_nextprime("100", NULL);
+printf("100 之后的素数: %s\n", p);  // 输出：101
+ocas_string_free(p);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_discrete_log"><a class="header" href="#ocas_ntheory_discrete_log"><code>ocas_ntheory_discrete_log</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_discrete_log(const char *p, const char *base,
+                                const char *target, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：求解 $\text{base}^x \equiv \text{target} \pmod{p}$。素数 $p$ 使用 Pohlig–Hellman，否则使用 BSGS。</p>
+<p><strong>返回值</strong>：对数的十进制字符串，或 <code>NULL</code>（无解时设 <code>OCAS_ERROR_RUNTIME</code>）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *x = ocas_ntheory_discrete_log("7", "3", "5", NULL);
+// 3^x ≡ 5 (mod 7) → x = 5
+printf("离散对数: %s\n", x);
+ocas_string_free(x);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_crt"><a class="header" href="#ocas_ntheory_crt"><code>ocas_ntheory_crt</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_crt(const char *moduli, const char *residues, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：中国剩余定理。模数无需互素；不一致返回 <code>NULL</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>moduli</code></td><td><code>const char*</code></td><td>逗号分隔模数，如 <code>"3,5,7"</code></td></tr>
+<tr><td><code>residues</code></td><td><code>const char*</code></td><td>逗号分隔余数，如 <code>"2,3,2"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>"r,m"</code>（$r \equiv \text{residues}[i] \pmod{\text{moduli}[i]}$），或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *r = ocas_ntheory_crt("3,5,7", "2,3,2", NULL);
+printf("CRT: %s\n", r);  // 输出：CRT: 23,105
+// 23 ≡ 2 (mod 3), 23 ≡ 3 (mod 5), 23 ≡ 2 (mod 7)
+ocas_string_free(r);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_jacobi"><a class="header" href="#ocas_ntheory_jacobi"><code>ocas_ntheory_jacobi</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_ntheory_jacobi(const char *a, const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：计算 Jacobi 符号 $(a/n)$，要求 $n$ 为正奇数。</p>
+<p><strong>返回值</strong>：$-1$、$0$ 或 $1$；$-2$ 表示输入无效。</p>
+<hr />
+<h3 id="ocas_ntheory_totient"><a class="header" href="#ocas_ntheory_totient"><code>ocas_ntheory_totient</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_totient(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：Euler totient 函数 $\varphi(n)$。</p>
+<p><strong>返回值</strong>：十进制字符串或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *t = ocas_ntheory_totient("12", NULL);
+printf("φ(12) = %s\n", t);  // 输出：φ(12) = 4
+ocas_string_free(t);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_mobius"><a class="header" href="#ocas_ntheory_mobius"><code>ocas_ntheory_mobius</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_ntheory_mobius(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：Möbius 函数 $\mu(n)$。</p>
+<p><strong>返回值</strong>：$-1$、$0$ 或 $1$；$-2$ 表示错误。</p>
+<hr />
+<h3 id="ocas_ntheory_divisor_count"><a class="header" href="#ocas_ntheory_divisor_count"><code>ocas_ntheory_divisor_count</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_divisor_count(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：正因数个数 $\tau(n)$。</p>
+<p><strong>返回值</strong>：十进制字符串或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *d = ocas_ntheory_divisor_count("12", NULL);
+printf("τ(12) = %s\n", d);  // 输出：τ(12) = 6
+// 12 的因数：1,2,3,4,6,12
+ocas_string_free(d);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_divisor_sigma"><a class="header" href="#ocas_ntheory_divisor_sigma"><code>ocas_ntheory_divisor_sigma</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_ntheory_divisor_sigma(const char *n, uint32_t k, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：正因数的 $k$ 次幂和 $\sigma_k(n)$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>const char*</code></td><td>正整数</td></tr>
+<tr><td><code>k</code></td><td><code>uint32_t</code></td><td>幂次</td></tr>
+<tr><td><code>err_out</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：十进制字符串或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *s = ocas_ntheory_divisor_sigma("6", 1, NULL);
+printf("σ₁(6) = %s\n", s);  // 输出：σ₁(6) = 12
+// 1+2+3+6 = 12
+ocas_string_free(s);
+</code></pre>
+<hr />
+<h3 id="ocas_ntheory_liouville"><a class="header" href="#ocas_ntheory_liouville"><code>ocas_ntheory_liouville</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_ntheory_liouville(const char *n, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：Liouville 函数 $\lambda(n) = (-1)^{\Omega(n)}$。</p>
+<p><strong>返回值</strong>：$-1$、$0$ 或 $1$；$-2$ 表示错误。</p>
+<hr />
+<h3 id="c-包装ocasntheory"><a class="header" href="#c-包装ocasntheory">C++ 包装：<code>ocas::ntheory::*</code></a></h3>
+<p>所有数论函数均有 C++ 内联包装，自动管理字符串内存：</p>
+<pre><code class="language-cpp">#include &lt;ocas.h&gt;
+#include &lt;ocas.hpp&gt;
+
+std::string f = ocas::ntheory::factorint("360");
+// f == "2:3,3:2,5:1"
+
+bool prime = ocas::ntheory::isprime("997");
+// prime == true
+
+std::string p = ocas::ntheory::nextprime("100");
+// p == "101"
+
+std::string tot = ocas::ntheory::totient("12");
+// tot == "4"
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>C++ 函数</th><th>C 函数</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>factorint(n)</code></td><td><code>ocas_ntheory_factorint</code></td><td>素因数分解</td></tr>
+<tr><td><code>isprime(n)</code></td><td><code>ocas_ntheory_isprime</code></td><td>返回 <code>bool</code>，错误抛异常</td></tr>
+<tr><td><code>nextprime(n)</code></td><td><code>ocas_ntheory_nextprime</code></td><td>下一个素数</td></tr>
+<tr><td><code>discrete_log(p, base, target)</code></td><td><code>ocas_ntheory_discrete_log</code></td><td>离散对数，无解抛异常</td></tr>
+<tr><td><code>crt(moduli, residues)</code></td><td><code>ocas_ntheory_crt</code></td><td>中国剩余定理</td></tr>
+<tr><td><code>jacobi(a, n)</code></td><td><code>ocas_ntheory_jacobi</code></td><td>Jacobi 符号，无效输入抛异常</td></tr>
+<tr><td><code>totient(n)</code></td><td><code>ocas_ntheory_totient</code></td><td>Euler totient</td></tr>
+<tr><td><code>mobius(n)</code></td><td><code>ocas_ntheory_mobius</code></td><td>Möbius 函数，无效输入抛异常</td></tr>
+<tr><td><code>divisor_count(n)</code></td><td><code>ocas_ntheory_divisor_count</code></td><td>因数个数</td></tr>
+<tr><td><code>divisor_sigma(n, k=1)</code></td><td><code>ocas_ntheory_divisor_sigma</code></td><td>因数幂和</td></tr>
+<tr><td><code>liouville(n)</code></td><td><code>ocas_ntheory_liouville</code></td><td>Liouville 函数，无效输入抛异常</td></tr>
+</tbody></table>
+</div>
+<p>所有包装在 C API 返回错误时抛出 <code>ocas::Error</code> 异常。</p>
+<hr />
+<h2 id="10-张量12-个函数"><a class="header" href="#10-张量12-个函数">10. 张量（12 个函数）</a></h2>
+<p>命名指标张量，支持指标缩并和对称性。</p>
+<h3 id="槽位字符串格式"><a class="header" href="#槽位字符串格式">槽位字符串格式</a></h3>
+<p>槽位以分号分隔，每个条目为 <code>label,position</code>，其中 <code>position</code> 为 <code>"upper"</code> 或 <code>"lower"</code>（别名：<code>up</code>/<code>down</code>/<code>contravariant</code>/<code>covariant</code>）。</p>
+<p>例如：<code>"i,upper;j,lower"</code> 表示两个槽位 $i^j{}_{}$。</p>
+<h3 id="ocas_tensor_create"><a class="header" href="#ocas_tensor_create"><code>ocas_tensor_create</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasTensor *ocas_tensor_create(const char *name, const char *slots,
+                               const char *symmetry, int *err);
+</code></pre>
+<p><strong>功能</strong>：创建张量。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>const char*</code></td><td>张量名，如 <code>"T"</code></td></tr>
+<tr><td><code>slots</code></td><td><code>const char*</code></td><td>槽位字符串</td></tr>
+<tr><td><code>symmetry</code></td><td><code>const char*</code></td><td>可为 <code>NULL</code>（= <code>"none"</code>）；或 <code>"none"</code>/<code>"symmetric"</code>/<code>"antisymmetric"</code></td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasTensor*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasTensor *T = ocas_tensor_create("T", "i,upper;j,lower", "symmetric", NULL);
+printf("秩: %zu\n", ocas_tensor_rank(T));  // 输出：秩: 2
+ocas_tensor_free(T);
+</code></pre>
+<hr />
+<h3 id="ocas_tensor_free"><a class="header" href="#ocas_tensor_free"><code>ocas_tensor_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_tensor_free(OcasTensor *t);
+</code></pre>
+<p><strong>功能</strong>：释放张量句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_tensor_name"><a class="header" href="#ocas_tensor_name"><code>ocas_tensor_name</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_tensor_name(const OcasTensor *t, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回张量名称的堆分配字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<hr />
+<h3 id="ocas_tensor_rank"><a class="header" href="#ocas_tensor_rank"><code>ocas_tensor_rank</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_tensor_rank(const OcasTensor *t);
+</code></pre>
+<p><strong>功能</strong>：返回张量的秩（槽位数）。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_tensor_symmetry"><a class="header" href="#ocas_tensor_symmetry"><code>ocas_tensor_symmetry</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_tensor_symmetry(const OcasTensor *t);
+</code></pre>
+<p><strong>功能</strong>：返回对称性代码。</p>
+<p><strong>返回值</strong>：<code>0</code> = none，<code>1</code> = symmetric，<code>2</code> = antisymmetric，<code>-1</code> = null 句柄。</p>
+<hr />
+<h3 id="ocas_tensor_to_string"><a class="header" href="#ocas_tensor_to_string"><code>ocas_tensor_to_string</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_tensor_to_string(const OcasTensor *t, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回张量的字符串表示 <code>name(slot, slot, ...)</code>。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<hr />
+<h3 id="ocas_tensor_symmetrise_sign"><a class="header" href="#ocas_tensor_symmetrise_sign"><code>ocas_tensor_symmetrise_sign</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int64_t ocas_tensor_symmetrise_sign(const OcasTensor *t);
+</code></pre>
+<p><strong>功能</strong>：返回反对称化符号（$+1$ 或 $-1$）。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_tensor_contract"><a class="header" href="#ocas_tensor_contract"><code>ocas_tensor_contract</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">int ocas_tensor_contract(const OcasTensor *a, const OcasTensor *b,
+                         OcasTensorContraction *out, int *err);
+</code></pre>
+<p><strong>功能</strong>：对两个张量的共享哑指标（相同标签、相反变异性）求和缩并。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>const OcasTensor*</code></td><td>非空张量</td></tr>
+<tr><td><code>b</code></td><td><code>const OcasTensor*</code></td><td>非空张量</td></tr>
+<tr><td><code>out</code></td><td><code>OcasTensorContraction*</code></td><td>输出结构体</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OCAS_OK</code>（0）成功。</p>
+<p><strong><code>OcasTensorContraction</code> 字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>int</code></td><td><code>0</code> = product（有自由指标），<code>1</code> = scalar（完全缩并）</td></tr>
+<tr><td><code>tensors</code></td><td><code>OcasTensor**</code></td><td><code>kind == 0</code> 时有效，张量句柄数组</td></tr>
+<tr><td><code>n_tensors</code></td><td><code>size_t</code></td><td><code>tensors</code> 数组长度</td></tr>
+<tr><td><code>scalar_str</code></td><td><code>char*</code></td><td><code>kind == 1</code> 时有效，标量结果字符串</td></tr>
+</tbody></table>
+</div>
+<p><strong>内存</strong>：</p>
+<ul>
+<li><code>kind == 0</code>：每个 <code>tensors[i]</code> 用 <code>ocas_tensor_free()</code> 释放，数组用 <code>ocas_tensor_contraction_free()</code> 释放。</li>
+<li><code>kind == 1</code>：<code>scalar_str</code> 用 <code>ocas_string_free()</code> 释放，结构体用 <code>ocas_tensor_contraction_free()</code> 释放。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasTensor *A = ocas_tensor_create("A", "i,upper;j,lower", NULL, NULL);
+OcasTensor *B = ocas_tensor_create("B", "j,upper;k,lower", NULL, NULL);
+OcasTensorContraction result = {0};
+if (ocas_tensor_contract(A, B, &amp;result, NULL) == OCAS_OK) {
+    if (result.kind == 0) {
+        // 自由指标剩余
+        for (size_t i = 0; i &lt; result.n_tensors; i++) {
+            char *s = ocas_tensor_to_string(result.tensors[i], NULL);
+            printf("结果张量: %s\n", s);
+            ocas_string_free(s);
+            ocas_tensor_free(result.tensors[i]);
+        }
+    }
+    ocas_tensor_contraction_free(&amp;result);
+}
+ocas_tensor_free(B);
+ocas_tensor_free(A);
+</code></pre>
+<hr />
+<h3 id="ocas_tensor_contraction_free"><a class="header" href="#ocas_tensor_contraction_free"><code>ocas_tensor_contraction_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_tensor_contraction_free(OcasTensorContraction *c);
+</code></pre>
+<p><strong>功能</strong>：释放缩并结果的 <code>tensors</code> 数组和 <code>scalar_str</code>。<strong>不释放</strong>各张量句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_tensor_canonicalize"><a class="header" href="#ocas_tensor_canonicalize"><code>ocas_tensor_canonicalize</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_tensor_canonicalize(const char *expr_str, const char *specs_str,
+                                const char *groups_str, int *err);
+</code></pre>
+<p><strong>功能</strong>：通过图同构规范化张量表达式（0.22.0）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>expr_str</code></td><td><code>const char*</code></td><td>张量积字符串，如 <code>"T(i,j)*U(j,k)"</code></td></tr>
+<tr><td><code>specs_str</code></td><td><code>const char*</code></td><td>逗号分隔的 <code>name:sym</code> 对，如 <code>"T:none,U:none"</code></td></tr>
+<tr><td><code>groups_str</code></td><td><code>const char*</code></td><td>可为 <code>NULL</code>；或逗号分隔的 <code>label:group</code> 对</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：堆分配的规范形式字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">char *canon = ocas_tensor_canonicalize(
+    "T(i,j)*T(j,i)", "T:symmetric", NULL, NULL);
+printf("规范形式: %s\n", canon);
+ocas_string_free(canon);
+</code></pre>
+<hr />
+<h3 id="ocas_young_project"><a class="header" href="#ocas_young_project"><code>ocas_young_project</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_young_project(const char *expr_str, const char *tableau_str, int *err);
+</code></pre>
+<p><strong>功能</strong>：对张量表达式应用 Young 投影子（0.22.0）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>expr_str</code></td><td><code>const char*</code></td><td>张量表达式，如 <code>"f(a,b)"</code></td></tr>
+<tr><td><code>tableau_str</code></td><td><code>const char*</code></td><td>逗号分隔的行长度，如 <code>"2,1"</code> 表示 □□/□</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：堆分配的展开表达式字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">// 全反对称投影（(1,1,1) Young 表，三指标）
+char *proj = ocas_young_project("f(a,b,c)", "1,1,1", NULL);
+printf("投影结果: %s\n", proj);
+ocas_string_free(proj);
+</code></pre>
+<hr />
+<h3 id="ocas_tensor_refresh_dummies"><a class="header" href="#ocas_tensor_refresh_dummies"><code>ocas_tensor_refresh_dummies</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_tensor_refresh_dummies(const char *expr_str, const char *specs_str, int *err);
+</code></pre>
+<p><strong>功能</strong>：重命名张量表达式中的哑指标（恰好出现两次的标签）为 <code>d0</code>、<code>d1</code>、… 以避免冲突（0.22.0）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>expr_str</code></td><td><code>const char*</code></td><td>张量表达式</td></tr>
+<tr><td><code>specs_str</code></td><td><code>const char*</code></td><td><code>name:sym</code> 对</td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：堆分配字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<hr />
+<h3 id="c-包装ocastensor"><a class="header" href="#c-包装ocastensor">C++ 包装：<code>ocas::tensor::*</code></a></h3>
+<pre><code class="language-cpp">std::string canon = ocas::tensor::canonicalize("T(i,j)*T(j,i)", "T:symmetric");
+std::string proj = ocas::tensor::young_project("f(a,b,c)", "2,1");
+std::string fresh = ocas::tensor::refresh_dummies("T(i,j)*U(j,i)", "T:none,U:none");
+</code></pre>
+<p>所有包装在错误时抛出 <code>ocas::Error</code>。</p>
+<hr />
+<h2 id="11-双数14-个函数"><a class="header" href="#11-双数14-个函数">11. 双数（14 个函数）</a></h2>
+<p>超对偶数（前向自动微分），仅支持 <code>Rational</code> 系数。多项式/有理算术。</p>
+<h3 id="系数字符串格式"><a class="header" href="#系数字符串格式">系数字符串格式</a></h3>
+<p>有理数以 <code>"num"</code>（分母为 1）或 <code>"num/den"</code> 传递。返回字符串使用相同格式。</p>
+<h3 id="ocas_dual_shape_new"><a class="header" href="#ocas_dual_shape_new"><code>ocas_dual_shape_new</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasDualShape *ocas_dual_shape_new(size_t n_vars, int *err);
+</code></pre>
+<p><strong>功能</strong>：创建一阶形状，跟踪 <code>n_vars</code> 个变量的导数。</p>
+<p><strong>返回值</strong>：<code>OcasDualShape*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasDualShape *shape = ocas_dual_shape_new(2, NULL);  // 2 个变量
+printf("变量数: %zu, 分量数: %zu\n",
+       ocas_dual_shape_n_vars(shape),
+       ocas_dual_shape_n_components(shape));
+// 输出：变量数: 2, 分量数: 3
+ocas_dual_shape_free(shape);
+</code></pre>
+<hr />
+<h3 id="ocas_dual_shape_free"><a class="header" href="#ocas_dual_shape_free"><code>ocas_dual_shape_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_dual_shape_free(OcasDualShape *s);
+</code></pre>
+<p><strong>功能</strong>：释放形状句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_dual_shape_n_vars"><a class="header" href="#ocas_dual_shape_n_vars"><code>ocas_dual_shape_n_vars</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_dual_shape_n_vars(const OcasDualShape *s);
+</code></pre>
+<p><strong>功能</strong>：返回微分变量数。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_dual_shape_n_components"><a class="header" href="#ocas_dual_shape_n_components"><code>ocas_dual_shape_n_components</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_dual_shape_n_components(const OcasDualShape *s);
+</code></pre>
+<p><strong>功能</strong>：返回总分量数（值 + 各偏导）。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_dual_variable"><a class="header" href="#ocas_dual_variable"><code>ocas_dual_variable</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_variable(const OcasDualShape *shape, size_t i,
+                                  const char *coeff, int *err);
+</code></pre>
+<p><strong>功能</strong>：创建独立变量 $x_i = \text{coeff}$（对变量 $i$ 的导数为 1）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>const OcasDualShape*</code></td><td>非空形状句柄</td></tr>
+<tr><td><code>i</code></td><td><code>size_t</code></td><td>变量索引（$0 \le i &lt; \text{n_vars}$）</td></tr>
+<tr><td><code>coeff</code></td><td><code>const char*</code></td><td>系数字符串 <code>"num"</code> 或 <code>"num/den"</code></td></tr>
+<tr><td><code>err</code></td><td><code>int*</code></td><td>可为 <code>NULL</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasHyperDual*</code> 句柄或 <code>NULL</code>。</p>
+<hr />
+<h3 id="ocas_dual_constant"><a class="header" href="#ocas_dual_constant"><code>ocas_dual_constant</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_constant(const OcasDualShape *shape,
+                                  const char *coeff, int *err);
+</code></pre>
+<p><strong>功能</strong>：创建常量双数（所有导数为零）。</p>
+<hr />
+<h3 id="ocas_hyperdual_free"><a class="header" href="#ocas_hyperdual_free"><code>ocas_hyperdual_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_hyperdual_free(OcasHyperDual *d);
+</code></pre>
+<p><strong>功能</strong>：释放超对偶数句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_dual_value"><a class="header" href="#ocas_dual_value"><code>ocas_dual_value</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_dual_value(const OcasHyperDual *d, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回标量值分量的堆分配字符串。调用方用 <code>ocas_string_free()</code> 释放。</p>
+<hr />
+<h3 id="ocas_dual_deriv"><a class="header" href="#ocas_dual_deriv"><code>ocas_dual_deriv</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">char *ocas_dual_deriv(const OcasHyperDual *d, size_t i, int *err);
+</code></pre>
+<p><strong>功能</strong>：返回关于变量 $i$ 的偏导数的堆分配字符串。形状无 $i$ 的一阶分量时返回 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasDualShape *shape = ocas_dual_shape_new(2, NULL);
+OcasHyperDual *x = ocas_dual_variable(shape, 0, "3", NULL);   // x₀ = 3
+OcasHyperDual *y = ocas_dual_variable(shape, 1, "5", NULL);   // x₁ = 5
+OcasHyperDual *prod = ocas_dual_mul(x, y, NULL);               // f = x₀·x₁
+
+char *val = ocas_dual_value(prod, NULL);
+char *df_dx = ocas_dual_deriv(prod, 0, NULL);  // ∂f/∂x₀ = x₁ = 5
+char *df_dy = ocas_dual_deriv(prod, 1, NULL);  // ∂f/∂x₁ = x₀ = 3
+
+printf("f = %s, ∂f/∂x₀ = %s, ∂f/∂x₁ = %s\n", val, df_dx, df_dy);
+// 输出：f = 15, ∂f/∂x₀ = 5, ∂f/∂x₁ = 3
+
+ocas_string_free(val);
+ocas_string_free(df_dx);
+ocas_string_free(df_dy);
+ocas_hyperdual_free(prod);
+ocas_hyperdual_free(y);
+ocas_hyperdual_free(x);
+ocas_dual_shape_free(shape);
+</code></pre>
+<hr />
+<h3 id="ocas_dual_add"><a class="header" href="#ocas_dual_add"><code>ocas_dual_add</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_add(const OcasHyperDual *a, const OcasHyperDual *b, int *err);
+</code></pre>
+<p><strong>功能</strong>：计算 $a + b$。两个操作数必须共享同一形状。</p>
+<p><strong>返回值</strong>：新句柄或 <code>NULL</code>。</p>
+<hr />
+<h3 id="ocas_dual_sub"><a class="header" href="#ocas_dual_sub"><code>ocas_dual_sub</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_sub(const OcasHyperDual *a, const OcasHyperDual *b, int *err);
+</code></pre>
+<p><strong>功能</strong>：计算 $a - b$。</p>
+<hr />
+<h3 id="ocas_dual_mul"><a class="header" href="#ocas_dual_mul"><code>ocas_dual_mul</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_mul(const OcasHyperDual *a, const OcasHyperDual *b, int *err);
+</code></pre>
+<p><strong>功能</strong>：计算 $a \times b$。通过乘积法则自动传播导数。</p>
+<hr />
+<h3 id="ocas_dual_div"><a class="header" href="#ocas_dual_div"><code>ocas_dual_div</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_div(const OcasHyperDual *a, const OcasHyperDual *b, int *err);
+</code></pre>
+<p><strong>功能</strong>：计算 $a / b$。若 $b$ 的值分量为零，设置 <code>OCAS_ERROR_DIVISION_BY_ZERO</code> 并返回 <code>NULL</code>。</p>
+<hr />
+<h3 id="ocas_dual_neg"><a class="header" href="#ocas_dual_neg"><code>ocas_dual_neg</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasHyperDual *ocas_dual_neg(const OcasHyperDual *a, int *err);
+</code></pre>
+<p><strong>功能</strong>：计算 $-a$。</p>
+<hr />
+<h2 id="12-gröbner8-个函数"><a class="header" href="#12-gröbner8-个函数">12. Gröbner（8 个函数）</a></h2>
+<p>Gröbner 基计算和多项式系统求解。</p>
+<blockquote>
+<p><strong>⚠️ 非标准约定</strong></p>
+<ul>
+<li>这些函数<strong>未包含在 <code>ocas.h</code> 头文件中</strong>，需自行声明原型。</li>
+<li>错误码使用 <code>-1</code> 而非 <code>OCAS_*</code> 常量。</li>
+<li><code>OcasGroebnerBasis</code> 和 <code>OcasSystemSolution</code> 句柄<strong>未标记</strong> <code>#[repr(C)]</code>。</li>
+</ul>
+</blockquote>
+<h3 id="多项式数据格式"><a class="header" href="#多项式数据格式">多项式数据格式</a></h3>
+<p>多项式通过系数数组传递：每个多项式由以下部分指定：</p>
+<ul>
+<li><code>n_vars</code> — 变量数</li>
+<li><code>n_terms</code> — 项数</li>
+<li><code>exponents</code> — 展平的指数矩阵（<code>n_terms × n_vars</code>，行优先）</li>
+<li><code>coeff_nums</code> / <code>coeff_dens</code> — 有理系数的分子/分母数组</li>
+</ul>
+<h3 id="ocas_groebner_basis"><a class="header" href="#ocas_groebner_basis"><code>ocas_groebner_basis</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasGroebnerBasis *ocas_groebner_basis(
+    size_t n_polys,
+    const size_t *n_vars_array,
+    const size_t *n_terms_array,
+    const size_t *exponents,
+    const int64_t *coeff_nums,
+    const int64_t *coeff_dens,
+    int32_t algorithm,
+    int32_t *err
+);
+</code></pre>
+<p><strong>功能</strong>：从多项式数据数组计算 Gröbner 基。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_polys</code></td><td><code>size_t</code></td><td>多项式个数</td></tr>
+<tr><td><code>n_vars_array</code></td><td><code>const size_t*</code></td><td>每个多项式的变量数</td></tr>
+<tr><td><code>n_terms_array</code></td><td><code>const size_t*</code></td><td>每个多项式的项数</td></tr>
+<tr><td><code>exponents</code></td><td><code>const size_t*</code></td><td>展平指数矩阵</td></tr>
+<tr><td><code>coeff_nums</code></td><td><code>const int64_t*</code></td><td>有理系数分子</td></tr>
+<tr><td><code>coeff_dens</code></td><td><code>const int64_t*</code></td><td>有理系数分母</td></tr>
+<tr><td><code>algorithm</code></td><td><code>int32_t</code></td><td>算法选择：<code>0</code> = Auto, <code>1</code> = F4, <code>2</code> = F5, <code>3</code> = Buchberger</td></tr>
+<tr><td><code>err</code></td><td><code>int32_t*</code></td><td>错误码（<code>-1</code> 表示失败）。<strong>注意</strong>：与其余 C API 不同，此指针不可为 <code>NULL</code>——为 <code>NULL</code> 时函数直接返回 <code>NULL</code> 且不计算</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>OcasGroebnerBasis*</code> 句柄或 <code>NULL</code>。</p>
+<p><strong>内存</strong>：调用方用 <code>ocas_groebner_basis_free()</code> 释放。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">// 计算 {x² + y - 1, x + y² - 1} 的 Gröbner 基
+size_t n_vars[] = {2, 2};
+size_t n_terms[] = {2, 2};
+// x² + y - 1: exponents = [[2,0],[0,1],[0,0]]
+// x + y² - 1: exponents = [[1,0],[0,2],[0,0]]
+size_t exps[] = {2,0, 0,1, 0,0,
+                 1,0, 0,2, 0,0};
+int64_t nums[] = {1, 1, -1,  1, 1, -1};
+int64_t dens[] = {1, 1,  1,  1, 1,  1};
+
+int32_t err = 0;
+OcasGroebnerBasis *gb = ocas_groebner_basis(
+    2, n_vars, n_terms, exps, nums, dens, 0, &amp;err);
+if (gb) {
+    printf("基有 %zu 个元素\n", ocas_groebner_basis_len(gb));
+    printf("零维？%s\n", ocas_is_zero_dimensional(gb) ? "是" : "否");
+    ocas_groebner_basis_free(gb);
+}
+</code></pre>
+<hr />
+<h3 id="ocas_groebner_basis_free"><a class="header" href="#ocas_groebner_basis_free"><code>ocas_groebner_basis_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_groebner_basis_free(OcasGroebnerBasis *gb);
+</code></pre>
+<p><strong>功能</strong>：释放 Gröbner 基句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h3 id="ocas_groebner_basis_len"><a class="header" href="#ocas_groebner_basis_len"><code>ocas_groebner_basis_len</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_groebner_basis_len(const OcasGroebnerBasis *gb);
+</code></pre>
+<p><strong>功能</strong>：返回 Gröbner 基中的元素数。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_is_zero_dimensional"><a class="header" href="#ocas_is_zero_dimensional"><code>ocas_is_zero_dimensional</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">bool ocas_is_zero_dimensional(const OcasGroebnerBasis *gb);
+</code></pre>
+<p><strong>功能</strong>：检查理想是否为零维。<code>NULL</code> 返回 <code>false</code>。</p>
+<hr />
+<h3 id="ocas_solve_polynomial_system"><a class="header" href="#ocas_solve_polynomial_system"><code>ocas_solve_polynomial_system</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasSystemSolution *ocas_solve_polynomial_system(
+    size_t n_polys,
+    const size_t *n_vars_array,
+    const size_t *n_terms_array,
+    const size_t *exponents,
+    const int64_t *coeff_nums,
+    const int64_t *coeff_dens,
+    int32_t algorithm,
+    int32_t *err
+);
+</code></pre>
+<p><strong>功能</strong>：求解多项式方程组。返回句柄或 <code>NULL</code>。</p>
+<p><strong>参数</strong>：同 <code>ocas_groebner_basis</code>。</p>
+<p><strong>内存</strong>：调用方用 <code>ocas_system_solution_free()</code> 释放。</p>
+<hr />
+<h3 id="ocas_system_solution_count"><a class="header" href="#ocas_system_solution_count"><code>ocas_system_solution_count</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">size_t ocas_system_solution_count(const OcasSystemSolution *sol);
+</code></pre>
+<p><strong>功能</strong>：返回解的个数。非零维或空解返回 <code>0</code>。<code>NULL</code> 返回 <code>0</code>。</p>
+<hr />
+<h3 id="ocas_system_solution_value"><a class="header" href="#ocas_system_solution_value"><code>ocas_system_solution_value</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">double ocas_system_solution_value(const OcasSystemSolution *sol,
+                                  size_t sol_idx, size_t var_idx);
+</code></pre>
+<p><strong>功能</strong>：获取特定解的特定变量值。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>sol</code></td><td><code>const OcasSystemSolution*</code></td><td>非空解句柄</td></tr>
+<tr><td><code>sol_idx</code></td><td><code>size_t</code></td><td>解的索引</td></tr>
+<tr><td><code>var_idx</code></td><td><code>size_t</code></td><td>变量的索引</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>f64</code> 值。越界或错误返回 <code>0.0</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">OcasSystemSolution *sol = ocas_solve_polynomial_system(
+    2, n_vars, n_terms, exps, nums, dens, 0, &amp;err);
+if (sol) {
+    size_t count = ocas_system_solution_count(sol);
+    printf("找到 %zu 个解\n", count);
+    for (size_t i = 0; i &lt; count; i++) {
+        printf("解 %zu: x = %g, y = %g\n", i,
+               ocas_system_solution_value(sol, i, 0),
+               ocas_system_solution_value(sol, i, 1));
+    }
+    ocas_system_solution_free(sol);
+}
+</code></pre>
+<hr />
+<h3 id="ocas_system_solution_free"><a class="header" href="#ocas_system_solution_free"><code>ocas_system_solution_free</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">void ocas_system_solution_free(OcasSystemSolution *sol);
+</code></pre>
+<p><strong>功能</strong>：释放解句柄。<code>NULL</code> 安全。</p>
+<hr />
+<h2 id="完整示例"><a class="header" href="#完整示例">完整示例</a></h2>
+<h3 id="c符号微分与求值"><a class="header" href="#c符号微分与求值">C：符号微分与求值</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;assert.h&gt;
+
+int main(void) {
+    int err = 0;
+
+    // 解析表达式
+    OcasExpr *f = ocas_expr_parse("x^3 - 6*x^2 + 11*x - 6", &amp;err);
+    assert(f != NULL);
+
+    // 求导
+    OcasExpr *df = ocas_expr_diff(f, "x", &amp;err);
+    assert(df != NULL);
+
+    // 化简
+    OcasExpr *simplified = ocas_expr_simplify(df, &amp;err);
+    assert(simplified != NULL);
+
+    char *s = ocas_expr_to_string(simplified, &amp;err);
+    printf("f'(x) = %s\n", s);  // 输出：f'(x) = 11 + (-12*x) + (3*(x^2))
+
+    // 清理
+    ocas_string_free(s);
+    ocas_expr_free(simplified);
+    ocas_expr_free(df);
+    ocas_expr_free(f);
+
+    return 0;
+}
+</code></pre>
+<p>编译：</p>
+<pre><code class="language-bash">gcc example.c -locas -o example
+</code></pre>
+<h3 id="c自动微分双数"><a class="header" href="#c自动微分双数">C：自动微分（双数）</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    int err = 0;
+
+    // f(x,y) = x² + 2xy + y²，在 (3, 5) 处求值与偏导
+    OcasDualShape *shape = ocas_dual_shape_new(2, &amp;err);
+    OcasHyperDual *x = ocas_dual_variable(shape, 0, "3", &amp;err);   // x₀ = 3
+    OcasHyperDual *y = ocas_dual_variable(shape, 1, "5", &amp;err);   // x₁ = 5
+
+    OcasHyperDual *x2 = ocas_dual_mul(x, x, &amp;err);       // x², ∂/∂x = 6
+    OcasHyperDual *xy = ocas_dual_mul(x, y, &amp;err);       // xy,  ∂/∂x = 5
+    OcasHyperDual *y2 = ocas_dual_mul(y, y, &amp;err);       // y²,  ∂/∂y = 10
+    OcasHyperDual *two_xy = ocas_dual_add(xy, xy, &amp;err);
+    OcasHyperDual *a = ocas_dual_add(x2, two_xy, &amp;err);
+    OcasHyperDual *f = ocas_dual_add(a, y2, &amp;err);
+
+    char *v = ocas_dual_value(f, &amp;err);
+    char *dfx = ocas_dual_deriv(f, 0, &amp;err);
+    char *dfy = ocas_dual_deriv(f, 1, &amp;err);
+    printf("f(3,5) = %s, ∂f/∂x = %s, ∂f/∂y = %s\n", v, dfx, dfy);
+
+    ocas_string_free(v);
+    ocas_string_free(dfx);
+    ocas_string_free(dfy);
+    ocas_hyperdual_free(f);
+    ocas_hyperdual_free(a);
+    ocas_hyperdual_free(two_xy);
+    ocas_hyperdual_free(y2);
+    ocas_hyperdual_free(xy);
+    ocas_hyperdual_free(x2);
+    ocas_hyperdual_free(y);
+    ocas_hyperdual_free(x);
+    ocas_dual_shape_free(shape);
+    return 0;
+}
+</code></pre>
+<blockquote>
+<p><strong>注意</strong>：双数域在 <code>ocas.hpp</code> 中<strong>没有</strong> C++ RAII 包装，必须直接使用上述 C API。</p>
+</blockquote>
+<h3 id="c数论"><a class="header" href="#c数论">C：数论</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    int err = 0;
+
+    // 素因数分解
+    char *f = ocas_ntheory_factorint("360", &amp;err);
+    printf("360 = %s\n", f);  // 2:3,3:2,5:1
+    ocas_string_free(f);
+
+    // 素性测试
+    printf("997 是素数？%s\n", ocas_ntheory_isprime("997", &amp;err) ? "是" : "否");
+
+    // 中国剩余定理
+    char *r = ocas_ntheory_crt("3,5,7", "2,3,2", &amp;err);
+    printf("CRT: %s\n", r);  // 23,105
+    ocas_string_free(r);
+
+    // Euler totient
+    char *t = ocas_ntheory_totient("100", &amp;err);
+    printf("φ(100) = %s\n", t);  // 40
+    ocas_string_free(t);
+
+    return 0;
+}
+</code></pre>
+<hr />
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./rust.html">Rust API 参考</a> — Rust 公共 API 总览</li>
+<li><a href="./python.html">Python API 参考</a> — Python 绑定文档</li>
+<li><a href="../architecture.html">架构</a> — 项目架构概览</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/python.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/python.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

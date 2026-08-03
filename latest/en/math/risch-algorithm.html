@@ -1,0 +1,639 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Higher: The Risch Integration Algorithm - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html" class="active"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/risch-algorithm.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="the-risch-integration-algorithm"><a class="header" href="#the-risch-integration-algorithm">The Risch Integration Algorithm</a></h1>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<ul>
+<li><a href="./polynomial-algebra.html">Polynomial Algebra</a> — polynomial rings, factorization, resultants</li>
+<li><a href="./finite-fields.html">Finite Fields &amp; Modular Arithmetic</a> — modular inverses and the extended Euclidean algorithm</li>
+<li><a href="./linear-algebra.html">Linear Algebra</a> — Gaussian elimination and determinants</li>
+<li><a href="./symbolic-calculus.html">Symbolic Calculus</a> — differentiation rules and the chain rule</li>
+<li><a href="./poly-gcd-factoring.html">Polynomial GCD &amp; Factorization</a> — square-free factorization and Hensel lifting</li>
+</ul>
+<hr />
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="the-precise-definition-of-elementary-functions"><a class="header" href="#the-precise-definition-of-elementary-functions">The Precise Definition of Elementary Functions</a></h3>
+<p>The term "elementary function" is usually used intuitively in calculus textbooks. The Risch algorithm requires a precise definition:</p>
+<p><strong>Definition 1</strong> (Field of constants). Let $k$ be a differential field of characteristic zero with derivation denoted by $D$. The most basic field of constants is $\mathbb{Q}$, on which $D = 0$.</p>
+<p><strong>Definition 2</strong> (Elementary extension). Let $k$ be a differential field and $K$ an extension field of $k$. $K/k$ is called an <strong>elementary extension</strong> if $K$ is generated from $k$ by a finite chain of extensions of the following three types:</p>
+<ol>
+<li><strong>Algebraic extension</strong>: $K = k(\alpha)$, where $\alpha$ is algebraic over $k$ (i.e. $\alpha$ is a root of some polynomial in $k[x]$). For example $\mathbb{Q}(\sqrt{2})/\mathbb{Q}$.</li>
+<li><strong>Logarithmic extension</strong>: $K = k(t)$, where $Dt = Du / u$ for some $u \in k^*$, i.e. $t = \log(u)$. Derivation rule: $D(\log u) = Du/u$.</li>
+<li><strong>Exponential extension</strong>: $K = k(t)$, where $Dt / t = Du$ for some $u \in k$, i.e. $t = \exp(u)$. Derivation rule: $D(\exp u) = \exp(u) \cdot Du$.</li>
+</ol>
+<p><strong>Definition 3</strong> (Elementary function). An <strong>elementary function</strong> over a field $k$ is an element of some elementary extension tower $k = k_0 \subset k_1 \subset \cdots \subset k_n$ in which each $k_{i+1}/k_i$ is one of the three types above.</p>
+<p><strong>Theorem</strong> (Liouville, 1835). Let $f$ be an elementary function over $k$. Then $f$ has an elementary antiderivative over $k$ if and only if it can be written as</p>
+<p>$$f = Dv + \sum_{i=1}^{n} c_i \cdot \frac{Du_i}{u_i}$$</p>
+<p>where $v, u_1, \dots, u_n \in k$ and $c_1, \dots, c_n$ are $D$-constants (i.e. $Dc_i = 0$).</p>
+<p>The deep significance of this theorem is that if an elementary function has an antiderivative, the only "new" parts of it can be constant multiples of logarithms. This is the theoretical foundation of the Risch algorithm.</p>
+<h3 id="differential-fields"><a class="header" href="#differential-fields">Differential Fields</a></h3>
+<p><strong>Definition 4</strong> (Differential field). A <strong>differential field</strong> is a field $k$ equipped with a derivation $D: k \to k$ satisfying:</p>
+<ul>
+<li><strong>Additivity</strong>: $D(a + b) = Da + Db$</li>
+<li><strong>Leibniz rule</strong>: $D(a \cdot b) = a \cdot Db + Da \cdot b$</li>
+</ul>
+<p>The kernel of the derivation ${c \in k : Dc = 0}$ is called the <strong>field of constants</strong>, denoted $C_k$ or $k^D$.</p>
+<p>In the context of the Risch algorithm:</p>
+<ul>
+<li>The base field is $k_0 = \mathbb{Q}(x)$ with $D = d/dx$ (differentiation with respect to the integration variable $x$); its field of constants is $C_{k_0} = \mathbb{Q}$.</li>
+<li>A logarithmic extension $k(t) = k(\log u)$ has $Dt = Du/u$.</li>
+<li>An exponential extension $k(t) = k(\exp u)$ has $Dt = t \cdot Du$.</li>
+</ul>
+<p><strong>Key fact</strong>: in an elementary extension tower the field of constants stays the same: $C_{k_n} = C_{k_0} = \mathbb{Q}$. This property is used implicitly by the algorithm — when we say "rational constant", we mean an element of $\mathbb{Q}$.</p>
+<hr />
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="constructing-the-differential-field-tower"><a class="header" href="#constructing-the-differential-field-tower">Constructing the Differential-Field Tower</a></h3>
+<p>Given an integrand $f$ (an elementary function expression), the first step of the Risch algorithm is to construct the differential-field tower in which it "lives".</p>
+<p><strong>Algorithm</strong> <code>build_tower(f, var)</code>:</p>
+<ol>
+<li><strong>Collect function symbols</strong>: scan the expression tree of $f$ and collect all function applications (<code>log</code>, <code>exp</code>).</li>
+<li><strong>Order them</strong>: sort by dependency — if $t_2 = \exp(\log(x) + 1)$, then $t_1 = \log(x)$ must come before $t_2$.</li>
+<li><strong>Detect algebraic dependence</strong>: for each candidate generator $t_i$, check whether it is algebraically dependent over the tower built so far. The conservative strategy is:
+<ul>
+<li>$\log(c \cdot u)$ and $\log(u)$ (with $c$ a rational constant) → algebraically dependent ($\log(c \cdot u) = \log(u) + \log(c)$)</li>
+<li>$\exp(u + c)$ and $\exp(u)$ (with $c$ a rational constant) → algebraically dependent ($\exp(u + c) = e^c \cdot \exp(u)$)</li>
+<li>otherwise reject (conservative strategy: rather reject a true dependence than merge incorrectly)</li>
+</ul>
+</li>
+<li><strong>Reject non-integral powers</strong>: if $f$ contains non-integral powers such as $\sqrt{x}$ (i.e. algebraic functions), reject (return <code>None</code>).</li>
+<li><strong>Compute derivatives</strong>: for each generator $t_i$, compute $Dt_i$ (with respect to $D = d/dx$):
+<ul>
+<li>$t_i = \log(u)$: $Dt_i = Du / u$ (compute $Du$ recursively)</li>
+<li>$t_i = \exp(u)$: $Dt_i = t_i \cdot Du$</li>
+</ul>
+</li>
+</ol>
+<p>In oCAS, <code>build_tower</code> lives in <code>ocas-calc/src/tower/build.rs</code>. It returns a <code>Tower</code> struct containing the list of generators <code>gens: Vec&lt;GenInfo&gt;</code> (each with kind, atom reference, and derivative) and the field-of-constants information.</p>
+<p><strong>Representation of field elements</strong>: elements of the tower are represented by numerator/denominator pairs of <strong>sparse multivariate polynomials</strong> (<code>SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;</code>):</p>
+<ul>
+<li><code>KElem</code> (k-element): <code>{ num: Sparse, den: Sparse }</code>, representing an element $p/q$ of $k_\ell$</li>
+<li><code>KPoly</code> (k-polynomial): a univariate polynomial in the top-level generator $t_\ell$ with coefficients in <code>KElem</code></li>
+<li><code>KRat</code> (k-rational function): <code>{ num: KPoly, den: KPoly }</code>, representing a rational function in $k_\ell(t_\ell)$</li>
+</ul>
+<p><strong>Example.</strong> For $f = x \cdot \exp(x) + \log(x)$:</p>
+<div class="table-wrapper"><table><thead><tr><th>Level</th><th>Field</th><th>Generator</th><th>Derivation</th></tr></thead><tbody>
+<tr><td>$k_0$</td><td>$\mathbb{Q}(x)$</td><td>$x$</td><td>$Dx = 1$</td></tr>
+<tr><td>$k_1$</td><td>$k_0(t_1)$, $t_1 = \log(x)$</td><td>$t_1$</td><td>$Dt_1 = 1/x$</td></tr>
+<tr><td>$k_2$</td><td>$k_1(t_2)$, $t_2 = \exp(x)$</td><td>$t_2$</td><td>$Dt_2 = t_2$</td></tr>
+</tbody></table>
+</div>
+<h3 id="level-by-level-integration-the-overall-framework"><a class="header" href="#level-by-level-integration-the-overall-framework">Level-by-Level Integration: The Overall Framework</a></h3>
+<p>The core of the Risch algorithm is <strong>top-down recursion through the levels</strong>. At each level $\ell$ of the tower, the integrand $f$ is viewed as a rational function in $k_{\ell-1}(t_\ell)$.</p>
+<p><strong>Algorithm</strong> <code>integrate_level(tower, level, f)</code>:</p>
+<p>Write $f = a/d \in k_\ell(t_\ell)$ with $a, d \in k_\ell[t_\ell]$ and $\gcd(a, d) = 1$.</p>
+<ol>
+<li><strong>Hermite reduction</strong> (split off the rational part): decompose $a/d$ as</li>
+</ol>
+<p>$$\frac{a}{d} = Dg + \frac{a_1}{d_1}$$</p>
+<p>where $g \in k_\ell(t_\ell)$ has an explicit antiderivative and $d_1$ is square-free.</p>
+<ol start="2">
+<li>
+<p><strong>Integrate the polynomial part</strong>: if the polynomial part of $a/d$ is $p(t_\ell) \in k_\ell[t_\ell]$, integrate it according to the type of the generator:</p>
+<ul>
+<li><strong>Primitive level</strong> ($t_\ell = \log u$): the method of undetermined coefficients</li>
+<li><strong>Hyperexponential level</strong> ($t_\ell = \exp u$): the Risch differential equation</li>
+</ul>
+</li>
+<li>
+<p><strong>Integrate the logarithmic part</strong>: for $a_1/d_1$ ($d_1$ square-free), check whether it matches the <strong>logarithmic derivative identity</strong>.</p>
+</li>
+<li>
+<p><strong>Base field</strong> $\mathbb{Q}(x)$: delegate to the rational-function integrator.</p>
+</li>
+</ol>
+<p>The results are assembled into <code>LevelResult { elem, logs, extras }</code>, where <code>elem</code> is the field-element part, <code>logs</code> is the logarithmic part of the form $\sum c_i \log(v_i)$, and <code>extras</code> is the part that could not be integrated.</p>
+<h3 id="hermite-reduction"><a class="header" href="#hermite-reduction">Hermite Reduction</a></h3>
+<p><strong>Goal</strong>: decompose a rational function $a/d$ into an "already integrated" part plus a "simpler" remainder (the denominator of the remainder is square-free).</p>
+<p><strong>Algorithm</strong> (Hermite reduction as in Bronstein ch. 2; oCAS uses the square-free-factorization recursive form):</p>
+<p>Let $a/d$ be a proper fraction ($\deg a &lt; \deg d$) with $d$ monic.</p>
+<ol>
+<li>Compute the square-free factorization $d = \prod_j v_j^{m_j}$. If the maximum multiplicity is $m \leq 1$, then $d$ is already square-free; return $(0, a, d)$.</li>
+<li>Pick a factor $v$ of maximum multiplicity ($= m \geq 2$) and write $d = u \cdot v^m$.</li>
+<li>Let $B = u \cdot Dv$ (the derivative under the tower derivation; over the base field this is $u \cdot v'$). Use the extended Euclidean algorithm to find $s, t$ with $s \cdot B + t \cdot v = a$ ($s$ reduced modulo $v$).</li>
+<li>Recurrence formula:
+$$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdot D\bigl(s/(m-1)\bigr)}{u, v^{m-1}}$$</li>
+<li>Recurse on the remainder $\dfrac{t + u \cdot D(s/(m-1))}{u, v^{m-1}}$ until the denominator is square-free.</li>
+</ol>
+<p>Here $D!\left(\frac{-s}{(m-1) v^{m-1}}\right)$ has the explicit antiderivative $\frac{-s}{(m-1) v^{m-1}}$ itself, and the denominator $d_1$ of the final remainder $a_1/d_1$ is square-free. Each iteration lowers the maximum multiplicity by one, so at most $m$ iterations are needed.</p>
+<p>In oCAS, Hermite reduction is implemented in two places:</p>
+<ul>
+<li><code>ocas-calc/src/integral/rational.rs</code>: Hermite reduction over the base field $\mathbb{Q}(x)$ (<code>hermite_reduce</code>)</li>
+<li><code>ocas-calc/src/integral/risch.rs</code>: Hermite reduction at an arbitrary tower level (<code>hermite_tower</code>)</li>
+</ul>
+<p><strong>Example</strong>. $\int \frac{1}{(x+1)^2}, dx$:</p>
+<p>$d = (x+1)^2$; its square-free factorization is $(x+1)^2$, so the maximum multiplicity is $m = 2$, $v = x+1$, and $u = 1$. Then $B = u \cdot Dv = 1$, and solving $s \cdot B + t \cdot v = 1$ gives $s = 1$ (mod $v$), $t = 0$. The recurrence yields:</p>
+<p>$$\frac{1}{(x+1)^2} = D!\left(\frac{-1}{x+1}\right) + \frac{0}{x+1}$$</p>
+<p>i.e. $\int = -1/(x+1)$. More generally, $\int a/(x+1)^2$ can always be handled by Hermite reduction.</p>
+<h3 id="the-logarithmic-derivative-identity"><a class="header" href="#the-logarithmic-derivative-identity">The Logarithmic Derivative Identity</a></h3>
+<p><strong>Core idea</strong>: a term of the form $c \cdot \frac{Du}{u}$ has the trivial antiderivative $c \cdot \log(u)$.</p>
+<p><strong>Theorem</strong> (logarithmic derivative identity). Let $f \in k_\ell(t_\ell)$ and let $d_1$ be square-free. If</p>
+<p>$$\frac{a_1}{d_1} = c \cdot \frac{D d_1}{d_1}$$</p>
+<p>for some $D$-constant $c$, then</p>
+<p>$$\int \frac{a_1}{d_1} = c \cdot \log(d_1)$$</p>
+<p>More generally, for a square-free denominator $d_1$, all contributions to the logarithmic part have the form $\sum_i c_i \log(v_i)$, where the $v_i$ are given by the irreducible factors of $d_1$.</p>
+<p><strong>How to check it</strong>: over the base field $\mathbb{Q}(x)$, check whether $a_1$ equals some rational constant $c$ times $d_1'$. At higher tower levels, check whether $a_1$ is a constant of the coefficient field times $d_1'$.</p>
+<p><strong>A more precise method</strong> (Rothstein–Trager resultant): for a general square-free denominator $d(x)$, the logarithmic part of $\int a(x)/d(x),dx$ is given by the <strong>Rothstein–Trager resultant</strong>:</p>
+<p>$$R(t) = \text{Res}_x!\bigl(d(x),; a(x) - t \cdot d'(x)\bigr)$$</p>
+<p>If the roots of $R(t)$ over $\mathbb{Q}$ are $c_1, \dots, c_m$, then</p>
+<p>$$\int \frac{a}{d},dx = \sum_{i=1}^{m} c_i \cdot \log\gcd(d,; a - c_i \cdot d') + C$$</p>
+<p>In the oCAS implementation (<code>rothstein_trager</code>), $R(t)$ is computed by <strong>interpolation</strong> — evaluate the resultant at $t = 0, 1, 2, \dots$ and then recover the polynomial by Lagrange interpolation. When $R(t)$ does not split completely over $\mathbb{Q}$, the corresponding terms are returned in the unevaluated form <code>Integral(term, var)</code>.</p>
+<p><strong>The special case of a quadratic denominator</strong>: when $d(x) = x^2 + bx + c$ (irreducible), completing the square gives:</p>
+<p>$$\int \frac{Ax + B}{x^2 + bx + c},dx = \frac{A}{2}\log(x^2 + bx + c) + \frac{2B - Ab}{\sqrt{4c - b^2}}\arctan!\left(\frac{2x + b}{\sqrt{4c - b^2}}\right)$$</p>
+<p>When $4c - b^2 &lt; 0$ (real-root case), $\arctan$ becomes $\text{artanh}$ (inverse hyperbolic tangent), corresponding to the logarithmic form.</p>
+<h3 id="the-risch-differential-equation"><a class="header" href="#the-risch-differential-equation">The Risch Differential Equation</a></h3>
+<p>The central subproblem of the Risch algorithm is solving the <strong>Risch differential equation</strong> (RDE).</p>
+<p><strong>Problem</strong>. Given elements $f, g$ of the differential field $k_\ell$ (neither containing the top-level variable $t_\ell$), find $q \in k_\ell[t_\ell]$ satisfying:</p>
+<p>$$Dq + f \cdot q = g$$</p>
+<p>where $D$ is the tower derivation (total derivative with respect to $t_\ell$). Note that the coefficients of $f$ and $g$ lie in $k_\ell$ and $q$ is a polynomial in $k_\ell[t_\ell]$.</p>
+<p><strong>Why only polynomial solutions?</strong> Rational-function solutions $q = p/d$ require an additional denominator-bound analysis, a piece not covered by the current oCAS implementation. When <code>None</code> is returned, the caller falls back to other integration methods.</p>
+<h4 id="rde-over-the-base-field-mathbbqx"><a class="header" href="#rde-over-the-base-field-mathbbqx">RDE over the Base Field $\mathbb{Q}(x)$</a></h4>
+<p>Over the base field $k_0 = \mathbb{Q}(x)$, the RDE becomes the ordinary differential equation $q'(x) + f(x) \cdot q(x) = g(x)$.</p>
+<p><strong>Algorithm</strong> (<code>base_rde</code>):</p>
+<ol>
+<li><strong>Degree bound</strong>: let $\deg f = p$ and $\deg g = r$. If $f = 0$, integrate directly, giving $\deg q = r + 1$; if $f$ is a nonzero constant ($p = 0$), then $\deg q = r$; if $p \geq 1$, the leading term of $f \cdot q$ (of degree $p + \deg q$) dominates $\deg(q') \leq \deg q - 1$, so $\deg q = r - p$ (uniquely determined).</li>
+<li><strong>Undetermined coefficients</strong>: write $q = \sum_{i=0}^{n} a_i x^i$ and substitute into the equation.</li>
+<li><strong>Eliminate from high to low degree</strong>: compare the coefficients of the powers of $x$ and determine the $a_i$ one by one. Each $a_i$ is either determined uniquely or contradictory (the antiderivative does not exist).</li>
+</ol>
+<p><strong>Example</strong>. Solve $q' + q = x$ ($f = 1, g = x$):</p>
+<p>Write $q = a_1 x + a_0$. Then $q' = a_1$. Substituting: $a_1 + a_1 x + a_0 = x$.</p>
+<p>Comparing coefficients: $x^1: a_1 = 1$; $x^0: a_1 + a_0 = 0 \Rightarrow a_0 = -1$.</p>
+<p>Solution: $q = x - 1$. Verification: $(x-1)' + (x-1) = 1 + x - 1 = x$ ✓</p>
+<p>This gives $\int x \cdot e^x,dx = (x - 1) e^x$ (at the hyperexponential level).</p>
+<h4 id="rde-at-a-primitive-level"><a class="header" href="#rde-at-a-primitive-level">RDE at a Primitive Level</a></h4>
+<p>At a level with $t_\ell = \log(u)$, the derivation satisfies $Dt_\ell = Du/u \in k_{\ell-1}$ (it does not contain $t_\ell$).</p>
+<p><strong>Property</strong>: $D(a_0 + a_1 t + \cdots + a_m t^m) = Da_0 + Da_1 \cdot t + \cdots + Da_m \cdot t^m + (a_1 + 2a_2 t + \cdots + m a_m t^{m-1}) \cdot Dt$</p>
+<p>Since $Dt$ does not contain $t$ (the key property of a primitive extension), applying $D$ to $k[t]$ <strong>does not change the degree in $t$</strong> (except that the $\partial/\partial t$ part lowers the degree by one).</p>
+<p><strong>Algorithm</strong>: start from the top coefficient $a_m$ of $q$ and <strong>eliminate top-down</strong>:</p>
+<ol>
+<li>Determine $a_m$ from the coefficient of $t^m$ in the equation (an RDE for $a_m$ in $k_{\ell-1}$).</li>
+<li>Substitute and lower the degree; repeat for $a_{m-1}$.</li>
+<li>Finally $a_0$ must satisfy a <strong>logarithmic constraint</strong>: the constant part of $a_0$ must make the logarithmic terms arising in the lower-level integration consistent.</li>
+</ol>
+<p><strong>Recursive structure</strong>: each step produces an RDE over $k_{\ell-1}$; call <code>rde_solve</code> recursively down to the base field.</p>
+<h4 id="rde-at-a-hyperexponential-level"><a class="header" href="#rde-at-a-hyperexponential-level">RDE at a Hyperexponential Level</a></h4>
+<p>At a level with $t_\ell = \exp(u)$, the derivation satisfies $Dt_\ell = t_\ell \cdot Du$.</p>
+<p><strong>Key property</strong>: $Dt = t \cdot Du$ contains $t$, so applying $D$ to $k[t]$ <strong>mixes degrees</strong>:</p>
+<p>$$D(a_i t^i) = (Da_i) t^i + a_i \cdot i \cdot t^i \cdot Du = (Da_i + i \cdot a_i \cdot Du) t^i$$</p>
+<p>i.e. $D(a_i t^i) = (Da_i + i \cdot a_i \cdot Du) \cdot t^i$ — each power $t^i$ is <strong>independent</strong>!</p>
+<p><strong>Decoupling property</strong>: substituting $q = \sum a_i t^i$ and $g = \sum b_j t^j$ into $Dq + fq = g$ and comparing the coefficient of $t^k$:</p>
+<p>$$Da_k + k \cdot a_k \cdot Du + f \cdot a_k = b_k$$</p>
+<p>i.e.</p>
+<p>$$Da_k + (f + k \cdot Du) \cdot a_k = b_k$$</p>
+<p>This is an RDE over $k_{\ell-1}$ (unknown $a_k$), and the equations for different $k$ are <strong>independent</strong>!</p>
+<p><strong>Algorithm</strong>: for each $k = 0, 1, \dots, \deg g$, solve the RDE</p>
+<p>$$Da_k + (f + k \cdot Du) \cdot a_k = b_k$$</p>
+<p>independently. If some $a_k$ has no solution, the whole equation has no solution. An upper bound for $\deg q$ is given by $\deg g$.</p>
+<p><strong>Example</strong>. $\int x \cdot e^x,dx$: on the tower with $t = e^x$ ($Dt = t$), the integrand is $x \cdot t$.</p>
+<p>The polynomial part is $p(t) = x \cdot t$ ($m = 1$). Comparing the $t^1$ coefficient: $Da_1 + a_1 \cdot 1 = x$, i.e. $a_1' + a_1 = x$. The base-field RDE gives $a_1 = x - 1$. The $t^0$ part is 0.</p>
+<p>Result: $\int = (x-1) \cdot t = (x-1) \cdot e^x$.</p>
+<h3 id="the-method-of-undetermined-coefficients-at-logarithmic-levels"><a class="header" href="#the-method-of-undetermined-coefficients-at-logarithmic-levels">The Method of Undetermined Coefficients at Logarithmic Levels</a></h3>
+<p>When integrating a polynomial $p(t) = \sum a_i t^i$ at a primitive (logarithmic) level $t = \log(u)$, the <strong>method of undetermined coefficients</strong> is used.</p>
+<p><strong>Algorithm</strong> <code>integrate_kpoly_primitive</code>:</p>
+<p>Let the polynomial to be integrated be $p(t) = \sum_{i=0}^{m} a_i t^i$ and guess the antiderivative $q(t) = \sum_{i=0}^{m'} b_i t^i$.</p>
+<ol>
+<li>Set $m' = m + 1$ (the degree of the antiderivative is at most one higher than that of the integrand, because the $\partial/\partial t$ part of $D$ lowers the degree).</li>
+<li>Compute $Dq = \sum (Db_i) t^i + \sum i \cdot b_i \cdot (Du/u) \cdot t^{i-1}$.</li>
+<li>Compare the coefficients of $p = Dq$:
+<ul>
+<li>$t^m$: $a_m = Db_m + (m+1) b_{m+1} \cdot Du/u$</li>
+<li>$\vdots$</li>
+<li>$t^0$: $a_0 = Db_0 + b_1 \cdot Du/u$</li>
+</ul>
+</li>
+<li>Solve downwards starting from $t^{m+1}$. Each $b_i$ may require a recursive call to the integrator (for the $Db_i$ part).</li>
+<li>The determination of $b_0$ is constrained by the <strong>logarithmic constraint</strong>: in the final result, all logarithmic terms $\sum c_j \log(v_j)$ must be consistent. If $b_0$ contains logarithmic terms coming from lower levels that do not satisfy the Liouville condition, there is no solution.</li>
+</ol>
+<h3 id="rewriting-trigonometric-functions-to-complex-exponentials"><a class="header" href="#rewriting-trigonometric-functions-to-complex-exponentials">Rewriting Trigonometric Functions to Complex Exponentials</a></h3>
+<p>The Risch algorithm natively handles only <code>log</code> and <code>exp</code>. Trigonometric functions must first be rewritten in complex-exponential form.</p>
+<p><strong>Euler's formula</strong>:</p>
+<p>$$\sin(u) = \frac{e^{iu} - e^{-iu}}{2i}, \qquad \cos(u) = \frac{e^{iu} + e^{-iu}}{2}$$</p>
+<p>$$\tan(u) = \frac{\sin u}{\cos u} = \frac{e^{iu} - e^{-iu}}{i(e^{iu} + e^{-iu})}$$</p>
+<p>In oCAS, <code>trig_to_exp</code> (<code>ocas-calc/src/integral/trig.rs</code>) walks the expression tree and replaces <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>cot</code>, <code>sec</code>, <code>csc</code> one by one with the equivalent forms above. The imaginary unit $I$ is added to the tower as a constant generator ($DI = 0$).</p>
+<p><strong>Integrating the rewritten form</strong>: the rewritten expression lives in the differential-field tower over $\mathbb{Q}(x, I, e^{Ix}, \dots)$ and can be handled by the Risch algorithm.</p>
+<p><strong>Conversion back to real form</strong> (<code>realify</code>): the result of a Risch integration may contain the imaginary unit. <code>realify</code> attempts to convert the result back into real form:</p>
+<ul>
+<li><strong>Merging conjugate logarithms</strong>: if the result contains $c \cdot \log(u + Iv) + c \cdot \log(u - Iv)$, merge it into $c \cdot \log(u^2 + v^2)$</li>
+<li><strong>Difference of conjugate logarithms</strong>: if it contains $c \cdot \log(u + Iv) - c \cdot \log(u - Iv)$, merge it into $2c \cdot \arctan(v/u)$</li>
+<li><strong>Merging exponentials</strong>: $e^{Iu} \cdot e^{-Iu} = 1$, $e^{Iu} + e^{-Iu} = 2\cos(u)$, etc.</li>
+</ul>
+<p>This is a "best-effort" process. If no known pattern matches, the complex form is kept (it is still mathematically correct, since differentiation-verification still holds).</p>
+<p><strong>Current limitation</strong>: the Risch differential equation solver works over $\mathbb{Q}[x]$, so when trigonometric rewriting produces hyperexponential equations containing $I$ (e.g. the equations arising when integrating $\sin(x)\cos(x)$ or $\cos^2(x)$), the coefficient field extends to $\mathbb{Q}(I)$ rather than $\mathbb{Q}$, and the solver may fail. Such integrands are returned in unevaluated form.</p>
+<h3 id="the-heuristic-layer"><a class="header" href="#the-heuristic-layer">The Heuristic Layer</a></h3>
+<p>Before the Risch algorithm, oCAS tries a set of <strong>heuristic integration techniques</strong> (<code>ocas-calc/src/integral/heuristic.rs</code>). These techniques are fast and cover common patterns.</p>
+<h4 id="integration-by-parts-liate-ordering"><a class="header" href="#integration-by-parts-liate-ordering">Integration by Parts (LIATE Ordering)</a></h4>
+<p>For a product $f \cdot g$, try integration by parts $\int u,dv = uv - \int v,du$.</p>
+<p><strong>LIATE priority</strong> (heuristic rule for choosing $u$):</p>
+<div class="table-wrapper"><table><thead><tr><th>Priority</th><th>Type</th><th>Score</th><th>Example</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>L</strong>ogarithmic</td><td>0</td><td>$\log x$, $\arctan x$</td></tr>
+<tr><td>2</td><td><strong>I</strong>nverse trig</td><td>1</td><td>$\arcsin x$, $\text{arccosh}, x$</td></tr>
+<tr><td>3</td><td><strong>A</strong>lgebraic</td><td>2</td><td>$x^2$, $\sqrt{x}$</td></tr>
+<tr><td>4</td><td><strong>T</strong>rigonometric</td><td>3</td><td>$\sin x$, $\cos x$</td></tr>
+<tr><td>5</td><td><strong>E</strong>xponential</td><td>4</td><td>$e^x$, $2^x$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Algorithm</strong>: for each factor of the product, sort by LIATE score. Choose the factor with the lowest score (highest priority) as $u$, and the rest (integrated to obtain $v$) as $dv$.</p>
+<p><strong>Depth limit</strong>: <code>PARTS_MAX_DEPTH = 2</code>, to prevent infinite recursion.</p>
+<h4 id="trigonometric-substitution"><a class="header" href="#trigonometric-substitution">Trigonometric Substitution</a></h4>
+<p>Match $\sqrt{a^2 - x^2}$, $\sqrt{a^2 + x^2}$, $\sqrt{x^2 - a^2}$ and their reciprocals, and directly return the known antiderivatives:</p>
+<div class="table-wrapper"><table><thead><tr><th>Integrand</th><th>Antiderivative</th></tr></thead><tbody>
+<tr><td>$\frac{1}{\sqrt{a^2 - x^2}}$</td><td>$\arcsin(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{a^2 + x^2}}$</td><td>$\text{arcsinh}(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{x^2 - a^2}}$</td><td>$\text{arccosh}(x/a)$</td></tr>
+<tr><td>$\sqrt{a^2 - x^2}$</td><td>$\frac{x\sqrt{a^2-x^2} + a^2 \arcsin(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{a^2 + x^2}$</td><td>$\frac{x\sqrt{a^2+x^2} + a^2 \text{arcsinh}(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{x^2 - a^2}$</td><td>$\frac{x\sqrt{x^2-a^2} - a^2 \text{arccosh}(x/a)}{2}$</td></tr>
+</tbody></table>
+</div>
+<h4 id="weierstrass-substitution"><a class="header" href="#weierstrass-substitution">Weierstrass Substitution</a></h4>
+<p>For rational functions of $\sin(u)$ and $\cos(u)$ (with $u$ a linear function of $x$), use the universal substitution $t = \tan(u/2)$:</p>
+<p>$$\sin u = \frac{2t}{1+t^2}, \qquad \cos u = \frac{1-t^2}{1+t^2}, \qquad du = \frac{2,dt}{1+t^2}$$</p>
+<p>This reduces the integral of a rational function of trigonometric functions to the integral of a rational function in $t$.</p>
+<h4 id="euler-substitution"><a class="header" href="#euler-substitution">Euler Substitution</a></h4>
+<p>For integrands containing $\sqrt{ax^2 + bx + c}$, choose the Euler substitution according to the sign of $a$:</p>
+<ul>
+<li>$a &gt; 0$: $\sqrt{a},x + t = \sqrt{ax^2 + bx + c}$</li>
+<li>$a &lt; 0$: $t(x - \alpha) = \sqrt{ax^2 + bx + c}$ ($\alpha$ one of the roots)</li>
+<li>$c &gt; 0$: $\sqrt{c} + xt = \sqrt{ax^2 + bx + c}$</li>
+</ul>
+<p>These substitutions reduce integrals of rational functions with square roots to integrals of rational functions.</p>
+<h3 id="the-special-function-table"><a class="header" href="#the-special-function-table">The Special Function Table</a></h3>
+<p>When the Risch algorithm proves that an integral has <strong>no elementary antiderivative</strong>, many common cases still have closed forms in terms of special functions. oCAS encodes these standard antiderivatives directly in <code>ocas-calc/src/integral/special.rs</code> (definitions consistent with SymPy):</p>
+<div class="table-wrapper"><table><thead><tr><th>Integrand</th><th>Antiderivative</th><th>Special function</th></tr></thead><tbody>
+<tr><td>$e^{-x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erf}(x)$</td><td>Error function</td></tr>
+<tr><td>$e^{x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erfi}(x)$</td><td>Imaginary error function</td></tr>
+<tr><td>$e^{cx^2}$ ($c &lt; 0$)</td><td>$\frac{\sqrt{\pi}}{2\sqrt{-c}},\text{erf}(\sqrt{-c},x)$</td><td>Error function</td></tr>
+<tr><td>$e^x / x$</td><td>$\text{Ei}(x)$</td><td>Exponential integral</td></tr>
+<tr><td>$\sin(x)/x$</td><td>$\text{Si}(x)$</td><td>Sine integral</td></tr>
+<tr><td>$\cos(x)/x$</td><td>$\text{Ci}(x)$</td><td>Cosine integral</td></tr>
+<tr><td>$\sinh(x)/x$</td><td>$\text{Shi}(x)$</td><td>Hyperbolic sine integral</td></tr>
+<tr><td>$\cosh(x)/x$</td><td>$\text{Chi}(x)$</td><td>Hyperbolic cosine integral</td></tr>
+<tr><td>$\sin(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},S!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $S$</td></tr>
+<tr><td>$\cos(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},C!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $C$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Matching logic</strong>: <code>special_integrate</code> decomposes the integrand into product factors and tries to match the following pattern families:</p>
+<ul>
+<li><strong>erf family</strong>: $e^{c \cdot x^2}$ ($c &lt; 0$), including the special case $e^{-x^2}$</li>
+<li><strong>Ei family</strong>: $e^x / x$, including the generalization $e^{cx}/x$</li>
+<li><strong>Si/Ci/Shi/Chi family</strong>: trigonometric or hyperbolic functions divided by $x$</li>
+<li><strong>Fresnel family</strong>: $\sin(x^2)$, $\cos(x^2)$</li>
+</ul>
+<p>Note: these are <strong>not</strong> part of the Risch algorithm. After Risch proves "no elementary antiderivative exists", the special-function table provides a "suboptimal" answer.</p>
+<hr />
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<h3 id="the-integration-pipeline-architecture"><a class="header" href="#the-integration-pipeline-architecture">The Integration Pipeline Architecture</a></h3>
+<p><code>integrate(expr, var)</code> (<code>ocas-calc/src/integral/mod.rs</code>) tries the following layers in order; the first layer that produces an answer wins:</p>
+<pre><code>┌────────────────────────────────────────────────────────┐
+│  integrate(expr, var)                                  │
+├────────────────────────────────────────────────────────┤
+│ 1. Lookup table (power rule, linear-argument functions)│
+│     ↓ failure                                          │
+│  2. Rational-function integrator (integrate_rational)  │
+│     ↓ failure                                          │
+│  3. Risch algorithm (risch_integrate)                  │
+│     ↓ failure                                          │
+│  4. Trig rewrite (trig_to_exp) → retry Risch → realify   │
+│     ↓ failure                                          │
+│  5. Special-function table (special_integrate)         │
+│     ↓ failure                                          │
+│  6. Heuristic layer (heuristic_integrate)              │
+│     ↓ failure                                          │
+│  7. Return the unevaluated form Integral(expr, var)    │
+└────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Depth limits</strong>: <code>MAX_DEPTH = 8</code> (the recursion depth of <code>integrate_raw</code>) and <code>MAX_RISCH_DEPTH = 16</code> (the recursion depth of <code>risch_integrate</code>, using a <code>thread_local!</code> counter). These limits prevent stack overflow caused by pathological inputs (e.g. <code>sec(x)</code> triggering infinite VOP retries).</p>
+<h3 id="module-organization"><a class="header" href="#module-organization">Module Organization</a></h3>
+<pre><code>ocas-calc/src/integral/
+├── mod.rs         ← integrate entry + lookup tables + pipeline dispatch
+├── rational.rs    ← rational-function integrator over the base field Q(x)
+│                    Hermite reduction + logarithmic part + Rothstein–Trager
+├── risch.rs       ← main loop of the Risch algorithm
+│                    per-level integrate_level + Hermite reduction
+│                    polynomial part (primitive / hyperexponential)
+├── rde.rs         ← Risch differential equation solver
+│                    base_rde (Q[x]) + recursive tower
+├── trig.rs        ← trigonometric ↔ complex-exponential rewrite (trig_to_exp / realify)
+├── heuristic.rs   ← heuristics: parts / trig substitution / Weierstrass / Euler
+└── special.rs     ← special-function table (erf, Ei, Si, Ci, Fresnel, etc.)
+</code></pre>
+<h3 id="execution-flow-of-the-risch-algorithm"><a class="header" href="#execution-flow-of-the-risch-algorithm">Execution Flow of the Risch Algorithm</a></h3>
+<p>Trace the full execution with $\int (x+1) e^x,dx$ as an example:</p>
+<ol>
+<li><strong>Build the tower</strong>: <code>build_tower</code> collects $t_1 = \exp(x)$; the tower is $\mathbb{Q}(x) \subset \mathbb{Q}(x)(t_1)$.</li>
+<li><strong><code>risch_integrate</code></strong>: convert the integrand into a rational function in $k_1(t_1)$: $(x+1) \cdot t_1$.</li>
+<li><strong><code>integrate_level(tower, level=1, f)</code></strong>:
+<ul>
+<li>The denominator is 1; no Hermite reduction.</li>
+<li>Polynomial part $p(t_1) = (x+1) t_1$.</li>
+<li>Call <code>integrate_kpoly_hyperexp</code> (since $t_1 = \exp(x)$):
+<ul>
+<li>Compare the $t_1^1$ coefficient: $Da_1 + a_1 \cdot 1 = x + 1$</li>
+<li>Recursively call <code>rde_solve</code>: $a_1' + a_1 = x + 1$</li>
+<li>Base-field <code>base_rde</code>: write $a_1 = ax + b$; then $a_1' = a$ and $a + ax + b = x + 1$</li>
+<li>Compare: $a = 1$, $a + b = 1 \Rightarrow b = 0$</li>
+<li>$a_1 = x$; verification: $x' + x = 1 + x = x + 1$ ✓</li>
+</ul>
+</li>
+<li>The $t_1^0$ coefficient is 0, so $b_0 = 0$.</li>
+</ul>
+</li>
+<li><strong>Assemble the result</strong>: $q = x \cdot t_1$, converted to an atom: $x \cdot e^x$.</li>
+<li><strong>Simplify + normalize</strong>: return $x \cdot e^x$.</li>
+</ol>
+<p><strong>Verification</strong>: $\frac{d}{dx}[x \cdot e^x] = e^x + x \cdot e^x = (x+1)e^x$ ✓</p>
+<h3 id="internal-representation-of-field-elements"><a class="header" href="#internal-representation-of-field-elements">Internal Representation of Field Elements</a></h3>
+<p>In the tower, field elements are represented by <strong>flat multivariate sparse polynomials</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// KElem: an element of k = Q(x, t_1, ..., t_{n-1})
+struct KElem {
+    num: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
+    den: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Variable index assignment: <code>0</code> corresponds to $x$, <code>1</code> to $t_1$, …, <code>n-1</code> to $t_{n-1}$.</p>
+<p><code>KPoly</code> is a dense univariate polynomial in the top-level variable with coefficients in <code>KElem</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// KPoly: a polynomial in k[t_n] with coefficients in k
+struct KPoly {
+    coeffs: Vec&lt;KElem&gt;,  // from lowest to highest degree
+    top: usize,          // index of the top-level variable
+    n: usize,            // total number of variables
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>KRat</code> is a rational function $p/q$:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct KRat {
+    num: KPoly,
+    den: KPoly,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>No GCD reduction</strong>: <code>KElem</code> does not perform multivariate GCD reduction (because a general multivariate GCD is expensive). Zero detection only checks whether the numerator is zero; cross-multiplied equality is the only reliable equality test.</p>
+<h3 id="fuel-bounded-integration"><a class="header" href="#fuel-bounded-integration">Fuel-Bounded Integration</a></h3>
+<p><code>integrate_with_fuel(ctx, expr, var, &amp;fuel)</code> threads a <code>Fuel</code> budget through the two post-integration simplification phases. The integration traversal itself uses the <code>MAX_DEPTH</code> / <code>MAX_RISCH_DEPTH</code> limits; <code>Fuel</code> constrains only the simplification phases, preventing pathological results (e.g. integrals producing enormous expressions) from sending the rewriter into an infinite loop.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::fuel::Fuel;
+
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
+// Ok(result)  — completed normally
+// Err(_)      — fuel exhausted during simplification
+<span class="boring">}</span></code></pre></pre>
+<h3 id="limitations-and-fallback-strategy"><a class="header" href="#limitations-and-fallback-strategy">Limitations and Fallback Strategy</a></h3>
+<p>The current implementation of the Risch algorithm has the following limitations:</p>
+<div class="table-wrapper"><table><thead><tr><th>Limitation</th><th>Reason</th><th>Fallback behavior</th></tr></thead><tbody>
+<tr><td>Only polynomial solutions of the RDE</td><td>Rational solutions need denominator-bound analysis</td><td>Return <code>None</code>; the caller tries other layers</td></tr>
+<tr><td>At tower levels the logarithmic part only uses the logarithmic-derivative identity $a_1 = c \cdot Dd_1$</td><td>The full logarithmic part needs tower-level Rothstein–Trager / trace-function techniques</td><td>Return the unevaluated form (the base field $\mathbb{Q}(x)$ still gets the full treatment)</td></tr>
+<tr><td>Algebraic functions ($\sqrt{x}$, etc.) not supported</td><td>Needs algebraic-function field extensions</td><td>Common patterns are covered by the heuristic trigonometric substitution</td></tr>
+<tr><td>Conservative rejection of algebraically dependent generators</td><td>Detecting relations like $\log(2x)$ vs. $\log(x)$</td><td>Return <code>None</code></td></tr>
+<tr><td>Hyperexponential RDEs containing $I$</td><td>The RDE solver works only over $\mathbb{Q}[x]$</td><td>Trigonometric integrands are returned in unevaluated form</td></tr>
+</tbody></table>
+</div>
+<p>When all layers fail, <code>Integral(expr, var)</code> is returned — this is an <strong>intentional answer</strong>, meaning "this integral has no closed form in the current implementation", not a program error.</p>
+<hr />
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li><strong>Bronstein, M.</strong> <em>Symbolic Integration I: Transcendental Functions</em>, 2nd ed., Springer, 2005. — The authoritative reference on the Risch algorithm. Chapter 2: integration of rational functions (Hermite reduction, Rothstein–Trager); Chapter 5: the Risch algorithm for elementary functions; Chapter 6: the Risch differential equation. The oCAS implementation follows this book closely.</li>
+<li><strong>Bronstein, M.</strong> <em>Symbolic Integration II: Transcendental and Algebraic Functions</em>, Springer, 2004. — Extensions to algebraic and special functions. Not yet covered by oCAS.</li>
+<li><strong>Geddes, K. O., Czapor, S. R., &amp; Labahn, G.</strong> <em>Algorithms for Computer Algebra</em>, Kluwer, 1992. — Chapter 12 offers an alternative presentation of the Risch algorithm.</li>
+<li><strong>Liouville, J.</strong> "Sur les transcendantes elliptiques de première et de seconde espèce considérées comme fonctions de leur amplitude." <em>Journal de l'École Polytechnique</em>, 1835. — The original source of Liouville's theorem on elementary antiderivatives.</li>
+<li><strong>Risch, R. H.</strong> "The problem of integration in finite terms." <em>Transactions of the AMS</em>, 139:167–189, 1969. — The founding paper of the Risch algorithm.</li>
+<li><strong>Rothstein, M.</strong> "A new algorithm for the integration of exponential and logarithmic functions." <em>Proceedings of the 1977 MACSYMA Users Conference</em>, 1977. — The Rothstein–Trager resultant method.</li>
+<li><strong>Trager, B. M.</strong> "Algebraic factoring and rational function integration." <em>Proceedings of SYMSAC '76</em>, 1976. — Trager's algorithm (factorization over algebraic number fields).</li>
+<li><strong>Lazard, D. &amp; Rioboo, R.</strong> "Integration of rational functions: Rational computation of the logarithmic part." <em>Journal of Symbolic Computation</em>, 9(2):113–129, 1990. — An efficient algorithm for the logarithmic part.</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/ode-theory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/fglm-elimination.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/ode-theory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/fglm-elimination.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

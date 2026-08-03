@@ -1,0 +1,996 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>微积分 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html" class="active"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-calculus.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="微积分"><a class="header" href="#微积分">微积分</a></h1>
+<blockquote>
+<p>来源：<code>ocas-calc/src/</code></p>
+</blockquote>
+<p>oCAS 的微积分模块提供符号求导、积分、级数展开和部分分式分解。所有运算在 <code>AtomArena</code> 上执行，结果为新的 <code>Atom</code> 句柄。无法化简的导数或积分以保留函数形式 <code>Derivative(expr, var)</code> 或 <code>Integral(expr, var)</code> 返回。</p>
+<p><strong>模块结构</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>子模块</th><th>功能</th></tr></thead><tbody>
+<tr><td><code>derivative</code></td><td>符号微分 <code>diff</code></td></tr>
+<tr><td><code>integral</code></td><td>分层积分管线 <code>integrate</code>、<code>integrate_heuristic</code>、<code>integrate_with_fuel</code></td></tr>
+<tr><td><code>series</code></td><td>Taylor 展开 <code>taylor</code>、替换 <code>substitute</code></td></tr>
+<tr><td><code>partial_fraction</code></td><td>部分分式分解 <code>apart</code>、合并 <code>together</code></td></tr>
+<tr><td><code>tower</code></td><td>Risch 算法的微分域塔构造</td></tr>
+<tr><td><code>ode</code></td><td>常微分方程求解（见 <a href="./rust-solvers.html">求解器</a>）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="diff"><a class="header" href="#diff"><code>diff</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn diff&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：对 <code>expr</code> 关于 <code>var</code> 求符号导数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena，用于构造结果</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被求导的表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>求导变量（interned 字符串）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 求导并化简后的表达式。</p>
+<p><strong>算法说明</strong>：</p>
+<p><code>diff</code> 递归遍历表达式树，对每种节点类型应用标准求导规则：</p>
+<div class="table-wrapper"><table><thead><tr><th>节点类型</th><th>求导规则</th></tr></thead><tbody>
+<tr><td><code>Num(_)</code></td><td>$\frac{d}{dx} c = 0$</td></tr>
+<tr><td><code>Var(s)</code></td><td>若 $s = \text{var}$ 则为 $1$，否则为 $0$</td></tr>
+<tr><td><code>Add([a₁, …, aₙ])</code></td><td>和的导数 = 导数的和：$\sum \frac{d a_i}{dx}$</td></tr>
+<tr><td><code>Mul([a₁, …, aₙ])</code></td><td>乘积法则：$\frac{d}{dx}\prod a_i = \sum_i \left(\frac{d a_i}{dx} \prod_{j \neq i} a_j\right)$</td></tr>
+<tr><td><code>Pow([base, exp])</code></td><td>幂函数法则（含链式法则），支持常数和非常数指数</td></tr>
+<tr><td><code>Fun(name, args)</code></td><td>内置函数查表 + 链式法则</td></tr>
+</tbody></table>
+</div>
+<p><strong>内置函数求导表</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>函数 $f(u)$</th><th>导数 $f'(u) \cdot u'$</th></tr></thead><tbody>
+<tr><td>$\sin(u)$</td><td>$\cos(u) \cdot u'$</td></tr>
+<tr><td>$\cos(u)$</td><td>$-\sin(u) \cdot u'$</td></tr>
+<tr><td>$\tan(u)$</td><td>$\sec^2(u) \cdot u'$</td></tr>
+<tr><td>$\sec(u)$</td><td>$\sec(u)\tan(u) \cdot u'$</td></tr>
+<tr><td>$\exp(u)$</td><td>$\exp(u) \cdot u'$</td></tr>
+<tr><td>$\log(u)$</td><td>$u^{-1} \cdot u'$</td></tr>
+<tr><td>$\sqrt{u}$</td><td>$(2\sqrt{u})^{-1} \cdot u'$</td></tr>
+<tr><td>$\text{atan}(u)$</td><td>$(1 + u^2)^{-1} \cdot u'$</td></tr>
+</tbody></table>
+</div>
+<p>表在 <code>derivative.rs</code> 的 <code>diff_function</code> 中硬编码。<strong>不在</strong>表中的函数（如 $\text{asin}$、$\sinh$、$\cosh$、$\tanh$ 等）也返回未求值形式 <code>Derivative(f, var)</code>。</p>
+<p><strong>未求值形式</strong>：当求导函数不在内置表中时，结果为 <code>Derivative(expr, var)</code>，可通过后续模式匹配检测（匹配函数名 <code>"Derivative"</code> 的 <code>Fun</code> 节点；注意 <code>is_fallback</code> 只检测 <code>"Integral"</code>，不检测 <code>Derivative</code>）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::diff;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// d/dx [sin(x)] = cos(x)
+let sin_x = ctx.fun("sin", &amp;[x]);
+let result = diff(&amp;ctx, sin_x, Symbol::new("x"));
+assert_eq!(result.to_string(), "cos(x)");
+
+// d/dx [x^3] = 3*x^2
+let x_cubed = ctx.pow(x, ctx.num(3));
+let result = diff(&amp;ctx, x_cubed, Symbol::new("x"));
+assert_eq!(result.to_string(), "3*(x^2)");
+
+// d/dx [exp(x^2)] = 2*x*exp(x^2) （链式法则）
+let inner = ctx.pow(x, ctx.num(2));
+let expr = ctx.fun("exp", &amp;[inner]);
+let result = diff(&amp;ctx, expr, Symbol::new("x"));
+// 输出包含 2*x*exp(x^2) 的化简形式
+
+// 未知函数返回 Derivative 形式
+let f = ctx.fun("my_func", &amp;[x]);
+let result = diff(&amp;ctx, f, Symbol::new("x"));
+// result 包含 Derivative(my_func(x), x)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#taylor">taylor</a>、<a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="integrate"><a class="header" href="#integrate"><code>integrate</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：对 <code>expr</code> 关于 <code>var</code> 求符号积分。使用分层积分管线，逐层尝试不同算法。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被积表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>积分变量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 积分结果。无法求解时返回 <code>Integral(expr, var)</code>。</p>
+<p><strong>积分管线</strong>：</p>
+<p><code>integrate</code> 内部调用 <code>integrate_raw</code>（递归，深度上限 <code>MAX_DEPTH = 8</code>）。管线分两个阶段：</p>
+<pre><code>┌───────────────────────────────────────────┐
+│ 阶段一：integrate_raw 按节点类型分派        │
+├───────────────────────────────────────────┤
+│ Num / Var          → 常数积分：c·x；       │
+│                      ∫x dx = (1/2)·x²      │
+│ Add                → 逐项递归积分           │
+│ Mul (integrate_product)  → 提取常数因子    │
+│ Pow (integrate_power)    → 幂函数积分      │
+│                      ∫xⁿ, ∫(a·x+b)ⁿ,       │
+│                      分数指数 (a·x+b)^(p/q) │
+│ Fun (integrate_function) → 查表 + 线性替换  │
+│                      ∫sin(u), ∫cos(u),     │
+│                      ∫exp(u), ∫log(u)      │
+│                      若 u = a·x+b 自动应用  │
+│                      链式法则              │
+├───────────────────────────────────────────┤
+│ 阶段二：以上分派失败（返回 fallback 形式）  │
+│ → try_risch_or_fallback，按顺序尝试：      │
+├───────────────────────────────────────────┤
+│ 1. 有理函数积分   (integrate_rational)     │
+│ 2. Risch 算法     (risch_integrate)        │
+│ 3. 三角→指数重写  (trig_to_exp +           │
+│    + Risch + realify)                     │
+│ 4. 特殊函数       (special_integrate)      │
+│ 5. 启发式方法     (heuristic_integrate)    │
+│    分部积分 (LIATE)、三角替换、            │
+│    Weierstrass、Euler 替换                 │
+│ 6. 未求值形式     (fallback)               │
+│    Integral(expr, var)                    │
+└───────────────────────────────────────────┘
+</code></pre>
+<p><strong>阶段一 — 节点类型分派</strong>：</p>
+<ul>
+<li><code>Num(_)</code>：常数的积分为线性函数 <code>c * x</code></li>
+<li><code>Var(var)</code>：$\int x,dx = \frac{1}{2} x^2$；其他变量视为常数</li>
+<li><code>Add</code>：逐项递归积分再求和</li>
+<li><code>Mul</code>（<code>integrate_product</code>）：识别 <code>c · f(x)</code> 形式（常数乘以非常数因子），提取常数因子后递归积分</li>
+<li><code>Pow</code>（<code>integrate_power</code>）：幂函数积分，支持 $\int x^n,dx$、线性形式 $(a \cdot x + b)^n$（含 $n = -1$ 时 $\int \frac{dx}{ax+b} = \frac{\log(ax+b)}{a}$）以及分数指数 $(a \cdot x + b)^{p/q}$</li>
+<li><code>Fun</code>（<code>integrate_function</code>）：查表 + 线性替换</li>
+</ul>
+<p><strong>查表与线性替换</strong>：</p>
+<p>内置积分表覆盖幂函数（<code>integrate_power</code>）以及 <code>sin</code>、<code>cos</code>、<code>exp</code>、<code>log</code>。当被积函数（或幂的底）的参数为线性形式 $a \cdot x + b$ 时，自动应用链式法则 $\int f(ax+b),dx = \frac{1}{a} F(ax+b)$。</p>
+<p><strong>阶段二 — 回退链</strong>（<code>try_risch_or_fallback</code>）：</p>
+<ol>
+<li>
+<p><strong>有理函数积分</strong>（<code>integrate_rational</code>）：当表达式为 $\var$ 的有理函数（无其他变量或函数应用）时，执行：</p>
+<ol>
+<li>多项式部分逐项积分</li>
+<li>Hermite 约化分离有理部分</li>
+<li>对数部分：完全平方（二次分母 → $\log$ 或 $\text{atan}$）+ Rothstein–Trager 结式</li>
+</ol>
+<p>详见 <a href="#%E6%9C%89%E7%90%86%E5%87%BD%E6%95%B0%E7%A7%AF%E5%88%86">有理函数积分</a>。</p>
+</li>
+<li>
+<p><strong>Risch 算法</strong>（<code>risch_integrate</code>）：构造微分域塔 $\mathbb{Q}(x, t_1, \dots, t_n)$，逐层递归积分。详见 <a href="#risch-%E7%AE%97%E6%B3%95">Risch 算法</a>。</p>
+</li>
+<li>
+<p><strong>三角→指数重写</strong>：若 Risch 对原表达式失败且表达式含三角函数，通过 <code>trig_to_exp</code> 重写为复指数形式，再次尝试 Risch，最后用 <code>realify</code> 转回实数形式。</p>
+</li>
+<li>
+<p><strong>特殊函数</strong>（<code>special_integrate</code>）：当 Risch 与三角重写均未成功时，尝试匹配已知的特殊函数反导数。详见 <a href="#%E7%89%B9%E6%AE%8A%E5%87%BD%E6%95%B0%E7%A7%AF%E5%88%86">特殊函数积分</a>。</p>
+</li>
+<li>
+<p><strong>启发式方法</strong>（<code>heuristic_integrate</code>）：分部积分 (LIATE)、三角替换、Weierstrass 替换、Euler 替换。详见 <a href="#integrate_heuristic">integrate_heuristic</a>。</p>
+</li>
+<li>
+<p><strong>未求值形式</strong>（<code>fallback</code>）：以上均失败时，返回 <code>Integral(expr, var)</code>。可通过 <code>is_fallback</code> 检测：</p>
+</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn is_fallback&lt;'a&gt;(atom: &amp;Atom&lt;'a&gt;) -&gt; bool {
+    matches!(atom.node(), AtomNode::Fun(name, _) if name.as_str() == "Integral")
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::integrate;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// ∫ x² dx = (1/3) x³
+let expr = ctx.pow(x, ctx.num(2));
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+assert_eq!(result.to_string(), "(3^-1)*(x^3)");
+
+// ∫ sin(x) dx = -cos(x)
+let expr = ctx.fun("sin", &amp;[x]);
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// 输出：-cos(x) 的化简形式
+
+// ∫ 1/x dx = log(x) （通过有理函数积分器或 Risch）
+let expr = ctx.pow(x, ctx.num(-1));
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// 输出：log(x)
+
+// 不可积表达式返回 Integral 形式
+let expr = ctx.fun("my_func", &amp;[x]);
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// result 为 Integral(my_func(x), x)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#integrate_heuristic">integrate_heuristic</a>、<a href="#integrate_with_fuel">integrate_with_fuel</a>、<a href="#%E6%9C%89%E7%90%86%E5%87%BD%E6%95%B0%E7%A7%AF%E5%88%86">有理函数积分</a>、<a href="#risch-%E7%AE%97%E6%B3%95">Risch 算法</a></p>
+<hr />
+<h2 id="integrate_heuristic"><a class="header" href="#integrate_heuristic"><code>integrate_heuristic</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_heuristic&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：尝试启发式积分技巧。仅使用分部积分、三角替换、Weierstrass 替换和 Euler 替换，不调用 Risch 算法或有理函数积分器。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被积表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>积分变量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 若启发式成功则返回积分结果，否则返回 <code>Integral(expr, var)</code>。</p>
+<p><strong>启发式方法</strong>：</p>
+<h3 id="1-分部积分liate-启发式"><a class="header" href="#1-分部积分liate-启发式">1. 分部积分（LIATE 启发式）</a></h3>
+<p>对 $\int u \cdot v' , dx$ 形式的乘积，按 <strong>LIATE</strong> 优先级选择 $u$（优先级从高到低）：</p>
+<div class="table-wrapper"><table><thead><tr><th>优先级</th><th>类型</th><th>LIATE 评分</th><th>示例</th></tr></thead><tbody>
+<tr><td>0（最高）</td><td>对数 (L)</td><td>0</td><td>$\log(x)$</td></tr>
+<tr><td>1</td><td>反三角 (I)</td><td>1</td><td>$\text{asin}(x)$</td></tr>
+<tr><td>2</td><td>代数 (A)</td><td>2</td><td>$x^2$</td></tr>
+<tr><td>3</td><td>三角 (T)</td><td>3</td><td>$\sin(x)$</td></tr>
+<tr><td>4</td><td>指数 (E)</td><td>4</td><td>$\exp(x)$</td></tr>
+<tr><td>5（最低）</td><td>其他</td><td>5</td><td>—</td></tr>
+</tbody></table>
+</div>
+<p>选择评分最低的因子作为 $u$，其余作为 $v'$。递归深度上限为 <code>PARTS_MAX_DEPTH = 2</code>。</p>
+<h3 id="2-三角替换"><a class="header" href="#2-三角替换">2. 三角替换</a></h3>
+<p>匹配以下模式并返回已知反导数：</p>
+<div class="table-wrapper"><table><thead><tr><th>被积函数</th><th>替换</th><th>结果</th></tr></thead><tbody>
+<tr><td>$\frac{1}{\sqrt{a^2 - x^2}}$</td><td>$x = a\sin\theta$</td><td>$\text{asin}(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{a^2 + x^2}}$</td><td>$x = a\sinh t$</td><td>$\text{asinh}(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{x^2 - a^2}}$</td><td>$x = a\cosh t$</td><td>$\text{acosh}(x/a)$</td></tr>
+<tr><td>$\sqrt{a^2 - x^2}$</td><td>$x = a\sin\theta$</td><td>$\frac{x\sqrt{a^2-x^2} + a^2,\text{asin}(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{a^2 + x^2}$</td><td>$x = a\sinh t$</td><td>$\frac{x\sqrt{a^2+x^2} + a^2,\text{asinh}(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{x^2 - a^2}$</td><td>$x = a\cosh t$</td><td>$\frac{x\sqrt{x^2-a^2} - a^2,\text{acosh}(x/a)}{2}$</td></tr>
+</tbody></table>
+</div>
+<h3 id="3-weierstrass-替换"><a class="header" href="#3-weierstrass-替换">3. Weierstrass 替换</a></h3>
+<p>当被积函数是 $\sin(u)$ 和 $\cos(u)$ 的有理函数（$u$ 关于 $\text{var}$ 线性）时，应用 $t = \tan(u/2)$ 替换：</p>
+<p>$$\sin(u) = \frac{2t}{1+t^2}, \quad \cos(u) = \frac{1-t^2}{1+t^2}$$</p>
+<p>将三角有理函数化为 $t$ 的有理函数后递归积分。</p>
+<h3 id="4-euler-替换"><a class="header" href="#4-euler-替换">4. Euler 替换</a></h3>
+<p>当被积函数包含 $\sqrt{ax^2 + bx + c}$ 时，尝试 Euler 替换消去根号。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::integrate_heuristic;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// ∫ x·exp(x) dx — 分部积分 (LIATE: x=代数, exp=指数)
+let expr = ctx.mul(&amp;[x, ctx.fun("exp", &amp;[x])]);
+let result = integrate_heuristic(&amp;ctx, expr, Symbol::new("x"));
+// 结果包含 (x-1)*exp(x) 的化简形式
+
+// ∫ 1/√(1 - x²) dx = asin(x)
+// 构造 (1 - x²)^(-1/2)：指数为 -1·(2^-1)
+let one = ctx.num(1);
+let sqrt_arg = ctx.add(&amp;[one, ctx.mul(&amp;[ctx.num(-1), ctx.pow(x, ctx.num(2))])]);
+let neg_half = ctx.mul(&amp;[ctx.num(-1), ctx.pow(ctx.num(2), ctx.num(-1))]);
+let expr = ctx.pow(sqrt_arg, neg_half);
+let result = integrate_heuristic(&amp;ctx, expr, Symbol::new("x"));
+// 输出：asin(x) 的化简形式
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="integrate_with_fuel"><a class="header" href="#integrate_with_fuel"><code>integrate_with_fuel</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_with_fuel&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    fuel: &amp;Fuel,
+) -&gt; Result&lt;Atom&lt;'a&gt;, FuelError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：带燃料预算的积分。积分遍历本身使用内部深度限制（<code>MAX_DEPTH = 8</code>），此入口将 <code>fuel</code> 线程化到积分后的两个化简阶段，防止病态结果使重写引擎无限循环。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被积表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>积分变量</td></tr>
+<tr><td><code>fuel</code></td><td><code>&amp;Fuel</code></td><td>燃料预算（重写步数上限）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(Atom&lt;'a&gt;)</code> — 积分化简成功</li>
+<li><code>Err(FuelError)</code> — 燃料在化简过程中耗尽</li>
+</ul>
+<p><strong>与 <code>integrate</code> 的区别</strong>：</p>
+<p><code>integrate</code> 在化简阶段不设上限；<code>integrate_with_fuel</code> 对化简阶段施加燃料约束。积分遍历本身的深度限制（<code>MAX_DEPTH</code>）两者相同。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_core::fuel::Fuel;
+use ocas_calc::integrate_with_fuel;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&amp;ctx, x, Symbol::new("x"), &amp;fuel);
+match result {
+    Ok(expr) =&gt; assert_eq!(expr.to_string(), "(2^-1)*(x^2)"),
+    Err(_) =&gt; panic!("fuel exhausted"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="taylor"><a class="header" href="#taylor"><code>taylor</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn taylor&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    point: Atom&lt;'a&gt;,
+    order: usize,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算 <code>expr</code> 在 <code>point</code> 处关于 <code>var</code> 的 Taylor 展开，展开到 <code>order</code> 阶（含）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被展开的表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>展开变量</td></tr>
+<tr><td><code>point</code></td><td><code>Atom&lt;'a&gt;</code></td><td>展开点（可为任意表达式，通常为 <code>0</code> 或某常数）</td></tr>
+<tr><td><code>order</code></td><td><code>usize</code></td><td>展开阶数（含）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 截断多项式：</p>
+<p>$$\sum_{n=0}^{\text{order}} \frac{f^{(n)}(\text{point})}{n!} \cdot (\text{var} - \text{point})^n$$</p>
+<p><strong>算法说明</strong>：</p>
+<p>通过重复符号微分 + 在展开点处求值计算各阶系数：</p>
+<ol>
+<li>对 $n = 0, 1, \dots, \text{order}$：
+<ul>
+<li>计算 $f^{(n)}(x)$（通过 <code>diff</code>）</li>
+<li>用 <code>substitute</code> 在 $x = \text{point}$ 处求值得 $f^{(n)}(\text{point})$</li>
+<li>乘以 $\frac{1}{n!}$（通过 <code>mul_by_factorial_inverse</code>）</li>
+<li>乘以 $(x - \text{point})^n$</li>
+</ul>
+</li>
+<li>将所有项求和，应用微积分化简规则</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::taylor;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// exp(x) 在 x=0 处展开到 3 阶
+let expr = ctx.fun("exp", &amp;[x]);
+let result = taylor(&amp;ctx, expr, Symbol::new("x"), ctx.num(0), 3);
+assert_eq!(
+    result.to_string(),
+    "1 + x + ((2^-1)*(x^2)) + ((6^-1)*(x^3))"
+);
+
+// sin(x) 在 x=0 处展开到 5 阶
+let expr = ctx.fun("sin", &amp;[x]);
+let result = taylor(&amp;ctx, expr, Symbol::new("x"), ctx.num(0), 5);
+// 输出：x + (-1*(6^-1)*(x^3)) + ((120^-1)*(x^5))
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#diff">diff</a>、<a href="#substitute">substitute</a></p>
+<hr />
+<h2 id="substitute"><a class="header" href="#substitute"><code>substitute</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    replacement: Atom&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将 <code>expr</code> 中所有出现的变量 <code>var</code> 替换为 <code>replacement</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被替换的表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>要替换的变量名</td></tr>
+<tr><td><code>replacement</code></td><td><code>Atom&lt;'a&gt;</code></td><td>替换表达式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 替换后的新表达式。原表达式不受影响（Arena 上的不可变数据结构）。</p>
+<p><strong>语义</strong>：</p>
+<ul>
+<li>深度遍历表达式树</li>
+<li>仅替换精确匹配 <code>var</code> 的叶节点 <code>Var(Symbol)</code></li>
+<li>替换后不自动化简（如需化简，需额外调用 <code>simplify</code>）</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::substitute;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+
+// (x² + x)[x → y] = y² + y
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), x]);
+let result = substitute(&amp;ctx, expr, Symbol::new("x"), y);
+assert_eq!(result.to_string(), "(y^2) + y");
+
+// sin(x)[x → 2*y] = sin(2*y)
+let expr = ctx.fun("sin", &amp;[x]);
+let two_y = ctx.mul(&amp;[ctx.num(2), y]);
+let result = substitute(&amp;ctx, expr, Symbol::new("x"), two_y);
+assert_eq!(result.to_string(), "sin(2*y)");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#taylor">taylor</a>、<a href="#diff">diff</a></p>
+<hr />
+<h2 id="apart"><a class="header" href="#apart"><code>apart</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn apart&lt;D: EuclideanDomain&gt;(
+    num: &amp;DenseUnivariatePolynomial&lt;D&gt;,
+    den: &amp;DenseUnivariatePolynomial&lt;D&gt;,
+) -&gt; (
+    Option&lt;DenseUnivariatePolynomial&lt;D&gt;&gt;,
+    Vec&lt;PartialFractionTerm&lt;D&gt;&gt;,
+)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：对有理函数 $\frac{\text{num}(x)}{\text{den}(x)}$ 执行部分分式分解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>num</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;D&gt;</code></td><td>分子多项式</td></tr>
+<tr><td><code>den</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;D&gt;</code></td><td>分母多项式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(Option&lt;poly&gt;, Vec&lt;PartialFractionTerm&lt;D&gt;&gt;)</code> — 多项式部分（若分子次数 ≥ 分母次数）和部分分式项列表。</p>
+<p><strong>数学原理</strong>：</p>
+<p>给定适当分式 $\frac{p(x)}{q(x)}$（即 $\deg(p) &lt; \deg(q)$），将分母作无平方分解 $q = \prod_i f_i^{e_i}$，然后分解为：</p>
+<p>$$\frac{p(x)}{q(x)} = \text{poly_part} + \sum_i \sum_{k=1}^{e_i} \frac{a_{i,k}(x)}{f_i(x)^k}$$</p>
+<p>若 $\deg(p) \geq \deg(q)$，先执行多项式除法，商作为 <code>poly_part</code>，余式继续分解。</p>
+<p><strong><code>PartialFractionTerm&lt;D&gt;</code> 结构</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PartialFractionTerm&lt;D: EuclideanDomain&gt; {
+    pub numer: DenseUnivariatePolynomial&lt;D&gt;,  // 分子 a_{i,k}(x)
+    pub denom: DenseUnivariatePolynomial&lt;D&gt;,  // 不可约因子 f_i(x)
+    pub exp: usize,                            // 指数 k
+}
+<span class="boring">}</span></code></pre></pre>
+<p>表示分数 $\frac{\text{numer}(x)}{\text{denom}(x)^{\text{exp}}}$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::apart;
+
+let d = RationalDomain;
+
+// 1 / (x² - 1) — 分母无平方（单一平方自由因子 x²-1）
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(-1, 1),  // 常数项
+    Rational::new(0, 1),   // x 系数
+    Rational::new(1, 1),   // x² 系数
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+assert!(poly_part.is_none()); // deg(num) &lt; deg(den)，无多项式部分
+// x²-1 无平方 → 返回单项：分母为 x²-1、指数为 1
+// （apart 基于无平方分解而非不可约分解，不会拆成 (x-1)(x+1)）
+
+// (x³ + 1) / (x² - 1) — 需要多项式除法
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1),
+    Rational::new(0, 1), Rational::new(1, 1),
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+assert!(poly_part.is_some()); // 商多项式 x
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#together">together</a>、<a href="#%E6%9C%89%E7%90%86%E5%87%BD%E6%95%B0%E7%A7%AF%E5%88%86">有理函数积分</a></p>
+<hr />
+<h2 id="together"><a class="header" href="#together"><code>together</code></a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn together&lt;D: EuclideanDomain&gt;(
+    poly_part: Option&lt;&amp;DenseUnivariatePolynomial&lt;D&gt;&gt;,
+    terms: &amp;[PartialFractionTerm&lt;D&gt;],
+) -&gt; (DenseUnivariatePolynomial&lt;D&gt;, DenseUnivariatePolynomial&lt;D&gt;)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将部分分式项合并回单一有理函数。是 <code>apart</code> 的逆操作。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>poly_part</code></td><td><code>Option&lt;&amp;DenseUnivariatePolynomial&lt;D&gt;&gt;</code></td><td>多项式部分（<code>apart</code> 返回的第一项）</td></tr>
+<tr><td><code>terms</code></td><td><code>&amp;[PartialFractionTerm&lt;D&gt;]</code></td><td>部分分式项列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(numerator, denominator)</code> — 合并后的分子和分母多项式。</p>
+<p><strong>算法</strong>：</p>
+<p>将多项式部分和所有分式项通分：计算公分母 $\text{lcm}$，将每项扩展到公分母后求和，返回结果的分子和分母。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::{apart, together};
+
+let d = RationalDomain;
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(-1, 1), Rational::new(0, 1), Rational::new(1, 1),
+]);
+
+// apart → round-trip → together 应还原原始分数
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+let (result_num, result_den) = together(poly_part.as_ref(), &amp;terms);
+// result_num/result_den 等价于 num/den（可能差一个常数因子）
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#apart">apart</a></p>
+<hr />
+<h2 id="有理函数积分"><a class="header" href="#有理函数积分">有理函数积分</a></h2>
+<p><strong>来源</strong>：<code>ocas-calc/src/integral/rational.rs</code></p>
+<p>有理函数积分器 <code>integrate_rational</code> 处理 $\var$ 的有理函数（不含其他变量或函数应用）。采用 Bronstein《Symbolic Integration I》第 2 章的标准三步法：</p>
+<h3 id="1-多项式部分"><a class="header" href="#1-多项式部分">1. 多项式部分</a></h3>
+<p>对 $\int \sum c_k x^k , dx = \sum \frac{c_k}{k+1} x^{k+1}$ 逐项积分。</p>
+<h3 id="2-hermite-约化"><a class="header" href="#2-hermite-约化">2. Hermite 约化</a></h3>
+<p>对真分式 $\frac{a(x)}{d(x)}$（$d$ 为首一多项式），分解为：</p>
+<p>$$\frac{a}{d} = \frac{d}{dx}\left(\frac{g_{\text{num}}}{g_{\text{den}}}\right) + \frac{a_1}{d_1}$$</p>
+<p>其中 $d_1$ 是无平方的。有理部分 $\frac{g_{\text{num}}}{g_{\text{den}}}$ 的导数可直接计算。</p>
+<h3 id="3-对数部分"><a class="header" href="#3-对数部分">3. 对数部分</a></h3>
+<p>对无平方分母的剩余部分 $\frac{a_1}{d_1}$，根据分母次数选择策略：</p>
+<div class="table-wrapper"><table><thead><tr><th>分母次数</th><th>策略</th></tr></thead><tbody>
+<tr><td>0</td><td>常数积分</td></tr>
+<tr><td>1</td><td>$c \cdot \log(ax + b)$</td></tr>
+<tr><td>2</td><td>完全平方 → $\log$ 或 $\text{atan}$</td></tr>
+<tr><td>≥ 3</td><td>Rothstein–Trager 结式法</td></tr>
+</tbody></table>
+</div>
+<p><strong>Rothstein–Trager 方法</strong>：</p>
+<p>计算 $R(t) = \text{Res}_x(d, a - t \cdot d')$，$R(t)$ 的有理根 $c_i$ 给出：</p>
+<p>$$\int \frac{a}{d} = \sum_i c_i \cdot \log(\gcd(d, a - c_i \cdot d'))$$</p>
+<p>当 $R(t)$ 在 $\mathbb{Q}$ 上不能完全分解时，对应项以未求值形式 <code>Integral(term, var)</code> 返回。</p>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Some(Atom)</code> — 表达式是 $\var$ 的有理函数，返回积分结果</li>
+<li><code>None</code> — 表达式不是 $\var$ 的纯有理函数（含其他变量或函数）</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::integral::rational::integrate_rational;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// ∫ 1/x dx = log(x)
+let result = integrate_rational(&amp;ctx, ctx.pow(x, ctx.num(-1)), Symbol::new("x"));
+assert_eq!(result.unwrap().to_string(), "log(x)");
+
+// ∫ 1/(x²+1) dx = atan(x) （通过完全平方）
+// 表达式需构建为 x 的有理函数
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#apart">apart</a>、<a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="risch-算法"><a class="header" href="#risch-算法">Risch 算法</a></h2>
+<p><strong>来源</strong>：<code>ocas-calc/src/integral/risch.rs</code>、<code>ocas-calc/src/tower/</code></p>
+<p>Risch 算法处理初等超越函数的积分，基于 Bronstein《Symbolic Integration I》第 5–6 章。</p>
+<h3 id="微分域塔"><a class="header" href="#微分域塔">微分域塔</a></h3>
+<p>算法首先构造微分域塔 $\mathbb{Q}(x, t_1, \dots, t_n)$，其中每个生成元 $t_i$ 是对数或指数：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) enum GenKind {
+    Constant,  // 常数符号（如虚数单位 I），D t = 0
+    Log,       // t_i = log(u)
+    Exp,       // t_i = exp(u)
+}
+<span class="boring">}</span></code></pre></pre>
+<p>塔的构造（<code>build_tower</code>）遍历表达式中的函数应用，为每个 <code>log</code> 或 <code>exp</code> 创建新层。限制条件：</p>
+<ul>
+<li>仅接受 <code>log</code> 和 <code>exp</code> 函数（三角函数需先通过 <code>trig_to_exp</code> 重写）</li>
+<li>拒绝代数函数（非整数指数，如 $\sqrt{x}$）</li>
+<li>拒绝代数相关的生成元（如 $\log(x)$ 和 $\log(2x)$）</li>
+</ul>
+<h3 id="逐层积分"><a class="header" href="#逐层积分">逐层积分</a></h3>
+<p>在塔的每一层 $k(t_i)$，算法执行：</p>
+<ol>
+<li><strong>Hermite 约化</strong>（<code>hermite_tower</code>）：将 $\frac{a}{d}$ 分解为 $D(g) + \frac{a_1}{d_1}$，其中 $d_1$ 无平方</li>
+<li><strong>多项式部分</strong>：
+<ul>
+<li><strong>原语层</strong>（$t = \log(u)$）：待定系数法，顶层常数由对数约束确定</li>
+<li><strong>超指数层</strong>（$t = \exp(u)$）：每层解 Risch 微分方程 $Dq + fq = g$</li>
+</ul>
+</li>
+<li><strong>对数部分</strong>：匹配对数导数恒等式 $c \cdot \frac{D d}{d} \to c \cdot \log(d)$</li>
+</ol>
+<h3 id="三角函数处理"><a class="header" href="#三角函数处理">三角函数处理</a></h3>
+<p><code>integrate</code> 先对原表达式直接尝试 Risch；失败且表达式含三角函数时，通过 <code>trig_to_exp</code> 将三角函数重写为复指数形式后再尝试：</p>
+<p>$$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-iu}}{2}$$</p>
+<p>积分结果通过 <code>realify</code> 尝试转回实数形式：</p>
+<div class="table-wrapper"><table><thead><tr><th>复数模式</th><th>实数形式</th></tr></thead><tbody>
+<tr><td>$c \cdot \log(u + iv) + c \cdot \log(u - iv)$</td><td>$c \cdot \log(u^2 + v^2)$</td></tr>
+<tr><td>$c \cdot \log(u + iv) - c \cdot \log(u - iv)$</td><td>$2c \cdot \text{atan}(v/u)$</td></tr>
+<tr><td>$\exp(Iu) \cdot \exp(Iv)$</td><td>$\exp(I(u+v))$（合并指数使抵消可见，如 $e^{Ix}e^{-Ix} \to e^0$）</td></tr>
+</tbody></table>
+</div>
+<p>若 <code>realify</code> 无法匹配模式，返回复数形式（数学上仍正确，可通过微分验证）。</p>
+<h3 id="深度限制"><a class="header" href="#深度限制">深度限制</a></h3>
+<p><code>MAX_RISCH_DEPTH = 16</code>，通过线程本地计数器 <code>RISCH_DEPTH</code> 和守卫 <code>RischDepthGuard</code>（RAII 自动减计数）实现。</p>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Some(Atom)</code> — 积分成功</li>
+<li><code>None</code> — 表达式超出已实现片段（调用者回退到其他积分器）</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Risch 算法通过 integrate 自动调用，通常不直接使用
+// ∫ exp(x²) · 2x dx = exp(x²) — Risch 可处理的典型例子
+// ∫ sin(x)/x dx — 无初等原函数，Risch 返回 None，特殊函数层处理
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#integrate">integrate</a>、<a href="#%E7%89%B9%E6%AE%8A%E5%87%BD%E6%95%B0%E7%A7%AF%E5%88%86">特殊函数积分</a></p>
+<hr />
+<h2 id="特殊函数积分"><a class="header" href="#特殊函数积分">特殊函数积分</a></h2>
+<p><strong>来源</strong>：<code>ocas-calc/src/integral/special.rs</code></p>
+<p>当 Risch 算法证明积分无初等原函数时，特殊函数积分器尝试匹配已知的非初等反导数。</p>
+<h3 id="支持的特殊函数"><a class="header" href="#支持的特殊函数">支持的特殊函数</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>被积函数</th><th>反导数</th><th>函数名</th></tr></thead><tbody>
+<tr><td>$e^{-x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erf}(x)$</td><td>误差函数</td></tr>
+<tr><td>$e^{x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erfi}(x)$</td><td>虚误差函数</td></tr>
+<tr><td>$\frac{e^x}{x}$</td><td>$\text{Ei}(x)$</td><td>指数积分</td></tr>
+<tr><td>$\frac{\sin x}{x}$</td><td>$\text{Si}(x)$</td><td>正弦积分</td></tr>
+<tr><td>$\frac{\cos x}{x}$</td><td>$\text{Ci}(x)$</td><td>余弦积分</td></tr>
+<tr><td>$\frac{\sinh x}{x}$</td><td>$\text{Shi}(x)$</td><td>双曲正弦积分</td></tr>
+<tr><td>$\frac{\cosh x}{x}$</td><td>$\text{Chi}(x)$</td><td>双曲余弦积分</td></tr>
+<tr><td>$\sin(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnels}(\sqrt{2/\pi},x)$</td><td>Fresnel S 积分（函数名 <code>fresnels</code>）</td></tr>
+<tr><td>$\cos(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnelc}(\sqrt{2/\pi},x)$</td><td>Fresnel C 积分（函数名 <code>fresnelc</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>匹配策略</strong>：</p>
+<p><code>special_integrate</code> 检查被积函数的因子结构：</p>
+<ul>
+<li><code>erf_family</code>：匹配 $e^{c \cdot x^2}$ 形式</li>
+<li><code>ei_family</code>：匹配 $e^{cx} / x$ 形式</li>
+<li><code>trig_integral_family</code>：匹配 $\sin(x)/x$、$\cos(x)/x$、$\sinh(x)/x$、$\cosh(x)/x$（自变量必须恰为 $x$）</li>
+<li><code>fresnel_family</code>：匹配 $\sin(cx^2)$、$\cos(cx^2)$</li>
+</ul>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Some(Atom)</code> — 匹配成功，返回含特殊函数的反导数</li>
+<li><code>None</code> — 不匹配任何已知模式，调用者以 <code>Integral(expr, var)</code> 形式返回</li>
+</ul>
+<p><strong>设计说明</strong>：</p>
+<p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。</p>
+<p><strong>参见</strong>：<a href="#risch-%E7%AE%97%E6%B3%95">Risch 算法</a>、<a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="辅助函数"><a class="header" href="#辅助函数">辅助函数</a></h2>
+<h3 id="is_fallback"><a class="header" href="#is_fallback"><code>is_fallback</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn is_fallback&lt;'a&gt;(atom: &amp;Atom&lt;'a&gt;) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：检查 <code>atom</code> 是否为未求值积分形式（函数名为 <code>"Integral"</code>）。注意：未求值的导数（<code>Derivative</code> 形式）由 <code>diff</code> 直接构造，不经由此函数检测。</p>
+<p><strong>参见</strong>：<a href="#integrate">integrate</a>、<a href="#diff">diff</a></p>
+<h3 id="is_constant"><a class="header" href="#is_constant"><code>is_constant</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn is_constant&lt;'a&gt;(expr: Atom&lt;'a&gt;, var: Symbol) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：检查 <code>expr</code> 是否不包含变量 <code>var</code>（即关于 <code>var</code> 为常数）。</p>
+<h3 id="fraction_exponent"><a class="header" href="#fraction_exponent"><code>fraction_exponent</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn fraction_exponent&lt;'a&gt;(exp: Atom&lt;'a&gt;) -&gt; Option&lt;(i64, i64)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将指数原子解析为分数 $p/q$（小整数）。接受 $p \cdot q^{-1}$ 形式，用于幂函数积分。</p>
+<h3 id="linear_form"><a class="header" href="#linear_form"><code>linear_form</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn linear_form&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol)
+    -&gt; Option&lt;(Atom&lt;'a&gt;, Atom&lt;'a&gt;)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：若 <code>expr</code> 形如 $a \cdot \text{var} + b$（$a, b$ 关于 <code>var</code> 为常数），返回 <code>(a, b)</code>；否则返回 <code>None</code>。</p>
+<hr />
+<h2 id="内部架构"><a class="header" href="#内部架构">内部架构</a></h2>
+<h3 id="化简管线"><a class="header" href="#化简管线">化简管线</a></h3>
+<ul>
+<li><code>integrate</code> 的结果经过两级化简：先用默认重写规则 <code>default_rules</code>（$0 + x = x$、$1 \cdot x = x$、$x^1 = x$ 等代数恒等式）化简 20 步，再用 <code>calculus_rules</code> 化简 10 步，最后 <code>normalize</code> 到规范形式</li>
+<li><code>diff</code> 与 <code>taylor</code> 直接使用 <code>calculus_rules</code> 化简后 <code>normalize</code></li>
+</ul>
+<p><code>calculus_rules</code>（<code>rules.rs</code>）以 <code>default_rules</code> 为基础，追加微积分专用恒等式：<code>exp(0) → 1</code>、<code>log(1) → 0</code>、<code>sin(0) → 0</code>、<code>cos(0) → 1</code>、<code>tan(0) → 0</code>、$(-1) \cdot (-1) \to 1$、$1^x \to 1$ 等。</p>
+<h3 id="深度限制-1"><a class="header" href="#深度限制-1">深度限制</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>限制</th><th>值</th><th>用途</th></tr></thead><tbody>
+<tr><td><code>MAX_DEPTH</code></td><td>8</td><td><code>integrate_raw</code> 递归深度</td></tr>
+<tr><td><code>MAX_RISCH_DEPTH</code></td><td>16</td><td>Risch 算法递归深度</td></tr>
+<tr><td><code>PARTS_MAX_DEPTH</code></td><td>2</td><td>分部积分递归深度</td></tr>
+</tbody></table>
+</div>
+<h3 id="模块依赖关系"><a class="header" href="#模块依赖关系">模块依赖关系</a></h3>
+<pre><code>ocas-calc
+├── derivative::diff
+├── integral
+│   ├── mod.rs          — integrate, integrate_with_fuel, integrate_heuristic
+│   ├── heuristic.rs    — 分部积分, 三角/Weierstrass/Euler 替换
+│   ├── rational.rs     — Hermite 约化, Rothstein–Trager
+│   ├── risch.rs        — Risch 算法核心
+│   ├── rde.rs          — Risch 微分方程求解器
+│   ├── trig.rs         — 三角→指数重写, realify
+│   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   └── tower/
+│       ├── build.rs    — 微分域塔构造
+│       ├── elem.rs     — 塔元素类型 (KElem, KPoly, KRat)
+│       └── convert.rs  — Atom ↔ 塔元素转换
+├── series.rs           — taylor, substitute
+├── partial_fraction.rs — apart, together
+└── rules.rs            — 微积分化简规则
+</code></pre>
+<hr />
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="../math/symbolic-calculus.html">数学：符号微积分</a> — 微分与 Taylor 展开的数学原理</li>
+<li><a href="../math/risch-algorithm.html">数学：Risch 积分算法</a> — 微分域塔与 Risch 算法的完整数学推导</li>
+<li><a href="../math/poly-gcd-factoring.html">数学：多项式 GCD 与因式分解</a> — Hermite 约化与无平方分解的数学基础</li>
+<li><a href="./rust-solvers.html">求解器 API</a> — ODE 求解（<code>dsolve</code>、<code>classify_ode</code>）</li>
+<li><a href="./rust-expressions.html">表达式系统</a> — <code>Atom</code>、<code>AtomArena</code>、<code>Symbol</code> 的基本用法</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-matrix.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-solvers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-matrix.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-solvers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,1001 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Calculus - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html" class="active"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-calculus.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="calculus"><a class="header" href="#calculus">Calculus</a></h1>
+<blockquote>
+<p>Source: <code>ocas-calc/src/</code></p>
+</blockquote>
+<p>oCAS's calculus module provides symbolic differentiation, integration, series expansion, and partial fraction decomposition. All operations execute on an <code>AtomArena</code> and produce new <code>Atom</code> handles. Derivatives or integrals that cannot be simplified are returned in unevaluated form as <code>Derivative(expr, var)</code> or <code>Integral(expr, var)</code>.</p>
+<p><strong>Module structure</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Submodule</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>derivative</code></td><td>symbolic differentiation <code>diff</code></td></tr>
+<tr><td><code>integral</code></td><td>layered integration pipeline <code>integrate</code>, <code>integrate_heuristic</code>, <code>integrate_with_fuel</code></td></tr>
+<tr><td><code>series</code></td><td>Taylor expansion <code>taylor</code>, substitution <code>substitute</code></td></tr>
+<tr><td><code>partial_fraction</code></td><td>partial fraction decomposition <code>apart</code>, recomposition <code>together</code></td></tr>
+<tr><td><code>tower</code></td><td>differential field tower construction for the Risch algorithm</td></tr>
+<tr><td><code>ode</code></td><td>ordinary differential equation solving (see <a href="./rust-solvers.html">Solvers</a>)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="diff"><a class="header" href="#diff"><code>diff</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn diff&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: computes the symbolic derivative of <code>expr</code> with respect to <code>var</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena used to construct the result</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the expression to differentiate</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>the differentiation variable (interned string)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the differentiated and simplified expression.</p>
+<p><strong>Algorithm</strong>:</p>
+<p><code>diff</code> recursively traverses the expression tree and applies the standard differentiation rules to each node type:</p>
+<div class="table-wrapper"><table><thead><tr><th>Node type</th><th>Differentiation rule</th></tr></thead><tbody>
+<tr><td><code>Num(_)</code></td><td>$\frac{d}{dx} c = 0$</td></tr>
+<tr><td><code>Var(s)</code></td><td>$1$ if $s = \text{var}$, otherwise $0$</td></tr>
+<tr><td><code>Add([a₁, …, aₙ])</code></td><td>derivative of a sum = sum of derivatives: $\sum \frac{d a_i}{dx}$</td></tr>
+<tr><td><code>Mul([a₁, …, aₙ])</code></td><td>product rule: $\frac{d}{dx}\prod a_i = \sum_i \left(\frac{d a_i}{dx} \prod_{j \neq i} a_j\right)$</td></tr>
+<tr><td><code>Pow([base, exp])</code></td><td>power rule (with chain rule), supports constant and non-constant exponents</td></tr>
+<tr><td><code>Fun(name, args)</code></td><td>built-in function table + chain rule</td></tr>
+</tbody></table>
+</div>
+<p><strong>Built-in derivative table</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Function $f(u)$</th><th>Derivative $f'(u) \cdot u'$</th></tr></thead><tbody>
+<tr><td>$\sin(u)$</td><td>$\cos(u) \cdot u'$</td></tr>
+<tr><td>$\cos(u)$</td><td>$-\sin(u) \cdot u'$</td></tr>
+<tr><td>$\tan(u)$</td><td>$\sec^2(u) \cdot u'$</td></tr>
+<tr><td>$\sec(u)$</td><td>$\sec(u)\tan(u) \cdot u'$</td></tr>
+<tr><td>$\exp(u)$</td><td>$\exp(u) \cdot u'$</td></tr>
+<tr><td>$\log(u)$</td><td>$u^{-1} \cdot u'$</td></tr>
+<tr><td>$\sqrt{u}$</td><td>$(2\sqrt{u})^{-1} \cdot u'$</td></tr>
+<tr><td>$\text{atan}(u)$</td><td>$(1 + u^2)^{-1} \cdot u'$</td></tr>
+</tbody></table>
+</div>
+<p>The table is hard-coded in <code>diff_function</code> in <code>derivative.rs</code>. Functions <strong>not</strong> in the table (such as $\text{asin}$, $\sinh$, $\cosh$, $\tanh$, etc.) also return the unevaluated form <code>Derivative(f, var)</code>.</p>
+<p><strong>Unevaluated form</strong>: when the function being differentiated is not in the built-in table, the result is <code>Derivative(expr, var)</code>, which can be detected by later pattern matching (match a <code>Fun</code> node whose name is <code>"Derivative"</code>; note that <code>is_fallback</code> only detects <code>"Integral"</code>, not <code>Derivative</code>).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::diff;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// d/dx [sin(x)] = cos(x)
+let sin_x = ctx.fun("sin", &amp;[x]);
+let result = diff(&amp;ctx, sin_x, Symbol::new("x"));
+assert_eq!(result.to_string(), "cos(x)");
+
+// d/dx [x^3] = 3*x^2
+let x_cubed = ctx.pow(x, ctx.num(3));
+let result = diff(&amp;ctx, x_cubed, Symbol::new("x"));
+assert_eq!(result.to_string(), "3*(x^2)");
+
+// d/dx [exp(x^2)] = 2*x*exp(x^2) (chain rule)
+let inner = ctx.pow(x, ctx.num(2));
+let expr = ctx.fun("exp", &amp;[inner]);
+let result = diff(&amp;ctx, expr, Symbol::new("x"));
+// Output contains a simplified form of 2*x*exp(x^2)
+
+// Unknown functions return the Derivative form
+let f = ctx.fun("my_func", &amp;[x]);
+let result = diff(&amp;ctx, f, Symbol::new("x"));
+// result contains Derivative(my_func(x), x)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#taylor">taylor</a>, <a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="integrate"><a class="header" href="#integrate"><code>integrate</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: computes the symbolic integral of <code>expr</code> with respect to <code>var</code>. Uses a layered integration pipeline that tries different algorithms layer by layer.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the integrand</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>the integration variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the integration result. Returns <code>Integral(expr, var)</code> when unsolved.</p>
+<p><strong>Integration pipeline</strong>:</p>
+<p><code>integrate</code> internally calls <code>integrate_raw</code> (recursive, depth limit <code>MAX_DEPTH = 8</code>). The pipeline has two phases:</p>
+<pre><code>┌───────────────────────────────────────────┐
+│ Phase 1: integrate_raw dispatches on node │
+│   type                                    │
+├───────────────────────────────────────────┤
+│ Num / Var          → constant integration:│
+│                      c·x; ∫x dx = (1/2)·x² │
+│ Add                → integrate term-wise  │
+│ Mul (integrate_product)  → extract the    │
+│                      constant factor      │
+│ Pow (integrate_power)    → power rule     │
+│                      ∫xⁿ, ∫(a·x+b)ⁿ,      │
+│                      fractional (a·x+b)^(p/q)│
+│ Fun (integrate_function) → table + linear │
+│                      substitution         │
+│                      ∫sin(u), ∫cos(u),    │
+│                      ∫exp(u), ∫log(u)     │
+│                      if u = a·x+b, apply  │
+│                      the chain rule       │
+├───────────────────────────────────────────┤
+│ Phase 2: when the dispatch above fails    │
+│   (returns the fallback form)             │
+│   → try_risch_or_fallback, in order:      │
+├───────────────────────────────────────────┤
+│ 1. rational function  (integrate_rational)│
+│ 2. Risch algorithm    (risch_integrate)   │
+│ 3. trig→exponential   (trig_to_exp +      │
+│    + Risch + realify)                     │
+│ 4. special functions  (special_integrate) │
+│ 5. heuristics         (heuristic_integrate)│
+│    parts (LIATE), trig substitution,      │
+│    Weierstrass, Euler substitution        │
+│ 6. unevaluated form   (fallback)          │
+│    Integral(expr, var)                    │
+└───────────────────────────────────────────┘
+</code></pre>
+<p><strong>Phase 1 — node-type dispatch</strong>:</p>
+<ul>
+<li><code>Num(_)</code>: the integral of a constant is the linear function <code>c * x</code></li>
+<li><code>Var(var)</code>: $\int x,dx = \frac{1}{2} x^2$; other variables are treated as constants</li>
+<li><code>Add</code>: integrate each term recursively and sum</li>
+<li><code>Mul</code> (<code>integrate_product</code>): recognizes the form <code>c · f(x)</code> (a constant times a non-constant factor), extracts the constant factor, and integrates recursively</li>
+<li><code>Pow</code> (<code>integrate_power</code>): power-function integration, supporting $\int x^n,dx$, linear forms $(a \cdot x + b)^n$ (including $n = -1$: $\int \frac{dx}{ax+b} = \frac{\log(ax+b)}{a}$), and fractional exponents $(a \cdot x + b)^{p/q}$</li>
+<li><code>Fun</code> (<code>integrate_function</code>): table lookup + linear substitution</li>
+</ul>
+<p><strong>Table lookup and linear substitution</strong>:</p>
+<p>The built-in integral table covers power functions (<code>integrate_power</code>) plus <code>sin</code>, <code>cos</code>, <code>exp</code>, <code>log</code>. When the argument of the integrand (or the base of a power) has the linear form $a \cdot x + b$, the chain rule $\int f(ax+b),dx = \frac{1}{a} F(ax+b)$ is applied automatically.</p>
+<p><strong>Phase 2 — fallback chain</strong> (<code>try_risch_or_fallback</code>):</p>
+<ol>
+<li>
+<p><strong>Rational function integration</strong> (<code>integrate_rational</code>): when the expression is a rational function of $\var$ (with no other variables or function applications), perform:</p>
+<ol>
+<li>Integrate the polynomial part term by term</li>
+<li>Hermite reduction to separate the rational part</li>
+<li>Logarithmic part: completing the square (quadratic denominators → $\log$ or $\text{atan}$) + Rothstein–Trager resultant</li>
+</ol>
+<p>See <a href="#rational-function-integration">rational function integration</a>.</p>
+</li>
+<li>
+<p><strong>Risch algorithm</strong> (<code>risch_integrate</code>): constructs the differential field tower $\mathbb{Q}(x, t_1, \dots, t_n)$ and integrates recursively layer by layer. See <a href="#risch-algorithm">Risch algorithm</a>.</p>
+</li>
+<li>
+<p><strong>Trigonometric rewriting</strong>: when Risch fails on the original expression and the integrand contains trigonometric functions, they are rewritten into complex exponential form via <code>trig_to_exp</code>, Risch is tried again, and <code>realify</code> converts the answer back to real form.</p>
+</li>
+<li>
+<p><strong>Special functions</strong> (<code>special_integrate</code>): when both Risch and the trigonometric rewriting fail, tries to match known special-function antiderivatives. See <a href="#special-function-integration">special function integration</a>.</p>
+</li>
+<li>
+<p><strong>Heuristics</strong> (<code>heuristic_integrate</code>): integration by parts (LIATE), trigonometric substitution, Weierstrass substitution, Euler substitution. See <a href="#integrate_heuristic">integrate_heuristic</a>.</p>
+</li>
+<li>
+<p><strong>Unevaluated form</strong> (<code>fallback</code>): when everything above fails, returns <code>Integral(expr, var)</code>. Detectable via <code>is_fallback</code>:</p>
+</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn is_fallback&lt;'a&gt;(atom: &amp;Atom&lt;'a&gt;) -&gt; bool {
+    matches!(atom.node(), AtomNode::Fun(name, _) if name.as_str() == "Integral")
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::integrate;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// ∫ x² dx = (1/3) x³
+let expr = ctx.pow(x, ctx.num(2));
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+assert_eq!(result.to_string(), "(3^-1)*(x^3)");
+
+// ∫ sin(x) dx = -cos(x)
+let expr = ctx.fun("sin", &amp;[x]);
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// Output: a simplified form of -cos(x)
+
+// ∫ 1/x dx = log(x) (via the rational function integrator or Risch)
+let expr = ctx.pow(x, ctx.num(-1));
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// Output: log(x)
+
+// Non-integrable expressions return the Integral form
+let expr = ctx.fun("my_func", &amp;[x]);
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// result is Integral(my_func(x), x)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#integrate_heuristic">integrate_heuristic</a>, <a href="#integrate_with_fuel">integrate_with_fuel</a>, <a href="#rational-function-integration">rational function integration</a>, <a href="#risch-algorithm">Risch algorithm</a></p>
+<hr />
+<h2 id="integrate_heuristic"><a class="header" href="#integrate_heuristic"><code>integrate_heuristic</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_heuristic&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: attempts heuristic integration techniques. Uses only integration by parts, trigonometric substitution, Weierstrass substitution, and Euler substitution; does not invoke the Risch algorithm or the rational function integrator.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the integrand</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>the integration variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the integration result if a heuristic succeeds, otherwise <code>Integral(expr, var)</code>.</p>
+<p><strong>Heuristic methods</strong>:</p>
+<h3 id="1-integration-by-parts-liate-heuristic"><a class="header" href="#1-integration-by-parts-liate-heuristic">1. Integration by parts (LIATE heuristic)</a></h3>
+<p>For products $\int u \cdot v' , dx$, choose $u$ by <strong>LIATE</strong> priority (highest to lowest):</p>
+<div class="table-wrapper"><table><thead><tr><th>Priority</th><th>Type</th><th>LIATE score</th><th>Example</th></tr></thead><tbody>
+<tr><td>0 (highest)</td><td>Logarithmic (L)</td><td>0</td><td>$\log(x)$</td></tr>
+<tr><td>1</td><td>Inverse trigonometric (I)</td><td>1</td><td>$\text{asin}(x)$</td></tr>
+<tr><td>2</td><td>Algebraic (A)</td><td>2</td><td>$x^2$</td></tr>
+<tr><td>3</td><td>Trigonometric (T)</td><td>3</td><td>$\sin(x)$</td></tr>
+<tr><td>4</td><td>Exponential (E)</td><td>4</td><td>$\exp(x)$</td></tr>
+<tr><td>5 (lowest)</td><td>Other</td><td>5</td><td>—</td></tr>
+</tbody></table>
+</div>
+<p>Choose the factor with the lowest score as $u$ and the rest as $v'$. The recursion depth limit is <code>PARTS_MAX_DEPTH = 2</code>.</p>
+<h3 id="2-trigonometric-substitution"><a class="header" href="#2-trigonometric-substitution">2. Trigonometric substitution</a></h3>
+<p>Matches the following patterns and returns the known antiderivative:</p>
+<div class="table-wrapper"><table><thead><tr><th>Integrand</th><th>Substitution</th><th>Result</th></tr></thead><tbody>
+<tr><td>$\frac{1}{\sqrt{a^2 - x^2}}$</td><td>$x = a\sin\theta$</td><td>$\text{asin}(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{a^2 + x^2}}$</td><td>$x = a\sinh t$</td><td>$\text{asinh}(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{x^2 - a^2}}$</td><td>$x = a\cosh t$</td><td>$\text{acosh}(x/a)$</td></tr>
+<tr><td>$\sqrt{a^2 - x^2}$</td><td>$x = a\sin\theta$</td><td>$\frac{x\sqrt{a^2-x^2} + a^2,\text{asin}(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{a^2 + x^2}$</td><td>$x = a\sinh t$</td><td>$\frac{x\sqrt{a^2+x^2} + a^2,\text{asinh}(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{x^2 - a^2}$</td><td>$x = a\cosh t$</td><td>$\frac{x\sqrt{x^2-a^2} - a^2,\text{acosh}(x/a)}{2}$</td></tr>
+</tbody></table>
+</div>
+<h3 id="3-weierstrass-substitution"><a class="header" href="#3-weierstrass-substitution">3. Weierstrass substitution</a></h3>
+<p>When the integrand is a rational function of $\sin(u)$ and $\cos(u)$ ($u$ linear in $\text{var}$), apply the substitution $t = \tan(u/2)$:</p>
+<p>$$\sin(u) = \frac{2t}{1+t^2}, \quad \cos(u) = \frac{1-t^2}{1+t^2}$$</p>
+<p>Rationalize the trigonometric rational function into a rational function of $t$, then integrate recursively.</p>
+<h3 id="4-euler-substitution"><a class="header" href="#4-euler-substitution">4. Euler substitution</a></h3>
+<p>When the integrand contains $\sqrt{ax^2 + bx + c}$, try the Euler substitution to eliminate the radical.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::integrate_heuristic;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// ∫ x·exp(x) dx — integration by parts (LIATE: x=algebraic, exp=exponential)
+let expr = ctx.mul(&amp;[x, ctx.fun("exp", &amp;[x])]);
+let result = integrate_heuristic(&amp;ctx, expr, Symbol::new("x"));
+// Result contains a simplified form of (x-1)*exp(x)
+
+// ∫ 1/√(1 - x²) dx = asin(x)
+// Build (1 - x²)^(-1/2): the exponent is -1·(2^-1)
+let one = ctx.num(1);
+let sqrt_arg = ctx.add(&amp;[one, ctx.mul(&amp;[ctx.num(-1), ctx.pow(x, ctx.num(2))])]);
+let neg_half = ctx.mul(&amp;[ctx.num(-1), ctx.pow(ctx.num(2), ctx.num(-1))]);
+let expr = ctx.pow(sqrt_arg, neg_half);
+let result = integrate_heuristic(&amp;ctx, expr, Symbol::new("x"));
+// Output: a simplified form of asin(x)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="integrate_with_fuel"><a class="header" href="#integrate_with_fuel"><code>integrate_with_fuel</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_with_fuel&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    fuel: &amp;Fuel,
+) -&gt; Result&lt;Atom&lt;'a&gt;, FuelError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: integration with a fuel budget. The integration traversal itself uses an internal depth limit (<code>MAX_DEPTH = 8</code>); this entry point threads <code>fuel</code> into the two simplification phases after integration, preventing pathological results from making the rewrite engine loop indefinitely.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the integrand</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>the integration variable</td></tr>
+<tr><td><code>fuel</code></td><td><code>&amp;Fuel</code></td><td>the fuel budget (rewrite step limit)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>Ok(Atom&lt;'a&gt;)</code> — integration simplification succeeded</li>
+<li><code>Err(FuelError)</code> — fuel exhausted during simplification</li>
+</ul>
+<p><strong>Difference from <code>integrate</code></strong>:</p>
+<p><code>integrate</code> imposes no limit on the simplification phases; <code>integrate_with_fuel</code> applies a fuel constraint to them. The depth limit (<code>MAX_DEPTH</code>) of the integration traversal itself is the same for both.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_core::fuel::Fuel;
+use ocas_calc::integrate_with_fuel;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&amp;ctx, x, Symbol::new("x"), &amp;fuel);
+match result {
+    Ok(expr) =&gt; assert_eq!(expr.to_string(), "(2^-1)*(x^2)"),
+    Err(_) =&gt; panic!("fuel exhausted"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="taylor"><a class="header" href="#taylor"><code>taylor</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn taylor&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    point: Atom&lt;'a&gt;,
+    order: usize,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: computes the Taylor expansion of <code>expr</code> in <code>var</code> around <code>point</code>, up to and including <code>order</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the expression to expand</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>the expansion variable</td></tr>
+<tr><td><code>point</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the expansion point (any expression, usually <code>0</code> or a constant)</td></tr>
+<tr><td><code>order</code></td><td><code>usize</code></td><td>the expansion order (inclusive)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the truncated polynomial:</p>
+<p>$$\sum_{n=0}^{\text{order}} \frac{f^{(n)}(\text{point})}{n!} \cdot (\text{var} - \text{point})^n$$</p>
+<p><strong>Algorithm</strong>:</p>
+<p>Computes each coefficient by repeated symbolic differentiation and evaluation at the expansion point:</p>
+<ol>
+<li>For $n = 0, 1, \dots, \text{order}$:
+<ul>
+<li>Compute $f^{(n)}(x)$ (via <code>diff</code>)</li>
+<li>Evaluate at $x = \text{point}$ with <code>substitute</code> to obtain $f^{(n)}(\text{point})$</li>
+<li>Multiply by $\frac{1}{n!}$ (via <code>mul_by_factorial_inverse</code>)</li>
+<li>Multiply by $(x - \text{point})^n$</li>
+</ul>
+</li>
+<li>Sum all terms and apply the calculus simplification rules</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::taylor;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// exp(x) expanded at x=0 to order 3
+let expr = ctx.fun("exp", &amp;[x]);
+let result = taylor(&amp;ctx, expr, Symbol::new("x"), ctx.num(0), 3);
+assert_eq!(
+    result.to_string(),
+    "1 + x + ((2^-1)*(x^2)) + ((6^-1)*(x^3))"
+);
+
+// sin(x) expanded at x=0 to order 5
+let expr = ctx.fun("sin", &amp;[x]);
+let result = taylor(&amp;ctx, expr, Symbol::new("x"), ctx.num(0), 5);
+// Output: x + (-1*(6^-1)*(x^3)) + ((120^-1)*(x^5))
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#diff">diff</a>, <a href="#substitute">substitute</a></p>
+<hr />
+<h2 id="substitute"><a class="header" href="#substitute"><code>substitute</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    replacement: Atom&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: replaces every occurrence of the variable <code>var</code> in <code>expr</code> with <code>replacement</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the expression to rewrite</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>the variable name to replace</td></tr>
+<tr><td><code>replacement</code></td><td><code>Atom&lt;'a&gt;</code></td><td>the replacement expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the new expression after substitution. The original expression is unaffected (immutable data structure on the arena).</p>
+<p><strong>Semantics</strong>:</p>
+<ul>
+<li>Traverses the expression tree depth-first</li>
+<li>Replaces only leaf nodes <code>Var(Symbol)</code> that exactly match <code>var</code></li>
+<li>No automatic simplification after substitution (call <code>simplify</code> separately if needed)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::substitute;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+
+// (x² + x)[x → y] = y² + y
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), x]);
+let result = substitute(&amp;ctx, expr, Symbol::new("x"), y);
+assert_eq!(result.to_string(), "(y^2) + y");
+
+// sin(x)[x → 2*y] = sin(2*y)
+let expr = ctx.fun("sin", &amp;[x]);
+let two_y = ctx.mul(&amp;[ctx.num(2), y]);
+let result = substitute(&amp;ctx, expr, Symbol::new("x"), two_y);
+assert_eq!(result.to_string(), "sin(2*y)");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#taylor">taylor</a>, <a href="#diff">diff</a></p>
+<hr />
+<h2 id="apart"><a class="header" href="#apart"><code>apart</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn apart&lt;D: EuclideanDomain&gt;(
+    num: &amp;DenseUnivariatePolynomial&lt;D&gt;,
+    den: &amp;DenseUnivariatePolynomial&lt;D&gt;,
+) -&gt; (
+    Option&lt;DenseUnivariatePolynomial&lt;D&gt;&gt;,
+    Vec&lt;PartialFractionTerm&lt;D&gt;&gt;,
+)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: performs partial fraction decomposition of the rational function $\frac{\text{num}(x)}{\text{den}(x)}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>num</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;D&gt;</code></td><td>the numerator polynomial</td></tr>
+<tr><td><code>den</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;D&gt;</code></td><td>the denominator polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>(Option&lt;poly&gt;, Vec&lt;PartialFractionTerm&lt;D&gt;&gt;)</code> — the polynomial part (when the numerator degree ≥ the denominator degree) and the list of partial fraction terms.</p>
+<p><strong>Mathematical background</strong>:</p>
+<p>Given a proper fraction $\frac{p(x)}{q(x)}$ (i.e., $\deg(p) &lt; \deg(q)$), factor the denominator square-free as $q = \prod_i f_i^{e_i}$, then decompose:</p>
+<p>$$\frac{p(x)}{q(x)} = \text{poly_part} + \sum_i \sum_{k=1}^{e_i} \frac{a_{i,k}(x)}{f_i(x)^k}$$</p>
+<p>If $\deg(p) \geq \deg(q)$, perform polynomial division first; the quotient becomes <code>poly_part</code> and the remainder is decomposed.</p>
+<p><strong>The <code>PartialFractionTerm&lt;D&gt;</code> struct</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PartialFractionTerm&lt;D: EuclideanDomain&gt; {
+    pub numer: DenseUnivariatePolynomial&lt;D&gt;,  // numerator a_{i,k}(x)
+    pub denom: DenseUnivariatePolynomial&lt;D&gt;,  // irreducible factor f_i(x)
+    pub exp: usize,                            // exponent k
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Represents the fraction $\frac{\text{numer}(x)}{\text{denom}(x)^{\text{exp}}}$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::apart;
+
+let d = RationalDomain;
+
+// 1 / (x² - 1) — the denominator is square-free (a single square-free factor x²-1)
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(-1, 1),  // constant term
+    Rational::new(0, 1),   // x coefficient
+    Rational::new(1, 1),   // x² coefficient
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+assert!(poly_part.is_none()); // deg(num) &lt; deg(den), no polynomial part
+// x²-1 is square-free → a single term with denominator x²-1 and exponent 1
+// (apart works on the square-free factorization, not the irreducible
+// factorization, so it does not split into (x-1)(x+1))
+
+// (x³ + 1) / (x² - 1) — requires polynomial division
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1),
+    Rational::new(0, 1), Rational::new(1, 1),
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+assert!(poly_part.is_some()); // the quotient polynomial x
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#together">together</a>, <a href="#rational-function-integration">rational function integration</a></p>
+<hr />
+<h2 id="together"><a class="header" href="#together"><code>together</code></a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn together&lt;D: EuclideanDomain&gt;(
+    poly_part: Option&lt;&amp;DenseUnivariatePolynomial&lt;D&gt;&gt;,
+    terms: &amp;[PartialFractionTerm&lt;D&gt;],
+) -&gt; (DenseUnivariatePolynomial&lt;D&gt;, DenseUnivariatePolynomial&lt;D&gt;)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: recomposes partial fraction terms back into a single rational function. The inverse of <code>apart</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>poly_part</code></td><td><code>Option&lt;&amp;DenseUnivariatePolynomial&lt;D&gt;&gt;</code></td><td>the polynomial part (the first element returned by <code>apart</code>)</td></tr>
+<tr><td><code>terms</code></td><td><code>&amp;[PartialFractionTerm&lt;D&gt;]</code></td><td>the list of partial fraction terms</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>(numerator, denominator)</code> — the merged numerator and denominator polynomials.</p>
+<p><strong>Algorithm</strong>:</p>
+<p>Combines the polynomial part and all fraction terms over a common denominator: compute the common denominator $\text{lcm}$, expand each term to the common denominator, sum, and return the resulting numerator and denominator.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::{apart, together};
+
+let d = RationalDomain;
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(-1, 1), Rational::new(0, 1), Rational::new(1, 1),
+]);
+
+// apart → round-trip → together should restore the original fraction
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+let (result_num, result_den) = together(poly_part.as_ref(), &amp;terms);
+// result_num/result_den is equivalent to num/den (possibly up to a constant factor)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#apart">apart</a></p>
+<hr />
+<h2 id="rational-function-integration"><a class="header" href="#rational-function-integration">Rational function integration</a></h2>
+<p><strong>Source</strong>: <code>ocas-calc/src/integral/rational.rs</code></p>
+<p>The rational function integrator <code>integrate_rational</code> handles rational functions of $\var$ (with no other variables or function applications). It follows the standard three-step method from Chapter 2 of Bronstein's <em>Symbolic Integration I</em>:</p>
+<h3 id="1-polynomial-part"><a class="header" href="#1-polynomial-part">1. Polynomial part</a></h3>
+<p>Integrate $\int \sum c_k x^k , dx = \sum \frac{c_k}{k+1} x^{k+1}$ term by term.</p>
+<h3 id="2-hermite-reduction"><a class="header" href="#2-hermite-reduction">2. Hermite reduction</a></h3>
+<p>For a proper fraction $\frac{a(x)}{d(x)}$ ($d$ monic), decompose:</p>
+<p>$$\frac{a}{d} = \frac{d}{dx}\left(\frac{g_{\text{num}}}{g_{\text{den}}}\right) + \frac{a_1}{d_1}$$</p>
+<p>where $d_1$ is square-free. The derivative of the rational part $\frac{g_{\text{num}}}{g_{\text{den}}}$ can be computed directly.</p>
+<h3 id="3-logarithmic-part"><a class="header" href="#3-logarithmic-part">3. Logarithmic part</a></h3>
+<p>For the remaining part $\frac{a_1}{d_1}$ with square-free denominator, choose a strategy by denominator degree:</p>
+<div class="table-wrapper"><table><thead><tr><th>Denominator degree</th><th>Strategy</th></tr></thead><tbody>
+<tr><td>0</td><td>constant integration</td></tr>
+<tr><td>1</td><td>$c \cdot \log(ax + b)$</td></tr>
+<tr><td>2</td><td>complete the square → $\log$ or $\text{atan}$</td></tr>
+<tr><td>≥ 3</td><td>Rothstein–Trager resultant method</td></tr>
+</tbody></table>
+</div>
+<p><strong>The Rothstein–Trager method</strong>:</p>
+<p>Compute $R(t) = \text{Res}_x(d, a - t \cdot d')$; the rational roots $c_i$ of $R(t)$ give:</p>
+<p>$$\int \frac{a}{d} = \sum_i c_i \cdot \log(\gcd(d, a - c_i \cdot d'))$$</p>
+<p>When $R(t)$ cannot be completely factored over $\mathbb{Q}$, the corresponding terms are returned in unevaluated form <code>Integral(term, var)</code>.</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>Some(Atom)</code> — the expression is a rational function of $\var$; returns the integration result</li>
+<li><code>None</code> — the expression is not a pure rational function of $\var$ (contains other variables or functions)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::integral::rational::integrate_rational;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+
+// ∫ 1/x dx = log(x)
+let result = integrate_rational(&amp;ctx, ctx.pow(x, ctx.num(-1)), Symbol::new("x"));
+assert_eq!(result.unwrap().to_string(), "log(x)");
+
+// ∫ 1/(x²+1) dx = atan(x) (via completing the square)
+// The expression must be built as a rational function of x
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#apart">apart</a>, <a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="risch-algorithm"><a class="header" href="#risch-algorithm">Risch algorithm</a></h2>
+<p><strong>Source</strong>: <code>ocas-calc/src/integral/risch.rs</code>, <code>ocas-calc/src/tower/</code></p>
+<p>The Risch algorithm handles integrals of elementary transcendental functions, based on Chapters 5–6 of Bronstein's <em>Symbolic Integration I</em>.</p>
+<h3 id="differential-field-tower"><a class="header" href="#differential-field-tower">Differential field tower</a></h3>
+<p>The algorithm first constructs the differential field tower $\mathbb{Q}(x, t_1, \dots, t_n)$, where each generator $t_i$ is a logarithm or an exponential:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) enum GenKind {
+    Constant,  // a constant symbol (e.g. the imaginary unit I), D t = 0
+    Log,       // t_i = log(u)
+    Exp,       // t_i = exp(u)
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Tower construction (<code>build_tower</code>) walks the function applications in the expression, creating a new layer for every <code>log</code> or <code>exp</code>. Constraints:</p>
+<ul>
+<li>Only <code>log</code> and <code>exp</code> are accepted (trigonometric functions must first be rewritten via <code>trig_to_exp</code>)</li>
+<li>Algebraic functions are rejected (non-integer exponents, e.g. $\sqrt{x}$)</li>
+<li>Algebraically dependent generators are rejected (e.g., $\log(x)$ and $\log(2x)$)</li>
+</ul>
+<h3 id="layer-by-layer-integration"><a class="header" href="#layer-by-layer-integration">Layer-by-layer integration</a></h3>
+<p>At each tower layer $k(t_i)$, the algorithm performs:</p>
+<ol>
+<li><strong>Hermite reduction</strong> (<code>hermite_tower</code>): decompose $\frac{a}{d}$ into $D(g) + \frac{a_1}{d_1}$, where $d_1$ is square-free</li>
+<li><strong>Polynomial part</strong>:
+<ul>
+<li><strong>Primitive layer</strong> ($t = \log(u)$): method of undetermined coefficients; the top-level constant is fixed by the logarithmic constraint</li>
+<li><strong>Hyperexponential layer</strong> ($t = \exp(u)$): solve the Risch differential equation $Dq + fq = g$ at each layer</li>
+</ul>
+</li>
+<li><strong>Logarithmic part</strong>: match the logarithmic derivative identity $c \cdot \frac{D d}{d} \to c \cdot \log(d)$</li>
+</ol>
+<h3 id="handling-trigonometric-functions"><a class="header" href="#handling-trigonometric-functions">Handling trigonometric functions</a></h3>
+<p><code>integrate</code> first tries Risch on the original expression; when that fails and the integrand contains trigonometric functions, they are rewritten into complex exponential form via <code>trig_to_exp</code> and Risch is attempted again:</p>
+<p>$$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-iu}}{2}$$</p>
+<p>The integration result is then converted back to real form where possible via <code>realify</code>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Complex pattern</th><th>Real form</th></tr></thead><tbody>
+<tr><td>$c \cdot \log(u + iv) + c \cdot \log(u - iv)$</td><td>$c \cdot \log(u^2 + v^2)$</td></tr>
+<tr><td>$c \cdot \log(u + iv) - c \cdot \log(u - iv)$</td><td>$2c \cdot \text{atan}(v/u)$</td></tr>
+<tr><td>$\exp(Iu) \cdot \exp(Iv)$</td><td>$\exp(I(u+v))$ (combines the exponents so cancellation is visible, e.g. $e^{Ix}e^{-Ix} \to e^0$)</td></tr>
+</tbody></table>
+</div>
+<p>If <code>realify</code> cannot match a pattern, the complex form is returned (still mathematically correct; verifiable by differentiation).</p>
+<h3 id="depth-limit"><a class="header" href="#depth-limit">Depth limit</a></h3>
+<p><code>MAX_RISCH_DEPTH = 16</code>, enforced via the thread-local counter <code>RISCH_DEPTH</code> and the guard <code>RischDepthGuard</code> (RAII, decrements automatically).</p>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>Some(Atom)</code> — integration succeeded</li>
+<li><code>None</code> — the expression is beyond the implemented fragment (the caller falls back to other integrators)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// The Risch algorithm is invoked automatically through integrate; usually not called directly
+// ∫ exp(x²) · 2x dx = exp(x²) — a typical example the Risch algorithm handles
+// ∫ sin(x)/x dx — no elementary antiderivative; Risch returns None and the special function layer handles it
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#integrate">integrate</a>, <a href="#special-function-integration">special function integration</a></p>
+<hr />
+<h2 id="special-function-integration"><a class="header" href="#special-function-integration">Special function integration</a></h2>
+<p><strong>Source</strong>: <code>ocas-calc/src/integral/special.rs</code></p>
+<p>When the Risch algorithm proves that the integral has no elementary antiderivative, the special function integrator tries to match known non-elementary antiderivatives.</p>
+<h3 id="supported-special-functions"><a class="header" href="#supported-special-functions">Supported special functions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Integrand</th><th>Antiderivative</th><th>Function name</th></tr></thead><tbody>
+<tr><td>$e^{-x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erf}(x)$</td><td>error function</td></tr>
+<tr><td>$e^{x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erfi}(x)$</td><td>imaginary error function</td></tr>
+<tr><td>$\frac{e^x}{x}$</td><td>$\text{Ei}(x)$</td><td>exponential integral</td></tr>
+<tr><td>$\frac{\sin x}{x}$</td><td>$\text{Si}(x)$</td><td>sine integral</td></tr>
+<tr><td>$\frac{\cos x}{x}$</td><td>$\text{Ci}(x)$</td><td>cosine integral</td></tr>
+<tr><td>$\frac{\sinh x}{x}$</td><td>$\text{Shi}(x)$</td><td>hyperbolic sine integral</td></tr>
+<tr><td>$\frac{\cosh x}{x}$</td><td>$\text{Chi}(x)$</td><td>hyperbolic cosine integral</td></tr>
+<tr><td>$\sin(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnels}(\sqrt{2/\pi},x)$</td><td>Fresnel S integral (function name <code>fresnels</code>)</td></tr>
+<tr><td>$\cos(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnelc}(\sqrt{2/\pi},x)$</td><td>Fresnel C integral (function name <code>fresnelc</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Matching strategy</strong>:</p>
+<p><code>special_integrate</code> examines the factor structure of the integrand:</p>
+<ul>
+<li><code>erf_family</code>: matches forms $e^{c \cdot x^2}$</li>
+<li><code>ei_family</code>: matches forms $e^{cx} / x$</li>
+<li><code>trig_integral_family</code>: matches $\sin(x)/x$, $\cos(x)/x$, $\sinh(x)/x$, $\cosh(x)/x$ (the argument must be exactly $x$)</li>
+<li><code>fresnel_family</code>: matches $\sin(cx^2)$, $\cos(cx^2)$</li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<ul>
+<li><code>Some(Atom)</code> — matched successfully; returns the antiderivative containing special functions</li>
+<li><code>None</code> — no known pattern matches; the caller returns <code>Integral(expr, var)</code></li>
+</ul>
+<p><strong>Design notes</strong>:</p>
+<p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>.</p>
+<p><strong>See also</strong>: <a href="#risch-algorithm">Risch algorithm</a>, <a href="#integrate">integrate</a></p>
+<hr />
+<h2 id="helper-functions"><a class="header" href="#helper-functions">Helper functions</a></h2>
+<h3 id="is_fallback"><a class="header" href="#is_fallback"><code>is_fallback</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn is_fallback&lt;'a&gt;(atom: &amp;Atom&lt;'a&gt;) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: checks whether <code>atom</code> is an unevaluated integral form (function name <code>"Integral"</code>). Note that unevaluated derivatives (the <code>Derivative</code> form) are constructed directly by <code>diff</code> and are not detected by this function.</p>
+<p><strong>See also</strong>: <a href="#integrate">integrate</a>, <a href="#diff">diff</a></p>
+<h3 id="is_constant"><a class="header" href="#is_constant"><code>is_constant</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn is_constant&lt;'a&gt;(expr: Atom&lt;'a&gt;, var: Symbol) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: checks whether <code>expr</code> does not contain the variable <code>var</code> (i.e., is constant with respect to <code>var</code>).</p>
+<h3 id="fraction_exponent"><a class="header" href="#fraction_exponent"><code>fraction_exponent</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn fraction_exponent&lt;'a&gt;(exp: Atom&lt;'a&gt;) -&gt; Option&lt;(i64, i64)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: parses an exponent atom into a fraction $p/q$ (small integers). Accepts the form $p \cdot q^{-1}$; used for power-function integration.</p>
+<h3 id="linear_form"><a class="header" href="#linear_form"><code>linear_form</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn linear_form&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol)
+    -&gt; Option&lt;(Atom&lt;'a&gt;, Atom&lt;'a&gt;)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: if <code>expr</code> is of the form $a \cdot \text{var} + b$ ($a, b$ constant with respect to <code>var</code>), returns <code>(a, b)</code>; otherwise returns <code>None</code>.</p>
+<hr />
+<h2 id="internal-architecture"><a class="header" href="#internal-architecture">Internal architecture</a></h2>
+<h3 id="simplification-pipeline"><a class="header" href="#simplification-pipeline">Simplification pipeline</a></h3>
+<ul>
+<li>The result of <code>integrate</code> passes through two simplification stages: first the default rewrite rules <code>default_rules</code> (algebraic identities such as $0 + x = x$, $1 \cdot x = x$, $x^1 = x$) for 20 steps, then <code>calculus_rules</code> for 10 steps, and finally <code>normalize</code> to canonical form</li>
+<li><code>diff</code> and <code>taylor</code> simplify with <code>calculus_rules</code> directly, then <code>normalize</code></li>
+</ul>
+<p><code>calculus_rules</code> (<code>rules.rs</code>) builds on <code>default_rules</code> and adds calculus-specific identities: <code>exp(0) → 1</code>, <code>log(1) → 0</code>, <code>sin(0) → 0</code>, <code>cos(0) → 1</code>, <code>tan(0) → 0</code>, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, etc.</p>
+<h3 id="depth-limits"><a class="header" href="#depth-limits">Depth limits</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Limit</th><th>Value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>MAX_DEPTH</code></td><td>8</td><td><code>integrate_raw</code> recursion depth</td></tr>
+<tr><td><code>MAX_RISCH_DEPTH</code></td><td>16</td><td>Risch algorithm recursion depth</td></tr>
+<tr><td><code>PARTS_MAX_DEPTH</code></td><td>2</td><td>integration-by-parts recursion depth</td></tr>
+</tbody></table>
+</div>
+<h3 id="module-dependency-graph"><a class="header" href="#module-dependency-graph">Module dependency graph</a></h3>
+<pre><code>ocas-calc
+├── derivative::diff
+├── integral
+│   ├── mod.rs          — integrate, integrate_with_fuel, integrate_heuristic
+│   ├── heuristic.rs    — integration by parts, trig/Weierstrass/Euler substitutions
+│   ├── rational.rs     — Hermite reduction, Rothstein–Trager
+│   ├── risch.rs        — Risch algorithm core
+│   ├── rde.rs          — Risch differential equation solver
+│   ├── trig.rs         — trig→exponential rewriting, realify
+│   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   └── tower/
+│       ├── build.rs    — differential field tower construction
+│       ├── elem.rs     — tower element types (KElem, KPoly, KRat)
+│       └── convert.rs  — Atom ↔ tower element conversion
+├── series.rs           — taylor, substitute
+├── partial_fraction.rs — apart, together
+└── rules.rs            — calculus simplification rules
+</code></pre>
+<hr />
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="../math/symbolic-calculus.html">Math: Symbolic calculus</a> — the mathematics of differentiation and Taylor expansion</li>
+<li><a href="../math/risch-algorithm.html">Math: The Risch algorithm</a> — full mathematical derivation of the differential field tower and the Risch algorithm</li>
+<li><a href="../math/poly-gcd-factoring.html">Math: Polynomial GCD and factorization</a> — the mathematical foundations of Hermite reduction and square-free factorization</li>
+<li><a href="./rust-solvers.html">Solvers API</a> — ODE solving (<code>dsolve</code>, <code>classify_ode</code>)</li>
+<li><a href="./rust-expressions.html">Expression system</a> — basic usage of <code>Atom</code>, <code>AtomArena</code>, <code>Symbol</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-matrix.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-solvers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-matrix.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-solvers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
