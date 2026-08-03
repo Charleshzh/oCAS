@@ -190,9 +190,7 @@ impl PyTensor {
         let inner = TensorInner::build(|ctx| {
             let slots: Vec<IndexSlot<'static>> = parsed
                 .iter()
-                .map(|(label, pos)| {
-                    IndexSlot::new(ctx.var(label), *pos)
-                })
+                .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
                 .collect();
             Tensor::new(symbol, slots).with_symmetry(sym)
         })?;
@@ -266,9 +264,7 @@ fn rebuild_tensor(
     let inner = TensorInner::build(|ctx| {
         let slots: Vec<IndexSlot<'static>> = slots
             .iter()
-            .map(|(label, pos)| {
-                IndexSlot::new(ctx.var(label), *pos)
-            })
+            .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
             .collect();
         Tensor::new(Symbol::new(name), slots).with_symmetry(sym)
     })?;
@@ -325,26 +321,14 @@ pub fn contract_tensors<'py>(
     let (b_name, b_sym, b_slots_data) = snapshot(&b.inner.tensor);
     let a_slots: Vec<IndexSlot<'static>> = a_slots_data
         .iter()
-        .map(|(label, pos)| {
-            IndexSlot::new(ctx.var(label), *pos)
-        })
+        .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
         .collect();
     let b_slots: Vec<IndexSlot<'static>> = b_slots_data
         .iter()
-        .map(|(label, pos)| {
-            IndexSlot::new(ctx.var(label), *pos)
-        })
+        .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
         .collect();
-    let a_rebuilt = Tensor::new(
-        Symbol::new(&a_name),
-        a_slots,
-    )
-    .with_symmetry(a_sym);
-    let b_rebuilt = Tensor::new(
-        Symbol::new(&b_name),
-        b_slots,
-    )
-    .with_symmetry(b_sym);
+    let a_rebuilt = Tensor::new(Symbol::new(&a_name), a_slots).with_symmetry(a_sym);
+    let b_rebuilt = Tensor::new(Symbol::new(&b_name), b_slots).with_symmetry(b_sym);
 
     let result = contract(ctx, &a_rebuilt, &b_rebuilt);
     match result {

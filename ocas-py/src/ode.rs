@@ -99,8 +99,7 @@ fn build_ode(
 }
 
 fn parse_in<'a>(ctx: &'a ocas_atom::AtomArena<'a>, input: &str) -> PyResult<ocas_atom::Atom<'a>> {
-    ocas_parse::parse(ctx, input)
-        .map_err(|e| PyValueError::new_err(format!("parse error: {e}")))
+    ocas_parse::parse(ctx, input).map_err(|e| PyValueError::new_err(format!("parse error: {e}")))
 }
 
 fn ode_type_name(t: &ODEType) -> &'static str {

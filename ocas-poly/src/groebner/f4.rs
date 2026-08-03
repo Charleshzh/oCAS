@@ -1398,7 +1398,9 @@ fn make_monic<D: Domain, O: MonomialOrder>(p: &mut SparseMultivariatePolynomial<
 }
 
 pub(super) fn domain_to_i64_fp<D: Domain + 'static>(elem: &D::Element, prime: i64) -> i64 {
-    if let Some(ff_elem) = (elem as &dyn std::any::Any).downcast_ref::<<FiniteField as Domain>::Element>() {
+    if let Some(ff_elem) =
+        (elem as &dyn std::any::Any).downcast_ref::<<FiniteField as Domain>::Element>()
+    {
         let val = ff_elem.value();
         let (_, digits) = val.to_u64_digits();
         if digits.is_empty() {

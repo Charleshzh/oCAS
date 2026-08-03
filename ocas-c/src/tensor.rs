@@ -168,9 +168,7 @@ fn build_tensor_inner(
     let symbol = Symbol::new(name);
     let slots: Vec<IndexSlot<'static>> = slots
         .iter()
-        .map(|(label, pos)| {
-            IndexSlot::new(ctx.var(label), *pos)
-        })
+        .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
         .collect();
     let tensor = Tensor::new(symbol, slots).with_symmetry(symmetry);
     Box::new(TensorInner {
@@ -436,26 +434,14 @@ pub extern "C" fn ocas_tensor_contract(
     let (b_name, b_sym, b_slots_data) = snapshot(&b_inner.tensor);
     let a_slots: Vec<IndexSlot<'static>> = a_slots_data
         .iter()
-        .map(|(label, pos)| {
-            IndexSlot::new(ctx.var(label), *pos)
-        })
+        .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
         .collect();
     let b_slots: Vec<IndexSlot<'static>> = b_slots_data
         .iter()
-        .map(|(label, pos)| {
-            IndexSlot::new(ctx.var(label), *pos)
-        })
+        .map(|(label, pos)| IndexSlot::new(ctx.var(label), *pos))
         .collect();
-    let a_rebuilt = Tensor::new(
-        Symbol::new(&a_name),
-        a_slots,
-    )
-    .with_symmetry(a_sym);
-    let b_rebuilt = Tensor::new(
-        Symbol::new(&b_name),
-        b_slots,
-    )
-    .with_symmetry(b_sym);
+    let a_rebuilt = Tensor::new(Symbol::new(&a_name), a_slots).with_symmetry(a_sym);
+    let b_rebuilt = Tensor::new(Symbol::new(&b_name), b_slots).with_symmetry(b_sym);
 
     let result = contract(ctx, &a_rebuilt, &b_rebuilt);
     match result {
