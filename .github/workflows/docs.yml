@@ -23,7 +23,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install mdBook
         uses: peaceiris/actions-mdbook@v2
@@ -138,7 +138,7 @@ jobs:
       # ──────────────────────────────────────────────────────────────
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ steps.stage.outputs.root }}
 
