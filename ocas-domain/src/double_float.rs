@@ -328,8 +328,10 @@ impl DoubleF64 {
     }
 }
 
-// Note: cos(x) = sin(π/2 - x) is incorrect above. Let me fix:
-// We override cos below.
+// Note: cos(x) is implemented via the identity cos(x) = sin(π/2 − x).  This
+// is accurate to double-double precision for arguments up to a few multiples
+// of π; for very large |x| the same argument-reduction accuracy limits as
+// `sin` apply.
 
 // =========================================================================
 // std::ops trait implementations
