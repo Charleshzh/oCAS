@@ -69,12 +69,28 @@ jobs:
 
       - name: Dry-run publish workspace crates
         run: |
+          # Topological order matching the workspace dependency graph.
+          # Must match publish-batch.yml order.
+          crates=(
+            ocas-core
+            ocas-domain
+            ocas-poly
+            ocas-atom
+            ocas-parse
+            ocas-rewrite
+            ocas-eval
+            ocas-calc
+            ocas-gpl
+            ocas
+            ocas-c
+            ocas-py
+          )
           # Crates may already exist on crates.io when this runs (the real
           # publish is handled by release-plz on main). A dry-run failure due
           # to "already exists" is not a packaging problem, so we only fail
           # on errors that are NOT the already-exists warning.
           failed=0
-          for crate in ocas-core ocas-domain ocas-poly ocas-atom ocas-rewrite ocas-calc ocas-eval ocas-parse ocas ocas-c ocas-py ocas-gpl; do
+          for crate in "${crates[@]}"; do
             echo "=== Dry-run $crate ==="
             out=$(cargo publish --dry-run -p "$crate" 2>&1) || {
               if echo "$out" | grep -q "already exists on crates.io"; then
@@ -84,6 +100,8 @@ jobs:
                 failed=1
               fi
             }
+            # crates.io index needs a moment to propagate between publishes.
+            sleep 15
           done
           exit $failed
 

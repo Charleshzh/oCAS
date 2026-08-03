@@ -450,7 +450,22 @@ pub fn young_project(expr: &str, tableau: Vec<usize>) -> PyResult<String> {
         .map_err(|e| PyValueError::new_err(format!("parse error: {e}")))?;
 
     let t = YoungTableau::new(tableau);
-    let result = yp(&ctx, parsed, &t);
+    // young_project currently returns Atom directly (not Result); catch any
+    // panics (e.g. from internal unwrap) and convert to a Python exception
+    // instead of aborting the process.
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| yp(&ctx, parsed, &t)))
+        .map_err(|e| {
+            PyValueError::new_err(format!(
+                "young projection panicked: {}",
+                if let Some(s) = e.downcast_ref::<String>() {
+                    s.clone()
+                } else if let Some(s) = e.downcast_ref::<&str>() {
+                    s.to_string()
+                } else {
+                    "unknown panic".to_string()
+                }
+            ))
+        })?;
     Ok(result.to_string())
 }
 
