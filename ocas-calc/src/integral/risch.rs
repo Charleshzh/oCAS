@@ -39,6 +39,23 @@ use crate::tower::elem::{KElem, KPoly, KRat};
 
 type DPoly = DenseUnivariatePolynomial<RationalDomain>;
 
+/// Maximum recursion depth for `risch_integrate` / `integrate_level`.
+/// Prevents infinite loops when the Risch algorithm cannot handle an
+/// integrand but keeps retrying (e.g. sec(x) forcing in VOP).
+const MAX_RISCH_DEPTH: usize = 16;
+
+thread_local! {
+    static RISCH_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+struct RischDepthGuard;
+
+impl Drop for RischDepthGuard {
+    fn drop(&mut self) {
+        RISCH_DEPTH.set(RISCH_DEPTH.get().saturating_sub(1));
+    }
+}
+
 /// Integrate `expr` (an elementary function of `var` built from rational
 /// functions, `log`, and `exp`) by the Risch algorithm.
 ///
@@ -49,6 +66,12 @@ pub(crate) fn risch_integrate<'a>(
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
+    let depth = RISCH_DEPTH.get();
+    if depth >= MAX_RISCH_DEPTH {
+        return None;
+    }
+    RISCH_DEPTH.set(depth + 1);
+    let _guard = RischDepthGuard;
     let tower = build_tower(ctx, expr, var)?;
     let level = tower.gens.len();
     let rf = atom_to_rational_extended(expr, &tower.gen_atoms(), tower.n_vars())?;
