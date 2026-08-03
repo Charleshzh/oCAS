@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="zh" class="light sidebar-visible" dir="ltr">
+<html lang="zh" class="light" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,58 +7,44 @@
 
 
         <!-- Custom HTML head -->
-
+        
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-0392ca55.css">
-        <link rel="stylesheet" href="css/chrome-fc474251.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../language-switcher.css">
 
-
-        <!-- Provide site root and default themes to javascript -->
-        <script>
-            const path_to_root = "";
-            const default_light_theme = "light";
-            const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-356dfe38.js";
-        </script>
-        <!-- Start loading toc.js asap -->
-        <script src="toc-59070e71.js"></script>
     </head>
-    <body>
-    <div id="mdbook-help-container">
-        <div id="mdbook-help-popup">
-            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
-            <div>
-                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
-                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
-                <p>Press <kbd>?</kbd> to show this help</p>
-                <p>Press <kbd>Esc</kbd> to hide this help</p>
-            </div>
-        </div>
-    </div>
-    <div id="mdbook-body-container">
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                let theme = localStorage.getItem('mdbook-theme');
-                let sidebar = localStorage.getItem('mdbook-sidebar');
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -72,69 +58,87 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
-            let theme;
+            var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            const html = document.documentElement;
+            var html = document.querySelector('html');
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add("js");
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
         </script>
 
-        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            let sidebar = null;
-            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
-                sidebar_toggle.checked = false;
             }
-            if (sidebar === 'visible') {
-                sidebar_toggle.checked = true;
-            } else {
-                html.classList.remove('sidebar-visible');
-            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
         </script>
 
-        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
-            <!-- populated by js -->
-            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
-            <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
-            </noscript>
-            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded affix "><li class="part-title">语言绑定</li><li class="chapter-item expanded "><a href="bindings-python.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li class="chapter-item expanded "><a href="bindings-c.html"><strong aria-hidden="true">5.</strong> C/C++ API</a></li><li class="chapter-item expanded "><a href="rust-api.html"><strong aria-hidden="true">6.</strong> Rust API</a></li><li class="chapter-item expanded affix "><li class="part-title">高级主题</li><li class="chapter-item expanded "><a href="solvers.html" class="active"><strong aria-hidden="true">7.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="rewrite.html"><strong aria-hidden="true">8.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="evaluation.html"><strong aria-hidden="true">9.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="algorithms/factorization.html"><strong aria-hidden="true">10.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="algorithms/rational-functions.html"><strong aria-hidden="true">11.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="algorithms/groebner.html"><strong aria-hidden="true">12.</strong> Gröbner 基</a></li><li class="chapter-item expanded "><a href="algorithms/integration.html"><strong aria-hidden="true">13.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="algorithms/number-theory.html"><strong aria-hidden="true">14.</strong> 数论</a></li><li class="chapter-item expanded "><a href="numeric-integration.html"><strong aria-hidden="true">15.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="autodiff.html"><strong aria-hidden="true">16.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="tensors.html"><strong aria-hidden="true">17.</strong> 张量</a></li><li class="chapter-item expanded affix "><li class="part-title">性能与质量</li><li class="chapter-item expanded "><a href="performance.html"><strong aria-hidden="true">18.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="correctness.html"><strong aria-hidden="true">19.</strong> 正确性</a></li><li class="chapter-item expanded affix "><li class="part-title">参考</li><li class="chapter-item expanded "><a href="backends.html"><strong aria-hidden="true">20.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="build-windows.html"><strong aria-hidden="true">21.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">22.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="external-references.html"><strong aria-hidden="true">23.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <div id="mdbook-page-wrapper" class="page-wrapper">
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="mdbook-menu-bar-hover-placeholder"></div>
-                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
                         </label>
-                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
                         </button>
-                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
                         </button>
                     </div>
 
@@ -142,83 +146,78 @@
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
-                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                            <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                            <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/solvers.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
-                            <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/solvers.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
                     </div>
                 </div>
 
-                <div id="mdbook-search-wrapper" class="hidden">
-                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
-                        <div class="search-wrapper">
-                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
-                            <div class="spinner-wrapper">
-                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
-                            </div>
-                        </div>
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
-                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
-                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
-                        <ul id="mdbook-searchresults">
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
                         </ul>
                     </div>
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script>
-                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
-                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
-                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
                         link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
                     });
                 </script>
 
-                <div id="mdbook-content" class="content">
+                <div id="content" class="content">
                     <main>
                         <h1 id="求解器"><a class="header" href="#求解器">求解器</a></h1>
 <p>oCAS 提供线性方程组、丢番图方程与多项式系统的求解器。本章介绍所有可用求解器及其用法。</p>
-<hr>
+<hr />
 <h2 id="ℚ-上的线性方程组"><a class="header" href="#ℚ-上的线性方程组">ℚ 上的线性方程组</a></h2>
 <p><code>solve_linear_rational</code> 在有理数域上求解 $n \times n$ 系统 $Ax = b$。
 输入系数为 <code>i64</code> 值；解以 <code>(分子, 分母)</code> 对返回。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let a = vec![vec![2, 1], vec![1, -1]];
 let b = vec![5, 1];
 let x = solve_linear_rational(&amp;a, &amp;b).unwrap();
 // x = [(2, 1), (1, 1)]  → 2, 1
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>错误：<code>EmptySystem</code>、<code>NonSquare</code>、<code>Inconsistent</code>、<code>Underdetermined { rank }</code>。</p>
 <p>Python：</p>
 <pre><code class="language-python">print(ocas.solve_linear_rational([[2, 1], [1, -1]], [5, 1]))
 # [(2, 1), (1, 1)]
 </code></pre>
-<hr>
+<hr />
 <h2 id="ℤ-上的线性方程组"><a class="header" href="#ℤ-上的线性方程组">ℤ 上的线性方程组</a></h2>
 <p><code>solve_linear_integer</code> 求 $Ax = b$ 的整数解。若无整数解则返回错误。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>// 2x + y = 3
 let a = vec![vec![2, 1]];
 let b = vec![3];
 let x = solve_linear_integer(&amp;a, &amp;b).unwrap();
 // x = [1, 1]  (2·1 + 1·1 = 3)
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>当解含分数时返回 <code>ResultNotInDomain</code> 错误。</p>
-<hr>
+<hr />
 <h2 id="丢番图方程"><a class="header" href="#丢番图方程">丢番图方程</a></h2>
 <p><code>solve_diophantine</code> 求解线性丢番图方程 $a \cdot x + b \cdot y = c$ 的整数解 $x, y$。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let sol = solve_diophantine(3, 5, 1).unwrap();
 // sol = DiophantineSolution { x0: 2, y0: -1, x_step: 5, y_step: -3 }
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>结果给出特解 $(x_0, y_0)$ 和步长值。通解为：</p>
 <p>$$
 \begin{aligned}
@@ -227,11 +226,11 @@ y &amp;= y_0 + y_{step} \cdot t
 \end{aligned}
 $$</p>
 <p>其中 $t$ 为任意整数。</p>
-<hr>
+<hr />
 <h2 id="多项式系统基于-gröbner-基"><a class="header" href="#多项式系统基于-gröbner-基">多项式系统（基于 Gröbner 基）</a></h2>
 <p><code>solve_polynomial_system</code> 首先计算 Gröbner 基，然后进行回代，求解多项式方程组。
 它使用 Buchberger 算法，支持可配置的单项式序。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let arena = Arena::new();
 let ctx = AtomArena::new(&amp;arena);
@@ -240,27 +239,133 @@ let ctx = AtomArena::new(&amp;arena);
 let eq1 = parse(&amp;ctx, "x + y").unwrap();
 let eq2 = parse(&amp;ctx, "x*y - 1").unwrap();
 let sol = solve_polynomial_system(&amp;ctx, &amp;[eq1, eq2], &amp;[Symbol::new("x"), Symbol::new("y")]);
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>结果为三角形多项式系统，可通过回代求解。</p>
-<hr>
+<h3 id="理想运算0230-起"><a class="header" href="#理想运算0230-起">理想运算（0.23.0 起）</a></h3>
+<p><code>ocas_poly::ideal</code> 模块提供完整理想运算：</p>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>函数</th><th>描述</th></tr></thead><tbody>
+<tr><td>成员判定</td><td><code>ideal_contains(gens, f, algo)</code></td><td>测试 $f \in I$</td></tr>
+<tr><td>和</td><td><code>ideal_sum(I, J)</code></td><td>$I + J$</td></tr>
+<tr><td>积</td><td><code>ideal_product(I, J)</code></td><td>$I \cdot J$</td></tr>
+<tr><td>商</td><td><code>ideal_quotient(I, J)</code></td><td>$I : J$</td></tr>
+<tr><td>饱和</td><td><code>ideal_saturate(I, J)</code></td><td>$I : J^\infty$</td></tr>
+<tr><td>交集</td><td><code>ideal_intersection(I, J)</code></td><td>$I \cap J$</td></tr>
+<tr><td>消元</td><td><code>eliminate(gens, elim_vars, algo)</code></td><td>消去变量</td></tr>
+<tr><td>根式</td><td><code>ideal_radical(gens)</code></td><td>$\sqrt{I}$</td></tr>
+<tr><td>准素分解</td><td><code>primary_decomposition(gens)</code></td><td>分解为准素分量</td></tr>
+<tr><td>Hilbert 级数</td><td><code>hilbert_series(&amp;gb)</code></td><td>计算 Hilbert 级数</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::ideal::*;
+use ocas_poly::sparse::Lex;
+
+let d = RationalDomain;
+let circle = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let line = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+
+// 求解圆 ∩ 直线
+let sol = solve_polynomial_system(&amp;[circle, line], Algorithm::Auto);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="常微分方程"><a class="header" href="#常微分方程">常微分方程</a></h2>
+<p><code>dsolve</code> 解析求解常微分方程。方程以等于零的表达式、未知函数
+（如 <code>y(x)</code>）与自变量（如 <code>x</code>）给出。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+// y' - y = 0
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+let sol = dsolve(&amp;ctx, ode, None);
+// ODESolution::Explicit(C1*exp(x))
+<span class="boring">}</span></code></pre></pre>
+<p><code>classify_ode</code> 只返回可用的求解方法而不求解：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let types = classify_ode(&amp;ctx, ode);
+// [LinearFirst, Separable, PowerSeries]
+<span class="boring">}</span></code></pre></pre>
+<h3 id="支持的-ode-类型"><a class="header" href="#支持的-ode-类型">支持的 ODE 类型</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>类型</th><th>形式</th><th>方法</th></tr></thead><tbody>
+<tr><td>可分离</td><td>$f(x)dx = g(y)dy$</td><td>直接积分</td></tr>
+<tr><td>一阶线性</td><td>$y' + p(x)y = q(x)$</td><td>积分因子 $\mu = e^{\int p}$</td></tr>
+<tr><td>Bernoulli</td><td>$y' + p(x)y = q(x)y^n$</td><td>替换 $v = y^{1-n}$</td></tr>
+<tr><td>恰当</td><td>$M dx + N dy = 0$，$\partial M/\partial y = \partial N/\partial x$</td><td>势函数</td></tr>
+<tr><td>齐次</td><td>$y' = f(y/x)$</td><td>替换 $v = y/x$</td></tr>
+<tr><td>积分因子</td><td>非恰当一阶</td><td>$\mu(x)$ 或 $\mu(y)$ 检测</td></tr>
+<tr><td>常系数</td><td>$ay'' + by' + cy = f(x)$</td><td>特征方程</td></tr>
+<tr><td>Cauchy-Euler</td><td>$ax^2y'' + bxy' + cy = f(x)$</td><td>指标方程</td></tr>
+<tr><td>降阶法</td><td>二阶线性</td><td>$y_2 = y_1\int e^{-\int p}/y_1^2$</td></tr>
+<tr><td>常数变易法</td><td>二阶非齐次</td><td>Wronskian 公式</td></tr>
+<tr><td>待定系数法</td><td>多项式/指数/三角 forcing</td><td>系数匹配 + 共振</td></tr>
+<tr><td>幂级数</td><td>常点</td><td>系数递推</td></tr>
+<tr><td>Frobenius</td><td>正则奇点</td><td>指标方程 + 递推</td></tr>
+<tr><td>Laplace IVP</td><td>一阶/二阶线性初值问题</td><td><code>dsolve_ivp</code></td></tr>
+<tr><td>2×2 系统</td><td>$\mathbf{Y}' = A\mathbf{Y}$</td><td><code>dsolve_system</code>（特征分解）</td></tr>
+</tbody></table>
+</div>
+<p>无法解析求解的 ODE 返回未求值的 <code>ODE(equation, func)</code> 形式。</p>
+<h3 id="初值问题"><a class="header" href="#初值问题">初值问题</a></h3>
+<p><code>dsolve_ivp</code> 通过 Laplace 变换求解线性常系数初值问题：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// y' - y = 0, y(0) = 1  =&gt;  y = exp(x)
+let sol = dsolve_ivp(&amp;ctx, ode, ctx.num(1), None);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="系统"><a class="header" href="#系统">系统</a></h3>
+<p><code>dsolve_system</code> 求解 2×2 常系数系统 $\mathbf{Y}' = A\mathbf{Y}$：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// y1' = y2, y2' = -y1（谐振子）
+let sol = dsolve_system(&amp;ctx, &amp;[eq1, eq2], &amp;[y1, y2], Symbol::new("x"));
+// ODESolution::System([C1*sin(x) + C2*cos(x), C1*cos(x) - C2*sin(x)])
+<span class="boring">}</span></code></pre></pre>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-python">import ocas
+
+e = ocas.Expression("Derivative(y(x), x) - y(x)")
+print(ocas.classify_ode(e, "y", "x"))     # ['LinearFirst', 'Separable', ...]
+print(ocas.dsolve(e, "y", "x"))            # y = C1*exp(x)
+print(ocas.dsolve_ivp(e, "y", "x", "1"))   # y = exp(x)
+</code></pre>
+<h3 id="c"><a class="header" href="#c">C</a></h3>
+<pre><code class="language-c">int err = 0;
+char *types = ocas_ode_classify("Derivative(y(x), x) - y(x)", "y", "x", &amp;err);
+char *sol = ocas_ode_dsolve("Derivative(y(x), x) - y(x)", "y", "x", NULL, &amp;err);
+char *ivp = ocas_ode_dsolve_ivp("Derivative(y(x), x) - y(x)", "y", "x", "1", NULL, &amp;err);
+ocas_string_free(types);
+ocas_string_free(sol);
+ocas_string_free(ivp);
+</code></pre>
+<hr />
 <h2 id="错误"><a class="header" href="#错误">错误</a></h2>
 <p>所有求解器返回 <code>Result&lt;T, SolveError&gt;</code>。常见错误变体：</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>错误</th><th>含义</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>错误</th><th>含义</th></tr></thead><tbody>
 <tr><td><code>EmptySystem</code></td><td>未提供方程</td></tr>
 <tr><td><code>NonLinear</code></td><td>系统对请求变量非线程</td></tr>
 <tr><td><code>NonSquare</code></td><td>方程数与未知数个数不匹配</td></tr>
 <tr><td><code>Inconsistent</code></td><td>无解</td></tr>
 <tr><td><code>Underdetermined { rank }</code></td><td>无穷多解</td></tr>
 <tr><td><code>ResultNotInDomain</code></td><td>解含分数但要求整数</td></tr>
-</tbody>
-</table>
+</tbody></table>
 </div>
-<hr>
+<hr />
 <h2 id="参见"><a class="header" href="#参见">参见</a></h2>
 <ul>
 <li><a href="./rust-api.html">Rust API</a> — 系数域类型与多项式操作</li>
@@ -273,11 +378,11 @@ let sol = solve_polynomial_system(&amp;ctx, &amp;[eq1, eq2], &amp;[Symbol::new("
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                             <a rel="prev" href="rust-api.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                                <i class="fa fa-angle-left"></i>
                             </a>
 
                             <a rel="next prefetch" href="rewrite.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                                <i class="fa fa-angle-right"></i>
                             </a>
 
                         <div style="clear: both"></div>
@@ -287,21 +392,16 @@ let sol = solve_polynomial_system(&amp;ctx, &amp;[eq1, eq2], &amp;[Symbol::new("
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                     <a rel="prev" href="rust-api.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                        <i class="fa fa-angle-left"></i>
                     </a>
 
                     <a rel="next prefetch" href="rewrite.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                        <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
 
         </div>
 
-        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
-        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
-        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
-        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
-        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
 
 
@@ -310,17 +410,16 @@ let sol = solve_polynomial_system(&amp;ctx, &amp;[eq1, eq2], &amp;[Symbol::new("
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-09f2665d.js"></script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-c22b7243.js"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
         <script src="../language-switcher.js"></script>
-
 
 
     </div>

@@ -1,0 +1,383 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Symbolic Integration - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded affix "><li class="part-title">Language Bindings</li><li class="chapter-item expanded "><a href="../bindings-python.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li class="chapter-item expanded "><a href="../bindings-c.html"><strong aria-hidden="true">5.</strong> C/C++ API</a></li><li class="chapter-item expanded "><a href="../rust-api.html"><strong aria-hidden="true">6.</strong> Rust API</a></li><li class="chapter-item expanded affix "><li class="part-title">Advanced Topics</li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">7.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">8.</strong> Rewrite & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">9.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">10.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">11.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">12.</strong> Gröbner Bases</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html" class="active"><strong aria-hidden="true">13.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">14.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">15.</strong> Numeric Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">16.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">17.</strong> Tensors</a></li><li class="chapter-item expanded affix "><li class="part-title">Performance & Quality</li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">18.</strong> Benchmarks & Comparison</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">19.</strong> Correctness</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference</li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">20.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">21.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">22.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">23.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/algorithms/integration.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="symbolic-integration"><a class="header" href="#symbolic-integration">Symbolic Integration</a></h1>
+<p>oCAS integrates expressions by a layered pipeline: a fast heuristic table,
+then a rational-function integrator, then the Risch algorithm over
+elementary towers, then a trigonometric-to-exponential rewrite, and
+finally a special-function table. The first layer that produces an answer
+wins. This chapter explains each layer and when the unevaluated
+<code>Integral(expr, var)</code> form is returned.</p>
+<hr />
+<h2 id="the-pipeline"><a class="header" href="#the-pipeline">The Pipeline</a></h2>
+<p><code>integrate(expr, var)</code> tries, in order:</p>
+<ol>
+<li><strong>Heuristic table</strong> — power rules, <code>sin</code>/<code>cos</code>/<code>exp</code>/<code>log</code> of linear
+arguments, linear substitutions. Fast and always attempted first.</li>
+<li><strong>Rational-function integrator</strong> — Hermite reduction plus the
+logarithmic part (logarithmic-derivative identity, completing the
+square, Rothstein–Trager). Handles every rational function of <code>x</code>.</li>
+<li><strong>Risch algorithm</strong> — elementary transcendental towers built from
+<code>log</code> and <code>exp</code>.</li>
+<li><strong>Trigonometric rewrite</strong> — <code>sin</code>/<code>cos</code>/<code>tan</code>/… rewritten into
+<code>exp(I·x)</code> and re-integrated by Risch, then converted back to real
+form on a best-effort basis.</li>
+<li><strong>Special-function table</strong> — non-elementary integrals with closed
+forms in terms of <code>erf</code>, <code>Ei</code>, <code>Si</code>, <code>Ci</code>, Fresnel <code>S</code>/<code>C</code>, …</li>
+<li><strong>Unevaluated form</strong> — <code>Integral(expr, var)</code>.</li>
+</ol>
+<hr />
+<h2 id="rational-functions"><a class="header" href="#rational-functions">Rational Functions</a></h2>
+<p>Every rational function of the integration variable is integrated
+exactly. The polynomial part is integrated termwise; the proper fraction
+is split by Hermite reduction into a rational part plus a remainder with
+a squarefree denominator; the remainder yields logarithms (via the
+identity <code>c·f'/f → c·log(f)</code>), arctangents (degree-2 denominators by
+completing the square), or Rothstein–Trager logarithms.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = parse(&amp;ctx, "(2*x + 3)/(x^2 + 3*x + 5)").unwrap();
+let result = integrate(&amp;ctx, expr, Symbol::new("x"));
+// log(x^2 + 3*x + 5)
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="the-risch-algorithm"><a class="header" href="#the-risch-algorithm">The Risch Algorithm</a></h2>
+<p>Elementary transcendental integrands are handled by building a
+<em>differential field tower</em> <code>ℚ(x, t₁, …, tₙ)</code> where each <code>tᵢ</code> is a
+<code>log</code> or <code>exp</code> over the field below, and integrating recursively
+(Bronstein, <em>Symbolic Integration I</em>, ch. 5):</p>
+<ul>
+<li>at each level, the rational part is split off by Hermite reduction;</li>
+<li>the logarithmic part uses the logarithmic-derivative identity;</li>
+<li>the polynomial part is integrated by undetermined coefficients at
+<code>log</code> levels and by the Risch differential equation <code>Dq + f·q = g</code>
+at <code>exp</code> levels;</li>
+<li>the base <code>ℚ(x)</code> delegates to the rational-function integrator.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+// ∫ x·exp(x) dx = (x - 1)·exp(x)
+let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::new("x"));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="scope-limits"><a class="header" href="#scope-limits">Scope limits</a></h3>
+<p>The current fragment seeks only <strong>polynomial</strong> solutions of the Risch
+differential equation and uses only the logarithmic-derivative identity
+for logarithmic parts. Consequences:</p>
+<ul>
+<li><code>∫ exp(x)/x dx</code> has no elementary antiderivative — it is answered by
+the special-function table as <code>Ei(x)</code>.</li>
+<li>Some <code>log</code>-tower cases needing a free-constant choice that makes lower
+layers integrable (e.g. <code>log(x+1)</code>) are not yet decided and fall back.</li>
+</ul>
+<p>When no layer succeeds, the result is the unevaluated form
+<code>Integral(expr, var)</code> — a deliberate answer, not an error.</p>
+<hr />
+<h2 id="trigonometric-integrands"><a class="header" href="#trigonometric-integrands">Trigonometric Integrands</a></h2>
+<p><code>sin</code>, <code>cos</code>, <code>tan</code>, <code>cot</code>, <code>sec</code>, <code>csc</code> are rewritten into complex
+exponentials via <code>t = exp(I·x)</code> and integrated by Risch. The imaginary
+unit is carried as a constant tower generator (<code>D I = 0</code>). Results are
+converted back to real form where possible: conjugate logarithm pairs
+merge into real <code>log</code>/<code>atan</code> terms.</p>
+<p>The Risch differential-equation solver currently works over <code>ℚ[x]</code>, so
+hyperexponential equations whose coefficients contain <code>I</code> (e.g. the ones
+produced by <code>sin(x)·cos(x)</code> or <code>cos(x)²</code>) cannot be solved yet; those
+integrands return the unevaluated form. Simple <code>sin</code>/<code>cos</code> of linear
+arguments are covered by the heuristic table.</p>
+<hr />
+<h2 id="special-functions"><a class="header" href="#special-functions">Special Functions</a></h2>
+<p>Integrals with no elementary antiderivative but a standard closed form
+are answered directly (definitions match SymPy):</p>
+<div class="table-wrapper"><table><thead><tr><th>Integrand</th><th>Result</th></tr></thead><tbody>
+<tr><td><code>exp(-x²)</code></td><td><code>(√π/2)·erf(x)</code></td></tr>
+<tr><td><code>exp(x²)</code></td><td><code>(√π/2)·erfi(x)</code></td></tr>
+<tr><td><code>exp(c·x²)</code>, <code>c &lt; 0</code></td><td><code>√π/(2√(-c))·erf(√(-c)·x)</code></td></tr>
+<tr><td><code>exp(x)/x</code></td><td><code>Ei(x)</code></td></tr>
+<tr><td><code>sin(x)/x</code></td><td><code>Si(x)</code></td></tr>
+<tr><td><code>cos(x)/x</code></td><td><code>Ci(x)</code></td></tr>
+<tr><td><code>sinh(x)/x</code></td><td><code>Shi(x)</code></td></tr>
+<tr><td><code>cosh(x)/x</code></td><td><code>Chi(x)</code></td></tr>
+<tr><td><code>sin(x²)</code></td><td><code>√(π/2)·fresnels(√(2/π)·x)</code></td></tr>
+<tr><td><code>cos(x²)</code></td><td><code>√(π/2)·fresnelc(√(2/π)·x)</code></td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+// ∫ exp(-x^2) dx = (√π/2)·erf(x)
+let result = integrate(&amp;ctx, parse(&amp;ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="fuel-bounded-integration"><a class="header" href="#fuel-bounded-integration">Fuel-bounded integration</a></h2>
+<p><code>integrate_with_fuel</code> wraps the same pipeline but threads a [<code>Fuel</code>] budget
+through the two post-integration simplification stages. A pathological result
+that would otherwise spin the rewriter can be cut off deterministically.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::fuel::Fuel;
+use ocas_calc::integral::integrate_with_fuel;
+
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
+match result {
+    Ok(r) =&gt; println!("{}", r),
+    Err(_) =&gt; println!("fuel exhausted during simplification"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Returns <code>Err</code> only when fuel was exhausted mid-simplification. The
+integration traversal itself uses the internal depth limit; fuel bounds
+only the post-simplification passes.</p>
+<hr />
+<h2 id="bindings"><a class="header" href="#bindings">Bindings</a></h2>
+<p>The same pipeline backs the Python and C APIs:</p>
+<ul>
+<li>Python: <code>Expression.integrate(var)</code></li>
+<li>C: <code>ocas_expr_integrate(...)</code></li>
+</ul>
+<p>Both return the unevaluated <code>Integral(...)</code> form when no closed form is
+found, exactly like the Rust API.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../algorithms/groebner.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../algorithms/number-theory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../algorithms/groebner.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../algorithms/number-theory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

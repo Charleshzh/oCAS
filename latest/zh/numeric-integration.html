@@ -1,0 +1,352 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>数值积分 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded affix "><li class="part-title">语言绑定</li><li class="chapter-item expanded "><a href="bindings-python.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li class="chapter-item expanded "><a href="bindings-c.html"><strong aria-hidden="true">5.</strong> C/C++ API</a></li><li class="chapter-item expanded "><a href="rust-api.html"><strong aria-hidden="true">6.</strong> Rust API</a></li><li class="chapter-item expanded affix "><li class="part-title">高级主题</li><li class="chapter-item expanded "><a href="solvers.html"><strong aria-hidden="true">7.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="rewrite.html"><strong aria-hidden="true">8.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="evaluation.html"><strong aria-hidden="true">9.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="algorithms/factorization.html"><strong aria-hidden="true">10.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="algorithms/rational-functions.html"><strong aria-hidden="true">11.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="algorithms/groebner.html"><strong aria-hidden="true">12.</strong> Gröbner 基</a></li><li class="chapter-item expanded "><a href="algorithms/integration.html"><strong aria-hidden="true">13.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="algorithms/number-theory.html"><strong aria-hidden="true">14.</strong> 数论</a></li><li class="chapter-item expanded "><a href="numeric-integration.html" class="active"><strong aria-hidden="true">15.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="autodiff.html"><strong aria-hidden="true">16.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="tensors.html"><strong aria-hidden="true">17.</strong> 张量</a></li><li class="chapter-item expanded affix "><li class="part-title">性能与质量</li><li class="chapter-item expanded "><a href="performance.html"><strong aria-hidden="true">18.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="correctness.html"><strong aria-hidden="true">19.</strong> 正确性</a></li><li class="chapter-item expanded affix "><li class="part-title">参考</li><li class="chapter-item expanded "><a href="backends.html"><strong aria-hidden="true">20.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="build-windows.html"><strong aria-hidden="true">21.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">22.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="external-references.html"><strong aria-hidden="true">23.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/numeric-integration.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="数值积分"><a class="header" href="#数值积分">数值积分</a></h1>
+<p>oCAS 内置自适应蒙特卡洛积分器（Vegas），用于数值计算定积分。当符号反
+导数不存在或计算代价过高时，数值积分是实用的替代方案。</p>
+<hr />
+<h2 id="vegas-算法"><a class="header" href="#vegas-算法">Vegas 算法</a></h2>
+<p>Vegas（Lepage 1978）是一种重要性采样蒙特卡洛方法，通过迭代细化分段常数
+近似来集中采样到被积函数变化最剧烈的区域。oCAS 实现了标准自适应网格变
+体，可配置迭代次数、采样预算和学习率。</p>
+<div class="table-wrapper"><table><thead><tr><th>入口</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>integrate_1d(f, a, b, opts)</code></td><td>一维积分便捷函数</td></tr>
+<tr><td><code>Vegas::new(n_dims, opts)</code></td><td>多维积分器</td></tr>
+<tr><td><code>Integrator::integrate(&amp;mut self, f)</code></td><td>运行积分</td></tr>
+</tbody></table>
+</div>
+<p>返回 <code>IntegrateResult { integral, error }</code>。</p>
+<hr />
+<h2 id="快速上手一维积分"><a class="header" href="#快速上手一维积分">快速上手：一维积分</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::numeric::{integrate_1d, VegasOptions};
+
+// 计算 sin(x) 从 0 到 π 的积分
+let opts = VegasOptions {
+    n_bins: 50,
+    n_samples: 10_000,
+    iterations: 5,
+    learning_rate: 1.5,
+    seed: Some(42),
+};
+let result = integrate_1d(|x| x.sin(), 0.0, std::f64::consts::PI, opts);
+println!("integral = {:.6} ± {:.6}", result.integral, result.error);
+// ≈ 2.000000
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="多维积分"><a class="header" href="#多维积分">多维积分</a></h2>
+<p>对多变量积分，直接使用 <code>Vegas</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::numeric::{Vegas, VegasOptions, Integrator};
+
+let opts = VegasOptions {
+    n_bins: 50,
+    n_samples: 10_000,
+    iterations: 10,
+    learning_rate: 1.5,
+    seed: Some(0),
+};
+let mut vegas = Vegas::new(2, opts);
+
+// 计算 x*y 在 [0,1]×[0,1] 上的积分 → 精确值 = 0.25
+let result = vegas.integrate(&amp;|coords| coords[0] * coords[1]);
+println!("integral = {:.6} ± {:.6}", result.integral, result.error);
+<span class="boring">}</span></code></pre></pre>
+<p>闭包接收一个 <code>&amp;[f64]</code> 切片，每个元素对应一个维度，已映射到单位超立方
+体 <code>[0, 1]ⁿ</code>。</p>
+<hr />
+<h2 id="调优参数"><a class="header" href="#调优参数">调优参数</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>默认值</th><th>作用</th></tr></thead><tbody>
+<tr><td><code>n_bins</code></td><td>50</td><td>每个维度的网格分箱数</td></tr>
+<tr><td><code>n_samples</code></td><td>10,000</td><td>每次迭代的采样数</td></tr>
+<tr><td><code>iterations</code></td><td>5</td><td>自适应迭代次数</td></tr>
+<tr><td><code>learning_rate</code></td><td>1.5</td><td>网格自适应速度（1.0–2.0）</td></tr>
+<tr><td><code>seed</code></td><td><code>None</code></td><td>随机数种子，用于可重现性</td></tr>
+</tbody></table>
+</div>
+<p>增加迭代和采样次数可降低方差估计但增加运行时间。学习率控制网格对被积
+函数结构的自适应强度。</p>
+<hr />
+<h2 id="统计累加器"><a class="header" href="#统计累加器">统计累加器</a></h2>
+<p><code>StatisticsAccumulator</code> 是 Vegas 内部使用的逆方差加权累加器。它跟踪每
+次迭代的积分估计、卡方诊断和最终组合结果。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::numeric::StatisticsAccumulator;
+
+let mut acc = StatisticsAccumulator::new();
+acc.add_sample(1.0, 1.5);
+acc.add_sample(1.0, 1.8);
+acc.add_sample(1.0, 2.1);
+acc.finalize_iteration();
+
+println!("integral = {:.6}", acc.integral());
+println!("error    = {:.6}", acc.error());
+println!("chi²     = {:.2}", acc.chi_square());
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="python-与-c-用法"><a class="header" href="#python-与-c-用法">Python 与 C 用法</a></h2>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-python">import ocas
+
+# 一维便捷函数
+result = ocas.integrate_1d(lambda x: x**2, 0, 1, n_samples=10000, iterations=10)
+print(result.integral, result.error)
+
+# 多维积分
+vegas = ocas.Vegas(n_dims=2, n_samples=10000, iterations=10)
+result = vegas.integrate(lambda coords: coords[0] * coords[1])
+print(result.integral)
+</code></pre>
+<h3 id="c"><a class="header" href="#c">C</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+
+/* 一维便捷函数 */
+ocas_OcasIntegrateResult result;
+ocas_integrate_1d(my_fn, NULL, 0.0, 1.0, 10000, 10, &amp;result);
+printf("integral = %f ± %f\n", result.integral, result.error);
+</code></pre>
+<p>完整的绑定文档见 <a href="./bindings-python.html">Python API</a> 和
+<a href="./bindings-c.html">C/C++ API</a> 章节。</p>
+<hr />
+<h2 id="限制"><a class="header" href="#限制">限制</a></h2>
+<ul>
+<li>Vegas 使用蒙特卡洛采样，结果是带误差条的统计估计，非精确符号值。</li>
+<li>对高维且变量间强相关的积分，收敛较慢。</li>
+<li>被积函数必须是纯 <code>f64 → f64</code> 函数；符号表达式需先编译为数值求值器
+（见 <a href="./evaluation.html">求值与 JIT</a>）。</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="algorithms/number-theory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="autodiff.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="algorithms/number-theory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="autodiff.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

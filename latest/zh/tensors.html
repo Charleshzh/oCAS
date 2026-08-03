@@ -1,0 +1,433 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>张量 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded affix "><li class="part-title">语言绑定</li><li class="chapter-item expanded "><a href="bindings-python.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li class="chapter-item expanded "><a href="bindings-c.html"><strong aria-hidden="true">5.</strong> C/C++ API</a></li><li class="chapter-item expanded "><a href="rust-api.html"><strong aria-hidden="true">6.</strong> Rust API</a></li><li class="chapter-item expanded affix "><li class="part-title">高级主题</li><li class="chapter-item expanded "><a href="solvers.html"><strong aria-hidden="true">7.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="rewrite.html"><strong aria-hidden="true">8.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="evaluation.html"><strong aria-hidden="true">9.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="algorithms/factorization.html"><strong aria-hidden="true">10.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="algorithms/rational-functions.html"><strong aria-hidden="true">11.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="algorithms/groebner.html"><strong aria-hidden="true">12.</strong> Gröbner 基</a></li><li class="chapter-item expanded "><a href="algorithms/integration.html"><strong aria-hidden="true">13.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="algorithms/number-theory.html"><strong aria-hidden="true">14.</strong> 数论</a></li><li class="chapter-item expanded "><a href="numeric-integration.html"><strong aria-hidden="true">15.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="autodiff.html"><strong aria-hidden="true">16.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="tensors.html" class="active"><strong aria-hidden="true">17.</strong> 张量</a></li><li class="chapter-item expanded affix "><li class="part-title">性能与质量</li><li class="chapter-item expanded "><a href="performance.html"><strong aria-hidden="true">18.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="correctness.html"><strong aria-hidden="true">19.</strong> 正确性</a></li><li class="chapter-item expanded affix "><li class="part-title">参考</li><li class="chapter-item expanded "><a href="backends.html"><strong aria-hidden="true">20.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="build-windows.html"><strong aria-hidden="true">21.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">22.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="external-references.html"><strong aria-hidden="true">23.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/tensors.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="张量"><a class="header" href="#张量">张量</a></h1>
+<p>oCAS 提供带显式指标管理的基础张量代数。<code>Tensor</code> 携带命名指标槽
+（上标/下标）、可选的对称性元数据，并可转换为 <code>Atom</code> 表达式进行符号处理。</p>
+<hr />
+<h2 id="指标槽"><a class="header" href="#指标槽">指标槽</a></h2>
+<p>每个张量指标具有：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Atom</code></td><td>指标名（通常为希腊字母或 <code>i</code>、<code>j</code> 等）</td></tr>
+<tr><td><code>position</code></td><td><code>IndexPosition</code></td><td><code>Upper</code>（逆变）或 <code>Lower</code>（协变）</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{IndexSlot, IndexPosition};
+
+let mu = IndexSlot::new("mu", IndexPosition::Upper);
+let nu = IndexSlot::new("nu", IndexPosition::Lower);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="创建张量"><a class="header" href="#创建张量">创建张量</a></h2>
+<p><code>Tensor</code> 由名称（<code>Symbol</code>）和指标槽向量定义：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry};
+
+let slots = vec![
+    IndexSlot::new("mu", IndexPosition::Upper),
+    IndexSlot::new("nu", IndexPosition::Lower),
+];
+let t = Tensor::new(Symbol::new("g"), slots);
+
+println!("rank = {}", t.rank());       // 2
+println!("name = {}", t.name());       // g
+<span class="boring">}</span></code></pre></pre>
+<p>可选地附加对称性元数据：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let symmetric = t.clone().with_symmetry(Symmetry::Symmetric);
+let antisymmetric = t.clone().with_symmetry(Symmetry::Antisymmetric);
+<span class="boring">}</span></code></pre></pre>
+<p>对称性元数据对下游消费者是建议性的；张量代数运算不会自动对称化。</p>
+<hr />
+<h2 id="缩并"><a class="header" href="#缩并">缩并</a></h2>
+<p><code>contract</code> 接受两个张量，返回标量（当所有指标都缩并时）或含剩余自由
+指标的 <code>TensorProduct</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{contract, Contracted};
+
+// 缩并两个 1 阶张量：A^μ B_μ → 标量
+let a = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new("mu", IndexPosition::Upper),
+]);
+let b = Tensor::new(Symbol::new("B"), vec![
+    IndexSlot::new("mu", IndexPosition::Lower),
+]);
+
+match contract(&amp;ctx, &amp;a, &amp;b) {
+    Contracted::Scalar(expr) =&gt; println!("scalar: {}", expr),
+    Contracted::Product(tp) =&gt; {
+        for f in &amp;tp.factors {
+            println!("free factor: {}", f.name());
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>缩并按标签和相反位置匹配指标。单次调用可缩并多对匹配指标。</p>
+<hr />
+<h2 id="对称化"><a class="header" href="#对称化">对称化</a></h2>
+<p><code>symmetrise_sign</code> 返回张量反对称化的符号：对哑指标（已缩并标签）的
+偶排列返回 <code>+1</code>，奇排列返回 <code>-1</code>。这在计算类行列式表达式时很有用。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::symmetrise_sign;
+
+let sign = symmetrise_sign(&amp;tensor);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="转换为-atom"><a class="header" href="#转换为-atom">转换为 Atom</a></h2>
+<p>张量可通过 <code>to_atom</code> 降级为标准 <code>Atom</code> 表达式：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let atom = tensor.to_atom(&amp;ctx);
+println!("{}", atom);  // 例如 g(mu, nu)
+<span class="boring">}</span></code></pre></pre>
+<p>这允许张量参与通用符号处理流水线（重写、化简、微分）。</p>
+<hr />
+<h2 id="python-与-c-用法"><a class="header" href="#python-与-c-用法">Python 与 C 用法</a></h2>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-python">from ocas import Tensor, contract_tensors, tensor_symmetrise_sign
+
+# 创建 2 阶张量
+g = Tensor("g", [("mu", "upper"), ("nu", "lower")])
+print(g.rank())    # 2
+print(g.name())    # g
+
+# 缩并两个张量
+A = Tensor("A", [("mu", "upper")])
+B = Tensor("B", [("mu", "lower")])
+result = contract_tensors(A, B)
+print(result)      # 标量表达式
+
+# 反对称化符号
+sign = tensor_symmetrise_sign(g)
+</code></pre>
+<h3 id="c"><a class="header" href="#c">C</a></h3>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+
+/* 创建张量 A^μ */
+const char* labels[] = {"mu"};
+int positions[] = {1};  /* 1 = upper */
+ocas_OcasTensor* A = ocas_tensor_create("A", labels, positions, 1, &amp;err);
+
+/* 查询阶数 */
+int rank = ocas_tensor_rank(A, &amp;err);  /* 1 */
+
+ocas_tensor_free(A);
+</code></pre>
+<p>完整的绑定文档见 <a href="./bindings-python.html">Python API</a> 和
+<a href="./bindings-c.html">C/C++ API</a> 章节。</p>
+<hr />
+<h2 id="张量规范化0220"><a class="header" href="#张量规范化0220">张量规范化（0.22.0）</a></h2>
+<p>基于图同构的规范化为张量表达式提供<strong>与指标命名无关的唯一规范形</strong>。
+仅由指标重命名不同的两个张量乘积会得到相同的规范形。</p>
+<h3 id="工作原理"><a class="header" href="#工作原理">工作原理</a></h3>
+<ol>
+<li>将张量表达式编码为图：张量头成为头顶点，每个指标槽成为槽顶点，
+缩并成为无向边，对称性编码为隐藏的位置数据。</li>
+<li>对图运行 McKay 细化-个体化搜索（1-WL 颜色细化 + 带自同构轨道
+剪枝的个体化 DFS）。</li>
+<li>根据规范标号重建表达式，哑指标从按维度组的池中重命名（<code>d0</code>、
+<code>d1</code>、…）。</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+let prod = ctx.mul(&amp;[ctx.fun("T", &amp;[i, j]), ctx.fun("U", &amp;[j, k])]);
+let ct = canonicalize_tensors(&amp;ctx, prod, &amp;reg).unwrap();
+println!("规范形: {}", ct.canonical_form);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="对称性规格"><a class="header" href="#对称性规格">对称性规格</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>规格</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>SymmetrySpec::none()</code></td><td>所有槽位独立</td></tr>
+<tr><td><code>SymmetrySpec::fully_symmetric(n)</code></td><td>槽位可互换（隐藏位置）</td></tr>
+<tr><td><code>SymmetrySpec::fully_antisymmetric(n)</code></td><td>反对称（Ricci 恒等式验证）</td></tr>
+<tr><td>自定义子集</td><td><code>symmetric_subsets</code> / <code>antisymmetric_subsets</code> / <code>cyclic</code> 字段</td></tr>
+</tbody></table>
+</div>
+<h3 id="哑指标管理"><a class="header" href="#哑指标管理">哑指标管理</a></h3>
+<p><code>dummy::refresh_dummies</code> 将恰好出现两次的标签重命名为规范名称
+（<code>d0</code>、<code>d1</code>、…），按维度组分配：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::dummy::refresh_dummies;
+let result = refresh_dummies(&amp;ctx, expr, &amp;reg)?;
+// "T(i,j)*U(j,i)" → "T(d0,d1)*U(d1,d0)"
+<span class="boring">}</span></code></pre></pre>
+<h3 id="young-投影子显式展开"><a class="header" href="#young-投影子显式展开">Young 投影子（显式展开）</a></h3>
+<p><code>young::young_project</code> 按 Young 盘将张量展开为置换和，列反对称：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::young::{YoungTableau, young_project};
+
+// 全反对称 [1,1]: f(a,b) → f(a,b) - f(b,a)
+let result = young_project(&amp;ctx, f_ab, &amp;YoungTableau::new(vec![1, 1]));
+// 全对称 [2]: g(a,b) → g(a,b) + g(b,a)
+let result = young_project(&amp;ctx, g_ab, &amp;YoungTableau::new(vec![2]));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="python-api"><a class="header" href="#python-api">Python API</a></h3>
+<pre><code class="language-python">import ocas
+
+# 规范化
+result = ocas.canonicalize_tensors("T(i,j)*U(j,k)", {"T": "none", "U": "none"})
+
+# 对称规范化（g(b,a) == g(a,b)）
+result = ocas.canonicalize_tensors("g(b,a)", {"g": "symmetric"})
+
+# Young 投影
+result = ocas.young_project("f(a,b)", [1, 1])
+
+# 刷新哑指标
+result = ocas.refresh_dummies("T(i,j)*U(j,i)", {"T": "none", "U": "none"})
+</code></pre>
+<hr />
+<h2 id="限制"><a class="header" href="#限制">限制</a></h2>
+<ul>
+<li>张量代数是显式的：指标按标签匹配，不使用爱因斯坦求和约定。必须手
+动调用 <code>contract</code>。</li>
+<li>基于图的规范化（自动对称性强制、Wick 缩并）推迟到 1.0 之后。</li>
+<li>仅支持 <code>Symmetric</code> 和 <code>Antisymmetric</code> 对称类型，不支持混合或循环
+对称。</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="autodiff.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="performance.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="autodiff.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="performance.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

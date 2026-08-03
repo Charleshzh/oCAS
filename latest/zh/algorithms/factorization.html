@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="zh" class="light sidebar-visible" dir="ltr">
+<html lang="zh" class="light" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,58 +7,44 @@
 
 
         <!-- Custom HTML head -->
-
+        
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
-        <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-0392ca55.css">
-        <link rel="stylesheet" href="../css/chrome-fc474251.css">
-        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../language-switcher.css">
 
-
-        <!-- Provide site root and default themes to javascript -->
-        <script>
-            const path_to_root = "../";
-            const default_light_theme = "light";
-            const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-356dfe38.js";
-        </script>
-        <!-- Start loading toc.js asap -->
-        <script src="../toc-59070e71.js"></script>
     </head>
-    <body>
-    <div id="mdbook-help-container">
-        <div id="mdbook-help-popup">
-            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
-            <div>
-                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
-                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
-                <p>Press <kbd>?</kbd> to show this help</p>
-                <p>Press <kbd>Esc</kbd> to hide this help</p>
-            </div>
-        </div>
-    </div>
-    <div id="mdbook-body-container">
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                let theme = localStorage.getItem('mdbook-theme');
-                let sidebar = localStorage.getItem('mdbook-sidebar');
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -72,69 +58,87 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
-            let theme;
+            var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            const html = document.documentElement;
+            var html = document.querySelector('html');
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add("js");
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
         </script>
 
-        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            let sidebar = null;
-            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
-                sidebar_toggle.checked = false;
             }
-            if (sidebar === 'visible') {
-                sidebar_toggle.checked = true;
-            } else {
-                html.classList.remove('sidebar-visible');
-            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
         </script>
 
-        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
-            <!-- populated by js -->
-            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
-            <noscript>
-                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
-            </noscript>
-            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded affix "><li class="part-title">语言绑定</li><li class="chapter-item expanded "><a href="../bindings-python.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li class="chapter-item expanded "><a href="../bindings-c.html"><strong aria-hidden="true">5.</strong> C/C++ API</a></li><li class="chapter-item expanded "><a href="../rust-api.html"><strong aria-hidden="true">6.</strong> Rust API</a></li><li class="chapter-item expanded affix "><li class="part-title">高级主题</li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">7.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">8.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">9.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html" class="active"><strong aria-hidden="true">10.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">11.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">12.</strong> Gröbner 基</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">13.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">14.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">15.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">16.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">17.</strong> 张量</a></li><li class="chapter-item expanded affix "><li class="part-title">性能与质量</li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">18.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">19.</strong> 正确性</a></li><li class="chapter-item expanded affix "><li class="part-title">参考</li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">20.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">21.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">22.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">23.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <div id="mdbook-page-wrapper" class="page-wrapper">
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="mdbook-menu-bar-hover-placeholder"></div>
-                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
                         </label>
-                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
                         </button>
-                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
                         </button>
                     </div>
 
@@ -142,68 +146,60 @@
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
-                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                            <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
-                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                            <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/algorithms/factorization.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
-                            <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/algorithms/factorization.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
                     </div>
                 </div>
 
-                <div id="mdbook-search-wrapper" class="hidden">
-                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
-                        <div class="search-wrapper">
-                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
-                            <div class="spinner-wrapper">
-                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
-                            </div>
-                        </div>
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
-                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
-                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
-                        <ul id="mdbook-searchresults">
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
                         </ul>
                     </div>
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script>
-                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
-                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
-                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
                         link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
                     });
                 </script>
 
-                <div id="mdbook-content" class="content">
+                <div id="content" class="content">
                     <main>
                         <h1 id="多项式因式分解"><a class="header" href="#多项式因式分解">多项式因式分解</a></h1>
 <p>oCAS 实现了整数和素有限域上一元与二元多项式的因式分解。本章介绍相关算法、适用范围以及公共 API。</p>
-<hr>
+<hr />
 <h2 id="适用范围"><a class="header" href="#适用范围">适用范围</a></h2>
 <p>当前支持的因式分解包括：</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>域</th><th>多项式</th><th>算法</th></tr>
-</thead>
-<tbody>
+<div class="table-wrapper"><table><thead><tr><th>域</th><th>多项式</th><th>算法</th></tr></thead><tbody>
 <tr><td>$\mathbb{Z}[x]$</td><td>一元</td><td>无平方分解、Berlekamp–Zassenhaus、Hensel 提升</td></tr>
 <tr><td>$\mathbb{F}_p[x]$</td><td>一元</td><td>无平方分解、Berlekamp</td></tr>
 <tr><td>$\mathbb{Z}[x,y]$</td><td>二元（关于 $x$ 首一）</td><td>Wang Hensel 提升</td></tr>
 <tr><td>$\mathbb{F}_p[x,y]$</td><td>二元（关于 $x$ 首一）</td><td>有限域上的 Hensel 提升</td></tr>
-</tbody>
-</table>
+<tr><td>$\mathbb{Z}[x_1,\dots,x_n]$</td><td>任意多元</td><td>Wang EEZ Hensel 提升 + 首项系数预处理 + Zassenhaus 重组</td></tr>
+<tr><td>$\mathbb{F}_p[x_1,\dots,x_n]$</td><td>任意多元</td><td>EEZ Hensel 提升（含特征 $p$ 的 $p$ 次幂处理；非常数 LC 走域版 Wang 预处理）</td></tr>
+<tr><td>$\mathbb{Q}(\alpha)[x]$</td><td>一元</td><td>Trager 算法：范数 + $\mathbb{Q}$ 上分解 + $\mathrm{GF}(p^d)$ 模 GCD</td></tr>
+</tbody></table>
 </div>
-<p>多于两个变量的多元因式分解尚未实现。当前 Hensel 提升实现不支持关于主变量非首一的二元多项式，这类输入暂时被视为不可约。</p>
-<hr>
+<p>自 0.16.0 起支持多于两个变量的任意多元因式分解。非首一的一元多项式经首项系数变换后同样可分解。自 0.16.1 起，$\mathbb{Z}$ 上的多元路径通过 p-adic 系数 Hensel 提升（骨架插值 Diophantine）完整支持非常数首项系数强加；二元非常数 LC 输入自动转入 EEZ 路径。自 0.17.0 起支持代数数域上的一元因式分解（Trager 算法）。</p>
+<hr />
 <h2 id="有限域上的一元因式分解"><a class="header" href="#有限域上的一元因式分解">有限域上的一元因式分解</a></h2>
 <p>对于素域 $\mathbb{F}_p$，oCAS 使用 <strong>Berlekamp 算法</strong>。首先将多项式化为无平方形式，然后计算 Frobenius 矩阵 $Q - I$ 的核空间。核空间的每个基向量通过与非平凡元素的 gcd 给出因子分解。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use ocas_domain::{FiniteField, Integer};
 use ocas_poly::DenseUnivariatePolynomial;
@@ -215,9 +211,9 @@ let f = DenseUnivariatePolynomial::&lt;FiniteField&gt;::from_coeffs(p.clone(), v
     p.element(1), // x^2
 ]);
 let factors = f.factor();
-<span class="boring">}</span></code></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>返回结果是 <code>(因子, 重数)</code> 的列表。经过无平方分解后，有限域上的重数总是 1。</p>
-<hr>
+<hr />
 <h2 id="整数上的一元因式分解"><a class="header" href="#整数上的一元因式分解">整数上的一元因式分解</a></h2>
 <p>对于 $\mathbb{Z}[x]$，oCAS 将<strong>无平方分解</strong>与 <strong>Berlekamp–Zassenhaus 型 Hensel 提升</strong>结合使用：</p>
 <ol>
@@ -227,7 +223,7 @@ let factors = f.factor();
 <li>使用 Berlekamp 在模 $p$ 下分解。</li>
 <li>通过 Hensel 提升将模 $p$ 因子提升为 $\mathbb{Z}[x]$ 上的因子。</li>
 </ol>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use ocas_domain::IntegerDomain;
 use ocas_poly::DenseUnivariatePolynomial;
@@ -237,8 +233,8 @@ let f = DenseUnivariatePolynomial::&lt;IntegerDomain&gt;::from_coeffs(
     vec![1.into(), 0.into(), 1.into()], // x^2 + 1
 );
 let factors = f.factor();
-<span class="boring">}</span></code></pre>
-<hr>
+<span class="boring">}</span></code></pre></pre>
+<hr />
 <h2 id="整数上的二元因式分解"><a class="header" href="#整数上的二元因式分解">整数上的二元因式分解</a></h2>
 <p><code>ocas-poly</code> 使用 <strong>Wang Hensel 提升</strong> 对 $\mathbb{Z}[x,y]$ 上的二元多项式进行因式分解，假设多项式关于 $x$ 首一。</p>
 <p>算法流程：</p>
@@ -248,7 +244,7 @@ let factors = f.factor();
 <li>通过修正 $f$ 在 $y = \alpha$ 处的 Taylor 系数，将一元因子提升回二元因子。</li>
 </ol>
 <p>修正步骤使用一元因子的有理 Bézout 系数，然后通过整数除法重建整系数修正项。如果重建失败（余式非整）或提升后的乘积与原多项式不符，实现会尝试下一个候选赋值点，最终回退为将该多项式视为不可约。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use ocas_domain::IntegerDomain;
 use ocas_poly::SparseMultivariatePolynomial;
@@ -270,11 +266,11 @@ let f = MPoly::from_terms(domain, 2, vec![
 
 let factors = f.factor();
 // factors 包含 (x^2 + y + 1, 1) 和 (x + y + 2, 1)
-<span class="boring">}</span></code></pre>
-<hr>
+<span class="boring">}</span></code></pre></pre>
+<hr />
 <h2 id="有限域上的二元因式分解"><a class="header" href="#有限域上的二元因式分解">有限域上的二元因式分解</a></h2>
 <p>在 $\mathbb{F}_p[x,y]$ 上，使用相同的 Hensel 提升框架，但所有运算直接在有限域中进行。Bézout 系数通过有限域上的 gcd 计算，所有修正项都保持在域中，因此无需整系数重建。</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use ocas_domain::FiniteField;
 use ocas_poly::SparseMultivariatePolynomial;
@@ -289,8 +285,8 @@ let f = FpPoly::from_terms(domain.clone(), 2, vec![
     (vec![0, 0], 1.into()), // 1
 ]);
 let factors = f.factor();
-<span class="boring">}</span></code></pre>
-<hr>
+<span class="boring">}</span></code></pre></pre>
+<hr />
 <h2 id="cc-多项式-api"><a class="header" href="#cc-多项式-api">C/C++ 多项式 API</a></h2>
 <p>C 绑定为二元整数和有限域多项式提供不透明句柄。多项式可通过 ASCII 字符串创建、因式分解、打印和释放。</p>
 <pre><code class="language-c">#include &lt;ocas.h&gt;
@@ -326,13 +322,75 @@ int main(void) {
 }
 </code></pre>
 <p>有限域版本使用 <code>OcasPolyFp</code>、<code>ocas_poly_fp_create</code> 和 <code>ocas_poly_fp_factor</code>。因子数组中存储的是 <code>void*</code> 多项式句柄，调用者必须先将其转换为正确的具体类型，再进行打印或释放。</p>
-<hr>
+<hr />
+<h2 id="任意多元因式分解wang-eez"><a class="header" href="#任意多元因式分解wang-eez">任意多元因式分解（Wang EEZ）</a></h2>
+<p>自 0.16.0 起，oCAS 支持 $\mathbb{Z}$ 与 $\mathbb{F}_p$ 上任意变量数的多项式因式分解，核心是 <strong>Wang 的 EEZ（Evaluation and EZ-lifting）算法</strong>：</p>
+<ol>
+<li><strong>无平方分解</strong>（Yun）：对主变量 $x_1$ 求偏导，用 $n$ 元 GCD（稠密递归求值–插值）剥离重因子；在特征 $p$ 下处理 $p$ 次幂（收缩/展开）。</li>
+<li><strong>求值点采样</strong>：把副变量 $x_2,\dots,x_n$ 代入样本点，使一元像次数不变且无平方。</li>
+<li><strong>Wang 首项系数预处理</strong>：分解首项系数 $\ell(x_2,\dots)$，用其在样本点的两两互素整数像把各因子分配到各一元因子，重建真实首项系数 $\ell_i$。</li>
+<li><strong>逐变量 Hensel 提升</strong>：通过多元 Diophantine 方程把一元因子沿理想 $(x_k - a_k)$ 逐变量提升回多元。</li>
+<li><strong>Zassenhaus 重组</strong>：当提升的因子多于真实因子时，枚举子集组合并试除，得到不可约因子。</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
+
+// (x + y + z)(x - y + 2z)
+let f = SparseMultivariatePolynomial::&lt;IntegerDomain, Lex&gt;::from_terms(
+    IntegerDomain, 3,
+    vec![
+        (vec![2, 0, 0], Integer::from(1)),
+        (vec![1, 0, 1], Integer::from(3)),
+        (vec![0, 1, 1], Integer::from(1)),
+        (vec![0, 2, 0], Integer::from(-1)),
+        (vec![0, 1, 0], Integer::from(0)),
+        (vec![0, 0, 2], Integer::from(2)),
+    ],
+);
+let factors = f.factor();
+<span class="boring">}</span></code></pre></pre>
+<p>返回 <code>(因子, 重数)</code> 列表，因子按本原且首项系数为正规范化。</p>
+<hr />
+<h2 id="代数数域上的因式分解trager"><a class="header" href="#代数数域上的因式分解trager">代数数域上的因式分解（Trager）</a></h2>
+<p>自 0.17.0 起，oCAS 支持代数数域 $K = \mathbb{Q}(\alpha)$ 上一元多项式的因式分解，其中 $\alpha$ 由 $\mathbb{Q}$ 上的首一极小多项式给出。域类型位于 <code>ocas-domain</code>：<code>AlgebraicExtension&lt;D&gt;</code>（$D = \mathbb{Q}$ 时为 <code>AlgebraicNumberField</code>）；同一类型在 $D = \mathbb{F}_p$ 时表示 $\mathrm{GF}(p^d)$。</p>
+<p>分解器实现 <strong>Trager 算法</strong>：</p>
+<ol>
+<li><strong>无平方分解</strong>（Yun）：在 $K$ 上进行，GCD 使用下述模方法而非伪余式序列。</li>
+<li><strong>范数与平移</strong>：对 $s = 0, 1, 2, \dots$ 计算 $g(x) = f(x - s\alpha)$ 的范数——通过求值–插值计算标量结式 $\operatorname{Res}_\alpha(m, g)$——直到范数在 $\mathbb{Q}$ 上无平方（用小素数模检验；接受条件是精确的）。</li>
+<li><strong>有理数域分解</strong>：无平方范数在 $\mathbb{Z}$ 上分解（Hensel 路径）。</li>
+<li><strong>数域上的模 GCD</strong>：把每个有理因子映到 $K[x]$，用模方法求其与 $g$ 的 GCD——在 $m \bmod p$ 不可约的素数上映到 $\mathrm{GF}(p^d)$，CRT 合并首一模 GCD，有理重构系数，试除验证。</li>
+<li><strong>回代</strong> $x \mapsto x + s\alpha$ 并首一化。</li>
+</ol>
+<p>当 $f$ 的所有系数都是有理常数时走<strong>有理快速通道</strong>：先在 $\mathbb{Q}$ 上分解，仅把 $\mathbb{Q}$ 不可约因子送入 Trager 范数流程。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicNumberField, Domain, Rational, RationalDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+// ℚ(√2)：极小多项式 α² − 2。
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+// x² − 2 = (x − √2)(x + √2) 在 ℚ(√2) 上分裂。
+let f = DenseUnivariatePolynomial::from_coeffs(
+    field.clone(),
+    vec![field.from_base(Rational::new(-2, 1)), field.zero(), field.one()],
+);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p>基准（criterion 组 <code>poly_factor_anf</code>）：$\mathbb{Q}(\sqrt2)$、$\mathbb{Q}(\sqrt[3]{2})$ 与分圆域 $\mathbb{Q}(\zeta_5)$ 上次数 ≤ 12 的多项式分解均远低于 100 ms。</p>
+<hr />
 <h2 id="限制与未来工作"><a class="header" href="#限制与未来工作">限制与未来工作</a></h2>
 <ul>
-<li>尚不支持多于两个变量的多元因式分解。</li>
-<li>当前 Wang Hensel 实现不处理关于主变量非首一的二元多项式
-（<a href="https://github.com/Charleshzh/oCAS/issues/13">#13</a>）。</li>
-<li>赋值点搜索范围较小；对于非常稀疏或高度特殊的多项式，未来可能需要扩大搜索范围。</li>
+<li>$\mathbb{Z}$ 上的多元路径自 0.16.1 起已完整支持非常数首项系数强加（p-adic 系数 Hensel 提升 + 骨架插值 Diophantine）。</li>
+<li>二元 Wang Hensel 实现的原有"首项系数须为常数"限制已由 0.16.0 的任意多元路径覆盖（走 EEZ）；二元非常数 LC 输入现自动转入 EEZ 路径。</li>
+<li>自 0.16.2 起 $\mathbb{F}_p$ 多元路径同样支持非常数首项系数（域版 Wang LC 预处理 <code>wang_reconstruct_lcoeffs_fp</code> + <code>eez_lift_imposed</code>）。</li>
+<li>代数数域因式分解（0.17.0）目前<strong>仅限一元</strong>；扩域上的多元因式分解与解析器的 <code>RootOf</code>/根式语法留待后续版本。极小多项式的不可约性由调用方保证（模可约时环中存在零因子，求逆会失败）。</li>
+<li>自适应赋值点搜索已扩大（ℤ：7 → 25，$\mathbb{F}_p$：8 → 32）；对于非常稀疏或高度特殊的多项式，可能仍需进一步扩大搜索范围或额外的 Diophantine 插值遍次。</li>
 </ul>
 <p>这些限制已在项目路线图中跟踪，并会随着代数内核的成熟逐步解除。</p>
 
@@ -341,11 +399,11 @@ int main(void) {
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                             <a rel="prev" href="../evaluation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                                <i class="fa fa-angle-left"></i>
                             </a>
 
                             <a rel="next prefetch" href="../algorithms/rational-functions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                                <i class="fa fa-angle-right"></i>
                             </a>
 
                         <div style="clear: both"></div>
@@ -355,21 +413,16 @@ int main(void) {
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                     <a rel="prev" href="../evaluation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                        <i class="fa fa-angle-left"></i>
                     </a>
 
                     <a rel="next prefetch" href="../algorithms/rational-functions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                        <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
 
         </div>
 
-        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
-        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
-        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
-        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
-        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
 
 
@@ -378,17 +431,16 @@ int main(void) {
         </script>
 
 
-        <script src="../elasticlunr-ef4e11c1.min.js"></script>
-        <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-09f2665d.js"></script>
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
 
-        <script src="../clipboard-1626706a.min.js"></script>
-        <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-c22b7243.js"></script>
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
 
         <!-- Custom JS scripts -->
         <script src="../../language-switcher.js"></script>
-
 
 
     </div>

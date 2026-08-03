@@ -1,0 +1,492 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Gröbner 基 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded affix "><li class="part-title">语言绑定</li><li class="chapter-item expanded "><a href="../bindings-python.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li class="chapter-item expanded "><a href="../bindings-c.html"><strong aria-hidden="true">5.</strong> C/C++ API</a></li><li class="chapter-item expanded "><a href="../rust-api.html"><strong aria-hidden="true">6.</strong> Rust API</a></li><li class="chapter-item expanded affix "><li class="part-title">高级主题</li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">7.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">8.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">9.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">10.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">11.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html" class="active"><strong aria-hidden="true">12.</strong> Gröbner 基</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">13.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">14.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">15.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">16.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">17.</strong> 张量</a></li><li class="chapter-item expanded affix "><li class="part-title">性能与质量</li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">18.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">19.</strong> 正确性</a></li><li class="chapter-item expanded affix "><li class="part-title">参考</li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">20.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">21.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">22.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">23.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/algorithms/groebner.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="gröbner-基"><a class="header" href="#gröbner-基">Gröbner 基</a></h1>
+<p>oCAS 可在任意域上计算多元多项式理想的 Gröbner 基。提供三种算法以及
+换序工具，本章对比它们并说明何时使用哪一种。</p>
+<hr />
+<h2 id="范围"><a class="header" href="#范围">范围</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>算法</th><th>入口</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>Buchberger</td><td><code>GroebnerBasis::buchberger</code></td><td>小理想、教学</td></tr>
+<tr><td><strong>F4</strong></td><td><code>f4::f4</code></td><td>生产环境 —— 默认</td></tr>
+<tr><td><strong>F5</strong></td><td><code>f5::f5</code></td><td>基于签名；正则序列</td></tr>
+</tbody></table>
+</div>
+<p>换序：</p>
+<div class="table-wrapper"><table><thead><tr><th>工具</th><th>入口</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>重跑 F4</td><td><code>GroebnerBasis::reorder</code></td><td>一般理想</td></tr>
+<tr><td><strong>FGLM</strong></td><td><code>fglm::fglm</code></td><td>零维理想（快得多）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="buchberger-与-f4-对比"><a class="header" href="#buchberger-与-f4-对比">Buchberger 与 F4 对比</a></h2>
+<p>Buchberger 算法逐个处理 S-多项式。F4（Faugère 1999）把大量 S-多项式
+约化批处理成一次稀疏矩阵行阶梯计算，对中等和大理想显著更快——因为
+线性代数占主导，并且可以优化（缓存友好的稀疏行、ℤ_p 原生 <code>i64</code>
+快速路径）。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{SparseMultivariatePolynomial, f4};
+
+let d = RationalDomain;
+// cyclic-3 方程组
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 0, 0], Rational::new(1, 1)),
+    (vec![0, 1, 0], Rational::new(1, 1)),
+    (vec![0, 0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 1, 0], Rational::new(1, 1)),
+    (vec![0, 1, 1], Rational::new(1, 1)),
+    (vec![1, 0, 1], Rational::new(1, 1)),
+]);
+let f3 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 1, 1], Rational::new(1, 1)),
+    (vec![0, 0, 0], Rational::new(-1, 1)),
+]);
+let gb = f4::f4(&amp;[f1, f2, f3]);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p>F4 使用 Gebauer–Moeller 临界对筛选（第一、第二判据加冗余对清理）
+和逐基元素简化缓存，因此它构造的矩阵接近最小。</p>
+<hr />
+<h2 id="单项式序与-reorder"><a class="header" href="#单项式序与-reorder">单项式序与 <code>reorder</code></a></h2>
+<p>支持 <code>Lex</code>、<code>Grlex</code> 与 <code>Grevlex</code> 序。消元理论需要 <code>Lex</code> 基，但它
+通常计算代价最高。标准策略是：</p>
+<ol>
+<li>先计算 <code>Grevlex</code> 基（最快），</li>
+<li>再转换为 <code>Lex</code>。</li>
+</ol>
+<p>对一般理想，<code>reorder</code> 在新序下重新解释基并重跑 F4：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::{Grevlex, Lex};
+use ocas_poly::{SparseMultivariatePolynomial, f4};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Grevlex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Grevlex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb_grevlex = f4::f4(&amp;[f1, f2]);
+let gb_lex = gb_grevlex.reorder::&lt;Lex&gt;();
+assert!(gb_lex.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="fglm零维理想的快速换序"><a class="header" href="#fglm零维理想的快速换序">FGLM：零维理想的快速换序</a></h2>
+<p>零维理想（有限多个公共根）具有有限的<em>阶梯</em>——不被任何首项单项式
+整除的单项式集合。FGLM 算法（Faugère–Gianni–Lazard–Mora 1993）按
+目标序递增遍历单项式，计算它们对现有基的正规形，并检测线性相关。
+每次相关产生新基的一个多项式。代价为 <code>O(n·D³)</code> 次域运算，其中 <code>D</code>
+是阶梯维数，与产生原基的 F4 代价无关。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::{Grevlex, Lex};
+use ocas_poly::{SparseMultivariatePolynomial, f4};
+use ocas_poly::groebner::fglm::fglm;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb_lex = f4::f4(&amp;[f1, f2]);
+let gb_grevlex = fglm::&lt;_, Grevlex&gt;(&amp;gb_lex).expect("zero-dimensional");
+assert!(gb_grevlex.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p>当理想为正维（无限阶梯）时 <code>fglm</code> 返回 <code>None</code>，此时请改用
+<code>reorder</code>。</p>
+<hr />
+<h2 id="f5基于签名的-gröbner-基"><a class="header" href="#f5基于签名的-gröbner-基">F5：基于签名的 Gröbner 基</a></h2>
+<p><code>f5::f5</code> 实现 Faugère 的签名判据（2002）：签名已出现的 S-对会被
+跳过，可证明对正则序列避免全部零约化。自 0.19.0 版本起，F5 已是
+生产级实现，在大理想上性能与 F4 竞争。</p>
+<p><code>hilbert</code> 模块通过容斥原理计算单项式理想的 Hilbert 分子，给出阶梯
+的正则性——一个可靠的次数界，F4 可将其用作提前终止提示。</p>
+<hr />
+<h2 id="基准"><a class="header" href="#基准">基准</a></h2>
+<p>Criterion 计时（cyclic 方程组，ℚ 与 ℤ₁₃ 上，本机）：</p>
+<div class="table-wrapper"><table><thead><tr><th>方程组</th><th>Buchberger</th><th>F4</th><th>加速比</th></tr></thead><tbody>
+<tr><td>cyclic-3 ℚ</td><td>308 µs</td><td>147 µs</td><td>2.1×</td></tr>
+<tr><td>cyclic-4 ℚ</td><td>3.99 ms</td><td>2.13 ms</td><td>1.9×</td></tr>
+<tr><td>cyclic-3 ℤ₁₃</td><td>582 µs</td><td>276 µs</td><td>2.1×</td></tr>
+<tr><td>cyclic-4 ℤ₁₃</td><td>6.19 ms</td><td>2.80 ms</td><td>2.2×</td></tr>
+</tbody></table>
+</div>
+<p>ℤ_p 原生 <code>i64</code> 快速路径（行阶梯步骤中的惰性模算术）使有限域计时
+接近有理数计时，尽管系数更小。</p>
+<hr />
+<h2 id="单项式序"><a class="header" href="#单项式序">单项式序</a></h2>
+<p>0.19.1 版本扩展了单项式序系统，在内置 <code>Lex</code>、<code>Grlex</code> 和 <code>Grevlex</code>
+之外支持运行时可配置的序：</p>
+<div class="table-wrapper"><table><thead><tr><th>序</th><th>入口</th><th>用途</th></tr></thead><tbody>
+<tr><td><code>WeightOrder</code></td><td><code>WeightOrder::from_slice(&amp;[2, 1])</code></td><td>通过变量权重实现消元序</td></tr>
+<tr><td><code>BlockOrder</code></td><td><code>BlockOrder::new(boundaries, orders)</code></td><td>分块消元：将变量分组，各组独立排序</td></tr>
+</tbody></table>
+</div>
+<p><code>WeightOrder</code> 按加权和 $\sum w_i e_i$ 降序比较单项式。<code>BlockOrder</code>
+将变量划分为连续块，各块按独立子序（Lex 或 Grevlex）比较。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::WeightOrder;
+
+let order = WeightOrder::from_slice(&amp;[2, 1]);
+let p = SparseMultivariatePolynomial::new_with_order(d, 2, order);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matrixorder-与消元"><a class="header" href="#matrixorder-与消元">MatrixOrder 与消元</a></h3>
+<p>0.23.0 版本新增 <code>MatrixOrder</code>，基于权重矩阵的通用单项式序，支持消元：</p>
+<div class="table-wrapper"><table><thead><tr><th>序</th><th>入口</th><th>用途</th></tr></thead><tbody>
+<tr><td><code>MatrixOrder</code></td><td><code>MatrixOrder::new(matrix)</code></td><td>通用权重矩阵序</td></tr>
+<tr><td>消元序</td><td><code>MatrixOrder::elimination_order(elim_vars, n_vars)</code></td><td>消去前 <code>elim_vars</code> 个变量</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{MatrixOrder, MonomialOrder};
+
+// 消元序：先消去 x_0，剩余变量按 Grevlex 比较。
+let ord = MatrixOrder::elimination_order(1, 3);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="理想运算"><a class="header" href="#理想运算">理想运算</a></h2>
+<p>0.23.0 版本在 <code>ocas_poly::ideal</code> 中引入完整理想运算库。所有运算使用
+<code>Lex</code> 序以保持一致性。</p>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>入口</th><th>描述</th></tr></thead><tbody>
+<tr><td>成员判定</td><td><code>ideal_contains(gens, f, algo)</code></td><td>测试 $f \in I$</td></tr>
+<tr><td>和</td><td><code>ideal_sum(I, J)</code></td><td>$I + J$</td></tr>
+<tr><td>积</td><td><code>ideal_product(I, J)</code></td><td>$I \cdot J$</td></tr>
+<tr><td>商</td><td><code>ideal_quotient(I, J)</code></td><td>$I : J$（Rabinowitsch 技巧）</td></tr>
+<tr><td>饱和</td><td><code>ideal_saturate(I, J)</code></td><td>$I : J^\infty$</td></tr>
+<tr><td>交集</td><td><code>ideal_intersection(I, J)</code></td><td>$I \cap J$（辅助变量法）</td></tr>
+<tr><td>消元</td><td><code>eliminate(gens, elim_vars, algo)</code></td><td>通过 Lex GB 消元</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::{ideal_contains, ideal_saturate};
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]); // x² + y² - 1
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]); // x - y
+
+// 成员判定：x² + y² - 1 ∈ ⟨x - y, x² + y² - 1⟩
+assert!(ideal_contains(&amp;[f2.clone()], &amp;f1, Algorithm::Auto));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="零维求解"><a class="header" href="#零维求解">零维求解</a></h2>
+<p><code>solve_polynomial_system</code> 对方程组分类并求实数解：</p>
+<div class="table-wrapper"><table><thead><tr><th>解类型</th><th>描述</th></tr></thead><tbody>
+<tr><td><code>ZeroDimensional</code></td><td>有限个实数解，通过 Sturm 根隔离</td></tr>
+<tr><td><code>PositiveDimensional</code></td><td>无限解集；返回 Lex GB</td></tr>
+<tr><td><code>Empty</code></td><td>无解（理想为 $\langle 1 \rangle$）</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::ideal::solve_polynomial_system;
+
+// 圆 ∩ 直线：x² + y² = 1, x = y
+let sol = solve_polynomial_system(&amp;[f1, f2], Algorithm::Auto);
+// 返回两个实数解 (±1/√2, ±1/√2)
+<span class="boring">}</span></code></pre></pre>
+<p>使用 <code>is_zero_dimensional(&amp;gb)</code> 检查维数而不求解。</p>
+<hr />
+<h2 id="准素分解与根式"><a class="header" href="#准素分解与根式">准素分解与根式</a></h2>
+<p>对零维理想，准素分解通过 Lex GB 中一元多项式的因式分解和饱和分离分量：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::ideal::{primary_decomposition, ideal_radical};
+
+// (x², xy) = (x) ∩ (x², y)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let decomp = primary_decomposition(&amp;[f1, f2]);
+assert_eq!(decomp.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p><code>ideal_radical</code> 计算 $\sqrt{I}$：</p>
+<ul>
+<li><strong>零维</strong>：一元多项式无平方分解</li>
+<li><strong>正维</strong>：Jacobian 饱和法（$\sqrt{I} = I : h^\infty$）</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let rad = ideal_radical(&amp;[f1, f2]);
+// √(x², xy) = (x)
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="hilbert-级数"><a class="header" href="#hilbert-级数">Hilbert 级数</a></h2>
+<p><code>hilbert</code> 模块提供从 Gröbner 基计算完整 Hilbert 级数的功能：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>描述</th></tr></thead><tbody>
+<tr><td><code>hilbert_function(d)</code></td><td>$\dim_k (R/I)_d$ 在次数 $d$ 处的值</td></tr>
+<tr><td><code>dimension()</code></td><td>$R/I$ 的 Krull 维数</td></tr>
+<tr><td><code>degree()</code></td><td>射影簇的次数</td></tr>
+<tr><td><code>hilbert_polynomial()</code></td><td>完整多项式系数（Lagrange 插值）</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::groebner::hilbert::hilbert_series;
+
+let hs = hilbert_series(&amp;gb);
+println!("H(5) = {}", hs.hilbert_function(5));
+println!("dim = {}", hs.dimension());
+println!("polynomial = {:?}", hs.hilbert_polynomial());
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../algorithms/rational-functions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../algorithms/integration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../algorithms/rational-functions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../algorithms/integration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
