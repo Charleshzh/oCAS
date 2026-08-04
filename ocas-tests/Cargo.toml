@@ -25,6 +25,7 @@ ocas-eval = { path = "../ocas-eval" }
 num-bigint = { workspace = true }
 proptest = { workspace = true }
 criterion = { workspace = true }
+rand_xoshiro = { workspace = true }
 quadrature = { workspace = true, optional = true }
 
 [features]
