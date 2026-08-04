@@ -12,14 +12,21 @@
 //!   Rejects zero-reducers *before* matrix construction via syzygy
 //!   criteria, targeting order-of-magnitude speedups on difficult ideals
 //!   (e.g. cyclic-n). Production-grade since 0.19.0.
+//! - **MultiModular** ([`multi_modular`]) — multi-prime strategy for ℚ
+//!   ideals since 0.25.0: parallel F5 over lucky primes, CRT + rational
+//!   reconstruction, exact ℚ verification, and a p-adic Hensel-lift
+//!   shortcut.
 //!
 //! All algorithms produce a reduced Gröbner basis. [`Algorithm::Auto`]
-//! selects a backend by heuristic (currently F4).
+//! routes ℚ ideals through the multi-modular pipeline and other domains
+//! through F4.
 
 pub mod f4;
 pub mod f5;
 pub mod fglm;
 pub mod hilbert;
+pub mod multi_modular;
+pub(crate) mod packed;
 
 use ocas_core::FastHashSet as HashSet;
 use ocas_domain::Domain;
@@ -269,10 +276,8 @@ pub fn buchberger<D: Domain, O: MonomialOrder>(
 /// the unified entry point.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Algorithm {
-    /// Automatically select the most suitable algorithm based on ideal
-    /// size and structure (heuristic, calibrated from benchmarks).
-    /// Currently routes to F4; the crossover to F5 will be tuned from
-    /// cyclic-n benchmarks once the F5 core is complete.
+    /// Automatically select the most suitable algorithm: the multi-modular
+    /// pipeline for ℚ ideals (fast path since 0.25.0), F4 otherwise.
     #[default]
     Auto,
     /// Force the F4 matrix algorithm (Faugère 1999).
@@ -281,6 +286,11 @@ pub enum Algorithm {
     F5,
     /// Force Buchberger's classic S-polynomial iteration.
     Buchberger,
+    /// Force the multi-modular pipeline ([`crate::groebner::multi_modular`]):
+    /// parallel F5 over lucky primes + CRT/rational reconstruction + exact
+    /// ℚ verification, with a Hensel-lift shortcut. Only applies to ℚ
+    /// coefficients; other domains fall back to F4.
+    MultiModular,
 }
 
 /// Compute a Gröbner basis using the requested [`Algorithm`].
@@ -288,8 +298,9 @@ pub enum Algorithm {
 /// This is the unified entry point for Gröbner basis computation. Zero
 /// polynomials in `ideal` are filtered internally by each backend.
 ///
-/// [`Algorithm::Auto`] currently routes to F4; the crossover to F5 will
-/// be calibrated from cyclic-n benchmarks once the F5 core is complete.
+/// [`Algorithm::Auto`] routes ℚ ideals through the multi-modular pipeline
+/// (the fast path for rational coefficients since 0.25.0) and other
+/// domains through F4.
 ///
 /// # Example
 ///
@@ -311,14 +322,24 @@ pub enum Algorithm {
 /// let gb = groebner_basis(&[f1, f2], Algorithm::Auto);
 /// assert!(gb.is_groebner_basis());
 /// ```
-pub fn groebner_basis<D: Domain + 'static, O: MonomialOrder>(
+pub fn groebner_basis<D: Domain + 'static, O: MonomialOrder + Send + Sync>(
     ideal: &[SparseMultivariatePolynomial<D, O>],
     algo: Algorithm,
 ) -> GroebnerBasis<D, O> {
     match algo {
-        Algorithm::Auto | Algorithm::F4 => f4::f4(ideal),
+        // Auto: multi-modular for ℚ ideals (the internal Any check returns
+        // None for other domains, which then take the F4 path).
+        Algorithm::Auto => match multi_modular::groebner_basis_mm(ideal) {
+            Some(gb) => gb,
+            None => f4::f4(ideal),
+        },
+        Algorithm::F4 => f4::f4(ideal),
         Algorithm::F5 => f5::f5(ideal),
         Algorithm::Buchberger => buchberger(ideal),
+        Algorithm::MultiModular => match multi_modular::groebner_basis_mm(ideal) {
+            Some(gb) => gb,
+            None => f4::f4(ideal),
+        },
     }
 }
 

@@ -97,8 +97,9 @@ pub unsafe extern "C" fn ocas_groebner_basis(
         1 => Algorithm::F4,
         2 => Algorithm::F5,
         3 => Algorithm::Buchberger,
+        4 => Algorithm::MultiModular,
         _ => {
-            error::set(-1, "invalid algorithm: expected 0-3");
+            error::set(-1, "invalid algorithm: expected 0-4");
             unsafe {
                 *err = -1;
             }
@@ -196,8 +197,9 @@ pub unsafe extern "C" fn ocas_solve_polynomial_system(
         1 => Algorithm::F4,
         2 => Algorithm::F5,
         3 => Algorithm::Buchberger,
+        4 => Algorithm::MultiModular,
         _ => {
-            error::set(-1, "invalid algorithm");
+            error::set(-1, "invalid algorithm: expected 0-4");
             unsafe {
                 *err = -1;
             }

@@ -10,6 +10,7 @@
 
 use ocas_domain::number_theory::{crt::crt_many, primes_from, symmetric_mod};
 use ocas_domain::{Domain, EuclideanDomain, FiniteField, Integer, IntegerDomain};
+use rayon::prelude::*;
 
 use crate::dense::DenseUnivariatePolynomial;
 use crate::factor::finite_field::FpPoly;
@@ -133,52 +134,67 @@ pub fn gcd_modular_z(a: &ZPoly, b: &ZPoly) -> ZPoly {
     let mut best_deg: Option<usize> = None;
     let mut images: Vec<(Integer, FpPoly)> = Vec::new();
     let mut prime_iter = primes_from(&Integer::from(1_073_741_824)); // > 2^30
-    for _ in 0..MAX_PRIMES {
-        let p = prime_iter.next().expect("primes are inexhaustible");
-        if gamma.mod_floor(&p).is_zero() {
-            continue;
+    let batch_size = rayon::current_num_threads().max(1);
+    let mut tried = 0usize;
+    while tried < MAX_PRIMES {
+        let batch: Vec<Integer> = prime_iter.by_ref().take(batch_size).collect();
+        if batch.is_empty() {
+            break;
         }
-        let field = FiniteField::new(p.to_bigint());
-        let fa = reduce_mod_field(&ap, &field);
-        let fb = reduce_mod_field(&bp, &field);
-        let g = fa.gcd(&fb);
-        let Some(deg) = g.degree() else {
-            continue; // one input vanished mod p: unlucky
-        };
-        // Normalize: monic, then scaled by γ.
-        let lc = g.leading_coeff().expect("nonzero gcd").clone();
-        let inv_lc = field.inv(&lc).expect("field element invertible");
-        let gamma_p = field.element(gamma.to_bigint());
-        let scale = field.mul(&inv_lc, &gamma_p);
-        let g_scaled = g.mul_scalar(&scale);
-
-        match best_deg {
-            None => {
-                best_deg = Some(deg);
-                images.push((p, g_scaled));
+        tried += batch.len();
+        // Monic scaled modular GCD images, computed in parallel. Primes
+        // dividing γ or where an input vanishes mod p contribute None.
+        let computed: Vec<Option<(Integer, FpPoly, usize)>> = batch
+            .par_iter()
+            .map(|p| {
+                if gamma.mod_floor(p).is_zero() {
+                    return None;
+                }
+                let field = FiniteField::new(p.to_bigint());
+                let fa = reduce_mod_field(&ap, &field);
+                let fb = reduce_mod_field(&bp, &field);
+                let g = fa.gcd(&fb);
+                let deg = g.degree()?; // one input vanished mod p: unlucky
+                // Normalize: monic, then scaled by γ.
+                let lc = g.leading_coeff()?.clone();
+                let inv_lc = field.inv(&lc)?;
+                let gamma_p = field.element(gamma.to_bigint());
+                let scale = field.mul(&inv_lc, &gamma_p);
+                Some((p.clone(), g.mul_scalar(&scale), deg))
+            })
+            .collect();
+        for item in computed {
+            let Some((p, g_scaled, deg)) = item else {
+                continue;
+            };
+            match best_deg {
+                None => {
+                    best_deg = Some(deg);
+                    images.push((p, g_scaled));
+                }
+                Some(bd) if deg < bd => {
+                    // Earlier primes were unlucky; restart with the smaller GCD.
+                    best_deg = Some(deg);
+                    images.clear();
+                    images.push((p, g_scaled));
+                }
+                Some(bd) if deg == bd => images.push((p, g_scaled)),
+                _ => continue, // unlucky prime: modular GCD degree too large
             }
-            Some(bd) if deg < bd => {
-                // Earlier primes were unlucky; restart with the smaller GCD.
-                best_deg = Some(deg);
-                images.clear();
-                images.push((p, g_scaled));
+            let deg = best_deg.expect("set above");
+            if deg == 0 {
+                // GCD of the primitive parts is a constant.
+                return ZPoly::from_coeffs(dom, vec![Integer::from(1)]);
             }
-            Some(bd) if deg == bd => images.push((p, g_scaled)),
-            _ => continue, // unlucky prime: modular GCD degree too large
-        }
-        let deg = best_deg.expect("set above");
-        if deg == 0 {
-            // GCD of the primitive parts is a constant.
-            return ZPoly::from_coeffs(dom, vec![Integer::from(1)]);
-        }
-        // Trial reconstruction: accept only a common divisor of full degree.
-        if let Some(candidate) = reconstruct(&images, deg) {
-            let cand = candidate.primitive_part();
-            if cand.degree() == Some(deg)
-                && div_exact_z(&ap, &cand).is_some()
-                && div_exact_z(&bp, &cand).is_some()
-            {
-                return cand;
+            // Trial reconstruction: accept only a common divisor of full degree.
+            if let Some(candidate) = reconstruct(&images, deg) {
+                let cand = candidate.primitive_part();
+                if cand.degree() == Some(deg)
+                    && div_exact_z(&ap, &cand).is_some()
+                    && div_exact_z(&bp, &cand).is_some()
+                {
+                    return cand;
+                }
             }
         }
     }

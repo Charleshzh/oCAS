@@ -431,8 +431,9 @@ fn parse_algorithm(s: &str) -> PyResult<Algorithm> {
         "f4" => Ok(Algorithm::F4),
         "f5" => Ok(Algorithm::F5),
         "buchberger" => Ok(Algorithm::Buchberger),
+        "multi_modular" | "multimodular" | "mm" => Ok(Algorithm::MultiModular),
         _ => Err(PyValueError::new_err(format!(
-            "unknown algorithm '{}': expected auto, f4, f5, or buchberger",
+            "unknown algorithm '{}': expected auto, f4, f5, buchberger, or multi_modular",
             s
         ))),
     }

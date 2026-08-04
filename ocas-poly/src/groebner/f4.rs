@@ -85,7 +85,7 @@ struct MonomialData {
 /// Variables beyond index 63 are ignored in the mask; this only weakens
 /// the filter's selectivity, never its correctness (a false-positive
 /// bucket match is filtered out by the exact divisibility check).
-fn support_mask(exp: &[usize]) -> u64 {
+pub(super) fn support_mask(exp: &[usize]) -> u64 {
     let mut mask = 0u64;
     for (v, &e) in exp.iter().enumerate() {
         if e > 0 && v < 64 {
@@ -102,20 +102,20 @@ fn support_mask(exp: &[usize]) -> u64 {
 /// monomial. A query for `exp` enumerates the submasks of `support(exp)`
 /// (a basis LM dividing `exp` must have its support inside `exp`'s) and
 /// checks exact divisibility only within those buckets.
-struct DivisorIndex {
+pub(super) struct DivisorIndex {
     /// Exact support mask of a basis LM → basis indices with that mask.
-    buckets: HashMap<u64, Vec<usize>>,
+    pub(super) buckets: HashMap<u64, Vec<usize>>,
 }
 
 impl DivisorIndex {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             buckets: HashMap::default(),
         }
     }
 
     /// Register the leading monomial of basis element `idx`.
-    fn push(&mut self, lm: &[usize], idx: usize) {
+    pub(super) fn push(&mut self, lm: &[usize], idx: usize) {
         self.buckets.entry(support_mask(lm)).or_default().push(idx);
     }
 }
@@ -123,7 +123,11 @@ impl DivisorIndex {
 /// Find a reducer for `exp` in the basis: a basis element whose leading
 /// monomial divides `exp`, chosen with the smallest number of terms
 /// (ties keep the lowest basis index, matching the old linear scan).
-fn find_reducer<P: BasisPoly>(index: &DivisorIndex, basis: &[P], exp: &[usize]) -> Option<usize> {
+pub(super) fn find_reducer<P: BasisPoly>(
+    index: &DivisorIndex,
+    basis: &[P],
+    exp: &[usize],
+) -> Option<usize> {
     let mask = support_mask(exp);
     let mut best: Option<usize> = None;
     // Enumerate all submasks of `mask`, including `mask` itself and 0.
@@ -187,7 +191,11 @@ pub fn f4<D: Domain + 'static, O: MonomialOrder>(
 
     // ℤ_p fast path: run the entire F4 pipeline on native i64 residues,
     // converting to/from the BigInt-backed domain only at the boundaries.
-    if let Some(ff) = (ideal[0].domain() as &dyn std::any::Any).downcast_ref::<FiniteField>() {
+    // Requires p < 2^31 so that products of two residues fit in i64;
+    // larger primes fall back to the generic domain path.
+    if let Some(ff) = (ideal[0].domain() as &dyn std::any::Any).downcast_ref::<FiniteField>()
+        && ff.prime_u64() < (1u64 << 31)
+    {
         return f4_fp(ideal, ff.prime_u64() as i64);
     }
 
@@ -1099,7 +1107,7 @@ fn f4_fp<D: Domain + 'static, O: MonomialOrder>(
 // =========================================================================
 
 #[allow(clippy::needless_range_loop)]
-fn echelonize_fp(
+pub(super) fn echelonize_fp(
     matrix: &mut Vec<Vec<(i64, usize)>>,
     ncols: usize,
     prime: i64,
@@ -1662,7 +1670,8 @@ mod tests {
         let ord = Grlex;
         assert_eq!(ord.cmp(&[2, 0], &[1, 1]), std::cmp::Ordering::Greater);
         assert_eq!(ord.cmp(&[1, 1], &[0, 2]), std::cmp::Ordering::Greater);
-        assert_eq!(ord.cmp(&[0, 2], &[1, 0]), std::cmp::Ordering::Less);
-        assert_eq!(ord.cmp(&[1, 0], &[0, 2]), std::cmp::Ordering::Greater);
+        // y² (degree 2) is larger than x (degree 1) under graded orders.
+        assert_eq!(ord.cmp(&[0, 2], &[1, 0]), std::cmp::Ordering::Greater);
+        assert_eq!(ord.cmp(&[1, 0], &[0, 2]), std::cmp::Ordering::Less);
     }
 }

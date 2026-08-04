@@ -17,10 +17,11 @@ use ocas_domain::number_theory::{crt::crt_many, primes_from};
 use ocas_domain::{
     Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer, IntegerDomain,
 };
+use rayon::prelude::*;
 
 use crate::dense::DenseUnivariatePolynomial;
 use crate::rational_reconstruction::rational_reconstruction;
-use crate::sparse::{Lex, SparseMultivariatePolynomial};
+use crate::sparse::{Lex, MonomialOrder, SparseMultivariatePolynomial};
 
 /// Alias for sparse polynomials over the integers with lexicographic order.
 pub type ZMPoly = SparseMultivariatePolynomial<IntegerDomain, Lex>;
@@ -677,42 +678,60 @@ fn modular_gcd_x(pp_a: &ZMPoly, pp_b: &ZMPoly, n_vars: usize) -> Option<ZMPoly> 
     let mut best_deg_x: Option<usize> = None;
     let mut images: Vec<(Integer, FpMPoly)> = Vec::new();
     let mut prime_iter = primes_from(&Integer::from(1_000_000_007));
-    for _ in 0..64 {
-        let p = prime_iter.next().expect("primes are inexhaustible");
-        if !bad.is_one() && bad.mod_floor(&p).is_zero() {
-            continue;
+    let batch_size = rayon::current_num_threads().max(1);
+    let mut tried = 0usize;
+    while tried < 64 {
+        let batch: Vec<Integer> = prime_iter.by_ref().take(batch_size).collect();
+        if batch.is_empty() {
+            break;
         }
-        let a_p = reduce_mod(pp_a, &p.to_bigint());
-        let b_p = reduce_mod(pp_b, &p.to_bigint());
-        let g_p = bivariate_gcd_fp(&a_p, &b_p)?;
-        let deg_x = fp_poly_degree_in(&g_p, 0);
-        let is_constant = g_p.total_degree() == Some(0);
-
-        match best_deg_x {
-            None => {
-                best_deg_x = Some(deg_x);
-                images.push((p, g_p));
+        tried += batch.len();
+        // Bivariate modular GCD images, computed in parallel. Primes
+        // dividing the bad integer or with a vanished image contribute None.
+        let computed: Vec<Option<(Integer, FpMPoly, usize, bool)>> = batch
+            .par_iter()
+            .map(|p| {
+                if !bad.is_one() && bad.mod_floor(p).is_zero() {
+                    return None;
+                }
+                let a_p = reduce_mod(pp_a, &p.to_bigint());
+                let b_p = reduce_mod(pp_b, &p.to_bigint());
+                let g_p = bivariate_gcd_fp(&a_p, &b_p)?;
+                let deg_x = fp_poly_degree_in(&g_p, 0);
+                let is_constant = g_p.total_degree() == Some(0);
+                Some((p.clone(), g_p, deg_x, is_constant))
+            })
+            .collect();
+        for item in computed {
+            let Some((p, g_p, deg_x, is_constant)) = item else {
+                continue;
+            };
+            match best_deg_x {
+                None => {
+                    best_deg_x = Some(deg_x);
+                    images.push((p, g_p));
+                }
+                Some(bd) if deg_x < bd => {
+                    best_deg_x = Some(deg_x);
+                    images.clear();
+                    images.push((p, g_p));
+                }
+                Some(bd) if deg_x == bd => images.push((p, g_p)),
+                _ => continue, // unlucky prime
             }
-            Some(bd) if deg_x < bd => {
-                best_deg_x = Some(deg_x);
-                images.clear();
-                images.push((p, g_p));
+            // A constant monic image means the primitive parts are coprime.
+            if best_deg_x == Some(0) && is_constant {
+                return Some(pp_a.one());
             }
-            Some(bd) if deg_x == bd => images.push((p, g_p)),
-            _ => continue, // unlucky prime
-        }
-        // A constant monic image means the primitive parts are coprime.
-        if best_deg_x == Some(0) && is_constant {
-            return Some(pp_a.one());
-        }
-        // Trial reconstruction: accept only a common divisor of full degree.
-        if let Some(cand) = reconstruct_rational(&images, n_vars) {
-            let cand = cand.primitive_part();
-            if poly_degree_in(&cand, 0) == best_deg_x.unwrap_or(0)
-                && pp_a.reduce(std::slice::from_ref(&cand)).is_zero()
-                && pp_b.reduce(std::slice::from_ref(&cand)).is_zero()
-            {
-                return Some(cand);
+            // Trial reconstruction: accept only a common divisor of full degree.
+            if let Some(cand) = reconstruct_rational(&images, n_vars) {
+                let cand = cand.primitive_part();
+                if poly_degree_in(&cand, 0) == best_deg_x.unwrap_or(0)
+                    && pp_a.reduce(std::slice::from_ref(&cand)).is_zero()
+                    && pp_b.reduce(std::slice::from_ref(&cand)).is_zero()
+                {
+                    return Some(cand);
+                }
             }
         }
     }
@@ -1347,7 +1366,12 @@ fn zmpoly_to_qmpoly(f: &ZMPoly) -> QMPoly {
 
 /// Convert a sparse rational polynomial to a primitive integer polynomial by
 /// clearing denominators (multiply by the LCM of all denominators).
-fn qmpoly_to_primitive_zmpoly(f: &QMPoly) -> ZMPoly {
+///
+/// Generic over the monomial order; used by the multivariate GCD driver
+/// (Lex) and the multi-modular Gröbner pipeline (any order).
+pub(crate) fn qmpoly_to_primitive_zmpoly<O: MonomialOrder>(
+    f: &SparseMultivariatePolynomial<RationalDomain, O>,
+) -> SparseMultivariatePolynomial<IntegerDomain, O> {
     let mut lcm = BigInt::one();
     for c in f.terms_ref().values() {
         let d = c.denom().to_bigint();
@@ -1362,7 +1386,7 @@ fn qmpoly_to_primitive_zmpoly(f: &QMPoly) -> ZMPoly {
             (e.to_vec(), Integer::from(c.numer().to_bigint() * scale))
         })
         .collect();
-    ZMPoly::from_terms(IntegerDomain, f.n_vars(), terms).primitive_part()
+    SparseMultivariatePolynomial::from_terms(IntegerDomain, f.n_vars(), terms).primitive_part()
 }
 
 /// Negate the polynomial if its Lex-leading coefficient is negative.

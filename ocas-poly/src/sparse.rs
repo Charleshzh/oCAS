@@ -25,7 +25,8 @@ use crate::factor::multivariate::{bivariate_factor_fp, bivariate_factor_z};
 /// let a = [2, 1];
 /// let b = [1, 1];
 /// assert_eq!(Lex.cmp(&a, &b), std::cmp::Ordering::Greater);
-/// assert_eq!(Grevlex.cmp(&a, &b), std::cmp::Ordering::Less);
+/// // Grevlex: x^2·y has higher total degree (3 > 2), so it is larger.
+/// assert_eq!(Grevlex.cmp(&a, &b), std::cmp::Ordering::Greater);
 /// ```
 pub trait MonomialOrder: Clone + PartialEq + Eq + std::fmt::Debug + Default {
     /// Compare two exponent vectors.
@@ -46,7 +47,9 @@ impl MonomialOrder for Lex {
 }
 
 /// Graded reverse lexicographic ordering: first by total degree descending,
-/// then reverse lexicographic.
+/// then reverse lexicographic (Cox–Little–O'Shea Def. 2.4: on equal degree,
+/// the monomial whose exponent difference has a negative rightmost nonzero
+/// entry is larger).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Grevlex;
 
@@ -54,8 +57,8 @@ impl MonomialOrder for Grevlex {
     fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
         let deg_lhs: usize = lhs.iter().sum();
         let deg_rhs: usize = rhs.iter().sum();
-        deg_rhs
-            .cmp(&deg_lhs)
+        deg_lhs
+            .cmp(&deg_rhs)
             .then_with(|| rhs.iter().rev().cmp(lhs.iter().rev()))
     }
 }
@@ -74,8 +77,8 @@ impl MonomialOrder for Grevlex {
 /// let a = [2, 0]; // x^2, degree 2
 /// let b = [1, 1]; // x*y, degree 2
 /// let c = [0, 3]; // y^3, degree 3
-/// // c has highest degree, so it comes first
-/// assert_eq!(Grlex.cmp(&c, &a), std::cmp::Ordering::Less);
+/// // c has highest degree, so it is larger
+/// assert_eq!(Grlex.cmp(&c, &a), std::cmp::Ordering::Greater);
 /// // a and b have same degree; a > b lexicographically
 /// assert_eq!(Grlex.cmp(&a, &b), std::cmp::Ordering::Greater);
 /// ```
@@ -86,7 +89,7 @@ impl MonomialOrder for Grlex {
     fn cmp(&self, lhs: &[usize], rhs: &[usize]) -> std::cmp::Ordering {
         let deg_lhs: usize = lhs.iter().sum();
         let deg_rhs: usize = rhs.iter().sum();
-        deg_rhs.cmp(&deg_lhs).then_with(|| lhs.cmp(rhs))
+        deg_lhs.cmp(&deg_rhs).then_with(|| lhs.cmp(rhs))
     }
 }
 
@@ -102,8 +105,8 @@ impl MonomialOrder for Grlex {
 /// use smallvec::smallvec;
 ///
 /// let ord = WeightOrder::new(smallvec![2, 1]);
-/// // [1,0] → weight 2, [0,1] → weight 1 → [1,0] is "larger"
-/// assert_eq!(ord.cmp(&[1, 0], &[0, 1]), std::cmp::Ordering::Less);
+/// // [1,0] → weight 2, [0,1] → weight 1 → [1,0] is larger
+/// assert_eq!(ord.cmp(&[1, 0], &[0, 1]), std::cmp::Ordering::Greater);
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WeightOrder {
@@ -145,8 +148,8 @@ impl MonomialOrder for WeightOrder {
             .zip(self.weights.iter())
             .map(|(&e, &w)| w * e as i64)
             .sum();
-        // Higher weight first (descending).
-        w_rhs.cmp(&w_lhs)
+        // Higher weight is larger.
+        w_lhs.cmp(&w_rhs)
     }
 }
 
@@ -272,14 +275,14 @@ impl SubOrder {
             SubOrder::Grevlex => {
                 let deg_l: usize = lhs.iter().sum();
                 let deg_r: usize = rhs.iter().sum();
-                deg_r
-                    .cmp(&deg_l)
+                deg_l
+                    .cmp(&deg_r)
                     .then_with(|| rhs.iter().rev().cmp(lhs.iter().rev()))
             }
             SubOrder::Grlex => {
                 let deg_l: usize = lhs.iter().sum();
                 let deg_r: usize = rhs.iter().sum();
-                deg_r.cmp(&deg_l).then_with(|| lhs.cmp(rhs))
+                deg_l.cmp(&deg_r).then_with(|| lhs.cmp(rhs))
             }
         }
     }
@@ -1510,9 +1513,10 @@ mod tests {
         );
         let sorted = p.sorted_terms();
         let exps: Vec<_> = sorted.into_iter().map(|(e, _)| e.to_vec()).collect();
-        // Grevlex order for these terms: x^2 (degree 2), x (degree 1), y (degree 1).
-        // Among degree-1 terms, reverse lex compares the last non-zero exponent:
-        // y = [0,1] comes before x = [1,0] because 1 > 0 in the last position.
-        assert_eq!(exps, vec![vec![2, 0], vec![0, 1], vec![1, 0]]);
+        // Ascending grevlex order for these terms: y (degree 1), x (degree 1),
+        // x^2 (degree 2). On equal degree the monomial with the negative
+        // rightmost exponent difference is larger, so y < x; higher degree
+        // is larger still.
+        assert_eq!(exps, vec![vec![0, 1], vec![1, 0], vec![2, 0]]);
     }
 }
