@@ -15,6 +15,49 @@ _No changes yet._
 
 ---
 
+## [0.26.0] - 2026-08-04
+
+### Added / 新增
+
+- **打包单项式 F5 快通道（u128 SWAR）**：`ocas-poly/src/groebner/packed.rs` + `f5_fp_packed`。n_vars ≤ 8 且全部输入指数 < 2¹⁵ 的 ℤ_p 理想走打包管线：单项式为 8×16 位 SWAR `PackedMono`（变量 0 在最高域，整数比较即 Lex），指数加法/整除/lcm/支持掩码均为单条 u128 运算；注册表键为 Copy 值（命中零克隆、零堆分配）；打包签名 `PackedSig` 与 syzygy 桶集。超界理想自动回落 i64 路径（旧路径原样保留） / **SWAR-packed monomial F5 fast path**: u128 packed monomials (add/divide/lcm/support-mask in single u128 ops), Copy-key registration with zero cloning, packed signatures and syzygy buckets; out-of-contract ideals fall back to the i64 path.
+- **echelon 改造**：`LabeledFpRow` 系数 i64 → i32（乘积放宽至 i64 运算）；两阶段消去免克隆——pass-1 主元移入只读 `pivot_store`（`PivotLoc::{Store,Row}`），Phase A 并行只读归约、Phase B 串行收尾认领新主元，行序与纯串行逐位一致；矩阵容量按 `selected.len() * 4` 预分配 / **Echelon rework**: i32 row coefficients, clone-free two-phase echelonization (pass-1 pivots moved to a read-only store), capacity preallocation.
+- **grevlex 基准变体**：`ocas-tests::systems` 新增序泛型 `cyclic_q_with_order`/`cyclic_fp_with_order` 及 `cyclic_q_grevlex`/`cyclic_fp_grevlex` 包装；criterion 组 `f5_cyclic_fp13_grevlex`（n=5,6）与 `f5_cyclic_7_fp13_grevlex` 计时测试。msolve 的 cyclic 基准为 grevlex，本轮对标以此为准 / **Grevlex benchmark variants** and order-generic cyclic generators; msolve's cyclic references are grevlex, so grevlex is the alignment baseline.
+- **修复 Graded 单项式序的度方向（预存在 bug）**：`Grevlex`/`Grlex`/`WeightOrder`/`BlockOrder` 的度/权重比较方向反置（低度视为更大、常数项最大，并非合法单项式序），导致 grevlex 下 buchberger/f4/f5 全部产生错误基（例：cyclic-7 grevlex 坍缩为 `{Πxᵢ−1}`）。已按 Cox–Little–O'Shea Def. 2.4 修正方向，`MatrixOrder::elimination_order` 与 fglm 同时对齐 / **Fixed inverted degree/weight direction in graded monomial orders** (pre-existing): grevlex computations were silently wrong (e.g. cyclic-7 collapsed to `{Πxᵢ−1}`); now standard CLO 2.4.
+
+### Tests / 测试
+
+- `packed.rs` 9 项 SWAR 单元测试：pack/unpack 往返、add/sub（含跨域借位链）、divides/lcm/support_mask 与手写参考实现对拍，覆盖 1–8 变量与 15 位边界值（32766/32767）。
+- `correctness/groebner.rs` 新增 `f5_fp_packed_fallback_nvars_gt_8`（9 变量回落）、`f5_fp_packed_fallback_exp_overflow`（x⁷⁰⁰⁰⁰ 回落，断言基为 `{y−1, x⁷⁰⁰⁰⁰−1}`）、`f5_fp_packed_deterministic`（cyclic-4 ℤ₁₃ 三连算逐项相等）；既有 cyclic fp13 系列与 `multi_modular_matches_f5_random`（FiniteField 像）自动走打包路径，作为等价性回归。
+- 版本号升至 0.26.0。
+
+### Performance / 性能（实测，见 `docs/planning/BENCHMARK_RESULTS_CN.md` §0.26.0）
+
+- G2 cyclic-6 ℤ₁₃：Lex 中位数 1.415 s → **936 ms**（1.51×）；grevlex 中位数 73.6 ms → **55.6 ms**（msolve 0.04 s 的 ~1.4×）。
+- G3 cyclic-7 ℤ₁₃：grevlex 单轮 **5.755 s**（209 基元素，msolve ~1 s 的 ~5.8×）；Lex 单轮与基线对比见基准文档。
+
+---
+
+## [0.25.0] - 2026-08-04
+
+### Added / 新增
+
+- **多素数 Gröbner 基（MultiModular）**：`ocas-poly/src/groebner/multi_modular.rs` 为 ℚ 理想提供多素数策略——通分得 primitive ℤ 理想、并行 F5 计算幸运素数像（`[2³⁰, 2³¹)` 素数，走 i64 快通道）、按首项单项式理想包含筛选、CRT + 有理重构、ℚ 精确验证；累积素数 > 16 时改用无迹线性 p-adic Hensel 提升（`hensel_lift_groebner`，monic 基上无需求逆），64 素数仍失败则回落 ℚ F5 / **Multi-modular Gröbner bases**: parallel F5 over lucky primes with CRT + rational reconstruction, exact ℚ verification, a trace-free linear p-adic Hensel lift, and a fallback to exact ℚ F5.
+- **`Algorithm::MultiModular` 变体与 Auto 路由**：`groebner_basis(.., Algorithm::Auto)` 对 ℚ 理想自动走 multi-modular 管线（内部 `Any` 判定），有限域等其它域维持 F4 路径；Python 绑定接受 `"multi_modular" | "multimodular" | "mm"`，C 绑定 `algorithm=4` / **`Algorithm::MultiModular` variant and Auto routing**: ℚ ideals take the multi-modular pipeline under `Auto`; Python accepts `multi_modular`/`multimodular`/`mm`, C FFI maps `algorithm=4`.
+- **F5 性能（cyclic-6 ℤ₁₃ 单轮 2.63 s → ~1.5 s）**：`find_reducer_fp` 线性扫描替换为 `DivisorIndex`（支持掩码分桶）；syzygy 集合按支持掩码分桶（`contains` 从 O(syzygies) 降到 submask 枚举）；矩阵行构造并行化（rayon）；echelon 二次消去两阶段化（pass-1 主元并行消去 + 串行收尾，结果与纯串行逐位一致）；行注册 fused + 栈缓冲避免逐项堆分配 / **F5 speedups**: DivisorIndex reducer queries, bucketed syzygy membership, parallel row construction, two-phase parallel echelonization (bit-identical to sequential), fused allocation-free row registration.
+- **模 GCD 并行化**：`gcd_modular_z` 与 `modular_gcd_x` 的素数循环按批并行计算模像，主线程维持原有增量重构与验证流程 / **Parallel modular GCD**: prime-image batches computed with rayon in both univariate and multivariate Brown GCD drivers.
+- **共享系统生成器**：`ocas-tests/src/systems.rs` 提供 `cyclic_q/cyclic_fp/katsura_q/katsura_fp`，benches 与测试去重；新增 katsura-6/7 基准与 `f5_cyclic_fp13`（n=3..6）、`multi_modular_cyclic_q`（n=3..5）criterion 组 / **Shared system generators**: `ocas-tests::systems` with cyclic/katsura over ℚ and ℤ_p; new criterion groups.
+- **`qmpoly_to_primitive_zmpoly` 泛型化**（`pub(crate)`，任意单项式序）供 multi-modular 管线复用 / **`qmpoly_to_primitive_zmpoly` generalized** over `O: MonomialOrder`.
+- **`p < 2³¹` 运行时守卫**：f4/f5 的 ℤ_p 快通道仅在素数小于 2³¹ 时启用，大素数回落通用域路径（此前 `prime_u64() as i64` 静默溢出） / **`p < 2³¹` guards** on the ℤ_p fast paths (previously a silent `as i64` overflow).
+
+### Tests / 测试
+
+- `groebner::multi_modular` 7 项单元测试：CRT+RR 重构、坏素数跳过、cyclic-2..4 与 f5 逐项一致、有理系数重构、Hensel 提升（含人工不一致素数返回 `None`）。
+- `correctness/groebner.rs` 新增 `algorithm_multi_modular_variant_routes`、`auto_routes_multi_modular_for_q`、`multi_modular_matches_f5_random`（确定性种子 100 个随机 ℚ 理想与 F5 逐项相等）。
+- `groebner_f5_cyclic_6_fp13` 断言收紧至 < 2.0 s；cyclic-7 改为基准标记（可解 + `is_groebner_basis`，不设硬时限）。
+- 版本号升至 0.25.0。
+
+---
+
 ## [0.24.0] - 2026-08-03
 
 ### Added / 新增
