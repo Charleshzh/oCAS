@@ -1,0 +1,1176 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Tensors - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html" class="active"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-tensors.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-tensors"><a class="header" href="#rust-api-reference-tensors">Rust API Reference: Tensors</a></h1>
+<p>oCAS provides basic tensor algebra with explicit index management. A <code>Tensor</code> carries named index slots (upper/lower), optional symmetry metadata, and can be converted into an <code>Atom</code> expression for symbolic processing. Since 0.22.0, a graph-isomorphism-based canonicalization engine and Young projectors are also available.</p>
+<p><strong>Module paths</strong>: <code>ocas_atom::tensor</code> (<code>mod.rs</code>), <code>ocas_atom::tensor::spec</code>, <code>ocas_atom::tensor::canon</code>, <code>ocas_atom::tensor::dummy</code>, <code>ocas_atom::tensor::young</code></p>
+<p><strong>Import</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{
+    IndexPosition, IndexSlot, Symmetry, Tensor,
+    contract, Contracted, TensorProduct,
+    symmetrise_sign,
+};
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::{canonicalize_tensors, CanonicalTensor, TensorCanonError};
+use ocas_atom::tensor::dummy::{refresh_dummies, DummyError};
+use ocas_atom::tensor::young::{YoungTableau, young_project};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="indexposition"><a class="header" href="#indexposition">IndexPosition</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum IndexPosition {
+    Upper,
+    Lower,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The position (variance) of an index on a tensor. <code>Upper</code> denotes a contravariant index (superscript), <code>Lower</code> a covariant index (subscript). Contraction requires two indices with the same label to have opposite positions.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>Upper</code></td><td>Contravariant index (superscript); corresponds to a contravariant vector in physics</td></tr>
+<tr><td><code>Lower</code></td><td>Covariant index (subscript); corresponds to a covariant vector in physics</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::IndexPosition;
+
+assert_eq!(IndexPosition::Upper, IndexPosition::Upper);
+assert_ne!(IndexPosition::Upper, IndexPosition::Lower);
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="indexslot"><a class="header" href="#indexslot">IndexSlot</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct IndexSlot&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A single index slot of a tensor, consisting of an index label (<code>Atom</code>) and a position (<code>IndexPosition</code>). It is a <code>Copy</code> type and can be copied cheaply.</p>
+<h3 id="indexslotnew"><a class="header" href="#indexslotnew">IndexSlot::new</a></h3>
+<p><strong>Signature</strong>: <code>pub fn new(label: Atom&lt;'a&gt;, position: IndexPosition) -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates a new index slot.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Atom&lt;'a&gt;</code></td><td>Index label expression (usually a variable name such as <code>mu</code> or <code>i</code>)</td></tr>
+<tr><td><code>position</code></td><td><code>IndexPosition</code></td><td>Index position: <code>Upper</code> or <code>Lower</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>IndexSlot&lt;'a&gt;</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{IndexSlot, IndexPosition};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mu = IndexSlot::new(ctx.var("mu"), IndexPosition::Upper);
+let nu = IndexSlot::new(ctx.var("nu"), IndexPosition::Lower);
+assert_eq!(mu.position(), IndexPosition::Upper);
+assert_eq!(nu.position(), IndexPosition::Lower);
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<h3 id="indexslotlabel"><a class="header" href="#indexslotlabel">IndexSlot::label</a></h3>
+<p><strong>Signature</strong>: <code>pub fn label(&amp;self) -&gt; Atom&lt;'a&gt;</code></p>
+<p><strong>Description</strong>: Returns the index label expression.</p>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the <code>Atom</code> handle of the index label.</p>
+<h3 id="indexslotposition"><a class="header" href="#indexslotposition">IndexSlot::position</a></h3>
+<p><strong>Signature</strong>: <code>pub fn position(&amp;self) -&gt; IndexPosition</code></p>
+<p><strong>Description</strong>: Returns the position of the index (<code>Upper</code> or <code>Lower</code>).</p>
+<p><strong>Returns</strong>: <code>IndexPosition</code></p>
+<p><strong>See also</strong>: <a href="#indexposition">IndexPosition</a></p>
+<hr />
+<h2 id="symmetry"><a class="header" href="#symmetry">Symmetry</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Symmetry {
+    None,
+    Symmetric,
+    Antisymmetric,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The symmetry of a tensor's index slots. This is <strong>advisory</strong> metadata — operations such as <code>contract</code> do not automatically symmetrize; the symmetry is used by downstream consumers (such as the canonicalization engine or Young projectors).</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>None</code></td><td>No symmetry (generic tensor)</td></tr>
+<tr><td><code>Symmetric</code></td><td>Symmetric: swapping any two index slots leaves the tensor unchanged</td></tr>
+<tr><td><code>Antisymmetric</code></td><td>Antisymmetric: swapping any two index slots flips the sign</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::Symmetry;
+
+assert_eq!(Symmetry::None, Symmetry::None);
+assert_ne!(Symmetry::Symmetric, Symmetry::Antisymmetric);
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensor"><a class="header" href="#tensor">Tensor</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Tensor&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A named tensor object, consisting of a name (<code>Symbol</code>), a list of index slots (<code>Vec&lt;IndexSlot&gt;</code>), and a symmetry (<code>Symmetry</code>). It can be lowered to a standard <code>Atom</code> expression node via <code>to_atom</code>.</p>
+<h3 id="tensornew"><a class="header" href="#tensornew">Tensor::new</a></h3>
+<p><strong>Signature</strong>: <code>pub fn new(name: Symbol, slots: Vec&lt;IndexSlot&lt;'a&gt;&gt;) -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates a new tensor; the default symmetry is <code>Symmetry::None</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>Tensor name (interned string, e.g. <code>"g"</code>, <code>"Riemann"</code>)</td></tr>
+<tr><td><code>slots</code></td><td><code>Vec&lt;IndexSlot&lt;'a&gt;&gt;</code></td><td>List of index slots; the order is meaningful</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Tensor&lt;'a&gt;</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let slots = vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+];
+let t = Tensor::new(Symbol::new("g"), slots);
+assert_eq!(t.rank(), 2);
+assert_eq!(t.name().as_str(), "g");
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorwith_symmetry"><a class="header" href="#tensorwith_symmetry">Tensor::with_symmetry</a></h3>
+<p><strong>Signature</strong>: <code>pub fn with_symmetry(mut self, symmetry: Symmetry) -&gt; Self</code></p>
+<p><strong>Description</strong>: Builder method that sets the tensor's symmetry. Consumes and returns <code>self</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>symmetry</code></td><td><code>Symmetry</code></td><td>The desired symmetry</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Self</code> — the tensor with the symmetry set.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let slots = vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Upper),
+];
+let sym = Tensor::new(Symbol::new("g"), slots.clone())
+    .with_symmetry(Symmetry::Symmetric);
+let anti = Tensor::new(Symbol::new("epsilon"), slots)
+    .with_symmetry(Symmetry::Antisymmetric);
+
+assert_eq!(sym.symmetry(), Symmetry::Symmetric);
+assert_eq!(anti.symmetry(), Symmetry::Antisymmetric);
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorname"><a class="header" href="#tensorname">Tensor::name</a></h3>
+<p><strong>Signature</strong>: <code>pub fn name(&amp;self) -&gt; Symbol</code></p>
+<p><strong>Description</strong>: Returns the tensor name.</p>
+<p><strong>Returns</strong>: <code>Symbol</code> — the interned string handle.</p>
+<h3 id="tensorslots"><a class="header" href="#tensorslots">Tensor::slots</a></h3>
+<p><strong>Signature</strong>: <code>pub fn slots(&amp;self) -&gt; &amp;[IndexSlot&lt;'a&gt;]</code></p>
+<p><strong>Description</strong>: Returns a slice reference to the index slots.</p>
+<p><strong>Returns</strong>: <code>&amp;[IndexSlot&lt;'a&gt;]</code></p>
+<h3 id="tensorsymmetry"><a class="header" href="#tensorsymmetry">Tensor::symmetry</a></h3>
+<p><strong>Signature</strong>: <code>pub fn symmetry(&amp;self) -&gt; Symmetry</code></p>
+<p><strong>Description</strong>: Returns the tensor's symmetry.</p>
+<p><strong>Returns</strong>: <code>Symmetry</code></p>
+<h3 id="tensorrank"><a class="header" href="#tensorrank">Tensor::rank</a></h3>
+<p><strong>Signature</strong>: <code>pub fn rank(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: Returns the rank of the tensor (the number of index slots).</p>
+<p><strong>Returns</strong>: <code>usize</code></p>
+<h3 id="tensordummy_labels"><a class="header" href="#tensordummy_labels">Tensor::dummy_labels</a></h3>
+<p><strong>Signature</strong>: <code>pub fn dummy_labels(&amp;self) -&gt; Vec&lt;Atom&lt;'a&gt;&gt;</code></p>
+<p><strong>Description</strong>: Returns the list of dummy index labels. A dummy index is a label that occurs exactly twice across all slots (once <code>Upper</code> and once <code>Lower</code>), i.e. a contraction candidate.</p>
+<p><strong>Returns</strong>: <code>Vec&lt;Atom&lt;'a&gt;&gt;</code> — the list of dummy index labels.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// A^μ_μ: mu occurs twice (Upper + Lower) → dummy index
+let t = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
+]);
+assert_eq!(t.dummy_labels().len(), 1);
+// Output: 1 dummy index
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorto_atom"><a class="header" href="#tensorto_atom">Tensor::to_atom</a></h3>
+<p><strong>Signature</strong>: <code>pub fn to_atom(&amp;self, ctx: &amp;'a AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt;</code></p>
+<p><strong>Description</strong>: Lowers the tensor to a standard <code>Atom</code> function node <code>name(slot₁, slot₂, …)</code>. No symmetrization is applied — the atom preserves <code>self</code>'s slot order.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the function node expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let t = Tensor::new(Symbol::new("g"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+]);
+let atom = t.to_atom(&amp;ctx);
+println!("{}", atom);  // g(mu, nu)
+// Output: g(mu, nu)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="./rust-expressions.html#atom">Atom</a></p>
+<hr />
+<h2 id="contract"><a class="header" href="#contract">contract</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn contract&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    a: &amp;Tensor&lt;'a&gt;,
+    b: &amp;Tensor&lt;'a&gt;,
+) -&gt; Contracted&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Contracts two tensors by summing over shared dummy indices. Two slots with the same label but opposite positions are contracted. The result retains the surviving free indices, in the order <code>(a's free slots, b's free slots)</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>a</code></td><td><code>&amp;Tensor&lt;'a&gt;</code></td><td>The first tensor</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Tensor&lt;'a&gt;</code></td><td>The second tensor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Contracted&lt;'a&gt;</code></p>
+<ul>
+<li>With no contraction pair, returns <code>Contracted::Product</code> containing the two original tensors</li>
+<li>With a partial contraction, returns <code>Contracted::Product</code> containing a new tensor carrying the free slots</li>
+<li>With a full contraction (no free slots), returns <code>Contracted::Scalar</code></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, contract, Contracted};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// A^μ B_μ → scalar
+let a = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+]);
+let b = Tensor::new(Symbol::new("B"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
+]);
+match contract(&amp;ctx, &amp;a, &amp;b) {
+    Contracted::Scalar(expr) =&gt; println!("scalar: {}", expr),
+    Contracted::Product(tp) =&gt; {
+        for f in &amp;tp.factors {
+            println!("free: {} (rank {})", f.name().as_str(), f.rank());
+        }
+    }
+}
+// Output: scalar: A(mu)*B(mu)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#contracted">Contracted</a>, <a href="#tensorproduct">TensorProduct</a></p>
+<hr />
+<h2 id="contracted"><a class="header" href="#contracted">Contracted</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Contracted&lt;'a&gt; {
+    Product(TensorProduct&lt;'a&gt;),
+    Scalar(Atom&lt;'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The result of contracting two tensors. When no free indices survive it is a scalar expression; otherwise it is a tensor product with free slots.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Product</code></td><td><code>TensorProduct&lt;'a&gt;</code></td><td>Partial or no contraction; a tensor product with free indices</td></tr>
+<tr><td><code>Scalar</code></td><td><code>Atom&lt;'a&gt;</code></td><td>Full contraction to a scalar expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, contract, Contracted};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// A^μ_ν B^ν_ρ → partial contraction, leaving A^μ_ρ
+let a = Tensor::new(Symbol::new("A"), vec![
+    IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+]);
+let b = Tensor::new(Symbol::new("B"), vec![
+    IndexSlot::new(ctx.var("nu"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("rho"), IndexPosition::Lower),
+]);
+match contract(&amp;ctx, &amp;a, &amp;b) {
+    Contracted::Product(tp) =&gt; {
+        assert_eq!(tp.factors.len(), 1);
+        assert_eq!(tp.factors[0].rank(), 2); // mu, rho
+    }
+    Contracted::Scalar(_) =&gt; panic!("expected partial contraction"),
+}
+// Output: partial contraction, 2 free indices remain
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensorproduct"><a class="header" href="#tensorproduct">TensorProduct</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TensorProduct&lt;'a&gt; {
+    pub factors: Vec&lt;Tensor&lt;'a&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A tensor product retaining the free slots after contraction. <code>factors</code> contains the tensors that survive the contraction, with slots concatenated in the order <code>(a's free slots, b's free slots)</code>.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>factors</code></td><td><code>Vec&lt;Tensor&lt;'a&gt;&gt;</code></td><td>The list of tensor factors after contraction</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <a href="#contract">contract</a>, <a href="#contracted">Contracted</a></p>
+<hr />
+<h2 id="symmetrise_sign"><a class="header" href="#symmetrise_sign">symmetrise_sign</a></h2>
+<p><strong>Signature</strong>: <code>pub fn symmetrise_sign(tensor: &amp;Tensor&lt;'_&gt;) -&gt; i64</code></p>
+<p><strong>Description</strong>: Sorts the tensor's index slots by label in ascending order and returns the sign of the antisymmetrization.</p>
+<ul>
+<li><code>Symmetry::None</code> or <code>Symmetry::Symmetric</code>: returns <code>+1</code></li>
+<li><code>Symmetry::Antisymmetric</code>: returns the permutation parity (even permutation <code>+1</code>, odd permutation <code>-1</code>)</li>
+</ul>
+<p><strong>Note</strong>: This is not full canonicalization under the permutation group (that requires graph isomorphism); it merely provides a stable order for comparing equivalent symmetric tensors.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tensor</code></td><td><code>&amp;Tensor&lt;'_&gt;</code></td><td>The input tensor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>i64</code> — <code>+1</code> or <code>-1</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::{Tensor, IndexSlot, IndexPosition, Symmetry, symmetrise_sign};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let slots = vec![
+    IndexSlot::new(ctx.var("a"), IndexPosition::Upper),
+    IndexSlot::new(ctx.var("b"), IndexPosition::Upper),
+];
+let anti = Tensor::new(Symbol::new("epsilon"), slots)
+    .with_symmetry(Symmetry::Antisymmetric);
+
+let sign = symmetrise_sign(&amp;anti);
+// If a &lt; b the permutation is the identity, sign = +1
+// Output: +1
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="symmetryspec"><a class="header" href="#symmetryspec">SymmetrySpec</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Default)]
+pub struct SymmetrySpec {
+    pub symmetric_subsets: Vec&lt;Vec&lt;usize&gt;&gt;,
+    pub antisymmetric_subsets: Vec&lt;Vec&lt;usize&gt;&gt;,
+    pub cyclic: Option&lt;Vec&lt;usize&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A fine-grained symmetry specification for tensors, used by the canonicalization engine. It is more flexible than the <code>Symmetry</code> enum — different subsets of slot positions can be assigned different symmetry behavior.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>symmetric_subsets</code></td><td><code>Vec&lt;Vec&lt;usize&gt;&gt;</code></td><td>List of symmetric slot subsets. Slots within the same subset are interchangeable</td></tr>
+<tr><td><code>antisymmetric_subsets</code></td><td><code>Vec&lt;Vec&lt;usize&gt;&gt;</code></td><td>List of antisymmetric slot subsets. Swapping two slots within a subset flips the sign</td></tr>
+<tr><td><code>cyclic</code></td><td><code>Option&lt;Vec&lt;usize&gt;&gt;</code></td><td>A slot subset undergoing cyclic permutations</td></tr>
+</tbody></table>
+</div>
+<h3 id="symmetryspecnone"><a class="header" href="#symmetryspecnone">SymmetrySpec::none</a></h3>
+<p><strong>Signature</strong>: <code>pub fn none() -&gt; Self</code></p>
+<p><strong>Description</strong>: No symmetry — all slots are independent.</p>
+<p><strong>Returns</strong>: <code>SymmetrySpec</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::none();
+assert!(spec.symmetric_subsets.is_empty());
+assert!(spec.antisymmetric_subsets.is_empty());
+assert!(spec.cyclic.is_none());
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symmetryspecfully_symmetric"><a class="header" href="#symmetryspecfully_symmetric">SymmetrySpec::fully_symmetric</a></h3>
+<p><strong>Signature</strong>: <code>pub fn fully_symmetric(rank: usize) -&gt; Self</code></p>
+<p><strong>Description</strong>: All slots are fully symmetric. Creates a symmetric subset containing all slots <code>0..rank</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rank</code></td><td><code>usize</code></td><td>The rank of the tensor (total number of slots)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>SymmetrySpec</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::fully_symmetric(3);
+assert_eq!(spec.symmetric_subsets, vec![vec![0, 1, 2]]);
+// Output: symmetric subset = [[0, 1, 2]]
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symmetryspecfully_antisymmetric"><a class="header" href="#symmetryspecfully_antisymmetric">SymmetrySpec::fully_antisymmetric</a></h3>
+<p><strong>Signature</strong>: <code>pub fn fully_antisymmetric(rank: usize) -&gt; Self</code></p>
+<p><strong>Description</strong>: All slots are fully antisymmetric. Creates an antisymmetric subset containing all slots <code>0..rank</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rank</code></td><td><code>usize</code></td><td>The rank of the tensor (total number of slots)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>SymmetrySpec</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::fully_antisymmetric(4);
+assert_eq!(spec.antisymmetric_subsets, vec![vec![0, 1, 2, 3]]);
+// Output: antisymmetric subset = [[0, 1, 2, 3]]
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symmetryspecis_slot_hidden"><a class="header" href="#symmetryspecis_slot_hidden">SymmetrySpec::is_slot_hidden</a></h3>
+<p><strong>Signature</strong>: <code>pub fn is_slot_hidden(&amp;self, pos: usize) -&gt; bool</code></p>
+<p><strong>Description</strong>: Checks whether the given slot position should be "hidden" in the graph encoding (i.e. it does not participate in canonicalization comparisons). Symmetric and cyclic slots are hidden.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pos</code></td><td><code>usize</code></td><td>The slot position index</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> if the slot is hidden.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::SymmetrySpec;
+
+let spec = SymmetrySpec::fully_symmetric(2);
+assert!(spec.is_slot_hidden(0));   // in symmetric subset
+assert!(spec.is_slot_hidden(1));   // in symmetric subset
+
+let none = SymmetrySpec::none();
+assert!(!none.is_slot_hidden(0));  // not in any subset
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensorregistry"><a class="header" href="#tensorregistry">TensorRegistry</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Default)]
+pub struct TensorRegistry { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The complete registry for tensor canonicalization. It records which function heads are tensors and their symmetry specifications, and also manages the assignment of index dimension groups (preventing dummy-index renaming conflicts across dimensions).</p>
+<h3 id="tensorregistrynew"><a class="header" href="#tensorregistrynew">TensorRegistry::new</a></h3>
+<p><strong>Signature</strong>: <code>pub fn new() -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates an empty registry.</p>
+<p><strong>Returns</strong>: <code>TensorRegistry</code></p>
+<h3 id="tensorregistryregister"><a class="header" href="#tensorregistryregister">TensorRegistry::register</a></h3>
+<p><strong>Signature</strong>: <code>pub fn register(&amp;mut self, name: Symbol, spec: SymmetrySpec)</code></p>
+<p><strong>Description</strong>: Registers a tensor name together with its symmetry specification.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>The tensor function head name</td></tr>
+<tr><td><code>spec</code></td><td><code>SymmetrySpec</code></td><td>The symmetry specification</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::Symbol;
+
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("g"), SymmetrySpec::fully_symmetric(2));
+reg.register(Symbol::new("Riemann"), SymmetrySpec::none());
+reg.register(Symbol::new("epsilon"), SymmetrySpec::fully_antisymmetric(4));
+// Output: 3 tensors registered
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorregistryset_index_group"><a class="header" href="#tensorregistryset_index_group">TensorRegistry::set_index_group</a></h3>
+<p><strong>Signature</strong>: <code>pub fn set_index_group(&amp;mut self, label: Symbol, group: u64)</code></p>
+<p><strong>Description</strong>: Sets the dimension-group identifier of an index label. Dummy indices from different groups are never renamed to the same canonical name, avoiding cross-dimension conflicts.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Symbol</code></td><td>The index label (e.g. <code>"mu"</code>, <code>"i"</code>)</td></tr>
+<tr><td><code>group</code></td><td><code>u64</code></td><td>The group identifier. <code>0</code> means default/ungrouped</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::TensorRegistry;
+use ocas_atom::Symbol;
+
+let mut reg = TensorRegistry::new();
+reg.set_index_group(Symbol::new("mu"), 1);  // spacetime index
+reg.set_index_group(Symbol::new("i"), 2);   // internal index
+assert_eq!(reg.index_group(Symbol::new("mu")), 1);
+assert_eq!(reg.index_group(Symbol::new("i")), 2);
+assert_eq!(reg.index_group(Symbol::new("other")), 0); // default group
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<h3 id="tensorregistryspec"><a class="header" href="#tensorregistryspec">TensorRegistry::spec</a></h3>
+<p><strong>Signature</strong>: <code>pub fn spec(&amp;self, name: Symbol) -&gt; Option&lt;&amp;SymmetrySpec&gt;</code></p>
+<p><strong>Description</strong>: Looks up the symmetry specification of a registered tensor.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>The tensor name</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Option&lt;&amp;SymmetrySpec&gt;</code> — <code>None</code> if not registered.</p>
+<h3 id="tensorregistryindex_group"><a class="header" href="#tensorregistryindex_group">TensorRegistry::index_group</a></h3>
+<p><strong>Signature</strong>: <code>pub fn index_group(&amp;self, label: Symbol) -&gt; u64</code></p>
+<p><strong>Description</strong>: Looks up the dimension group of an index label. Labels that have not been set return <code>0</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>label</code></td><td><code>Symbol</code></td><td>The index label</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>u64</code> — the group identifier.</p>
+<p><strong>See also</strong>: <a href="#symmetryspec">SymmetrySpec</a></p>
+<hr />
+<h2 id="canonicalize_tensors"><a class="header" href="#canonicalize_tensors">canonicalize_tensors</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn canonicalize_tensors&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    registry: &amp;TensorRegistry,
+) -&gt; Result&lt;CanonicalTensor&lt;'a&gt;, TensorCanonError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Canonicalizes a tensor expression to a unique canonical form independent of index naming. Internally, the expression is encoded as a graph (tensor head → head vertex, index slot → slot vertex, contraction → edge), the McKay refinement-individualization algorithm computes canonical labels, and the expression is then rebuilt with renamed dummy indices.</p>
+<p>For sum expressions (<code>Add</code>), each term is canonicalized individually and all terms are verified to have the same set of free indices.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The tensor expression to canonicalize (<code>Mul</code> of <code>Fun</code> nodes)</td></tr>
+<tr><td><code>registry</code></td><td><code>&amp;TensorRegistry</code></td><td>The tensor registry (symmetry specifications + index groups)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Result&lt;CanonicalTensor&lt;'a&gt;, TensorCanonError&gt;</code></p>
+<p><strong>Errors</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Error variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ContractedMoreThanOnce(Symbol)</code></td><td>An index label is contracted more than twice</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>Two slots with the same label have the same position (not an upper/lower pair)</td></tr>
+<tr><td><code>NotATensor(Symbol)</code></td><td>A function head not registered in the registry appears in the expression</td></tr>
+<tr><td><code>InconsistentOpenIndices</code></td><td>The free indices of the terms in a sum are inconsistent</td></tr>
+<tr><td><code>UnsupportedPower</code></td><td>An unsupported power node appears in the expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+
+// T(i, j) and T(j, i) are different (no symmetry)
+let t_ij = ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]);
+let t_ji = ctx.fun("T", &amp;[ctx.var("j"), ctx.var("i")]);
+
+let ct1 = canonicalize_tensors(&amp;ctx, t_ij, &amp;reg).unwrap();
+let ct2 = canonicalize_tensors(&amp;ctx, t_ji, &amp;reg).unwrap();
+// Without symmetry, T(i,j) ≠ T(j,i)
+// Note: without symmetry, T(i,j) and T(j,i) have different canonical forms
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#canonicaltensor">CanonicalTensor</a>, <a href="#tensorcanonerror">TensorCanonError</a>, <a href="#tensorregistry">TensorRegistry</a></p>
+<hr />
+<h2 id="canonicaltensor"><a class="header" href="#canonicaltensor">CanonicalTensor</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct CanonicalTensor&lt;'a&gt; {
+    pub canonical_form: Atom&lt;'a&gt;,
+    pub external_indices: Vec&lt;Atom&lt;'a&gt;&gt;,
+    pub dummy_indices: Vec&lt;Atom&lt;'a&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The result of tensor canonicalization.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>canonical_form</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The canonicalized expression (dummy indices renamed)</td></tr>
+<tr><td><code>external_indices</code></td><td><code>Vec&lt;Atom&lt;'a&gt;&gt;</code></td><td>The list of free (external) indices</td></tr>
+<tr><td><code>dummy_indices</code></td><td><code>Vec&lt;Atom&lt;'a&gt;&gt;</code></td><td>The list of dummy indices (renamed to <code>d0</code>, <code>d1</code>, …)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+let prod = ctx.mul(&amp;[ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]),
+                      ctx.fun("U", &amp;[ctx.var("j"), ctx.var("k")])]);
+let ct = canonicalize_tensors(&amp;ctx, prod, &amp;reg).unwrap();
+
+println!("Canonical form: {}", ct.canonical_form);
+println!("External indices: {:?}", ct.external_indices);
+println!("Dummy indices: {:?}", ct.dummy_indices);
+// Output: canonical form contains renamed dummy indices; external indices are i, k
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="tensorcanonerror"><a class="header" href="#tensorcanonerror">TensorCanonError</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TensorCanonError {
+    ContractedMoreThanOnce(Symbol),
+    BadContraction(Symbol),
+    NotATensor(Symbol),
+    InconsistentOpenIndices,
+    UnsupportedPower,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Errors that may arise during tensor canonicalization.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ContractedMoreThanOnce(Symbol)</code></td><td>An index label is contracted more than twice (occurs 3 or more times)</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>Two slots with the same label have the same variance (not a valid upper/lower pair)</td></tr>
+<tr><td><code>NotATensor(Symbol)</code></td><td>A function head not registered in the <code>TensorRegistry</code> appears</td></tr>
+<tr><td><code>InconsistentOpenIndices</code></td><td>The sets of free indices of the terms in a sum are inconsistent</td></tr>
+<tr><td><code>UnsupportedPower</code></td><td>An unsupported power node appears in the expression</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="refresh_dummies"><a class="header" href="#refresh_dummies">refresh_dummies</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn refresh_dummies&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    registry: &amp;TensorRegistry,
+) -&gt; Result&lt;Atom&lt;'a&gt;, DummyError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Renames the dummy indices in a tensor expression to avoid conflicts with external (free) indices. Labels that occur exactly twice (once as a superscript, once as a subscript) are replaced with new names assigned per dimension group (<code>d0</code>, <code>d1</code>, …). External indices remain unchanged.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The tensor expression to process</td></tr>
+<tr><td><code>registry</code></td><td><code>&amp;TensorRegistry</code></td><td>The tensor registry (used for dimension-group assignment)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Result&lt;Atom&lt;'a&gt;, DummyError&gt;</code></p>
+<p><strong>Errors</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Error variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>OverContracted(Symbol)</code></td><td>An index label occurs more than twice</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>Two slots with the same label have the same variance</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::dummy::refresh_dummies;
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let mut reg = TensorRegistry::new();
+reg.register(Symbol::new("T"), SymmetrySpec::none());
+reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+// T(i,j) * U(j,i): i and j both occur exactly twice → dummy indices
+let expr = ctx.mul(&amp;[ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]),
+                      ctx.fun("U", &amp;[ctx.var("j"), ctx.var("i")])]);
+let refreshed = refresh_dummies(&amp;ctx, expr, &amp;reg).unwrap();
+println!("{}", refreshed);
+// Output: dummy indices renamed to d0, d1 (assigned per dimension group)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#dummyerror">DummyError</a>, <a href="#tensorregistry">TensorRegistry</a></p>
+<hr />
+<h2 id="dummyerror"><a class="header" href="#dummyerror">DummyError</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DummyError {
+    OverContracted(Symbol),
+    BadContraction(Symbol),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The error type for dummy-index operations.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>OverContracted(Symbol)</code></td><td>An index label occurs more than twice (not a valid contraction candidate)</td></tr>
+<tr><td><code>BadContraction(Symbol)</code></td><td>Two slots with the same label have the same variance (not an upper/lower pair)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="youngtableau"><a class="header" href="#youngtableau">YoungTableau</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct YoungTableau {
+    pub row_lengths: Vec&lt;usize&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A Young tableau, whose shape is defined by a list of row lengths (e.g. <code>[2, 1]</code> denotes □□/□). The Young projector implements the classical symmetrizer $c_\lambda = a_\lambda \cdot b_\lambda$: it sums over all combinations of row permutations $\sigma \in R$ and column permutations $\tau \in C$, each term carrying the column permutation parity $\operatorname{sgn}(\tau)$.</p>
+<p>This is an <strong>explicit</strong> expansion (not a BSGS group-theoretic implementation): the result is a sum of $\prod r_i! \cdot \prod c_j!$ terms (products of row/column factorials), each with sign ±1 and no hook-length normalization.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>row_lengths</code></td><td><code>Vec&lt;usize&gt;</code></td><td>The number of boxes in each row</td></tr>
+</tbody></table>
+</div>
+<h3 id="youngtableaunew"><a class="header" href="#youngtableaunew">YoungTableau::new</a></h3>
+<p><strong>Signature</strong>: <code>pub fn new(row_lengths: Vec&lt;usize&gt;) -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates a Young tableau from row lengths.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>row_lengths</code></td><td><code>Vec&lt;usize&gt;</code></td><td>The list of boxes per row. The total number of boxes should equal the rank of the tensor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>YoungTableau</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::young::YoungTableau;
+
+// [2, 1] = □□/□ (3 boxes)
+let tab = YoungTableau::new(vec![2, 1]);
+assert_eq!(tab.total_boxes(), 3);
+
+// [1, 1, 1] = fully antisymmetric
+let anti = YoungTableau::new(vec![1, 1, 1]);
+assert_eq!(anti.total_boxes(), 3);
+
+// [3] = fully symmetric
+let sym = YoungTableau::new(vec![3]);
+assert_eq!(sym.total_boxes(), 3);
+// Output: all assertions pass
+<span class="boring">}</span></code></pre></pre>
+<h3 id="youngtableautotal_boxes"><a class="header" href="#youngtableautotal_boxes">YoungTableau::total_boxes</a></h3>
+<p><strong>Signature</strong>: <code>pub fn total_boxes(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: Returns the total number of boxes in the tableau (equal to the rank of the tensor).</p>
+<p><strong>Returns</strong>: <code>usize</code></p>
+<hr />
+<h2 id="young_project"><a class="header" href="#young_project">young_project</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn young_project&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    tensor_expr: Atom&lt;'a&gt;,
+    tableau: &amp;YoungTableau,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Applies the Young projector to a tensor expression. Expands $T(i_1, i_2, \dots, i_n)$ into a sum over permutations:</p>
+<p>$$\sum_\sigma \text{sign}(\sigma) \cdot T(i_{\sigma(1)}, i_{\sigma(2)}, \dots, i_{\sigma(n)})$$</p>
+<p>The current implementation does <strong>not</strong> normalize by the product of hook lengths — each term has coefficient $\pm 1$ only. For a fully antisymmetric tableau <code>[1, 1, …, 1]</code>, the standard alternating sum is obtained.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>tensor_expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The tensor expression (a <code>Fun</code> node)</td></tr>
+<tr><td><code>tableau</code></td><td><code>&amp;YoungTableau</code></td><td>The Young tableau shape</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the projected expression (an <code>Add</code> node whose terms carry signs).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::tensor::young::{YoungTableau, young_project};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// fully antisymmetric [1, 1]: f(a, b) → f(a, b) - f(b, a)
+let f_ab = ctx.fun("f", &amp;[ctx.var("a"), ctx.var("b")]);
+let result = young_project(&amp;ctx, f_ab, &amp;YoungTableau::new(vec![1, 1]));
+println!("{}", result);
+// Output: f(a,b) - f(b,a)
+
+// fully symmetric [2]: g(a, b) → g(a, b) + g(b, a)
+let g_ab = ctx.fun("g", &amp;[ctx.var("a"), ctx.var("b")]);
+let result = young_project(&amp;ctx, g_ab, &amp;YoungTableau::new(vec![2]));
+println!("{}", result);
+// Output: g(a,b) + g(b,a)
+
+// fully antisymmetric [1, 1, 1]: h(a, b, c) → alternating sum of 6 terms (coefficients ±1, not normalized)
+let h = ctx.fun("h", &amp;[ctx.var("a"), ctx.var("b"), ctx.var("c")]);
+let result = young_project(&amp;ctx, h, &amp;YoungTableau::new(vec![1, 1, 1]));
+println!("{}", result);
+// Output: h(a,b,c) - h(b,a,c) - ... (6 terms, each with coefficient ±1)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#youngtableau">YoungTableau</a>, <a href="#symmetryspec">SymmetrySpec</a></p>
+<hr />
+<h2 id="design-invariants"><a class="header" href="#design-invariants">Design Invariants</a></h2>
+<h3 id="atom-is-a-copy-arena-handle"><a class="header" href="#atom-is-a-copy-arena-handle"><code>Atom</code> is a Copy arena handle</a></h3>
+<p><code>Atom&lt;'a&gt;</code> is a Copy handle pointing to a node in the arena. <code>IndexSlot&lt;'a&gt;</code> is also Copy. This means tensors can be copied and compared cheaply — structural equality is equivalent to pointer equality (hash-consing).</p>
+<h3 id="explicit-index-matching"><a class="header" href="#explicit-index-matching">Explicit index matching</a></h3>
+<p>The tensor algebra of oCAS uses <strong>explicit index matching</strong> rather than the Einstein summation convention. Contractions must be performed manually by calling <code>contract</code>; indices are paired by label and position (upper/lower).</p>
+<h3 id="symmetry-is-advisory"><a class="header" href="#symmetry-is-advisory">Symmetry is advisory</a></h3>
+<p>The <code>Symmetry</code> enum and <code>SymmetrySpec</code> are metadata and are not used automatically by basic operations such as <code>contract</code>. Full symmetry handling requires:</p>
+<ol>
+<li>Canonicalization (<code>canonicalize_tensors</code>) — symmetry enforcement at the level of graph isomorphism</li>
+<li>Young projection (<code>young_project</code>) — explicit permutation expansion</li>
+</ol>
+<h3 id="graph-isomorphism-engine"><a class="header" href="#graph-isomorphism-engine">Graph isomorphism engine</a></h3>
+<p>Canonicalization in 0.22.0 is based on the McKay refinement-individualization graph isomorphism algorithm (implemented in the <code>tensor::graph</code> module). This engine is a standalone nauty implementation that provides:</p>
+<ul>
+<li>1-WL color refinement (neighbor signatures + edge data + direction)</li>
+<li>equitable partitions + individualization-refinement DFS</li>
+<li>path-invariant pruning + automorphism orbits</li>
+<li>canonical form = the lexicographically maximal certificate</li>
+</ul>
+<hr />
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use ocas_atom::tensor::{
+    IndexPosition, IndexSlot, Symmetry, Tensor,
+    contract, Contracted, symmetrise_sign,
+};
+use ocas_atom::tensor::spec::{SymmetrySpec, TensorRegistry};
+use ocas_atom::tensor::canon::canonicalize_tensors;
+use ocas_atom::tensor::dummy::refresh_dummies;
+use ocas_atom::tensor::young::{YoungTableau, young_project};
+use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+
+fn main() {
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+
+    // 1. Create the metric tensor g_μν with symmetry
+    let g = Tensor::new(Symbol::new("g"), vec![
+        IndexSlot::new(ctx.var("mu"), IndexPosition::Lower),
+        IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+    ]).with_symmetry(Symmetry::Symmetric);
+    println!("g rank = {}, symmetry = {:?}", g.rank(), g.symmetry());
+    // Output: g rank = 2, symmetry = Symmetric
+
+    // 2. Contract g^μν A_ν → partial contraction
+    let g_inv = Tensor::new(Symbol::new("g"), vec![
+        IndexSlot::new(ctx.var("mu"), IndexPosition::Upper),
+        IndexSlot::new(ctx.var("nu"), IndexPosition::Upper),
+    ]);
+    let a = Tensor::new(Symbol::new("A"), vec![
+        IndexSlot::new(ctx.var("nu"), IndexPosition::Lower),
+    ]);
+    match contract(&amp;ctx, &amp;g_inv, &amp;a) {
+        Contracted::Product(tp) =&gt; {
+            println!("Free indices after contraction: {}", tp.factors[0].rank());
+            // Output: number of free indices after contraction: 1 (mu)
+        }
+        _ =&gt; {}
+    }
+
+    // 3. Canonicalize: j in T(i,j)*U(j,k) is renamed
+    let mut reg = TensorRegistry::new();
+    reg.register(Symbol::new("T"), SymmetrySpec::none());
+    reg.register(Symbol::new("U"), SymmetrySpec::none());
+
+    let prod = ctx.mul(&amp;[
+        ctx.fun("T", &amp;[ctx.var("i"), ctx.var("j")]),
+        ctx.fun("U", &amp;[ctx.var("j"), ctx.var("k")]),
+    ]);
+    let ct = canonicalize_tensors(&amp;ctx, prod, &amp;reg).unwrap();
+    println!("Canonical form: {}", ct.canonical_form);
+    // Output: canonical form contains dummy indices d0, d1, etc.
+
+    // 4. Young projection: fully antisymmetrize f(a, b)
+    let f = ctx.fun("f", &amp;[ctx.var("a"), ctx.var("b")]);
+    let anti = young_project(&amp;ctx, f, &amp;YoungTableau::new(vec![1, 1]));
+    println!("Antisymmetrized: {}", anti);
+    // Output: f(a,b) - f(b,a)
+}</code></pre></pre>
+<hr />
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="./rust-expressions.html">Expression System</a> — the <code>Atom</code>, <code>AtomArena</code>, <code>Symbol</code> basic types</li>
+<li><a href="./rust-rewrite.html">Rewriting and Simplification</a> — pattern-matching-based expression transformation</li>
+<li><a href="../math/linear-algebra.html">Linear Algebra</a> — matrix operations (a low-rank special case of tensors)</li>
+<li><a href="../math/tensor-canonicalization.html">Tensor Algebra and Canonicalization</a> — the mathematical foundations</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-autodiff.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-ntheory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-autodiff.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-ntheory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

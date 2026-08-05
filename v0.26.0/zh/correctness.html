@@ -1,0 +1,330 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>正确性 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="correctness.html" class="active"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/correctness.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="正确性"><a class="header" href="#正确性">正确性</a></h1>
+<p>oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统进行对比：SymPy、SageMath 和 Symbolica。
+本章介绍该框架、如何运行及其当前已知限制。</p>
+<hr />
+<h2 id="框架概述"><a class="header" href="#框架概述">框架概述</a></h2>
+<p>正确性套件位于 <code>ocas-tests/tests/correctness/</code>，包含 <strong>201 项 <code>#[test]</code> 测试，覆盖 19 个数学模块</strong>（截至 0.24.0；其中 35 项标记 <code>#[ignore]</code> 记录已知差距）。每项测试：</p>
+<ol>
+<li>生成输入（表达式、多项式、方程组等）</li>
+<li>使用 oCAS 计算结果</li>
+<li>使用参考系统计算等价结果</li>
+<li>断言两者语义相等</li>
+</ol>
+<p>模块覆盖 oCAS 的全部功能：</p>
+<div class="table-wrapper"><table><thead><tr><th>模块</th><th>测试数</th><th>覆盖</th></tr></thead><tbody>
+<tr><td><code>calculus</code></td><td>16</td><td>微分、Taylor、积分（SymPy 对比）</td></tr>
+<tr><td><code>evaluation</code></td><td>6</td><td>数值求值</td></tr>
+<tr><td><code>finite_field</code></td><td>5</td><td>有限域运算</td></tr>
+<tr><td><code>groebner</code></td><td>18</td><td>Gröbner 基计算</td></tr>
+<tr><td><code>integral_risch</code></td><td>15</td><td>Risch 符号积分</td></tr>
+<tr><td><code>linear_solve</code></td><td>5</td><td>线性求解器</td></tr>
+<tr><td><code>matrix</code></td><td>5</td><td>矩阵运算</td></tr>
+<tr><td><code>normalize</code></td><td>8</td><td>表达式规范化</td></tr>
+<tr><td><code>ntheory</code></td><td>11</td><td>数论（与 SymPy <code>ntheory</code> 交叉验证）</td></tr>
+<tr><td><code>ode</code></td><td>34</td><td>ODE 求解</td></tr>
+<tr><td><code>parse</code></td><td>6</td><td>表达式解析与输出</td></tr>
+<tr><td><code>partial_fraction</code></td><td>8</td><td>部分分式分解</td></tr>
+<tr><td><code>poly_arithmetic</code></td><td>6</td><td>稠密/稀疏多项式运算</td></tr>
+<tr><td><code>poly_factor</code></td><td>12</td><td>无平方与完全因式分解</td></tr>
+<tr><td><code>poly_factor_anf</code></td><td>21</td><td>代数数域因式分解</td></tr>
+<tr><td><code>poly_gcd</code></td><td>5</td><td>多项式 GCD</td></tr>
+<tr><td><code>resultant</code></td><td>8</td><td>结式</td></tr>
+<tr><td><code>rewrite</code></td><td>8</td><td>重写与化简</td></tr>
+<tr><td><code>root_isolation</code></td><td>4</td><td>实根隔离</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="忽略的测试已知差距"><a class="header" href="#忽略的测试已知差距">忽略的测试（已知差距）</a></h2>
+<p>部分测试标记 <code>#[ignore]</code>（当前 36 项），用于记录已知差距——它们预期失败，
+仅在需要复现/推进时手动运行（<code>cargo test -p ocas-tests --test correctness -- --ignored</code>）。例如 Wilkinson 多项式求根：10 个实根中仅找到 8 个。</p>
+<hr />
+<h2 id="运行测试"><a class="header" href="#运行测试">运行测试</a></h2>
+<pre><code class="language-bash"># 运行全部正确性测试
+cargo test -p ocas-tests --test correctness
+
+# 运行特定模块（如 ODE 求解）
+cargo test -p ocas-tests --test correctness ode
+
+# 运行被忽略的测试（已知差距）
+cargo test -p ocas-tests --test correctness -- --ignored
+
+# 详细输出以检查失败
+cargo test -p ocas-tests --test correctness -- --nocapture
+</code></pre>
+<p>测试无需外部依赖 —— 所有参考计算通过 <code>uv</code> 管理的 Python 子进程使用 SymPy，子进程自动自举。</p>
+<hr />
+<h2 id="对比工具"><a class="header" href="#对比工具">对比工具</a></h2>
+<p>独立脚本提供针对 SageMath 和 Symbolica 的手动交叉检查，用于深入调查：</p>
+<pre><code class="language-bash"># SageMath（需本地安装 `sage`）
+cd ocas-tests
+sage scripts/bench_sage.py factor "x^30 - 1" 100
+
+# Symbolica（需 Symbolica 源码检出）
+cd ../symbolica
+cargo run --release --example factorization
+</code></pre>
+<p>这些工具在开发期间用于验证自动化测试套件，并维护用于手动回归测试。</p>
+<hr />
+<h2 id="审计报告"><a class="header" href="#审计报告">审计报告</a></h2>
+<p><code>ocas-tests/scripts/generate_audit_report.py</code> 会运行全部测试（含 <code>--ignored</code>
+部分）并生成审计报告：</p>
+<pre><code class="language-bash">cd ocas-tests
+python scripts/generate_audit_report.py
+</code></pre>
+<p>报告写入 <code>docs/planning/correctness/audit-&lt;日期&gt;.md</code>，包含：</p>
+<ul>
+<li>普通测试与被忽略测试的通过/失败/忽略计数摘要</li>
+<li>失败测试列表</li>
+<li>与 Symbolica 的因式分解计时对比</li>
+</ul>
+<hr />
+<h2 id="已知限制"><a class="header" href="#已知限制">已知限制</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>问题</th><th>模块</th><th>状态</th></tr></thead><tbody>
+<tr><td>Wilkinson n=10：10 个实根中仅找到 8 个</td><td><code>root_isolation</code></td><td>已知差距（<code>#[ignore]</code>）</td></tr>
+<tr><td><code>sin(x)^2 + cos(x)^2 → 1</code> 需要 <code>egg</code> feature</td><td><code>rewrite</code></td><td>启用 <code>egg</code> feature 后可化简</td></tr>
+<tr><td>Bernoulli forcing y^n 使线性系数提取混淆</td><td><code>ode</code></td><td>已知限制（<code>#[ignore]</code>）</td></tr>
+<tr><td>积分器缺 tan/sec 表项</td><td><code>ode</code></td><td>计划中（<code>#[ignore]</code>）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./performance.html">基准与性能对比</a> — 基准套件详情</li>
+<li><a href="./api/rust.html">Rust API</a> — 测试中使用的核心类型</li>
+<li><a href="./contributing.html">贡献</a> — 如何添加新的正确性测试</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="performance.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="backends.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="performance.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="backends.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

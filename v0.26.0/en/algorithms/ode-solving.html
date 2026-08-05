@@ -1,0 +1,689 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ODE Solving - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html" class="active"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/algorithms/ode-solving.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="ode-solving-algorithms"><a class="header" href="#ode-solving-algorithms">ODE Solving Algorithms</a></h1>
+<p>oCAS's ODE module (<code>ocas-calc/src/ode/</code>) implements a symbolic solver for ordinary differential equations. This chapter details the classification criteria for each ODE type, the implementation details of the solving algorithms, and the design choices. For the mathematical derivations, see <a href="../math/ode-theory.html">ODE Solving Theory</a>.</p>
+<hr />
+<h2 id="overall-architecture"><a class="header" href="#overall-architecture">Overall Architecture</a></h2>
+<p>The core entry point of ODE solving is <code>dsolve</code>, which performs three steps:</p>
+<ol>
+<li><strong>Normalization</strong> (<code>normalize_ode</code>): algebraically simplifies and standardizes the input equation</li>
+<li><strong>Classification</strong> (<code>classify_ode</code>): returns all applicable solving methods in priority order</li>
+<li><strong>Dispatch</strong>: tries the methods in turn and returns the first successful result</li>
+</ol>
+<pre><code>input equation ─→ normalize ─→ classify ─→ dispatch ─→ ODESolution
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+     first-order ODE    second-order linear ODE   series solutions (fallback)
+    ┌────┴────┐          ┌────┴────┐
+ separable  linear   const-coeff  Cauchy-Euler
+ Bernoulli  exact    reduction    variation of
+ homogeneous          of order    parameters
+</code></pre>
+<h3 id="result-types"><a class="header" href="#result-types">Result Types</a></h3>
+<p>The <code>ODESolution</code> enum represents the outcome:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Meaning</th><th>Typical source</th></tr></thead><tbody>
+<tr><td><code>Explicit(expr)</code></td><td>explicit solution $y = f(x)$</td><td>linear, constant coefficient, Laplace</td></tr>
+<tr><td><code>Implicit(expr)</code></td><td>implicit solution $F(x, y) = C$</td><td>separable, exact, homogeneous</td></tr>
+<tr><td><code>Parametric(x(t), y(t))</code></td><td>parametric solution $(x(t), y(t))$</td><td>reserved in the enum; no solver produces it yet</td></tr>
+<tr><td><code>Series(expr, n)</code></td><td>truncated series solution</td><td>power series, Frobenius</td></tr>
+<tr><td><code>System(&amp;[Atom])</code></td><td>system solution components $(y_1, y_2)$</td><td>$2\times2$ systems</td></tr>
+<tr><td><code>Unsolved(ode)</code></td><td>could not be solved symbolically</td><td>when all methods fail</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="the-classification-engine"><a class="header" href="#the-classification-engine">The Classification Engine</a></h2>
+<p>The classifier (<code>classify.rs</code>) performs a structural analysis of the ODE and returns the list of candidate methods in priority order. It does not solve — only pattern recognition.</p>
+<h3 id="detection-pipeline"><a class="header" href="#detection-pipeline">Detection Pipeline</a></h3>
+<p><strong>First-order ODEs</strong> (<code>order == 1</code>):</p>
+<ol>
+<li>Check <code>is_first_order_linear</code>: $y$ and $y'$ appear only to the first power → <code>LinearFirst</code></li>
+<li>Check <code>is_bernoulli</code>: some $y^n$ ($n \geq 2$) plus a linear $y$ term → <code>Bernoulli</code></li>
+<li>Check <code>is_separable</code>: additive terms without $y$ plus additive terms with $y$ → <code>Separable</code></li>
+<li>Check <code>is_exact</code>: in $M + Ny' = 0$, $\partial M/\partial y = \partial N/\partial x$ → <code>Exact</code></li>
+<li>Check <code>is_homogeneous</code>: all terms have the same total $(x, y)$ degree → <code>Homogeneous</code></li>
+</ol>
+<p><strong>Second-order and higher linear ODEs</strong>:</p>
+<ol start="6">
+<li><code>is_constant_coeff_linear</code>: the coefficients of $y, y', y''$ do not contain $x$ → <code>LinearConstantCoeff</code></li>
+<li><code>is_cauchy_euler</code>: the terms are of the form $c_k x^k y^{(k)}$ → <code>CauchyEuler</code></li>
+<li>Second-order linear → <code>ReductionOfOrder</code> (tries simple candidate solutions)</li>
+</ol>
+<p><strong>Global fallback</strong>:</p>
+<ol start="9">
+<li>Linear ODEs → <code>PowerSeries</code> (power series or Frobenius)</li>
+</ol>
+<h3 id="exactness-detection"><a class="header" href="#exactness-detection">Exactness Detection</a></h3>
+<p>The exact-equation test <code>is_exact</code> works as follows:</p>
+<ol>
+<li>Split the equation into $M(x, y) + N(x, y),y' = 0$ with <code>split_mn</code></li>
+<li>Replace $y(x)$ by the bare symbol $y$ so that $M, N$ become bivariate expressions</li>
+<li>Compute $\partial M/\partial y$ and $\partial N/\partial x$</li>
+<li>First compare the normalized strings (<code>to_string()</code> after <code>normalize</code>)</li>
+<li>If they differ, compute the difference and check with the rule-based simplifier whether it is zero</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let dm_norm = normalize(ctx, dm_dy);
+let dn_norm = normalize(ctx, dn_dx);
+if dm_norm.to_string() == dn_norm.to_string() {
+    return true;
+}
+// fallback: simplify the difference
+let difference = simplify(ctx, ctx.add(&amp;[dm_dy, ctx.mul(&amp;[ctx.num(-1), dn_dx])]), &amp;rules, 20);
+matches!(normalize(ctx, difference).node(), AtomNode::Num(0))
+<span class="boring">}</span></code></pre></pre>
+<p>This double-check strategy compensates for the simplifier's inability to collect like terms.</p>
+<h3 id="homogeneity-detection"><a class="header" href="#homogeneity-detection">Homogeneity Detection</a></h3>
+<p><code>is_homogeneous</code> checks whether the equation is homogeneous in $(x, y)$ (zero-th degree homogeneity). In the implementation, <code>all_terms_homogeneous_degree</code> walks all additive terms, computes the total degree of each term in $x$ and <code>func</code> (<code>term_degree</code>), and asserts that all terms have the same, positive degree.</p>
+<p>For $\text{Derivative}(y(x), x)$, the degree is counted as 1 in $y$ (without additional powers of $x$).</p>
+<hr />
+<h2 id="first-order-ode-solvers"><a class="header" href="#first-order-ode-solvers">First-Order ODE Solvers</a></h2>
+<p>The first-order solvers are implemented in <code>first_order.rs</code>; there are five methods.</p>
+<h3 id="separable-equations"><a class="header" href="#separable-equations">Separable Equations</a></h3>
+<p><strong>Criterion</strong>: the equation can be written as $g(y),y' = f(x)$.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Split the equation into $y$-terms and non-$y$ ($x$) terms with <code>separate_by_func</code></li>
+<li>Replace $x$ by $y$ in the $y$-terms (<code>substitute_var</code>)</li>
+<li>Integrate both sides: $\int g(y),dy$ and $\int f(x),dx$</li>
+<li>Return the implicit solution $\int g(y),dy - \int f(x),dx = C$</li>
+</ol>
+<p><strong>Design choice</strong>: <code>Implicit</code> is returned rather than <code>Explicit</code> because in general solving for $y$ is required, which is undecidable in symbolic computation. The integration calls <code>crate::integral::integrate</code>, which launches the full integration pipeline (fast table → rational function → Risch → trigonometric rewrite → special functions → heuristic techniques → unevaluated form).</p>
+<h3 id="first-order-linear-equations"><a class="header" href="#first-order-linear-equations">First-Order Linear Equations</a></h3>
+<p><strong>Criterion</strong>: $y' + p(x),y = q(x)$, where $y$ and $y'$ appear only to the first power.</p>
+<p><strong>Algorithm</strong> (integrating factor method):</p>
+<ol>
+<li>Extract $p(x)$ and $q(x)$ with <code>extract_linear_coeffs</code></li>
+<li>Compute the integrating factor $\mu(x) = e^{\int p,dx}$</li>
+<li>General solution:
+$$y = e^{-\int p,dx}\left(\int e^{\int p,dx},q(x),dx + C_1\right)$$</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let p_integral = integrate(ctx, p, var);
+let mu = ctx.fun("exp", &amp;[p_integral]);
+let mu_q = ctx.mul(&amp;[mu, q]);
+let int_mu_q = integrate(ctx, mu_q, var);
+let neg_p_integral = ctx.mul(&amp;[ctx.num(-1), p_integral]);
+let exp_neg_p = ctx.fun("exp", &amp;[neg_p_integral]);
+let particular = ctx.mul(&amp;[exp_neg_p, int_mu_q]);
+let c1 = ctx.var("C1");
+let homogeneous = ctx.mul(&amp;[c1, exp_neg_p]);
+<span class="boring">}</span></code></pre></pre>
+<p><code>extract_linear_coeffs</code> decomposes the equation into additive terms and classifies them as $y'$-terms, $y$-terms, and free terms. For the $y$-terms it extracts the coefficient $p(x)$ by filtering out the <code>func</code> factor.</p>
+<h3 id="bernoulli-equations"><a class="header" href="#bernoulli-equations">Bernoulli Equations</a></h3>
+<p><strong>Criterion</strong>: $y' + p(x),y = q(x),y^n$ ($n \neq 0, 1$).</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Find $n$ in $y^n$ recursively with <code>find_bernoulli_power</code></li>
+<li>Substitute $v = y^{1-n}$; the equation becomes $v' + (1-n),p(x),v = (1-n),q(x)$</li>
+<li>Solve for $v$ with the linear-equation method</li>
+<li>Substitute back $y = v^{1/(1-n)}$</li>
+</ol>
+<p><code>find_power_inner</code> walks the AST recursively and returns $n$ when it encounters <code>Pow(base, Num(n))</code> whose <code>base</code> contains <code>func</code>.</p>
+<p><strong>Edge cases</strong>: $n = 0$ or $n = 1$ degenerates to a linear equation; <code>None</code> is returned so that <code>LinearFirst</code> handles it.</p>
+<h3 id="exact-equations"><a class="header" href="#exact-equations">Exact Equations</a></h3>
+<p><strong>Criterion</strong>: $M(x,y) + N(x,y),y' = 0$ with $\partial M/\partial y = \partial N/\partial x$.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Split into $M$ and $N$ with <code>split_mn</code> ($y'$ must appear linearly, otherwise <code>None</code> is returned)</li>
+<li>Check exactness (<code>partials_equal</code>)</li>
+<li>If not exact, try an integrating factor (<code>find_integrating_factor</code>)</li>
+<li>Integrate $M$ with respect to $x$ to obtain part of the potential $F$</li>
+<li>Compute the correction term $g(y) = N - \partial F/\partial y$</li>
+<li>If $g(y)$ does not contain $x$, integrate with respect to $y$ to obtain the full solution $F + g = C$</li>
+</ol>
+<p><strong>Integrating factor strategies</strong>:</p>
+<ul>
+<li><strong>Candidate 1</strong>: $(M_y - N_x)/N$ contains only $x$ → $\mu(x) = \exp!\int!(M_y - N_x)/N,dx$</li>
+<li><strong>Candidate 2</strong>: $(N_x - M_y)/M$ contains only $y$ → $\mu(y) = \exp!\int!(N_x - M_y)/M,dy$</li>
+</ul>
+<p>The helper <code>exp_simplify</code> simplifies $\exp(k \cdot \log u) = u^k$, so that the integrating factor does not remain in unsimplified exponential form.</p>
+<h3 id="homogeneous-equations"><a class="header" href="#homogeneous-equations">Homogeneous Equations</a></h3>
+<p><strong>Criterion</strong>: $y' = f(y/x)$ (all additive terms have the same total $(x,y)$ degree).</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Substitute $v = y/x$ (i.e. $y = vx$), obtaining $y' = v + xv'$</li>
+<li>The equation becomes $v + xv' = f(v)$, i.e. $xv' = f(v) - v$ (separable in $v$ and $x$)</li>
+<li>Split into $v$-terms and $x$-terms with <code>separate_by_var</code></li>
+<li>Integrate both sides, then substitute back $v = y/x$</li>
+</ol>
+<p>Returns an <code>Implicit</code> solution.</p>
+<hr />
+<h2 id="second-order-linear-ode-solvers"><a class="header" href="#second-order-linear-ode-solvers">Second-Order Linear ODE Solvers</a></h2>
+<p>The second-order solvers are implemented in <code>second_order.rs</code>.</p>
+<h3 id="constant-coefficient-equations"><a class="header" href="#constant-coefficient-equations">Constant-Coefficient Equations</a></h3>
+<p><strong>Form</strong>: $a,y'' + b,y' + c,y = f(x)$, where $a, b, c$ are constants.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Extract $a, b, c$ and $f(x)$ with <code>extract_second_order_coeffs</code></li>
+<li>Verify that $a, b, c$ do not contain $x$ (<code>contains_x</code>)</li>
+<li>Compute the discriminant $\Delta = b^2 - 4ac$ of the characteristic equation $ar^2 + br + c = 0$</li>
+<li>Construct the homogeneous solution $y_c$</li>
+<li>Construct a particular solution $y_p$ (undetermined coefficients or variation of parameters)</li>
+<li>Return $y = y_c + y_p$</li>
+</ol>
+<h4 id="three-cases-for-the-homogeneous-solution"><a class="header" href="#three-cases-for-the-homogeneous-solution">Three Cases for the Homogeneous Solution</a></h4>
+<p><code>constant_coeff_basis</code> constructs the fundamental solution set from the discriminant:</p>
+<div class="table-wrapper"><table><thead><tr><th>Discriminant</th><th>Fundamental solution set</th></tr></thead><tbody>
+<tr><td>$\Delta &gt; 0$ (two real roots $r_1, r_2$)</td><td>$e^{r_1 x},; e^{r_2 x}$</td></tr>
+<tr><td>$\Delta = 0$ (repeated root $r$)</td><td>$e^{rx},; x,e^{rx}$</td></tr>
+<tr><td>$\Delta &lt; 0$ (complex roots $\alpha \pm \beta i$)</td><td>$e^{\alpha x}\cos\beta x,; e^{\alpha x}\sin\beta x$</td></tr>
+</tbody></table>
+</div>
+<p>In the implementation, the discriminant branches directly once it has been collapsed (<code>collect_terms</code>) to <code>Num(d)</code>. For complex roots, $\beta = \sqrt{-\Delta}/(2a)$: when $-\Delta$ is a perfect square, $\beta$ is computed exactly as a rational number; otherwise the symbolic radical is kept.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let sn = isqrt(num);
+if sn * sn == num {
+    // beta = sn/den — exact rational
+    ctx.mul(&amp;[ctx.num(sn), ctx.pow(ctx.num(den), ctx.num(-1))])
+} else {
+    // beta = sqrt(num)/den — symbolic form
+    ctx.mul![
+        ctx.pow(ctx.num(num), ctx.pow(ctx.num(2), ctx.num(-1))),
+        ctx.pow(ctx.num(den), ctx.num(-1)),
+    ]
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="the-method-of-undetermined-coefficients"><a class="header" href="#the-method-of-undetermined-coefficients">The Method of Undetermined Coefficients</a></h4>
+<p><code>particular_solution_undetermined</code> dispatches on the type of the forcing term:</p>
+<div class="table-wrapper"><table><thead><tr><th>Forcing type</th><th>Detection</th><th>Solving strategy</th></tr></thead><tbody>
+<tr><td>Polynomial $f(x)$</td><td><code>is_polynomial_in</code></td><td>set $y_p = \sum A_k x^{k+s}$, substitute back, solve for the coefficients</td></tr>
+<tr><td>Exponential $F e^{kx}$</td><td><code>extract_exp_forcing</code></td><td>set $y_p = A x^s e^{kx}$</td></tr>
+<tr><td>Trigonometric $f_c\cos\omega x + f_s\sin\omega x$</td><td><code>extract_trig_forcing</code></td><td>set $y_p = x^s(A\cos\omega x + B\sin\omega x)$</td></tr>
+</tbody></table>
+</div>
+<p>$s$ is the resonance shift: when $k$ (or $0$) is an $s$-fold root of the characteristic equation, the trial solution is multiplied by $x^s$.</p>
+<p><strong>Back-substitution algorithm for polynomial forcing</strong>:</p>
+<p>For $y_p = \sum_{k=0}^{d} A_k x^{k+s}$, substituting into $ay'' + by' + cy = f(x)$ yields recurrence relations from the coefficients of equal powers of $x$. Solve backwards from the highest power $k = d$:</p>
+<ul>
+<li>$s = 0$ (no resonance): $A_k = \frac{f_k - b(k+1)A_{k+1} - a(k+2)(k+1)A_{k+2}}{c}$</li>
+<li>$s = 1$ (simple resonance): $A_k = \frac{f_k - a(k+2)(k+1)A_{k+1}}{b(k+1)}$</li>
+<li>$s = 2$ (double resonance): $A_k = \frac{f_k}{a(k+2)(k+1)}$</li>
+</ul>
+<p><strong>Superposition principle</strong>: each additive term of the polynomial forcing is solved separately and the results are summed.</p>
+<h4 id="variation-of-parameters"><a class="header" href="#variation-of-parameters">Variation of Parameters</a></h4>
+<p>When the method of undetermined coefficients does not apply, it falls back to variation of parameters (<code>variation_of_parameters</code>):</p>
+<p>Given the homogeneous solutions $y_1, y_2$ and the standard-form equation $y'' + py' + qy = g$:</p>
+<ol>
+<li>Compute the Wronskian $W = y_1 y_2' - y_1' y_2$</li>
+<li>$u_1' = -y_2 g / W$, $u_2' = y_1 g / W$</li>
+<li>Integrate to obtain $u_1, u_2$</li>
+<li>$y_p = y_1 u_1 + y_2 u_2$</li>
+</ol>
+<p>If the integration returns the unevaluated <code>Integral(...)</code> form, the method fails (<code>is_integral_fallback</code>).</p>
+<h3 id="cauchyeuler-equations"><a class="header" href="#cauchyeuler-equations">Cauchy–Euler Equations</a></h3>
+<p><strong>Form</strong>: $a x^2 y'' + b x y' + c y = f(x)$.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Extract the coefficients with <code>extract_cauchy_euler_coeffs</code></li>
+<li>Reduce to constant coefficients (divide by the powers of $x$)</li>
+<li>Solve the indicial equation $ar(r-1) + br + c = 0$, i.e. $ar^2 + (b-a)r + c = 0$</li>
+<li>Construct the homogeneous solution from the discriminant:</li>
+</ol>
+<div class="table-wrapper"><table><thead><tr><th>Discriminant</th><th>Fundamental solution set</th></tr></thead><tbody>
+<tr><td>$\Delta &gt; 0$ (two real roots $r_1, r_2$)</td><td>$x^{r_1},; x^{r_2}$</td></tr>
+<tr><td>$\Delta = 0$ (repeated root $r$)</td><td>$x^r,; x^r \ln x$</td></tr>
+<tr><td>$\Delta &lt; 0$ (complex roots $\alpha \pm \beta i$)</td><td>$x^\alpha\cos(\beta\ln x),; x^\alpha\sin(\beta\ln x)$</td></tr>
+</tbody></table>
+</div>
+<ol start="5">
+<li>For the inhomogeneous term, find a particular solution by variation of parameters (divide by $ax^2$ to get standard form)</li>
+</ol>
+<h3 id="reduction-of-order"><a class="header" href="#reduction-of-order">Reduction of Order</a></h3>
+<p><strong>Applies to</strong>: any second-order linear ODE (constant coefficients not required).</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Try candidate solutions $y_1 \in {1, x, x^2, e^x, e^{-x}, e^{2x}}$</li>
+<li>Verify $a y_1'' + b y_1' + c y_1 = 0$ (<code>satisfies_extracted</code>)</li>
+<li>If $y_1$ satisfies the homogeneous equation, the second solution is:
+$$y_2 = y_1 \int \frac{e^{-\int p,dx}}{y_1^2},dx$$
+where $p = b/a$</li>
+<li>The particular solution is obtained by variation of parameters</li>
+<li>Return $y = C_1 y_1 + C_2 y_2 + y_p$</li>
+</ol>
+<p><strong>Design choice</strong>: the candidate set ${1, x, x^2, e^x, e^{-x}, e^{2x}}$ covers the simple solution forms most common in teaching and engineering. For more general equations, the fallback is <code>PowerSeries</code>.</p>
+<hr />
+<h2 id="the-laplace-transform-method"><a class="header" href="#the-laplace-transform-method">The Laplace Transform Method</a></h2>
+<p><code>laplace.rs</code> implements Laplace-transform solving of initial-value problems, invoked through the <code>dsolve_ivp</code> entry point.</p>
+<h3 id="applicability"><a class="header" href="#applicability">Applicability</a></h3>
+<ul>
+<li>First order: $a y' + b y = f(x)$, $y(0) = y_0$</li>
+<li>Second order: $a y'' + b y' + c y = f(x)$, $y(0) = y_0$, $y'(0) = y_1$</li>
+<li>The coefficients $a, b, c$ must be integer constants</li>
+<li>The forcing term $f(x)$ must be in the transform table</li>
+</ul>
+<h3 id="the-forward-transform"><a class="header" href="#the-forward-transform">The Forward Transform</a></h3>
+<p><code>laplace_kernel</code> transforms the $x$-dependent kernel functions. The supported kernels:</p>
+<div class="table-wrapper"><table><thead><tr><th>Kernel</th><th>Laplace transform</th></tr></thead><tbody>
+<tr><td>$1$ (constant)</td><td>$1/s$</td></tr>
+<tr><td>$x$</td><td>$1/s^2$</td></tr>
+<tr><td>$x^n$ ($n \leq 12$)</td><td>$n!/s^{n+1}$</td></tr>
+<tr><td>$e^{kx}$</td><td>$1/(s-k)$</td></tr>
+<tr><td>$\sin\omega x$</td><td>$\omega/(s^2 + \omega^2)$</td></tr>
+<tr><td>$\cos\omega x$</td><td>$s/(s^2 + \omega^2)$</td></tr>
+<tr><td>$e^{kx}\sin\omega x$</td><td>$\omega/((s-k)^2 + \omega^2)$</td></tr>
+<tr><td>$e^{kx}\cos\omega x$</td><td>$(s-k)/((s-k)^2 + \omega^2)$</td></tr>
+</tbody></table>
+</div>
+<p><code>split_const_factors</code> splits a term into an $x$-independent constant and an $x$-dependent kernel, transforming only the kernel part. <code>linear_coeff_of</code> extracts $k$ from $kx$ (for $x$ itself it returns $1$).</p>
+<h3 id="building-the-algebraic-equation"><a class="header" href="#building-the-algebraic-equation">Building the Algebraic Equation</a></h3>
+<p>The transformed algebraic equation:</p>
+<p><strong>First order</strong>: $a(sY - y_0) + bY = F(s)$
+$$Y(s) = \frac{F(s) + a,y_0}{as + b}$$</p>
+<p><strong>Second order</strong>: $a(s^2Y - sy_0 - y_1) + b(sY - y_0) + cY = F(s)$
+$$Y(s) = \frac{F(s) + a(sy_0 + y_1) + by_0}{as^2 + bs + c}$$</p>
+<h3 id="the-inverse-transform"><a class="header" href="#the-inverse-transform">The Inverse Transform</a></h3>
+<p><code>inverse_laplace_term</code> performs partial fraction decomposition and table-lookup inversion of the rational function $Y(s) = \frac{n_1 s + n_0}{as^2 + bs + c}$.</p>
+<p>First compute the discriminant $\Delta = b^2 - 4ac$; there are three cases depending on the roots:</p>
+<p><strong>Case 1: two distinct real roots $r_1 \neq r_2$</strong></p>
+<p>$$\frac{n_1 s + n_0}{(s - r_1)(s - r_2)} = \frac{A}{s - r_1} + \frac{B}{s - r_2}$$</p>
+<p>with $A = \frac{n_1 r_1 + n_0}{r_1 - r_2}$ and $B = \frac{n_1 r_2 + n_0}{r_2 - r_1}$.</p>
+<p>Inverse transform: $A,e^{r_1 x} + B,e^{r_2 x}$.</p>
+<p><strong>Case 2: repeated root $r$</strong> ($\Delta = 0$)</p>
+<p>$$\frac{n_1 s + n_0}{(s - r)^2} = \frac{n_1}{s - r} + \frac{n_1 r + n_0}{(s - r)^2}$$</p>
+<p>Inverse transform: $n_1,e^{rx} + (n_1 r + n_0),x,e^{rx}$.</p>
+<p><strong>Case 3: complex roots $k \pm i\omega$</strong> ($\Delta &lt; 0$)</p>
+<p>$$\frac{n_1 s + n_0}{(s - k)^2 + \omega^2} = e^{kx}!\left[n_1\cos\omega x + \frac{n_0 + kn_1}{\omega}\sin\omega x\right]$$</p>
+<p>The $e^{kx}$ factor is dropped when $k = 0$. Requires $(n_0 + kn_1) \bmod \omega = 0$ (integer arithmetic).</p>
+<h3 id="integer-arithmetic-constraints"><a class="header" href="#integer-arithmetic-constraints">Integer-Arithmetic Constraints</a></h3>
+<p>The Laplace module uses <code>i64</code> integer arithmetic throughout (via <code>const_i64</code>, <code>quadratic_coeffs_i64</code>, <code>linear_coeffs_i64</code>). This restricts the applicability — equations whose coefficients contain symbolic constants or irrational numbers fall back to other methods. Design rationale: integer arithmetic is completely exact and introduces no floating-point error.</p>
+<hr />
+<h2 id="power-series-and-the-frobenius-method"><a class="header" href="#power-series-and-the-frobenius-method">Power Series and the Frobenius Method</a></h2>
+<p><code>series.rs</code> implements the two series methods, used as the fallback when every other method fails.</p>
+<h3 id="the-power-series-method"><a class="header" href="#the-power-series-method">The Power Series Method</a></h3>
+<p><strong>Applies to</strong>: solutions of linear ODEs near an ordinary point $x_0$.</p>
+<p><strong>Algorithm</strong> (<code>solve_power_series</code>):</p>
+<ol>
+<li>Construct symbolic coefficients $a_0, a_1, \ldots, a_{N-1}$</li>
+<li>Manually construct the series $S = \sum a_n (x - x_0)^n$ together with its first and second derivatives $S', S''$ (<code>build_series_triple</code> — <code>diff</code> is not used, to avoid differentiating the $a_n$)</li>
+<li>Substitute into the ODE: $R(x) = a,S'' + b,S' + c,S - f = 0$</li>
+<li>Satisfy order by order: for $k = 0, 1, \ldots$, compute $R^{(k)}(x_0) = 0$</li>
+<li>Each condition determines one new coefficient $a_{k+\text{order}}$ linearly</li>
+<li>Solved coefficients are substituted back immediately</li>
+</ol>
+<p><strong>Key implementation details</strong>:</p>
+<ul>
+<li><code>substitute_series</code> recursively replaces all $y(x)$, $y'(x)$, $y''(x)$ in the equation by the series forms</li>
+<li><code>solve_linear_coeff</code> solves $a_n$ from the condition equation $\text{coeff} \cdot a_n + \text{rest} = 0$</li>
+<li>The free parameters $a_0, \ldots, a_{\text{order}-1}$ remain symbolic (initial conditions)</li>
+<li>If a condition contains no unknown coefficient but is nonzero, $x_0$ is not an ordinary point → return <code>None</code> and hand over to Frobenius</li>
+</ul>
+<p><strong>Limitations</strong>: by default $N = 8$ terms. The coefficients are rational expressions in the initial values (not numerical).</p>
+<h3 id="the-frobenius-method"><a class="header" href="#the-frobenius-method">The Frobenius Method</a></h3>
+<p><strong>Applies to</strong>: solutions of second-order linear ODEs near a regular singular point $x_0 = 0$.</p>
+<p><strong>Algorithm</strong> (<code>solve_frobenius</code>):</p>
+<ol>
+<li>Extract the coefficients $a(x), b(x), c(x)$ and verify $f = 0$ (homogeneous equations only)</li>
+<li>Set $y = x^r \sum a_n x^n$ and construct $y, y', y''$</li>
+<li>Substitute into the ODE and group the residual by powers of $x$</li>
+<li>The lowest-power group yields the <strong>indicial equation</strong> $Ar^2 + Br + C = 0$</li>
+<li>Find rational roots of the indicial equation (<code>indicial_coeffs</code> → <code>isqrt</code> + discriminant)</li>
+<li>Take the larger root $r_1$ and recurse through the subsequent groups to determine the $a_n$</li>
+</ol>
+<p><strong>Construction of $y$</strong>:</p>
+<p>$$y = u \cdot S, \quad y' = r x^{-1} u S + u S', \quad y'' = r(r-1)x^{-2}uS + 2rx^{-1}uS' + uS''$$</p>
+<p>where $u = x^r$ is an opaque placeholder and $S = \sum a_n x^n$. <code>strip_x_and_u</code> strips the powers of $x$ and the $u$ factor from the residual terms, which is used for grouping.</p>
+<p><strong>Extraction of the indicial equation</strong> (<code>indicial_coeffs</code>):</p>
+<p>The terms of the lowest-power group should be $a_0$ times a quadratic in $r$. Extract $A, B, C$ so that the group equals $a_0(Ar^2 + Br + C)$. <code>expand_indicial</code> handles expansions containing the factor $(r-1)$.</p>
+<p><strong>Limitations</strong>:</p>
+<ul>
+<li>Only $x_0 = 0$ is supported</li>
+<li>Homogeneous equations only</li>
+<li>Only real rational roots</li>
+<li>Only the series for the larger root is taken (the smaller root may give a linearly independent solution)</li>
+</ul>
+<hr />
+<h2 id="2times2-linear-ode-systems"><a class="header" href="#2times2-linear-ode-systems">$2\times2$ Linear ODE Systems</a></h2>
+<p><code>systems.rs</code> implements solving of constant-coefficient linear systems, invoked through the <code>dsolve_system</code> entry point.</p>
+<h3 id="input-format"><a class="header" href="#input-format">Input Format</a></h3>
+<p>The system $\mathbf{Y}' = A\mathbf{Y}$ is given as two equations:
+$$\text{Derivative}(y_i, x) - (a_{i1}y_1 + a_{i2}y_2) = 0$$</p>
+<p><code>extract_coeff</code> extracts the $2\times2$ coefficient matrix $A$ from each equation.</p>
+<h3 id="the-characteristic-polynomial"><a class="header" href="#the-characteristic-polynomial">The Characteristic Polynomial</a></h3>
+<p>$$\lambda^2 - \text{tr}(A)\lambda + \det(A) = 0$$</p>
+<p>with $\text{tr} = a_{11} + a_{22}$ and $\det = a_{11}a_{22} - a_{12}a_{21}$.</p>
+<p>The discriminant is $\Delta = \text{tr}^2 - 4\det$.</p>
+<h3 id="solving-the-three-cases"><a class="header" href="#solving-the-three-cases">Solving the Three Cases</a></h3>
+<h4 id="distinct-real-eigenvalues"><a class="header" href="#distinct-real-eigenvalues">Distinct Real Eigenvalues</a></h4>
+<p>$\lambda_1 \neq \lambda_2$, both integers.</p>
+<ol>
+<li><code>eigenvector</code> solves $(A - \lambda I)\mathbf{v} = 0$: if $a_{12} \neq 0$, take $\mathbf{v} = (a_{12},; \lambda - a_{11})$</li>
+<li>General solution:
+$$\mathbf{Y} = C_1 \mathbf{v}_1 e^{\lambda_1 x} + C_2 \mathbf{v}_2 e^{\lambda_2 x}$$</li>
+</ol>
+<h4 id="repeated-eigenvalues"><a class="header" href="#repeated-eigenvalues">Repeated Eigenvalues</a></h4>
+<p>$\lambda_1 = \lambda_2 = \lambda$.</p>
+<p><strong>Subcase A</strong>: $A = \lambda I$ (complete matrix):
+$$\mathbf{Y} = C_1 \mathbf{e}_1 e^{\lambda x} + C_2 \mathbf{e}_2 e^{\lambda x}$$</p>
+<p><strong>Subcase B</strong>: $A$ is defective:</p>
+<ol>
+<li>Find the eigenvector $\mathbf{v}$ (<code>eigenvector</code>)</li>
+<li>Find a generalized eigenvector $\mathbf{w}$ satisfying $(A - \lambda I)\mathbf{w} = \mathbf{v}$ (<code>generalized_eigenvector</code>)</li>
+<li>General solution:
+$$\mathbf{Y} = e^{\lambda x}!\left[C_1 \mathbf{v} + C_2(x\mathbf{v} + \mathbf{w})\right]$$</li>
+</ol>
+<p><code>generalized_eigenvector</code> solves the linear system $(a_{11}-\lambda)w_1 + a_{12}w_2 = v_1$ for integer solutions, trying $w_1 = 0$ and $w_1 = 1$.</p>
+<h4 id="complex-eigenvalues"><a class="header" href="#complex-eigenvalues">Complex Eigenvalues</a></h4>
+<p>$\lambda = \alpha \pm \beta i$ (requires $\text{tr}$ even and $-\Delta$ a perfect square).</p>
+<ol>
+<li>$\alpha = \text{tr}/2$, $\beta = \sqrt{-\Delta}/2$</li>
+<li>Real part $p$ and imaginary part $q$ of the eigenvector $(v + iw)$: take $v_1 = a_{12}$, $v_2 = (\alpha - a_{11}) + i\beta$, hence $p = (a_{12},; \alpha - a_{11})$ and $q = (0,; \beta)$</li>
+<li>Real fundamental solutions:
+$$\mathbf{Y}_1 = e^{\alpha x}(p\cos\beta x - q\sin\beta x)$$
+$$\mathbf{Y}_2 = e^{\alpha x}(p\sin\beta x + q\cos\beta x)$$</li>
+</ol>
+<p>The $e^{\alpha x}$ factor is dropped when $\alpha = 0$, to avoid a redundant <code>exp(0)</code>.</p>
+<hr />
+<h2 id="helper-utilities"><a class="header" href="#helper-utilities">Helper Utilities</a></h2>
+<p><code>util.rs</code> provides the infrastructure shared by the ODE module.</p>
+<h3 id="order-detection"><a class="header" href="#order-detection">Order Detection</a></h3>
+<p><code>ode_order</code> recursively scans the AST for <code>Derivative(func, var, var, ...)</code> nodes and returns the highest order of differentiation.</p>
+<h3 id="linearity-checks"><a class="header" href="#linearity-checks">Linearity Checks</a></h3>
+<p><code>is_linear_in</code> checks that <code>func</code> and its derivatives occur only to the first power in the expression:</p>
+<ul>
+<li><code>is_func_first_degree</code> counts the occurrences of <code>func</code>/<code>Derivative(func, ...)</code> inside multiplicative factors</li>
+<li>A factor containing <code>Pow(func, Num(n))</code> with $n \geq 2$ means nonlinearity</li>
+</ul>
+<h3 id="collecting-like-terms"><a class="header" href="#collecting-like-terms">Collecting Like Terms</a></h3>
+<p><code>collect_terms</code> solves the problem that the simplifier does not collect like terms:</p>
+<ol>
+<li>Decompose additive terms into a rational coefficient plus base-exponent factor pairs</li>
+<li>Group by base-exponent signature</li>
+<li>Sum the rational coefficients within each group</li>
+<li>Drop groups whose coefficient is zero</li>
+</ol>
+<p>The decomposition supports rational exponents: $x \cdot x^{-1/2} = x^{1/2}$.</p>
+<h3 id="exponential-simplification"><a class="header" href="#exponential-simplification">Exponential Simplification</a></h3>
+<p><code>exp_simplify</code> handles $\exp(k \cdot \log u) = u^k$:</p>
+<ul>
+<li>Recognizes exponents of the form <code>Mul(k, Fun("log", [u]))</code></li>
+<li>Numerical constant factors are discarded from the $\log$ argument (no effect for ODE integrating factors)</li>
+<li>Falls back to the literal <code>exp</code> form</li>
+</ul>
+<h3 id="substituting-and-verifying-solutions"><a class="header" href="#substituting-and-verifying-solutions">Substituting and Verifying Solutions</a></h3>
+<p><code>substitute_solution</code> substitutes a candidate solution $y = \text{sol}$ into the equation:</p>
+<ul>
+<li>Replace <code>func</code> → <code>sol</code></li>
+<li>Replace <code>Derivative(func, var)</code> → <code>diff(sol, var)</code></li>
+<li>Replace <code>Derivative(func, var, var)</code> → <code>diff(diff(sol, var), var)</code></li>
+</ul>
+<p><code>verify_solution</code> (tests only) substitutes and checks whether the residual simplifies to zero.</p>
+<hr />
+<h2 id="design-choices-and-trade-offs"><a class="header" href="#design-choices-and-trade-offs">Design Choices and Trade-offs</a></h2>
+<h3 id="simplification-strategy"><a class="header" href="#simplification-strategy">Simplification Strategy</a></h3>
+<p>The ODE module relies heavily on <code>ocas_rewrite::simplify</code> (rule-based simplification, at most 20 rounds of iteration) and <code>ocas_atom::normalize</code> (structural normalization). Their division of labor:</p>
+<ul>
+<li><code>normalize</code>: fast structural equivalence testing (string comparison)</li>
+<li><code>simplify</code>: rule-based algebraic simplification (combining, expanding, eliminating)</li>
+</ul>
+<p>In exactness detection and solution construction, the two are used alternately to handle equivalences the simplifier cannot discover automatically.</p>
+<h3 id="integration-dependency"><a class="header" href="#integration-dependency">Integration Dependency</a></h3>
+<p>The ODE solvers call <code>crate::integral::integrate</code> to compute indefinite integrals. This launches the full integration pipeline (fast table → rational function → Risch → trigonometric rewrite → special functions → heuristic techniques → unevaluated form). When the integral cannot be evaluated in closed form, the <code>Integral(...)</code> form is returned — in that case variation of parameters and reduction of order are marked as failed.</p>
+<h3 id="integer-restrictions"><a class="header" href="#integer-restrictions">Integer Restrictions</a></h3>
+<p>The Laplace transform module strictly uses <code>i64</code> integer arithmetic and rejects symbolic coefficients. This is because partial fraction decomposition requires exact rational arithmetic, and integers are the safest choice over <code>i64</code>. For initial-value problems requiring symbolic coefficients, one should fall back to the general <code>dsolve</code> plus substitution of the initial conditions.</p>
+<h3 id="the-fallback-chain"><a class="header" href="#the-fallback-chain">The Fallback Chain</a></h3>
+<p>The priority order returned by the classifier ensures the most specific method is tried first:</p>
+<pre><code>LinearFirst → Bernoulli → Separable → Exact → Homogeneous
+    → LinearConstantCoeff → CauchyEuler → ReductionOfOrder
+        → PowerSeries
+</code></pre>
+<p><code>PowerSeries</code> is the method of last resort and always appears at the end of
+the list; its solver tries the power-series method first and falls back to
+Frobenius internally. <code>dsolve</code> tries them in order until the first success.</p>
+<hr />
+<h2 id="source-locations"><a class="header" href="#source-locations">Source Locations</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody>
+<tr><td><code>ocas-calc/src/ode/mod.rs</code></td><td>Entry points: <code>dsolve</code>, <code>dsolve_ivp</code>, <code>dsolve_system</code>, <code>ODE</code>, <code>ODESolution</code></td></tr>
+<tr><td><code>ocas-calc/src/ode/classify.rs</code></td><td>Classifier: <code>classify_ode</code>, <code>ODEType</code>, the detection functions</td></tr>
+<tr><td><code>ocas-calc/src/ode/first_order.rs</code></td><td>First-order solvers: separable, linear, Bernoulli, exact, homogeneous</td></tr>
+<tr><td><code>ocas-calc/src/ode/second_order.rs</code></td><td>Second-order solvers: constant coefficient, Cauchy–Euler, reduction of order, variation of parameters</td></tr>
+<tr><td><code>ocas-calc/src/ode/laplace.rs</code></td><td>Laplace transform: forward transform table, inverse transform (three root types), IVP solving</td></tr>
+<tr><td><code>ocas-calc/src/ode/series.rs</code></td><td>Power series and Frobenius methods</td></tr>
+<tr><td><code>ocas-calc/src/ode/systems.rs</code></td><td>$2\times2$ systems: eigenvalue decomposition, real/complex/repeated-root cases</td></tr>
+<tr><td><code>ocas-calc/src/ode/util.rs</code></td><td>Utilities: order, linearity, like-term collection, exponential simplification, solution substitution</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="../math/ode-theory.html">ODE Solving Theory</a> — mathematical derivations and proofs of each method</li>
+<li><a href="../math/symbolic-calculus.html">Symbolic Calculus</a> — theoretical foundations of differentiation and Taylor expansion</li>
+<li><a href="../api/rust-solvers.html">Rust API: Solvers</a> — API reference for <code>dsolve</code>, <code>dsolve_ivp</code>, <code>dsolve_system</code></li>
+<li><a href="../api/rust-calculus.html">Rust API: Calculus</a> — API reference for <code>diff</code>, <code>integrate</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../algorithms/rational-functions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../solvers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../algorithms/rational-functions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../solvers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

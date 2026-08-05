@@ -1,0 +1,639 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>高阶：Risch 积分算法 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html" class="active"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/risch-algorithm.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="高阶risch-积分算法"><a class="header" href="#高阶risch-积分算法">高阶：Risch 积分算法</a></h1>
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<ul>
+<li><a href="./polynomial-algebra.html">多项式代数</a> — 多项式环、因式分解、结式</li>
+<li><a href="./finite-fields.html">有限域与模算术</a> — 模逆与扩展 Euclid 算法</li>
+<li><a href="./linear-algebra.html">线性代数</a> — 高斯消元与行列式</li>
+<li><a href="./symbolic-calculus.html">符号微积分</a> — 求导规则与链式法则</li>
+<li><a href="./poly-gcd-factoring.html">多项式 GCD 与因式分解</a> — 无平方分解与 Hensel 提升</li>
+</ul>
+<hr />
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="初等函数的精确定义"><a class="header" href="#初等函数的精确定义">初等函数的精确定义</a></h3>
+<p>"初等函数"一词在微积分课本中往往凭直觉使用。Risch 算法需要严格定义：</p>
+<p><strong>定义 1</strong>（常数域）. 令 $k$ 为一个特征零的微分域，导子记为 $D$。最基本的常数域是 $\mathbb{Q}$，其上 $D = 0$。</p>
+<p><strong>定义 2</strong>（初等扩张）. 设 $k$ 为微分域，$K$ 为 $k$ 的扩域。称 $K/k$ 是一个<strong>初等扩张</strong>（elementary extension），如果 $K$ 可由以下三种类型的有限扩张逐层生成：</p>
+<ol>
+<li><strong>代数扩张</strong>：$K = k(\alpha)$，其中 $\alpha$ 在 $k$ 上代数（即 $\alpha$ 是某个 $k[x]$ 中多项式的根）。例如 $\mathbb{Q}(\sqrt{2})/\mathbb{Q}$。</li>
+<li><strong>对数扩张</strong>：$K = k(t)$，其中 $Dt = Du / u$ 对某个 $u \in k^*$，即 $t = \log(u)$。导子规则：$D(\log u) = Du/u$。</li>
+<li><strong>指数扩张</strong>：$K = k(t)$，其中 $Dt / t = Du$ 对某个 $u \in k$，即 $t = \exp(u)$。导子规则：$D(\exp u) = \exp(u) \cdot Du$。</li>
+</ol>
+<p><strong>定义 3</strong>（初等函数）. 域 $k$ 上的<strong>初等函数</strong>是某个初等扩张塔 $k = k_0 \subset k_1 \subset \cdots \subset k_n$ 中的元素，其中每个 $k_{i+1}/k_i$ 是上述三种类型之一。</p>
+<p><strong>定理</strong>（Liouville, 1835）. 设 $f$ 为 $k$ 上的初等函数。$f$ 在 $k$ 上有初等原函数，当且仅当它可以写成</p>
+<p>$$f = Dv + \sum_{i=1}^{n} c_i \cdot \frac{Du_i}{u_i}$$</p>
+<p>其中 $v, u_1, \dots, u_n \in k$，$c_1, \dots, c_n$ 为 $D$-常数（即 $Dc_i = 0$）。</p>
+<p>这个定理的深刻意义在于：初等函数的原函数如果存在，其"新"的部分只可能是常数倍的对数。这是 Risch 算法的理论基础。</p>
+<h3 id="微分域"><a class="header" href="#微分域">微分域</a></h3>
+<p><strong>定义 4</strong>（微分域）. 一个<strong>微分域</strong>（differential field）是一个域 $k$ 配备一个导子（derivation）$D: k \to k$，满足：</p>
+<ul>
+<li><strong>加法性</strong>：$D(a + b) = Da + Db$</li>
+<li><strong>Leibniz 法则</strong>：$D(a \cdot b) = a \cdot Db + Da \cdot b$</li>
+</ul>
+<p>导子的核 ${c \in k : Dc = 0}$ 称为<strong>常数域</strong>（field of constants），记为 $C_k$ 或 $k^D$。</p>
+<p>在 Risch 算法的语境下：</p>
+<ul>
+<li>基域 $k_0 = \mathbb{Q}(x)$，$D = d/dx$（关于积分变量 $x$ 的导数），常数域 $C_{k_0} = \mathbb{Q}$。</li>
+<li>对数扩张 $k(t) = k(\log u)$，$Dt = Du/u$。</li>
+<li>指数扩张 $k(t) = k(\exp u)$，$Dt = t \cdot Du$。</li>
+</ul>
+<p><strong>关键事实</strong>：在初等扩张塔中，常数域保持不变：$C_{k_n} = C_{k_0} = \mathbb{Q}$。这个性质在算法中被隐式使用——当我们说"有理常数"时，就是 $\mathbb{Q}$ 中的元素。</p>
+<hr />
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="微分域塔的构造"><a class="header" href="#微分域塔的构造">微分域塔的构造</a></h3>
+<p>给定被积函数 $f$（一个初等函数表达式），Risch 算法的第一步是构造它所"生活"的微分域塔。</p>
+<p><strong>算法</strong> <code>build_tower(f, var)</code>：</p>
+<ol>
+<li><strong>收集函数符号</strong>：扫描 $f$ 的表达式树，收集所有函数应用（<code>log</code>、<code>exp</code>）。</li>
+<li><strong>排序</strong>：按依赖关系排序——若 $t_2 = \exp(\log(x) + 1)$ 则 $t_1 = \log(x)$ 必须在 $t_2$ 之前。</li>
+<li><strong>代数依赖检测</strong>：对每个候选生成元 $t_i$，检查它是否在已有塔上代数相关。保守策略：
+<ul>
+<li>$\log(c \cdot u)$ 与 $\log(u)$（$c$ 为有理常数）→ 代数相关（$\log(c \cdot u) = \log(u) + \log(c)$）</li>
+<li>$\exp(u + c)$ 与 $\exp(u)$（$c$ 为有理常数）→ 代数相关（$\exp(u + c) = e^c \cdot \exp(u)$）</li>
+<li>否则拒绝（保守策略：宁可拒绝错误相关，也不错误合并）</li>
+</ul>
+</li>
+<li><strong>拒绝非整数幂</strong>：若 $f$ 含有 $\sqrt{x}$ 等非整数幂（即代数函数），拒绝（返回 <code>None</code>）。</li>
+<li><strong>计算导数</strong>：对每个生成元 $t_i$，计算 $Dt_i$（关于 $D = d/dx$）：
+<ul>
+<li>$t_i = \log(u)$：$Dt_i = Du / u$（递归计算 $Du$）</li>
+<li>$t_i = \exp(u)$：$Dt_i = t_i \cdot Du$</li>
+</ul>
+</li>
+</ol>
+<p>在 oCAS 中，<code>build_tower</code> 位于 <code>ocas-calc/src/tower/build.rs</code>。它返回一个 <code>Tower</code> 结构体，包含生成元列表 <code>gens: Vec&lt;GenInfo&gt;</code>（每个含 kind、原子引用、导数）和常数域信息。</p>
+<p><strong>域元素的表示</strong>：塔中的元素使用<strong>稀疏多元多项式</strong>（<code>SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;</code>）的分子/分母对表示：</p>
+<ul>
+<li><code>KElem</code>（k-元素）：<code>{ num: Sparse, den: Sparse }</code>，表示 $k_\ell$ 中的一个元素 $p/q$</li>
+<li><code>KPoly</code>（k-多项式）：关于顶层生成元 $t_\ell$ 的一元多项式，系数是 <code>KElem</code></li>
+<li><code>KRat</code>（k-有理函数）：<code>{ num: KPoly, den: KPoly }</code>，表示 $k_\ell(t_\ell)$ 中的一个有理函数</li>
+</ul>
+<p><strong>例子</strong>. 对 $f = x \cdot \exp(x) + \log(x)$：</p>
+<div class="table-wrapper"><table><thead><tr><th>层级</th><th>域</th><th>生成元</th><th>导子</th></tr></thead><tbody>
+<tr><td>$k_0$</td><td>$\mathbb{Q}(x)$</td><td>$x$</td><td>$Dx = 1$</td></tr>
+<tr><td>$k_1$</td><td>$k_0(t_1)$，$t_1 = \log(x)$</td><td>$t_1$</td><td>$Dt_1 = 1/x$</td></tr>
+<tr><td>$k_2$</td><td>$k_1(t_2)$，$t_2 = \exp(x)$</td><td>$t_2$</td><td>$Dt_2 = t_2$</td></tr>
+</tbody></table>
+</div>
+<h3 id="逐层积分总框架"><a class="header" href="#逐层积分总框架">逐层积分：总框架</a></h3>
+<p>Risch 算法的核心是<strong>自顶向下逐层递归</strong>。在塔的每一层 $\ell$，被积函数 $f$ 被视为 $k_{\ell-1}(t_\ell)$ 中的一个有理函数。</p>
+<p><strong>算法</strong> <code>integrate_level(tower, level, f)</code>：</p>
+<p>设 $f = a/d \in k_\ell(t_\ell)$，其中 $a, d \in k_\ell[t_\ell]$，$\gcd(a, d) = 1$。</p>
+<ol>
+<li><strong>Hermite 约化</strong>（分离有理部分）：将 $a/d$ 分解为</li>
+</ol>
+<p>$$\frac{a}{d} = Dg + \frac{a_1}{d_1}$$</p>
+<p>其中 $g \in k_\ell(t_\ell)$ 有显式原函数，$d_1$ 无平方。</p>
+<ol start="2">
+<li>
+<p><strong>积分多项式部分</strong>：若 $a/d$ 的多项式部分为 $p(t_\ell) \in k_\ell[t_\ell]$，则按生成元类型积分：</p>
+<ul>
+<li><strong>原始层</strong>（$t_\ell = \log u$）：待定系数法</li>
+<li><strong>超指数层</strong>（$t_\ell = \exp u$）：Risch 微分方程</li>
+</ul>
+</li>
+<li>
+<p><strong>积分对数部分</strong>：对 $a_1/d_1$（$d_1$ 无平方），检查是否匹配<strong>对数导数恒等式</strong>。</p>
+</li>
+<li>
+<p><strong>基域</strong> $\mathbb{Q}(x)$：委托给有理函数积分器。</p>
+</li>
+</ol>
+<p>结果组装为 <code>LevelResult { elem, logs, extras }</code>，其中 <code>elem</code> 是域元素部分，<code>logs</code> 是 $\sum c_i \log(v_i)$ 形式的对数项，<code>extras</code> 是未能积分的部分。</p>
+<h3 id="hermite-约化"><a class="header" href="#hermite-约化">Hermite 约化</a></h3>
+<p><strong>目标</strong>：将有理函数 $a/d$ 分解为"已积"部分加"更简单"的剩余（剩余部分的分母无平方）。</p>
+<p><strong>算法</strong>（Bronstein Ch. 2 的 Hermite 约化；oCAS 采用无平方分解递推形式）：</p>
+<p>设 $a/d$ 是一个真分式（$\deg a &lt; \deg d$），$d$ 为 monic 多项式。</p>
+<ol>
+<li>计算 $d$ 的无平方分解 $d = \prod_j v_j^{m_j}$。若最大重数 $m \leq 1$，则 $d$ 已无平方，直接返回 $(0, a, d)$。</li>
+<li>选取重数最大（$= m \geq 2$）的因子 $v$，写 $d = u \cdot v^m$。</li>
+<li>令 $B = u \cdot Dv$（塔导子下的导数；基域上即 $u \cdot v'$），用扩展 Euclid 算法求 $s, t$ 使得 $s \cdot B + t \cdot v = a$（$s$ 取对 $v$ 的模余式）。</li>
+<li>递推公式：
+$$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdot D\bigl(s/(m-1)\bigr)}{u, v^{m-1}}$$</li>
+<li>对剩余项 $\dfrac{t + u \cdot D(s/(m-1))}{u, v^{m-1}}$ 递归执行，直到分母无平方。</li>
+</ol>
+<p>其中 $D!\left(\frac{-s}{(m-1) v^{m-1}}\right)$ 有显式原函数 $\frac{-s}{(m-1) v^{m-1}}$ 本身，最终剩余 $a_1/d_1$ 的分母无平方。每次迭代将最大重数降低一次，故至多迭代 $m$ 次。</p>
+<p>在 oCAS 中，Hermite 约化在两个地方实现：</p>
+<ul>
+<li><code>ocas-calc/src/integral/rational.rs</code>：基域 $\mathbb{Q}(x)$ 上的 Hermite 约化（<code>hermite_reduce</code>）</li>
+<li><code>ocas-calc/src/integral/risch.rs</code>：任意塔层上的 Hermite 约化（<code>hermite_tower</code>）</li>
+</ul>
+<p><strong>例子</strong>. $\int \frac{1}{(x+1)^2}, dx$：</p>
+<p>$d = (x+1)^2$，其无平方分解为 $(x+1)^2$，最大重数 $m = 2$，取 $v = x+1$，$u = 1$。$B = u \cdot Dv = 1$，解 $s \cdot B + t \cdot v = 1$ 得 $s = 1$（对 $v$ 取模），$t = 0$。递推公式给出：</p>
+<p>$$\frac{1}{(x+1)^2} = D!\left(\frac{-1}{x+1}\right) + \frac{0}{x+1}$$</p>
+<p>即 $\int = -1/(x+1)$。更一般地，$\int a/(x+1)^2$ 总能用 Hermite 约化处理。</p>
+<h3 id="对数导数恒等式"><a class="header" href="#对数导数恒等式">对数导数恒等式</a></h3>
+<p><strong>核心思想</strong>：形如 $c \cdot \frac{Du}{u}$ 的项有平凡原函数 $c \cdot \log(u)$。</p>
+<p><strong>定理</strong>（对数导数恒等式）. 设 $f \in k_\ell(t_\ell)$，$d_1$ 无平方。若</p>
+<p>$$\frac{a_1}{d_1} = c \cdot \frac{D d_1}{d_1}$$</p>
+<p>对某个 $D$-常数 $c$，则</p>
+<p>$$\int \frac{a_1}{d_1} = c \cdot \log(d_1)$$</p>
+<p>更一般地，对无平方分母 $d_1$，对数部分的所有贡献形如 $\sum_i c_i \log(v_i)$，其中 $v_i$ 由 $d_1$ 的不可约因子给出。</p>
+<p><strong>判断方法</strong>：在 $\mathbb{Q}(x)$ 基域上，检查 $a_1$ 是否等于某个有理常数 $c$ 乘以 $d_1'$。在高阶塔上，检查 $a_1$ 是否是系数域中某个常数乘以 $d_1'$。</p>
+<p><strong>更精确的方法</strong>（Rothstein–Trager 结式）：对一般无平方分母 $d(x)$，$\int a(x)/d(x),dx$ 的对数部分由 <strong>Rothstein–Trager 结式</strong>给出：</p>
+<p>$$R(t) = \text{Res}_x!\bigl(d(x),; a(x) - t \cdot d'(x)\bigr)$$</p>
+<p>设 $R(t)$ 在 $\mathbb{Q}$ 上的根为 $c_1, \dots, c_m$，则</p>
+<p>$$\int \frac{a}{d},dx = \sum_{i=1}^{m} c_i \cdot \log\gcd(d,; a - c_i \cdot d') + C$$</p>
+<p>在 oCAS 的实现中（<code>rothstein_trager</code>），$R(t)$ 通过<strong>插值</strong>计算——在 $t = 0, 1, 2, \dots$ 处求结式值，然后 Lagrange 插值恢复多项式。当 $R(t)$ 在 $\mathbb{Q}$ 上不完全分裂时，对应项以未求值形式 <code>Integral(term, var)</code> 返回。</p>
+<p><strong>二次分母的特殊情况</strong>：当 $d(x) = x^2 + bx + c$（不可约）时，配方（completing the square）给出：</p>
+<p>$$\int \frac{Ax + B}{x^2 + bx + c},dx = \frac{A}{2}\log(x^2 + bx + c) + \frac{2B - Ab}{\sqrt{4c - b^2}}\arctan!\left(\frac{2x + b}{\sqrt{4c - b^2}}\right)$$</p>
+<p>当 $4c - b^2 &lt; 0$（实根情况），$\arctan$ 变为 $\text{artanh}$（反双曲正切），对应对数形式。</p>
+<h3 id="risch-微分方程"><a class="header" href="#risch-微分方程">Risch 微分方程</a></h3>
+<p>Risch 算法中最核心的子问题是求解 <strong>Risch 微分方程</strong>（Risch Differential Equation, RDE）。</p>
+<p><strong>问题</strong>. 给定微分域 $k_\ell$ 中的元素 $f, g$（两者都不含顶层变量 $t_\ell$），求 $q \in k_\ell[t_\ell]$ 满足：</p>
+<p>$$Dq + f \cdot q = g$$</p>
+<p>其中 $D$ 是塔导子（对 $t_\ell$ 的全导数）。注意 $f$ 和 $g$ 的系数在 $k_\ell$ 中，$q$ 是 $k_\ell[t_\ell]$ 中的多项式。</p>
+<p><strong>为什么只求多项式解</strong>：有理函数解 $q = p/d$ 需要额外的分母界（denominator bound）分析，这是当前 oCAS 实现未覆盖的片段。返回 <code>None</code> 时调用者回退到其他积分方法。</p>
+<h4 id="基域-mathbbqx-上的-rde"><a class="header" href="#基域-mathbbqx-上的-rde">基域 $\mathbb{Q}(x)$ 上的 RDE</a></h4>
+<p>在基域 $k_0 = \mathbb{Q}(x)$ 上，RDE 化为常微分方程 $q'(x) + f(x) \cdot q(x) = g(x)$。</p>
+<p><strong>算法</strong>（<code>base_rde</code>）：</p>
+<ol>
+<li><strong>度界</strong>：设 $\deg f = p$、$\deg g = r$。$f = 0$ 时直接积分，$\deg q = r + 1$；$f$ 为非零常数（$p = 0$）时 $\deg q = r$；$p \geq 1$ 时 $\deg(f \cdot q) = p + \deg q$ 的首项主导 $\deg(q') \leq \deg q - 1$，故 $\deg q = r - p$（唯一确定）。</li>
+<li><strong>待定系数</strong>：设 $q = \sum_{i=0}^{n} a_i x^i$，代入方程。</li>
+<li><strong>从高次到低次消除</strong>：比较 $x$ 的各次幂系数，逐个确定 $a_i$。每个 $a_i$ 要么被唯一确定，要么矛盾（原函数不存在）。</li>
+</ol>
+<p><strong>例子</strong>. 求解 $q' + q = x$（$f = 1, g = x$）：</p>
+<p>设 $q = a_1 x + a_0$。$q' = a_1$。代入：$a_1 + a_1 x + a_0 = x$。</p>
+<p>比较系数：$x^1: a_1 = 1$；$x^0: a_1 + a_0 = 0 \Rightarrow a_0 = -1$。</p>
+<p>解：$q = x - 1$。验证：$(x-1)' + (x-1) = 1 + x - 1 = x$ ✓</p>
+<p>这给出 $\int x \cdot e^x,dx = (x - 1) e^x$（在超指数层中）。</p>
+<h4 id="原始层primitive-level的-rde"><a class="header" href="#原始层primitive-level的-rde">原始层（Primitive Level）的 RDE</a></h4>
+<p>在 $t_\ell = \log(u)$ 的层上，导子满足 $Dt_\ell = Du/u \in k_{\ell-1}$（不含 $t_\ell$）。</p>
+<p><strong>性质</strong>：$D(a_0 + a_1 t + \cdots + a_m t^m) = Da_0 + Da_1 \cdot t + \cdots + Da_m \cdot t^m + (a_1 + 2a_2 t + \cdots + m a_m t^{m-1}) \cdot Dt$</p>
+<p>由于 $Dt$ 不含 $t$（原始扩张的关键性质），$D$ 作用在 $k[t]$ 上时<strong>不改变关于 $t$ 的次数</strong>（除了 $\partial/\partial t$ 部分降低一次）。</p>
+<p><strong>算法</strong>：从 $q$ 的最高次系数 $a_m$ 开始，<strong>自顶向下消除</strong>：</p>
+<ol>
+<li>由方程中 $t^m$ 的系数确定 $a_m$（一个关于 $a_m$ 的 RDE 在 $k_{\ell-1}$ 中）。</li>
+<li>代入后降低次数，对 $a_{m-1}$ 重复。</li>
+<li>最终 $a_0$ 需满足一个<strong>对数约束</strong>：$a_0$ 的常数部分必须使下层积分中出现的对数项一致。</li>
+</ol>
+<p><strong>递归结构</strong>：每步产生一个 $k_{\ell-1}$ 上的 RDE，递归调用 <code>rde_solve</code> 直到基域。</p>
+<h4 id="超指数层hyperexponential-level的-rde"><a class="header" href="#超指数层hyperexponential-level的-rde">超指数层（Hyperexponential Level）的 RDE</a></h4>
+<p>在 $t_\ell = \exp(u)$ 的层上，导子满足 $Dt_\ell = t_\ell \cdot Du$。</p>
+<p><strong>关键性质</strong>：$Dt = t \cdot Du$ 含 $t$，因此 $D$ 作用在 $k[t]$ 上时<strong>混合次数</strong>：</p>
+<p>$$D(a_i t^i) = (Da_i) t^i + a_i \cdot i \cdot t^i \cdot Du = (Da_i + i \cdot a_i \cdot Du) t^i$$</p>
+<p>即 $D(a_i t^i) = (Da_i + i \cdot a_i \cdot Du) \cdot t^i$——每个 $t^i$ 层<strong>独立</strong>！</p>
+<p><strong>解耦性质</strong>：将 $q = \sum a_i t^i$ 和 $g = \sum b_j t^j$ 代入 $Dq + fq = g$，比较 $t^k$ 的系数：</p>
+<p>$$Da_k + k \cdot a_k \cdot Du + f \cdot a_k = b_k$$</p>
+<p>即</p>
+<p>$$Da_k + (f + k \cdot Du) \cdot a_k = b_k$$</p>
+<p>这是 $k_{\ell-1}$ 上的一个 RDE（未知数为 $a_k$），各 $k$ 独立！</p>
+<p><strong>算法</strong>：对 $k = 0, 1, \dots, \deg g$，分别解 RDE：</p>
+<p>$$Da_k + (f + k \cdot Du) \cdot a_k = b_k$$</p>
+<p>若某个 $a_k$ 无解，则整体无解。$\deg q$ 的上界由 $\deg g$ 给出。</p>
+<p><strong>例子</strong>. $\int x \cdot e^x,dx$：在 $t = e^x$（$Dt = t$）的塔上，被积函数为 $x \cdot t$。</p>
+<p>多项式部分 $p(t) = x \cdot t$（$m = 1$）。比较 $t^1$：$Da_1 + a_1 \cdot 1 = x$，即 $a_1' + a_1 = x$。由基域 RDE 解得 $a_1 = x - 1$。$t^0$ 部分为 0。</p>
+<p>结果：$\int = (x-1) \cdot t = (x-1) \cdot e^x$。</p>
+<h3 id="对数层的待定系数法"><a class="header" href="#对数层的待定系数法">对数层的待定系数法</a></h3>
+<p>在原始（对数）层 $t = \log(u)$ 上积分多项式 $p(t) = \sum a_i t^i$ 时，使用<strong>待定系数法</strong>。</p>
+<p><strong>算法</strong> <code>integrate_kpoly_primitive</code>：</p>
+<p>设待积多项式为 $p(t) = \sum_{i=0}^{m} a_i t^i$，猜测原函数 $q(t) = \sum_{i=0}^{m'} b_i t^i$。</p>
+<ol>
+<li>设 $m' = m + 1$（原函数的次数至多比被积函数高 1，因为 $D$ 的 $\partial/\partial t$ 部分会降次）。</li>
+<li>计算 $Dq = \sum (Db_i) t^i + \sum i \cdot b_i \cdot (Du/u) \cdot t^{i-1}$。</li>
+<li>比较 $p = Dq$ 的系数：
+<ul>
+<li>$t^m$：$a_m = Db_m + (m+1) b_{m+1} \cdot Du/u$</li>
+<li>$\vdots$</li>
+<li>$t^0$：$a_0 = Db_0 + b_1 \cdot Du/u$</li>
+</ul>
+</li>
+<li>从 $t^{m+1}$ 开始向下求解。每个 $b_i$ 可能需要递归调用积分器（对 $Db_i$ 部分）。</li>
+<li>$b_0$ 的确定受<strong>对数约束</strong>限制：在最终结果中，所有对数项 $\sum c_j \log(v_j)$ 必须一致。若 $b_0$ 含有来自下层的对数项且不满足 Liouville 条件，则无解。</li>
+</ol>
+<h3 id="三角到复指数的重写"><a class="header" href="#三角到复指数的重写">三角到复指数的重写</a></h3>
+<p>Risch 算法原生只处理 <code>log</code> 和 <code>exp</code>。三角函数需要先重写为复指数形式。</p>
+<p><strong>Euler 公式</strong>：</p>
+<p>$$\sin(u) = \frac{e^{iu} - e^{-iu}}{2i}, \qquad \cos(u) = \frac{e^{iu} + e^{-iu}}{2}$$</p>
+<p>$$\tan(u) = \frac{\sin u}{\cos u} = \frac{e^{iu} - e^{-iu}}{i(e^{iu} + e^{-iu})}$$</p>
+<p>在 oCAS 中，<code>trig_to_exp</code>（<code>ocas-calc/src/integral/trig.rs</code>）遍历表达式树，将 <code>sin</code>、<code>cos</code>、<code>tan</code>、<code>cot</code>、<code>sec</code>、<code>csc</code> 逐个替换为上述等价形式。虚数单位 $I$ 作为常数生成元加入塔中（$DI = 0$）。</p>
+<p><strong>重写后的积分</strong>：重写后的表达式在 $\mathbb{Q}(x, I, e^{Ix}, \dots)$ 上的微分域塔中，可由 Risch 算法处理。</p>
+<p><strong>回转为实数形式</strong>（<code>realify</code>）：Risch 积分的结果可能含有虚数单位。<code>realify</code> 尝试将结果转换回实数形式：</p>
+<ul>
+<li><strong>共轭对数合并</strong>：若结果中含 $c \cdot \log(u + Iv) + c \cdot \log(u - Iv)$，合并为 $c \cdot \log(u^2 + v^2)$</li>
+<li><strong>共轭对数之差</strong>：若含 $c \cdot \log(u + Iv) - c \cdot \log(u - Iv)$，合并为 $2c \cdot \arctan(v/u)$</li>
+<li><strong>指数合并</strong>：$e^{Iu} \cdot e^{-Iu} = 1$，$e^{Iu} + e^{-Iu} = 2\cos(u)$ 等</li>
+</ul>
+<p>这是"尽力而为"的过程。若无法匹配已知模式，保留复数形式（数学上仍然正确，因为求导验证仍然成立）。</p>
+<p><strong>当前限制</strong>：Risch 微分方程求解器在 $\mathbb{Q}[x]$ 上工作，因此当三角重写产生含 $I$ 的超指数方程（例如 $\sin(x)\cos(x)$ 或 $\cos^2(x)$ 积分时产生的方程）时，系数域扩展为 $\mathbb{Q}(I)$ 而非 $\mathbb{Q}$，求解器可能失败。这些被积函数返回未求值形式。</p>
+<h3 id="启发式层"><a class="header" href="#启发式层">启发式层</a></h3>
+<p>在 Risch 算法之前，oCAS 尝试一组<strong>启发式积分技术</strong>（<code>ocas-calc/src/integral/heuristic.rs</code>）。这些技术快速且覆盖常见模式。</p>
+<h4 id="分部积分liate-排序"><a class="header" href="#分部积分liate-排序">分部积分（LIATE 排序）</a></h4>
+<p>对乘积 $f \cdot g$，尝试分部积分 $\int u,dv = uv - \int v,du$。</p>
+<p><strong>LIATE 优先级</strong>（选 $u$ 的启发式规则）：</p>
+<div class="table-wrapper"><table><thead><tr><th>优先级</th><th>类型</th><th>分数</th><th>例子</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>L</strong>ogarithmic</td><td>0</td><td>$\log x$, $\arctan x$</td></tr>
+<tr><td>2</td><td><strong>I</strong>nverse trig</td><td>1</td><td>$\arcsin x$, $\text{arccosh}, x$</td></tr>
+<tr><td>3</td><td><strong>A</strong>lgebraic</td><td>2</td><td>$x^2$, $\sqrt{x}$</td></tr>
+<tr><td>4</td><td><strong>T</strong>rigonometric</td><td>3</td><td>$\sin x$, $\cos x$</td></tr>
+<tr><td>5</td><td><strong>E</strong>xponential</td><td>4</td><td>$e^x$, $2^x$</td></tr>
+</tbody></table>
+</div>
+<p><strong>算法</strong>：对乘积中的每个因子，按 LIATE 分数排序。选择分数最低（优先级最高）的作为 $u$，其余的（经积分得 $v$）作为 $dv$。</p>
+<p><strong>深度限制</strong>：<code>PARTS_MAX_DEPTH = 2</code>，防止无限递归。</p>
+<h4 id="三角替换"><a class="header" href="#三角替换">三角替换</a></h4>
+<p>匹配 $\sqrt{a^2 - x^2}$、$\sqrt{a^2 + x^2}$、$\sqrt{x^2 - a^2}$ 及其倒数，直接返回已知原函数：</p>
+<div class="table-wrapper"><table><thead><tr><th>被积函数</th><th>原函数</th></tr></thead><tbody>
+<tr><td>$\frac{1}{\sqrt{a^2 - x^2}}$</td><td>$\arcsin(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{a^2 + x^2}}$</td><td>$\text{arcsinh}(x/a)$</td></tr>
+<tr><td>$\frac{1}{\sqrt{x^2 - a^2}}$</td><td>$\text{arccosh}(x/a)$</td></tr>
+<tr><td>$\sqrt{a^2 - x^2}$</td><td>$\frac{x\sqrt{a^2-x^2} + a^2 \arcsin(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{a^2 + x^2}$</td><td>$\frac{x\sqrt{a^2+x^2} + a^2 \text{arcsinh}(x/a)}{2}$</td></tr>
+<tr><td>$\sqrt{x^2 - a^2}$</td><td>$\frac{x\sqrt{x^2-a^2} - a^2 \text{arccosh}(x/a)}{2}$</td></tr>
+</tbody></table>
+</div>
+<h4 id="weierstrass-替换"><a class="header" href="#weierstrass-替换">Weierstrass 替换</a></h4>
+<p>对 $\sin(u)$ 和 $\cos(u)$ 的有理函数（$u$ 是 $x$ 的线性函数），使用万能替换 $t = \tan(u/2)$：</p>
+<p>$$\sin u = \frac{2t}{1+t^2}, \qquad \cos u = \frac{1-t^2}{1+t^2}, \qquad du = \frac{2,dt}{1+t^2}$$</p>
+<p>将三角有理积分化为 $t$ 的有理函数积分。</p>
+<h4 id="euler-替换"><a class="header" href="#euler-替换">Euler 替换</a></h4>
+<p>对含 $\sqrt{ax^2 + bx + c}$ 的被积函数，根据 $a$ 的符号选择 Euler 替换：</p>
+<ul>
+<li>$a &gt; 0$：$\sqrt{a},x + t = \sqrt{ax^2 + bx + c}$</li>
+<li>$a &lt; 0$：$t(x - \alpha) = \sqrt{ax^2 + bx + c}$（$\alpha$ 为根之一）</li>
+<li>$c &gt; 0$：$\sqrt{c} + xt = \sqrt{ax^2 + bx + c}$</li>
+</ul>
+<p>这些替换将根号有理积分化为有理函数积分。</p>
+<h3 id="特殊函数表"><a class="header" href="#特殊函数表">特殊函数表</a></h3>
+<p>当 Risch 算法证明某个积分<strong>没有初等原函数</strong>时，许多常见情形仍有特殊函数的闭式。oCAS 在 <code>ocas-calc/src/integral/special.rs</code> 中直接编码这些标准反导数（定义与 SymPy 一致）：</p>
+<div class="table-wrapper"><table><thead><tr><th>被积函数</th><th>原函数</th><th>特殊函数</th></tr></thead><tbody>
+<tr><td>$e^{-x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erf}(x)$</td><td>误差函数</td></tr>
+<tr><td>$e^{x^2}$</td><td>$\frac{\sqrt{\pi}}{2},\text{erfi}(x)$</td><td>虚误差函数</td></tr>
+<tr><td>$e^{cx^2}$（$c &lt; 0$）</td><td>$\frac{\sqrt{\pi}}{2\sqrt{-c}},\text{erf}(\sqrt{-c},x)$</td><td>误差函数</td></tr>
+<tr><td>$e^x / x$</td><td>$\text{Ei}(x)$</td><td>指数积分</td></tr>
+<tr><td>$\sin(x)/x$</td><td>$\text{Si}(x)$</td><td>正弦积分</td></tr>
+<tr><td>$\cos(x)/x$</td><td>$\text{Ci}(x)$</td><td>余弦积分</td></tr>
+<tr><td>$\sinh(x)/x$</td><td>$\text{Shi}(x)$</td><td>双曲正弦积分</td></tr>
+<tr><td>$\cosh(x)/x$</td><td>$\text{Chi}(x)$</td><td>双曲余弦积分</td></tr>
+<tr><td>$\sin(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},S!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $S$</td></tr>
+<tr><td>$\cos(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},C!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $C$</td></tr>
+</tbody></table>
+</div>
+<p><strong>匹配逻辑</strong>：<code>special_integrate</code> 将被积函数分解为乘积因子，尝试匹配以下模式族：</p>
+<ul>
+<li><strong>erf 族</strong>：$e^{c \cdot x^2}$（$c &lt; 0$），含 $e^{-x^2}$ 特例</li>
+<li><strong>Ei 族</strong>：$e^x / x$，含 $e^{cx}/x$ 推广</li>
+<li><strong>Si/Ci/Shi/Chi 族</strong>：三角或双曲函数除以 $x$</li>
+<li><strong>Fresnel 族</strong>：$\sin(x^2)$、$\cos(x^2)$</li>
+</ul>
+<p>注意：这些<strong>不是</strong> Risch 算法的一部分。Risch 证明"不存在初等原函数"后，特殊函数表提供"次优"答案。</p>
+<hr />
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<h3 id="积分管线架构"><a class="header" href="#积分管线架构">积分管线架构</a></h3>
+<p><code>integrate(expr, var)</code>（<code>ocas-calc/src/integral/mod.rs</code>）按顺序尝试以下层，第一个产生答案的层获胜：</p>
+<pre><code>┌─────────────────────────────────────────────────┐
+│  integrate(expr, var)                           │
+├─────────────────────────────────────────────────┤
+│  1. 查找表（幂法则、线性参数函数）               │
+│     ↓ 失败                                      │
+│  2. 有理函数积分器（integrate_rational）         │
+│     ↓ 失败                                      │
+│  3. Risch 算法（risch_integrate）                │
+│     ↓ 失败                                      │
+│  4. 三角重写（trig_to_exp）→ 重试 Risch → realify │
+│     ↓ 失败                                      │
+│  5. 特殊函数表（special_integrate）              │
+│     ↓ 失败                                      │
+│  6. 启发式层（heuristic_integrate）              │
+│     ↓ 失败                                      │
+│  7. 返回未求值形式 Integral(expr, var)           │
+└─────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>深度限制</strong>：<code>MAX_DEPTH = 8</code>（<code>integrate_raw</code> 的递归深度），<code>MAX_RISCH_DEPTH = 16</code>（<code>risch_integrate</code> 的递归深度，使用 <code>thread_local!</code> 计数器）。这些限制防止病态输入（如 <code>sec(x)</code> 触发 VOP 无限重试）导致栈溢出。</p>
+<h3 id="模块组织"><a class="header" href="#模块组织">模块组织</a></h3>
+<pre><code>ocas-calc/src/integral/
+├── mod.rs         ← integrate 入口 + 查找表 + 管线调度
+├── rational.rs    ← 基域 Q(x) 上的有理函数积分器
+│                    Hermite 约化 + 对数部分 + Rothstein–Trager
+├── risch.rs       ← Risch 算法主循环
+│                    逐层 integrate_level + Hermite 层上约化
+│                    多项式部分（原始/超指数）
+├── rde.rs         ← Risch 微分方程求解器
+│                    base_rde (Q[x]) + 递归塔
+├── trig.rs        ← 三角↔复指数重写（trig_to_exp / realify）
+├── heuristic.rs   ← 启发式：分部积分 / 三角替换 / Weierstrass / Euler
+└── special.rs     ← 特殊函数表（erf, Ei, Si, Ci, Fresnel 等）
+</code></pre>
+<h3 id="risch-算法的执行流程"><a class="header" href="#risch-算法的执行流程">Risch 算法的执行流程</a></h3>
+<p>以 $\int (x+1) e^x,dx$ 为例，追踪完整执行：</p>
+<ol>
+<li><strong>构建塔</strong>：<code>build_tower</code> 收集 $t_1 = \exp(x)$，塔为 $\mathbb{Q}(x) \subset \mathbb{Q}(x)(t_1)$。</li>
+<li><strong><code>risch_integrate</code></strong>：将被积函数转换为 $k_1(t_1)$ 中的有理函数：$(x+1) \cdot t_1$。</li>
+<li><strong><code>integrate_level(tower, level=1, f)</code></strong>：
+<ul>
+<li>分母为 1，无 Hermite 约化。</li>
+<li>多项式部分 $p(t_1) = (x+1) t_1$。</li>
+<li>调用 <code>integrate_kpoly_hyperexp</code>（因为 $t_1 = \exp(x)$）：
+<ul>
+<li>比较 $t_1^1$ 系数：$Da_1 + a_1 \cdot 1 = x + 1$</li>
+<li>递归调用 <code>rde_solve</code>：$a_1' + a_1 = x + 1$</li>
+<li>基域 <code>base_rde</code>：设 $a_1 = ax + b$，$a_1' = a$，$a + ax + b = x + 1$</li>
+<li>比较：$a = 1$，$a + b = 1 \Rightarrow b = 0$</li>
+<li>$a_1 = x$，验证：$x' + x = 1 + x = x + 1$ ✓</li>
+</ul>
+</li>
+<li>$t_1^0$ 系数为 0，$b_0 = 0$。</li>
+</ul>
+</li>
+<li><strong>结果组装</strong>：$q = x \cdot t_1$，转为原子：$x \cdot e^x$。</li>
+<li><strong>化简 + 归一化</strong>：返回 $x \cdot e^x$。</li>
+</ol>
+<p><strong>验证</strong>：$\frac{d}{dx}[x \cdot e^x] = e^x + x \cdot e^x = (x+1)e^x$ ✓</p>
+<h3 id="域元素的内部表示"><a class="header" href="#域元素的内部表示">域元素的内部表示</a></h3>
+<p>在塔中，域元素使用<strong>平坦多元稀疏多项式</strong>表示：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// KElem: k = Q(x, t_1, ..., t_{n-1}) 中的元素
+struct KElem {
+    num: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
+    den: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>变量索引分配：<code>0</code> 对应 $x$，<code>1</code> 对应 $t_1$，…，<code>n-1</code> 对应 $t_{n-1}$。</p>
+<p><code>KPoly</code> 是关于顶层变量的稠密一元多项式，系数为 <code>KElem</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// KPoly: k[t_n] 中的多项式，系数在 k 中
+struct KPoly {
+    coeffs: Vec&lt;KElem&gt;,  // 从低次到高次
+    top: usize,          // 顶层变量的索引
+    n: usize,            // 总变量数
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>KRat</code> 是有理函数 $p/q$：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct KRat {
+    num: KPoly,
+    den: KPoly,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>无 GCD 约简</strong>：<code>KElem</code> 不执行多元 GCD 约简（因为通用多元 GCD 代价高昂）。零检测仅通过分子为零来判断，交叉相乘相等是唯一可靠的相等性判断。</p>
+<h3 id="fuel-受限积分"><a class="header" href="#fuel-受限积分">Fuel 受限积分</a></h3>
+<p><code>integrate_with_fuel(ctx, expr, var, &amp;fuel)</code> 将 <code>Fuel</code> 预算贯穿到两个积分后化简阶段。积分遍历本身使用 <code>MAX_DEPTH</code> / <code>MAX_RISCH_DEPTH</code> 限制；<code>Fuel</code> 仅约束化简阶段，防止病态结果（如产生极大表达式的积分）导致重写器无限循环。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::fuel::Fuel;
+
+let fuel = Fuel::new(500);
+let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
+// Ok(result)  — 正常完成
+// Err(_)      — 化简中途 fuel 耗尽
+<span class="boring">}</span></code></pre></pre>
+<h3 id="范围限制与回退策略"><a class="header" href="#范围限制与回退策略">范围限制与回退策略</a></h3>
+<p>Risch 算法的当前实现有以下限制：</p>
+<div class="table-wrapper"><table><thead><tr><th>限制</th><th>原因</th><th>回退行为</th></tr></thead><tbody>
+<tr><td>只求 RDE 的多项式解</td><td>有理函数解需要分母界分析</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
+<tr><td>塔层上的对数部分只用对数导数恒等式 $a_1 = c \cdot Dd_1$</td><td>完整的对数部分需要塔层上的 Rothstein–Trager / 迹函数判定</td><td>返回未求值形式（基域 $\mathbb{Q}(x)$ 上仍使用完整处理）</td></tr>
+<tr><td>代数函数（$\sqrt{x}$ 等）不支持</td><td>需要代数函数域扩展</td><td>由启发式三角替换覆盖常见模式</td></tr>
+<tr><td>代数相关生成元保守拒绝</td><td>$\log(2x)$ 与 $\log(x)$ 的关系检测</td><td>返回 <code>None</code></td></tr>
+<tr><td>含 $I$ 的超指数 RDE</td><td>RDE 求解器仅在 $\mathbb{Q}[x]$ 上工作</td><td>三角被积函数返回未求值形式</td></tr>
+</tbody></table>
+</div>
+<p>当所有层都失败时，返回 <code>Integral(expr, var)</code>——这是<strong>有意的答案</strong>，表示"该积分在当前实现中没有闭式解"，而非程序错误。</p>
+<hr />
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ol>
+<li><strong>Bronstein, M.</strong> <em>Symbolic Integration I: Transcendental Functions</em>, 2nd ed., Springer, 2005. — Risch 算法的权威参考。第 2 章：有理函数积分（Hermite 约化、Rothstein–Trager）；第 5 章：初等函数上的 Risch 算法；第 6 章：Risch 微分方程。oCAS 的实现严格遵循此书。</li>
+<li><strong>Bronstein, M.</strong> <em>Symbolic Integration II: Transcendental and Algebraic Functions</em>, Springer, 2004. — 扩展到代数函数和特殊函数。oCAS 尚未覆盖此书的内容。</li>
+<li><strong>Geddes, K. O., Czapor, S. R., &amp; Labahn, G.</strong> <em>Algorithms for Computer Algebra</em>, Kluwer, 1992. — 第 12 章提供 Risch 算法的替代讲解。</li>
+<li><strong>Liouville, J.</strong> "Sur les transcendantes elliptiques de première et de seconde espèce considérées comme fonctions de leur amplitude." <em>Journal de l'École Polytechnique</em>, 1835. — 初等函数原函数的 Liouville 定理原始出处。</li>
+<li><strong>Risch, R. H.</strong> "The problem of integration in finite terms." <em>Transactions of the AMS</em>, 139:167–189, 1969. — Risch 算法的奠基论文。</li>
+<li><strong>Rothstein, M.</strong> "A new algorithm for the integration of exponential and logarithmic functions." <em>Proceedings of the 1977 MACSYMA Users Conference</em>, 1977. — Rothstein–Trager 结式方法。</li>
+<li><strong>Trager, B. M.</strong> "Algebraic factoring and rational function integration." <em>Proceedings of SYMSAC '76</em>, 1976. — Trager 算法（代数数域上的因式分解）。</li>
+<li><strong>Lazard, D. &amp; Rioboo, R.</strong> "Integration of rational functions: Rational computation of the logarithmic part." <em>Journal of Symbolic Computation</em>, 9(2):113–129, 1990. — 对数部分的高效算法。</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/ode-theory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/fglm-elimination.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/ode-theory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/fglm-elimination.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

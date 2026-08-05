@@ -1,0 +1,584 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>高阶：蒙特卡洛积分 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html" class="active"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/monte-carlo-integration.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="高阶蒙特卡洛积分"><a class="header" href="#高阶蒙特卡洛积分">高阶：蒙特卡洛积分</a></h1>
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<ul>
+<li><a href="./linear-algebra.html">线性代数</a> — 矩阵运算（用于理解高维采样）</li>
+<li>基础概率论 — 随机变量、期望、方差</li>
+<li>基础微积分 — 定积分的定义与变量替换</li>
+</ul>
+<p>建议具备以下概率论基础：</p>
+<div class="table-wrapper"><table><thead><tr><th>概念</th><th>说明</th></tr></thead><tbody>
+<tr><td>期望 $\mathbb{E}[X]$</td><td>随机变量的加权平均值</td></tr>
+<tr><td>方差 $\text{Var}(X) = \mathbb{E}[(X - \mu)^2]$</td><td>随机变量偏离均值的度量</td></tr>
+<tr><td>独立同分布 (i.i.d.)</td><td>多个随机变量相互独立且服从同一分布</td></tr>
+<tr><td>大数定律</td><td>样本均值随样本量增大收敛于期望</td></tr>
+<tr><td>中心极限定理</td><td>样本均值近似服从正态分布</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="从定积分到期望"><a class="header" href="#从定积分到期望">从定积分到期望</a></h3>
+<p>考虑定积分</p>
+<p>$$I = \int_\Omega f(\mathbf{x}), d\mathbf{x}$$</p>
+<p>其中 $\Omega \subseteq \mathbb{R}^d$ 是积分域。蒙特卡洛方法的核心思想是将积分<strong>重写为期望</strong>。</p>
+<p>令 $\mathbf{X}$ 为在 $\Omega$ 上服从均匀分布的随机变量，其概率密度函数为</p>
+<p>$$p(\mathbf{x}) = \frac{1}{V}, \qquad V = \text{vol}(\Omega)$$</p>
+<p>则积分变为</p>
+<p>$$I = V \cdot \mathbb{E}[f(\mathbf{X})]$$</p>
+<h3 id="基本估计量"><a class="header" href="#基本估计量">基本估计量</a></h3>
+<p><strong>蒙特卡洛基本估计量</strong>：从 $p(\mathbf{x})$ 中抽取 $N$ 个独立样本 $\mathbf{x}_1, \dots, \mathbf{x}_N$，定义</p>
+<p>$$\hat{I} = \frac{V}{N} \sum_{i=1}^{N} f(\mathbf{x}_i)$$</p>
+<p><strong>性质</strong>：</p>
+<ol>
+<li><strong>无偏性</strong>：$\mathbb{E}[\hat{I}] = I$（精确等于真值的期望）。</li>
+<li><strong>方差</strong>：$\text{Var}(\hat{I}) = \frac{V^2}{N} \text{Var}(f(\mathbf{X}))$。</li>
+<li><strong>收敛速率</strong>：$\hat{I}$ 的标准误差为 $\sigma_{\hat{I}} \propto 1/\sqrt{N}$，<strong>与维度 $d$ 无关</strong>。</li>
+</ol>
+<p>最后一条性质是蒙特卡洛方法的核心优势：传统数值积分（梯形法则、Simpson 法则）的误差随维度指数增长（"维度灾难"），而蒙特卡洛方法的收敛速率始终为 $O(N^{-1/2})$。</p>
+<h3 id="大数定律与中心极限定理"><a class="header" href="#大数定律与中心极限定理">大数定律与中心极限定理</a></h3>
+<p><strong>大数定律</strong>（Kolmogorov 强大数定律）. 若 $X_1, X_2, \dots$ 是独立同分布的随机变量，$\mathbb{E}[|X_1|] &lt; \infty$，则</p>
+<p>$$\bar{X}<em>n = \frac{1}{n}\sum</em>{i=1}^{n} X_i ;\xrightarrow{\text{a.s.}}; \mathbb{E}[X_1]$$</p>
+<p>应用到蒙特卡洛：$\hat{I}/V \to \mathbb{E}[f(\mathbf{X})]$ 几乎必然成立，因此 $\hat{I} \to I$。</p>
+<p><strong>中心极限定理</strong>（CLT）. 在上述条件下，若 $\text{Var}(X_1) = \sigma^2 &lt; \infty$，则</p>
+<p>$$\frac{\bar{X}_n - \mu}{\sigma / \sqrt{n}} ;\xrightarrow{d}; \mathcal{N}(0, 1)$$</p>
+<p>应用到蒙特卡洛：对足够大的 $N$，$\hat{I}$ 近似服从正态分布：</p>
+<p>$$\hat{I} ;\sim; \mathcal{N}!\left(I,; \frac{V^2 \sigma_f^2}{N}\right)$$</p>
+<p>其中 $\sigma_f^2 = \text{Var}(f(\mathbf{X}))$。这给出了<strong>置信区间</strong>的基础。</p>
+<h3 id="方差估计与置信区间"><a class="header" href="#方差估计与置信区间">方差估计与置信区间</a></h3>
+<p>实际中 $\sigma_f^2$ 未知，用样本方差估计：</p>
+<p>$$\hat{\sigma}<em>f^2 = \frac{1}{N-1} \sum</em>{i=1}^{N} \bigl(f(\mathbf{x}<em>i) - \bar{f}\bigr)^2, \qquad \bar{f} = \frac{1}{N}\sum</em>{i=1}^{N} f(\mathbf{x}_i)$$</p>
+<p>$\hat{I}$ 的标准误差估计为</p>
+<p>$$\hat{\sigma}_{\hat{I}} = \frac{V}{\sqrt{N}} \hat{\sigma}_f$$</p>
+<p>$95%$ 置信区间为 $\hat{I} \pm 1.96, \hat{\sigma}_{\hat{I}}$。</p>
+<p><strong>加权采样的推广</strong>：当采样密度 $p(\mathbf{x})$ 不是均匀分布时（重要性采样），每个样本 $i$ 带有权重 $w_i = 1/p(\mathbf{x}_i)$，则</p>
+<p>$$\hat{I} = \frac{1}{N} \sum_{i=1}^{N} w_i \cdot f(\mathbf{x}_i)$$</p>
+<p>方差估计变为</p>
+<p>$$\hat{\sigma}^2 = \frac{1}{N} \sum_{i=1}^{N} w_i^2 f(\mathbf{x}<em>i)^2 - \left(\frac{1}{N}\sum</em>{i=1}^{N} w_i f(\mathbf{x}_i)\right)^2$$</p>
+<p>oCAS 的 <code>StatisticsAccumulator</code> 使用与之类似的加权方差形式（见下文『统计累加器』一节）。</p>
+<hr />
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="重要性采样"><a class="header" href="#重要性采样">重要性采样</a></h3>
+<p>蒙特卡洛估计量的方差取决于被积函数在采样分布下的"波动"程度。<strong>重要性采样</strong>（importance sampling）通过选择一个非均匀的采样分布 $p(\mathbf{x})$ 来降低方差。</p>
+<p><strong>原理</strong>：将积分重写为</p>
+<p>$$I = \int_\Omega \frac{f(\mathbf{x})}{p(\mathbf{x})} \cdot p(\mathbf{x}), d\mathbf{x} = \mathbb{E}_p!\left[\frac{f(\mathbf{X})}{p(\mathbf{X})}\right]$$</p>
+<p>估计量为</p>
+<p>$$\hat{I}<em>p = \frac{1}{N} \sum</em>{i=1}^{N} \frac{f(\mathbf{x}_i)}{p(\mathbf{x}_i)}, \qquad \mathbf{x}_i \sim p$$</p>
+<p><strong>最优采样分布</strong>：方差最小化的 $p^*$ 为</p>
+<p>$$p^*(\mathbf{x}) = \frac{|f(\mathbf{x})|}{\int_\Omega |f(\mathbf{y})|, d\mathbf{y}}$$</p>
+<p>当 $f$ 不变号时，$w \cdot f = \int |f| \cdot \mathrm{sgn}(f)$ 是常数，此时方差为零；$f$ 变号时方差也达到最小。但 $p^<em>$ 本身需要知道积分值——这是一个"先有鸡还是先有蛋"的问题。实际中，我们用<strong>自适应网格</strong>来近似 $p^</em>$。</p>
+<p><strong>关键约束</strong>：$p(\mathbf{x})$ 必须在 $f(\mathbf{x}) \neq 0$ 的所有点上严格为正。若 $p$ 在 $f$ 非零处为零，估计量无界，方差无穷大。</p>
+<h3 id="vegas-自适应网格"><a class="header" href="#vegas-自适应网格">Vegas 自适应网格</a></h3>
+<p>Vegas 算法（Lepage, 1978）是最广泛使用的自适应蒙特卡洛积分方法。其核心思想是用一个<strong>分段常数</strong>的采样密度来近似最优分布 $p^*$。</p>
+<h4 id="乘积网格结构"><a class="header" href="#乘积网格结构">乘积网格结构</a></h4>
+<p>Vegas 在 $d$ 维单位超立方体 $[0,1]^d$ 上工作（物理域通过线性变量替换映射到超立方体）。采样密度采用<strong>乘积形式</strong>：</p>
+<p>$$p(\mathbf{x}) = \prod_{k=1}^{d} p_k(x_k)$$</p>
+<p>每个 $p_k$ 是第 $k$ 维上的独立一维分段常数密度。这意味着每维的网格独立维护——$d$ 维问题被分解为 $d$ 个一维问题。</p>
+<p><strong>第 $k$ 维的网格</strong>：将 $[0,1]$ 分为 $M$ 个 bin，边界为</p>
+<p>$$0 = b_0 &lt; b_1 &lt; \cdots &lt; b_M = 1$$</p>
+<p>第 $j$ 个 bin 的宽度为 $\Delta_j = b_{j+1} - b_j$。在该 bin 上 $p_k(x) = 1/(M \cdot \Delta_j)$（常数），因为每个 bin 被等概率选中。</p>
+<h4 id="采样过程"><a class="header" href="#采样过程">采样过程</a></h4>
+<p>对每个样本点 $\mathbf{x} = (x_1, \dots, x_d)$：</p>
+<ol>
+<li><strong>选 bin</strong>：对第 $k$ 维，从 ${0, 1, \dots, M-1}$ 中均匀随机选取 bin 编号 $j_k$。</li>
+<li><strong>选点</strong>：在 $[b_{j_k}, b_{j_k+1}]$ 内均匀随机选取 $x_k$。</li>
+<li><strong>计算 Jacobian（权重）</strong>：该点的概率密度为 $p_k(x_k) = 1/(M \cdot \Delta_{j_k})$，因此</li>
+</ol>
+<p>$$w_k = \frac{1}{p_k(x_k)} = M \cdot \Delta_{j_k}$$</p>
+<p>总权重为</p>
+<p>$$w = \prod_{k=1}^{d} w_k = \prod_{k=1}^{d} (M \cdot \Delta_{j_k})$$</p>
+<ol start="4">
+<li><strong>累加</strong>：将 $w \cdot f(\mathbf{x})$ 加入统计累加器。</li>
+</ol>
+<p><strong>权重的物理意义</strong>：$w = 1/p(\mathbf{x})$ 是采样密度的倒数——稀疏区域（$\Delta_j$ 大）的样本获得更大权重，密集区域（$\Delta_j$ 小）的样本获得更小权重，从而补偿了非均匀采样。</p>
+<h4 id="网格自适应训练信号"><a class="header" href="#网格自适应训练信号">网格自适应：训练信号</a></h4>
+<p>每次迭代中，Vegas 记录每个 bin 的"重要性"。对第 $k$ 维的第 $j$ 个 bin，训练信号为</p>
+<p>$$d_j = \sum_{\text{samples in bin } j} w \cdot f^2(\mathbf{x})$$</p>
+<p><strong>直觉</strong>：$f^2$ 度量该 bin 区域内被积函数的"能量"（方差贡献），$w$ 补偿非均匀采样。高 $d_j$ 的 bin 对积分误差贡献大，需要更细的网格。</p>
+<h4 id="网格更新平滑累积弧长重分布"><a class="header" href="#网格更新平滑累积弧长重分布">网格更新：平滑累积弧长重分布</a></h4>
+<p>有了训练信号 ${d_0, d_1, \dots, d_{M-1}}$，Vegas 通过以下步骤更新网格边界：</p>
+<p><strong>步骤 1：3-bin 平滑</strong>。对每个 bin $j$，计算平滑值：</p>
+<p>$$\tilde{d}<em>j = \frac{d</em>{j-1} + d_j + d_{j+1}}{3}$$</p>
+<p>边界 bin（$j = 0$ 或 $j = M-1$）缺失的邻居用 0 代替。平滑的目的是抑制单 bin 的噪声，使网格变化更稳定。</p>
+<p><strong>步骤 2：均值归一化</strong>。计算平均值 $\bar{d} = \frac{1}{M}\sum_j \tilde{d}_j$，令</p>
+<p>$$\hat{d}_j = \frac{\tilde{d}_j}{\bar{d}}$$</p>
+<p>归一化后 $\hat{d}_j = 1$ 表示"平均重要性"，$\hat{d}_j &gt; 1$ 表示该 bin 需要更细的网格。</p>
+<p><strong>步骤 3：阻尼</strong>。引入学习率 $\alpha &gt; 0$（oCAS 默认 $\alpha = 1.5$），对归一化值进行幂变换：</p>
+<p>$$\hat{d}_j ;\leftarrow; \hat{d}_j^{1/\alpha}$$</p>
+<p>当 $\alpha = 1$ 时无阻尼（$\hat{d}_j^{1/1} = \hat{d}_j$）；$\alpha &gt; 1$ 时幂次 $&lt; 1$，压缩极端值，使网格更新更保守。这防止了网格对单次迭代的噪声过度反应。</p>
+<p><strong>步骤 4：累积弧长与等距重分布</strong>。计算累积和：</p>
+<p>$$S_j = \sum_{i=0}^{j-1} \hat{d}_i, \qquad j = 0, 1, \dots, M$$</p>
+<p>其中 $S_0 = 0$，$S_M = \sum_{i=0}^{M-1} \hat{d}_i$。将 $S$ 视为一条"弧长"曲线，新的 bin 边界在弧长上等距分布：</p>
+<p>$$b'_j = \text{在 } [0,1] \text{ 上对应弧长 } S = j \cdot S_M / M \text{ 的位置}$$</p>
+<p>具体地，对 $j = 1, \dots, M-1$，找到 $S$ 中满足 $S_i \leq j \cdot S_M / M &lt; S_{i+1}$ 的位置 $i$，然后线性插值：</p>
+<p>$$b'<em>j = \frac{i + \frac{j \cdot S_M / M - S_i}{S</em>{i+1} - S_i}}{M}$$</p>
+<p>固定 $b'_0 = 0$，$b'_M = 1$。</p>
+<p><strong>步骤 5：单调性钳制</strong>。由于浮点精度和数值噪声，$b'_j$ 可能不严格递增。对结果进行单调性修复：</p>
+<p>$$b'_j ;\leftarrow; \max(b'<em>j,; b'</em>{j-1})$$</p>
+<p><strong>直觉</strong>：弧长重分布的几何意义是——如果我们在 $(x, S(x))$ 平面上画出累积重要性曲线，"等弧长分点"恰好使得每个新 bin 在曲线上的弧长相等，即每个新 bin 承载近似相等的积分贡献。</p>
+<h3 id="分层采样"><a class="header" href="#分层采样">分层采样</a></h3>
+<p><strong>分层采样</strong>（stratified sampling）是另一种方差缩减技术。其思想是将积分域划分为不相交的子域（"层"），在每层内独立采样：</p>
+<p>$$I = \sum_{j=1}^{M} I_j, \qquad I_j = \int_{\Omega_j} f(\mathbf{x}), d\mathbf{x}$$</p>
+<p>每层的估计量为 $\hat{I}_j = V_j \cdot \bar{f}_j$（$V_j$ 是层体积，$\bar{f}_j$ 是层内样本均值），总估计量为 $\hat{I} = \sum_j \hat{I}_j$。</p>
+<p><strong>方差分析</strong>：</p>
+<p>$$\text{Var}(\hat{I}) = \sum_{j=1}^{M} \frac{V_j^2}{N_j} \sigma_j^2$$</p>
+<p>其中 $N_j$ 是第 $j$ 层的样本数，$\sigma_j^2$ 是第 $j$ 层内 $f$ 的方差。若各层方差不等，最优分配（Neyman 分配）为</p>
+<p>$$N_j \propto V_j \sigma_j$$</p>
+<p>即高方差层分配更多样本。</p>
+<p><strong>Vegas 与分层采样的关系</strong>：Vegas 的乘积网格本质上是一种<strong>自适应分层采样</strong>——bin 边界将积分域分层，每层内均匀采样。区别在于 Vegas 的层边界是迭代自适应的，而非事先固定的。</p>
+<h3 id="多轮迭代的逆方差加权组合"><a class="header" href="#多轮迭代的逆方差加权组合">多轮迭代的逆方差加权组合</a></h3>
+<p>Vegas 运行多轮迭代（每轮 $N$ 个样本），每轮给出一个估计 $\hat{I}_r$ 及其标准误差 $\hat{\sigma}_r$。如何组合多轮结果？</p>
+<p><strong>逆方差加权</strong>（inverse-variance weighting）：令 $w_r = 1/\hat{\sigma}_r^2$，组合估计为</p>
+<p>$$\hat{I}_{\text{combined}} = \frac{\sum_r w_r \hat{I}_r}{\sum_r w_r}$$</p>
+<p>组合误差为</p>
+<p>$$\hat{\sigma}_{\text{combined}} = \frac{1}{\sqrt{\sum_r w_r}}$$</p>
+<p><strong>最优性</strong>：当各轮估计相互独立时，逆方差加权是<strong>方差最小</strong>的无偏组合方式（Gauss–Markov 定理的直接推论）。</p>
+<p><strong>在线逆方差加权累加</strong>：为避免存储所有轮次的估计值，<code>StatisticsAccumulator</code> 使用在线更新（加权均值 + 增量 $\chi^2$，并非 Welford 算法本身）。维护状态变量：</p>
+<ul>
+<li><code>integral</code>：当前组合估计</li>
+<li><code>error</code>：当前组合标准误差</li>
+<li><code>chi_square</code>：跨轮次 $\chi^2$ 统计量</li>
+</ul>
+<p>当第 $r$ 轮完成（估计 $\mu_r$，误差 $\sigma_r$）时，更新规则为：</p>
+<p>$$w_{\text{prev}} = 1/\sigma_{\text{prev}}^2, \quad w_r = 1/\sigma_r^2, \quad w_{\text{new}} = w_{\text{prev}} + w_r$$</p>
+<p>$$\hat{I}<em>{\text{new}} = \frac{w</em>{\text{prev}} \cdot \hat{I}<em>{\text{prev}} + w_r \cdot \mu_r}{w</em>{\text{new}}}$$</p>
+<p>$$\sigma_{\text{new}} = 1/\sqrt{w_{\text{new}}}$$</p>
+<p><strong>实现细节</strong>：为防止零方差轮次导致权重溢出，oCAS 将误差钳制在 $\sigma_r \geq 10^{-150}$（$10^{-300}$ 仍可表示为 <code>f64</code>）。</p>
+<h3 id="chi2-诊断"><a class="header" href="#chi2-诊断">$\chi^2$ 诊断</a></h3>
+<p><strong>目的</strong>：检验各轮次的估计是否一致——若各轮的 $\hat{I}_r$ 差异远超其误差条，说明方差估计偏低或积分器未收敛。</p>
+<p><strong>定义</strong>：</p>
+<p>$$\chi^2 = \sum_{r=1}^{R} w_r (\hat{I}<em>r - \hat{I}</em>{\text{combined}})^2$$</p>
+<p>其中 $w_r = 1/\hat{\sigma}_r^2$。</p>
+<p><strong>解释</strong>：若各轮独立且方差估计准确，$\chi^2$ 服从自由度为 $R - 1$ 的卡方分布。经验准则：</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">$\chi^2 / (R-1)$</th><th>含义</th></tr></thead><tbody>
+<tr><td style="text-align: center">$\approx 1$</td><td>正常——各轮一致</td></tr>
+<tr><td style="text-align: center">$\gg 1$</td><td>方差被低估，或积分器未收敛</td></tr>
+<tr><td style="text-align: center">$\ll 1$</td><td>方差被高估（罕见）</td></tr>
+</tbody></table>
+</div>
+<p>oCAS 的 <code>StatisticsAccumulator</code> 在每轮结束时在线更新 $\chi^2$：</p>
+<p>$$\chi^2_{\text{new}} = \chi^2_{\text{prev}} + w_{\text{prev}} (\hat{I}<em>{\text{prev}} - \hat{I}</em>{\text{new}})^2 + w_r (\mu_r - \hat{I}_{\text{new}})^2$$</p>
+<p>注意这是增量式更新——无需存储历史轮次的估计值。</p>
+<hr />
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<p>oCAS 的 Vegas 实现位于 <code>ocas-eval/src/numeric/vegas.rs</code>，配套的统计累加器在 <code>ocas-eval/src/numeric/statistics.rs</code>。</p>
+<h3 id="数据结构"><a class="header" href="#数据结构">数据结构</a></h3>
+<pre><code>Vegas
+├── opts: VegasOptions        // 调参选项
+├── axes: Vec&lt;GridAxis&gt;       // 每维独立的网格
+│   ├── boundaries: Vec&lt;f64&gt;  // M+1 个 bin 边界 ∈ [0,1]
+│   └── bin_accum: Vec&lt;f64&gt;   // M 个 bin 的训练信号累加器
+└── accumulator: StatisticsAccumulator  // 跨轮次逆方差加权
+    ├── sum_w, sum_wf, sum_wf2  // 当前轮次的加权累加
+    ├── integral, error          // 组合估计与误差
+    ├── chi_square               // χ² 诊断
+    └── iterations               // 已完成轮次数
+</code></pre>
+<h3 id="默认参数"><a class="header" href="#默认参数">默认参数</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th style="text-align: center">默认值</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>n_bins</code></td><td style="text-align: center">64</td><td>每维 bin 数 $M$</td></tr>
+<tr><td><code>n_samples</code></td><td style="text-align: center">10,000</td><td>每轮采样数 $N$</td></tr>
+<tr><td><code>iterations</code></td><td style="text-align: center">10</td><td>自适应轮次数 $R$</td></tr>
+<tr><td><code>learning_rate</code></td><td style="text-align: center">1.5</td><td>网格更新阻尼参数 $\alpha$</td></tr>
+<tr><td><code>seed</code></td><td style="text-align: center"><code>0x0C45</code></td><td>确定性 RNG 种子</td></tr>
+</tbody></table>
+</div>
+<h3 id="采样过程的实现"><a class="header" href="#采样过程的实现">采样过程的实现</a></h3>
+<p>每轮迭代的伪代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for _ in 0..n_samples {
+    // 1. 对每维独立采样
+    let mut x = Vec::with_capacity(n_dims);
+    let mut jac = 1.0;
+    for axis in axes.iter_mut() {
+        // 均匀选 bin
+        let b = rng.random_range(0..n_bins);
+        let lo = boundaries[b];
+        let hi = boundaries[b + 1];
+        // bin 内均匀选点
+        let u = rng.random::&lt;f64&gt;();
+        let xi = lo + (hi - lo) * u;
+        // Jacobian = M × bin_width = 1/pdf
+        let wi = (hi - lo) * n_bins as f64;
+        x.push(xi);
+        jac *= wi;
+    }
+    // 2. 求值并累加
+    let fx = f(&amp;x);
+    accumulator.add_sample(jac, fx);
+    // 3. 记录训练信号
+    for (i, xi) in x.iter().enumerate() {
+        axes[i].add_training(*xi, jac, fx * fx);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>关键实现细节</strong>：</p>
+<ul>
+<li><strong>RNG 选择</strong>：使用 <code>Xoshiro256PlusPlus</code>（而非 <code>thread_rng</code>），通过固定种子保证结果可重现。</li>
+<li><strong>乘积 Jacobian</strong>：总权重 <code>jac = ∏ w_k</code>——各维独立采样，总密度为各维密度之积。</li>
+<li><strong>训练信号</strong>：<code>add_training</code> 使用二分查找定位 bin（$O(\log M)$），将 <code>weight × f²</code> 累加到对应 bin。</li>
+</ul>
+<h3 id="网格更新的实现"><a class="header" href="#网格更新的实现">网格更新的实现</a></h3>
+<p><code>GridAxis::update(learning_rate)</code> 的实现步骤：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn update(&amp;mut self, learning_rate: f64) {
+    let n = self.bin_accum.len();
+    let total: f64 = self.bin_accum.iter().sum();
+    if total &lt;= 0.0 { return; }
+
+    // 1. 3-bin 平滑
+    let avg = total / n as f64;
+    let mut d = vec![0.0; n];
+    for i in 0..n {
+        let prev = if i &gt; 0 { bin_accum[i-1] } else { 0.0 };
+        let next = if i+1 &lt; n { bin_accum[i+1] } else { 0.0 };
+        d[i] = (prev + bin_accum[i] + next) / 3.0 / avg;
+    }
+
+    // 2. 阻尼：d[i] = d[i]^(1/learning_rate)
+    if learning_rate != 1.0 {
+        for v in d.iter_mut() {
+            *v = v.max(1e-30).powf(1.0 / learning_rate);
+        }
+    }
+
+    // 3. 累积弧长
+    let mut cum = vec![0.0; n+1];
+    for i in 0..n { cum[i+1] = cum[i] + d[i]; }
+
+    // 4. 等距重分布
+    let mut new_boundaries = vec![0.0; n+1];
+    new_boundaries[0] = 0.0;
+    new_boundaries[n] = 1.0;
+    let mut j = 0;
+    for i in 1..n {
+        let target = i as f64 / n as f64 * cum[n];
+        while j &lt; n &amp;&amp; cum[j+1] &lt; target { j += 1; }
+        let frac = (target - cum[j]) / (cum[j+1] - cum[j]);
+        new_boundaries[i] = (j as f64 + frac) / n as f64;
+    }
+
+    // 5. 单调性钳制
+    for i in 1..=n {
+        if new_boundaries[i] &lt; new_boundaries[i-1] {
+            new_boundaries[i] = new_boundaries[i-1];
+        }
+    }
+    new_boundaries[n] = 1.0;
+    self.boundaries = new_boundaries;
+    self.bin_accum.fill(0.0);  // 重置训练信号
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>实现中的数值保护</strong>：</p>
+<ul>
+<li>归一化后的值在幂变换前先取 <code>max(1e-30)</code>，保证 $d_i &gt; 0$，使弧长累积严格递增（防止后续插值除零/退化）。</li>
+<li>当 <code>learning_rate = 1.0</code> 时幂变换（连同 1e-30 钳制）被跳过，此时 <code>cum[j+1] - cum[j]</code> 仍可能为零（某 bin 完全平坦），<code>frac</code> 取 0。</li>
+<li>最终钳制保证边界严格非递减，首尾固定为 0 和 1。</li>
+</ul>
+<h3 id="统计累加器"><a class="header" href="#统计累加器">统计累加器</a></h3>
+<p><code>StatisticsAccumulator</code> 在每轮中用三个变量在线累加：</p>
+<p>$$S_w = \sum_i w_i, \qquad S_{wf} = \sum_i w_i f_i, \qquad S_{wf^2} = \sum_i w_i f_i^2$$</p>
+<p>轮次结束时，估计量为</p>
+<p>$$\mu = \frac{S_{wf}}{S_w}, \qquad \sigma^2 = \frac{S_{wf^2}}{S_w} - \mu^2$$</p>
+<p>注意这不是标准的样本方差公式——这是<strong>加权方差</strong>公式，适用于每个样本有不同权重的情况（Vegas 的 Jacobian 权重）。</p>
+<h3 id="一维便捷函数"><a class="header" href="#一维便捷函数">一维便捷函数</a></h3>
+<p><code>integrate_1d(f, a, b, opts)</code> 内部做线性变量替换 $x = a + u \cdot (b-a)$：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let width = b - a;
+let wrapped = |u: &amp;[f64]| f(a + u[0] * width) * width;
+let mut vegas = Vegas::new(1, opts);
+vegas.integrate(&amp;wrapped)
+<span class="boring">}</span></code></pre></pre>
+<p>Jacobian 因子 $(b-a)$ 直接乘入被积函数，用户传入的 $f(x)$ 接收物理坐标而非超立方体坐标。</p>
+<hr />
+<h2 id="进阶话题"><a class="header" href="#进阶话题">进阶话题</a></h2>
+<h3 id="何时使用-vegas-vs-符号积分"><a class="header" href="#何时使用-vegas-vs-符号积分">何时使用 Vegas vs 符号积分</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>场景</th><th>推荐方法</th></tr></thead><tbody>
+<tr><td>被积函数有初等原函数</td><td>符号积分（<code>integrate</code>）——精确结果</td></tr>
+<tr><td>被积函数含特殊函数（Bessel、误差函数等）</td><td>数值积分（Vegas）</td></tr>
+<tr><td>高维积分（$d &gt; 3$）</td><td>蒙特卡洛（Vegas 或其他）</td></tr>
+<tr><td>被积函数有奇点或边界层</td><td>Vegas + 增加 <code>n_bins</code> 和 <code>iterations</code></td></tr>
+<tr><td>需要可微分的积分值</td><td>自动微分（见 <a href="../autodiff.html">自动微分</a>）</td></tr>
+</tbody></table>
+</div>
+<h3 id="vegas-的局限性"><a class="header" href="#vegas-的局限性">Vegas 的局限性</a></h3>
+<ol>
+<li>
+<p><strong>乘积网格假设</strong>：Vegas 假设最优采样密度可分离为 $\prod_k p_k(x_k)$。当被积函数有强变量间相关性（如 $f(x,y) = \delta(x - y)$）时，乘积网格无法有效近似，收敛变慢。</p>
+</li>
+<li>
+<p><strong>分段常数近似</strong>：网格密度是分段常数的——在每个 bin 内采样均匀。若被积函数在某个 bin 内有剧烈变化（如窄峰），该 bin 的方差估计可能不准确。</p>
+</li>
+<li>
+<p><strong>自适应偏差</strong>：早期迭代使用尚未收敛的网格，其样本不完全独立。Vegas 通过逆方差加权缓解此问题——收敛后的迭代权重更大。</p>
+</li>
+<li>
+<p><strong>确定性种子</strong>：oCAS 使用固定 RNG 种子（默认 <code>0x0C45</code>）保证可重现性。这在测试和基准中有用，但生产环境中应考虑使用随机种子以避免系统性偏差。</p>
+</li>
+</ol>
+<h3 id="改进方向"><a class="header" href="#改进方向">改进方向</a></h3>
+<ul>
+<li><strong>Vegas+</strong>（Lepage, 2020）：在网格更新中引入"反射"策略，处理对称被积函数。</li>
+<li><strong>Suave</strong>（Hahn, 2005）：结合 Vegas 自适应网格与分层采样的优势。</li>
+<li><strong>Divonne</strong>（Friedman &amp; Harris, 1996）：使用分区树和启发式细分策略。</li>
+<li><strong>Cuhre</strong>：纯确定性求积（非蒙特卡洛），适用于低维光滑被积函数。</li>
+</ul>
+<p>这些方法可通过实现 <code>Integrator</code> trait 扩展到 oCAS 中。</p>
+<hr />
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ol>
+<li>
+<p><strong>Lepage, G. P.</strong> "A new algorithm for adaptive multidimensional integration." <em>Journal of Computational Physics</em>, 27(2):192–203, 1978. — Vegas 算法的原始论文。</p>
+</li>
+<li>
+<p><strong>James, F.</strong> "Monte Carlo theory and practice." <em>Reports on Progress in Physics</em>, 43(9):1145–1189, 1980. — 蒙特卡洛方法的综述，包含 Vegas 的详细描述。</p>
+</li>
+<li>
+<p><strong>Lepage, G. P.</strong> "Vegas: An adaptive multi-dimensional integration program." <em>Cornell preprint CLNS 80-447</em>, 1980. — Vegas 的实现细节和使用指南。</p>
+</li>
+<li>
+<p><strong>Hahn, T.</strong> "CUBA—a library for multidimensional numerical integration." <em>Computer Physics Communications</em>, 168(2):78–95, 2005. — Vegas、Suave、Divonne、Cuhre 的比较。</p>
+</li>
+<li>
+<p><strong>Neal, R. M.</strong> "Annealed importance sampling." <em>Statistics and Computing</em>, 11(2):125–139, 2001. — 重要性采样的理论基础。</p>
+</li>
+<li>
+<p><strong>Kahn, H. &amp; Marshall, A. W.</strong> "Methods of reducing sample size in Monte Carlo computations." <em>Journal of the Operations Research Society of America</em>, 1(5):263–278, 1953. — 分层采样和重要性采样的早期工作。</p>
+</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/tensor-canonicalization.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../algorithms/groebner.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/tensor-canonicalization.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../algorithms/groebner.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

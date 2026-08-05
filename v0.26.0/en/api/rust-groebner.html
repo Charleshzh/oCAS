@@ -1,0 +1,1303 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Gröbner Bases &amp; Ideals - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html" class="active"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-groebner.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="gröbner-bases-and-ideals"><a class="header" href="#gröbner-bases-and-ideals">Gröbner Bases and Ideals</a></h1>
+<p>This chapter documents the complete Rust API for Gröbner basis computation and ideal operations in oCAS. All algorithms are accessed through the unified entry point [<code>groebner_basis</code>]; ideal operations live in the <code>ocas_poly::ideal</code> module.</p>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of contents</a></h2>
+<ul>
+<li><a href="#algorithm"><code>Algorithm</code></a> — algorithm selection enum</li>
+<li><a href="#groebnerbasis"><code>GroebnerBasis</code></a> — Gröbner basis struct</li>
+<li><a href="#groebner_basis"><code>groebner_basis</code></a> — unified entry point</li>
+<li><a href="#buchberger"><code>buchberger</code></a> — Buchberger algorithm</li>
+<li><a href="#f4f4"><code>f4::f4</code></a> — F4 matrix algorithm</li>
+<li><a href="#f5f5"><code>f5::f5</code></a> — F5 signature algorithm</li>
+<li><a href="#fglm"><code>fglm</code></a> — FGLM order-change algorithm</li>
+<li><a href="#hilbertseries"><code>HilbertSeries</code></a> — Hilbert series</li>
+<li><a href="#hilbert_series"><code>hilbert_series</code></a> — computing the Hilbert series</li>
+<li><a href="#eliminate"><code>eliminate</code></a> — elimination</li>
+<li><a href="#ideal-operations">Ideal operations</a> — <code>ideal_contains</code>, <code>ideal_sum</code>, <code>ideal_product</code>, etc.</li>
+<li><a href="#primarycomponent"><code>PrimaryComponent</code></a> — primary component</li>
+<li><a href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a> — polynomial system solution result</li>
+</ul>
+<hr />
+<h2 id="algorithm"><a class="header" href="#algorithm"><code>Algorithm</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Algorithm {
+    Auto,
+    F4,
+    F5,
+    Buchberger,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Algorithm selector for Gröbner basis computation; passed to the unified entry point [<code>groebner_basis</code>].</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Auto</code> (default)</td><td>Automatically selects the algorithm based on the size and structure of the ideal. Currently routes to F4; the F5 switching threshold will be tuned against the cyclic-n benchmarks in the future.</td></tr>
+<tr><td><code>F4</code></td><td>Forces the F4 matrix algorithm (Faugère 1999). Batches S-polynomial reduction into sparse matrix row operations, significantly faster than Buchberger for larger ideals.</td></tr>
+<tr><td><code>F5</code></td><td>Forces the F5 signature algorithm (Faugère 2002). Rejects zero reductions before matrix construction via the syzygy criterion, giving order-of-magnitude speedups on hard ideals (e.g., cyclic-n).</td></tr>
+<tr><td><code>Buchberger</code></td><td>Forces the classic Buchberger S-polynomial iteration algorithm; suitable for small ideals.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, groebner_basis, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<hr />
+<h2 id="groebnerbasis"><a class="header" href="#groebnerbasis"><code>GroebnerBasis</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GroebnerBasis&lt;D: Domain, O: MonomialOrder&gt; {
+    pub basis: Vec&lt;SparseMultivariatePolynomial&lt;D, O&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A Gröbner basis of a polynomial ideal. The <code>basis</code> field stores the list of polynomials of the basis. Constructed via <code>buchberger</code>, <code>f4::f4</code>, <code>f5::f5</code>, or <code>groebner_basis</code>; all entry points return a <strong>reduced Gröbner basis</strong> (minimized + auto-reduced).</p>
+<p><strong>Type parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Constraint</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>D</code></td><td><code>Domain</code></td><td>Coefficient domain (e.g., <code>RationalDomain</code>, <code>FiniteField</code>)</td></tr>
+<tr><td><code>O</code></td><td><code>MonomialOrder</code></td><td>Monomial order (e.g., <code>Lex</code>, <code>Grevlex</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>basis</code></td><td><code>Vec&lt;SparseMultivariatePolynomial&lt;D, O&gt;&gt;</code></td><td>List of polynomials of the basis</td></tr>
+</tbody></table>
+</div>
+<h3 id="groebnerbasisbuchberger"><a class="header" href="#groebnerbasisbuchberger"><code>GroebnerBasis::buchberger</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn buchberger(ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;]) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes a Gröbner basis from the generators using the Buchberger algorithm. Internally filters out zero polynomials, applies Buchberger's first criterion (skips S-polynomials whose leading terms are coprime), with a maximum of 10,000 iterations.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>List of generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, O&gt;</code> — the raw basis, not minimized/auto-reduced.</p>
+<p><strong>Note</strong>: Requires the coefficient domain to support exact division (i.e., to be a field). Panics if division fails. The convenience function <a href="#buchberger"><code>buchberger</code></a> (a free function) additionally calls <code>minimize().auto_reduce()</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = GroebnerBasis::buchberger(&amp;[f1, f2]);
+assert!(gb.basis.len() &gt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#buchberger"><code>buchberger</code></a> (convenience free function), <a href="#f4f4"><code>f4::f4</code></a>, <a href="#f5f5"><code>f5::f5</code></a></p>
+<h3 id="minimize"><a class="header" href="#minimize"><code>minimize</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn minimize(mut self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Minimizes the basis — removes polynomials whose leading monomial is divisible by the leading monomial of another element.</p>
+<p><strong>Returns</strong>: <code>Self</code> — the minimized basis (consumes <code>self</code>).</p>
+<p><strong>See also</strong>: <a href="#auto_reduce"><code>auto_reduce</code></a></p>
+<h3 id="auto_reduce"><a class="header" href="#auto_reduce"><code>auto_reduce</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn auto_reduce(mut self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Auto-reduces the basis — reduces each element against the others and makes it monic. Processes elements in ascending order of leading monomial, guaranteeing the standard reduced Gröbner basis property: no monomial of any basis element is divisible by the leading monomial of another basis element.</p>
+<p><strong>Returns</strong>: <code>Self</code> — the reduced basis (consumes <code>self</code>).</p>
+<p><strong>See also</strong>: <a href="#minimize"><code>minimize</code></a></p>
+<h3 id="is_groebner_basis"><a class="header" href="#is_groebner_basis"><code>is_groebner_basis</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_groebner_basis(&amp;self) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Verifies that this basis is indeed a Gröbner basis — checks that all S-polynomials reduce to zero.</p>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> if it is a valid Gröbner basis.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::Auto);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<h3 id="reorder"><a class="header" href="#reorder"><code>reorder</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn reorder&lt;O2: MonomialOrder&gt;(&amp;self) -&gt; GroebnerBasis&lt;D, O2&gt;
+where
+    D: 'static,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Changes the monomial order of the Gröbner basis. Reinterprets the polynomials under the target order and re-runs F4. This is the simple order-change path; for zero-dimensional ideals, use <a href="#fglm"><code>fglm</code></a> for the faster $O(n \cdot D^3)$ conversion.</p>
+<p><strong>Type parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>O2</code></td><td>Target monomial order</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, O2&gt;</code> — a Gröbner basis under the target order.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::{Grevlex, Lex};
+use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial, f4};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb_lex = f4::f4(&amp;[f1, f2]);
+let gb_grevlex = gb_lex.reorder::&lt;Grevlex&gt;();
+assert!(gb_grevlex.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#fglm"><code>fglm</code></a> (faster order change for zero-dimensional ideals)</p>
+<hr />
+<h2 id="groebner_basis"><a class="header" href="#groebner_basis"><code>groebner_basis</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn groebner_basis&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+    algo: Algorithm,
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Unified entry point for Gröbner basis computation. Selects the algorithm according to the <code>algo</code> parameter (<code>Auto</code>/<code>F4</code>/<code>F5</code>/<code>Buchberger</code>). Zero polynomials are filtered out internally by the backends.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>List of generators of the ideal</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Algorithm selection</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, O&gt;</code> — a reduced Gröbner basis.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, groebner_basis, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::Auto);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#algorithm"><code>Algorithm</code></a>, <a href="#groebnerbasis"><code>GroebnerBasis</code></a></p>
+<hr />
+<h2 id="buchberger"><a class="header" href="#buchberger"><code>buchberger</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn buchberger&lt;D: Domain, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Convenience function — computes a Gröbner basis and then minimizes and auto-reduces it (equivalent to <code>GroebnerBasis::buchberger(ideal).minimize().auto_reduce()</code>).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>List of generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, O&gt;</code> — a reduced Gröbner basis.</p>
+<p><strong>See also</strong>: <a href="#groebnerbasisbuchberger"><code>GroebnerBasis::buchberger</code></a>, <a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<hr />
+<h2 id="f4f4"><a class="header" href="#f4f4"><code>f4::f4</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn f4&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes a Gröbner basis using the F4 matrix algorithm (Faugère 1999). Replaces sequential S-polynomial reduction with batched sparse matrix row operations (Gaussian elimination). For <code>FiniteField</code> coefficient domains, the native ℤ_p fast path (<code>FpPoly</code> i64 modular arithmetic) is used automatically, avoiding BigInt overhead.</p>
+<p><strong>Internal optimizations</strong>:</p>
+<ul>
+<li><strong>Gebauer–Moeller pair selection</strong>: chain criterion + update criterion with strict divisibility guards</li>
+<li><strong><code>SimpCache</code></strong>: caches the results of multiplying polynomials by monomials, avoiding recomputation</li>
+<li><strong><code>DivisorIndex</code></strong>: support-bitmask-based O(1)-ish reducer lookup (exact bitmasks for variable indices ≤ 63; degrades to a correctness-conservative filter above 63)</li>
+<li><strong>Two-pointer sparse row subtraction</strong> <code>sub_scaled_fp</code>: O(nnz) complexity</li>
+<li><strong>Native ℤ_p fast path</strong>: <code>FpPoly</code> uses i64 modular arithmetic, converting to/from BigInt only when reading inputs and writing outputs</li>
+</ul>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>List of generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, O&gt;</code> — a reduced Gröbner basis.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::groebner::f4::f4;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = f4(&amp;[f1, f2]);
+assert!(!gb.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#algorithm"><code>Algorithm::F4</code></a>, <a href="#f5f5"><code>f5::f5</code></a></p>
+<hr />
+<h2 id="f5f5"><a class="header" href="#f5f5"><code>f5::f5</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn f5&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes a Gröbner basis using the F5 signature algorithm (Faugère 2002). Attaches a signature (<code>module_pos</code>, <code>monomial</code>) to each polynomial and rejects zero reductions before matrix construction via the syzygy criterion, achieving order-of-magnitude speedups on hard ideals (e.g., cyclic-n).</p>
+<p><strong>Algorithm highlights</strong>:</p>
+<ul>
+<li><strong>Signatures</strong>: <code>(module_pos, monomial)</code> records the history of a polynomial — <code>module_pos</code> is the index of the input generator and <code>monomial</code> is the monomial multiple applied. Signatures are compared under the <strong>pot</strong> (position-over-term) order: module position first (smaller preferred), then by the monomial order <code>O</code>.</li>
+<li><strong>Syzygy tracking</strong>: when a matrix row reduces to zero, its signature is a syzygy. Rows whose future signatures are monomial multiples of known syzygies are skipped immediately (the F5 syzygy criterion).</li>
+<li><strong>Incremental processing</strong>: generators are processed one at a time; each new generator triggers a round of matrix construction and reduction.</li>
+</ul>
+<p>The current implementation provides a general-domain F5 core. For <code>FiniteField</code> coefficient domains, the native ℤ_p fast path is used automatically.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>List of generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, O&gt;</code> — a reduced Gröbner basis (identical to the F4 output).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::groebner::f5::f5;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = f5(&amp;[f1, f2]);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#algorithm"><code>Algorithm::F5</code></a>, <a href="#f4f4"><code>f4::f4</code></a></p>
+<hr />
+<h2 id="fglm"><a class="header" href="#fglm"><code>fglm</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn fglm&lt;D: Domain, O2: MonomialOrder&gt;(
+    gb: &amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;,
+) -&gt; Option&lt;GroebnerBasis&lt;D, O2&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The FGLM order-change algorithm (Faugère–Gianni–Lazard–Mora 1993). Converts a Gröbner basis of a <strong>zero-dimensional</strong> ideal from one monomial order to another, with complexity $O(n \cdot D^3)$ ($D$ is the vector space dimension of $R/I$), much faster than re-running F4 for large zero-dimensional ideals.</p>
+<p><strong>Algorithm steps</strong>:</p>
+<ol>
+<li>Compute the staircase — the set of monomials not divisible by any leading monomial</li>
+<li>Traverse the staircase monomials in the target order</li>
+<li>For each monomial, compute its normal form under the current basis</li>
+<li>If the normal form is linearly dependent on the vectors seen so far, construct a new basis element from the coefficient relation</li>
+<li>Otherwise, add it to the set of seen vectors</li>
+</ol>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>&amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;</code></td><td>The input Gröbner basis (must be reduced)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Option&lt;GroebnerBasis&lt;D, O2&gt;&gt;</code> — <code>Some(gb)</code> is the converted basis; <code>None</code> means the ideal is not zero-dimensional (the staircase is infinite).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::{Grevlex, Lex};
+use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial, f4};
+use ocas_poly::groebner::fglm::fglm;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb_lex = f4::f4(&amp;[f1, f2]);
+let gb_grevlex = fglm::&lt;_, Grevlex&gt;(&amp;gb_lex).expect("zero-dimensional");
+assert!(gb_grevlex.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#reorder"><code>GroebnerBasis::reorder</code></a> (simple order change, works for any dimension), <a href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h2 id="hilbertseries"><a class="header" href="#hilbertseries"><code>HilbertSeries</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct HilbertSeries {
+    pub numerator: Vec&lt;i64&gt;,
+    pub denominator_power: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The Hilbert series of the quotient ring $R/I$, represented as the rational function $H(t) = N(t) / (1-t)^n$. The numerator $N(t)$ is stored as a coefficient vector (<code>numerator[i]</code> is the coefficient of $t^i$), and the denominator is $(1-t)^n$ ($n$ is the number of variables).</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>numerator</code></td><td><code>Vec&lt;i64&gt;</code></td><td>Coefficients of the numerator $N(t)$ (starting from the constant term)</td></tr>
+<tr><td><code>denominator_power</code></td><td><code>usize</code></td><td>Power of $(1-t)$ (= the number of variables $n$)</td></tr>
+</tbody></table>
+</div>
+<h3 id="hilbert_function"><a class="header" href="#hilbert_function"><code>hilbert_function</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_function(&amp;self, degree: usize) -&gt; i64
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the Hilbert function value $\dim_k (R/I)_d$ at degree $d$. Uses the formula $H(d) = [t^d] N(t) / (1-t)^n$, where the coefficient of $t^k$ in $(1-t)^{-n}$ is $\binom{n+k-1}{k}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>degree</code></td><td><code>usize</code></td><td>The degree $d$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>i64</code> — the value of $\dim_k (R/I)_d$.</p>
+<h3 id="dimension"><a class="header" href="#dimension"><code>dimension</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn dimension(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the Krull dimension of $R/I$. Obtained by checking the order of vanishing of the numerator at $t=1$ (differentiating repeatedly until the value at $t=1$ is nonzero).</p>
+<p><strong>Returns</strong>: <code>usize</code> — the Krull dimension. Zero-dimensional ideals return 0.</p>
+<h3 id="degree"><a class="header" href="#degree"><code>degree</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn degree(&amp;self) -&gt; i64
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the degree of the projective variety. For a well-formed Hilbert series, this equals the value of the numerator at $t=1$ after removing the dimension factors.</p>
+<p><strong>Returns</strong>: <code>i64</code> — the degree of the projective variety.</p>
+<h3 id="hilbert_polynomial"><a class="header" href="#hilbert_polynomial"><code>hilbert_polynomial</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_polynomial(&amp;self) -&gt; Vec&lt;f64&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the coefficients of the Hilbert polynomial $P(d)$ ($H(d) = P(d)$ for $d \gg 0$) using Lagrange interpolation. Returns the coefficients in ascending power order (<code>result[i]</code> is the coefficient of $d^i$); the degree of the polynomial is <code>self.dimension()</code>.</p>
+<p><strong>Returns</strong>: <code>Vec&lt;f64&gt;</code> — the Hilbert polynomial coefficients (ascending power order).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::groebner::hilbert::hilbert_series;
+
+let d = RationalDomain;
+// Ideal (x² - 1, y² - 1): LM ideal (x², y²), numerator N(t) = 1 - 2t² + t⁴
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+let hs = hilbert_series(&amp;gb);
+assert_eq!(hs.dimension(), 0); // zero-dimensional: 4 solutions
+assert_eq!(hs.degree(), 4); // degree = number of solutions
+println!("dimension: {}, degree: {}", hs.dimension(), hs.degree());
+for d in 0..10 {
+    println!("H({}) = {}", d, hs.hilbert_function(d));
+}
+let hp = hs.hilbert_polynomial();
+println!("Hilbert polynomial coefficients: {:?}", hp);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#hilbert_series"><code>hilbert_series</code></a></p>
+<hr />
+<h2 id="hilbert_series"><a class="header" href="#hilbert_series"><code>hilbert_series</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_series(
+    gb: &amp;GroebnerBasis&lt;RationalDomain, Lex&gt;,
+) -&gt; HilbertSeries
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the Hilbert series of $R/I$ from a Gröbner basis. Uses Macaulay's theorem: the Hilbert series of $R/I$ equals the Hilbert series of $R/\text{LM}(I)$ (the leading-term ideal). The Hilbert numerator of the monomial ideal $\langle m_1, \dots, m_s \rangle$ is computed via inclusion–exclusion: $N(t) = \sum_k (-1)^k \sum_{|S|=k} t^{\deg \text{lcm}(S)}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>&amp;GroebnerBasis&lt;RationalDomain, Lex&gt;</code></td><td>A Lex-order Gröbner basis over the rationals</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>HilbertSeries</code> — the Hilbert series of the quotient ring.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::groebner::hilbert::hilbert_series;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+let hs = hilbert_series(&amp;gb);
+assert!(hs.dimension() &lt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#hilbertseries"><code>HilbertSeries</code></a>, <a href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h2 id="eliminate"><a class="header" href="#eliminate"><code>eliminate</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn eliminate&lt;D: Domain + 'static&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    elim_vars: usize,
+    algo: Algorithm,
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Eliminates variables from an ideal. Returns a Gröbner basis of $I \cap k[x_{\text{elim_vars}}, \dots, x_{n-1}]$, i.e., the polynomials that do not contain the first <code>elim_vars</code> variables. Uses the Lex order — under Lex, the reduced Gröbner basis of an ideal automatically contains generators of the elimination ideal.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of the ideal (must be in Lex order)</td></tr>
+<tr><td><code>elim_vars</code></td><td><code>usize</code></td><td>The number of variables to eliminate (eliminates $x_0, \dots, x_{\text{elim_vars}-1}$)</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner basis algorithm selection</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, Lex&gt;</code> — a Gröbner basis of the elimination ideal.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{SparseMultivariatePolynomial, eliminate, Algorithm};
+
+let d = RationalDomain;
+// Ideal: x + y + z, x*y + x*z in k[x,y,z]; eliminate x
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 0, 0], Rational::new(1, 1)),
+    (vec![0, 1, 0], Rational::new(1, 1)),
+    (vec![0, 0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 1, 0], Rational::new(1, 1)),
+    (vec![1, 0, 1], Rational::new(1, 1)),
+]);
+let elim = eliminate(&amp;[f1, f2], 1, Algorithm::Auto);
+// The result should lie in k[y,z]
+for p in &amp;elim.basis {
+    assert!(p.degree_in(0) == 0, "the eliminated variable x should not appear");
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#groebner_basis"><code>groebner_basis</code></a>, <a href="#ideal_quotient"><code>ideal_quotient</code></a></p>
+<hr />
+<h2 id="ideal-operations"><a class="header" href="#ideal-operations">Ideal operations</a></h2>
+<p>All ideal operations live in the <code>ocas_poly::ideal</code> module and use the <code>Lex</code> order for consistency with elimination computations.</p>
+<h3 id="ideal_contains"><a class="header" href="#ideal_contains"><code>ideal_contains</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_contains&lt;D: Domain + 'static&gt;(
+    generators: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    f: &amp;SparseMultivariatePolynomial&lt;D, Lex&gt;,
+    algo: Algorithm,
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Tests whether $f$ belongs to the ideal generated by the generators. Computes a Gröbner basis of the ideal and reduces $f$; $f \in I$ if and only if the remainder is zero.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of the ideal</td></tr>
+<tr><td><code>f</code></td><td><code>&amp;SparseMultivariatePolynomial&lt;D, Lex&gt;</code></td><td>The polynomial to test</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner basis algorithm selection</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> if $f \in I$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_contains;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+assert!(ideal_contains(&amp;[x.clone(), y.clone()], &amp;x, Algorithm::Auto));
+assert!(!ideal_contains(&amp;[y], &amp;x, Algorithm::Auto));  // x ∉ ⟨y⟩
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<hr />
+<h3 id="ideal_sum"><a class="header" href="#ideal_sum"><code>ideal_sum</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_sum&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The sum of two ideals $I + J = \langle f_1, \dots, f_m, g_1, \dots, g_n \rangle$. Merges the generators and computes a Gröbner basis.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators_a</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $I$</td></tr>
+<tr><td><code>generators_b</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $J$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, Lex&gt;</code> — a reduced Gröbner basis of $I + J$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_sum;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let gb = ideal_sum(&amp;[x], &amp;[y]);
+// ⟨x⟩ + ⟨y⟩ = ⟨x, y⟩
+assert!(gb.basis.len() &gt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#ideal_intersection"><code>ideal_intersection</code></a></p>
+<hr />
+<h3 id="ideal_product"><a class="header" href="#ideal_product"><code>ideal_product</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_product&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The product of two ideals $I \cdot J = \langle f_i \cdot g_j \rangle$. Computes all products $f_i g_j$ and then a Gröbner basis.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators_a</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $I$</td></tr>
+<tr><td><code>generators_b</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $J$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, Lex&gt;</code> — a reduced Gröbner basis of $I \cdot J$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_product;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let gb = ideal_product(&amp;[x], &amp;[y]);
+// ⟨x⟩ · ⟨y⟩ = ⟨xy⟩
+assert_eq!(gb.basis.len(), 1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#ideal_quotient"><code>ideal_quotient</code></a></p>
+<hr />
+<h3 id="ideal_quotient"><a class="header" href="#ideal_quotient"><code>ideal_quotient</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_quotient&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The quotient of ideals $I : J = {f : f \cdot g \in I, \forall g \in J}$. Uses the Rabinowitsch trick for each generator $g$ of $J$: compute $\text{GB}(I \cup {1 - w \cdot g})$ in the extended ring $k[x_1, \dots, x_n, w]$, eliminate $w$, and intersect the results.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators_i</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $I$</td></tr>
+<tr><td><code>generators_j</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $J$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, Lex&gt;</code> — a reduced Gröbner basis of $I : J$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_quotient;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// ⟨x², xy⟩ : ⟨x⟩ = ⟨x⟩
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let g = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let gb = ideal_quotient(&amp;[f1, f2], &amp;[g]);
+assert!(!gb.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#ideal_saturate"><code>ideal_saturate</code></a>, <a href="#ideal_contains"><code>ideal_contains</code></a></p>
+<hr />
+<h3 id="ideal_saturate"><a class="header" href="#ideal_saturate"><code>ideal_saturate</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_saturate&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The saturation of an ideal $I : J^\infty = \bigcup_k (I : J^k)$. Iteratively computes $I : J$, $(I : J) : J$, etc., until stabilization.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators_i</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $I$</td></tr>
+<tr><td><code>generators_j</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $J$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, Lex&gt;</code> — a reduced Gröbner basis of $I : J^\infty$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_saturate;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// ⟨x²y, xy²⟩ : ⟨x⟩^∞ = ⟨y⟩
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 2], Rational::new(1, 1)),
+]);
+let g = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let gb = ideal_saturate(&amp;[f1, f2], &amp;[g]);
+assert!(!gb.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#ideal_quotient"><code>ideal_quotient</code></a></p>
+<hr />
+<h3 id="ideal_intersection"><a class="header" href="#ideal_intersection"><code>ideal_intersection</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_intersection&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The intersection of two ideals $I \cap J$. Uses an auxiliary variable $t$: $I \cap J = \langle t \cdot f_i, (1-t) \cdot g_j \rangle \cap k[x_1, \dots, x_n]$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators_a</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $I$</td></tr>
+<tr><td><code>generators_b</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>The generators of ideal $J$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;D, Lex&gt;</code> — a reduced Gröbner basis of $I \cap J$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_intersection;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let gb = ideal_intersection(&amp;[x], &amp;[y]);
+// ⟨x⟩ ∩ ⟨y⟩ = ⟨xy⟩
+assert_eq!(gb.basis.len(), 1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#ideal_sum"><code>ideal_sum</code></a>, <a href="#eliminate"><code>eliminate</code></a></p>
+<hr />
+<h3 id="ideal_radical"><a class="header" href="#ideal_radical"><code>ideal_radical</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_radical(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; GroebnerBasis&lt;RationalDomain, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the radical $\sqrt{I}$ of the ideal.</p>
+<ul>
+<li><strong>Zero-dimensional ideals</strong>: computed via the square-free factorization of the univariate polynomials in the Lex GB (the generators of $\sqrt{I}$ consist of the square-free univariate polynomials for each variable together with the non-univariate basis elements).</li>
+<li><strong>Positive-dimensional ideals</strong>: uses the Jacobian saturation method (a simplified Kemper algorithm): $\sqrt{I} = I : h^\infty$. The current implementation picks $h$ heuristically — the non-trivial partial derivative of smallest total degree (not the exact GCD). If all partial derivatives are constants or zero (trivial Jacobian), the original GB is returned conservatively.</li>
+</ul>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>The generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>GroebnerBasis&lt;RationalDomain, Lex&gt;</code> — a reduced Gröbner basis of $\sqrt{I}$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_radical;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// √(x², xy) = (x)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let rad = ideal_radical(&amp;[f1, f2]);
+assert!(!rad.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#primary_decomposition"><code>primary_decomposition</code></a></p>
+<hr />
+<h3 id="is_zero_dimensional"><a class="header" href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_zero_dimensional(gb: &amp;GroebnerBasis&lt;RationalDomain, Lex&gt;) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Checks whether the ideal is zero-dimensional. The ideal is zero-dimensional if and only if for every variable $x_i$ some leading monomial in the GB is a pure power $x_i^N$ (equivalently, the staircase/set of standard monomials is finite).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>&amp;GroebnerBasis&lt;RationalDomain, Lex&gt;</code></td><td>A Lex-order Gröbner basis over the rationals</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> if zero-dimensional.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, GroebnerBasis, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::ideal::is_zero_dimensional;
+
+let d = RationalDomain;
+// x² - 1, y - x → zero-dimensional
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+    (vec![1, 0], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+assert!(is_zero_dimensional(&amp;gb));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#solve_polynomial_system"><code>solve_polynomial_system</code></a>, <a href="#fglm"><code>fglm</code></a></p>
+<hr />
+<h3 id="solve_polynomial_system"><a class="header" href="#solve_polynomial_system"><code>solve_polynomial_system</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn solve_polynomial_system(
+    equations: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+    algo: Algorithm,
+) -&gt; PolynomialSystemSolution
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Solves a zero-dimensional polynomial system. Converts the GB to Lex order, extracts the univariate polynomial for each variable, and solves by back substitution. Returns the <code>PolynomialSystemSolution</code> enum, distinguishing zero-dimensional (finitely many solutions), positive-dimensional (infinite solution set), and empty ($\langle 1 \rangle$).</p>
+<p><strong>Solution procedure</strong>:</p>
+<ol>
+<li>Compute a Gröbner basis</li>
+<li>Check whether it is $\langle 1 \rangle$ (empty set)</li>
+<li>Check whether it is zero-dimensional</li>
+<li>Convert to a triangular decomposition in Lex order</li>
+<li>Back-substitute starting from the last variable: for each variable, find the real roots of the univariate polynomial (Sturm's theorem isolation + refinement to $10^{-14}$), recursively substituting the known values</li>
+</ol>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equations</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>The system of equations (polynomials = 0)</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner basis algorithm selection</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>PolynomialSystemSolution</code> — the solution result.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::ideal::{solve_polynomial_system, PolynomialSystemSolution};
+
+let d = RationalDomain;
+// x² + y² - 1, x - y → solutions at (±1/√2, ±1/√2)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let sol = solve_polynomial_system(&amp;[f1, f2], Algorithm::Auto);
+match sol {
+    PolynomialSystemSolution::ZeroDimensional(z) =&gt; {
+        assert_eq!(z.solutions.len(), 2);
+    }
+    _ =&gt; panic!("expected zero-dimensional"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a>, <a href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h3 id="primary_decomposition"><a class="header" href="#primary_decomposition"><code>primary_decomposition</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn primary_decomposition(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; Vec&lt;PrimaryComponent&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the primary decomposition of the ideal.</p>
+<ul>
+<li><strong>Zero-dimensional ideals</strong>: factor the univariate polynomial in the first variable of the Lex GB and separate the primary components by saturation (for each factor $f_i$, compute $I : (\prod_{j \neq i} f_j)^\infty$).</li>
+<li><strong>Positive-dimensional ideals</strong>: conservatively return a single primary component (the original GB itself as both primary and prime).</li>
+</ul>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>The generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;PrimaryComponent&gt;</code> — the list of primary components.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::primary_decomposition;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// (x², xy) is positive-dimensional → one conservative component
+// (ideally (x², xy) = (x) ∩ (x², y))
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let decomp = primary_decomposition(&amp;[f1, f2]);
+assert!(decomp.len() &gt;= 1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#primarycomponent"><code>PrimaryComponent</code></a>, <a href="#ideal_radical"><code>ideal_radical</code></a></p>
+<hr />
+<h3 id="is_prime_ideal"><a class="header" href="#is_prime_ideal"><code>is_prime_ideal</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_prime_ideal(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Tests whether the ideal is prime.</p>
+<ul>
+<li><strong>Zero-dimensional ideals</strong>: checks whether the univariate polynomials in the Lex GB are irreducible (for polynomials of degree ≤ 3, the rational root theorem is used).</li>
+<li><strong>Positive-dimensional ideals</strong>: conservatively returns <code>false</code> (a complete implementation would require checking the irreducibility of the variety, which is not yet implemented).</li>
+</ul>
+<p><strong>Note</strong>: This is a conservative approximation — it never returns a false positive (a non-prime ideal reported as prime); it can only return a false negative (a prime ideal reported as non-prime).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>The generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> for a (confirmed) prime ideal.</p>
+<p><strong>See also</strong>: <a href="#is_primary_ideal"><code>is_primary_ideal</code></a>, <a href="#primary_decomposition"><code>primary_decomposition</code></a></p>
+<hr />
+<h3 id="is_primary_ideal"><a class="header" href="#is_primary_ideal"><code>is_primary_ideal</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_primary_ideal(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Tests whether the ideal is primary. A primary ideal has exactly one associated prime ideal, i.e., <code>primary_decomposition</code> returns at most one component.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>The generators of the ideal</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> if the ideal is primary.</p>
+<p><strong>See also</strong>: <a href="#primary_decomposition"><code>primary_decomposition</code></a>, <a href="#is_prime_ideal"><code>is_prime_ideal</code></a></p>
+<hr />
+<h2 id="primarycomponent"><a class="header" href="#primarycomponent"><code>PrimaryComponent</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct PrimaryComponent {
+    pub primary: Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;,
+    pub prime: Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A primary component of an ideal — a primary ideal together with its associated prime ideal (i.e., the radical of the primary ideal).</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>primary</code></td><td><code>Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;</code></td><td>The generators of the primary ideal</td></tr>
+<tr><td><code>prime</code></td><td><code>Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;</code></td><td>The generators of the associated prime ideal (the radical)</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <a href="#primary_decomposition"><code>primary_decomposition</code></a></p>
+<hr />
+<h2 id="polynomialsystemsolution"><a class="header" href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub enum PolynomialSystemSolution {
+    ZeroDimensional(ZeroDimSolutions),
+    PositiveDimensional(GroebnerBasis&lt;RationalDomain, Lex&gt;),
+    Empty,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The result of solving a polynomial system, classified by the type of the solution set.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ZeroDimensional(ZeroDimSolutions)</code></td><td>Finitely many real solutions (zero-dimensional ideal)</td></tr>
+<tr><td><code>PositiveDimensional(GroebnerBasis&lt;RationalDomain, Lex&gt;)</code></td><td>Infinite solution set (positive-dimensional ideal); returns a Lex-order Gröbner basis</td></tr>
+<tr><td><code>Empty</code></td><td>No solutions (the ideal is $\langle 1 \rangle$)</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <a href="#solve_polynomial_system"><code>solve_polynomial_system</code></a></p>
+<h3 id="zerodimsolutions"><a class="header" href="#zerodimsolutions"><code>ZeroDimSolutions</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct ZeroDimSolutions {
+    pub solutions: Vec&lt;RealSolution&gt;,
+    pub vector_space_dimension: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>solutions</code></td><td><code>Vec&lt;RealSolution&gt;</code></td><td>The list of real solutions found</td></tr>
+<tr><td><code>vector_space_dimension</code></td><td><code>usize</code></td><td>The vector space dimension of the quotient ring $k[x_1,\dots,x_n]/I$ (the total number of solutions over $\mathbb{C}$, counted with multiplicity)</td></tr>
+</tbody></table>
+</div>
+<h3 id="realsolution"><a class="header" href="#realsolution"><code>RealSolution</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct RealSolution {
+    pub values: Vec&lt;f64&gt;,
+    pub multiplicity: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>Vec&lt;f64&gt;</code></td><td>The value of each variable (one per variable)</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>usize</code></td><td>The algebraic multiplicity of the solution</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="module-path-quick-reference"><a class="header" href="#module-path-quick-reference">Module path quick reference</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Function/Type</th><th>Full path</th></tr></thead><tbody>
+<tr><td><code>Algorithm</code></td><td><code>ocas_poly::Algorithm</code></td></tr>
+<tr><td><code>GroebnerBasis</code></td><td><code>ocas_poly::GroebnerBasis</code></td></tr>
+<tr><td><code>groebner_basis</code></td><td><code>ocas_poly::groebner_basis</code></td></tr>
+<tr><td><code>buchberger</code></td><td><code>ocas_poly::buchberger</code></td></tr>
+<tr><td><code>eliminate</code></td><td><code>ocas_poly::eliminate</code></td></tr>
+<tr><td><code>f4::f4</code></td><td><code>ocas_poly::groebner::f4::f4</code></td></tr>
+<tr><td><code>f5::f5</code></td><td><code>ocas_poly::groebner::f5::f5</code></td></tr>
+<tr><td><code>fglm</code></td><td><code>ocas_poly::groebner::fglm::fglm</code></td></tr>
+<tr><td><code>HilbertSeries</code></td><td><code>ocas_poly::groebner::hilbert::HilbertSeries</code></td></tr>
+<tr><td><code>hilbert_series</code></td><td><code>ocas_poly::groebner::hilbert::hilbert_series</code></td></tr>
+<tr><td><code>ideal_contains</code></td><td><code>ocas_poly::ideal::ideal_contains</code></td></tr>
+<tr><td><code>ideal_sum</code></td><td><code>ocas_poly::ideal::ideal_sum</code></td></tr>
+<tr><td><code>ideal_product</code></td><td><code>ocas_poly::ideal::ideal_product</code></td></tr>
+<tr><td><code>ideal_quotient</code></td><td><code>ocas_poly::ideal::ideal_quotient</code></td></tr>
+<tr><td><code>ideal_saturate</code></td><td><code>ocas_poly::ideal::ideal_saturate</code></td></tr>
+<tr><td><code>ideal_intersection</code></td><td><code>ocas_poly::ideal::ideal_intersection</code></td></tr>
+<tr><td><code>ideal_radical</code></td><td><code>ocas_poly::ideal::ideal_radical</code></td></tr>
+<tr><td><code>primary_decomposition</code></td><td><code>ocas_poly::ideal::primary_decomposition</code></td></tr>
+<tr><td><code>is_zero_dimensional</code></td><td><code>ocas_poly::ideal::is_zero_dimensional</code></td></tr>
+<tr><td><code>solve_polynomial_system</code></td><td><code>ocas_poly::ideal::solve_polynomial_system</code></td></tr>
+<tr><td><code>is_prime_ideal</code></td><td><code>ocas_poly::ideal::is_prime_ideal</code></td></tr>
+<tr><td><code>is_primary_ideal</code></td><td><code>ocas_poly::ideal::is_primary_ideal</code></td></tr>
+<tr><td><code>PrimaryComponent</code></td><td><code>ocas_poly::ideal::PrimaryComponent</code></td></tr>
+<tr><td><code>PolynomialSystemSolution</code></td><td><code>ocas_poly::ideal::PolynomialSystemSolution</code></td></tr>
+<tr><td><code>ZeroDimSolutions</code></td><td><code>ocas_poly::ideal::ZeroDimSolutions</code></td></tr>
+<tr><td><code>RealSolution</code></td><td><code>ocas_poly::ideal::RealSolution</code></td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-ntheory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-factoring.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-ntheory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-factoring.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

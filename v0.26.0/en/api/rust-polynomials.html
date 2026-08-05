@@ -1,0 +1,1388 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Polynomials - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html" class="active"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-polynomials.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-polynomials"><a class="header" href="#rust-api-reference-polynomials">Rust API Reference: Polynomials</a></h1>
+<p>This chapter documents oCAS's polynomial system, covering three core data structures:</p>
+<ul>
+<li><strong><code>DenseUnivariatePolynomial&lt;D&gt;</code></strong> — dense univariate polynomials</li>
+<li><strong><code>SparseMultivariatePolynomial&lt;D, O&gt;</code></strong> — sparse multivariate polynomials</li>
+<li><strong><code>RationalPolynomial&lt;D, O&gt;</code></strong> — elements of the polynomial fraction field</li>
+</ul>
+<p>as well as the monomial order trait <code>MonomialOrder</code> and its implementations for various orders.</p>
+<p><strong>Module path</strong>: <code>ocas_poly</code></p>
+<hr />
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#monomial-orders">Monomial Orders</a>
+<ul>
+<li><a href="#monomialorder-trait">MonomialOrder trait</a></li>
+<li><a href="#lex">Lex</a></li>
+<li><a href="#grlex">Grlex</a></li>
+<li><a href="#grevlex">Grevlex</a></li>
+<li><a href="#weightorder">WeightOrder</a></li>
+<li><a href="#blockorder-and-suborder">BlockOrder and SubOrder</a></li>
+<li><a href="#matrixorder">MatrixOrder</a></li>
+</ul>
+</li>
+<li><a href="#denseunivariatepolynomial">DenseUnivariatePolynomial</a>
+<ul>
+<li><a href="#dense-construction-and-properties">Construction and Properties</a></li>
+<li><a href="#dense-basic-arithmetic">Basic Arithmetic</a></li>
+<li><a href="#euclideandomain-operations">EuclideanDomain Operations</a></li>
+<li><a href="#factorization-and-resultants">Factorization and Resultants</a></li>
+</ul>
+</li>
+<li><a href="#sparsemultivariatepolynomial">SparseMultivariatePolynomial</a>
+<ul>
+<li><a href="#sparse-construction-and-properties">Construction and Properties</a></li>
+<li><a href="#sparse-basic-arithmetic">Basic Arithmetic</a></li>
+<li><a href="#gr%C3%B6bner-basis-support">Gröbner Basis Support</a></li>
+<li><a href="#multivariate-factorization">Multivariate Factorization</a></li>
+</ul>
+</li>
+<li><a href="#rationalpolynomial">RationalPolynomial</a></li>
+<li><a href="#helper-functions">Helper Functions</a></li>
+</ul>
+<hr />
+<h2 id="monomial-orders"><a class="header" href="#monomial-orders">Monomial Orders</a></h2>
+<h3 id="monomialorder-trait"><a class="header" href="#monomialorder-trait">MonomialOrder trait</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait MonomialOrder: Clone + PartialEq + Eq + std::fmt::Debug + Default {
+    fn cmp(&amp;self, lhs: &amp;[usize], rhs: &amp;[usize]) -&gt; std::cmp::Ordering;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Defines a total order on monomials. A polynomial's leading term, sorting, and Gröbner basis computations all depend on it.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>self</code></td><td><code>&amp;Self</code></td><td>The order instance (a zero-sized type or a type with parameters)</td></tr>
+<tr><td><code>lhs</code></td><td><code>&amp;[usize]</code></td><td>Exponent vector of the left monomial $[\alpha_1, \alpha_2, \dots]$</td></tr>
+<tr><td><code>rhs</code></td><td><code>&amp;[usize]</code></td><td>Exponent vector of the right monomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>std::cmp::Ordering</code> — <code>Less</code> means <code>lhs</code> comes <strong>before</strong> <code>rhs</code> in the order (i.e., <code>lhs</code> is larger), <code>Greater</code> means <code>lhs</code> is smaller.</p>
+<p><strong>Design notes</strong>: The simple orders (Lex, Grevlex, Grlex) are zero-sized types with no runtime overhead. The parameterized orders (WeightOrder, BlockOrder, MatrixOrder) store their configuration at construction time.</p>
+<p><strong>See also</strong>: <a href="#lex">Lex</a>, <a href="#grevlex">Grevlex</a>, <a href="#grlex">Grlex</a>, <a href="#weightorder">WeightOrder</a>, <a href="#blockorder-and-suborder">BlockOrder</a>, <a href="#matrixorder">MatrixOrder</a></p>
+<hr />
+<h3 id="lex"><a class="header" href="#lex">Lex</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Lex;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Lexicographic order. Compares exponent vectors component by component from left to right.</p>
+<p><strong>Comparison rule</strong>: <code>lhs &gt; rhs</code> if and only if there exists an $i$ such that $\alpha_j = \beta_j$ for all $j &lt; i$ and $\alpha_i &gt; \beta_i$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{Lex, MonomialOrder};
+
+let a = [2, 1]; // x^2 y
+let b = [1, 1]; // x y
+assert_eq!(Lex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+// a is larger in Lex order (first component 2 &gt; 1)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="grlex"><a class="header" href="#grlex">Grlex</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Grlex;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Graded lexicographic order. Orders by total degree descending first, then lexicographically among monomials of equal degree.</p>
+<p><strong>Comparison rule</strong>:</p>
+<ol>
+<li>The monomial with the larger total degree $\sum \alpha_i$ comes first</li>
+<li>Monomials of equal total degree are compared lexicographically</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{Grlex, MonomialOrder};
+
+let a = [2, 0]; // x^2, degree 2
+let b = [1, 1]; // xy, degree 2
+let c = [0, 3]; // y^3, degree 3
+// c has the highest degree, so it comes first
+assert_eq!(Grlex.cmp(&amp;c, &amp;a), std::cmp::Ordering::Less);
+// a and b have the same degree; lexicographically a &gt; b
+assert_eq!(Grlex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="grevlex"><a class="header" href="#grevlex">Grevlex</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Grevlex;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Graded reverse lexicographic order. Orders by total degree descending first, then compares in <strong>reverse</strong> lexicographic order (starting from the last component, with the direction reversed).</p>
+<p><strong>Comparison rule</strong>:</p>
+<ol>
+<li>The monomial with the larger total degree comes first</li>
+<li>For equal total degree, compare starting from the last component, where the <strong>smaller</strong> component comes first</li>
+</ol>
+<p><strong>Properties</strong>: Grevlex typically produces the smallest intermediate matrices in Gröbner basis computations and is the default order.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{Grevlex, Lex, MonomialOrder};
+
+let a = [2, 1];
+let b = [1, 1];
+assert_eq!(Lex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+assert_eq!(Grevlex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Less);
+// Under Grevlex, a &lt; b (reverse lexicographic order flips the direction)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="weightorder"><a class="header" href="#weightorder">WeightOrder</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WeightOrder {
+    weights: SmallVec&lt;[i64; 4]&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Weighted order. Orders by $\sum_i w_i \cdot \alpha_i$ descending. Suitable for elimination orders that cannot be expressed with a zero-sized type.</p>
+<p><strong>Construction</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(weights: SmallVec&lt;[i64; 4]&gt;) -&gt; Self
+pub fn from_slice(weights: &amp;[i64]) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>weights</code></td><td><code>SmallVec&lt;[i64; 4]&gt;</code> or <code>&amp;[i64]</code></td><td>Weight of each variable; the length should equal the number of variables</td></tr>
+</tbody></table>
+</div>
+<p><strong>Default</strong>: all weights set to 1 (i.e., the total degree order).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{MonomialOrder, WeightOrder};
+use smallvec::smallvec;
+
+let ord = WeightOrder::new(smallvec![2, 1]);
+// [1,0] → weight 2, [0,1] → weight 1 → [1,0] is larger
+assert_eq!(ord.cmp(&amp;[1, 0], &amp;[0, 1]), std::cmp::Ordering::Less);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="blockorder-and-suborder"><a class="header" href="#blockorder-and-suborder">BlockOrder and SubOrder</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BlockOrder {
+    boundaries: SmallVec&lt;[usize; 4]&gt;,
+    orders: SmallVec&lt;[SubOrder; 4]&gt;,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SubOrder {
+    Lex,
+    Grevlex,
+    Grlex,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Block elimination order. Partitions the variables into consecutive blocks, each block using its own sub-order.</p>
+<p><strong>Construction</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(boundaries: SmallVec&lt;[usize; 4]&gt;, orders: SmallVec&lt;[SubOrder; 4]&gt;) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>boundaries</code></td><td><code>SmallVec&lt;[usize; 4]&gt;</code></td><td>List of split points for the ordering (exclusive upper bounds, not including <code>n_vars</code>)</td></tr>
+<tr><td><code>orders</code></td><td><code>SmallVec&lt;[SubOrder; 4]&gt;</code></td><td>Sub-order for each block; its length must equal <code>boundaries.len() + 1</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Notes</strong>: <code>boundaries = [2]</code> with <code>orders = [Lex, Grevlex]</code> on a polynomial in 4 variables means: compare variables 0–1 first (Lex), and if equal, compare variables 2–3 (Grevlex).</p>
+<p><strong>Default</strong>: a single Grevlex block.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{BlockOrder, MonomialOrder, SubOrder};
+use smallvec::smallvec;
+
+let ord = BlockOrder::new(
+    smallvec![2],
+    smallvec![SubOrder::Lex, SubOrder::Grevlex],
+);
+let a = [1, 0, 0, 0]; // x₀
+let b = [0, 1, 0, 0]; // x₁
+// Lex within the block: [1,0] &gt; [0,1]
+assert_eq!(ord.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="matrixorder"><a class="header" href="#matrixorder">MatrixOrder</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MatrixOrder {
+    matrix: Vec&lt;Vec&lt;i64&gt;&gt;,
+    n_vars: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Matrix order. Multiplies exponent vectors by an integer matrix and compares the results lexicographically. Given an $n \times n$ matrix $M$, a monomial $\alpha &gt; \beta$ if and only if $M\alpha &gt;_{\text{lex}} M\beta$. It generalizes all standard orders and is especially suitable for constructing elimination orders.</p>
+<p><strong>Construction</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(matrix: Vec&lt;Vec&lt;i64&gt;&gt;) -&gt; Self
+pub fn elimination_order(elim_vars: usize, n_vars: usize) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>matrix</code></td><td><code>Vec&lt;Vec&lt;i64&gt;&gt;</code></td><td>$n \times n$ weight matrix (row-major)</td></tr>
+<tr><td><code>elim_vars</code></td><td><code>usize</code></td><td>Number of leading variables to eliminate</td></tr>
+<tr><td><code>n_vars</code></td><td><code>usize</code></td><td>Total number of variables</td></tr>
+</tbody></table>
+</div>
+<p><strong><code>elimination_order</code></strong>: Constructs a matrix order equivalent to <code>BlockOrder([elim_vars in Lex, rest in Grevlex])</code>.</p>
+<p><strong>Default</strong>: the $1 \times 1$ identity matrix.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{MatrixOrder, MonomialOrder};
+
+// 2×2 identity matrix = Lex order
+let ord = MatrixOrder::new(vec![vec![1, 0], vec![0, 1]]);
+assert_eq!(ord.cmp(&amp;[1, 0], &amp;[0, 1]), std::cmp::Ordering::Greater);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h2 id="denseunivariatepolynomial"><a class="header" href="#denseunivariatepolynomial">DenseUnivariatePolynomial</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DenseUnivariatePolynomial&lt;D: Domain&gt; {
+    coeffs: Vec&lt;D::Element&gt;,  // starts at the constant term, trailing zeros removed
+    domain: D,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>A dense univariate polynomial. Coefficients are stored in a contiguous vector, from the constant term $a_0$ to the highest-degree term $a_n$. The zero polynomial is represented by an empty vector. Multiplication automatically selects between Karatsuba (when both polynomials have at least 32 coefficients) and schoolbook multiplication.</p>
+<hr />
+<h3 id="dense-construction-and-properties"><a class="header" href="#dense-construction-and-properties">Dense Construction and Properties</a></h3>
+<h4 id="denseunivariatepolynomialnew"><a class="header" href="#denseunivariatepolynomialnew">DenseUnivariatePolynomial::new</a></h4>
+<p><strong>Signature</strong>: <code>pub fn new(domain: D) -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates the zero polynomial.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>The coefficient domain</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the zero polynomial (an empty coefficient vector).</p>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialfrom_coeffs">from_coeffs</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialfrom_coeffs"><a class="header" href="#denseunivariatepolynomialfrom_coeffs">DenseUnivariatePolynomial::from_coeffs</a></h4>
+<p><strong>Signature</strong>: <code>pub fn from_coeffs(domain: D, coeffs: Vec&lt;D::Element&gt;) -&gt; Self</code></p>
+<p><strong>Description</strong>: Constructs a polynomial from a coefficient vector. Trailing zero coefficients are removed automatically.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>The coefficient domain</td></tr>
+<tr><td><code>coeffs</code></td><td><code>Vec&lt;D::Element&gt;</code></td><td>Coefficients $[a_0, a_1, \dots, a_n]$, constant term first</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the polynomial $a_0 + a_1 x + \cdots + a_n x^n$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(0), Integer::from(2)],
+);
+assert_eq!(p.degree(), Some(2));
+assert_eq!(p.coeff(2), Some(&amp;Integer::from(2)));
+// p(x) = 1 + 2x^2, the middle zero coefficient is kept (not a trailing zero)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialnew">new</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialdomain"><a class="header" href="#denseunivariatepolynomialdomain">DenseUnivariatePolynomial::domain</a></h4>
+<p><strong>Signature</strong>: <code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>Description</strong>: Returns a reference to the coefficient domain.</p>
+<hr />
+<h4 id="denseunivariatepolynomialcoeffs"><a class="header" href="#denseunivariatepolynomialcoeffs">DenseUnivariatePolynomial::coeffs</a></h4>
+<p><strong>Signature</strong>: <code>pub fn coeffs(&amp;self) -&gt; &amp;[D::Element]</code></p>
+<p><strong>Description</strong>: Returns the coefficient slice, starting from the constant term.</p>
+<hr />
+<h4 id="denseunivariatepolynomialis_zero"><a class="header" href="#denseunivariatepolynomialis_zero">DenseUnivariatePolynomial::is_zero</a></h4>
+<p><strong>Signature</strong>: <code>pub fn is_zero(&amp;self) -&gt; bool</code></p>
+<p><strong>Description</strong>: Returns whether the polynomial is zero.</p>
+<hr />
+<h4 id="denseunivariatepolynomialdegree"><a class="header" href="#denseunivariatepolynomialdegree">DenseUnivariatePolynomial::degree</a></h4>
+<p><strong>Signature</strong>: <code>pub fn degree(&amp;self) -&gt; Option&lt;usize&gt;</code></p>
+<p><strong>Description</strong>: Returns the degree of the polynomial. Returns <code>None</code> for the zero polynomial.</p>
+<hr />
+<h4 id="denseunivariatepolynomialcoeff"><a class="header" href="#denseunivariatepolynomialcoeff">DenseUnivariatePolynomial::coeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn coeff(&amp;self, n: usize) -&gt; Option&lt;&amp;D::Element&gt;</code></p>
+<p><strong>Description</strong>: Returns the coefficient of $x^n$, or <code>None</code> if it does not exist.</p>
+<hr />
+<h4 id="denseunivariatepolynomialleading_coeff"><a class="header" href="#denseunivariatepolynomialleading_coeff">DenseUnivariatePolynomial::leading_coeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn leading_coeff(&amp;self) -&gt; Option&lt;&amp;D::Element&gt;</code></p>
+<p><strong>Description</strong>: Returns the leading coefficient. Returns <code>None</code> for the zero polynomial.</p>
+<hr />
+<h4 id="denseunivariatepolynomiallcoeff"><a class="header" href="#denseunivariatepolynomiallcoeff">DenseUnivariatePolynomial::lcoeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn lcoeff(&amp;self) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Convenience alias for the leading coefficient. Returns the domain's zero for the zero polynomial.</p>
+<p><strong>Returns</strong>: the leading coefficient, or the domain's zero.</p>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialleading_coeff">leading_coeff</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialconstant"><a class="header" href="#denseunivariatepolynomialconstant">DenseUnivariatePolynomial::constant</a></h4>
+<p><strong>Signature</strong>: <code>pub fn constant(&amp;self) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Returns the constant term (the coefficient of $x^0$). Returns the domain's zero for the zero polynomial.</p>
+<hr />
+<h4 id="denseunivariatepolynomialzero"><a class="header" href="#denseunivariatepolynomialzero">DenseUnivariatePolynomial::zero</a></h4>
+<p><strong>Signature</strong>: <code>pub fn zero(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns the zero polynomial over the same domain.</p>
+<hr />
+<h4 id="denseunivariatepolynomialone"><a class="header" href="#denseunivariatepolynomialone">DenseUnivariatePolynomial::one</a></h4>
+<p><strong>Signature</strong>: <code>pub fn one(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns the constant polynomial $1$.</p>
+<hr />
+<h4 id="denseunivariatepolynomialis_one"><a class="header" href="#denseunivariatepolynomialis_one">DenseUnivariatePolynomial::is_one</a></h4>
+<p><strong>Signature</strong>: <code>pub fn is_one(&amp;self) -&gt; bool</code></p>
+<p><strong>Description</strong>: Returns whether the polynomial is the constant $1$.</p>
+<hr />
+<h3 id="dense-basic-arithmetic"><a class="header" href="#dense-basic-arithmetic">Dense Basic Arithmetic</a></h3>
+<p>The following methods are available for <code>D: Domain</code>:</p>
+<h4 id="denseunivariatepolynomialneg"><a class="header" href="#denseunivariatepolynomialneg">DenseUnivariatePolynomial::neg</a></h4>
+<p><strong>Signature</strong>: <code>pub fn neg(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns $-p(x)$.</p>
+<hr />
+<h4 id="denseunivariatepolynomialadd"><a class="header" href="#denseunivariatepolynomialadd">DenseUnivariatePolynomial::add</a></h4>
+<p><strong>Signature</strong>: <code>pub fn add(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Polynomial addition.</p>
+<hr />
+<h4 id="denseunivariatepolynomialsub"><a class="header" href="#denseunivariatepolynomialsub">DenseUnivariatePolynomial::sub</a></h4>
+<p><strong>Signature</strong>: <code>pub fn sub(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Polynomial subtraction.</p>
+<hr />
+<h4 id="denseunivariatepolynomialmul_scalar"><a class="header" href="#denseunivariatepolynomialmul_scalar">DenseUnivariatePolynomial::mul_scalar</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul_scalar(&amp;self, scalar: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>Description</strong>: Scalar multiplication. Multiplies every coefficient by <code>scalar</code>.</p>
+<hr />
+<h4 id="denseunivariatepolynomialmul"><a class="header" href="#denseunivariatepolynomialmul">DenseUnivariatePolynomial::mul</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Polynomial multiplication. Automatically selects between schoolbook multiplication and Karatsuba based on the degree.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let a = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(1)],
+);
+let b = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(-1)],
+);
+let c = a.mul(&amp;b);
+assert_eq!(c.coeffs(), &amp;[
+    Integer::from(1),
+    Integer::from(0),
+    Integer::from(-1),
+]);
+// (1 + x)(1 - x) = 1 - x^2
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialmul_into">mul_into</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialmul_into"><a class="header" href="#denseunivariatepolynomialmul_into">DenseUnivariatePolynomial::mul_into</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul_into(&amp;self, other: &amp;Self, buf: &amp;mut Vec&lt;D::Element&gt;)</code></p>
+<p><strong>Description</strong>: Multiplication that writes the result into a buffer (avoiding repeated heap allocations in hot loops). The buffer is cleared and reused.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Self</code></td><td>The other polynomial</td></tr>
+<tr><td><code>buf</code></td><td><code>&amp;mut Vec&lt;D::Element&gt;</code></td><td>Output buffer; after the call it contains the product coefficients</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h4 id="denseunivariatepolynomialeval"><a class="header" href="#denseunivariatepolynomialeval">DenseUnivariatePolynomial::eval</a></h4>
+<p><strong>Signature</strong>: <code>pub fn eval(&amp;self, x: &amp;D::Element) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Evaluates the polynomial at $x$ using Horner's method. Returns the domain's zero for the zero polynomial.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+);
+let value = p.eval(&amp;Integer::from(2));
+assert_eq!(value, Integer::from(17));
+// p(2) = 1 + 2·2 + 3·4 = 17
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="denseunivariatepolynomialderivative"><a class="header" href="#denseunivariatepolynomialderivative">DenseUnivariatePolynomial::derivative</a></h4>
+<p><strong>Signature</strong>: <code>pub fn derivative(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns the formal derivative $p'(x)$.</p>
+<hr />
+<h4 id="denseunivariatepolynomialintegral"><a class="header" href="#denseunivariatepolynomialintegral">DenseUnivariatePolynomial::integral</a></h4>
+<p><strong>Signature</strong>: <code>pub fn integral(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns the formal integral $\int p(x),dx$ with zero constant term. Requires a domain that supports division (such as <code>RationalDomain</code>).</p>
+<hr />
+<h3 id="euclideandomain-operations"><a class="header" href="#euclideandomain-operations">EuclideanDomain Operations</a></h3>
+<p>The following methods require <code>D: EuclideanDomain</code>:</p>
+<h4 id="denseunivariatepolynomialmul_coeff"><a class="header" href="#denseunivariatepolynomialmul_coeff">DenseUnivariatePolynomial::mul_coeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul_coeff(&amp;self, c: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>Description</strong>: Multiplies every coefficient by the constant $c$. Equivalent to <code>mul_scalar</code>, but restricted to <code>EuclideanDomain</code>.</p>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialmul_scalar">mul_scalar</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialdiv_coeff"><a class="header" href="#denseunivariatepolynomialdiv_coeff">DenseUnivariatePolynomial::div_coeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn div_coeff(&amp;self, c: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>Description</strong>: Divides every coefficient by the constant $c$ (which must divide exactly).</p>
+<p><strong>Errors</strong>: panics unconditionally if $c$ is not invertible in the domain (e.g. over $\mathbb{Z}$ when $c$ is not $\pm 1$), even if every coefficient is divisible by $c$.</p>
+<hr />
+<h4 id="denseunivariatepolynomialdiv_rem"><a class="header" href="#denseunivariatepolynomialdiv_rem">DenseUnivariatePolynomial::div_rem</a></h4>
+<p><strong>Signature</strong>: <code>pub fn div_rem(&amp;self, divisor: &amp;Self) -&gt; Option&lt;(Self, Self)&gt;</code></p>
+<p><strong>Description</strong>: Division with remainder. Returns $(q, r)$ such that $p = q \cdot \text{divisor} + r$, where $\deg(r) &lt; \deg(\text{divisor})$.</p>
+<p><strong>Returns</strong>: <code>Some((quotient, remainder))</code>, or <code>None</code> if the divisor is zero.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(0), Integer::from(-1)],
+);
+let q = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(1)],
+);
+let (quot, rem) = p.div_rem(&amp;q).unwrap();
+assert_eq!(quot.coeffs(), &amp;[Integer::from(1), Integer::from(-1)]);
+assert!(rem.is_zero());
+// (x^2 - 1) / (x + 1) = x - 1, remainder 0
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialgcd"><a class="header" href="#denseunivariatepolynomialgcd">DenseUnivariatePolynomial::gcd</a></h4>
+<p><strong>Signature</strong>: <code>pub fn gcd(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Computes the greatest common divisor of two polynomials. Uses the Euclidean algorithm (with pseudo-remainders when the coefficient domain is not a field). The result is always primitive (content-free).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]); // x^2 - 1
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]); // (x+1)^2
+let g = a.gcd(&amp;b);
+assert_eq!(g.coeffs(), &amp;[Integer::from(1), Integer::from(1)]);
+// gcd = x + 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialextended_gcd_poly">extended_gcd_poly</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialcontent"><a class="header" href="#denseunivariatepolynomialcontent">DenseUnivariatePolynomial::content</a></h4>
+<p><strong>Signature</strong>: <code>pub fn content(&amp;self) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Returns the greatest common divisor of all coefficients. Returns the domain's zero for the zero polynomial.</p>
+<p><strong>Returns</strong>: the GCD of the coefficients.</p>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialprimitive_part">primitive_part</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialprimitive_part"><a class="header" href="#denseunivariatepolynomialprimitive_part">DenseUnivariatePolynomial::primitive_part</a></h4>
+<p><strong>Signature</strong>: <code>pub fn primitive_part(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns the primitive part $p / \text{content}(p)$. The result has content 1 (or is the zero polynomial).</p>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialcontent">content</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialextended_gcd_poly"><a class="header" href="#denseunivariatepolynomialextended_gcd_poly">DenseUnivariatePolynomial::extended_gcd_poly</a></h4>
+<p><strong>Signature</strong>: <code>pub fn extended_gcd_poly(&amp;self, other: &amp;Self) -&gt; (Self, Self, Self)</code></p>
+<p><strong>Description</strong>: Extended Euclidean algorithm. Returns $(g, s, t)$ such that $s \cdot p + t \cdot q = g$, where $g = \gcd(p, q)$ and $g$ is monic.</p>
+<p><strong>Returns</strong>: <code>(gcd, bezout_s, bezout_t)</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = RationalDomain;
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1), Rational::new(1, 1),
+]); // x^2 + 1
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(1, 1),
+]); // x + 1
+let (g, s, t) = a.extended_gcd_poly(&amp;b);
+// s·a + t·b = g
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialpow"><a class="header" href="#denseunivariatepolynomialpow">DenseUnivariatePolynomial::pow</a></h4>
+<p><strong>Signature</strong>: <code>pub fn pow(&amp;self, n: u32) -&gt; Self</code></p>
+<p><strong>Description</strong>: Fast exponentiation by repeated squaring. $p^0 = 1$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>u32</code></td><td>Non-negative integer exponent</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $p(x)^n$.</p>
+<hr />
+<h4 id="denseunivariatepolynomialp_adic_expansion"><a class="header" href="#denseunivariatepolynomialp_adic_expansion">DenseUnivariatePolynomial::p_adic_expansion</a></h4>
+<p><strong>Signature</strong>: <code>pub fn p_adic_expansion(&amp;self, p: &amp;Self) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: $p$-adic expansion. Returns $[a_0, a_1, a_2, \dots]$ such that $\text{self} = a_0 + a_1 \cdot p + a_2 \cdot p^2 + \cdots$, where each $a_k$ has degree less than $\deg(p)$.</p>
+<p><strong>Implementation</strong>: by repeated division with remainder.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// p-adic expansion of f(x) = x^3 with respect to p(x) = x + 1
+let f = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(0), Integer::from(0), Integer::from(0), Integer::from(1),
+]);
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(1),
+]);
+let expansion = f.p_adic_expansion(&amp;p);
+// expansion = [a0, a1, a2, ...] such that f = a0 + a1*p + a2*p^2 + ...
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialdiv_rem">div_rem</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialdiophantine"><a class="header" href="#denseunivariatepolynomialdiophantine">DenseUnivariatePolynomial::diophantine</a></h4>
+<p><strong>Signature</strong>: <code>pub fn diophantine(polys: &amp;mut [Self], b: &amp;Self) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: Polynomial CRT (Diophantine solver). Given a list of pairwise coprime polynomials <code>polys</code> and a target $b$, returns $[s_0, \dots, s_n]$ such that:</p>
+<p>$$\sum_i s_i \cdot \prod_{j \neq i} p_j \equiv b \pmod{\prod_i p_i}$$</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>polys</code></td><td><code>&amp;mut [Self]</code></td><td>List of pairwise coprime polynomials</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Self</code></td><td>The target polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the list of remainders $[s_0, \dots, s_n]$.</p>
+<p><strong>Errors</strong>: panics if the polynomials are not pairwise coprime.</p>
+<hr />
+<h3 id="factorization-and-resultants"><a class="header" href="#factorization-and-resultants">Factorization and Resultants</a></h3>
+<h4 id="denseunivariatepolynomialsquare_free_factorization"><a class="header" href="#denseunivariatepolynomialsquare_free_factorization">DenseUnivariatePolynomial::square_free_factorization</a></h4>
+<p><strong>Signature</strong>: <code>pub fn square_free_factorization(&amp;self) -&gt; SquareFreeFactors&lt;D&gt;</code></p>
+<p><strong>Description</strong>: Square-free factorization. Uses Yun's algorithm: $g = \gcd(f, f')$, $w = f/g$, then iterate $h = \gcd(w, g)$, $z = w/h$ to collect the factors of multiplicity $k$.</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;</code> — a list of <code>(factor, multiplicity)</code> pairs.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// (x+1)^2*(x-1) = x^3 + x^2 - x - 1
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(-1), Integer::from(1), Integer::from(1),
+]);
+let factors = p.square_free_factorization();
+assert_eq!(factors.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialfactor">factor</a>, <a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialis_square_free"><a class="header" href="#denseunivariatepolynomialis_square_free">DenseUnivariatePolynomial::is_square_free</a></h4>
+<p><strong>Signature</strong>: <code>pub fn is_square_free(&amp;self) -&gt; bool</code></p>
+<p><strong>Description</strong>: Returns whether the polynomial is square-free ($\gcd(p, p') = 1$).</p>
+<hr />
+<h4 id="denseunivariatepolynomialfactor-integerdomain"><a class="header" href="#denseunivariatepolynomialfactor-integerdomain">DenseUnivariatePolynomial::factor (IntegerDomain)</a></h4>
+<p><strong>Signature</strong>: <code>impl DenseUnivariatePolynomial&lt;IntegerDomain&gt; { pub fn factor(&amp;self) -&gt; Factors&lt;IntegerDomain&gt; }</code></p>
+<p><strong>Description</strong>: Completely factors a primitive integer polynomial into irreducible factors. Uses the square-free factorization + Berlekamp–Zassenhaus + Hensel lifting algorithms.</p>
+<p><strong>Preconditions</strong>: the input must be primitive (content = 1). Call <code>primitive_part()</code> first on arbitrary polynomials.</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(DenseUnivariatePolynomial&lt;IntegerDomain&gt;, usize)&gt;</code> — <code>(irreducible factor, multiplicity)</code> pairs.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// x^2 - 1 = (x-1)(x+1)
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]);
+let factors = p.factor();
+assert_eq!(factors.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialsquare_free_factorization">square_free_factorization</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialfactor-finitefield"><a class="header" href="#denseunivariatepolynomialfactor-finitefield">DenseUnivariatePolynomial::factor (FiniteField)</a></h4>
+<p><strong>Signature</strong>: <code>impl DenseUnivariatePolynomial&lt;FiniteField&gt; { pub fn factor(&amp;self) -&gt; Factors&lt;FiniteField&gt; }</code></p>
+<p><strong>Description</strong>: Completely factors a polynomial over $\mathbb{F}_p$. Uses Berlekamp's algorithm (or Cantor–Zassenhaus).</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(DenseUnivariatePolynomial&lt;FiniteField&gt;, usize)&gt;</code> — <code>(irreducible factor, multiplicity)</code> pairs.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let f = FiniteField::new(BigInt::from(5));
+// x^2 - 1 over F_5
+let p = DenseUnivariatePolynomial::from_coeffs(
+    f.clone(), vec![f.element(4), f.element(0), f.element(1)]);
+let factors = p.factor();
+assert!(!factors.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialfactor-integerdomain">factor (IntegerDomain)</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialresultant"><a class="header" href="#denseunivariatepolynomialresultant">DenseUnivariatePolynomial::resultant</a></h4>
+<p><strong>Signature</strong>: <code>pub fn resultant(&amp;self, other: &amp;Self) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Computes the resultant $\operatorname{Res}(a, b)$ using the Brown PRS algorithm. The resultant is zero if and only if $a$ and $b$ have a non-constant common factor.</p>
+<p><strong>Implementation details</strong>: subresultant PRS, with an exact division by $\beta$ at each step (the subresultant theorem guarantees exactness).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// Res(x - 1, x - 2) = 1 - 2 = -1
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-2), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(-1));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Properties</strong>: $\operatorname{Res}(a, b) = (-1)^{\deg a \cdot \deg b} \operatorname{Res}(b, a)$.</p>
+<p><strong>See also</strong>: <a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h2 id="sparsemultivariatepolynomial"><a class="header" href="#sparsemultivariatepolynomial">SparseMultivariatePolynomial</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SparseMultivariatePolynomial&lt;D: Domain, O: MonomialOrder = Grevlex&gt; {
+    terms: HashMap&lt;SmallVec&lt;[usize; 4]&gt;, D::Element&gt;,
+    domain: D,
+    n_vars: usize,
+    pub order: O,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>A sparse multivariate polynomial. Only nonzero terms are stored, in a HashMap keyed by the exponent vector $\vec{e} = [e_1, e_2, \dots]$ with the coefficient as value. An exponent vector $\vec{e}$ represents the monomial $x_1^{e_1} x_2^{e_2} \cdots$. The monomial order is controlled by the type parameter <code>O</code>, which defaults to <code>Grevlex</code>.</p>
+<hr />
+<h3 id="sparse-construction-and-properties"><a class="header" href="#sparse-construction-and-properties">Sparse Construction and Properties</a></h3>
+<h4 id="sparsemultivariatepolynomialnew"><a class="header" href="#sparsemultivariatepolynomialnew">SparseMultivariatePolynomial::new</a></h4>
+<p><strong>Signature</strong>: <code>pub fn new(domain: D, n_vars: usize) -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates the zero polynomial with the default monomial order.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>The coefficient domain</td></tr>
+<tr><td><code>n_vars</code></td><td><code>usize</code></td><td>Number of variables</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialnew_with_order">new_with_order</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialnew_with_order"><a class="header" href="#sparsemultivariatepolynomialnew_with_order">SparseMultivariatePolynomial::new_with_order</a></h4>
+<p><strong>Signature</strong>: <code>pub fn new_with_order(domain: D, n_vars: usize, order: O) -&gt; Self</code></p>
+<p><strong>Description</strong>: Creates the zero polynomial with the given monomial order.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::IntegerDomain;
+use ocas_poly::sparse::{SparseMultivariatePolynomial, WeightOrder};
+
+let order = WeightOrder::from_slice(&amp;[2, 1]);
+let p = SparseMultivariatePolynomial::&lt;_, WeightOrder&gt;::new_with_order(
+    IntegerDomain, 2, order,
+);
+assert_eq!(p.n_vars(), 2);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="sparsemultivariatepolynomialfrom_terms"><a class="header" href="#sparsemultivariatepolynomialfrom_terms">SparseMultivariatePolynomial::from_terms</a></h4>
+<p><strong>Signature</strong>: <code>pub fn from_terms(domain: D, n_vars: usize, terms: Vec&lt;(Vec&lt;usize&gt;, D::Element)&gt;) -&gt; Self</code></p>
+<p><strong>Description</strong>: Constructs a polynomial from a list of (exponent vector, coefficient) pairs. Terms with zero coefficients are dropped automatically.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>The coefficient domain</td></tr>
+<tr><td><code>n_vars</code></td><td><code>usize</code></td><td>Number of variables</td></tr>
+<tr><td><code>terms</code></td><td><code>Vec&lt;(Vec&lt;usize&gt;, D::Element)&gt;</code></td><td>(exponent vector, coefficient) pairs</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::sparse::Grevlex;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = SparseMultivariatePolynomial::&lt;IntegerDomain, Grevlex&gt;::from_terms(
+    domain,
+    2,
+    vec![(vec![1, 0], Integer::from(2)), (vec![0, 1], Integer::from(3))],
+);
+assert_eq!(p.n_terms(), 2);
+assert_eq!(p.coeff(&amp;[1, 0]), Integer::from(2));
+// p = 2x + 3y
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialnew">new</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialdomain"><a class="header" href="#sparsemultivariatepolynomialdomain">SparseMultivariatePolynomial::domain</a></h4>
+<p><strong>Signature</strong>: <code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>Description</strong>: Returns a reference to the coefficient domain.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialn_vars"><a class="header" href="#sparsemultivariatepolynomialn_vars">SparseMultivariatePolynomial::n_vars</a></h4>
+<p><strong>Signature</strong>: <code>pub fn n_vars(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: Returns the number of variables.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialn_terms"><a class="header" href="#sparsemultivariatepolynomialn_terms">SparseMultivariatePolynomial::n_terms</a></h4>
+<p><strong>Signature</strong>: <code>pub fn n_terms(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: Returns the number of nonzero terms.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialis_zero"><a class="header" href="#sparsemultivariatepolynomialis_zero">SparseMultivariatePolynomial::is_zero</a></h4>
+<p><strong>Signature</strong>: <code>pub fn is_zero(&amp;self) -&gt; bool</code></p>
+<p><strong>Description</strong>: Returns whether the polynomial is zero.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialterms_ref"><a class="header" href="#sparsemultivariatepolynomialterms_ref">SparseMultivariatePolynomial::terms_ref</a></h4>
+<p><strong>Signature</strong>: <code>pub fn terms_ref(&amp;self) -&gt; &amp;HashMap&lt;SmallVec&lt;[usize; 4]&gt;, D::Element&gt;</code></p>
+<p><strong>Description</strong>: Returns a reference to the internal term map (exponent → coefficient).</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialset_term_external"><a class="header" href="#sparsemultivariatepolynomialset_term_external">SparseMultivariatePolynomial::set_term_external</a></h4>
+<p><strong>Signature</strong>: <code>pub fn set_term_external(&amp;mut self, exp: Vec&lt;usize&gt;, coeff: D::Element)</code></p>
+<p><strong>Description</strong>: Sets the coefficient of a monomial. A zero coefficient removes the term.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialtotal_degree"><a class="header" href="#sparsemultivariatepolynomialtotal_degree">SparseMultivariatePolynomial::total_degree</a></h4>
+<p><strong>Signature</strong>: <code>pub fn total_degree(&amp;self) -&gt; Option&lt;usize&gt;</code></p>
+<p><strong>Description</strong>: Returns the total degree (the maximum degree over all monomials). Returns <code>None</code> for the zero polynomial.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialcoeff"><a class="header" href="#sparsemultivariatepolynomialcoeff">SparseMultivariatePolynomial::coeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn coeff(&amp;self, exp: &amp;[usize]) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Returns the coefficient of the given monomial, or the domain's zero if it is absent.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialdegree_in"><a class="header" href="#sparsemultivariatepolynomialdegree_in">SparseMultivariatePolynomial::degree_in</a></h4>
+<p><strong>Signature</strong>: <code>pub fn degree_in(&amp;self, var_index: usize) -&gt; usize</code></p>
+<p><strong>Description</strong>: Returns the degree in the variable <code>var_index</code>. Returns 0 for the zero polynomial.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var_index</code></td><td><code>usize</code></td><td>Variable index (0-based)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the maximum exponent of that variable over all terms.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialzero--one"><a class="header" href="#sparsemultivariatepolynomialzero--one">SparseMultivariatePolynomial::zero / one</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn zero(&amp;self) -&gt; Self
+pub fn one(&amp;self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Returns the zero polynomial or the constant $1$ with the same shape.</p>
+<hr />
+<h3 id="sparse-basic-arithmetic"><a class="header" href="#sparse-basic-arithmetic">Sparse Basic Arithmetic</a></h3>
+<h4 id="sparsemultivariatepolynomialneg"><a class="header" href="#sparsemultivariatepolynomialneg">SparseMultivariatePolynomial::neg</a></h4>
+<p><strong>Signature</strong>: <code>pub fn neg(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns $-p$.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialadd"><a class="header" href="#sparsemultivariatepolynomialadd">SparseMultivariatePolynomial::add</a></h4>
+<p><strong>Signature</strong>: <code>pub fn add(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Polynomial addition.</p>
+<p><strong>Errors</strong>: panics if the numbers of variables differ.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialsub"><a class="header" href="#sparsemultivariatepolynomialsub">SparseMultivariatePolynomial::sub</a></h4>
+<p><strong>Signature</strong>: <code>pub fn sub(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Polynomial subtraction.</p>
+<p><strong>Errors</strong>: panics if the numbers of variables differ.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialmul_scalar"><a class="header" href="#sparsemultivariatepolynomialmul_scalar">SparseMultivariatePolynomial::mul_scalar</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul_scalar(&amp;self, scalar: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>Description</strong>: Scalar multiplication.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialmul"><a class="header" href="#sparsemultivariatepolynomialmul">SparseMultivariatePolynomial::mul</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Polynomial multiplication. Multiplies each pair of terms and combines like terms.</p>
+<p><strong>Errors</strong>: panics if the numbers of variables differ.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::sparse::Grevlex;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = SparseMultivariatePolynomial::&lt;IntegerDomain, Grevlex&gt;::from_terms(
+    domain,
+    2,
+    vec![(vec![1, 0], Integer::from(2)), (vec![0, 1], Integer::from(3))],
+);
+let q = SparseMultivariatePolynomial::&lt;IntegerDomain, Grevlex&gt;::from_terms(
+    domain,
+    2,
+    vec![(vec![1, 0], Integer::from(1)), (vec![0, 0], Integer::from(1))],
+);
+let r = p.mul(&amp;q);
+assert_eq!(r.coeff(&amp;[1, 0]), Integer::from(2));
+assert_eq!(r.coeff(&amp;[0, 1]), Integer::from(3));
+assert_eq!(r.coeff(&amp;[2, 0]), Integer::from(2));
+// (2x + 3y)(x + 1) = 2x^2 + 2x + 3xy + 3y
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="sparsemultivariatepolynomialmul_monomial"><a class="header" href="#sparsemultivariatepolynomialmul_monomial">SparseMultivariatePolynomial::mul_monomial</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul_monomial(&amp;self, exp: &amp;[usize]) -&gt; Self</code></p>
+<p><strong>Description</strong>: Adds <code>exp</code> component-wise to the exponent vector of every term. Used in Gröbner basis reduction.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialsorted_terms"><a class="header" href="#sparsemultivariatepolynomialsorted_terms">SparseMultivariatePolynomial::sorted_terms</a></h4>
+<p><strong>Signature</strong>: <code>pub fn sorted_terms(&amp;self) -&gt; Vec&lt;(&amp;SmallVec&lt;[usize; 4]&gt;, &amp;D::Element)&gt;</code></p>
+<p><strong>Description</strong>: Returns the (exponent, coefficient) pairs sorted by the monomial order.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialeval"><a class="header" href="#sparsemultivariatepolynomialeval">SparseMultivariatePolynomial::eval</a></h4>
+<p><strong>Signature</strong>: <code>pub fn eval(&amp;self, var_index: usize, value: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>Description</strong>: Substitutes the value <code>value</code> for the variable <code>var_index</code>, returning a polynomial in one fewer variable.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var_index</code></td><td><code>usize</code></td><td>Index of the variable to substitute</td></tr>
+<tr><td><code>value</code></td><td><code>&amp;D::Element</code></td><td>The substitution value</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a polynomial in one fewer variable (the remaining variables keep their relative order).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+let p = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 2,
+    vec![
+        (vec![1, 1], Integer::from(1)), // xy
+        (vec![0, 1], Integer::from(2)), // 2y
+    ],
+);
+// Substitute x=3: the result is 3y + 2y = 5y
+let r = p.eval(0, &amp;Integer::from(3));
+assert_eq!(r.coeff(&amp;[1]), Integer::from(5));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="sparsemultivariatepolynomialeval_keep"><a class="header" href="#sparsemultivariatepolynomialeval_keep">SparseMultivariatePolynomial::eval_keep</a></h4>
+<p><strong>Signature</strong>: <code>pub fn eval_keep(&amp;self, var_index: usize, value: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>Description</strong>: Substitutes the variable <code>var_index</code> with a value but keeps the total number of variables unchanged (the substituted variable's exponents are zeroed). Used in scenarios where variable positions must stay fixed during Hensel lifting.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialleading_term"><a class="header" href="#sparsemultivariatepolynomialleading_term">SparseMultivariatePolynomial::leading_term</a></h4>
+<p><strong>Signature</strong>: <code>pub fn leading_term(&amp;self) -&gt; Option&lt;(&amp;SmallVec&lt;[usize; 4]&gt;, &amp;D::Element)&gt;</code></p>
+<p><strong>Description</strong>: Returns the leading term (exponent vector, coefficient). Returns <code>None</code> for the zero polynomial. An $O(n)$ scan of the HashMap.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialleading_monomial"><a class="header" href="#sparsemultivariatepolynomialleading_monomial">SparseMultivariatePolynomial::leading_monomial</a></h4>
+<p><strong>Signature</strong>: <code>pub fn leading_monomial(&amp;self) -&gt; Option&lt;&amp;SmallVec&lt;[usize; 4]&gt;&gt;</code></p>
+<p><strong>Description</strong>: Returns the exponent vector of the leading monomial.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialleading_coeff"><a class="header" href="#sparsemultivariatepolynomialleading_coeff">SparseMultivariatePolynomial::leading_coeff</a></h4>
+<p><strong>Signature</strong>: <code>pub fn leading_coeff(&amp;self) -&gt; Option&lt;&amp;D::Element&gt;</code></p>
+<p><strong>Description</strong>: Returns the leading coefficient.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialcontent"><a class="header" href="#sparsemultivariatepolynomialcontent">SparseMultivariatePolynomial::content</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn content(&amp;self) -&gt; D::Element
+where D: EuclideanDomain
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Returns the GCD of all coefficients.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+let p = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![2], Integer::from(6)), (vec![1], Integer::from(9)), (vec![0], Integer::from(3))],
+);
+assert_eq!(p.content(), Integer::from(3));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialprimitive_part">primitive_part</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialprimitive_part"><a class="header" href="#sparsemultivariatepolynomialprimitive_part">SparseMultivariatePolynomial::primitive_part</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn primitive_part(&amp;self) -&gt; Self
+where D: EuclideanDomain
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Returns the primitive part (polynomial / content).</p>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialcontent">content</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialdiv_exact"><a class="header" href="#sparsemultivariatepolynomialdiv_exact">SparseMultivariatePolynomial::div_exact</a></h4>
+<p><strong>Signature</strong>: <code>pub fn div_exact(&amp;self, divisor: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Exact division (assumes no remainder). Used in rational function normalization where the GCD is known to divide.</p>
+<p><strong>Errors</strong>: panics in debug mode if the division is not exact.</p>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialchecked_div_exact">checked_div_exact</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialchecked_div_exact"><a class="header" href="#sparsemultivariatepolynomialchecked_div_exact">SparseMultivariatePolynomial::checked_div_exact</a></h4>
+<p><strong>Signature</strong>: <code>pub fn checked_div_exact(&amp;self, divisor: &amp;Self) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: Exact division, returning <code>None</code> when the division is not exact.</p>
+<p><strong>Returns</strong>: <code>Some(quotient)</code> or <code>None</code>.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialderivative"><a class="header" href="#sparsemultivariatepolynomialderivative">SparseMultivariatePolynomial::derivative</a></h4>
+<p><strong>Signature</strong>: <code>pub fn derivative(&amp;self, var_index: usize) -&gt; Self</code></p>
+<p><strong>Description</strong>: Computes the formal partial derivative with respect to the variable <code>var_index</code>.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialtaylor_coefficients"><a class="header" href="#sparsemultivariatepolynomialtaylor_coefficients">SparseMultivariatePolynomial::taylor_coefficients</a></h4>
+<p><strong>Signature</strong>: <code>pub fn taylor_coefficients(&amp;self, var_index: usize, a: &amp;D::Element) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: Computes the Taylor coefficients in the variable <code>var_index</code> at the point $a$. Returns $[t_0, t_1, \dots, t_d]$ such that $f = \sum_j t_j (x_{\text{var}} - a)^j$.</p>
+<hr />
+<h3 id="gröbner-basis-support"><a class="header" href="#gröbner-basis-support">Gröbner Basis Support</a></h3>
+<h4 id="sparsemultivariatepolynomialreduce"><a class="header" href="#sparsemultivariatepolynomialreduce">SparseMultivariatePolynomial::reduce</a></h4>
+<p><strong>Signature</strong>: <code>pub fn reduce(&amp;self, basis: &amp;[Self]) -&gt; Self</code></p>
+<p><strong>Description</strong>: Multivariate polynomial division. Repeatedly finds a basis element whose leading term divides the current leading term and subtracts the appropriate multiple; otherwise the leading term is moved into the remainder. Requires the coefficient domain to be a field (division always succeeds).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>basis</code></td><td><code>&amp;[Self]</code></td><td>The list of divisors</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the reduced remainder.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialspoly"><a class="header" href="#sparsemultivariatepolynomialspoly">SparseMultivariatePolynomial::spoly</a></h4>
+<p><strong>Signature</strong>: <code>pub fn spoly(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Computes the S-polynomial. $S(f, g) = \frac{\text{lcm}}{\text{lt}(f)} \cdot f - \frac{\text{lcm}}{\text{lt}(g)} \cdot g$.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialmake_monic_inplace"><a class="header" href="#sparsemultivariatepolynomialmake_monic_inplace">SparseMultivariatePolynomial::make_monic_inplace</a></h4>
+<p><strong>Signature</strong>: <code>pub fn make_monic_inplace(&amp;mut self) -&gt; bool</code></p>
+<p><strong>Description</strong>: Normalizes the polynomial to be monic in place (divides by the leading coefficient). Returns <code>false</code> if the leading coefficient is not invertible.</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialexponents_iter"><a class="header" href="#sparsemultivariatepolynomialexponents_iter">SparseMultivariatePolynomial::exponents_iter</a></h4>
+<p><strong>Signature</strong>: <code>pub fn exponents_iter(&amp;self) -&gt; impl Iterator&lt;Item = &amp;SmallVec&lt;[usize; 4]&gt;&gt;</code></p>
+<p><strong>Description</strong>: Iterates over all exponent vectors in monomial order (descending). Used for the symbolic preprocessing of the F4 algorithm.</p>
+<hr />
+<h3 id="multivariate-factorization"><a class="header" href="#multivariate-factorization">Multivariate Factorization</a></h3>
+<h4 id="sparsemultivariatepolynomialfactor-integerdomain-lex"><a class="header" href="#sparsemultivariatepolynomialfactor-integerdomain-lex">SparseMultivariatePolynomial::factor (IntegerDomain, Lex)</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt; {
+    pub fn factor(&amp;self) -&gt; Vec&lt;(Self, usize)&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Factors a multivariate integer polynomial into irreducible factors. Bivariate polynomials with a constant leading coefficient in the main variable use bivariate Hensel lifting (Wang); polynomials in three or more variables, or bivariate ones with a non-constant leading coefficient, use the EEZ algorithm.</p>
+<p><strong>Returns</strong>: a list of <code>(irreducible factor, multiplicity)</code> pairs.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+// (x^2 + y + 1)(x + y + 2)
+let f = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 2,
+    vec![
+        (vec![3, 0], Integer::from(1)),
+        (vec![2, 1], Integer::from(1)),
+        (vec![2, 0], Integer::from(2)),
+        (vec![1, 1], Integer::from(1)),
+        (vec![1, 0], Integer::from(1)),
+        (vec![0, 2], Integer::from(1)),
+        (vec![0, 1], Integer::from(3)),
+        (vec![0, 0], Integer::from(2)),
+    ],
+);
+let factors = f.factor();
+assert!(factors.len() &gt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialfactor-finitefield-lex">factor (FiniteField)</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialfactor-finitefield-lex"><a class="header" href="#sparsemultivariatepolynomialfactor-finitefield-lex">SparseMultivariatePolynomial::factor (FiniteField, Lex)</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl SparseMultivariatePolynomial&lt;FiniteField, Lex&gt; {
+    pub fn factor(&amp;self) -&gt; Vec&lt;(Self, usize)&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Factors a multivariate $\mathbb{F}_p$ polynomial. Bivariate polynomials use the evaluation–Hensel path; three or more variables use EEZ.</p>
+<p><strong>See also</strong>: <a href="#sparsemultivariatepolynomialfactor-integerdomain-lex">factor (IntegerDomain)</a></p>
+<hr />
+<h2 id="rationalpolynomial"><a class="header" href="#rationalpolynomial">RationalPolynomial</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RationalPolynomial&lt;D: Domain, O: MonomialOrder = Grevlex&gt; {
+    pub numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    pub denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>An element of the polynomial fraction field $\frac{\text{num}}{\text{den}}$. Constructing via <code>from_num_den</code> automatically normalizes to lowest terms (coprime numerator and denominator, with the denominator's leading coefficient normalized).</p>
+<hr />
+<h4 id="rationalpolynomialnew"><a class="header" href="#rationalpolynomialnew">RationalPolynomial::new</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(
+    numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Constructs a rational polynomial without normalization. The caller must ensure the denominator is nonzero.</p>
+<p><strong>See also</strong>: <a href="#rationalpolynomialfrom_num_den">from_num_den</a></p>
+<hr />
+<h4 id="rationalpolynomialfrom_num_den"><a class="header" href="#rationalpolynomialfrom_num_den">RationalPolynomial::from_num_den</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;D: EuclideanDomain, O: MonomialOrder&gt; RationalPolynomial&lt;D, O&gt; {
+    pub fn from_num_den(
+        numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+        denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    ) -&gt; Self
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Constructs from numerator and denominator and normalizes. The result is in lowest terms: coprime numerator and denominator, with the denominator's leading coefficient normalized (1 over a finite field, positive over the integers).</p>
+<p><strong>Preconditions</strong>: the denominator must be nonzero.</p>
+<p><strong>Normalization steps</strong>:</p>
+<ol>
+<li>Compute $\gcd(\text{num}, \text{den})$ and cancel it</li>
+<li>In the univariate case, reduce by an exact GCD via the dense Euclidean algorithm</li>
+<li>Normalize the denominator's leading coefficient</li>
+</ol>
+<p><strong>Errors</strong>: panics when the denominator is zero.</p>
+<p><strong>See also</strong>: <a href="#rationalpolynomialnew">new</a></p>
+<hr />
+<h4 id="rationalpolynomialfrom_polynomial"><a class="header" href="#rationalpolynomialfrom_polynomial">RationalPolynomial::from_polynomial</a></h4>
+<p><strong>Signature</strong>: <code>pub fn from_polynomial(poly: SparseMultivariatePolynomial&lt;D, O&gt;) -&gt; Self</code></p>
+<p><strong>Description</strong>: Constructs from a polynomial (denominator = 1).</p>
+<hr />
+<h4 id="rationalpolynomialzero--one"><a class="header" href="#rationalpolynomialzero--one">RationalPolynomial::zero / one</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn zero(domain: &amp;D, n_vars: usize) -&gt; Self
+pub fn one(domain: &amp;D, n_vars: usize) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Returns the zero or the identity rational polynomial.</p>
+<hr />
+<h4 id="rationalpolynomialis_zero--is_one"><a class="header" href="#rationalpolynomialis_zero--is_one">RationalPolynomial::is_zero / is_one</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_zero(&amp;self) -&gt; bool
+pub fn is_one(&amp;self) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Returns whether the rational polynomial is zero or $1/1$.</p>
+<hr />
+<h4 id="rationalpolynomialn_vars"><a class="header" href="#rationalpolynomialn_vars">RationalPolynomial::n_vars</a></h4>
+<p><strong>Signature</strong>: <code>pub fn n_vars(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: Returns the number of variables.</p>
+<hr />
+<h4 id="rationalpolynomialdomain"><a class="header" href="#rationalpolynomialdomain">RationalPolynomial::domain</a></h4>
+<p><strong>Signature</strong>: <code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>Description</strong>: Returns a reference to the coefficient domain.</p>
+<hr />
+<h4 id="rationalpolynomialneg"><a class="header" href="#rationalpolynomialneg">RationalPolynomial::neg</a></h4>
+<p><strong>Signature</strong>: <code>pub fn neg(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns $-\frac{n}{d}$.</p>
+<hr />
+<h4 id="rationalpolynomialinv"><a class="header" href="#rationalpolynomialinv">RationalPolynomial::inv</a></h4>
+<p><strong>Signature</strong>: <code>pub fn inv(&amp;self) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: Returns the multiplicative inverse $\frac{d}{n}$. Returns <code>None</code> when the numerator is zero.</p>
+<p><strong>Returns</strong>: <code>Some(inverse)</code> or <code>None</code> (when the numerator is zero).</p>
+<hr />
+<h4 id="rationalpolynomialpow"><a class="header" href="#rationalpolynomialpow">RationalPolynomial::pow</a></h4>
+<p><strong>Signature</strong>: <code>pub fn pow(&amp;self, k: u32) -&gt; Self</code></p>
+<p><strong>Description</strong>: Fast exponentiation. Computes $\left(\frac{n}{d}\right)^k$ by repeated squaring of the numerator and denominator separately.</p>
+<hr />
+<h4 id="rationalpolynomialadd"><a class="header" href="#rationalpolynomialadd">RationalPolynomial::add</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;D: EuclideanDomain, O: MonomialOrder&gt; RationalPolynomial&lt;D, O&gt; {
+    pub fn add(&amp;self, other: &amp;Self) -&gt; Self
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Addition of rational polynomials. With equal denominators the numerators are added directly; with different denominators it cross-multiplies and normalizes.</p>
+<hr />
+<h4 id="rationalpolynomialsub"><a class="header" href="#rationalpolynomialsub">RationalPolynomial::sub</a></h4>
+<p><strong>Signature</strong>: <code>pub fn sub(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Subtraction of rational polynomials. Equivalent to <code>self.add(&amp;other.neg())</code>.</p>
+<hr />
+<h4 id="rationalpolynomialmul"><a class="header" href="#rationalpolynomialmul">RationalPolynomial::mul</a></h4>
+<p><strong>Signature</strong>: <code>pub fn mul(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Multiplication of rational polynomials. Cross-multiplies and normalizes.</p>
+<hr />
+<h4 id="rationalpolynomialdiv"><a class="header" href="#rationalpolynomialdiv">RationalPolynomial::div</a></h4>
+<p><strong>Signature</strong>: <code>pub fn div(&amp;self, other: &amp;Self) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: Division of rational polynomials. $\frac{a/b}{c/d} = \frac{ad}{bc}$.</p>
+<p><strong>Returns</strong>: <code>Some(quotient)</code> or <code>None</code> (when the numerator of the divisor is zero).</p>
+<hr />
+<h2 id="helper-functions"><a class="header" href="#helper-functions">Helper Functions</a></h2>
+<p>The following functions live in the <code>ocas_poly::sparse</code> module:</p>
+<h3 id="monomial_divides"><a class="header" href="#monomial_divides">monomial_divides</a></h3>
+<p><strong>Signature</strong>: <code>pub fn monomial_divides(a: &amp;[usize], b: &amp;[usize]) -&gt; bool</code></p>
+<p><strong>Description</strong>: Checks whether the monomial $b$ divides $a$ (i.e., $a$ is a multiple of $b$). Returns <code>true</code> iff $a_i \geq b_i$ for all $i$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;[usize]</code></td><td>Exponent vector of the dividend (the multiple)</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;[usize]</code></td><td>Exponent vector of the divisor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>true</code> if $b$ divides $a$.</p>
+<hr />
+<h3 id="monomial_lcm"><a class="header" href="#monomial_lcm">monomial_lcm</a></h3>
+<p><strong>Signature</strong>: <code>pub fn monomial_lcm(a: &amp;[usize], b: &amp;[usize]) -&gt; SmallVec&lt;[usize; 4]&gt;</code></p>
+<p><strong>Description</strong>: Computes the least common multiple of two monomials: the component-wise maximum.</p>
+<p>$$\text{lcm}(x^a y^b, x^c y^d) = x^{\max(a,c)} y^{\max(b,d)}$$</p>
+<hr />
+<h3 id="monomial_are_coprime"><a class="header" href="#monomial_are_coprime">monomial_are_coprime</a></h3>
+<p><strong>Signature</strong>: <code>pub fn monomial_are_coprime(a: &amp;[usize], b: &amp;[usize]) -&gt; bool</code></p>
+<p><strong>Description</strong>: Checks whether two monomials are coprime (no variable appears in both).</p>
+<hr />
+<h2 id="type-aliases"><a class="header" href="#type-aliases">Type Aliases</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Square-free factorization result: list of (factor, multiplicity) pairs.
+pub type SquareFreeFactors&lt;D&gt; = Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;;
+
+/// Complete factorization result: list of (irreducible factor, multiplicity) pairs.
+pub type Factors&lt;D&gt; = Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;;
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-domains.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-matrix.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-domains.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-matrix.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
