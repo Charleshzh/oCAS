@@ -65,7 +65,10 @@ jobs:
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    # Cold runners need ~55-60 min for the full workspace suite (build +
+    # the long integration tests); ubuntu-latest timed out at 60. 90 gives
+    # headroom without letting genuinely hung jobs run forever.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -80,7 +83,8 @@ jobs:
   test-all-features:
     name: Test all pure-Rust features
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Same cold-runner headroom as the matrix `test` job (timed out at 60).
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@1.97.1
