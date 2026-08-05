@@ -17,6 +17,9 @@ use ocas_domain::number_theory::{crt::crt_many, primes_from};
 use ocas_domain::{
     Domain, EuclideanDomain, FiniteField, FiniteFieldElement, Integer, IntegerDomain,
 };
+// The GMP backend's `Integer` is not `Sync`: the parallel batch loop is
+// compiled out there, so the prelude (par_iter/into_par_iter) is unused.
+#[cfg(not(feature = "gmp"))]
 use rayon::prelude::*;
 
 use crate::dense::DenseUnivariatePolynomial;
@@ -668,6 +671,28 @@ pub fn gcd_modular(a: &ZMPoly, b: &ZMPoly) -> Option<ZMPoly> {
     Some(cont_g.mul(&pp_gcd).primitive_part())
 }
 
+/// Compute one bivariate modular GCD image at prime `p`.
+///
+/// Returns `None` when `p` divides the `bad` integer or the image
+/// vanishes. Extracted so the batch loop can run under either a parallel
+/// or sequential iterator without duplicating the body.
+fn modular_gcd_x_image(
+    p: &Integer,
+    bad: &Integer,
+    pp_a: &ZMPoly,
+    pp_b: &ZMPoly,
+) -> Option<(Integer, FpMPoly, usize, bool)> {
+    if !bad.is_one() && bad.mod_floor(p).is_zero() {
+        return None;
+    }
+    let a_p = reduce_mod(pp_a, &p.to_bigint());
+    let b_p = reduce_mod(pp_b, &p.to_bigint());
+    let g_p = bivariate_gcd_fp(&a_p, &b_p)?;
+    let deg_x = fp_poly_degree_in(&g_p, 0);
+    let is_constant = g_p.total_degree() == Some(0);
+    Some((p.clone(), g_p, deg_x, is_constant))
+}
+
 /// Multi-prime modular GCD of the primitive parts (Brown's algorithm).
 fn modular_gcd_x(pp_a: &ZMPoly, pp_b: &ZMPoly, n_vars: usize) -> Option<ZMPoly> {
     // Any prime that makes the x-leading coefficient of the true GCD vanish
@@ -686,21 +711,18 @@ fn modular_gcd_x(pp_a: &ZMPoly, pp_b: &ZMPoly, n_vars: usize) -> Option<ZMPoly> 
             break;
         }
         tried += batch.len();
-        // Bivariate modular GCD images, computed in parallel. Primes
+        // Bivariate modular GCD images, computed in parallel (sequential
+        // under the GMP backend, whose `Integer` is not `Sync`). Primes
         // dividing the bad integer or with a vanished image contribute None.
+        #[cfg(not(feature = "gmp"))]
         let computed: Vec<Option<(Integer, FpMPoly, usize, bool)>> = batch
             .par_iter()
-            .map(|p| {
-                if !bad.is_one() && bad.mod_floor(p).is_zero() {
-                    return None;
-                }
-                let a_p = reduce_mod(pp_a, &p.to_bigint());
-                let b_p = reduce_mod(pp_b, &p.to_bigint());
-                let g_p = bivariate_gcd_fp(&a_p, &b_p)?;
-                let deg_x = fp_poly_degree_in(&g_p, 0);
-                let is_constant = g_p.total_degree() == Some(0);
-                Some((p.clone(), g_p, deg_x, is_constant))
-            })
+            .map(|p| modular_gcd_x_image(p, &bad, pp_a, pp_b))
+            .collect();
+        #[cfg(feature = "gmp")]
+        let computed: Vec<Option<(Integer, FpMPoly, usize, bool)>> = batch
+            .iter()
+            .map(|p| modular_gcd_x_image(p, &bad, pp_a, pp_b))
             .collect();
         for item in computed {
             let Some((p, g_p, deg_x, is_constant)) = item else {

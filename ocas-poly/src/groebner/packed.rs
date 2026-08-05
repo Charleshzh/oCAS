@@ -171,12 +171,9 @@ impl PackedSig {
         order: &O,
         n_vars: usize,
     ) -> Ordering {
-        self.pos.cmp(&other.pos).then_with(|| {
-            order.cmp(
-                &self.mono.unpack_sv(n_vars),
-                &other.mono.unpack_sv(n_vars),
-            )
-        })
+        self.pos
+            .cmp(&other.pos)
+            .then_with(|| order.cmp(&self.mono.unpack_sv(n_vars), &other.mono.unpack_sv(n_vars)))
     }
 }
 
@@ -288,10 +285,10 @@ mod tests {
             .map(|_| {
                 (0..n_vars)
                     .map(|_| match next() % 10 {
-                        0..=3 => (next() % 3) as usize,       // small values
-                        4..=5 => 32766usize,                  // near top of contract
-                        6..=7 => 32767usize,                  // top of contract
-                        _ => 3 + ((next() as usize) % 1024),  // mid-range
+                        0..=3 => (next() % 3) as usize,      // small values
+                        4..=5 => 32766usize,                 // near top of contract
+                        6..=7 => 32767usize,                 // top of contract
+                        _ => 3 + ((next() as usize) % 1024), // mid-range
                     })
                     .collect()
             })
@@ -490,10 +487,7 @@ mod tests {
         let s1 = PackedSig::unit(1);
         let order = Lex;
         // pot: module position dominates.
-        assert_eq!(
-            s0.cmp_pot::<Lex>(&s1, &order, 2),
-            Ordering::Less
-        );
+        assert_eq!(s0.cmp_pot::<Lex>(&s1, &order, 2), Ordering::Less);
         // Same position: compare monomials under O.
         let a = PackedSig {
             pos: 0,

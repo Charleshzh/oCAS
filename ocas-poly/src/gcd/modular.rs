@@ -10,6 +10,9 @@
 
 use ocas_domain::number_theory::{crt::crt_many, primes_from, symmetric_mod};
 use ocas_domain::{Domain, EuclideanDomain, FiniteField, Integer, IntegerDomain};
+// The GMP backend's `Integer` is not `Sync`: the parallel batch loop is
+// compiled out there, so the prelude (par_iter/into_par_iter) is unused.
+#[cfg(not(feature = "gmp"))]
 use rayon::prelude::*;
 
 use crate::dense::DenseUnivariatePolynomial;
@@ -105,6 +108,33 @@ fn reconstruct(images: &[(Integer, FpPoly)], deg: usize) -> Option<ZPoly> {
 /// ```
 /// use ocas_domain::{IntegerDomain, Integer};
 /// use ocas_poly::DenseUnivariatePolynomial;
+/// Compute one monic, γ-scaled modular GCD image at prime `p`.
+///
+/// Returns `None` when `p` divides γ or an input vanishes mod `p`
+/// (unlucky prime). Extracted so the batch loop can run under either a
+/// parallel or sequential iterator without duplicating the body.
+fn modular_gcd_image(
+    p: &Integer,
+    gamma: &Integer,
+    ap: &ZPoly,
+    bp: &ZPoly,
+) -> Option<(Integer, FpPoly, usize)> {
+    if gamma.mod_floor(p).is_zero() {
+        return None;
+    }
+    let field = FiniteField::new(p.to_bigint());
+    let fa = reduce_mod_field(ap, &field);
+    let fb = reduce_mod_field(bp, &field);
+    let g = fa.gcd(&fb);
+    let deg = g.degree()?; // one input vanished mod p: unlucky
+    // Normalize: monic, then scaled by γ.
+    let lc = g.leading_coeff()?.clone();
+    let inv_lc = field.inv(&lc)?;
+    let gamma_p = field.element(gamma.to_bigint());
+    let scale = field.mul(&inv_lc, &gamma_p);
+    Some((p.clone(), g.mul_scalar(&scale), deg))
+}
+
 /// use ocas_poly::gcd::modular::gcd_modular_z;
 ///
 /// let d = IntegerDomain;
@@ -142,26 +172,18 @@ pub fn gcd_modular_z(a: &ZPoly, b: &ZPoly) -> ZPoly {
             break;
         }
         tried += batch.len();
-        // Monic scaled modular GCD images, computed in parallel. Primes
+        // Monic scaled modular GCD images, computed in parallel (sequential
+        // under the GMP backend, whose `Integer` is not `Sync`). Primes
         // dividing γ or where an input vanishes mod p contribute None.
+        #[cfg(not(feature = "gmp"))]
         let computed: Vec<Option<(Integer, FpPoly, usize)>> = batch
             .par_iter()
-            .map(|p| {
-                if gamma.mod_floor(p).is_zero() {
-                    return None;
-                }
-                let field = FiniteField::new(p.to_bigint());
-                let fa = reduce_mod_field(&ap, &field);
-                let fb = reduce_mod_field(&bp, &field);
-                let g = fa.gcd(&fb);
-                let deg = g.degree()?; // one input vanished mod p: unlucky
-                // Normalize: monic, then scaled by γ.
-                let lc = g.leading_coeff()?.clone();
-                let inv_lc = field.inv(&lc)?;
-                let gamma_p = field.element(gamma.to_bigint());
-                let scale = field.mul(&inv_lc, &gamma_p);
-                Some((p.clone(), g.mul_scalar(&scale), deg))
-            })
+            .map(|p| modular_gcd_image(p, &gamma, &ap, &bp))
+            .collect();
+        #[cfg(feature = "gmp")]
+        let computed: Vec<Option<(Integer, FpPoly, usize)>> = batch
+            .iter()
+            .map(|p| modular_gcd_image(p, &gamma, &ap, &bp))
             .collect();
         for item in computed {
             let Some((p, g_scaled, deg)) = item else {

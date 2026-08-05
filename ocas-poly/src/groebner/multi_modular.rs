@@ -26,12 +26,15 @@ use num_bigint::BigInt;
 use ocas_core::FastHashMap as HashMap;
 use ocas_domain::number_theory::{crt, primes_from, symmetric_mod};
 use ocas_domain::{Domain, FiniteField, Integer, IntegerDomain, Rational, RationalDomain};
+// The GMP backend's `Integer` is not `Sync`: the parallel prime loop is
+// compiled out there, so the prelude (par_iter/into_par_iter) is unused.
+#[cfg(not(feature = "gmp"))]
 use rayon::prelude::*;
 use smallvec::SmallVec;
 
+use super::GroebnerBasis;
 use super::f4::{echelonize_fp, norm_mod};
 use super::f5::f5;
-use super::GroebnerBasis;
 use crate::multivariate_gcd::qmpoly_to_primitive_zmpoly;
 use crate::rational_reconstruction::rational_reconstruction;
 use crate::sparse::{MonomialOrder, SparseMultivariatePolynomial, monomial_divides, monomial_lcm};
@@ -273,8 +276,17 @@ pub fn groebner_basis_multi_modular<O: MonomialOrder + Send + Sync>(
         if batch.is_empty() {
             break;
         }
+        // F5 images over the batch of primes, computed in parallel
+        // (sequential under the GMP backend, whose `Integer` is not `Sync`
+        // and cannot cross rayon thread boundaries inside `f_z`).
+        #[cfg(not(feature = "gmp"))]
         let results: Vec<(i64, Option<GroebnerBasis<FiniteField, O>>)> = batch
             .par_iter()
+            .map(|&p| (p, ideal_mod_p(&f_z, p).map(|gens| f5(&gens))))
+            .collect();
+        #[cfg(feature = "gmp")]
+        let results: Vec<(i64, Option<GroebnerBasis<FiniteField, O>>)> = batch
+            .iter()
             .map(|&p| (p, ideal_mod_p(&f_z, p).map(|gens| f5(&gens))))
             .collect();
 
@@ -358,8 +370,7 @@ pub(crate) fn groebner_basis_mm<D: Domain + 'static, O: MonomialOrder + Send + S
     }
     let gb_q = groebner_basis_multi_modular(&q_ideal);
     let domain = ideal[0].domain().clone();
-    let mut basis: Vec<SparseMultivariatePolynomial<D, O>> =
-        Vec::with_capacity(gb_q.basis.len());
+    let mut basis: Vec<SparseMultivariatePolynomial<D, O>> = Vec::with_capacity(gb_q.basis.len());
     for poly in &gb_q.basis {
         let mut terms = Vec::with_capacity(poly.n_terms());
         for (exp, c) in poly.terms_ref() {
@@ -551,9 +562,7 @@ pub fn hensel_lift_groebner<O: MonomialOrder>(
         if k >= 2 {
             match rr_candidate(&g, &modulus) {
                 Some(cand) => {
-                    if prev_candidate.as_ref() == Some(&cand)
-                        && verify_candidate(ideal_z, &cand)
-                    {
+                    if prev_candidate.as_ref() == Some(&cand) && verify_candidate(ideal_z, &cand) {
                         return Some(cand.iter().map(qmpoly_to_primitive_zmpoly).collect());
                     }
                     prev_candidate = Some(cand);
@@ -686,10 +695,7 @@ fn reduce_mod_ring<O: MonomialOrder>(
         type Best = (SmallVec<[usize; 4]>, Integer, usize, SmallVec<[usize; 4]>);
         let mut best: Option<Best> = None;
         for (exp, c) in &coeffs {
-            if let Some((bi, lm)) = basis_lms
-                .iter()
-                .find(|(_, lm)| monomial_divides(exp, lm))
-            {
+            if let Some((bi, lm)) = basis_lms.iter().find(|(_, lm)| monomial_divides(exp, lm)) {
                 match &best {
                     Some((be, _, _, _)) if order.cmp(exp, be) != std::cmp::Ordering::Greater => {}
                     _ => best = Some((exp.clone(), c.clone(), *bi, lm.clone())),
@@ -720,10 +726,8 @@ fn reduce_mod_ring<O: MonomialOrder>(
             }
         }
     }
-    let terms: Vec<(Vec<usize>, Integer)> = coeffs
-        .into_iter()
-        .map(|(e, v)| (e.to_vec(), v))
-        .collect();
+    let terms: Vec<(Vec<usize>, Integer)> =
+        coeffs.into_iter().map(|(e, v)| (e.to_vec(), v)).collect();
     SparseMultivariatePolynomial::from_terms(IntegerDomain, n_vars, terms)
 }
 
@@ -732,11 +736,7 @@ fn reduce_mod_ring<O: MonomialOrder>(
 ///
 /// Rows must have columns in ascending order. Free variables are set to
 /// zero. Returns `None` when the system is inconsistent.
-fn solve_fp(
-    matrix: &mut Vec<Vec<(i64, usize)>>,
-    n_unknowns: usize,
-    p: i64,
-) -> Option<Vec<i64>> {
+fn solve_fp(matrix: &mut Vec<Vec<(i64, usize)>>, n_unknowns: usize, p: i64) -> Option<Vec<i64>> {
     let ncols = n_unknowns + 1;
     let mut pivots: Vec<Option<usize>> = Vec::new();
     echelonize_fp(matrix, ncols, p, &mut pivots);
@@ -953,8 +953,7 @@ mod tests {
         let p = gb_primes().next().unwrap();
         let img = ideal_mod_p(&ideal_z, p).unwrap();
         let g0 = f5(&img);
-        let lifted =
-            hensel_lift_groebner(&ideal_z, &g0.basis, p, 64).expect("lift should succeed");
+        let lifted = hensel_lift_groebner(&ideal_z, &g0.basis, p, 64).expect("lift should succeed");
         let lifted_q: Vec<SparseMultivariatePolynomial<RationalDomain, Lex>> =
             lifted.iter().map(zmpoly_to_qmpoly).collect();
         let expect = f5(&[
@@ -962,11 +961,7 @@ mod tests {
             qpoly(vec![(vec![0, 1], r(1, 1)), (vec![1, 0], r(-1, 1))], 2),
         ]);
         assert_eq!(
-            GroebnerBasis {
-                basis: lifted_q
-            }
-            .minimize()
-            .auto_reduce(),
+            GroebnerBasis { basis: lifted_q }.minimize().auto_reduce(),
             expect,
             "lifted basis must equal the direct ℚ basis"
         );
@@ -979,8 +974,7 @@ mod tests {
         let p = gb_primes().next().unwrap();
         let img = ideal_mod_p(&ideal_z, p).unwrap();
         let g0 = f5(&img);
-        let lifted =
-            hensel_lift_groebner(&ideal_z, &g0.basis, p, 64).expect("lift should succeed");
+        let lifted = hensel_lift_groebner(&ideal_z, &g0.basis, p, 64).expect("lift should succeed");
         assert_eq!(lifted, ideal_z);
     }
 

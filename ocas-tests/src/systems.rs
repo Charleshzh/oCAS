@@ -55,9 +55,7 @@ pub fn cyclic_q(n: usize) -> Vec<SparseMultivariatePolynomial<RationalDomain, Le
 }
 
 /// The cyclic-n ideal generators over ℚ (Grevlex order).
-pub fn cyclic_q_grevlex(
-    n: usize,
-) -> Vec<SparseMultivariatePolynomial<RationalDomain, Grevlex>> {
+pub fn cyclic_q_grevlex(n: usize) -> Vec<SparseMultivariatePolynomial<RationalDomain, Grevlex>> {
     cyclic_q_with_order::<Grevlex>(n)
 }
 

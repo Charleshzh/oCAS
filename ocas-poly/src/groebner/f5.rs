@@ -734,7 +734,12 @@ fn f5_fp<D: Domain + 'static, O: MonomialOrder>(
             let selected: Vec<CriticalPair> =
                 pairs.extract_if(.., |p| p.degree == min_deg).collect();
             let new_polys = build_and_reduce_fp::<O>(
-                &selected, &basis, &mut syzygies, &div_index, prime, &order,
+                &selected,
+                &basis,
+                &mut syzygies,
+                &div_index,
+                prime,
+                &order,
             );
 
             for poly in new_polys {
@@ -754,8 +759,6 @@ fn f5_fp<D: Domain + 'static, O: MonomialOrder>(
         .collect();
     GroebnerBasis { basis: basis_d }.minimize().auto_reduce()
 }
-
-
 
 /// Build the reduction matrix from selected pairs, echelonize, and extract
 /// new basis elements (fast path with i64 coefficients).
@@ -1033,8 +1036,7 @@ fn find_reducer_fp(
     }
     best.map(|bi| {
         let lm = basis[bi].leading_monomial().unwrap();
-        let diff: SmallVec<[usize; 4]> =
-            exp.iter().zip(lm.iter()).map(|(a, b)| a - b).collect();
+        let diff: SmallVec<[usize; 4]> = exp.iter().zip(lm.iter()).map(|(a, b)| a - b).collect();
         (bi, diff)
     })
 }
@@ -1059,7 +1061,11 @@ enum PivotLoc {
 /// original order and claims new pivots in place. The echelon form is
 /// bit-identical to a fully sequential run, and the final row order is
 /// the original order minus zero rows.
-fn echelonize_fp_labeled<S: Send + Sync>(rows: &mut Vec<LabeledFpRow<S>>, ncols: usize, prime: i64) {
+fn echelonize_fp_labeled<S: Send + Sync>(
+    rows: &mut Vec<LabeledFpRow<S>>,
+    ncols: usize,
+    prime: i64,
+) {
     let p = prime;
     let mut pivots: Vec<Option<PivotLoc>> = vec![None; ncols];
 
@@ -1086,11 +1092,11 @@ fn echelonize_fp_labeled<S: Send + Sync>(rows: &mut Vec<LabeledFpRow<S>>, ncols:
     // order is unchanged once the terms are moved back.
     let mut pivot_store: Vec<Vec<(i32, usize)>> = Vec::new();
     let mut pivot_orig_row: Vec<usize> = Vec::new();
-    for c in 0..ncols {
-        if let Some(PivotLoc::Row(r)) = pivots[c] {
+    for slot in pivots.iter_mut() {
+        if let Some(PivotLoc::Row(r)) = *slot {
             pivot_store.push(std::mem::take(&mut rows[r].terms));
             pivot_orig_row.push(r);
-            pivots[c] = Some(PivotLoc::Store(pivot_store.len() - 1));
+            *slot = Some(PivotLoc::Store(pivot_store.len() - 1));
         }
     }
 
@@ -1235,11 +1241,9 @@ pub(crate) fn packed_eligible<D: Domain, O: MonomialOrder>(
     ideal: &[SparseMultivariatePolynomial<D, O>],
 ) -> bool {
     ideal.iter().all(|p| p.n_vars() <= 8)
-        && ideal.iter().all(|p| {
-            p.terms_ref()
-                .keys()
-                .all(|e| e.iter().all(|&x| x < 1 << 15))
-        })
+        && ideal
+            .iter()
+            .all(|p| p.terms_ref().keys().all(|e| e.iter().all(|&x| x < 1 << 15)))
 }
 
 /// A native ℤ_p polynomial with packed monomials.
@@ -1315,11 +1319,8 @@ impl PackedFpPoly {
 
     /// Multiply by a packed monomial (single u128 add per term).
     fn mul_monomial_packed(&self, diff: PackedMono) -> Self {
-        let terms: Vec<(PackedMono, i64)> = self
-            .terms
-            .iter()
-            .map(|(e, c)| (e.add(diff), *c))
-            .collect();
+        let terms: Vec<(PackedMono, i64)> =
+            self.terms.iter().map(|(e, c)| (e.add(diff), *c)).collect();
         let n_vars = self.n_vars;
         let lm_sv = lm_smallvec(&terms, n_vars);
         Self {
@@ -1459,7 +1460,12 @@ fn f5_fp_packed<D: Domain + 'static, O: MonomialOrder>(
             let selected: Vec<CriticalPair> =
                 pairs.extract_if(.., |p| p.degree == min_deg).collect();
             let new_polys = build_and_reduce_fp_packed::<O>(
-                &selected, &basis, &mut syzygies, &div_index, prime, &order,
+                &selected,
+                &basis,
+                &mut syzygies,
+                &div_index,
+                prime,
+                &order,
             );
 
             for poly in new_polys {
@@ -1994,10 +2000,7 @@ mod tests {
         let h2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
             f.clone(),
             2,
-            vec![
-                (vec![0, 1], f.element(1)),
-                (vec![0usize; 2], f.element(12)),
-            ],
+            vec![(vec![0, 1], f.element(1)), (vec![0usize; 2], f.element(12))],
         );
         assert!(!packed_eligible(&[h1, h2]));
         // Boundary: exactly 2^15 - 1 still fits.
@@ -2012,10 +2015,7 @@ mod tests {
         let b2 = SparseMultivariatePolynomial::<_, Lex>::from_terms(
             f.clone(),
             2,
-            vec![
-                (vec![0, 1], f.element(1)),
-                (vec![0usize; 2], f.element(12)),
-            ],
+            vec![(vec![0, 1], f.element(1)), (vec![0usize; 2], f.element(12))],
         );
         assert!(packed_eligible(&[b1, b2]));
     }

@@ -44,7 +44,11 @@ type DPoly = DenseUnivariatePolynomial<RationalDomain>;
 /// integrand but keeps retrying (e.g. sec(x) forcing in VOP).
 const MAX_RISCH_DEPTH: usize = 16;
 
+// clippy 1.97 `missing_const_for_thread_local` false-positive: the
+// initializer already is the canonical `const {}` form (same convention
+// as ocas-atom/src/workspace.rs and ocas-poly/src/factor/eez.rs).
 thread_local! {
+    #[allow(clippy::missing_const_for_thread_local)]
     static RISCH_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 

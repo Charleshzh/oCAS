@@ -256,7 +256,9 @@ fn multi_modular_matches_f5_random() {
     use rand_xoshiro::Xoshiro256PlusPlus;
     use rand_xoshiro::rand_core::{RngCore, SeedableRng};
 
-    fn rand_q_ideal(rng: &mut Xoshiro256PlusPlus) -> Vec<SparseMultivariatePolynomial<RationalDomain, Lex>> {
+    fn rand_q_ideal(
+        rng: &mut Xoshiro256PlusPlus,
+    ) -> Vec<SparseMultivariatePolynomial<RationalDomain, Lex>> {
         let n_vars = 3;
         let mut gens = Vec::with_capacity(3);
         for _ in 0..3 {
@@ -352,7 +354,11 @@ fn f5_fp_packed_fallback_exp_overflow() {
     assert!(gb.is_groebner_basis());
     // Reduced basis of (x^70000 - 1, y - 1) is exactly {y - 1, x^70000 - 1}.
     assert_eq!(gb.basis.len(), 2);
-    let mut exps: Vec<Vec<usize>> = gb.basis.iter().map(|p| p.leading_monomial().unwrap().to_vec()).collect();
+    let mut exps: Vec<Vec<usize>> = gb
+        .basis
+        .iter()
+        .map(|p| p.leading_monomial().unwrap().to_vec())
+        .collect();
     exps.sort();
     assert_eq!(exps, vec![vec![0, 1], vec![70000, 0]]);
 }

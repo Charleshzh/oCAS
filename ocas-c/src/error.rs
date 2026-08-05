@@ -25,8 +25,13 @@ pub const OCAS_ERROR_DIVISION_BY_ZERO: c_int = 5;
 /// Memory allocation failed.
 pub const OCAS_ERROR_OUT_OF_MEMORY: c_int = 6;
 
+// clippy 1.97 `missing_const_for_thread_local` false-positive: the
+// initializers already are the canonical `const {}` form (same convention
+// as ocas-atom/src/workspace.rs).
 thread_local! {
+    #[allow(clippy::missing_const_for_thread_local)]
     static LAST_ERROR: RefCell<Option<CString>> = const { RefCell::new(None) };
+    #[allow(clippy::missing_const_for_thread_local)]
     static LAST_ERROR_CODE: RefCell<c_int> = const { RefCell::new(OCAS_OK) };
 }
 
