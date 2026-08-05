@@ -95,19 +95,6 @@ fn reconstruct(images: &[(Integer, FpPoly)], deg: usize) -> Option<ZPoly> {
     Some(ZPoly::from_coeffs(IntegerDomain, coeffs))
 }
 
-/// Compute the primitive GCD of `a` and `b` in ℤ[x] by the modular Brown
-/// algorithm: monic GCDs over `𝔽_p` are scaled by `γ = gcd(lc a, lc b)`,
-/// combined across primes with CRT, and confirmed by exact trial division.
-///
-/// The result is primitive (like [`DenseUnivariatePolynomial::gcd`]); the
-/// contents of the inputs are ignored. Falls back to the pseudo-remainder
-/// GCD only if an implausible number of primes was exhausted.
-///
-/// # Example
-///
-/// ```
-/// use ocas_domain::{IntegerDomain, Integer};
-/// use ocas_poly::DenseUnivariatePolynomial;
 /// Compute one monic, γ-scaled modular GCD image at prime `p`.
 ///
 /// Returns `None` when `p` divides γ or an input vanishes mod `p`
@@ -135,6 +122,19 @@ fn modular_gcd_image(
     Some((p.clone(), g.mul_scalar(&scale), deg))
 }
 
+/// Compute the primitive GCD of `a` and `b` in ℤ[x] by the modular Brown
+/// algorithm: monic GCDs over `𝔽_p` are scaled by `γ = gcd(lc a, lc b)`,
+/// combined across primes with CRT, and confirmed by exact trial division.
+///
+/// The result is primitive (like [`DenseUnivariatePolynomial::gcd`]); the
+/// contents of the inputs are ignored. Falls back to the pseudo-remainder
+/// GCD only if an implausible number of primes was exhausted.
+///
+/// # Example
+///
+/// ```
+/// use ocas_domain::{IntegerDomain, Integer};
+/// use ocas_poly::DenseUnivariatePolynomial;
 /// use ocas_poly::gcd::modular::gcd_modular_z;
 ///
 /// let d = IntegerDomain;
