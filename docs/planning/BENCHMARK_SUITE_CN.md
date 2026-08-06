@@ -33,11 +33,11 @@
 
 | ID | 测试用例 | 输入 | 目标 | 对标竞品 |
 |---|---|---|---|---|
-| G1 | cyclic-5 ℤ₁₃ | 标准 cyclic-5 5 变量 | < 0.1 s | msolve (5 ms)、Symbolica |
-| G2 | cyclic-6 ℤ₁₃ | 标准 cyclic-6 6 变量 | < 5 s | msolve (0.04 s)、Symbolica (~1 s) |
-| G3 | cyclic-7 ℤ₁₃ | 标准 cyclic-7 7 变量 | 标记基准 | msolve (~1 s)、Symbolica |
-| G4 | katsura-6 ℤ₁₃ | 标准 katsura-6 | < 1 s | msolve、Symbolica |
-| G5 | katsura-7 ℤ₁₃ | 标准 katsura-7 | 标记基准 | msolve、Symbolica |
+| G1 | cyclic-5 ℤ₁₃ | 标准 cyclic-5 5 变量 | < 0.1 s | msolve（实测 3 ms @ 0.10.1，2026-08-06）、Symbolica |
+| G2 | cyclic-6 ℤ₁₃ | 标准 cyclic-6 6 变量 | < 5 s | msolve（实测 4 ms @ 0.10.1，2026-08-06）、Symbolica (~1 s) |
+| G3 | cyclic-7 ℤ₁₃ | 标准 cyclic-7 7 变量 | 标记基准 | msolve（实测 55 ms @ 0.10.1，2026-08-06）、Symbolica |
+| G4 | katsura-6 ℤ₁₃ | 标准 katsura-6 | < 1 s | msolve（实测 3 ms @ 0.10.1，2026-08-06）、Symbolica |
+| G5 | katsura-7 ℤ₁₃ | 标准 katsura-7 | 标记基准 | msolve（实测 7 ms @ 0.10.1，2026-08-06）、Symbolica |
 
 ### 2.3 符号积分
 
@@ -101,13 +101,13 @@
 环境：
 - OS: Windows 11 Pro (26200)
 - CPU: Intel Core Ultra 7 255H
-- Rust: 1.XX.X (toolchain)
-- Python: 3.XX
-- oCAS: 0.23.0
+- Rust: 1.97.1 (toolchain)
+- Python: 3.12
+- oCAS: 0.26.0
 - Symbolica: 2.2.0 (pip show symbolica)
 - SymPy: 1.14.0 (pip show sympy)
-- FLINT: 3.5.0 (if applicable)
-- msolve: 0.7.x (if applicable)
+- FLINT: 3.6.0 (if applicable)
+- msolve: 0.10.1 (if applicable)
 ```
 
 ---

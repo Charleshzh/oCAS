@@ -8,11 +8,14 @@
 配套文档：[COMPETITIVE_MATRIX_CN.md](COMPETITIVE_MATRIX_CN.md)（竞品能力矩阵）、
 [BENCHMARK_SUITE_CN.md](BENCHMARK_SUITE_CN.md)（基准测试套件）。
 
-> 最后评估：**0.23.0 @ 2026-08-03**（竞品全面调研：Symbolica 2.2 Rubi 移植 + SymJIT/CUDA/WASM；
-> SymPy 1.14 DomainMatrix 10000× 加速 + Smith 标准形；SageMath 10.9 Meson 构建；
-> msolve Gröbner 性能标杆 cyclic-6 0.04 s；Symbolica 许可证变更为 source-available 商业；
-> 新增竞品：Numerica/Graphica（MIT）、mathcore（Rust CAS）。阶段 B++ 完成，
-> §5 优先级重排，新增 §7 许可证生态位与 §8 战略建议）
+> 最后评估：**0.26.0 @ 2026-08-06**（竞品版本重新核实：Symbolica 2.2.0（无更新）、
+> SymPy 1.14.0（无更新）、SageMath 10.9（2026-05-05）、FLINT 3.6.0（2026-06-29，
+> Kinoshita-Li 级数复合/padic_radix/subresultant 结式）、msolve 0.10.1（2026-07-08，
+> Gebauer-Möller 改进 + QQ 提升修复）、GiNaC 1.8.10（无更新）、mathcore 0.3.1
+> （更正上一版误记的 0.5.0）、Numerica（无 tag 发布，开发活跃）；本机全量复测
+> oCAS/Symbolica/SymPy + WSL2 实测 msolve 0.10.1：cyclic-6 grevlex 55 ms 达成
+> <0.5 s 里程碑，msolve 实测 4 ms；DoubleFloat 已由 0.24.0 DoubleF64 兑现；
+> §5 优先级重排，DoubleFloat 与 cyclic-6 移入已完成项）
 
 ---
 
@@ -67,6 +70,12 @@
 `cargo fmt`、`clippy -D warnings`、workspace 测试、`cargo deny`、pytest、
 `mdbook build`。
 
+| 版本 | 阶段 | 路线图 | 核验状态 |
+|---|---|---|---|
+| 0.24.0 | 1.0 候选 | ✅ | ✅ 启发式积分四技术（分部 LIATE/三角换元/Weierstrass/Euler 占位）接入 `try_risch_or_fallback` 调度链 + `integrate_heuristic` 公共 API；**DoubleF64**（Dekker/Knuth 双精度 ~31 位十进制，含超越函数 + EvaluationDomain）；Python/C 绑定 |
+| 0.25.0 | 1.0 候选 | ✅ | ✅ **MultiModular Gröbner**（ℚ 理想：并行 F5 幸运素数像 + CRT + 有理重构 + ℚ 精确验证 + 无迹 p-adic Hensel 提升 + 回落）；`Algorithm::Auto` 自动路由；F5 提速（DivisorIndex/分桶 syzygy/并行行构造/两阶段 echelon，cyclic-6 ℤ₁₃ 2.63 s → 1.415 s）；**并行模 GCD**；katsura-6/7 预存在差距记录 |
+| 0.26.0 | 1.0 候选 | ✅ | ✅ **打包单项式 F5 快通道**（u128 SWAR，n_vars≤8 且指数<2¹⁵ 自动路由，超界回落）+ echelon i32/免克隆两阶段改造 + **grevlex 基准变体**；修复 Graded 序度方向反置预存在 bug；cyclic-6 ℤ₁₃ grevlex 52.07 ms（criterion 中位数）、Lex 936 ms；cyclic-7 grevlex 单轮 5.755 s（209 基元素） |
+
 ---
 
 ## 2. 代码规模
@@ -106,8 +115,8 @@ ocas-domain +~1.1k）、数值积分/流式求值（ocas-eval，+~0.5k），以�
 | 算法领域 | oCAS 现状 | 成熟度 |
 |---|---|---|
 | 多项式因式分解 | `DenseUnivariatePolynomial` 上 ℤ 与 ℤ_p 的 `factor()`，`SparseMultivariatePolynomial` 上任意多元 ℤ 与 ℤ_p 的 `factor()`（0.16.x Wang EEZ + 非常数 LC 强加），以及 `AlgebraicNumberField` 上的一元 `factor()`（0.17.0 Trager：平移范数 + 模 GCD） | 🟢 一元/二元/任意多元/代数数域（一元） |
-| Gröbner 基 | F4 真实线性代数（0.15.1）+ F5 签名约简（0.19.0：`Signature`/`SyzygySet` + ℤ_p 原生快速路径 `f5_fp`）+ FGLM + 统一 `groebner_basis()` 分派 + ℤ_p 原生 i64 管线；cyclic-6 ℤ₁₃ **2.63 s**（基线 3670 s，≈1400×）；cyclic-5 ℤ₁₃ 0.05 s | 🟢 F4 + F5 完成 |
-| 符号积分 | Risch（初等超越塔 + RDE 多项式片段）+ 有理函数 Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel）；回退 `Integral(...)`；**关键差距**：Symbolica 2.2 移植 Rubi 4.17（7000+ 规则、72,944 题库、MIT crate），覆盖面远超 Risch | 🟢 Risch 完成，但 Rubi 广度差距大 |
+| Gröbner 基 | F4 真实线性代数（0.15.1）+ F5 签名约简（0.19.0：`Signature`/`SyzygySet` + ℤ_p 原生快速路径 `f5_fp`）+ FGLM + 统一 `groebner_basis()` 分派 + ℤ_p 原生 i64 管线 + MultiModular ℚ 管线（0.25）+ u128 打包 F5 快通道（0.26）；cyclic-6 ℤ₁₃ **55.04 ms** grevlex（2026-08-06 实测 criterion 中位数；0.19.0 基线 2.63 s，约 48×）；cyclic-5 ℤ₁₃ 8.97 ms grevlex | 🟢 F4 + F5 + MultiModular 完成 |
+| 符号积分 | Risch（初等超越塔 + RDE 多项式片段）+ 有理函数 Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel）+ 0.24 启发式模块（分部/三角换元/Weierstrass/Euler 占位）接入 `try_risch_or_fallback`；回退 `Integral(...)`；**关键差距**：Symbolica 2.2 移植 Rubi 4.17（7000+ 规则、72,944 题库、MIT crate），覆盖面远超 Risch | 🟢 Risch + 启发式完成，Rubi 广度差距大 |
 | 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量）；已知缺口：Wilkinson n=10 展开多项式仅隔离 8/10 根 | 🟡 较完整 |
 | 多项式 GCD | GCD + 本原部分 + 扩展 GCD（0.12）+ 经 EEZ 的任意元数多元 GCD（0.16）+ GF(p^d) 上模数域 GCD（CRT + 有理重构，0.17）+ 单变量 Brown 模 GCD 与二元多素数模 GCD（0.21，大整数系数无爆炸） | 🟢 完整（含模快速路径，无 HEVMGCD） |
 | 线性求解 | 有理/整数线性方程组 + 二元丢番图（`ax+by=c`） | 🟡 可用，规模有限 |
@@ -142,8 +151,8 @@ Rubi 4.17（7000+ 规则，MIT crate `symbolica-integrate`），是其杀手特�
 | 流式 API | ✅ 百万行恒定内存 | ✅ |
 | 张量 | ✅ 完整规范化 + Young 投影子（0.22） | ✅ Graphica 图同构引擎 |
 | **代码生成** | 🟢 **Cranelift JIT（97×/21×）** | ✅ **SymJIT + CUDA/WASM/C++/ASM** |
-| **DoubleFloat** | 🔴 | ✅ **~31 位，>3× 快于任意精度** |
-| Gröbner 基 | ✅ F5，cyclic-6 2.63 s | ✅ 工业级，~1 s |
+| **DoubleFloat** | ✅ **DoubleF64（0.24，~31 位十进制）** | ✅ **~31 位，>3× 快于任意精度** |
+| Gröbner 基 | ✅ F5 + u128 打包快通道，cyclic-6 ℤ₁₃ grevlex **55 ms**（2026-08-06 实测） | ✅ 工业级，~1 s |
 | ODE 求解器 | ✅ 完整（0.20.1） | 🔴 无 |
 | 数论 | ✅ 核心栈完整（0.21） | 🔴 无 |
 | 代数几何工具 | ✅ 理想运算+准素分解+Hilbert（0.23） | 🔴 无 |
@@ -189,10 +198,10 @@ SymPy 1.14.0（2025-04-27）引入 DomainMatrix（FLINT 后端）大幅提升矩
 | 微分 | 🟢 持平 | 链式/乘积/幂法则 |
 | 积分 | 🟢 基本持平 | 双方均有 Risch；SymPy 的 `manualintegrate` 启发式覆盖更广 |
 | 因式分解 | 🟢 持平 | oCAS 任意多元+代数数域已补齐 |
-| Gröbner | 🟢 oCAS 优势 | oCAS F5 2.63 s，SymPy 仅 Buchberger |
+| Gröbner | 🟢 oCAS 优势 | oCAS F5 打包快通道 cyclic-6 grevlex 55 ms（实测），SymPy 仅 Buchberger |
 | **矩阵/线性代数** | 🟡 **SymPy 追赶** | SymPy 1.14 DomainMatrix + FLINT 后端 rref **10000× 加速** + Smith 标准形；oCAS 仍为 Bareiss |
 | 数论 | 🟢 持平 | oCAS ECM，SymPy 二次筛（大整数可能更快） |
-| **性能** | 🟢 **oCAS 优势** | Rust + JIT 对纯 Python；x³⁰−1 无平方 39 µs vs ~0.9 ms（~24×） |
+| **性能** | 🟢 **oCAS 优势** | Rust + JIT 对纯 Python；2026-08-06 实测：parse 100×、simplify 124×、series 2,550×、integrate 39–76×、eval 183×；**例外**：`factor(x^30-1)` SymPy 快约 50×（分圆幂的快路径） |
 | Python 易用性 | 🟢 持平 | oCAS 有 `ocas-py` 绑定 |
 
 0.6.0 成功标准“基础多项式/微积分/重写与 SymPy 持平”——在**性能**维度已
@@ -205,19 +214,22 @@ Risch + 查表路径更宽）和**矩阵/线性代数**（DomainMatrix 10000× �
 ### 4.4 对照 msolve（Gröbner 性能标杆）
 
 msolve 是 Gröbner 基计算的开源性能标杆，使用 F4/F5 + 多模算术 + Hensel 提升 +
-Berlekamp-Massey 优化。基准数据（来源：Groebner.jl 论文 2026）：
+Berlekamp-Massey 优化。**2026-08-06 本机实测**（WSL2，msolve 0.10.1 源码构建，
+`-g 2` 仅 GB 模式、DRL 序、单线程；基元素数与 oCAS 逐项一致）：
 
-| 基准 | msolve | oCAS 0.23 | 比值 |
+| 基准 | msolve 0.10.1（实测） | oCAS 0.26（实测） | 比值 |
 |---|---|---|---|
-| cyclic-5 ℤ₁₃ | ~5 ms | 0.05 s | ~10× |
-| cyclic-6 ℤ₁₃ | **0.04 s** | 2.63 s | **~65×** |
-| cyclic-7 ℤ₁₃ | ~1 s | 未测 | — |
-| katsura-6 | ~0.02 s | 未测 | — |
+| cyclic-5 ℤ₁₃ | 3 ms | 8.97 ms（grevlex） | 3.0× |
+| cyclic-6 ℤ₁₃ | **4 ms** | **55.04 ms**（grevlex） | 13.8× |
+| cyclic-7 ℤ₁₃ | **55 ms** | 3.829 s（grevlex 单轮） | ~70× |
+| katsura-6 | 3 ms | 未测（预存在差距） | — |
+| katsura-7 | 7 ms | 未测（预存在差距） | — |
 
-**差距根源**：msolve 的多模算术（multi-modular）+ Hensel 提升 + BM 策略使其在
-大规模 Gröbner 上领先 oCAS 约 1-2 个数量级。oCAS 的 F5 签名约简已将 cyclic-6
-从 3670 s 降至 2.63 s，但要追平 msolve 还需引入 multi-modular + rational
-reconstruction 策略。
+**差距根源**：msolve 的多模算术 + Hensel 提升 + BM 策略在大规模 Gröbner 上仍领先
+oCAS 1–2 个数量级。0.26.0 的打包单项式 F5 已将 cyclic-6 拉到 55 ms（0.19.0 基线
+2.63 s，约 48×），但 cyclic-7（~70×）与 katsura 系（oCAS 未完成 vs msolve 3–7 ms）
+仍是最大单项差距。上一版文档引用的 msolve 数值（cyclic-6 0.04 s）已被本轮实测
+（4 ms）替换。
 
 **Windows 可用性**：msolve 可通过 MSYS2 在 Windows 上编译（需 GMP/MPFR/FLINT），
 但非原生体验。oCAS 在 Windows 上原生支持是差异化优势。
@@ -226,9 +238,9 @@ reconstruction 策略。
 
 | 竞品 | 语言 | 许可证 | 功能 | 对 oCAS 的威胁 |
 |---|---|---|---|---|
-| **Numerica** | Rust | MIT | 高性能数类型、误差跟踪浮点、有限域、矩阵、Vegas 积分、双数 | 直接竞争 `ocas-domain`/`ocas-eval` 的数值层 |
+| **Numerica** | Rust | MIT | 高性能数类型、误差跟踪浮点、有限域、矩阵、Vegas 积分、双数（2026-08-06 核实：无 release/tag，开发活跃） | 直接竞争 `ocas-domain`/`ocas-eval` 的数值层 |
 | **Graphica** | Rust | MIT | 图同构（McKay 算法）、Feynman 图生成 | 竞争 `ocas-rewrite` 的张量规范化 |
-| **mathcore** | Rust | MIT | 泛型代数结构（环/域/多项式/矩阵）| 底层代数基础设施竞品，功能远不及 oCAS |
+| **mathcore** | Rust | MIT | 泛型代数结构（环/域/多项式/矩阵）；2026-08-06 核实：最新 **0.3.1**（2025-08-30，crates.io），上一版误记 0.5.0 | 底层代数基础设施竞品，功能远不及 oCAS |
 | **cas-rs** | Rust | — | Rust CAS 工作进行中 | 功能远不及 oCAS，但验证 Rust CAS 市场需求 |
 
 **评估**：Numerica 和 Graphica 是 Symbolica 的 MIT 拆分，功能专精但不构成完整
@@ -237,18 +249,19 @@ CAS 威胁。mathcore/cas-rs 是早期项目。oCAS 的自包含内核 + LGPL �
 
 ---
 
-## 5. 关键缺口与优先级（2026-08-03 重排）
+## 5. 关键缺口与优先级（2026-08-06 重排）
 
-基于本次竞品全面调研（Symbolica 2.2、SymPy 1.14、msolve、SageMath 10.9），
-重排 1.0.0 前的优先级。阶段 B++ “竞品全面对齐”（0.19–0.23）已完成。
+基于本轮（2026-08-06）竞品版本重新核实 + 本机全量复测（msolve 0.10.1 实测、
+oCAS/Symbolica/SymPy 基准、cyclic-6 grevlex 55 ms 达成 <0.5 s 里程碑），
+重排 1.0.0 前的优先级。阶段 B++ “竞品全面对齐”（0.19–0.23）+ 0.24–0.26
+（启发式积分/DoubleF64、MultiModular、打包 F5）已完成。
 
 | 优先级 | 缺口 | 现状 | 目标 | 理由 |
 |---|---|---|---|---|
-| **P0** | 符号积分广度（Rubi 规则集成或等效） | Risch 覆盖面窄 | 对标 symbolica-integrate 1892 题 | Symbolica 2.2 杀手特性；覆盖面差距是最大功能缺口 |
-| **P1** | Gröbner 大规模性能对齐 msolve | cyclic-6 2.63 s vs msolve 0.04 s | cyclic-6 < 0.5 s | msolve 是开源性能标杆；需 multi-modular 策略 |
+| **P0** | 符号积分广度（Rubi 规则集成或等效） | Risch + 0.24 启发式四技术，覆盖面仍窄 | 对标 symbolica-integrate 1892 题 | Symbolica 2.2 Rubi 7000+ 规则（72,944 题库）仍是最大功能缺口 |
+| **P1** | Gröbner 大规模性能（katsura 系 + cyclic-7） | katsura-6/7 未完成（单轮 >30 min）；cyclic-7 Lex >2 h 未完成；cyclic-7 grevlex 3.829 s vs msolve 55 ms（~70×） | katsura-6 < 1 s；cyclic-7 可完成 | msolve 0.10.1 实测 katsura 3–7 ms、cyclic-7 55 ms；打包管线 + 多模策略向 katsura/cyclic-7 扩展 |
 | **P1** | 代码生成扩展（LLVM JIT + CUDA/WASM 导出） | 仅 Cranelift JIT | 至少 LLVM JIT | Symbolica SymJIT/CUDA/WASM 形成代差 |
 | **P2** | 矩阵/线性代数增强 | Bareiss 行列式/逆 | DomainMatrix 类似引擎 + Smith 标准形 | SymPy 1.14 DomainMatrix 10000× 加速后差距扩大 |
-| **P2** | DoubleFloat | 无 | ~31 位浮点，>3× 快于任意精度 | Symbolica 已支持；低垂果实 |
 | **P2** | Windows FLINT 支持 | `flint` feature 仅 Linux/WSL | 三平台可用 | 平台覆盖完整性 |
 | **P3** | 张量嵌套函数内处理 | 基础版 | 对标 Symbolica Graphica | 0.22 已补齐基础规范化 |
 | **P3** | 大整数分解（二次筛） | ECM 30 位 1.1 s | 对标 SymPy qs_factor | SymPy 二次筛在大整数上可能更快 |
@@ -271,28 +284,34 @@ CAS 威胁。mathcore/cas-rs 是早期项目。oCAS 的自包含内核 + LGPL �
 | 12 | 张量规范化+高级模式匹配 | 0.22.0 |
 | 13 | 代数几何工具 | 0.23.0 |
 | 14 | PDE 求解器 | Post-1.0 |
+| 15 | **DoubleFloat（DoubleF64，~31 位扩展精度）** | **0.24.0**（原 P2，本轮移入） |
+| 16 | **Gröbner cyclic-6 < 0.5 s**（grevlex 实测 55.04 ms） | **0.26.0**（原 P1，本轮移入；msolve 比值 13.8× 另行跟踪） |
 
 ---
 
 ## 6. 总评
 
-0.1 → 0.23.0 执行质量极高：每个路线图交付物均兑现，分层架构干净（无环依赖），
+0.1 → 0.26.0 执行质量极高：每个路线图交付物均兑现，分层架构干净（无环依赖），
 13 crate workspace 严格分层，质量门严格（`-D warnings` + deny + Miri 意识），
 文档/绑定/CI 工程化完备。阶段 A（Beta 硬代数）、阶段 B+（Symbolica 差距清零）、
-阶段 B++（竞品全面对齐）三个阶段全部完成。
+阶段 B++（竞品全面对齐）、0.24–0.26（启发式积分/DoubleF64、MultiModular、
+打包 F5）全部完成。2026-08-06 全量复测确认：cyclic-6 ℤ₁₃ grevlex 55.04 ms
+（0.19.0 基线的 ~48×），达成「< 0.5 s」里程碑。
 
 **务实定位**：当前 oCAS 是“高性能、自包含的代数内核，功能对标 SymPy，许可证
 优于 Symbolica”。核心优势：
 
 1. **唯一 LGPL-3.0 高性能 Rust CAS**——Symbolica 已转为 source-available 商业
 2. **功能广度领先 Symbolica**——ODE、数论、代数几何、等式饱和（Symbolica 不涉足）
-3. **性能全面领先 SymPy**——Rust + JIT 对纯 Python
+3. **性能全面领先 SymPy**——Rust + JIT 对纯 Python（parse 100×、series 2,550× 等；
+   例外：`factor(x^n−1)` 类分圆输入 SymPy 快约 50×）
 4. **三语言绑定**——Rust + Python + C/C++，比 Symbolica 更广
 
 **关键差距**（需 1.0.0 前或紧随其后解决）：
 
-1. 符号积分广度——Symbolica Rubi 7000+ 规则 vs oCAS Risch
-2. Gröbner 大规模性能——msolve 0.04 s vs oCAS 2.63 s
+1. 符号积分广度——Symbolica Rubi 7000+ 规则 vs oCAS Risch + 0.24 启发式
+2. Gröbner 大规模性能——katsura-6/7 未完成、cyclic-7 grevlex ~70× msolve
+   （msolve 0.10.1 实测 4–55 ms；cyclic-6 已收敛至 55 ms / 13.8×）
 3. 代码生成——Symbolica CUDA/WASM/C++ vs oCAS 仅 Cranelift
 4. 矩阵/线性代数——SymPy DomainMatrix 10000× 加速
 
@@ -347,10 +366,12 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 
 | 建议 | 版本 | 交付物 | 理由 |
 |---|---|---|---|
-| 积分广度扩展 | 0.24 或 1.0-rc | Risch + 启发式扩展 或 Rubi 规则集成 | Symbolica 2.2 杀手特性；覆盖面差距是最大功能缺口 |
-| Gröbner multi-modular | 0.24 或 1.0-rc | cyclic-6 < 0.5 s | msolve 性能标杆；需 multi-modular + rational reconstruction |
-| DoubleFloat | 0.24 或 1.0-rc | ~31 位浮点求值路径 | 低垂果实；Symbolica 已支持；>3× 快于任意精度 |
+| 积分广度扩展 | 1.0-rc | Risch + 启发式扩展 或 Rubi 规则集成 | Symbolica 2.2 杀手特性；覆盖面差距是最大功能缺口 |
+| Gröbner katsura/cyclic-7 扩展 | 1.0-rc | katsura-6 < 1 s；cyclic-7 可完成 | msolve 实测 3–55 ms；打包 F5 已验证 cyclic-6 收敛 |
 | 矩阵增强 | 1.0-rc | DomainMatrix 类似引擎 | SymPy 1.14 差距扩大 |
+
+> 已兑现（0.24–0.26）：DoubleFloat（→DoubleF64）、Gröbner cyclic-6 < 0.5 s
+> （grevlex 55 ms）、MultiModular ℚ 管线、启发式积分四技术。
 
 ### 8.2 Post-1.0
 
@@ -407,3 +428,4 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 | 0.20.0 | 2026-07-27 | **常微分方程求解器发布。** §3 新增 ODE 行（🟡）。§4.1 新增 ODE 竞品行（🟡）。§5 #10（ODE 求解器）标记 🟡 部分完成——一阶 5 种（可分离/线性/Bernoulli/恰当/齐次）+ 二阶 2 种（常系数/Cauchy-Euler）+ 幂级数框架 + ODE 分类引擎 `classify_ode()` + `dsolve()` 入口；Laplace 变换、ODE 系统、Python/C 绑定推迟。版本提升 0.20.0。 |
 | 0.20.1 | 2026-07-27 | **ODE 求解器全量收尾。** 积分因子检测（μ(x)/μ(y)）；常数变易法（VOP，修复 Cauchy-Euler forcing 静默丢弃）；降阶法；幂级数系数递推 + Frobenius（实有理指标根）；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定（`classify_ode`/`dsolve`/`dsolve_ivp`）。修复 real_roots isqrt/公式 bug、is_exact 硬编码、Cauchy-Euler 系数归一化、积分器 (ax+b)^-1 与分数次幂、substitute_solution 裸 y(x)、级数系数 diff 污染。新增同类项收集器 collect_terms + expand。31 项代入验证正确性测试（3 项已知限制 ignore）。ODE 缺口从 🟡 升级为 🟢。版本提升 0.20.1。 |
 | 0.23.0 竞品调研 | 2026-08-03 | **全面竞品差距调研与评估。** 头部更新至 0.23.0。新增配套文档 COMPETITIVE_MATRIX_CN.md（竞品能力矩阵）+ BENCHMARK_SUITE_CN.md（基准测试套件设计）。§1 版本表扩展至 0.23.0。§3 算法深度新增代数几何工具、高级模式匹配行，符号积分行标注 Rubi 广度差距。§4.1 Symbolica 对照重写（2.2.0 source-available + Rubi + SymJIT/CUDA/WASM + DoubleFloat）；新增 §4.4 msolve 对照（cyclic-6 0.04 s 标杆）；新增 §4.5 新兴竞品（Numerica/Graphica/mathcore/cas-rs）。§5 优先级重排（P0 积分广度、P1 Gröbner+代码生成、P2 矩阵+DoubleFloat+FLINT、P3 张量+二次筛）。新增 §7 许可证与生态位分析（Symbolica 许可证变更 + Rubi 许可证风险 + oCAS LGPL 优势）。新增 §8 战略建议（1.0 前 + Post-1.0 + 定位建议）。§6 总评重写。 |
+| 0.26.0 复测 | 2026-08-06 | **竞品版本重新核实 + 本机全量复测。** 头部更新至 0.26.0。竞品核实：FLINT 3.5.0→3.6.0（Kinoshita-Li 级数复合、padic_radix、subresultant 结式）、msolve 0.7.x→0.10.1（GM 改进、QQ 提升修复）、mathcore 更正为 0.3.1（0.5.0 不存在）、Numerica 无 tag、SageMath 日期更正 10.9@2026-05-05；Symbolica/SymPy/GiNaC 无更新。§1 版本表追加 0.24.0/0.25.0/0.26.0 行。§4.1 DoubleFloat 行 🔴→✅（0.24 DoubleF64）；§4.4 msolve 表以 WSL2 实测值替换引用值（cyclic-6 4 ms、cyclic-7 55 ms、katsura 3–7 ms）。§5 优先级重排：DoubleFloat 与 cyclic-6<0.5 s（grevlex 55.04 ms 实测）移入已完成项，Gröbner 剩余差距重定为 katsura+cyclic-7。§6/§8 同步改写（含 factor(x^n−1) 类 SymPy 快 ~50× 的诚实记录）。 |

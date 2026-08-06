@@ -1,10 +1,10 @@
-# oCAS 0.23.0 竞品能力矩阵
+# oCAS 0.26.0 竞品能力矩阵
 
-> **编制日期**：2026-08-03
+> **编制日期**：2026-08-06（全量复测日）
 > **数据来源**：Symbolica 官方博客（symbolica.io）、SymPy 1.14 文档、SageMath GitLab 标签、
 > FLINT GitHub/changelog、msolve GitHub/Groebner.jl 论文、GiNaC 官网/Codeberg、
 > Numerica GitHub、mathcore crates.io
-> **评估基准**：oCAS 0.23.0（2026-08-02 发布）
+> **评估基准**：oCAS 0.26.0（2026-08-04 发布）
 
 ---
 
@@ -23,15 +23,25 @@
 
 | 系统 | 最新版本 | 发布日期 | 语言 | 许可证 | 定位 |
 |---|---|---|---|---|---|
-| **oCAS** | 0.23.0 | 2026-08-02 | Rust | LGPL-3.0+ | 高性能自包含 CAS 内核 |
+| **oCAS** | 0.26.0 | 2026-08-04 | Rust | LGPL-3.0+ | 高性能自包含 CAS 内核 |
 | **Symbolica** | 2.2.0 | 2026-07-24 | Rust | source-available 商业（单核免费非商业） | 高性能符号框架 |
 | **SymPy** | 1.14.0 | 2025-04-27 | Python | BSD-3-Clause | 纯 Python CAS |
-| **SageMath** | 10.9 | 2026-05-04 | Python/Cython | GPL-2.0+ | 科学计算环境（80+ 库集成） |
-| **FLINT** | 3.5.0 | 2026-04-24 | C | LGPL-3.0+ | 多项式/数论性能库 |
-| **msolve** | 0.7.x | 2026 | C | GPL-3.0 | Gröbner 基性能标杆 |
-| **Numerica** | — | 2025-11 | Rust | MIT | Symbolica 数值拆分 |
+| **SageMath** | 10.9 | 2026-05-05 | Python/Cython | GPL-2.0+ | 科学计算环境（80+ 库集成） |
+| **FLINT** | 3.6.0 | 2026-06-29 | C | LGPL-3.0+ | 多项式/数论性能库 |
+| **msolve** | 0.10.1 | 2026-07-08 | C | GPL-3.0 | Gröbner 基性能标杆 |
+| **Numerica** | —（无发布 tag） | 最后提交 2026-07-22 | Rust | MIT | Symbolica 数值拆分 |
 | **GiNaC** | 1.8.10 | 2026-02-11 | C++ | GPL-2.0+ | C++ 嵌入式符号库 |
-| **mathcore** | 0.5.0 | 2026-03 | Rust | MIT | Rust CAS 代数基础 |
+| **mathcore** | 0.3.1 | 2025-08-30 | Rust | MIT | Rust CAS 代数基础 |
+
+> **版本核实（2026-08-06，权威源逐一核对）**：Symbolica 取 GitHub `ls-remote --tags`
+> 最高 tag（v2.2.0，本机检出 77c1374）；SymPy 取 PyPI JSON `info.version`（1.14.0，
+> 2025-04-27 上传）；SageMath/FLINT/msolve 取 GitHub releases/latest API
+> （10.9 / v3.6.0 / v0.10.1）；GiNaC 取 ginac.de/News.html（1.8.10，2026-02-11）；
+> mathcore 取 crates.io API（max_stable_version = 0.3.1，2025-08-30 发布，GitHub 仅
+> v0.3.0/v0.3.1 tag）。**更正**：上一版 §1 记录的 mathcore 0.5.0 @ 2026-03 与权威源
+> 不符（crates.io 与 GitHub 均无该版本），已改为 0.3.1。**Numerica**：GitHub 无任何
+> release/tag（releases/latest 404），仓库开发活跃（最后提交 2026-07-22），版本号
+> 无法核实，标注「无发布 tag」。
 
 ---
 
@@ -39,65 +49,80 @@
 
 ### 2.1 基础代数（多项式运算、GCD、因式分解、结式）
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.5 | msolve | GiNaC 1.8.10 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.6 | msolve | GiNaC 1.8.10 |
 |---|---|---|---|---|---|---|---|
 | 稠密单变量多项式 | ✅ | ✅ | ✅ | ✅ | ✅ 性能标杆 | — | ✅ |
 | 稀疏多元多项式 | ✅ | ✅ | ✅ | ✅ (Singular) | ✅ | — | 🟡 有限 |
-| 多项式 GCD（ℤ） | ✅ 模方法 | ✅ | ✅ | ✅ FLINT | ✅ 性能标杆 | — | ✅ |
+| 多项式 GCD（ℤ） | ✅ 模方法（0.25 并行化） | ✅ | ✅ | ✅ FLINT | ✅ 性能标杆 | — | ✅ |
 | 多项式 GCD（ℤ_p） | ✅ 模方法 | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| 多元 GCD | ✅ Brown 模 GCD | ✅ | ✅ | ✅ | ✅ | — | 🟡 |
+| 多元 GCD | ✅ Brown 模 GCD（并行模像） | ✅ | ✅ | ✅ | ✅ | — | 🟡 |
 | 因式分解（一元 ℤ/ℤ_p） | ✅ CZ+Hensel | ✅ | ✅ | ✅ FLINT | ✅ | — | ✅ |
 | 因式分解（多元） | ✅ Wang EEZ | ✅ | ✅ | ✅ Singular | ✅ | — | 🔴 |
 | 因式分解（代数数域） | ✅ Trager | ✅ | 🟡 | ✅ | — | — | 🔴 |
-| 结式 | ✅ Brown PRS | ✅ | ✅ | ✅ | ✅ | — | ✅ |
+| 结式 | ✅ Brown PRS | ✅ | ✅ | ✅ | ✅ subresultant 默认 | — | ✅ |
 | 无平方分解 | ✅ Yun SFF | ✅ | ✅ | ✅ | ✅ | — | ✅ |
 | 有理函数 | ✅ RationalPolynomial | ✅ | ✅ | ✅ | — | — | 🟡 |
 | 部分分式 | ✅ | ✅ | ✅ | ✅ | — | — | ✅ |
 
-**评估**：oCAS 0.23 在多项式代数上已达到与 Symbolica、SymPy 持平的水平。FLINT 在纯
-数值性能上仍是天花板，但 oCAS 已有 `flint` feature 集成。SageMath 通过 Singular/FLINT
-组合覆盖更广。
+**评估**：oCAS 0.26 在多项式代数上与 Symbolica、SymPy 持平；0.25 起 ℤ 模 GCD 素数
+循环并行化（gcd_modular_z/modular_gcd_x 的模像批并行）。FLINT 3.6 在纯数值性能上
+仍是天花板（新增 subresultant 结式/xgcd 默认路径，覆盖非域 UFD），oCAS 已有
+`flint` feature 集成。
 
 ### 2.2 Gröbner 基
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | msolve | Singular (via SageMath) |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | msolve 0.10.1 | Singular (via SageMath) |
 |---|---|---|---|---|---|---|
-| F4 算法 | ✅ | ✅ | 🔴 | ✅ (Singular) | ✅ 多模+Hensel | ✅ |
-| F5 签名约简 | ✅ f5_fp | ✅ | 🔴 | 🟡 | ✅ F4/F5 | 🟡 |
+| F4 算法 | ✅ | ✅ | 🔴 | ✅ (Singular) | ✅ 多模+Hensel+GM | ✅ |
+| F5 签名约简 | ✅ f5_fp + 打包快通道 | ✅ | 🔴 | 🟡 | ✅ F4/F5 | 🟡 |
+| MultiModular（ℚ） | ✅ 0.25 并行多素数+CRT+RR | 🟡 | 🔴 | ✅ | ✅ 核心策略 | ✅ |
 | Buchberger 经典 | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| 多单项式序 | ✅ Grlex/Weight/Block | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 多单项式序 | ✅ Grlex/Weight/Block | ✅ | ✅ | ✅ | ✅ DRL | ✅ |
 | FGLM 换序 | ✅ | ✅ | — | ✅ | ✅ | ✅ |
 | Hilbert 级数 | ✅ | ✅ | — | ✅ | — | ✅ |
-| cyclic-6 ℤ₁₃ | **2.63 s** | ~1 s | 🔴 | ~3.4 s (Oscar) | **0.04 s** | ~0.5 s |
-| cyclic-7 ℤ₁₃ | 🔴 未测 | ✅ | 🔴 | ✅ | **~1 s** | ✅ |
+| cyclic-6 ℤ₁₃ | **55.0 ms** grevlex（实测）/ 910 ms Lex | ~1 s | 🔴 | ~3.4 s (Oscar) | **4 ms** grevlex（实测） | ~0.5 s |
+| cyclic-7 ℤ₁₃ | **3.83 s** grevlex（实测）/ Lex >2 h 未完成 | ✅ | 🔴 | ✅ | **55 ms** grevlex（实测） | ✅ |
+| katsura-6 ℤ₁₃ | 🔴 未测（预存在差距） | ✅ | 🔴 | ✅ | **3 ms**（实测） | ✅ |
+| katsura-7 ℤ₁₃ | 🔴 未测（预存在差距） | ✅ | 🔴 | ✅ | **7 ms**（实测） | ✅ |
 | 理想运算 | ✅ sum/product/quotient/saturate | ✅ | 🟡 | ✅ | — | ✅ |
 | 准素分解 | ✅ 零维 | ✅ | 🟡 | ✅ | — | ✅ |
 
-**评估**：oCAS F5 在 cyclic-6 上 2.63 s，与 Symbolica ~1 s 在同一量级，但 msolve 的
-0.04 s（多模+Hensel+BM 优化）领先约 65×。cyclic-7 需要 multi-modular 策略进一步
-加速。oCAS 理想运算和准素分解已补齐。
+> 实测口径（2026-08-06，本机）：oCAS 为 criterion 中位数（grevlex 变体为
+> `f5_cyclic_fp13_grevlex`；cyclic-7 grevlex 为单轮计时 3.829 s，criterion 无法采
+> 样）；msolve 0.10.1 为 WSL2 下 `-g 2`（仅 Gröbner 基，DRL 序）3 次中位数，单线程
+> （`-t 16` 在本构建上慢 100–1000×，已弃用）。msolve 基元素数与 oCAS 完全一致
+> （cyclic-5/6/7 = 20/45/209，katsura-6/7 = 36/70），输入逐项同源。
+
+**评估**：0.26.0 打包单项式 F5（u128 SWAR）+ echelon 改造后，cyclic-6 ℤ₁₃ grevlex
+实测 **55 ms**，达成「< 0.5 s」里程碑；与 msolve 0.10.1 实测 4 ms 的比值为 ~14×
+（上一版文档按引用值 0.04 s 记为 1.3×，本轮以实测值替换——msolve 0.10.1 在本机比
+旧引用快一个数量级）。cyclic-7 grevlex 3.83 s vs msolve 55 ms（~70×）仍是最大单项
+差距；katsura 系 oCAS 预存在差距（katsura-6 单轮 >30 min），msolve 侧为 3–7 ms。
+理想运算和准素分解已补齐。
 
 ### 2.3 符号积分
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | Mathematica (参考) |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | Mathematica (参考) |
 |---|---|---|---|---|---|
 | Risch 算法 | ✅ 初等超越塔+RDE | 🟡 部分 | ✅ | ✅ (Maxima) | ✅ |
 | Rubi 规则集 | 🔴 | ✅ 7000+ 规则 (MIT crate) | 🔴 | 🔴 | ✅ 原生 |
-| 启发式查表 | ✅ 特殊函数表 | ✅ | ✅ manualintegrate | ✅ | ✅ |
+| 启发式查表 | ✅ 特殊函数表 + 0.24 四技术 | ✅ | ✅ manualintegrate | ✅ | ✅ |
 | 有理函数积分 | ✅ Hermite+Rothstein-Trager | ✅ Trager | ✅ | ✅ | ✅ |
-| 三角积分 | ✅ exp(I·x)+realify | ✅ | ✅ | ✅ | ✅ |
+| 三角积分 | ✅ exp(I·x)+realify + 0.24 三角换元/Weierstrass | ✅ | ✅ | ✅ | ✅ |
 | 特殊函数 | ✅ erf/Ei/Si/Ci/Fresnel | ✅ gamma/polylog/Bessel/zeta | ✅ | ✅ | ✅ |
 | 步骤推导 | 🔴 | ✅ rule-by-rule trace | 🔴 | 🔴 | ✅ |
 | Rubi 语料库覆盖 | — | ✅ 72,944 题 99.9% | — | — | ✅ |
 
-**评估**：这是 oCAS 与 Symbolica 2.2 最大的功能差距。Symbolica 的 Rubi 移植
-（7000+ 规则、72,944 题库、MIT crate `symbolica-integrate`）是其杀手特性。
-oCAS 的 Risch 算法在理论上更完备（decidable），但实际覆盖面远窄于 Rubi。
-SymPy 的 `manualintegrate` 启发式覆盖面也比 oCAS 广。
+**评估**：这是 oCAS 与 Symbolica 2.2 最大的功能差距。0.24 的启发式积分四技术
+（分部积分 LIATE、三角换元、Weierstrass 换元、Euler 换元[占位]）已接入
+`try_risch_or_fallback` 调度链，缩小了与 manualintegrate 的常规覆盖差距，但
+Symbolica 的 Rubi 移植（7000+ 规则、72,944 题库）仍是杀手特性。Symbolica 2.2 于
+2026-07-24 发布的 symbolic integration 博客确认该能力为 2.2.0 内置（Rust 原生移植，
+非外部 crate 调用）。
 
 ### 2.4 常微分方程
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 |
 |---|---|---|---|---|
 | 一阶（可分离/线性/Bernoulli/恰当） | ✅ 5 种 | 🟡 | ✅ | ✅ |
 | 二阶（常系数/Cauchy-Euler） | ✅ | 🔴 | ✅ | ✅ |
@@ -112,7 +137,7 @@ SageMath 通过 Maxima/desolve 覆盖更广。PDE 是 Post-1.0 议题。
 
 ### 2.5 数论
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.5 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.6 |
 |---|---|---|---|---|---|
 | 素性检测 | ✅ BPSW+确定性 MR | 🔴 | ✅ BPSW | ✅ PARI | ✅ |
 | 整数分解 | ✅ rho/p±1/ECM | 🔴 | ✅ rho/p-1/二次筛 | ✅ PARI/ECM/QS | ✅ |
@@ -129,28 +154,31 @@ SageMath 通过 Maxima/desolve 覆盖更广。PDE 是 Post-1.0 议题。
 
 ### 2.6 求值与 JIT
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SymJIT (Symbolica) |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SymJIT (Symbolica) |
 |---|---|---|---|---|
 | 解释器求值 | ✅ 树解释器 | ✅ | ✅ Python | ✅ |
 | JIT 后端 | ✅ Cranelift | ✅ SymJIT (默认 Python) | 🔴 | ✅ |
 | SIMD 向量化 | ✅ AVX2 via pulp | ✅ | 🔴 | ✅ |
 | 多输出批处理 | ✅ compile_multi | ✅ | 🔴 | ✅ |
 | f32 混合精度 | ✅ | ✅ | 🔴 | ✅ |
-| DoubleFloat (~31 位) | 🔴 | ✅ >3× 快于任意精度 | 🔴 | ✅ |
+| DoubleFloat (~31 位) | ✅ DoubleF64（0.24） | ✅ >3× 快于任意精度 | 🔴 | ✅ |
 | 流式求值 | ✅ 百万行恒定内存 | ✅ | 🔴 | ✅ |
 | 常量折叠+栈压缩 | ✅ | ✅ | 🔴 | ✅ |
-| CUDA 代码生成 | 🔴 Post-1.0 | ✅ | 🔴 | ✅ |
+| CUDA 代码生成 | 🔴 Post-1.0 | ✅ CompiledCudaEvaluator | 🔴 | ✅ |
 | WASM 代码生成 | 🔴 Post-1.0 | ✅ | 🔴 | ✅ |
 | C++/ASM 导出 | 🔴 Post-1.0 | ✅ | 🔴 | ✅ |
 | LLVM 后端 | 🔴 Post-1.0 (inkwell) | 🔴 | 🔴 | 🔴 |
 
-**评估**：Symbolica 2.0 的 SymJIT（默认 Python 后端）+ CUDA/WASM/C++/ASM 导出形成
-显著代差。oCAS 的 Cranelift JIT 在单/多输出上表现良好（97×/21×），但缺少
-CUDA/WASM 导出和 DoubleFloat。DoubleFloat 是低垂果实（~31 位，>3× 快于任意精度）。
+**评估**：Symbolica 的 SymJIT + CUDA/WASM/C++/ASM 导出（含 2026-07 新增
+CompiledCudaRealEvaluator 等 CUDA 求值器）仍构成代码生成代差。oCAS 的 Cranelift
+JIT 实测（2026-08-06）：单输出 121.11 µs → 1.64 µs（73.8×）、三输出 305.72 µs →
+13.52 µs（22.6×），满足套件 J1/J2 目标；SIMD 批处理（poly_batch_4000）6.7× 未达
+J3 的 >8× 目标。DoubleFloat 差距已由 0.24 的 DoubleF64（Dekker/Knuth 双精度，
+~31 位十进制精度）兑现。
 
 ### 2.7 张量
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 |
 |---|---|---|---|---|
 | 张量类型+指标槽 | ✅ | ✅ | ✅ | ✅ |
 | 显式收缩 | ✅ | ✅ | ✅ | ✅ |
@@ -165,7 +193,7 @@ Graphica（MIT）提供更完整的图同构引擎。差距在嵌套函数内张
 
 ### 2.8 线性代数
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.5 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.6 |
 |---|---|---|---|---|---|
 | 稠密矩阵 | ✅ | ✅ | ✅ DomainMatrix | ✅ | ✅ |
 | 行列式 | ✅ Bareiss | ✅ | ✅ | ✅ | ✅ |
@@ -181,7 +209,7 @@ Smith 标准形也已支持。oCAS 在线性代数上规模有限，缺少特征
 
 ### 2.9 模式匹配与重写
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 |
 |---|---|---|---|
 | 通配符匹配 | ✅ | ✅ | ✅ |
 | 条件守卫 | ✅ | ✅ | ✅ |
@@ -200,7 +228,7 @@ Smith 标准形也已支持。oCAS 在线性代数上规模有限，缺少特征
 
 ### 2.10 代码生成与绑定
 
-| 能力 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | GiNaC 1.8.10 |
+| 能力 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | GiNaC 1.8.10 |
 |---|---|---|---|---|---|
 | Rust API | ✅ | ✅ | 🔴 | 🔴 | 🔴 |
 | Python API | ✅ PyO3 | ✅ PyO3 | ✅ 原生 | ✅ 原生 | 🔴 |
@@ -220,7 +248,7 @@ LGPL-3.0 许可证在嵌入商业项目方面有优势。
 
 ### 2.11 许可证与生态
 
-| 维度 | oCAS 0.23 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.5 | msolve | GiNaC 1.8.10 | Numerica |
+| 维度 | oCAS 0.26 | Symbolica 2.2 | SymPy 1.14 | SageMath 10.9 | FLINT 3.6 | msolve | GiNaC 1.8.10 | Numerica |
 |---|---|---|---|---|---|---|---|---|
 | 许可证 | LGPL-3.0+ | source-available 商业 | BSD-3-Clause | GPL-2.0+ | LGPL-3.0+ | GPL-3.0 | GPL-2.0+ | MIT |
 | 商业嵌入 | ✅ | ⚠️ 需付费许可 | ✅ | 🔴 GPL 传染 | ✅ | 🔴 GPL 传染 | 🔴 GPL 传染 | ✅ |
@@ -239,16 +267,20 @@ source-available 商业模式。Numerica（MIT）和 mathcore（MIT）是新兴 
 1. **许可证**：LGPL-3.0 是唯一同时支持商业嵌入和开源的高性能 Rust CAS
 2. **ODE 求解器**：超越 Symbolica，与 SymPy 持平
 3. **三语言绑定**：Rust + Python + C/C++，比 Symbolica 更广
-4. **Gröbner F5**：cyclic-6 2.63 s，与 Symbolica ~1 s 同一量级
+4. **Gröbner F5**：cyclic-6 ℤ₁₃ grevlex 实测 55 ms（0.26.0 打包快通道，达成 <0.5 s
+   里程碑；0.19.0 基线 2.63 s → 0.26.0 约 48×）
 5. **数论核心栈**：完整的 CRT + 分解 + 素性 + 离散对数
 6. **代数几何工具**：理想运算 + 准素分解 + Hilbert 级数（0.23）
+7. **DoubleF64**（0.24）：~31 位扩展精度浮点，已对齐 Symbolica DoubleFloat
 
 ### 关键差距（按优先级）
-1. **P0 — 符号积分广度**：Symbolica Rubi 7000+ 规则 vs oCAS Risch（覆盖面窄）
-2. **P1 — Gröbner 大规模性能**：msolve 0.04 s vs oCAS 2.63 s（~65×）
+1. **P0 — 符号积分广度**：Symbolica Rubi 7000+ 规则 vs oCAS Risch + 0.24 启发式
+   （覆盖面仍窄）
+2. **P1 — Gröbner 大规模性能**：cyclic-6 grevlex 55 ms vs msolve 实测 4 ms（~14×）；
+   cyclic-7 grevlex 3.83 s vs 55 ms（~70×）；katsura 系预存在差距（未完成）
 3. **P1 — 代码生成扩展**：Symbolica CUDA/WASM/C++/ASM vs oCAS 仅 Cranelift JIT
 4. **P2 — 矩阵/线性代数**：SymPy DomainMatrix 10000× 加速 + Smith 标准形
-5. **P2 — DoubleFloat**：Symbolica ~31 位 >3× 快于任意精度
+5. **P2 — Windows FLINT 支持**：`flint` feature 仅 Linux/WSL
 6. **P3 — 张量完整规范形**：Symbolica Graphica 图同构引擎更成熟
 7. **P3 — 大整数分解**：SymPy 二次筛 vs oCAS ECM
 
@@ -258,3 +290,4 @@ source-available 商业模式。Numerica（MIT）和 mathcore（MIT）是新兴 
 - 代数几何工具（Symbolica 无）
 - egg 等式饱和（Symbolica 无）
 - 许可证灵活性（Symbolica 商业化）
+- DoubleFloat/DoubleF64 类高精度求值（0.24 已对齐）

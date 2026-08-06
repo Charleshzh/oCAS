@@ -6,7 +6,17 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.21.0 @ 2026-07-30** (0.21.0 number theory & computational algebra stack: multi-modulus CRT + BPSW + integer factorization (rho/p−1/p+1/ECM) + discrete logarithms + number-theoretic functions + modular GCD (Brown univariate + multivariate multi-prime) + Python/C bindings; the §3 large-coefficient GCD gap and the §5 #11 number-theory gap are both closed 🟢)
+> Last evaluated: **0.26.0 @ 2026-08-06** (competitor versions re-verified from
+> authoritative sources: Symbolica 2.2.0 (unchanged), SymPy 1.14.0 (unchanged),
+> SageMath 10.9 (2026-05-05), FLINT 3.6.0 (2026-06-29; Kinoshita-Li series
+> composition, padic_radix, subresultant resultants), msolve 0.10.1 (2026-07-08;
+> Gebauer-Möller improvements, QQ lifting fixes), GiNaC 1.8.10 (unchanged),
+> mathcore 0.3.1 (previous 0.5.0 record corrected — it does not exist on
+> crates.io or GitHub), Numerica (no tagged releases; active development);
+> full local re-benchmark of oCAS/Symbolica/SymPy + measured msolve 0.10.1 in
+> WSL2: cyclic-6 grevlex 55.04 ms meets the <0.5 s milestone, msolve measured
+> 4 ms; DoubleFloat gap closed by 0.24.0 DoubleF64; §5 reprioritized with
+> DoubleFloat and cyclic-6 moved to completed items)
 
 ---
 
@@ -54,8 +64,13 @@ For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 | 0.19.0/0.19.1 | 1.0 Candidate | ✅ | ✅ F5 Gröbner signature reduction (cyclic-6 ℤ₁₃ 3670 s → 2.63 s, ~1400×); `MonomialOrder` trait refactor + `WeightOrder`/`BlockOrder` |
 | 0.20.0/0.20.1 | 1.0 Candidate | ✅ | ✅ Full ODE solver: five first-order methods + integrating factors; second-order constant-coefficient/Cauchy-Euler + VOP + reduction of order + extended undetermined coefficients; series recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 systems (`dsolve_system`); Python/C bindings; 31 substitution-verified correctness tests |
 | 0.21.0 | 1.0 Candidate | ✅ | ✅ Number theory & computational algebra stack: multi-modulus CRT accumulator, BPSW primality + deterministic MR below 2⁶⁴, integer factorization (trial / Brent rho / Pollard p−1 / Williams p+1 / ECM Suyama-Montgomery), BSGS + Pohlig-Hellman discrete logarithms, φ/μ/τ/σ_k/λ functions; univariate Brown modular GCD (`gcd::modular::gcd_modular_z`) + full Brown rewrite of the bivariate `gcd_modular` (content separation + monic interpolation images + multi-prime CRT + rational reconstruction); Python/C bindings (`ocas::ntheory` / `ocas_ntheory_*`); latent integer-sqrt performance bomb in `rational_reconstruction` fixed; ECM factors a 30-digit semiprime in 1.1 s (<10 s) |
+| 0.22.0 | 1.0 Candidate | ✅ | ✅ Tensor canonicalisation + advanced pattern matching: graph-iso canonical labelling, tensor canonical form, Young projector, Partition transformer, multi-pattern replace, backtracking matcher |
+| 0.23.0 | 1.0 Candidate | ✅ | ✅ Algebraic-geometry tooling: ideal ops (contains/sum/product/quotient/saturate/intersection), MatrixOrder elimination + eliminate(), zero-dimensional solving (Sturm), primary decomposition, radical, Hilbert series/dimension/degree, rational-root theorem; Python/C bindings |
+| 0.24.0 | 1.0 Candidate | ✅ | ✅ Heuristic integration module (four techniques: integration by parts LIATE, trig substitution, Weierstrass, Euler [placeholder]) wired into `try_risch_or_fallback` + `integrate_heuristic` API; **DoubleF64** (Dekker/Knuth double-float, ~31 decimal digits, transcendentals, `EvaluationDomain`); Python/C bindings |
+| 0.25.0 | 1.0 Candidate | ✅ | ✅ **Multi-modular Gröbner bases** (ℚ ideals: parallel F5 lucky-prime images + CRT + rational reconstruction + exact ℚ verification + trace-free p-adic Hensel lift + fallback); `Algorithm::Auto` routing; F5 speedups (DivisorIndex, bucketed syzygies, parallel row construction, two-phase echelon; cyclic-6 ℤ₁₃ 2.63 s → 1.415 s); **parallel modular GCD**; katsura-6/7 pre-existing gap recorded |
+| 0.26.0 | 1.0 Candidate | ✅ | ✅ **SWAR-packed monomial F5 fast path** (u128 packed monomials, n_vars ≤ 8, exponent < 2¹⁵, auto fallback) + echelon rework (i32 coefficients, clone-free two-phase) + **grevlex benchmark variants**; fixed inverted degree/weight direction in graded monomial orders (pre-existing); cyclic-6 ℤ₁₃ grevlex **52.07 ms** (criterion median), Lex 936 ms; cyclic-7 grevlex single round 5.755 s (209 basis elements) |
 
-All 0.1–0.21.0 deliverables landed. The workspace is pinned at 0.21.0. Quality
+All 0.1–0.26.0 deliverables landed. The workspace is pinned at 0.26.0. Quality
 gates are green: `cargo fmt`, `clippy -D warnings`, workspace tests,
 `cargo deny`, pytest cases, `mdbook build`.
 
@@ -102,8 +117,10 @@ source of the gap.
 | Algorithm Area | oCAS Status | Maturity |
 |---|---|---|
 | Polynomial factorization | `factor()` on `DenseUnivariatePolynomial` over ℤ and ℤ_p, arbitrary multivariate `factor()` on `SparseMultivariatePolynomial` over ℤ and ℤ_p (0.16.x Wang EEZ + non-constant LC imposition), plus univariate `factor()` over `AlgebraicNumberField` (0.17.0 Trager: shifted norm + modular GCD) | 🟢 Univariate/bivariate/multivariate/ANF (univariate) |
-| Gröbner basis | F4 with real linear algebra (0.15.1) + F5 signature reduction (0.19.0: `Signature`/`SyzygySet` + native ℤ_p fast path `f5_fp`) + FGLM + unified `groebner_basis()` dispatch + native i64 ℤ_p pipeline; cyclic-6 ℤ₁₃ **2.63 s** (baseline 3670 s, ~1400×); cyclic-5 ℤ₁₃ 0.05 s | 🟢 F4 + F5 complete |
-| Symbolic integration | Risch (elementary transcendental towers + RDE polynomial fragment) + rational-function Hermite + trig exp(I·x) + special-function table (erf/Ei/Si/Ci/Fresnel); falls back to `Integral(...)` | 🟢 Risch done |
+| Gröbner basis | F4 with real linear algebra (0.15.1) + F5 signature reduction (0.19.0: `Signature`/`SyzygySet` + native ℤ_p fast path `f5_fp`) + FGLM + unified `groebner_basis()` dispatch + native i64 ℤ_p pipeline + multi-modular ℚ pipeline (0.25) + u128 SWAR-packed F5 fast path (0.26); cyclic-6 ℤ₁₃ **55.04 ms** grevlex (2026-08-06 measured, criterion median; baseline 2.63 s at 0.19.0, ~48×); cyclic-5 ℤ₁₃ 8.97 ms grevlex | 🟢 F4 + F5 + MultiModular complete |
+| Symbolic integration | Risch (elementary transcendental towers + RDE polynomial fragment) + rational-function Hermite + trig exp(I·x) + special-function table (erf/Ei/Si/Ci/Fresnel) + 0.24 heuristic module (parts/trig-sub/Weierstrass/Euler [placeholder]) in `try_risch_or_fallback`; falls back to `Integral(...)`; **gap**: Symbolica 2.2 Rubi port (7000+ rules, 72,944-problem corpus) far wider | 🟢 Risch + heuristics done, Rubi breadth gap |
+| Algebraic-geometry tooling | ideal ops (contains/sum/product/quotient/saturate/intersection), elimination orders + eliminate(), zero-dimensional solving, primary decomposition, radical, Hilbert series/dimension/degree, rational-root theorem (0.23) | 🟢 Complete (0.23) |
+| Advanced pattern matching | backtracking matcher + multi-pattern replace + Partition transformer + graph-iso canonical labelling (0.22); **gap**: Symbolica `opt`/`alt`/attribute filters more mature (Rubi-grade) | 🟡 Basic-usable, below Symbolica Rubi grade |
 | Real root isolation | Sturm sequence + interval isolation + refine (univariate); known gap: only 8/10 roots isolated on expanded Wilkinson n=10 | 🟡 Fairly complete |
 | Polynomial GCD | GCD + primitive part + extended GCD (0.12) + arbitrary-arity multivariate GCD via EEZ (0.16) + modular number-field GCD over GF(p^d) with CRT + rational reconstruction (0.17) + univariate Brown modular GCD and bivariate multi-prime modular GCD (0.21, no coefficient explosion on large inputs) | 🟢 Complete (incl. modular fast path, no HEVMGCD) |
 | Linear solving | Rational/integer linear systems + bivariate Diophantine (`ax+by=c`) | 🟡 Usable, limited scale |
@@ -115,13 +132,13 @@ source of the gap.
 
 ## 4. Gap Analysis vs Reference Systems
 
-### 4.1 vs Symbolica (Rust, AGPL)
+### 4.1 vs Symbolica (Rust, source-available commercial)
 
-Symbolica's `examples/` directory (30 examples) is the maturity benchmark.
-After 0.11–0.18, oCAS covers **all** of Symbolica's core example surface;
-the gap has narrowed to **scale performance** (cyclic-6 Gröbner) and a few
-**specialized pattern transformers** (e.g. `Transformer::Partition` for
-argument-sequence partitioning).
+Symbolica 2.2.0 (2026-07-24) is oCAS's closest competitor. It moved from
+AGPL-3.0 to a source-available commercial license in early 2026 (free for
+single-core non-commercial use) and split out MIT crates (Numerica, Graphica,
+symbolica-integrate). 2.2 ships the Rubi rule port (7000+ rules, MIT crate)
+and SymJIT/CUDA/WASM/C++/ASM code generation.
 
 | Capability | oCAS | Symbolica |
 |---|---|---|
@@ -129,23 +146,28 @@ argument-sequence partitioning).
 | Rational polynomials | ✅ `RationalPolynomial<D,O>` with GCD canonicalization | ✅ `rational_polynomial.rs` |
 | Partial fractions | ✅ `apart()` / `together()` over Euclidean domains | ✅ `partial_fraction.rs` |
 | Rational reconstruction | ✅ `rational_reconstruction(a, m)` via extended Euclidean | ✅ `rational_reconstruction.rs` |
+| **Symbolic integration** | 🟢 **Risch + 0.24 heuristics, narrower coverage** | ✅ **Rubi port (7000+ rules, 72,944-problem corpus)** |
 | Numerical integration | ✅ Vegas adaptive Monte Carlo + `integrate_1d` + `StatisticsAccumulator` (0.18) | ✅ `numerical_integration.rs` |
 | Streaming API | ✅ `StreamingEvaluator`: chunked input + reused stack, constant memory over 1M rows | ✅ `streaming.rs` |
-| Tensors / dual numbers | ✅ independent `Tensor` type + index contraction + `symmetrise_sign` (0.18 basics; full canonicalisation Post-1.0); `HyperDual<T>` forward AD (0.18) | ✅ `tensors.rs` / `dual.rs` (full graphica-based canonicalisation) |
-| Optimization / codegen | ✅ multi-output JIT (`compile_multi` + CSE + const folding + stack compaction) + f32 mixed precision | ✅ `optimize.rs` / multi-output |
-| Gröbner bases | � F4 (0.15.1 real linear algebra) + F5 signature reduction (0.19.0); cyclic-6 ℤ₁₃ **2.63 s** (~1400× over 0.15.2); F4/F5 unified dispatch; generic + ℤ_p fast path | ✅ industrial-grade |
+| Tensors / dual numbers | ✅ graph-iso canonical labelling + tensor canonical form + Young projector (0.22); `HyperDual<T>` forward AD (0.18) | ✅ full graphica-based canonicalisation |
+| Optimization / codegen | ✅ multi-output JIT (`compile_multi` + CSE + const folding + stack compaction) + f32 mixed precision | ✅ SymJIT + CUDA/WASM/C++/ASM export |
+| **DoubleFloat** | ✅ **DoubleF64 (0.24, ~31 decimal digits)** | ✅ **~31 digits, >3× faster than arbitrary precision** |
+| Gröbner bases | ✅ F4 + F5 + MultiModular (0.25) + packed F5 (0.26); cyclic-6 ℤ₁₃ grevlex **55.04 ms** (2026-08-06 measured) | ✅ industrial-grade, ~1 s |
+| ODE solvers | ✅ complete (0.20.1) | 🔴 none |
+| Number theory | ✅ core stack complete (0.21) | 🔴 none |
+| Algebraic-geometry tooling | ✅ ideal ops + primary decomposition + Hilbert series (0.23) | 🔴 none |
+| Equality saturation | ✅ egg integration | 🔴 none |
+| Pattern matching | 🟡 backtracking matcher (0.22); `opt`/`alt`/attribute filters missing | ✅ Rubi-grade matcher |
 | Resource control (fuel) | ✅ `Fuel = Arc<AtomicUsize>` + `simplify_with_fuel`/`integrate_with_fuel` (0.18) | ✅ `fuel_backend.rs` |
-| Pattern transformers | 🟡 matcher/replace/transformer complete; specialized sequence `Transformer::Partition` not implemented | ✅ full transformer set |
+| **License** | ✅ **LGPL-3.0+, embeddable in commercial products** | ⚠️ **source-available commercial** |
 
-Symbolica 2.1.0's core strengths — industrial factorization (including
-algebraic number fields), rational-function arithmetic, multi-output
-optimization, streaming, numerical integration, dual numbers, tensors, and
-fuel-based resource control — have **all been closed** by oCAS during
-0.11–0.18. The remaining gaps are: **Gröbner-basis performance at scale**
-(cyclic-6 class, where Symbolica's F5/signature machinery is still ahead),
-**full tensor canonicalisation** (oCAS ships basics only; Symbolica uses the
-graphica graph-isomorphism engine), and a few **specialized pattern
-transformers** (e.g. `Transformer::Partition`).
+Symbolica 2.2's core strengths — Rubi integration, SymJIT/CUDA/WASM code
+generation, DoubleFloat — have been partially closed (DoubleFloat → DoubleF64
+in 0.24). Remaining gaps: **symbolic-integration breadth** (Rubi), **code
+generation targets** (CUDA/WASM/C++/ASM), and **Gröbner performance at scale**
+(see §4.4 vs msolve). oCAS leads in ODE solvers, number theory, algebraic
+geometry, equality saturation, and license flexibility (LGPL vs
+source-available commercial).
 
 ### 4.2 vs SageMath (Python ecosystem)
 
@@ -180,7 +202,7 @@ leadership.
 | Factorization | 🟢 parity | univariate ℤ/ℤ_p + arbitrary multivariate (0.16 Wang EEZ) + algebraic-number-field (0.17 Trager); SymPy has broader ANF coverage |
 | Gröbner | 🟢 oCAS advantage | oCAS F4 matrix algorithm with real linear algebra (cyclic-5 ℤ₁₃ 23 ms) outperforms SymPy's Buchberger implementation |
 | Matrix / linear algebra | 🟢 parity | oCAS has Bareiss determinant/inverse |
-| **Performance** | 🟢 **oCAS advantage** | Rust + Cranelift JIT + arena vs pure Python; measured x³⁰−1 square-free factorization 39 µs vs SymPy full factor ~0.9 ms (~24×, 2026-07-21) |
+| **Performance** | 🟢 **oCAS advantage** | Rust + Cranelift JIT + arena vs pure Python; measured 2026-08-06: parse 100×, simplify 124×, series 2,550×, integrate 39–76×, eval 183× (SymPy 1.14.0, same inputs); **exception**: `factor(x^30-1)` — SymPy ~50× faster (cyclotomic fast path) |
 | Python ergonomics | 🟢 parity | oCAS has `ocas-py` bindings |
 
 The 0.6.0 success criterion — "parity with SymPy on basic polynomial,
@@ -191,14 +213,39 @@ via Trager in 0.17). The remaining feature gap against SymPy is the **breadth
 of integration heuristic fallbacks** (SymPy's `manualintegrate` /
 heuristic pool is wider than oCAS's Risch + table path).
 
+### 4.4 vs msolve (Gröbner performance benchmark)
+
+msolve is the open-source Gröbner performance benchmark (F4/F5 + modular
+arithmetic + Hensel lifting + Berlekamp-Massey). **Measured 2026-08-06 on this
+machine** (WSL2, msolve 0.10.1 built from source, `-g 2` GB-only mode, DRL
+order, single-threaded; basis sizes match oCAS exactly):
+
+| Benchmark | msolve 0.10.1 (measured) | oCAS 0.26 (measured) | Ratio |
+|---|---|---|---|
+| cyclic-5 ℤ₁₃ | 3 ms | 8.97 ms (grevlex) | 3.0× |
+| cyclic-6 ℤ₁₃ | **4 ms** | **55.04 ms** (grevlex) | 13.8× |
+| cyclic-7 ℤ₁₃ | **55 ms** | 3.829 s (grevlex, single round) | ~70× |
+| katsura-6 | 3 ms | not measured (pre-existing gap) | — |
+| katsura-7 | 7 ms | not measured (pre-existing gap) | — |
+
+The 0.26.0 packed-monomial F5 brought cyclic-6 to 55 ms (~48× over the 0.19.0
+baseline of 2.63 s and meeting the <0.5 s milestone); cyclic-7 (~70×) and the
+katsura family (oCAS unfinished vs 3–7 ms) remain the largest single gaps.
+The previously cited msolve values (cyclic-6 0.04 s) have been replaced by
+these measurements (4 ms).
+
+**Windows availability**: msolve builds on Windows only via MSYS2 (GMP/MPFR/FLINT);
+oCAS's native Windows support remains a differentiation point.
+
 ---
 
 ## 5. Key Gaps & Priorities
 
 Ranked by impact × implementation cost. All hard-algorithm gaps planned before
-1.0 are **closed**; Phase B+ "Closing the Symbolica Gap" (0.15.2–0.18.0) is
-complete — see EVOLUTION_PLAN. The remaining items are scale performance,
-breadth, and Post-1.0 topics.
+1.0 are **closed**; Phase B+ "Closing the Symbolica Gap" (0.15.2–0.18.0) and
+Phase B++ "Competitive Alignment" (0.19.0–0.23.0) plus the 0.24–0.26 round
+(heuristics/DoubleF64, MultiModular, packed F5) are complete. Remaining open
+items are re-ranked below (2026-08-06).
 
 | # | Gap | Priority |
 |---|---|---|
@@ -217,12 +264,21 @@ breadth, and Post-1.0 topics.
 | 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | � delivered in 0.22.0: graph-iso canonical labelling + tensor canonical form + Young projector + Partition + multi-pattern replace |
 | 13 | Algebraic-geometry tooling (Phase B++ 0.23) | 🟢 SageMath/Singular parity; ideal ops + RUR + primary decomposition + Hilbert series |
 | 14 | PDE solvers (Post-1.0) | 🟢 high user demand; Poisson/heat/wave |
+| 15 | ~~DoubleFloat~~ (completed 0.24) | ✅ done — **DoubleF64** (Dekker/Knuth double-float, ~31 decimal digits, transcendentals, `EvaluationDomain`, Python/C bindings); former P2 gap closed |
+| 16 | ~~Gröbner cyclic-6 < 0.5 s~~ (completed 0.26) | ✅ done — packed-monomial F5 + echelon rework; cyclic-6 ℤ₁₃ grevlex **55.04 ms** (2026-08-06 criterion median); ratio vs measured msolve 4 ms = 13.8× tracked separately |
+| 17 | **Gröbner scale: katsura-6/7 + cyclic-7** (open, P1) | ⚠️ katsura-6/7 unfinished (single round >30 min, pre-existing); cyclic-7 Lex >2 h; cyclic-7 grevlex 3.829 s vs measured msolve 55 ms (~70×); target katsura-6 < 1 s, cyclic-7 tractable — extend packed pipeline + multi-modular strategy |
+| 18 | **Symbolic-integration breadth** (open, P0) | ⚠️ Symbolica Rubi port (7000+ rules, 72,944-problem corpus) vs oCAS Risch + 0.24 heuristics |
+| 19 | **Code generation targets** (open, P1) | ⚠️ LLVM JIT + CUDA/WASM export vs Symbolica SymJIT/CUDA/WASM/C++/ASM |
+| 20 | **Matrix / linear algebra** (open, P2) | ⚠️ SymPy 1.14 DomainMatrix 10000× rref speedup + Smith normal form vs oCAS Bareiss |
+| 21 | **Windows FLINT support** (open, P2) | ⚠️ `flint` feature Linux/WSL only; target 3-platform |
+| 22 | **Tensor nested-function handling** (open, P3) | 🟡 nested-function tensors vs Symbolica Graphica engine maturity |
+| 23 | **Quadratic sieve factorization** (open, P3) | 🟡 ECM 30-digit in 1.1 s vs SymPy `qs_factor` on large composites |
 
 ---
 
 ## 6. Overall Assessment
 
-Execution quality of 0.1 → 0.18.1 is high: every roadmap deliverable shipped,
+Execution quality of 0.1 → 0.26.0 is high: every roadmap deliverable shipped,
 the layered architecture is clean (no cycles), the 13-crate workspace is
 strictly layered, quality gates are strict (`-D warnings` + deny + Miri
 awareness), and docs/bindings/CI are well-engineered. The three hard
@@ -234,26 +290,22 @@ cross-verification framework.
 Realistic positioning: oCAS today is "a high-performance, self-contained
 algebra kernel with feature parity against SymPy and near-complete coverage
 of Symbolica's example surface". Concretely it ships Risch symbolic
-integration, univariate/bivariate/arbitrary-multivariate factorization (plus
-algebraic-number-field via Trager), rational functions, Gröbner F4 with real
-linear algebra, multi-output JIT / streaming evaluation, Vegas numerical
-integration, hyper-dual forward AD, tensor basics, and fuel-based resource
-control. Re-measured 0.15.1 performance (still representative): F4 cyclic-5
-ℤ₁₃ 23 ms; x³⁰−1 square-free factorization 39 µs (SymPy full factor ~0.9 ms,
-~24×); JIT 97× single-output, 21× three-output.
+integration (plus 0.24 heuristics), univariate/bivariate/arbitrary-
+multivariate factorization (plus algebraic-number-field via Trager), rational
+functions, Gröbner F4/F5/MultiModular with packed fast paths, multi-output JIT
+/ streaming evaluation, Vegas numerical integration, hyper-dual forward AD,
+tensor canonicalisation, ODE solvers, a number-theory stack, algebraic-geometry
+tooling, and fuel-based resource control. Re-measured 2026-08-06: cyclic-6
+ℤ₁₃ grevlex 55.04 ms (msolve 4 ms, ratio 13.8×); JIT 73.8× single-output,
+22.6× three-output; parse/simplify/series vs SymPy 100×/124×/2,550×.
 
-Phase B+ "Closing the Symbolica Gap" (0.15.2 → 0.18.0) is **complete**: every
-Symbolica example-domain gap that was open at 0.15.1 — arbitrary multivariate
-factorization, algebraic-number-field factorization, numerical integration,
-dual numbers, tensors, and fuel — is now closed. Phase B++ "Competitive
-Alignment" (0.19.0 → 0.23.0, see EVOLUTION_PLAN) then targets the remaining
-gaps before the 1.0.0 freeze: Gröbner performance at the cyclic-6 scale (F5
-signature reduction, 0.19), ODE solvers (SageMath/SymPy parity, 0.20), number
-theory (SageMath/PARI parity, 0.21), full tensor canonicalisation + advanced
-pattern matching (Symbolica's last bastion, 0.22), and algebraic-geometry
-tooling (SageMath/Singular parity, 0.23). After Phase B++, 1.0.0 is strictly
-**stabilization and release engineering only** (API freeze, coverage,
-migration guides, signed artifacts).
+Phase B+ "Closing the Symbolica Gap" (0.15.2 → 0.18.0) and Phase B++
+"Competitive Alignment" (0.19.0 → 0.23.0) are **complete**, and the 0.24–0.26
+round closed DoubleFloat (→ DoubleF64) and the cyclic-6 <0.5 s milestone
+(55 ms). Remaining gaps before the 1.0.0 freeze: symbolic-integration breadth
+(Rubi), Gröbner scale (katsura-6/7 unfinished; cyclic-7 ~70× vs msolve),
+code generation targets (CUDA/WASM/C++), matrix/linear algebra (DomainMatrix),
+and Windows FLINT support.
 
 ---
 
@@ -287,3 +339,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.19.1 | 2026-07-23 | **MonomialOrder trait refactor + WeightOrder/BlockOrder released.** `Copy` + static dispatch → `Clone + Default` + method dispatch (`&self`); `PhantomData<O>` → `order: O` field; new `WeightOrder` (weighted) and `BlockOrder` (block) orderings with `SubOrder` enum; all 11 `O::cmp` call sites updated; `Signature::cmp_pot` updated with `order: &O` param. Multi-order support upgraded `[~]`→`[x]`. |
 | 0.20.0 | 2026-07-27 | **ODE solver released.** §3 added ODE row (🟡). §4.2 SageMath ODE row upgraded 🔴→🟡. §5 #10 (ODE solver) marked 🟡 partially complete — 5 first-order (separable/linear/Bernoulli/exact/homogeneous) + 2 second-order (const-coeff/Cauchy-Euler) + power-series framework + `classify_ode()` classifier + `dsolve()` entry; Laplace transform, ODE systems, Python/C bindings deferred. Version bumped to 0.20.0. |
 | 0.20.1 | 2026-07-27 | **ODE solver backfill complete.** Integrating factors (μ(x)/μ(y)); variation of parameters (VOP, fixing silently-dropped Cauchy-Euler forcing); reduction of order; power-series coefficient recursion + Frobenius (real rational indicial roots); Laplace IVP (`dsolve_ivp`); 2×2 constant-coefficient systems (`dsolve_system`); Python/C bindings (`classify_ode`/`dsolve`/`dsolve_ivp`). Fixed `real_roots` isqrt/formula bugs, hardcoded `is_exact`, unnormalized Cauchy-Euler coefficients, integrator (ax+b)⁻¹ and fractional-power gaps, `substitute_solution` missing bare y(x), and series-coefficient `diff` pollution. Added the `collect_terms` like-term collector + `expand`. 31 substitution-verified correctness tests (3 known gaps ignored). ODE gap upgraded 🟡→🟢. Version bumped to 0.20.1. |
+| 0.26.0 re-eval | 2026-08-06 | **Competitor versions re-verified + full local re-benchmark.** Header updated to 0.26.0. Competitor re-verification from authoritative sources: FLINT 3.5.0→3.6.0 (Kinoshita-Li series composition, padic_radix, subresultant resultants), msolve 0.7.x→0.10.1 (Gebauer-Möller, QQ lifting fixes), mathcore corrected to 0.3.1 (0.5.0 does not exist), Numerica has no tagged releases, SageMath date corrected to 10.9@2026-05-05; Symbolica/SymPy/GiNaC unchanged. §1 version table extended through 0.26.0 (0.22.0–0.26.0 rows added). §3 Gröbner/integration rows updated (packed F5, MultiModular, 0.24 heuristics); algebraic-geometry + pattern-matching rows added. §4.1 rewritten (source-available license, Rubi, DoubleFloat closed by DoubleF64 in 0.24, measured cyclic-6 55.04 ms). §4.3 performance row refreshed with 2026-08-06 measurements (parse 100×, series 2,550×, factor(x^30-1) exception: SymPy ~50× faster). New §4.4 vs msolve with measured WSL2 values (cyclic-6 4 ms, cyclic-7 55 ms, katsura 3–7 ms; basis sizes match oCAS). §5 items 15–16 marked complete (DoubleFloat, cyclic-6 <0.5 s), items 17–22 re-ranked (katsura/cyclic-7 P1, integration breadth P0, codegen P1, matrix P2, Windows FLINT P2, tensor+quad-sieve P3). §6 overall assessment refreshed with 2026-08-06 measurements. |
