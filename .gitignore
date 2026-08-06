@@ -15,6 +15,13 @@
 # target/linker without breaking Linux/macOS/CI builds.
 .cargo/
 
+# Standalone comparison runner (ocas-tests/scripts/symbolica_runner): its
+# workspace is deliberately excluded from the root workspace, so its target/
+# and Cargo.lock (which pins the source-available symbolica dependency) are
+# local-only and not committed.
+ocas-tests/scripts/symbolica_runner/target/
+ocas-tests/scripts/symbolica_runner/Cargo.lock
+
 # Python bindings build artifacts
 *.so
 *.pyd
