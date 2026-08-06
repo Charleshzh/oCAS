@@ -91,28 +91,16 @@ def _make_task(task: str, expr_str: str) -> Callable:
         sympy_expr = _parse_expr(expr_part)
         return lambda: sp.series(sympy_expr, x, 0, order + 1).removeO()
 
-    sympy_expr = _parse_expr(expr_str)
-
-    if task == "parse":
-        return lambda: _parse_expr(expr_str)
-    if task == "diff":
-        return lambda: sp.diff(sympy_expr, x)
-    if task == "expand":
-        return lambda: sp.expand(sympy_expr)
-    if task == "factor":
-        return lambda: sp.factor(sympy_expr)
     if task == "gcd":
+        # Two expressions separated by ';'.
         parts = expr_str.split(";")
         a = sp.expand(_parse_expr(parts[0]))
         b = sp.expand(_parse_expr(parts[1])) if len(parts) > 1 else a + 1
         return lambda: sp.gcd(a, b)
-    if task == "simplify":
-        return lambda: sp.simplify(sympy_expr)
-    if task == "integrate":
-        return lambda: sp.integrate(sympy_expr, x)
     if task == "eval":
         # Evaluate numerically at the point encoded in expr_str as "expr @ x=1,y=2".
         if "@" not in expr_str:
+            sympy_expr = _parse_expr(expr_str)
             return lambda: sympy_expr.evalf()
         expr_part, subs_part = expr_str.split("@", 1)
         expr = _parse_expr(expr_part)
@@ -126,6 +114,21 @@ def _make_task(task: str, expr_str: str) -> Callable:
         equations = [sp.sympify(_to_sympy(eq)) for eq in expr_str.split(";")]
         symbols = [s for s in [x, y, z] if any(s in eq.free_symbols for eq in equations)]
         return lambda: sp.linsolve(equations, symbols)
+
+    sympy_expr = _parse_expr(expr_str)
+
+    if task == "parse":
+        return lambda: _parse_expr(expr_str)
+    if task == "diff":
+        return lambda: sp.diff(sympy_expr, x)
+    if task == "expand":
+        return lambda: sp.expand(sympy_expr)
+    if task == "factor":
+        return lambda: sp.factor(sympy_expr)
+    if task == "simplify":
+        return lambda: sp.simplify(sympy_expr)
+    if task == "integrate":
+        return lambda: sp.integrate(sympy_expr, x)
     if task == "roots":
         return lambda: sp.nroots(sympy_expr)
     raise ValueError(f"unknown task: {task}")

@@ -14,7 +14,7 @@ use ocas_domain::{Domain, Integer, IntegerDomain};
 #[cfg(feature = "gmp")]
 fn gmp_add(c: &mut Criterion) {
     let a = GmpInteger::from_i64(1234567890123456789);
-    let b = GmpInteger::from_i64(9876543210987654321);
+    let b = GmpInteger::from_i64(9223372036854775807);
     c.bench_function("gmp_add", |bench| {
         bench.iter(|| {
             let result = a.add(&b);
@@ -26,7 +26,7 @@ fn gmp_add(c: &mut Criterion) {
 #[cfg(feature = "gmp")]
 fn gmp_mul(c: &mut Criterion) {
     let a = GmpInteger::from_i64(1234567890123456789);
-    let b = GmpInteger::from_i64(9876543210987654321);
+    let b = GmpInteger::from_i64(9223372036854775807);
     c.bench_function("gmp_mul", |bench| {
         bench.iter(|| {
             let result = a.mul(&b);

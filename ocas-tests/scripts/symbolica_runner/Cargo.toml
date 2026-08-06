@@ -5,8 +5,19 @@ edition = "2024"
 license = "LGPL-3.0-or-later"
 publish = false
 
+[workspace]
+
 [dependencies]
-symbolica = { path = "../../../symbolica", default-features = false }
+# no_gmp: numerica/graphica require a numeric backend (gmp or no_gmp);
+# the pure-Rust malachite backend avoids a system GMP dependency on Windows.
+symbolica = { path = "../../../../symbolica", default-features = false, features = ["no_gmp"] }
+
+[patch.crates-io]
+# Mirror Symbolica's own [patch.crates-io]; the crates.io numerica 2.2.0
+# package does not compile with default-features = false (unconditional
+# imports of backend items). Use the git checkout the Symbolica devs build.
+numerica = { path = "../../../../symbolica/lib/numerica" }
+graphica = { path = "../../../../symbolica/lib/graphica" }
 
 [profile.release]
 opt-level = 3

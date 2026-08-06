@@ -1,60 +1,69 @@
 use std::env;
+use std::hint::black_box;
 use std::process::ExitCode;
+use std::time::Instant;
 
 use symbolica::prelude::*;
 
-fn run(task: &str, expr: &str) -> Result<String, String> {
+/// Build a closure that executes `task` on `expr` once per call.
+///
+/// Correctness mode calls it once and prints the result; `time` mode calls
+/// it once as a warmup and then `iters` times, printing the total
+/// nanoseconds — the same contract as `compare_sympy.py time` so the two
+/// sides can be divided directly.
+fn build_op<'a>(task: &'a str, expr: &'a str) -> Result<Box<dyn Fn() -> String + 'a>, String> {
     let x = symbol!("x");
 
     match task {
         "parse" => {
-            let a = parse!(expr);
-            Ok(format!("{}", a.expand()))
+            // Re-parse on every call (mirrors the SymPy `parse` task).
+            Ok(Box::new(move || {
+                let a = parse!(expr);
+                format!("{}", a.expand())
+            }))
         }
         "diff" => {
             let a = parse!(expr);
-            Ok(format!("{}", a.derivative(x)))
+            Ok(Box::new(move || format!("{}", a.derivative(x))))
         }
         "expand" => {
             let a = parse!(expr);
-            Ok(format!("{}", a.expand()))
+            Ok(Box::new(move || format!("{}", a.expand())))
         }
         "simplify" => {
             // Symbolica does not expose a single `simplify`; expand is a reasonable proxy.
             let a = parse!(expr);
-            Ok(format!("{}", a.expand()))
+            Ok(Box::new(move || format!("{}", a.expand())))
         }
         "factor" => {
             let a = parse!(expr).expand();
             let poly: MultivariatePolynomial<_, u8> = a.to_polynomial(&Z, None);
-            let factors = poly.factor();
-            let mut parts = Vec::new();
-            for (f, pow) in factors {
-                if pow == 1 {
-                    parts.push(format!("{}", f));
-                } else {
-                    parts.push(format!("({})^{}", f, pow));
+            Ok(Box::new(move || {
+                let factors = poly.factor();
+                let mut parts = Vec::new();
+                for (f, pow) in factors {
+                    if pow == 1 {
+                        parts.push(format!("{}", f));
+                    } else {
+                        parts.push(format!("({})^{}", f, pow));
+                    }
                 }
-            }
-            Ok(parts.join(" * "))
-        }
-        "factor_time" => {
-            // Time `factor` over the integers; prints nanoseconds per op.
-            let a = parse!(expr).expand();
-            let poly: MultivariatePolynomial<_, u8> = a.to_polynomial(&Z, None);
-            let iters: u32 = 20;
-            let start = std::time::Instant::now();
-            for _ in 0..iters {
-                std::hint::black_box(poly.factor());
-            }
-            Ok(format!("{}", start.elapsed().as_nanos() / iters as u128))
+                parts.join(" * ")
+            }))
         }
         "series" => {
-            let a = parse!(expr);
-            let s = a
+            // Validate once so errors surface at build time; recompute per call.
+            let e = expr.to_string();
+            let probe = parse!(e.as_str());
+            probe
                 .series(x, 0, 10)
-                .map_err(|e| format!("series error: {:?}", e))?;
-            Ok(format!("{}", s))
+                .map_err(|err| format!("series error: {:?}", err))?;
+            let x0 = symbol!("x");
+            Ok(Box::new(move || {
+                let b = parse!(e.as_str());
+                let s = b.series(x0, 0, 10).expect("series validated");
+                format!("{}", s)
+            }))
         }
         _ => Err(format!("unknown task: {}", task)),
     }
@@ -62,14 +71,44 @@ fn run(task: &str, expr: &str) -> Result<String, String> {
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
+
+    if args.len() >= 2 && args[1] == "time" {
+        if args.len() != 5 {
+            eprintln!("Usage: symbolica_runner time <task> <expr> <iters>");
+            return ExitCode::from(1);
+        }
+        let iters: u32 = match args[4].parse() {
+            Ok(n) => n,
+            Err(_) => {
+                eprintln!("invalid iters: {}", args[4]);
+                return ExitCode::from(1);
+            }
+        };
+        return match build_op(&args[2], &args[3]) {
+            Ok(op) => {
+                op(); // warmup
+                let start = Instant::now();
+                for _ in 0..iters {
+                    black_box(op());
+                }
+                println!("{}", start.elapsed().as_nanos());
+                ExitCode::SUCCESS
+            }
+            Err(err) => {
+                eprintln!("{}", err);
+                ExitCode::from(1)
+            }
+        };
+    }
+
     if args.len() != 3 {
         eprintln!("Usage: symbolica_runner <task> <expr>");
         return ExitCode::from(1);
     }
 
-    match run(&args[1], &args[2]) {
-        Ok(out) => {
-            println!("{}", out);
+    match build_op(&args[1], &args[2]) {
+        Ok(op) => {
+            println!("{}", op());
             ExitCode::SUCCESS
         }
         Err(err) => {
