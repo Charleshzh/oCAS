@@ -242,6 +242,11 @@
 > SymPy 1.14 DomainMatrix 10000× 加速、msolve Gröbner 性能标杆
 > cyclic-6 仅 0.04 s——导致原有“1.0 仅做冻结”的计划不再充分。
 > 新增阶段 B+++ 三个版本弥合差距，然后进入 1.0.0 冻结。
+>
+> **（本阶段已完成：0.24 启发式积分四技术 + DoubleF64、0.25 MultiModular
+> Gröbner + 并行模 GCD、0.26 打包单项式 F5 快通道；cyclic-6 ℤ₁₃ grevlex
+> 实测 55.04 ms。0.26.0 实际交付与本节原计划不同——矩阵引擎/Smith 标准形
+> 顺延至阶段 5 的 0.30.0。）**
 
 ### 0.24.0 — 符号积分广度 + DoubleFloat
 
@@ -249,18 +254,18 @@
 
 **交付物**：
 
-- [ ] 积分启发式扩展：Risch 回退后的 `heuristic_integrate` 池
+- [x] 积分启发式扩展：Risch 回退后的 `heuristic_integrate` 池
   - 分部积分（LIATE/ILATE 启发式）
   - 三角替换（$\sqrt{a^2 - x^2}$、$\sqrt{a^2 + x^2}$、$\sqrt{x^2 - a^2}$）
   - 有理参数替换（Weierstrass $t = \tan(x/2)$）
-  - Euler 代换（二次根式下的有理化）
+  - Euler 代换（二次根式下的有理化，占位）
   - 参考：SymPy `manualintegrate` 启发式池
-- [ ] DoubleFloat 求值路径（`DoubleF64`：~31 位，>3× 快于任意精度）
+- [x] DoubleFloat 求值路径（`DoubleF64`：~31 位，>3× 快于任意精度）
   - 参考：Symbolica 2.0 `double-float` 实现
   - 在 `ocas-domain` 新增 `DoubleFloat` 类型
   - JIT/SIMD 求值器支持 DoubleFloat 管线
-- [ ] Python/C 绑定：`integrate_heuristic`、`DoubleFloat` 类型
-- [ ] 基准：Rubi 1892 题子集对标 symbolica-integrate
+- [x] Python/C 绑定：`integrate_heuristic`、`DoubleFloat` 类型
+- [ ] 基准：Rubi 1892 题子集对标 symbolica-integrate（推迟到 0.27.0）
 
 **成功标准**：
 - Rubi 1892 题子集覆盖率从当前水平提升 ≥30%（从 Risch-only 到 Risch + 启发式）
@@ -273,59 +278,164 @@
 
 **交付物**：
 
-- [ ] 多模算术（multi-modular）策略
+- [x] 多模算术（multi-modular）策略
   - 多个素数并行计算 Gröbner 基
   - 中国剩余定理（CRT）重建整数系数基
   - 有理重构（rational reconstruction）恢复 $\mathbb{Q}$ 系数
   - 参考：msolve F4 + multi-modular + Hensel + BM
-- [ ] Hensel 提升 Gröbner 基
+- [x] Hensel 提升 Gröbner 基
   - 从 $\mathbb{F}_p$ 基提升到 $\mathbb{Z}$ 基
   - 减少 CRT 重建的素数数量
-- [ ] 大系数多项式 GCD 加速
+- [x] 大系数多项式 GCD 加速
   - Brown 模 GCD 利用 multi-modular 进一步加速
-- [ ] 基准：cyclic-6/7、katsura-6/7 对标 msolve
+- [ ] 基准：cyclic-6/7、katsura-6/7 对标 msolve（katsura 系推迟到 0.28.0）
 
 **成功标准**：
 - cyclic-6 ℤ₁₃ < 0.5 s（当前 2.63 s，msolve 0.04 s）
 - cyclic-7 ℤ₁₃ 可解（当前未测）
 - 基准结果与 msolve 在同一数量级（< 10× 差距）
 
-### 0.26.0 — 线性代数增强 + 1.0 准备
+### 0.26.0 — 打包 F5 快通道 + grevlex 性能（实际交付）
 
-**目标**：缩小与 SymPy DomainMatrix 的线性代数差距；完成 1.0 冻结前准备。
+**目标**：将 F5 主循环压入 u128 SWAR 快通道，进一步对齐 msolve 性能；
+补充 grevlex 基准变体。（原计划的域感知矩阵引擎 + Smith/Hermite 标准形
+未在 0.26.0 交付，顺延至 0.30.0。）
 
 **交付物**：
 
-- [ ] 域感知矩阵引擎（`DomainMatrix` 类似物）
+- [x] 打包单项式 F5 快通道（u128 SWAR）
+  - n_vars ≤ 8 且指数 < 2¹⁵ 自动路由；超界回落通用路径
+- [x] echelon i32 / 免克隆两阶段改造
+- [x] grevlex 基准变体（补 Lex 之外的实测基线）
+- [x] 修复 Graded 序度方向反置的预存在 bug
+- [ ] 域感知矩阵引擎（`DomainMatrix` 类似物）→ 0.30.0
+- [ ] Smith/Hermite 标准形 → 0.30.0
+- [ ] 矩阵性能基准 → 0.30.0
+- [ ] 1.0 冻结前准备（API 审计/迁移指南/跨平台 CI）→ 0.30.0
+
+**成功标准**（实测，2026-08-06）：
+- cyclic-6 ℤ₁₃ grevlex 52.07 ms（criterion 中位数）、Lex 936 ms
+- cyclic-7 ℤ₁₃ grevlex 单轮 5.755 s（209 基元素）
+- 打包快通道与通用路径结果一致（随机基准交叉验证）
+
+---
+
+## 阶段 5：竞品差距收尾（0.27–0.30）
+
+> **目标**：依据 2026-08-06 竞品复测的优先级重排（GAP_ANALYSIS_CN.md §5），
+> 在 1.0.0 冻结前收尾剩余 P0–P3 缺口：P0 符号积分广度、P1 Gröbner
+> 大规模性能（katsura 系 + cyclic-7）、P1 LLVM JIT 代码生成、P2 矩阵/
+> 线性代数（DomainMatrix 类似物 + Smith/Hermite 标准形）、P2 Windows
+> FLINT、P3 二次筛与张量嵌套函数内处理。阶段 B+++（0.24–0.26）已交付
+> 启发式积分/DoubleF64、MultiModular Gröbner、打包 F5 快通道
+> （cyclic-6 grevlex 55.04 ms）；本阶段收尾其余差距后进入 1.0.0 冻结。
+
+### 0.27.0 — 符号积分广度（Rubi 级规则集）
+
+**目标**：弥合与 `symbolica-integrate`（Rubi 7000+ 规则、72,944 题库）的
+最大功能缺口（P0），1892 题子集覆盖率显著提升。
+
+**交付物**：
+
+- [ ] 规则表驱动的积分规则引擎（match → 模板替换）
+  - 幂/多项式/指数/对数规则族
+  - 三角/双曲/反三角/反双曲规则族
+  - 根式与二次型代换（在 0.24 三角换元/Weierstrass/Euler 框架上扩展，
+    补齐 Euler 占位）
+  - 特殊函数规则族（erf/Ei/Si/Ci/Fresnel，衔接 0.14 函数表）
+- [ ] 策略调度链：Risch（0.14）→ 启发式四技术（0.24）→ 规则库 →
+  `Integral(...)` 回退
+- [ ] 规则来源策略（参考 GAP_ANALYSIS_CN.md §7.3 许可证风险分析）：
+  - 首选自研规则集（方案 C 混合：Risch + 启发式 + 规则结构参考 Rubi 分类）
+  - 评估 `symbolica-integrate`（MIT）作为可选 feature 的集成可行性
+- [ ] 1892 题覆盖率基准 harness：覆盖率报告 + 失败分类分析
+- [ ] Python/C 绑定：`integrate` 规则路径开关
+
+**成功标准**：
+
+- 1892 题子集覆盖率从当前水平提升 ≥30 个百分点
+- 规则路径与 SymPy `manualintegrate`/`integrate` 抽样交叉验证一致
+- `cargo test --workspace` 通过
+
+### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
+
+**目标**：对齐 msolve 0.10.1 实测（katsura 3–7 ms、cyclic-7 55 ms）（P1），
+katsura-6 < 1 s、cyclic-7 grevlex 进入同数量级。
+
+**交付物**：
+
+- [ ] u128 打包 F5 快通道扩展到 katsura 系与 cyclic-7（指数域/稀疏度适配）
+- [ ] MultiModular ℚ 管线（0.25）扩展到大规模实例
+  - 并行幸运素数调度 + CRT + 有理重构 + 无迹 p-adic Hensel 提升
+- [ ] echelon 稀疏度感知优化（0.15.2 稀疏 echelon 的后续：行/列剪枝）
+- [ ] katsura-6/7、cyclic-7 grevlex/Lex 基准对标 msolve 实测（WSL2）
+
+**成功标准**：
+
+- katsura-6 ℤ₁₃ < 1 s（当前未完成）；katsura-7 可完成
+- cyclic-7 grevlex 与 msolve 差距 < 10×（当前 ~70×）
+- 多模路径与单素数路径随机 100 例一致；`is_groebner_basis` 验证
+
+### 0.29.0 — 代码生成扩展（LLVM/inkwell JIT）
+
+**目标**：落地第二个 JIT 后端——LLVM（经 `inkwell`，已在 workspace 依赖），
+缩小与 Symbolica SymJIT 的代码生成差距（P1）。
+
+**交付物**：
+
+- [ ] `ocas-eval::jit_llvm`：AST → LLVM IR + 函数注册表 + 多输出
+- [ ] 求值管线覆盖：f64/f32 混合精度 + DoubleF64 + SIMD 向量化
+- [ ] 运行时后端选择：Cranelift（默认，编译快）/ LLVM（优化代码）
+- [ ] 性能基准：LLVM vs Cranelift vs 解释器（保持多输出 97×/21× 基线）
+- [ ] Python/C 绑定暴露后端选择参数
+
+**成功标准**：
+
+- LLVM JIT 与 Cranelift 持平或更优；相对解释器 ≥10× 保持
+- 三平台（Linux/macOS/Windows）LLVM 构建 CI 全绿
+- 与 Cranelift 路径输出一致（随机 1000 表达式）
+
+### 0.30.0 — 矩阵引擎 + 平台收尾 + 1.0 冻结准备
+
+**目标**：收尾 P2/P3 差距并完成 1.0 冻结前准备：域感知矩阵引擎
+（DomainMatrix 类似物）+ Smith/Hermite 标准形、Windows FLINT、二次筛、
+张量嵌套函数内处理。
+
+**交付物**：
+
+- [ ] 域感知矩阵引擎（`DomainMatrix` 类似物，从 0.26.0 顺延）
   - `Matrix<D>` 泛型化：支持 `IntegerDomain`、`FiniteField`、`RationalDomain`
   - Dense 矩阵的域特化路径（避免通用 `Domain` trait 开销）
   - 参考：SymPy DomainMatrix + FLINT 后端
-- [ ] Smith 标准形
-  - 整数矩阵的 Smith 正规形
-  - 用于模结构分析和同调代数
-- [ ] Hermite 标准形
-  - 整数矩阵的 Hermite 正规形
-  - 用于线性丢番图方程
+- [ ] Smith 标准形（整数矩阵，用于模结构分析与同调代数）
+- [ ] Hermite 标准形（整数矩阵，用于线性丢番图方程）
 - [ ] 矩阵性能基准：20×20/30×30 整数矩阵 rref/inv/det 对标 SymPy DomainMatrix
+- [ ] Windows FLINT 支持（flint3-sys Windows 构建评估 + CI）
+- [ ] 二次筛大整数分解（对标 SymPy `qs_factor`，ECM 之上的下一级）
+- [ ] 张量嵌套函数内处理（对标 Symbolica Graphica；0.22 已交付基础规范化）
 - [ ] 1.0 冻结前准备
   - API 审计：所有公共类型/函数的文档完整性
-  - 迁移指南草稿（从 Symbolica/SymPy 迁移到 oCAS）
+  - 迁移指南定稿（从 Symbolica/SymPy 迁移到 oCAS）
   - 跨平台 CI 验证（Linux/macOS/Windows）
+  - 已发布基准（基于 BENCHMARK_SUITE_CN.md）
 
 **成功标准**：
-- Smith 标准形正确性（与 SymPy 交叉验证）
+
+- Smith/Hermite 标准形与 SymPy 交叉验证一致（随机 100 例）
 - 20×20 整数矩阵 rref 性能与 SymPy DomainMatrix 在同一数量级
+- 二次筛基准与 SymPy `qs_factor` 对比记录
+- Windows FLINT 三平台可用（或记录明确的技术阻塞）
 - 1.0 冻结前准备清单完成 ≥80%
 
 ---
 
-## 阶段 5：稳定 1.0
+## 阶段 6：稳定 1.0
 
 > **目标**：发布 API 稳定、后端支持广泛的成熟 CAS 库。
 
 ### 1.0.0 — 稳定发布
 
-**目标日期**：0.26.0 之后
+**目标日期**：0.30.0 之后
 
 **交付物**：
 
@@ -340,14 +450,19 @@
 **成功标准**：
 
 - 1.x 期间无计划中的破坏性 API 变更。
-- P0 差距（符号积分广度）已显著缩小。
-- P1 差距（Gröbner 性能）已对齐 msolve 至同一数量级。
+- P0 差距（符号积分广度）已显著缩小（1892 题子集覆盖率目标达成，
+  GAP_ANALYSIS_CN.md §5）。
+- P1 差距（Gröbner 性能）已对齐 msolve 至同一数量级（katsura-6 < 1 s、
+  cyclic-7 grevlex < 10× msolve）。
+- P1 差距（代码生成）已落地 LLVM/inkwell JIT 后端。
+- P2 差距（矩阵/线性代数）已落地域感知矩阵引擎 + Smith/Hermite 标准形。
 - 在核心基准上性能全面领先 SymPy。
 
 > 细粒度逐版本计划详见 [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md)。
 > 阶段 A（Beta 硬代数 0.11–0.13）、阶段 B+（Symbolica 差距清零 0.15.2–0.18.1）、
-> 阶段 B++（竞品全面对齐 0.19–0.23）均已完成。
-> 阶段 B+++（竞品差距弥合 0.24–0.26）弥合本次调研发现的 P0–P2 差距。
+> 阶段 B++（竞品全面对齐 0.19–0.23）、阶段 B+++（竞品差距弥合 0.24–0.26）
+> 均已完成。
+> 阶段 B++++（竞品差距收尾 0.27–0.30）收尾本次调研剩余的 P0–P3 差距。
 
 ---
 
@@ -358,10 +473,10 @@
 - 偏微分方程（PDE）求解器（Poisson、热传导、波动）
 - 微分 Galois 理论（研究序章）
 - 可选 GPL 后端（`ocas-gpl`）
-- LLVM/Inkwell JIT 后端（对标 Symbolica SymJIT）
 - CUDA/WASM 代码导出（对标 Symbolica SymJIT CUDA/WASM）
-- 二次筛整数分解（对标 SymPy qs_factor）
 - 领域专用工具包（物理、机器人、机器学习）
+
+> LLVM/Inkwell JIT 已前置至 0.29.0，二次筛整数分解已前置至 0.30.0。
 
 ---
 
@@ -402,10 +517,14 @@
 | 0.21.0 | 1.0 候选 | 第 36 月 | 数论与计算代数（模 GCD + 整数分解 + 素性 + 离散对数 + CRT + 数论函数）✅（另含 Python/C 绑定；ECM 30 位半素数 1.1 s） |
 | 0.22.0 | 1.0 候选 | 第 39 月 | 张量规范化（图同构引擎）+ 高级模式匹配（`Transformer::Partition`）✅ |
 | 0.23.0 | 1.0 候选 | 第 42 月 | 高级 Gröbner 与代数几何工具（理想运算 + 准素分解 + Hilbert 级数）✅ |
-| 0.24.0 | Beta | 第 45 月 | 符号积分广度（启发式扩展）+ DoubleFloat 求值路径（P0 积分 + P2 DoubleFloat） |
-| 0.25.0 | Beta | 第 47 月 | Gröbner 大规模性能（multi-modular 对标 msolve，cyclic-6 < 0.5 s）（P1） |
-| 0.26.0 | Beta | 第 49 月 | 线性代数增强（DomainMatrix + Smith 标准形）+ 1.0 冻结准备（P2） |
-| 1.0.0 | Stable | 第 51 月 | 稳定版发布（阶段 B+++ 竞品差距弥合完成后冻结：P0 积分广度已缩小 + P1 Gröbner 对齐 msolve + 性能全面领先 SymPy） |
+| 0.24.0 | Beta | 第 45 月 | 符号积分广度（启发式扩展）+ DoubleFloat 求值路径（P0 积分 + P2 DoubleFloat）✅ |
+| 0.25.0 | Beta | 第 47 月 | Gröbner 大规模性能（multi-modular 对标 msolve，cyclic-6 < 0.5 s）（P1）✅ |
+| 0.26.0 | Beta | 第 49 月 | 打包单项式 F5 快通道 + grevlex 基准（cyclic-6 grevlex 55.04 ms 实测）✅ |
+| 0.27.0 | Beta | 第 51 月 | 符号积分广度（Rubi 级规则集 + 1892 题覆盖率基准）（P0） |
+| 0.28.0 | Beta | 第 53 月 | Gröbner 大规模性能（katsura-6 < 1 s、cyclic-7 同数量级 msolve）（P1） |
+| 0.29.0 | Beta | 第 55 月 | 代码生成扩展（LLVM/inkwell JIT 后端）（P1） |
+| 0.30.0 | Beta | 第 57 月 | 矩阵引擎（DomainMatrix 类似物 + Smith/Hermite）+ Windows FLINT + 二次筛 + 1.0 冻结准备（P2/P3） |
+| 1.0.0 | Stable | 第 59 月 | 稳定版发布（阶段 B++++ 竞品差距收尾完成后冻结：P0 积分广度达成 + P1 Gröbner 对齐 msolve + LLVM JIT 落地 + 性能全面领先 SymPy） |
 
 ---
 

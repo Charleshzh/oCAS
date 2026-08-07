@@ -972,16 +972,16 @@ artifacts. No new features; freeze and polish only.
 ## Phase D — Post-1.0
 
 Roadmap-driven expansions, each versioned and benchmarked against the relevant
-competitor. (ODE/PDE moved to 0.20 pre-1.0.)
+competitor. (ODE moved to 0.20 pre-1.0; LLVM JIT moved to 0.29 pre-1.0;
+Windows FLINT and the quadratic sieve moved to 0.30 pre-1.0.)
 
 | Version | Theme | Reference competitor | Notes |
 |---|---|---|---|
 | 1.1 | PDE solvers (Poisson, heat, wave) | SageMath; Mathematica `DSolve` | finite-difference + spectral |
 | 1.2 | Differential Galois theory (prelude) | Maple; research | research-grade |
 | 1.3 | `ocas-gpl` real backend | LinBox, NTL | GPL-3.0 isolated crate |
-| 1.4 | GPU acceleration | CUDA/HIP | polynomial + linear algebra kernels |
-| 1.5 | LLVM JIT backend | Symbolica `evaluate.rs` | via `inkwell` |
-| 1.6+ | Domain toolkits (physics/robotics/ML) | domain libraries | layered on stable 1.x |
+| 1.4 | GPU acceleration + code export (CUDA/WASM/C++/ASM) | Symbolica SymJIT; CUDA/HIP | polynomial + linear algebra kernels |
+| 1.5+ | Domain toolkits (physics/robotics/ML) | domain libraries | layered on stable 1.x |
 
 ---
 
@@ -998,10 +998,14 @@ when an item is met or beaten.
 | Rational polynomials | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 done |
 | Partial fractions | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 done |
 | Resultant | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 done |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟡 F4 done (0.15.1) + LM index/sparse echelon (0.15.2); F5 signature reduction planned 0.19 |
-| GCD (modular) | Symbolica `poly/gcd.rs`; Brown 1971 | — | � done 0.21 (univariate Brown + multivariate multi-prime CRT) |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 papers | — | 🟢 F4 (0.15.1) + sparse echelon (0.15.2) + F5 (0.19) + MultiModular (0.25) + packed fast channel (0.26, cyclic-6 grevlex 55 ms); katsura/cyclic-7 at scale → 0.28 |
+| GCD (modular) | Symbolica `poly/gcd.rs`; Brown 1971 | — | 🟢 done 0.21 (univariate Brown + multivariate multi-prime CRT) |
 | GCD (modular multivariate) | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 done |
-| Integration (Risch) | Bronstein book; SymPy Risch | — | 🟢 0.14 done |
+| Integration (Risch) | Bronstein book; SymPy Risch | — | 🟢 0.14 done (Risch + 0.24 heuristics); Rubi-grade breadth → 0.27 |
+| Integration (Rubi rule breadth) | symbolica-integrate (MIT); Rubi 4.17 | SymPy `manualintegrate` | 🔴 gap; rule-table engine planned 0.27 |
+| Matrix/linear algebra | SymPy DomainMatrix + FLINT | FLINT backend | 🔴 gap (Bareiss); domain-aware matrix engine + Smith/Hermite planned 0.30 |
+| LLVM JIT | Symbolica SymJIT `evaluate.rs` | — | 🔴 gap (Cranelift only); planned 0.29 |
+| Integer factorization (quadratic sieve) | SymPy `qs_factor` | Crandall & Pomerance | 🔴 gap (ECM ceiling); planned 0.30 |
 | Multi-output JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 done |
 | Streaming | Symbolica `streaming.rs` | — | 🟢 0.15 done |
 | Series | Symbolica `poly/series.rs`; SymPy `series` | — | 🟢 have basics |
@@ -1013,10 +1017,10 @@ when an item is met or beaten.
 | Fast polynomial multiplication | FLINT 3 SSA; Symbolica dense mul | — | 🟢 0.12.1 NTT (90× vs Karatsuba) |
 | Memory management (mimalloc/pool) | Symbolica Workspace; Maple tiered regions | — | 🟢 mimalloc (0.11.2) + Arena/pool (0.15) done |
 | ODE/PDE | SageMath `desolve`; SymPy `dsolve` | — | 🟢 done 0.20 (first/second-order + systems + series + Laplace IVP) |
-| Number theory | SageMath/PARI; SymPy `ntheory` | Crandall & Pomerance | � done 0.21 (CRT + factorization + primality + dlog + number-theoretic functions) |
+| Number theory | SageMath/PARI; SymPy `ntheory` | Crandall & Pomerance | 🟢 done 0.21 (CRT + factorization + primality + dlog + number-theoretic functions); quadratic sieve → 0.30 |
 | Algebraic geometry (ideals) | Singular; SageMath `ideal` | Cox-Little-O'Shea | 🟢 done 0.23 (ideal ops + primary decomposition + radical + Hilbert series; RUR deferred) |
-| Tensor canonicalisation | Symbolica `graphica` (Bliss) | Cadabra | 🔴 gap; graph-iso canonicalisation planned 0.22 |
-| Pattern transformers | Symbolica `Transformer::Partition` | — | 🔴 gap; planned 0.22 |
+| Tensor canonicalisation | Symbolica `graphica` (Bliss) | Cadabra | 🟢 done 0.22 (graph-iso canonical labels + normal form); nested-function handling → 0.30 |
+| Pattern transformers | Symbolica `Transformer::Partition` | — | 🟢 done 0.22 (Partition transformer) |
 
 ---
 
@@ -1051,3 +1055,303 @@ Refresh this plan:
 | 0.20.0/0.20.1 | 2026-07-27/28 | **ODE solver released and fully backfilled.** First-order classification engine (separable/linear/Bernoulli/exact/homogeneous) + integrating factors; second-order constant-coefficient/Cauchy-Euler/reduction of order/variation of parameters/undetermined coefficients (any-degree polynomial, exponential resonance, trigonometric forcing, superposition); power-series coefficient recursion + Frobenius; Laplace IVP (`dsolve_ivp`); 2×2 constant-coefficient systems (`dsolve_system`); Python/C bindings. 7 core bugs fixed; 31 substitution-verified correctness tests (3 known limitations ignored). |
 | 0.21.0 | 2026-07-30 | **Number theory & computational algebra stack released (Track SF).** `number_theory` grew into a directory module: multi-modulus CRT accumulator `crt_many`; BPSW primality (base-2 MR + Selfridge strong Lucas) + deterministic `is_prime_u64` for n<2⁶⁴; integer factorization (trial / Brent rho / Pollard p−1 / Williams p+1 / ECM Suyama-Montgomery stage-1 with the escalating `factor_integer`); BSGS + Pohlig-Hellman discrete logarithms; φ/μ/τ/σ_k/λ number-theoretic functions. Modular GCD: univariate Brown (`gcd::modular::gcd_modular_z` — monic modular images + CRT symmetric reconstruction + trial division) replacing the naive PRS that explodes at degree ≳ 16; the bivariate `gcd_modular` was rewritten as the full Brown algorithm (content separation in the main variable, monic interpolation images, multi-prime CRT + rational reconstruction, bad-prime skipping). Python `ocas::ntheory` (12 functions) + C `ocas_ntheory_*` (11 functions) + `ocas.hpp` RAII wrappers. Two latent bugs fixed: the hand-rolled integer square root in `rational_reconstruction` decremented one-by-one (~52 s per call on 30-digit moduli → backend-native isqrt); the correctness harness `check` mode had its subcommand and arguments swapped. Acceptance all met: ECM factors a 30-digit semiprime in 1.1 s (<10 s); deg-50/100-digit modular GCD without explosion; ≥ 20 SymPy cross-verified cases per sub-module. Competitor index: GCD (modular) and number theory marked 🟢. |
 | 0.23.0 | 2026-08-02 | **Advanced Gröbner \& algebraic-geometry tooling released (Track SF — Phase B++ COMPLETE).** `ocas-poly::ideal` module: ideal_contains, ideal_sum, ideal_product, ideal_quotient (Rabinowitsch trick), ideal_saturate, ideal_intersection. MatrixOrder for elimination + eliminate() via Lex GB. Zero-dimensional solving with Sturm root isolation. Primary decomposition via Lex GB factoring + saturation. Radical: squarefree (zero-dim) + Jacobian saturation (pos-dim). Hilbert series: hilbert_function/dimension/degree/hilbert_polynomial. Rational root theorem. Python MultivariatePolynomial + C FFI bindings. 212 tests. Phase B++ COMPLETE. |
+| 0.26.0 | 2026-08-07 | **Phase B++++ "Competitive Gap Closure" (0.27.0→0.30.0) planned.** Four new versions before 1.0.0 based on the 2026-08-06 competitive re-test (GAP_ANALYSIS §5 priority re-rank): 0.27 symbolic integration breadth (Rubi-grade rule set + 1892-problem coverage benchmark, P0), 0.28 Gröbner performance at scale (katsura-6 < 1 s, cyclic-7 < 10× msolve, P1), 0.29 LLVM/inkwell JIT code generation (P1), 0.30 matrix engine (DomainMatrix analogue + Smith/Hermite) + Windows FLINT + quadratic sieve + tensor-in-nested-functions + 1.0 freeze preparation (P2/P3). Phase B+++ (0.24–0.26) deliverables verified against GAP_ANALYSIS §1 and ticked (0.26.0 shipped the packed F5 fast channel; the matrix engine deferred to 0.30.0). Phase D adjusted (LLVM→0.29; GPU row extended with code export; Windows FLINT/QS→0.30). Competitor reference index updated: Gröbner/number-theory/tensor-canonicalisation/pattern-transformers marked 🟢 + mojibake fixed; new rows for Rubi integration breadth, matrix/linear algebra, LLVM JIT, quadratic sieve. Milestone 1.0.0 moved to Month 59. |
+
+---
+
+## Phase B+++ — Competitive Gap Bridging (0.24–0.26) — COMPLETE
+
+> Based on the 2026-08-03 competitive survey (GAP_ANALYSIS_EN.md §5), bridge
+> the three gaps against Symbolica 2.2 Rubi integration, msolve Gröbner
+> performance, and SymPy 1.14 DomainMatrix. See [ROADMAP_EN.md](ROADMAP_EN.md)
+> §4. **This phase is COMPLETE: 0.24 heuristic integration + DoubleF64, 0.25
+> MultiModular Gröbner + parallel modular GCD, 0.26 packed-monomial F5 fast
+> channel (cyclic-6 ℤ₁₃ grevlex 55.04 ms measured). 0.26.0 shipped a different
+> scope than originally planned — the matrix engine / Smith normal forms were
+> deferred to 0.30.0 in Phase B++++.**
+
+### 0.24.0 — Symbolic Integration Breadth + DoubleFloat
+
+**Goal**: narrow the integration-coverage gap vs Symbolica Rubi (P0); introduce
+the DoubleFloat evaluation path (P2).
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Integration by parts (LIATE/ILATE heuristic) | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| Trigonometric substitution (√(a²−x²) etc., 3 kinds) | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| Weierstrass rational-parameter substitution | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| Euler substitution (quadratic-radical rationalising, placeholder) | SymPy `manualintegrate` | `ocas-calc::integrate::heuristic` |
+| `DoubleFloat` type (~31 digits, >3× faster than arbitrary precision) | Symbolica 2.0 `double-float` | `ocas-domain::double_float` |
+| JIT/SIMD evaluator DoubleFloat pipeline | Symbolica SymJIT | `ocas-eval::jit` |
+| Python/C bindings | — | `ocas-py`/`ocas-c` |
+
+**Performance targets**
+
+- Rubi 1892-problem subset coverage improved ≥30 percentage points over the
+  Risch-only baseline (Risch + heuristics)
+- DoubleFloat evaluation ≥3× faster than arbitrary precision
+- `cargo test --workspace` passes
+
+**Acceptance**
+
+- [x] Heuristic integration agrees with SymPy `manualintegrate` on standard
+  textbook cases
+- [x] DoubleFloat proptest: within tolerance of arbitrary-precision results
+- [ ] Rubi 1892-problem subset benchmark run and recorded (deferred to 0.27.0)
+- [x] Python `integrate()` and the `DoubleFloat` type callable from Python
+
+**Risks**
+
+- Heuristics may produce non-minimal forms → mitigated by SymPy cross-validation
+- DoubleFloat JIT pipeline requires Cranelift backend type-system changes
+
+---
+
+### 0.25.0 — Gröbner Performance at Scale (Multi-Modular)
+
+**Goal**: align Gröbner performance with msolve (P1); cyclic-6 ℤ₁₃ from 2.63 s
+to < 0.5 s.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Multi-modular Gröbner strategy | msolve F4 + multi-modular | `ocas-poly::groebner::multi_modular` |
+| Parallel F5 over several primes (rayon) | msolve | `groebner::multi_modular::parallel_f5` |
+| CRT reconstruction of integer-coefficient bases | msolve | `groebner::multi_modular::crt_reconstruct` |
+| Rational reconstruction to recover ℚ coefficients | msolve | `groebner::multi_modular::rat_reconstruct` |
+| Hensel lifting ℤ_p → ℤ bases | msolve | `groebner::multi_modular::hensel_lift` |
+| Brown modular GCD acceleration | — | upgrade `ocas-poly::gcd::modular` |
+
+**Performance targets**
+
+- cyclic-6 ℤ₁₃ < 0.5 s (was 2.63 s; msolve 0.04 s)
+- cyclic-7 ℤ₁₃ tractable (previously untested)
+- katsura-6/7 benchmarks run and recorded
+- Within one order of magnitude of msolve (< 10× gap)
+
+**Acceptance**
+
+- [x] cyclic-6 ℤ₁₃ criterion benchmark < 0.5 s (0.26 grevlex measured 52.07 ms)
+- [x] cyclic-7 ℤ₁₃ tractable and `is_groebner_basis` verified (0.26 grevlex
+  single round 5.755 s, 209 basis elements)
+- [x] Multi-modular path agrees with the single-prime F5 path (100 random cases)
+- [ ] katsura-6/7 benchmarks run and recorded (deferred to 0.28.0)
+
+**Risks**
+
+- CRT reconstruction may overflow on large coefficients → mitigated by rational
+  reconstruction + Hensel lifting
+- Prime-selection strategy affects performance → follow msolve's prime logic
+
+---
+
+### 0.26.0 — Packed F5 Fast Channel + grevlex Benchmarks (as shipped)
+
+**Goal**: push the F5 main loop into a u128 SWAR fast channel, closing in on
+msolve performance; add grevlex benchmark variants. (The originally planned
+domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
+0.26.0 — deferred to 0.30.0.)
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Packed-monomial F5 fast channel (u128 SWAR: auto-routed when n_vars ≤ 8 and exponents < 2¹⁵; generic fallback out of bounds) | msolve monomial packing | `ocas-poly::groebner::f5_fp` |
+| Echelon i32 / clone-free two-phase rework | — | `groebner::echelon` |
+| grevlex benchmark variants | msolve DRL | `ocas-tests/benches/groebner.rs` |
+| Graded-order degree-direction inversion bug fix | — | `ocas-poly::order` |
+
+**Performance targets** (measured 2026-08-06, criterion medians)
+
+- cyclic-6 ℤ₁₃ grevlex 52.07 ms (0.19.0 baseline 2.63 s, ≈50×)
+- cyclic-6 ℤ₁₃ Lex 936 ms
+- cyclic-7 ℤ₁₃ grevlex single round 5.755 s (209 basis elements)
+
+**Acceptance**
+
+- [x] Packed fast channel and generic path produce identical results (random
+  cross-checks)
+- [x] cyclic-6/7 grevlex benchmarks run and recorded
+- [x] Graded-order degree-direction fix regression-tested
+- [ ] Domain-aware matrix engine + Smith/Hermite normal forms (→ 0.30.0)
+- [ ] Matrix performance benchmarks (→ 0.30.0)
+- [ ] Pre-1.0 freeze preparation: API audit / migration guide / cross-platform CI (→ 0.30.0)
+
+**Risks**
+
+- Packed channel limited to n_vars ≤ 8 and exponents < 2¹⁵ → automatic generic
+  fallback out of bounds
+- u128 SWAR payload overflow → exponent bounds check + fallback verification
+
+---
+
+## Phase B++++ — Competitive Gap Closure (0.27–0.30)
+
+> Based on the 2026-08-06 competitive re-test (GAP_ANALYSIS_EN.md §5 priority
+> re-rank: measured msolve 0.10.1 katsura 3–7 ms / cyclic-7 55 ms; Symbolica
+> 2.2 Rubi 7000+ rules; SymPy 1.14 DomainMatrix 10000× speedup), close the
+> remaining P0–P3 gaps before freezing 1.0.0. Phase B+++ (0.24–0.26) is
+> complete (heuristic integration / DoubleF64, MultiModular, packed F5 fast
+> channel; cyclic-6 grevlex 55.04 ms). See [ROADMAP_EN.md](ROADMAP_EN.md) §5.
+
+### 0.27.0 — Symbolic Integration Breadth (Rubi-Grade Rule Set)
+
+**Goal**: close the largest functional gap (P0) vs `symbolica-integrate`
+(Rubi 7000+ rules, 72,944-problem corpus); lift the 1892-problem subset
+coverage substantially.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Rule-table-driven integration engine (match → template substitution) | Rubi 4.17 rule structure; Symbolica `symbolica-integrate` | `ocas-calc::integrate::rules` |
+| Power/polynomial/exponential/logarithm rule families | Rubi; SymPy `manualintegrate` | `integrate::rules` |
+| Trigonometric/hyperbolic/inverse-trig/inverse-hyperbolic rule families | Rubi; SymPy | `integrate::rules` |
+| Radical and quadratic-form substitutions (completing the Euler placeholder) | SymPy `manualintegrate` | extend `integrate::heuristic` |
+| Special-function rule families (erf/Ei/Si/Ci/Fresnel) | 0.14 function table | `integrate::rules` |
+| Strategy dispatch chain: Risch → heuristics → rule library → `Integral(...)` | 0.14/0.24 chain | `integrate::try_risch_or_fallback` |
+| 1892-problem coverage benchmark harness (coverage report + failure taxonomy) | symbolica-integrate corpus | `ocas-tests/benches/integrate_1892.rs` |
+| `symbolica-integrate` (MIT) optional-feature integration assessment | §7.3 licence risk analysis | decide after assessment |
+| Python/C bindings: rule-path toggle | — | `ocas-py`/`ocas-c` |
+
+**Performance targets**
+
+- 1892-problem subset coverage ≥30 percentage points above the current level
+  (baseline: post-0.24 coverage)
+- Rule-path integrals agree with SymPy `manualintegrate`/`integrate` on samples
+
+**Acceptance**
+
+- [ ] 1892-problem coverage benchmark run and recorded (with failure taxonomy)
+- [ ] Rule-library integrals agree with SymPy on 100 random standard cases
+- [ ] No regression in the dispatch chain (existing Risch-path tests green)
+- [ ] Python/C bindings usable
+
+**Risks**
+
+- Rubi's original rule licence (CC BY-NC-SA 3.0) may conflict with commercial
+  use → prefer a self-developed rule set (Option C hybrid); assess the MIT crate
+  legally before integrating
+- Rule-library bloat → modular per-family organisation + coverage-data-driven
+  priorities
+
+---
+
+### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
+
+**Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)
+(P1): katsura-6 < 1 s, cyclic-7 grevlex within one order of magnitude.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Extend the u128 packed F5 fast channel to katsura/cyclic-7 (exponent-range / sparsity adaptation) | 0.26 packed channel | `ocas-poly::groebner::f5_fp` |
+| Scale the MultiModular ℚ pipeline to large instances (parallel lucky-prime scheduling + CRT + rational reconstruction + traceless Hensel) | msolve; 0.25 pipeline | `groebner::multi_modular` |
+| Sparsity-aware echelon optimisation (row/column pruning) | 0.15.2 sparse echelon | `groebner::echelon` |
+| katsura-6/7, cyclic-7 grevlex/Lex benchmarks | measured msolve (WSL2) | `ocas-tests/benches/groebner.rs` |
+
+**Performance targets**
+
+- katsura-6 ℤ₁₃ < 1 s (currently not completed; single round >30 min)
+- katsura-7 ℤ₁₃ tractable
+- cyclic-7 grevlex within 10× of msolve (currently 3.829 s vs 55 ms, ~70×)
+
+**Acceptance**
+
+- [ ] katsura-6 ℤ₁₃ criterion benchmark < 1 s
+- [ ] katsura-7 ℤ₁₃ tractable and `is_groebner_basis` verified
+- [ ] Multi-modular path agrees with the single-prime path on 100 random cases
+- [ ] cyclic-7 grevlex benchmark recorded (vs msolve 55 ms)
+
+**Risks**
+
+- katsura matrices are larger than cyclic ones (more rounds/rows) → joint tuning
+  of the packed channel + sparse echelon
+- Rational reconstruction on ℚ coefficients slows on large instances → prefer
+  traceless Hensel lifting to reduce the prime count
+
+---
+
+### 0.29.0 — Code Generation Extension (LLVM/inkwell JIT)
+
+**Goal**: land a second JIT backend — LLVM (via `inkwell`, already a workspace
+dependency) — narrowing the code-generation gap vs Symbolica SymJIT (P1).
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| `jit_llvm`: AST → LLVM IR + function registry + multi-output | Symbolica SymJIT; 0.15 multi-output JIT | `ocas-eval::jit_llvm` |
+| f64/f32 mixed precision + DoubleF64 + SIMD vectorisation pipelines | 0.15 f32 pipeline; 0.24 DoubleF64 | `eval::jit_llvm` |
+| Runtime backend selection (Cranelift default / LLVM) | — | `eval::JitBackend` enum |
+| Performance benchmarks: LLVM vs Cranelift vs interpreter | — | `ocas-tests/benches/jit.rs` |
+| Python/C bindings: backend-selection parameter | — | `ocas-py`/`ocas-c` |
+
+**Performance targets**
+
+- LLVM JIT on par with Cranelift or better
+- ≥10× vs interpreter maintained (multi-output 97×/21× baseline not regressed)
+- LLVM builds green on Linux/macOS/Windows CI
+
+**Acceptance**
+
+- [ ] LLVM and Cranelift produce identical output (1000 random expressions)
+- [ ] Benchmark report records LLVM/Cranelift/interpreter comparison
+- [ ] Linux/macOS/Windows LLVM builds green on CI
+- [ ] Python/C backend-selection parameter usable
+
+**Risks**
+
+- inkwell's LLVM version-compatibility matrix (trickiest on Windows) → pin a
+  supported version + CI caching
+- Long LLVM compile times → keep Cranelift as the default path; LLVM opt-in
+
+---
+
+### 0.30.0 — Matrix Engine + Platform Close-Out + 1.0 Freeze Preparation
+
+**Goal**: close the P2/P3 gaps and finish pre-1.0 freeze preparation:
+domain-aware matrix engine (DomainMatrix analogue) + Smith/Hermite normal
+forms, Windows FLINT, quadratic sieve, tensor handling inside nested functions.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Domain-aware matrix engine `Matrix<D>` generic | SymPy DomainMatrix | `ocas-poly::matrix::domain_matrix` |
+| Domain-specialised dense-matrix paths | SymPy DomainMatrix + FLINT | `matrix::domain_matrix` |
+| Smith normal form | SymPy `Matrix.smith_normal_form()` | `matrix::smith_normal_form` |
+| Hermite normal form | SymPy | `matrix::hermite_normal_form` |
+| Matrix performance benchmarks (20×20/30×30 rref/inv/det) | SymPy DomainMatrix | `ocas-tests/benches/matrix.rs` |
+| Windows FLINT support (flint3-sys Windows build assessment + CI) | FLINT 3.6.0 | `ocas-poly` `flint` feature |
+| Quadratic-sieve integer factorisation | SymPy `qs_factor` | `ocas-domain::ntheory::factor` |
+| Tensor handling inside nested functions | Symbolica Graphica | `ocas-rewrite::tensor` |
+| API audit + migration guide finalisation + cross-platform CI + published benchmarks | — | whole workspace |
+
+**Performance targets**
+
+- 20×20 integer-matrix rref within one order of magnitude of SymPy DomainMatrix
+- Smith/Hermite normal forms correct (cross-validated vs SymPy, 100 random cases)
+- Quadratic sieve on 30–50-digit semiprimes recorded vs SymPy `qs_factor`
+
+**Acceptance**
+
+- [ ] Smith/Hermite normal forms agree with SymPy on 100 random cases
+- [ ] 20×20 integer-matrix rref benchmark run and recorded
+- [ ] Quadratic-sieve benchmark run and recorded (vs SymPy `qs_factor`)
+- [ ] Windows FLINT available on three platforms (or a documented hard blocker)
+- [ ] Pre-1.0 freeze checklist ≥80% complete (API audit / migration guide /
+      cross-platform CI / benchmark publication)
+
+**Risks**
+
+- `Matrix<D>` genericisation may break existing APIs → mitigate with
+  `Matrix<Domain>` as the default type parameter
+- flint3-sys Windows builds may be blocked → assess vcpkg/MSYS2 paths; on
+  failure document the blocker and keep `rug` as the Windows default
+- Quadratic sieve is complex (polynomial selection + sieving + Block Lanczos)
+  → implement plain QS first, then optimise

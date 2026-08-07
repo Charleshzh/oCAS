@@ -865,17 +865,17 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 ## 阶段 D — Post-1.0
 
-路线图驱动的扩展，每个都版本化并与相关竞品基准对比。（ODE/PDE 已移至
-1.0 前的 0.20。）
+路线图驱动的扩展，每个都版本化并与相关竞品基准对比。（ODE 已移至 1.0 前的
+0.20；LLVM JIT 已移至 1.0 前的 0.29；Windows FLINT 与二次筛已移至 1.0 前的
+0.30。）
 
 | 版本 | 主题 | 参考竞品 | 备注 |
 |---|---|---|---|
 | 1.1 | PDE 求解器（Poisson、热传导、波动） | SageMath；Mathematica `DSolve` | 有限差分 + 谱方法 |
 | 1.2 | 微分 Galois 理论（序章） | Maple；研究 | 研究级 |
 | 1.3 | `ocas-gpl` 实后端 | LinBox、NTL | GPL-3.0 隔离 crate |
-| 1.4 | GPU 加速 | CUDA/HIP | 多项式 + 线性代数核 |
-| 1.5 | LLVM JIT 后端 | Symbolica `evaluate.rs` | 经由 `inkwell` |
-| 1.6+ | 领域工具包（物理/机器人/ML） | 领域库 | 叠加于稳定的 1.x |
+| 1.4 | GPU 加速 + 代码导出（CUDA/WASM/C++/ASM） | Symbolica SymJIT；CUDA/HIP | 多项式 + 线性代数核 |
+| 1.5+ | 领域工具包（物理/机器人/ML） | 领域库 | 叠加于稳定的 1.x |
 
 ---
 
@@ -891,10 +891,14 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 有理多项式 | Symbolica `rational_polynomial.rs` | — | 🟢 0.12 完成 |
 | 部分分式 | Symbolica `partial_fraction.rs` | SymPy `apart` | 🟢 0.12 完成 |
 | 结式 | Symbolica `poly/resultant.rs` | Sylvester | 🟢 0.12 完成 |
-| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | � F4（0.15.1）+ LM 索引/稀疏 echelon（0.15.2）+ F5 签名约简（0.19，cyclic-6 2.63 s） |
+| Gröbner | Symbolica `groebner.rs` + Faugère F4/F5 论文 | — | 🟢 F4（0.15.1）+ 稀疏 echelon（0.15.2）+ F5（0.19）+ MultiModular（0.25）+ 打包快通道（0.26，cyclic-6 grevlex 55 ms）；katsura/cyclic-7 大规模 → 0.28 |
 | GCD（模） | Symbolica `poly/gcd.rs`；Brown 1971 | — | 🟢 0.21 完成（单变量 Brown + 多元多素数 CRT） |
 | GCD（模方法多变量） | Symbolica `poly/gcd.rs` `gcd_shape_modular` | — | 🟢 0.11.2 完成 |
-| 积分（Risch） | Bronstein 著作；SymPy Risch | — | 🟢 0.14 完成 |
+| 积分（Risch） | Bronstein 著作；SymPy Risch | — | 🟢 0.14 完成（Risch + 0.24 启发式）；Rubi 级广度 → 0.27 |
+| 积分（Rubi 规则广度） | symbolica-integrate（MIT）；Rubi 4.17 | SymPy `manualintegrate` | 🔴 缺口；规则集引擎计划 0.27 |
+| 矩阵/线性代数 | SymPy DomainMatrix + FLINT | FLINT 后端 | 🔴 缺口（Bareiss）；域感知矩阵引擎 + Smith/Hermite 计划 0.30 |
+| LLVM JIT | Symbolica SymJIT `evaluate.rs` | — | 🔴 缺口（仅 Cranelift）；计划 0.29 |
+| 大整数分解（二次筛） | SymPy `qs_factor` | Crandall & Pomerance | 🔴 缺口（ECM 上限）；计划 0.30 |
 | 多输出 JIT | Symbolica `optimize_multiple.rs` | — | 🟢 0.15 完成 |
 | 流式 | Symbolica `streaming.rs` | — | 🟢 0.15 完成 |
 | 级数 | Symbolica `poly/series.rs`；SymPy `series` | — | 🟢 已有基础 |
@@ -906,10 +910,10 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 多项式快速乘法 | FLINT 3 SSA；Symbolica dense mul | — | 🟢 0.12.1 NTT（90× vs Karatsuba） |
 | 内存管理（mimalloc/对象池） | Symbolica Workspace；Maple 分层区域 | — | 🟢 mimalloc（0.11.2）+ Arena/对象池（0.15）已完成 |
 | ODE/PDE | SageMath `desolve`；SymPy `dsolve` | — | 🔴 缺口；ODE 求解器计划 0.20 |
-| 数论 | SageMath/PARI；SymPy `ntheory` | Crandall & Pomerance | � 0.21 完成（CRT + 分解 + 素性 + 离散对数 + 数论函数） |
+| 数论 | SageMath/PARI；SymPy `ntheory` | Crandall & Pomerance | 🟢 0.21 完成（CRT + 分解 + 素性 + 离散对数 + 数论函数）；二次筛 → 0.30 |
 | 代数几何（理想） | Singular；SageMath `ideal` | Cox-Little-O'Shea | 🔴 缺口；理想运算 + RUR + 准素分解 + Hilbert 级数 |
-| 张量规范化 | Symbolica `graphica`（Bliss） | Cadabra | 🔴 缺口；图同构规范化 计划 0.22 |
-| 模式变换器 | Symbolica `Transformer::Partition` | — | 🔴 缺口；计划 0.22 |
+| 张量规范化 | Symbolica `graphica`（Bliss） | Cadabra | 🟢 0.22 完成（图同构正则标号 + 规范形）；嵌套函数内处理 → 0.30 |
+| 模式变换器 | Symbolica `Transformer::Partition` | — | 🟢 0.22 完成（Partition 变换器） |
 
 ---
 
@@ -944,14 +948,18 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 | 0.20.0/0.20.1 | 2026-07-27/28 | **ODE 求解器发布并全量收尾。** 一阶分类引擎（可分离/线性/Bernoulli/恰当/齐次）+ 积分因子；二阶常系数/Cauchy-Euler/降阶法/常数变易法/待定系数（任意次多项式、指数共振、三角 forcing、叠加）；常点幂级数系数递推 + Frobenius；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定。修复 7 个核心 bug；31 项代入验证正确性测试（3 项已知限制 ignore）。 |
 | 0.21.0 | 2026-07-30 | **数论与计算代数栈发布（主线 SF）。** `number_theory` 扩建为目录模块：CRT 多模累加 `crt_many`；BPSW 素性（base-2 MR + Selfridge 强 Lucas）+ n<2⁶⁴ 确定性 `is_prime_u64`；整数分解（试除/Brent rho/Pollard p−1/Williams p+1/ECM Suyama-Montgomery stage-1，`factor_integer` 自动升级）；BSGS + Pohlig-Hellman 离散对数；φ/μ/τ/σ_k/λ 数论函数。模 GCD：单变量 Brown（`gcd::modular::gcd_modular_z`，monic 模像 + CRT 对称重构 + 试除验证）替代 ≥16 次爆炸的朴素 PRS；二元 `gcd_modular` 重写为完整 Brown（主变量内容分离 + monic 插值像 + 多素数 CRT + 有理重构 + 坏素数跳过）。Python `ocas::ntheory` 12 函数 + C `ocas_ntheory_*` 11 函数 + `ocas.hpp` RAII。修复两个潜伏 bug：`rational_reconstruction` 整数平方根逐个减一校正（30 位模数 52 s/次 → 原生 isqrt）；correctness `check` 模式参数顺序颠倒。验收全达成：ECM 30 位半素数 1.1 s（<10 s）；deg-50/100 位系数模 GCD 无爆炸；每子模块 ≥ 20 例 SymPy 交叉验证。竞品索引更新：GCD（模）、数论标 🟢。 |
 | 0.23.0 | 2026-08-02 | **高级 Gröbner 与代数几何工具发布（主线 SF — 阶段 B++ 完成）。** `ocas-poly::ideal` 模块：ideal_contains、ideal_sum、ideal_product、ideal_quotient（Rabinowitsch 技巧）、ideal_saturate、ideal_intersection。MatrixOrder 消元序 + eliminate()（Lex GB 过滤）。零维求解（Sturm 根隔离）。准素分解（Lex GB 因式分解 + 饱和分离）。根式：无平方（零维）+ Jacobian 饱和（正维）。Hilbert 级数：hilbert_function/dimension/degree/hilbert_polynomial。有理根定理。Python MultivariatePolynomial + C FFI 绑定。212 测试通过。阶段 B++ 完成。 |
+| 0.26.0 | 2026-08-07 | **阶段 B++++ "竞品差距收尾"（0.27.0→0.30.0）规划完成。** 基于 2026-08-06 竞品复测（GAP_ANALYSIS §5 优先级重排）在 1.0.0 前新增 4 个版本：0.27 符号积分广度（Rubi 级规则集 + 1892 题覆盖率基准，P0）、0.28 Gröbner 大规模性能（katsura-6 < 1 s、cyclic-7 < 10× msolve，P1）、0.29 LLVM/inkwell JIT 代码生成（P1）、0.30 矩阵引擎（DomainMatrix 类似物 + Smith/Hermite）+ Windows FLINT + 二次筛 + 张量嵌套 + 1.0 冻结准备（P2/P3）。阶段 B+++（0.24–0.26）交付物按 GAP_ANALYSIS §1 核验勾选（0.26.0 实际交付为打包 F5 快通道，矩阵引擎顺延至 0.30.0）。阶段 D 调整（LLVM→0.29；GPU 行并入代码导出；Windows FLINT/二次筛→0.30）。竞品参考索引更新：Gröbner/数论/张量规范化/模式变换器标 🟢 + 修复乱码；新增积分规则广度、矩阵/线性代数、LLVM JIT、二次筛行。里程碑表 1.0.0 顺延至第 59 月。 |
 
 ---
 
-## 阶段 B+++ — 竞品差距弥合（0.24–0.26）
+## 阶段 B+++ — 竞品差距弥合（0.24–0.26）—— 已完成
 
 > 基于 2026-08-03 竞品全面调研（GAP_ANALYSIS_CN.md §5），弥合 Symbolica 2.2
 > Rubi 积分、msolve Gröbner 性能、SymPy 1.14 DomainMatrix 三大差距。
-> 详见 [ROADMAP_CN.md](ROADMAP_CN.md) §4。
+> 详见 [ROADMAP_CN.md](ROADMAP_CN.md) §4。**本阶段已完成**：0.24 启发式积分
+> 四技术 + DoubleF64、0.25 MultiModular Gröbner + 并行模 GCD、0.26 打包
+> 单项式 F5 快通道（cyclic-6 grevlex 55.04 ms 实测）。0.26.0 实际交付与
+> 原计划不同——矩阵引擎/Smith 标准形顺延至 0.30.0。
 
 ### 0.24.0 — 符号积分广度 + DoubleFloat
 
@@ -977,10 +985,10 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 **验收**
 
-- [ ] 启发式积分在标准教科书用例上与 SymPy `manualintegrate` 输出一致
-- [ ] DoubleFloat 的 proptest：与任意精度结果在容差内一致
-- [ ] Rubi 1892 题子集基准运行并记录结果
-- [ ] Python `integrate()` 和 `DoubleFloat` 类型可从 Python 调用
+- [x] 启发式积分在标准教科书用例上与 SymPy `manualintegrate` 输出一致
+- [x] DoubleFloat 的 proptest：与任意精度结果在容差内一致
+- [ ] Rubi 1892 题子集基准运行并记录结果（推迟到 0.27.0）
+- [x] Python `integrate()` 和 `DoubleFloat` 类型可从 Python 调用
 
 **风险**
 
@@ -1013,10 +1021,10 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 **验收**
 
-- [ ] cyclic-6 ℤ₁₃ criterion 基准 < 0.5 s
-- [ ] cyclic-7 ℤ₁₃ 可解并验证 `is_groebner_basis`
-- [ ] multi-modular 路径与单素数 F5 路径结果一致（随机 100 例）
-- [ ] katsura-6/7 基准运行并记录
+- [x] cyclic-6 ℤ₁₃ criterion 基准 < 0.5 s（0.26 grevlex 实测 52.07 ms）
+- [x] cyclic-7 ℤ₁₃ 可解并验证 `is_groebner_basis`（0.26 grevlex 单轮 5.755 s，209 基元素）
+- [x] multi-modular 路径与单素数 F5 路径结果一致（随机 100 例）
+- [ ] katsura-6/7 基准运行并记录（推迟到 0.28.0）
 
 **风险**
 
@@ -1025,37 +1033,198 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 ---
 
-### 0.26.0 — 线性代数增强 + 1.0 准备
+### 0.26.0 — 打包 F5 快通道 + grevlex 基准（实际交付）
 
-**目标**：缩小与 SymPy DomainMatrix 的线性代数差距（P2）；完成 1.0 冻结前准备。
+**目标**：将 F5 主循环压入 u128 SWAR 快通道，进一步对齐 msolve 性能；
+补充 grevlex 基准变体。（原计划的域感知矩阵引擎 + Smith/Hermite 标准形
+未在 0.26.0 交付，顺延至 0.30.0。）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 打包单项式 F5 快通道（u128 SWAR：n_vars ≤ 8 且指数 < 2¹⁵ 自动路由，超界回落） | msolve 单项式打包 | `ocas-poly::groebner::f5_fp` |
+| echelon i32 / 免克隆两阶段改造 | — | `groebner::echelon` |
+| grevlex 基准变体 | msolve DRL | `ocas-tests/benches/groebner.rs` |
+| Graded 序度方向反置 bug 修复 | — | `ocas-poly::order` |
+
+**性能指标**（2026-08-06 实测，criterion 中位数）
+
+- cyclic-6 ℤ₁₃ grevlex 52.07 ms（0.19.0 基线 2.63 s，≈50×）
+- cyclic-6 ℤ₁₃ Lex 936 ms
+- cyclic-7 ℤ₁₃ grevlex 单轮 5.755 s（209 基元素）
+
+**验收**
+
+- [x] 打包快通道与通用路径结果一致（随机基准交叉验证）
+- [x] cyclic-6/7 grevlex 基准运行并记录
+- [x] Graded 序度方向修复回归测试通过
+- [ ] 域感知矩阵引擎 + Smith/Hermite 标准形（→ 0.30.0）
+- [ ] 矩阵性能基准（→ 0.30.0）
+- [ ] 1.0 冻结前准备：API 审计/迁移指南/跨平台 CI（→ 0.30.0）
+
+**风险**
+
+- 打包通道受 n_vars ≤ 8 与指数 < 2¹⁵ 限制 → 超界自动回落通用路径
+- u128 SWAR 载荷溢出 → 指数边界检查 + 回落验证
+
+---
+
+## 阶段 B++++ — 竞品差距收尾（0.27–0.30）
+
+> 基于 2026-08-06 竞品复测（GAP_ANALYSIS_CN.md §5 优先级重排：msolve 0.10.1
+> 实测 katsura 3–7 ms / cyclic-7 55 ms；Symbolica 2.2 Rubi 7000+ 规则；
+> SymPy 1.14 DomainMatrix 10000× 加速），在 1.0.0 冻结前收尾剩余 P0–P3
+> 缺口。阶段 B+++（0.24–0.26）已完成（启发式积分/DoubleF64、MultiModular、
+> 打包 F5 快通道；cyclic-6 grevlex 55.04 ms）。详见
+> [ROADMAP_CN.md](ROADMAP_CN.md) §5。
+
+### 0.27.0 — 符号积分广度（Rubi 级规则集）
+
+**目标**：弥合与 `symbolica-integrate`（Rubi 7000+ 规则、72,944 题库）的
+最大功能缺口（P0）；1892 题子集覆盖率显著提升。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 规则表驱动积分引擎（match → 模板替换） | Rubi 4.17 规则结构；Symbolica `symbolica-integrate` | `ocas-calc::integrate::rules` |
+| 幂/多项式/指数/对数规则族 | Rubi；SymPy `manualintegrate` | `integrate::rules` |
+| 三角/双曲/反三角/反双曲规则族 | Rubi；SymPy | `integrate::rules` |
+| 根式与二次型代换（含 Euler 占位补齐） | SymPy `manualintegrate` | `integrate::heuristic` 扩展 |
+| 特殊函数规则族（erf/Ei/Si/Ci/Fresnel） | 0.14 函数表 | `integrate::rules` |
+| 策略调度链：Risch → 启发式 → 规则库 → `Integral(...)` | 0.14/0.24 现有链 | `integrate::try_risch_or_fallback` |
+| 1892 题覆盖率基准 harness（覆盖率报告 + 失败分类） | symbolica-integrate 题库 | `ocas-tests/benches/integrate_1892.rs` |
+| `symbolica-integrate`（MIT）可选 feature 集成评估 | §7.3 许可证风险分析 | 评估后决定 |
+| Python/C 绑定：规则路径开关 | — | `ocas-py`/`ocas-c` |
+
+**性能指标**
+
+- 1892 题子集覆盖率从当前水平提升 ≥30 个百分点（基准：0.24 之后的覆盖率）
+- 规则路径典型积分与 SymPy `manualintegrate`/`integrate` 抽样一致
+
+**验收**
+
+- [ ] 1892 题覆盖率基准运行并记录（含失败分类）
+- [ ] 规则库积分在标准教科书用例上与 SymPy 输出一致（随机 100 例）
+- [ ] 策略调度链无回归（Risch 路径现有测试全绿）
+- [ ] Python/C 绑定可用
+
+**风险**
+
+- Rubi 原始规则许可证（CC BY-NC-SA 3.0）与商业使用存在潜在争议 → 首选
+  自研规则集（方案 C 混合），集成 MIT crate 前先做法律评估
+- 规则库爆炸式增长 → 按规则族模块化 + 覆盖率数据驱动优先级
+
+---
+
+### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
+
+**目标**：对齐 msolve 0.10.1 实测（katsura 3–7 ms、cyclic-7 55 ms）（P1）；
+katsura-6 < 1 s、cyclic-7 grevlex 进入同数量级。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| u128 打包 F5 快通道扩展到 katsura/cyclic-7（指数域/稀疏度适配） | 0.26 打包通道 | `ocas-poly::groebner::f5_fp` |
+| MultiModular ℚ 管线扩展到大规模实例（并行幸运素数调度 + CRT + 有理重构 + 无迹 Hensel） | msolve；0.25 管线 | `groebner::multi_modular` |
+| echelon 稀疏度感知优化（行/列剪枝） | 0.15.2 稀疏 echelon | `groebner::echelon` |
+| katsura-6/7、cyclic-7 grevlex/Lex 基准 | msolve 实测（WSL2） | `ocas-tests/benches/groebner.rs` |
+
+**性能指标**
+
+- katsura-6 ℤ₁₃ < 1 s（当前未完成，单轮 >30 min）
+- katsura-7 ℤ₁₃ 可完成
+- cyclic-7 grevlex 与 msolve 差距 < 10×（当前 3.829 s vs 55 ms，~70×）
+
+**验收**
+
+- [ ] katsura-6 ℤ₁₃ criterion 基准 < 1 s
+- [ ] katsura-7 ℤ₁₃ 可解并验证 `is_groebner_basis`
+- [ ] 多模路径与单素数路径随机 100 例一致
+- [ ] cyclic-7 grevlex 基准记录（对比 msolve 55 ms）
+
+**风险**
+
+- katsura 系矩阵规模比 cyclic 系更大（更多轮次/行数）→ 打包通道 + 稀疏
+  echelon 联合调优
+- ℚ 系数有理重构在大实例上变慢 → 无迹 Hensel 提升优先，减少素数数量
+
+---
+
+### 0.29.0 — 代码生成扩展（LLVM/inkwell JIT）
+
+**目标**：落地第二个 JIT 后端——LLVM（经 `inkwell`，已在 workspace 依赖），
+缩小与 Symbolica SymJIT 的代码生成差距（P1）。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| `jit_llvm`：AST → LLVM IR + 函数注册表 + 多输出 | Symbolica SymJIT；0.15 多输出 JIT | `ocas-eval::jit_llvm` |
+| f64/f32 混合精度 + DoubleF64 + SIMD 向量化管线 | 0.15 f32 管线；0.24 DoubleF64 | `eval::jit_llvm` |
+| 运行时后端选择（Cranelift 默认 / LLVM） | — | `eval::JitBackend` 枚举 |
+| 性能基准：LLVM vs Cranelift vs 解释器 | — | `ocas-tests/benches/jit.rs` |
+| Python/C 绑定：后端选择参数 | — | `ocas-py`/`ocas-c` |
+
+**性能指标**
+
+- LLVM JIT 与 Cranelift 持平或更优
+- 相对解释器 ≥10× 保持（多输出 97×/21× 基线不倒退）
+- 三平台 LLVM 构建 CI 全绿
+
+**验收**
+
+- [ ] LLVM 与 Cranelift 输出一致（随机 1000 表达式）
+- [ ] 基准报告记录 LLVM/Cranelift/解释器对比
+- [ ] Linux/macOS/Windows LLVM 构建 CI 全绿
+- [ ] Python/C 后端选择参数可用
+
+**风险**
+
+- inkwell 的 LLVM 版本兼容矩阵（Windows 尤为棘手）→ 锁定支持版本 + CI 缓存
+- LLVM 编译时间长 → 保持 Cranelift 默认路径，LLVM 仅按需启用
+
+---
+
+### 0.30.0 — 矩阵引擎 + 平台收尾 + 1.0 冻结准备
+
+**目标**：收尾 P2/P3 差距并完成 1.0 冻结前准备：域感知矩阵引擎
+（DomainMatrix 类似物）+ Smith/Hermite 标准形、Windows FLINT、二次筛、
+张量嵌套函数内处理。
 
 **功能**
 
 | 条目 | 参考 | oCAS 落地位置 |
 |---|---|---|
 | 域感知矩阵引擎 `Matrix<D>` 泛型化 | SymPy DomainMatrix | `ocas-poly::matrix::domain_matrix` |
-| Dense 矩阵的域特化路径 | SymPy DomainMatrix + FLINT | `matrix::domain_matrix` |
+| Dense 矩阵域特化路径 | SymPy DomainMatrix + FLINT | `matrix::domain_matrix` |
 | Smith 标准形 | SymPy `Matrix.smith_normal_form()` | `matrix::smith_normal_form` |
 | Hermite 标准形 | SymPy | `matrix::hermite_normal_form` |
-| 矩阵性能基准（20×20/30×30） | SymPy DomainMatrix | `ocas-tests/benches/matrix.rs` |
-| API 审计 + 文档完整性 | — | 全 workspace |
-| 迁移指南草稿（Symbolica/SymPy → oCAS） | — | `docs/migration/` |
-| 跨平台 CI 验证 | — | GitHub Actions |
+| 矩阵性能基准（20×20/30×30 rref/inv/det） | SymPy DomainMatrix | `ocas-tests/benches/matrix.rs` |
+| Windows FLINT 支持（flint3-sys Windows 构建评估 + CI） | FLINT 3.6.0 | `ocas-poly` `flint` feature |
+| 二次筛大整数分解 | SymPy `qs_factor` | `ocas-domain::ntheory::factor` |
+| 张量嵌套函数内处理 | Symbolica Graphica | `ocas-rewrite::tensor` |
+| API 审计 + 迁移指南定稿 + 跨平台 CI + 已发布基准 | — | 全 workspace |
 
 **性能指标**
 
 - 20×20 整数矩阵 rref 与 SymPy DomainMatrix 在同一数量级
-- Smith 标准形正确性（与 SymPy 交叉验证）
+- Smith/Hermite 标准形正确性（与 SymPy 交叉验证，随机 100 例）
+- 二次筛 30–50 位半素数与 SymPy `qs_factor` 对比记录
 
 **验收**
 
-- [ ] Smith 标准形与 SymPy 输出一致（随机 100 例）
+- [ ] Smith/Hermite 标准形与 SymPy 输出一致（随机 100 例）
 - [ ] 20×20 整数矩阵 rref 性能基准运行并记录
-- [ ] API 审计：所有公共类型/函数有 rustdoc + 示例
-- [ ] 迁移指南草稿完成
-- [ ] Linux/macOS/Windows CI 全绿
+- [ ] 二次筛基准运行并记录（vs SymPy `qs_factor`）
+- [ ] Windows FLINT 三平台可用（或记录明确技术阻塞）
+- [ ] 1.0 冻结前准备清单完成 ≥80%（API 审计/迁移指南/跨平台 CI/基准发布）
 
 **风险**
 
-- `Matrix<D>` 泛型化可能破坏现有 API → 用 `Matrix<Domain>` 作为默认类型参数缓解
-- Smith 标准形算法复杂度 → 限制在 PID 域上（整数、有限域）
+- `Matrix<D>` 泛型化可能破坏现有 API → 用 `Matrix<Domain>` 默认类型参数缓解
+- flint3-sys Windows 构建可能阻塞 → 评估 vcpkg/MSYS2 路径，失败则记录阻塞
+  并保持 `rug` 后端为 Windows 默认
+- 二次筛实现复杂（多项式选择 + 筛法 + Block Lanczos）→ 先实现朴素 QS 再优化

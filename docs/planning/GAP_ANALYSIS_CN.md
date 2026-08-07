@@ -177,7 +177,7 @@ SageMath 是"瑞士军刀"式科学计算环境，差距是**广度级**的。
 | 领域 | oCAS | SageMath |
 |---|---|---|
 | 代数几何 | 🟡 基础 Gröbner | ✅ Singular 集成 |
-| 数论 | � 核心栈完整（0.21：CRT + 分解 + 素性 + 离散对数 + 数论函数） | ✅ PARI/FLINT 全栈 |
+| 数论 | 🟢 核心栈完整（0.21：CRT + 分解 + 素性 + 离散对数 + 数论函数） | ✅ PARI/FLINT 全栈 |
 | 微分方程 | 🟢 一阶/二阶/系统/级数/Laplace/绑定 完整（0.20.1） | ✅ 完整 ODE/PDE 求解器 |
 | 群论/表示论 | 🔴 无 | ✅ GAP 集成 |
 | 组合数学 | 🔴 无 | ✅ 完整 |
@@ -366,22 +366,25 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 
 | 建议 | 版本 | 交付物 | 理由 |
 |---|---|---|---|
-| 积分广度扩展 | 1.0-rc | Risch + 启发式扩展 或 Rubi 规则集成 | Symbolica 2.2 杀手特性；覆盖面差距是最大功能缺口 |
-| Gröbner katsura/cyclic-7 扩展 | 1.0-rc | katsura-6 < 1 s；cyclic-7 可完成 | msolve 实测 3–55 ms；打包 F5 已验证 cyclic-6 收敛 |
-| 矩阵增强 | 1.0-rc | DomainMatrix 类似引擎 | SymPy 1.14 差距扩大 |
+| 积分广度扩展 | 0.27.0 | Risch + 启发式扩展 + Rubi 级规则集（1892 题覆盖率 ≥30 个百分点提升） | Symbolica 2.2 杀手特性；覆盖面差距是最大功能缺口 |
+| Gröbner katsura/cyclic-7 扩展 | 0.28.0 | katsura-6 < 1 s；cyclic-7 grevlex < 10× msolve | msolve 实测 3–55 ms；打包 F5 已验证 cyclic-6 收敛 |
+| LLVM JIT 代码生成 | 0.29.0 | LLVM/inkwell JIT 后端（Cranelift 默认，LLVM 可选） | Symbolica SymJIT 代差；Cranelift 已到性能天花板 |
+| 矩阵增强 | 0.30.0 | DomainMatrix 类似引擎 + Smith/Hermite 标准形 | SymPy 1.14 差距扩大 |
+| Windows FLINT + 二次筛 + 张量嵌套 | 0.30.0 | flint3-sys Windows 构建；QS 大整数分解；嵌套函数内张量处理 | 平台覆盖完整性 + SymPy qs_factor |
 
 > 已兑现（0.24–0.26）：DoubleFloat（→DoubleF64）、Gröbner cyclic-6 < 0.5 s
 > （grevlex 55 ms）、MultiModular ℚ 管线、启发式积分四技术。
+> 剩余建议已排入新阶段 B++++（0.27–0.30），详见 [ROADMAP_CN.md](ROADMAP_CN.md) §5。
 
 ### 8.2 Post-1.0
 
 | 建议 | 优先级 | 理由 |
 |---|---|---|
-| LLVM/inkwell JIT 后端 | P1 | Symbolica SymJIT 代差；Cranelift 已到性能天花板 |
 | CUDA/WASM 代码导出 | P1 | Symbolica 已支持；GPU/浏览器场景需求 |
 | PDE 求解器 | P2 | 用户期望高；Poisson/热传导/波动 |
-| 二次筛分解 | P2 | SymPy qs_factor 可能更快 |
-| Windows FLINT | P2 | 平台覆盖完整性 |
+
+> 原 Post-1.0 建议中已移入 1.0 前：LLVM/inkwell JIT（→0.29.0）、二次筛分解
+> 与 Windows FLINT（→0.30.0）。
 
 ### 8.3 定位建议
 
@@ -429,3 +432,4 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 | 0.20.1 | 2026-07-27 | **ODE 求解器全量收尾。** 积分因子检测（μ(x)/μ(y)）；常数变易法（VOP，修复 Cauchy-Euler forcing 静默丢弃）；降阶法；幂级数系数递推 + Frobenius（实有理指标根）；Laplace IVP（`dsolve_ivp`）；2×2 常系数系统（`dsolve_system`）；Python/C 绑定（`classify_ode`/`dsolve`/`dsolve_ivp`）。修复 real_roots isqrt/公式 bug、is_exact 硬编码、Cauchy-Euler 系数归一化、积分器 (ax+b)^-1 与分数次幂、substitute_solution 裸 y(x)、级数系数 diff 污染。新增同类项收集器 collect_terms + expand。31 项代入验证正确性测试（3 项已知限制 ignore）。ODE 缺口从 🟡 升级为 🟢。版本提升 0.20.1。 |
 | 0.23.0 竞品调研 | 2026-08-03 | **全面竞品差距调研与评估。** 头部更新至 0.23.0。新增配套文档 COMPETITIVE_MATRIX_CN.md（竞品能力矩阵）+ BENCHMARK_SUITE_CN.md（基准测试套件设计）。§1 版本表扩展至 0.23.0。§3 算法深度新增代数几何工具、高级模式匹配行，符号积分行标注 Rubi 广度差距。§4.1 Symbolica 对照重写（2.2.0 source-available + Rubi + SymJIT/CUDA/WASM + DoubleFloat）；新增 §4.4 msolve 对照（cyclic-6 0.04 s 标杆）；新增 §4.5 新兴竞品（Numerica/Graphica/mathcore/cas-rs）。§5 优先级重排（P0 积分广度、P1 Gröbner+代码生成、P2 矩阵+DoubleFloat+FLINT、P3 张量+二次筛）。新增 §7 许可证与生态位分析（Symbolica 许可证变更 + Rubi 许可证风险 + oCAS LGPL 优势）。新增 §8 战略建议（1.0 前 + Post-1.0 + 定位建议）。§6 总评重写。 |
 | 0.26.0 复测 | 2026-08-06 | **竞品版本重新核实 + 本机全量复测。** 头部更新至 0.26.0。竞品核实：FLINT 3.5.0→3.6.0（Kinoshita-Li 级数复合、padic_radix、subresultant 结式）、msolve 0.7.x→0.10.1（GM 改进、QQ 提升修复）、mathcore 更正为 0.3.1（0.5.0 不存在）、Numerica 无 tag、SageMath 日期更正 10.9@2026-05-05；Symbolica/SymPy/GiNaC 无更新。§1 版本表追加 0.24.0/0.25.0/0.26.0 行。§4.1 DoubleFloat 行 🔴→✅（0.24 DoubleF64）；§4.4 msolve 表以 WSL2 实测值替换引用值（cyclic-6 4 ms、cyclic-7 55 ms、katsura 3–7 ms）。§5 优先级重排：DoubleFloat 与 cyclic-6<0.5 s（grevlex 55.04 ms 实测）移入已完成项，Gröbner 剩余差距重定为 katsura+cyclic-7。§6/§8 同步改写（含 factor(x^n−1) 类 SymPy 快 ~50× 的诚实记录）。 |
+| 0.26.0 规划 | 2026-08-07 | **1.0 前新增版本排期（阶段 B++++ 0.27–0.30）。** 开放 §5 缺口映射到具体版本：积分广度 → 0.27.0、Gröbner katsura/cyclic-7 → 0.28.0、LLVM JIT → 0.29.0、矩阵引擎 + Windows FLINT + 二次筛 + 张量嵌套 → 0.30.0。§8.1 表版本列替换为具体版本号（新增 LLVM 与 FLINT/QS/张量行）；§8.2 移出已前置项（LLVM→0.29、QS/FLINT→0.30），仅留 CUDA/WASM 与 PDE。1.0.0 里程碑顺延至第 59 月。 |

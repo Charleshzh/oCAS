@@ -238,14 +238,238 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 
 ---
 
-## Phase 4: Stable 1.0
+## Phase 4: Closing the Competitive Gap (0.24–0.26) — COMPLETE
+
+> **Goal**: close the key gaps found by the competitive survey
+> (GAP_ANALYSIS_EN.md §5) — Symbolica 2.2 Rubi integration, msolve Gröbner
+> performance, SymPy 1.14 DomainMatrix — before freezing 1.0.0.
+>
+> Background: Phase B++ "Competitive Alignment" (0.19–0.23) completed on
+> 2026-08-02. Competitors evolved significantly meanwhile — Symbolica 2.2
+> ported 7000+ Rubi integration rules, SymPy 1.14 DomainMatrix became
+> 10000× faster, msolve set a cyclic-6 Gröbner benchmark of ~0.04 s — so the
+> original "1.0 is freeze-and-polish only" plan was no longer sufficient.
+>
+> **(This phase is COMPLETE: 0.24 heuristic integration + DoubleF64, 0.25
+> MultiModular Gröbner + parallel modular GCD, 0.26 packed monomial F5 fast
+> channel; cyclic-6 ℤ₁₃ grevlex measured 55.04 ms. 0.26.0 shipped a different
+> scope than originally planned here — the matrix engine / Smith normal form
+> were deferred to 0.30.0 in Phase 5.)**
+
+### 0.24.0 — Symbolic Integration Breadth + DoubleFloat
+
+**Goal**: narrow the integration-coverage gap vs Symbolica Rubi (P0); introduce
+the DoubleFloat evaluation path (P2).
+
+**Deliverables**:
+
+- [x] Heuristic integration pool behind Risch fallback (`heuristic_integrate`)
+  - Integration by parts (LIATE/ILATE heuristic)
+  - Trigonometric substitution ($\sqrt{a^2 - x^2}$, $\sqrt{a^2 + x^2}$, $\sqrt{x^2 - a^2}$)
+  - Rational parameter substitution (Weierstrass $t = \tan(x/2)$)
+  - Euler substitution (rationalising quadratic radicals, placeholder)
+  - Reference: SymPy `manualintegrate` heuristic pool
+- [x] DoubleFloat evaluation path (`DoubleF64`: ~31 digits, >3× faster than
+  arbitrary precision)
+  - Reference: Symbolica 2.0 `double-float` implementation
+  - New `DoubleFloat` type in `ocas-domain`
+  - JIT/SIMD evaluator DoubleFloat pipeline
+- [x] Python/C bindings: `integrate_heuristic`, `DoubleFloat` type
+- [ ] Rubi 1892-problem subset benchmark vs symbolica-integrate (deferred to 0.27.0)
+
+**Success Criteria**:
+
+- Rubi 1892-problem subset coverage improved ≥30 percentage points over the
+  Risch-only baseline (Risch + heuristics)
+- DoubleFloat evaluation ≥3× faster than arbitrary precision
+- `cargo test --workspace` passes
+
+### 0.25.0 — Gröbner Performance at Scale (Multi-Modular)
+
+**Goal**: align Gröbner performance with msolve (P1); cyclic-6 ℤ₁₃ from 2.63 s
+to < 0.5 s.
+
+**Deliverables**:
+
+- [x] Multi-modular strategy
+  - Parallel Gröbner basis computation over several primes
+  - CRT reconstruction of integer-coefficient bases
+  - Rational reconstruction to recover ℚ coefficients
+  - Reference: msolve F4 + multi-modular + Hensel + BM
+- [x] Hensel lifting of Gröbner bases
+  - Lift from $\mathbb{F}_p$ basis to $\mathbb{Z}$ basis
+  - Fewer primes needed for CRT reconstruction
+- [x] Large-coefficient polynomial GCD acceleration
+  - Brown modular GCD further accelerated by multi-modular arithmetic
+- [ ] Benchmarks: cyclic-6/7, katsura-6/7 vs msolve (katsura deferred to 0.28.0)
+
+**Success Criteria**:
+
+- cyclic-6 ℤ₁₃ < 0.5 s (was 2.63 s; msolve 0.04 s)
+- cyclic-7 ℤ₁₃ tractable (previously untested)
+- Benchmark results within one order of magnitude of msolve (< 10× gap)
+
+### 0.26.0 — Packed F5 Fast Channel + grevlex Benchmarks (as shipped)
+
+**Goal**: push the F5 main loop into a u128 SWAR fast channel, closing in on
+msolve performance; add grevlex benchmark variants. (The originally planned
+domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
+0.26.0 — deferred to 0.30.0.)
+
+**Deliverables**:
+
+- [x] Packed-monomial F5 fast channel (u128 SWAR)
+  - Auto-routed when n_vars ≤ 8 and exponents < 2¹⁵; falls back to the generic
+    path out of bounds
+- [x] Echelon i32 / clone-free two-phase rework
+- [x] grevlex benchmark variants (measurement baseline beyond Lex)
+- [x] Fixed pre-existing Graded-order degree-direction inversion bug
+- [ ] Domain-aware matrix engine (`DomainMatrix` analogue) → 0.30.0
+- [ ] Smith/Hermite normal forms → 0.30.0
+- [ ] Matrix performance benchmarks → 0.30.0
+- [ ] Pre-1.0 freeze preparation (API audit / migration guide / cross-platform CI) → 0.30.0
+
+**Success Criteria** (measured 2026-08-06):
+
+- cyclic-6 ℤ₁₃ grevlex 52.07 ms (criterion median), Lex 936 ms
+- cyclic-7 ℤ₁₃ grevlex single round 5.755 s (209 basis elements)
+- Packed fast channel and generic path produce identical results (random cross-checks)
+
+---
+
+## Phase 5: Competitive Gap Closure (0.27–0.30)
+
+> **Goal**: close the remaining P0–P3 gaps before freezing 1.0.0, per the
+> 2026-08-06 priority re-ranking (GAP_ANALYSIS_EN.md §5): P0 symbolic
+> integration breadth, P1 Gröbner performance at scale (katsura + cyclic-7),
+> P1 LLVM JIT code generation, P2 matrix/linear algebra (DomainMatrix analogue
+> + Smith/Hermite normal forms), P2 Windows FLINT, P3 quadratic sieve and
+> tensor handling inside nested functions. Phase B+++ (0.24–0.26) delivered
+> heuristic integration / DoubleF64, MultiModular Gröbner, and the packed F5
+> fast channel (cyclic-6 grevlex 55.04 ms); this phase closes the rest, then
+> 1.0.0 freezes.
+
+### 0.27.0 — Symbolic Integration Breadth (Rubi-Grade Rule Set)
+
+**Goal**: close the largest functional gap (P0) vs `symbolica-integrate`
+(Rubi 7000+ rules, 72,944-problem corpus); lift the 1892-problem subset
+coverage substantially.
+
+**Deliverables**:
+
+- [ ] Rule-table-driven integration engine (match → template substitution)
+  - Power/polynomial/exponential/logarithm rule families
+  - Trigonometric/hyperbolic/inverse-trigonometric/inverse-hyperbolic rule families
+  - Radical and quadratic-form substitutions (extending the 0.24
+    trig-substitution/Weierstrass/Euler framework, completing the Euler placeholder)
+  - Special-function rule families (erf/Ei/Si/Ci/Fresnel, bridging the 0.14 table)
+- [ ] Strategy dispatch chain: Risch (0.14) → heuristic four techniques (0.24)
+  → rule library → `Integral(...)` fallback
+- [ ] Rule provenance strategy (per GAP_ANALYSIS_EN.md §7.3 licence risk):
+  - Preferred: self-developed rule set (Option C hybrid: Risch + heuristics +
+    rule structure informed by Rubi's classification)
+  - Evaluate integrating `symbolica-integrate` (MIT) as an optional feature
+- [ ] 1892-problem coverage benchmark harness: coverage report + failure taxonomy
+- [ ] Python/C bindings: `integrate` rule-path toggle
+
+**Success Criteria**:
+
+- 1892-problem subset coverage ≥30 percentage points above the current level
+- Rule path agrees with SymPy `manualintegrate`/`integrate` on sampled cases
+- `cargo test --workspace` passes
+
+### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
+
+**Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)
+(P1): katsura-6 < 1 s, cyclic-7 grevlex within one order of magnitude.
+
+**Deliverables**:
+
+- [ ] Extend the u128 packed F5 fast channel to katsura and cyclic-7
+  (exponent-range / sparsity adaptation)
+- [ ] Scale the MultiModular ℚ pipeline (0.25) to large instances
+  - Parallel lucky-prime scheduling + CRT + rational reconstruction + traceless
+    p-adic Hensel lifting
+- [ ] Sparsity-aware echelon optimisation (successor of the 0.15.2 sparse
+  echelon: row/column pruning)
+- [ ] katsura-6/7 and cyclic-7 grevlex/Lex benchmarks vs measured msolve (WSL2)
+
+**Success Criteria**:
+
+- katsura-6 ℤ₁₃ < 1 s (currently not completed); katsura-7 tractable
+- cyclic-7 grevlex within 10× of msolve (currently ~70×)
+- Multi-modular path agrees with the single-prime path on 100 random cases;
+  `is_groebner_basis` verified
+
+### 0.29.0 — Code Generation Extension (LLVM/inkwell JIT)
+
+**Goal**: land a second JIT backend — LLVM (via `inkwell`, already a workspace
+dependency) — narrowing the code-generation gap vs Symbolica SymJIT (P1).
+
+**Deliverables**:
+
+- [ ] `ocas-eval::jit_llvm`: AST → LLVM IR + function registry + multi-output
+- [ ] Evaluation pipeline coverage: f64/f32 mixed precision + DoubleF64 + SIMD
+  vectorisation
+- [ ] Runtime backend selection: Cranelift (default, fast compile) / LLVM
+  (optimised code)
+- [ ] Performance benchmarks: LLVM vs Cranelift vs interpreter (hold the
+  multi-output 97×/21× baseline)
+- [ ] Python/C bindings exposing the backend-selection parameter
+
+**Success Criteria**:
+
+- LLVM JIT on par with Cranelift or better; ≥10× vs interpreter maintained
+- LLVM builds green on Linux/macOS/Windows CI
+- Output identical to the Cranelift path (1000 random expressions)
+
+### 0.30.0 — Matrix Engine + Platform Close-Out + 1.0 Freeze Preparation
+
+**Goal**: close the P2/P3 gaps and finish pre-1.0 freeze preparation:
+domain-aware matrix engine (DomainMatrix analogue) + Smith/Hermite normal
+forms, Windows FLINT, quadratic sieve, tensor handling inside nested functions.
+
+**Deliverables**:
+
+- [ ] Domain-aware matrix engine (`DomainMatrix` analogue, deferred from 0.26.0)
+  - `Matrix<D>` generic over `IntegerDomain`/`FiniteField`/`RationalDomain`
+  - Domain-specialised paths for dense matrices (avoid generic `Domain` trait
+    overhead)
+  - Reference: SymPy DomainMatrix + FLINT backend
+- [ ] Smith normal form (integer matrices; for module-structure analysis and
+  homological algebra)
+- [ ] Hermite normal form (integer matrices; for linear Diophantine equations)
+- [ ] Matrix performance benchmarks: 20×20/30×30 integer rref/inv/det vs SymPy
+  DomainMatrix
+- [ ] Windows FLINT support (flint3-sys Windows build assessment + CI)
+- [ ] Quadratic-sieve integer factorisation (vs SymPy `qs_factor`; next level
+  above ECM)
+- [ ] Tensor handling inside nested functions (vs Symbolica Graphica; 0.22
+  delivered basic canonicalisation)
+- [ ] Pre-1.0 freeze preparation
+  - API audit: documentation completeness for all public types/functions
+  - Migration guide finalised (Symbolica/SymPy → oCAS)
+  - Cross-platform CI verification (Linux/macOS/Windows)
+  - Published benchmarks (per BENCHMARK_SUITE_EN.md)
+
+**Success Criteria**:
+
+- Smith/Hermite normal forms agree with SymPy on 100 random cases
+- 20×20 integer-matrix rref within one order of magnitude of SymPy DomainMatrix
+- Quadratic-sieve benchmark recorded vs SymPy `qs_factor`
+- Windows FLINT available on three platforms (or a documented hard blocker)
+- Pre-1.0 freeze checklist ≥80% complete
+
+---
+
+## Phase 6: Stable 1.0
 
 > **Goal**: A production-ready CAS library with stable APIs and broad backend
 > support.
 
 ### 1.0.0 — Stable Release
 
-**Target**: Month 16
+**Target**: after 0.30.0
 
 **Deliverables**:
 
@@ -255,11 +479,19 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 - [ ] Published benchmarks
 - [ ] Migration guide from Symbolica/SymPy
 - [ ] Signed release artifacts
+- [ ] Competitive comparison report (per the final COMPETITIVE_MATRIX_EN.md)
 
 **Success Criteria**:
 
 - No breaking API changes planned for 1.x.
-- Performance parity or better with Symbolica on core benchmarks.
+- P0 gap (symbolic integration breadth) significantly narrowed (1892-problem
+  subset coverage target met, GAP_ANALYSIS_EN.md §5).
+- P1 gap (Gröbner performance) aligned with msolve within one order of
+  magnitude (katsura-6 < 1 s, cyclic-7 grevlex < 10× msolve).
+- P1 gap (code generation) closed with an LLVM/inkwell JIT backend.
+- P2 gap (matrix/linear algebra) closed with a domain-aware matrix engine +
+  Smith/Hermite normal forms.
+- Performance ahead of SymPy across core benchmarks.
 
 > The fine-grained per-version plan from Beta to 1.0 (0.11 factorization →
 > 0.12 rational functions → 0.13 Gröbner F4 → 0.14 Risch integration → 0.15
@@ -268,10 +500,11 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 > imposition → 0.17 algebraic-number-field factorization →
 > 0.18 numerical integration / duals / tensors / fuel) is detailed in
 > [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md). Versions 0.15.2–0.18.0 form
-> Phase B+ "Closing the Symbolica Gap" (now complete); 0.19–0.23 form Phase B++
+> Phase B+ "Closing the Symbolica Gap" (complete); 0.19–0.23 form Phase B++
 > "Competitive Alignment" (F5 Gröbner → ODE solvers → number theory → tensor
-> canonicalisation → algebraic geometry). After Phase B++, 1.0.0 is
-> freeze-and-polish only.
+> canonicalisation → algebraic geometry); 0.24–0.26 form Phase B+++
+> "Competitive Gap Bridging" (complete); 0.27–0.30 form Phase B++++
+> "Competitive Gap Closure" (P0–P3). After Phase B++++, 1.0.0 freezes.
 
 ---
 
@@ -282,9 +515,11 @@ After 1.0, development will focus on:
 - Partial differential equation (PDE) solvers (Poisson, heat, wave)
 - Differential Galois theory (research prelude)
 - Optional GPL backends (`ocas-gpl`)
-- GPU acceleration (CUDA / HIP / Vulkan compute)
-- LLVM/Inkwell JIT backend
+- GPU acceleration + code export (CUDA / HIP / Vulkan compute, CUDA/WASM)
 - Domain-specific toolkits (physics, robotics, machine learning)
+
+> The LLVM/Inkwell JIT backend moved to 0.29.0, and the quadratic-sieve integer
+> factorisation moved to 0.30.0 (both pre-1.0).
 
 ---
 
@@ -324,8 +559,15 @@ After 1.0, development will focus on:
 | 0.20.1 | 1.0 Candidate | Month 33 | ODE backfill: integrating factors + VOP + reduction of order + series recursion + Frobenius + Laplace IVP + 2×2 systems + Python/C bindings + 31 substitution-verified tests ✅ |
 | 0.21.0 | 1.0 Candidate | Month 36 | Number theory & computational algebra (modular GCD + integer factorization + primality + discrete log + CRT + number-theoretic functions) ✅ (incl. Python/C bindings; ECM factors 30-digit semiprimes in 1.1 s) |
 | 0.22.0 | 1.0 Candidate | Month 39 | Tensor canonicalisation (graph-isomorphism engine) + advanced pattern matching (`Transformer::Partition`) ✅ |
-| 0.23.0 | 1.0 Candidate | Month 42 | Advanced Gröbner & algebraic-geometry tooling (ideal ops + RUR + primary decomposition + Hilbert series) |
-| 1.0.0 | Stable | Month 44 | Stable release (frozen after Phase B++ competitive alignment: Symbolica performance parity + SageMath/SymPy feature breadth parity) |
+| 0.23.0 | 1.0 Candidate | Month 42 | Advanced Gröbner & algebraic-geometry tooling (ideal ops + RUR + primary decomposition + Hilbert series) ✅ |
+| 0.24.0 | Beta | Month 45 | Symbolic integration breadth (heuristic expansion) + DoubleFloat evaluation path (P0 integration + P2 DoubleFloat) ✅ |
+| 0.25.0 | Beta | Month 47 | Gröbner performance at scale (multi-modular vs msolve, cyclic-6 < 0.5 s) (P1) ✅ |
+| 0.26.0 | Beta | Month 49 | Packed-monomial F5 fast channel + grevlex benchmarks (cyclic-6 grevlex 55.04 ms measured) ✅ |
+| 0.27.0 | Beta | Month 51 | Symbolic integration breadth (Rubi-grade rule set + 1892-problem coverage benchmark) (P0) |
+| 0.28.0 | Beta | Month 53 | Gröbner performance at scale (katsura-6 < 1 s, cyclic-7 within 10× of msolve) (P1) |
+| 0.29.0 | Beta | Month 55 | Code generation extension (LLVM/inkwell JIT backend) (P1) |
+| 0.30.0 | Beta | Month 57 | Matrix engine (DomainMatrix analogue + Smith/Hermite) + Windows FLINT + quadratic sieve + 1.0 freeze preparation (P2/P3) |
+| 1.0.0 | Stable | Month 59 | Stable release (frozen after Phase B++++ competitive gap closure: P0 integration breadth met + P1 Gröbner aligned with msolve + LLVM JIT landed + performance ahead of SymPy) |
 
 ---
 

@@ -177,7 +177,7 @@ SageMath is a "Swiss-army-knife" scientific environment. The gap is
 | Domain | oCAS | SageMath |
 |---|---|---|
 | Algebraic geometry | 🟡 basic Gröbner | ✅ Singular integration |
-| Number theory | � core stack complete (0.21: CRT + factorization + primality + discrete log + number-theoretic functions) | ✅ PARI/FLINT full stack |
+| Number theory | 🟢 core stack complete (0.21: CRT + factorization + primality + discrete log + number-theoretic functions) | ✅ PARI/FLINT full stack |
 | Differential equations | 🟢 first/second-order/systems/series/Laplace/bindings complete (0.20.1) | ✅ full ODE/PDE solvers |
 | Group / representation theory | 🔴 none | ✅ GAP integration |
 | Combinatorics | 🔴 none | ✅ complete |
@@ -261,18 +261,18 @@ items are re-ranked below (2026-08-06).
 | 9 | ~~Numerical integration / dual numbers / tensor basics / fuel~~ (done in 0.18) | ✅ Done — Vegas + HyperDual + index contraction + fuel; 0.18.1 backfilled the Python/C bindings |
 | 10 | ~~ODE solvers~~ (0.20.1 complete) | ✅ Done — 5 first-order + integrating factors; 2 second-order + VOP + reduction of order; series recursion + Frobenius; Laplace IVP; 2×2 systems; Python/C bindings |
 | 11 | ~~Number theory stack~~ (done 0.21) | ✅ done — modular GCD (univariate Brown + bivariate multi-prime) + integer factorization (ECM: 30-digit semiprime in 1.1 s) + BPSW primality + discrete log + CRT + number-theoretic functions + Python/C bindings |
-| 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | � delivered in 0.22.0: graph-iso canonical labelling + tensor canonical form + Young projector + Partition + multi-pattern replace |
+| 12 | Full tensor canonicalisation + specialized pattern transformers (Phase B++ 0.22) | ✅ delivered in 0.22.0: graph-iso canonical labelling + tensor canonical form + Young projector + Partition + multi-pattern replace |
 | 13 | Algebraic-geometry tooling (Phase B++ 0.23) | 🟢 SageMath/Singular parity; ideal ops + RUR + primary decomposition + Hilbert series |
 | 14 | PDE solvers (Post-1.0) | 🟢 high user demand; Poisson/heat/wave |
 | 15 | ~~DoubleFloat~~ (completed 0.24) | ✅ done — **DoubleF64** (Dekker/Knuth double-float, ~31 decimal digits, transcendentals, `EvaluationDomain`, Python/C bindings); former P2 gap closed |
 | 16 | ~~Gröbner cyclic-6 < 0.5 s~~ (completed 0.26) | ✅ done — packed-monomial F5 + echelon rework; cyclic-6 ℤ₁₃ grevlex **55.04 ms** (2026-08-06 criterion median); ratio vs measured msolve 4 ms = 13.8× tracked separately |
-| 17 | **Gröbner scale: katsura-6/7 + cyclic-7** (open, P1) | ⚠️ katsura-6/7 unfinished (single round >30 min, pre-existing); cyclic-7 Lex >2 h; cyclic-7 grevlex 3.829 s vs measured msolve 55 ms (~70×); target katsura-6 < 1 s, cyclic-7 tractable — extend packed pipeline + multi-modular strategy |
-| 18 | **Symbolic-integration breadth** (open, P0) | ⚠️ Symbolica Rubi port (7000+ rules, 72,944-problem corpus) vs oCAS Risch + 0.24 heuristics |
-| 19 | **Code generation targets** (open, P1) | ⚠️ LLVM JIT + CUDA/WASM export vs Symbolica SymJIT/CUDA/WASM/C++/ASM |
-| 20 | **Matrix / linear algebra** (open, P2) | ⚠️ SymPy 1.14 DomainMatrix 10000× rref speedup + Smith normal form vs oCAS Bareiss |
-| 21 | **Windows FLINT support** (open, P2) | ⚠️ `flint` feature Linux/WSL only; target 3-platform |
-| 22 | **Tensor nested-function handling** (open, P3) | 🟡 nested-function tensors vs Symbolica Graphica engine maturity |
-| 23 | **Quadratic sieve factorization** (open, P3) | 🟡 ECM 30-digit in 1.1 s vs SymPy `qs_factor` on large composites |
+| 17 | **Gröbner scale: katsura-6/7 + cyclic-7** (open, P1) | ⚠️ katsura-6/7 unfinished (single round >30 min, pre-existing); cyclic-7 Lex >2 h; cyclic-7 grevlex 3.829 s vs measured msolve 55 ms (~70×); target katsura-6 < 1 s, cyclic-7 tractable — extend packed pipeline + multi-modular strategy; **scheduled 0.28.0** |
+| 18 | **Symbolic-integration breadth** (open, P0) | ⚠️ Symbolica Rubi port (7000+ rules, 72,944-problem corpus) vs oCAS Risch + 0.24 heuristics; target 1892-problem coverage +30 pp; **scheduled 0.27.0** |
+| 19 | **Code generation targets** (open, P1) | ⚠️ LLVM JIT + CUDA/WASM export vs Symbolica SymJIT/CUDA/WASM/C++/ASM; **LLVM/inkwell JIT scheduled 0.29.0**, CUDA/WASM export stays post-1.0 |
+| 20 | **Matrix / linear algebra** (open, P2) | ⚠️ SymPy 1.14 DomainMatrix 10000× rref speedup + Smith normal form vs oCAS Bareiss; **scheduled 0.30.0** |
+| 21 | **Windows FLINT support** (open, P2) | ⚠️ `flint` feature Linux/WSL only; target 3-platform; **scheduled 0.30.0** |
+| 22 | **Tensor nested-function handling** (open, P3) | 🟡 nested-function tensors vs Symbolica Graphica engine maturity; **scheduled 0.30.0** |
+| 23 | **Quadratic sieve factorization** (open, P3) | 🟡 ECM 30-digit in 1.1 s vs SymPy `qs_factor` on large composites; **scheduled 0.30.0** |
 
 ---
 
@@ -309,6 +309,98 @@ and Windows FLINT support.
 
 ---
 
+## 7. Licence & Ecosystem Position
+
+### 7.1 Licence Landscape Change
+
+| System | Former licence | Current licence | Change date | Impact |
+|---|---|---|---|---|
+| Symbolica | AGPL-3.0 | source-available commercial | early 2026 | commercial use requires a paid licence; single-core non-commercial use free |
+| Numerica | (spun out of Symbolica) | MIT | 2025-11 | freely embeddable in commercial projects |
+| Graphica | (spun out of Symbolica) | MIT | 2025-11 | freely embeddable in commercial projects |
+| symbolica-integrate | (spun out of Symbolica) | MIT | 2026-07 | MIT Rust port of the Rubi rules |
+
+### 7.2 oCAS's Licence Advantage
+
+**LGPL-3.0+** permits:
+
+- ✅ Embedding in commercial projects (without open-sourcing commercial code)
+- ✅ Static/dynamic linking
+- ✅ Modifying oCAS itself requires contribution back (copyleft applies to the
+  library only)
+- ✅ Compatible with MIT/Apache/BSD projects
+
+**Comparison**:
+
+- Symbolica: source-available commercial — paid licence for commercial use
+- SymPy: BSD-3-Clause — most permissive, but pure-Python performance
+- SageMath: GPL-2.0+ — GPL copyleft, not embeddable in commercial projects
+- msolve: GPL-3.0 — GPL copyleft
+- GiNaC: GPL-2.0+ — GPL copyleft
+- FLINT: LGPL-3.0+ — same as oCAS, but only a polynomial/number-theory library
+
+**Conclusion**: oCAS is the only system that is simultaneously a
+high-performance Rust CAS and embeddable in commercial projects. This is the
+core differentiator to state clearly before and after 1.0.
+
+### 7.3 Rubi Rule-Set Licence Risk
+
+`symbolica-integrate` is an MIT-licensed Rust port, but the original Rubi rules
+come from Wolfram Language (Mathematica). Rubi itself is open source
+(CC BY-NC-SA 3.0), yet that licence has potential conflicts with commercial
+use. Recommended:
+
+1. **Option A**: integrate `symbolica-integrate` (MIT crate) — most direct, but
+   assess the licence compatibility of Rubi's original rules
+2. **Option B**: self-developed rule set — highest effort, fully controlled
+3. **Option C**: hybrid — Risch algorithm + heuristic extension + a small set of
+   Rubi rules used as reference
+
+---
+
+## 8. Strategic Recommendations
+
+### 8.1 Before 1.0.0 (pre-freeze)
+
+| Recommendation | Version | Deliverables | Rationale |
+|---|---|---|---|
+| Integration-breadth expansion | 0.27.0 | Risch + heuristic expansion + Rubi-grade rule set (1892-problem coverage +30 pp) | Symbolica 2.2 killer feature; the largest functional gap |
+| Gröbner katsura/cyclic-7 expansion | 0.28.0 | katsura-6 < 1 s; cyclic-7 grevlex < 10× msolve | measured msolve 3–55 ms; packed F5 already converged cyclic-6 |
+| LLVM JIT code generation | 0.29.0 | LLVM/inkwell JIT backend (Cranelift default, LLVM optional) | Symbolica SymJIT generation gap; Cranelift at its performance ceiling |
+| Matrix enhancement | 0.30.0 | DomainMatrix analogue + Smith/Hermite normal forms | SymPy 1.14 gap widening |
+| Windows FLINT + quadratic sieve + tensor nesting | 0.30.0 | flint3-sys Windows build; QS large-integer factorisation; nested-function tensor handling | platform completeness + SymPy `qs_factor` |
+
+> Already delivered (0.24–0.26): DoubleFloat (→DoubleF64), Gröbner cyclic-6
+> < 0.5 s (grevlex 55 ms), MultiModular ℚ pipeline, four heuristic integration
+> techniques. The remaining recommendations are scheduled in the new Phase
+> B++++ (0.27–0.30), see [ROADMAP_EN.md](ROADMAP_EN.md) §5.
+
+### 8.2 Post-1.0
+
+| Recommendation | Priority | Rationale |
+|---|---|---|
+| CUDA/WASM code export | P1 | Symbolica supports it; GPU/browser scenarios |
+| PDE solvers | P2 | high user demand; Poisson/heat/wave |
+
+> Moved from Post-1.0 into pre-1.0: LLVM/inkwell JIT (→0.29.0), quadratic-sieve
+> factorisation and Windows FLINT (→0.30.0).
+
+### 8.3 Positioning
+
+**One-line positioning**:
+> oCAS is the only high-performance Rust CAS that supports commercial embedding,
+> with feature breadth ahead of Symbolica and performance ahead of SymPy.
+
+**Differentiators to emphasise**:
+
+1. Licence advantage (LGPL-3.0 vs Symbolica's commercialisation)
+2. Feature breadth (ODE + number theory + algebraic geometry + equality
+   saturation — Symbolica has none of these)
+3. Three-language bindings (Rust + Python + C/C++)
+4. Native Windows support (msolve/SageMath need WSL)
+
+---
+
 ## Update Log
 
 Record every refresh here (version, date, evaluator, deltas).
@@ -340,3 +432,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.20.0 | 2026-07-27 | **ODE solver released.** §3 added ODE row (🟡). §4.2 SageMath ODE row upgraded 🔴→🟡. §5 #10 (ODE solver) marked 🟡 partially complete — 5 first-order (separable/linear/Bernoulli/exact/homogeneous) + 2 second-order (const-coeff/Cauchy-Euler) + power-series framework + `classify_ode()` classifier + `dsolve()` entry; Laplace transform, ODE systems, Python/C bindings deferred. Version bumped to 0.20.0. |
 | 0.20.1 | 2026-07-27 | **ODE solver backfill complete.** Integrating factors (μ(x)/μ(y)); variation of parameters (VOP, fixing silently-dropped Cauchy-Euler forcing); reduction of order; power-series coefficient recursion + Frobenius (real rational indicial roots); Laplace IVP (`dsolve_ivp`); 2×2 constant-coefficient systems (`dsolve_system`); Python/C bindings (`classify_ode`/`dsolve`/`dsolve_ivp`). Fixed `real_roots` isqrt/formula bugs, hardcoded `is_exact`, unnormalized Cauchy-Euler coefficients, integrator (ax+b)⁻¹ and fractional-power gaps, `substitute_solution` missing bare y(x), and series-coefficient `diff` pollution. Added the `collect_terms` like-term collector + `expand`. 31 substitution-verified correctness tests (3 known gaps ignored). ODE gap upgraded 🟡→🟢. Version bumped to 0.20.1. |
 | 0.26.0 re-eval | 2026-08-06 | **Competitor versions re-verified + full local re-benchmark.** Header updated to 0.26.0. Competitor re-verification from authoritative sources: FLINT 3.5.0→3.6.0 (Kinoshita-Li series composition, padic_radix, subresultant resultants), msolve 0.7.x→0.10.1 (Gebauer-Möller, QQ lifting fixes), mathcore corrected to 0.3.1 (0.5.0 does not exist), Numerica has no tagged releases, SageMath date corrected to 10.9@2026-05-05; Symbolica/SymPy/GiNaC unchanged. §1 version table extended through 0.26.0 (0.22.0–0.26.0 rows added). §3 Gröbner/integration rows updated (packed F5, MultiModular, 0.24 heuristics); algebraic-geometry + pattern-matching rows added. §4.1 rewritten (source-available license, Rubi, DoubleFloat closed by DoubleF64 in 0.24, measured cyclic-6 55.04 ms). §4.3 performance row refreshed with 2026-08-06 measurements (parse 100×, series 2,550×, factor(x^30-1) exception: SymPy ~50× faster). New §4.4 vs msolve with measured WSL2 values (cyclic-6 4 ms, cyclic-7 55 ms, katsura 3–7 ms; basis sizes match oCAS). §5 items 15–16 marked complete (DoubleFloat, cyclic-6 <0.5 s), items 17–22 re-ranked (katsura/cyclic-7 P1, integration breadth P0, codegen P1, matrix P2, Windows FLINT P2, tensor+quad-sieve P3). §6 overall assessment refreshed with 2026-08-06 measurements. |
+| 0.26.0 planning | 2026-08-07 | **New pre-1.0 versions scheduled (Phase B++++ 0.27–0.30).** Open §5 items mapped to concrete versions: integration breadth → 0.27.0, Gröbner katsura/cyclic-7 → 0.28.0, LLVM JIT → 0.29.0, matrix engine + Windows FLINT + quadratic sieve + tensor nesting → 0.30.0 (rows 17–23 annotated; row 12 mojibake fixed). New §7 (licence landscape + LGPL advantage + Rubi licence risk) and §8 (strategic recommendations, pre-1.0 table with concrete versions, post-1.0 trimmed as LLVM/FLINT/QS moved pre-1.0, positioning) added to bring the English edition in sync with the Chinese one. Milestone 1.0.0 moves to Month 59. |
