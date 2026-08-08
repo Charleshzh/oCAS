@@ -13,7 +13,9 @@ pub(crate) mod heuristic;
 pub mod rational;
 pub(crate) mod rde;
 pub(crate) mod risch;
+pub(crate) mod rules;
 pub(crate) mod special;
+pub(crate) mod symbolic_rational;
 pub(crate) mod trig;
 
 use ocas_atom::normalize::normalize;
@@ -28,6 +30,40 @@ use crate::rules::calculus_rules;
 /// Maximum recursion depth for `integrate_raw`, preventing infinite loops
 /// on patterns such as nested linear substitutions if the table is misapplied.
 const MAX_DEPTH: usize = 8;
+
+/// Options controlling the integration pipeline.
+///
+/// `rules` enables the rule-table engine (default `true`); set it to `false`
+/// to restore the pre-0.27 behaviour for comparison.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct IntegrateOptions {
+    /// Enable the rule-table integration engine (default: enabled).
+    pub rules: bool,
+}
+
+impl Default for IntegrateOptions {
+    fn default() -> Self {
+        Self { rules: true }
+    }
+}
+
+/// Integrate `expr` with respect to `var` using the given options.
+pub fn integrate_with_options<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    options: IntegrateOptions,
+) -> Atom<'a> {
+    let normalized = normalize(ctx, expr);
+    let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    let raw = integrate_raw(ctx, normalized, var, 0, options.rules, 0, 0);
+    // Combine default algebraic simplification with calculus-specific rules,
+    // then normalize to a canonical form (removing *1, +0, sorting, etc.).
+    let after_default = simplify(ctx, raw, &default_rules, 20);
+    let after_calc = simplify(ctx, after_default, &calc_rules, 10);
+    normalize(ctx, after_calc)
+}
 
 /// Integrate `expr` with respect to `var`.
 ///
@@ -49,15 +85,7 @@ const MAX_DEPTH: usize = 8;
 /// For integrals not covered by the heuristic table, the result is returned
 /// as `Integral(expr, var)`.
 pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
-    let normalized = normalize(ctx, expr);
-    let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
-    let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
-    let raw = integrate_raw(ctx, normalized, var, 0);
-    // Combine default algebraic simplification with calculus-specific rules,
-    // then normalize to a canonical form (removing *1, +0, sorting, etc.).
-    let after_default = simplify(ctx, raw, &default_rules, 20);
-    let after_calc = simplify(ctx, after_default, &calc_rules, 10);
-    normalize(ctx, after_calc)
+    integrate_with_options(ctx, expr, var, IntegrateOptions::default())
 }
 
 /// Integrate with a [`Fuel`] budget bounding the post-integration
@@ -95,7 +123,7 @@ pub fn integrate_with_fuel<'a>(
     let normalized = normalize(ctx, expr);
     let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
-    let raw = integrate_raw(ctx, normalized, var, 0);
+    let raw = integrate_raw(ctx, normalized, var, 0, true, 0, 0);
     let after_default = simplify_with_fuel(ctx, raw, &default_rules, 20, fuel)?;
     let after_calc = simplify_with_fuel(ctx, after_default, &calc_rules, 10, fuel)?;
     Ok(normalize(ctx, after_calc))
@@ -108,7 +136,7 @@ pub fn integrate_with_fuel<'a>(
 /// unevaluated `Integral(expr, var)` form if none do.
 pub fn integrate_heuristic<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
     let normalized = normalize(ctx, expr);
-    if let Some(r) = heuristic::heuristic_integrate(ctx, normalized, var) {
+    if let Some(r) = heuristic::heuristic_integrate(ctx, normalized, var, 0) {
         let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
         let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
         let after_default = simplify(ctx, r, &default_rules, 20);
@@ -123,6 +151,9 @@ pub(crate) fn integrate_raw<'a>(
     expr: Atom<'a>,
     var: Symbol,
     depth: usize,
+    rules_enabled: bool,
+    rule_depth: usize,
+    parts_depth: usize,
 ) -> Atom<'a> {
     if depth > MAX_DEPTH {
         return fallback(ctx, expr, var);
@@ -147,14 +178,30 @@ pub(crate) fn integrate_raw<'a>(
         AtomNode::Add(args) => {
             let mut terms = Vec::with_capacity(args.len());
             for a in args.iter() {
-                terms.push(integrate_raw(ctx, *a, var, depth));
+                terms.push(integrate_raw(
+                    ctx,
+                    *a,
+                    var,
+                    depth,
+                    rules_enabled,
+                    rule_depth,
+                    parts_depth,
+                ));
             }
             ctx.add(&terms)
         }
         AtomNode::Mul(args) => {
-            let r = integrate_product(ctx, args, var, depth);
+            let r = integrate_product(
+                ctx,
+                args,
+                var,
+                depth,
+                rules_enabled,
+                rule_depth,
+                parts_depth,
+            );
             if is_fallback(&r) {
-                try_risch_or_fallback(ctx, expr, var)
+                try_risch_or_fallback(ctx, expr, var, rules_enabled, rule_depth, parts_depth)
             } else {
                 r
             }
@@ -162,7 +209,7 @@ pub(crate) fn integrate_raw<'a>(
         AtomNode::Pow(base, exp) => {
             let r = integrate_power(ctx, *base, *exp, var, depth);
             if is_fallback(&r) {
-                try_risch_or_fallback(ctx, expr, var)
+                try_risch_or_fallback(ctx, expr, var, rules_enabled, rule_depth, parts_depth)
             } else {
                 r
             }
@@ -170,7 +217,7 @@ pub(crate) fn integrate_raw<'a>(
         AtomNode::Fun(name, args) => {
             let r = integrate_function(ctx, *name, args, var, depth);
             if is_fallback(&r) {
-                try_risch_or_fallback(ctx, expr, var)
+                try_risch_or_fallback(ctx, expr, var, rules_enabled, rule_depth, parts_depth)
             } else {
                 r
             }
@@ -178,29 +225,64 @@ pub(crate) fn integrate_raw<'a>(
     }
 }
 
-/// Try the rational-function integrator, then the Risch algorithm, before
-/// giving up with the unevaluated `Integral` form.
-fn try_risch_or_fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+/// Try the rational-function integrator, then the Risch algorithm, then the
+/// rule table, before giving up with the unevaluated `Integral` form.
+fn try_risch_or_fallback<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    rules_enabled: bool,
+    rule_depth: usize,
+    parts_depth: usize,
+) -> Atom<'a> {
     if let Some(r) = rational::integrate_rational(ctx, expr, var) {
+        return r;
+    }
+    // Symbolic-constant rationals (coefficients in ℚ(symbols)): the ℚ
+    // backend declines these; the symbolic backend also powers the
+    // trig-rational class through Weierstrass t-rationals.
+    if let Some(r) = symbolic_rational::integrate_rational_symbolic(ctx, expr, var) {
         return r;
     }
     if let Some(r) = risch::risch_integrate(ctx, expr, var) {
         return r;
     }
     // Trigonometric integrands: rewrite into complex exponentials, run
-    // Risch, then try to bring the answer back to real form.
-    if let Some(exp_form) = trig::trig_to_exp(ctx, expr) {
-        if let Some(complex_ans) = risch::risch_integrate(ctx, exp_form, var) {
-            return trig::realify(ctx, complex_ans);
-        }
+    // Risch, then try to bring the answer back to real form. The tower
+    // grinds on symbolic linear arguments (`cos(c + d*x)`), so this stage
+    // only runs when every sin/cos argument has numeric coefficients.
+    if trig::trig_args_numeric(ctx, expr, var)
+        && let Some(exp_form) = trig::trig_to_exp(ctx, expr)
+        && let Some(complex_ans) = risch::risch_integrate(ctx, exp_form, var)
+    {
+        return trig::realify(ctx, complex_ans);
     }
     // Non-elementary integrals with special-function closed forms
     // (erf, Ei, Si, Ci, Fresnel, …).
     if let Some(r) = special::special_integrate(ctx, expr, ctx.var(var.as_str())) {
         return r;
     }
+    // Rule-table engine: standard-calculus breadth rules with residual
+    // `Integral(g, x)` reduction formulas. The table is only built when the
+    // earlier stages failed, so Risch-solvable problems pay no parse cost.
+    //
+    // NOTE: this runs BEFORE the heuristic stage (the 0.27 plan originally
+    // placed it after). Running it first is required for reachability:
+    // trig products like `sin(x)^2*cos(x)^5` otherwise fall into the
+    // Weierstrass substitution, whose t-rational blows up the rational
+    // backend and never returns, so the rules never fire on the exact
+    // shapes the rule library is built for. Rules only fire where the
+    // rational/Risch/special stages failed, and the heuristic still runs
+    // for everything the rules do not cover.
+    if rules_enabled {
+        if let Some(table) = rules::build_rule_table(ctx, var)
+            && let Some(r) = rules::integrate_rules(ctx, &table, expr, var, rule_depth)
+        {
+            return r;
+        }
+    }
     // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
-    if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var) {
+    if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var, parts_depth) {
         return r;
     }
     fallback(ctx, expr, var)
@@ -227,6 +309,9 @@ fn integrate_product<'a>(
     args: &'a [Atom<'a>],
     var: Symbol,
     depth: usize,
+    rules_enabled: bool,
+    rule_depth: usize,
+    parts_depth: usize,
 ) -> Atom<'a> {
     // Split into constant factors and the remaining factor.
     let mut constants: Vec<Atom<'a>> = Vec::new();
@@ -251,7 +336,15 @@ fn integrate_product<'a>(
         ctx.mul(&non_constant)
     };
 
-    let integrated_core = integrate_raw(ctx, core, var, depth + 1);
+    let integrated_core = integrate_raw(
+        ctx,
+        core,
+        var,
+        depth + 1,
+        rules_enabled,
+        rule_depth,
+        parts_depth,
+    );
 
     // If integration failed, wrap the whole product.
     if is_fallback(&integrated_core) {
@@ -274,6 +367,12 @@ fn integrate_power<'a>(
     var: Symbol,
     _depth: usize,
 ) -> Atom<'a> {
+    // ∫ f(x)^0 dx = ∫ 1 dx = x (any base; reaches this table through the
+    // rules engine's reduction formulas, e.g. tan(x)^0).
+    if matches!(exp.node(), AtomNode::Num(0)) {
+        return ctx.var(var.as_str());
+    }
+
     // Detect x^n where n is a constant integer.
     if let AtomNode::Var(v) = base.node()
         && *v == var
@@ -374,7 +473,7 @@ fn fraction_exponent<'a>(exp: Atom<'a>) -> Option<(i64, i64)> {
 
 /// If `expr` is of the form `a*x + b` (with `a` and `b` constant w.r.t. `var`),
 /// return `(a, b)`. Otherwise return None.
-fn linear_form<'a>(
+pub(crate) fn linear_form<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,

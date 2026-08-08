@@ -12,7 +12,8 @@ use ocas_c::{
     ocas_dual_div, ocas_dual_mul, ocas_dual_neg, ocas_dual_shape_free,
     ocas_dual_shape_n_components, ocas_dual_shape_n_vars, ocas_dual_shape_new, ocas_dual_value,
     ocas_dual_variable, ocas_error_clear, ocas_error_last_message, ocas_expr_clone, ocas_expr_diff,
-    ocas_expr_free, ocas_expr_integrate, ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify,
+    ocas_expr_free, ocas_expr_integrate, ocas_expr_integrate_heuristic,
+    ocas_expr_integrate_with_options, ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify,
     ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string, ocas_hyperdual_free,
     ocas_integrate_1d, ocas_ntheory_crt, ocas_ntheory_discrete_log, ocas_ntheory_divisor_count,
     ocas_ntheory_divisor_sigma, ocas_ntheory_factorint, ocas_ntheory_isprime, ocas_ntheory_jacobi,
@@ -87,6 +88,42 @@ fn parse_integrate_roundtrip() {
     assert!(s.contains("(x^2)"), "got: {s}");
     unsafe {
         ocas_expr_free(integ);
+        ocas_expr_free(expr);
+    }
+}
+
+#[test]
+fn integrate_with_options_toggles_rules() {
+    // tan(x)^4 is a baseline fallback that the rule table solves.
+    let expr = parse("tan(x)^4");
+    let var = CString::new("x").unwrap();
+    let mut err = 0;
+    let with_rules = unsafe { ocas_expr_integrate_with_options(expr, var.as_ptr(), 1, &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert!(!with_rules.is_null());
+    let s_on = to_string(with_rules);
+    assert!(!s_on.contains("Integral("), "rules on: {s_on}");
+
+    let mut err = 0;
+    let without_rules =
+        unsafe { ocas_expr_integrate_with_options(expr, var.as_ptr(), 0, &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert!(!without_rules.is_null());
+    let s_off = to_string(without_rules);
+    assert!(s_off.contains("Integral("), "rules off: {s_off}");
+
+    // The heuristic-only entry point never runs the rule table.
+    let mut err = 0;
+    let heuristic = unsafe { ocas_expr_integrate_heuristic(expr, var.as_ptr(), &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert!(!heuristic.is_null());
+    let s_heur = to_string(heuristic);
+    assert!(s_heur.contains("Integral("), "heuristic: {s_heur}");
+
+    unsafe {
+        ocas_expr_free(with_rules);
+        ocas_expr_free(without_rules);
+        ocas_expr_free(heuristic);
         ocas_expr_free(expr);
     }
 }

@@ -356,6 +356,39 @@ use. Recommended:
 3. **Option C**: hybrid — Risch algorithm + heuristic extension + a small set of
    Rubi rules used as reference
 
+#### 0.27.0 symbolica-integrate (MIT) integration assessment conclusion (2026-08-08)
+
+Evaluation record (plan step S8) after executing the preferred in-house
+approach (option C):
+
+- **Licence chain**: the crate's code is MIT, but its rule content derives from
+  Rubi (CC BY-NC-SA 3.0) as a Wolfram port; the crate's MIT does not resolve
+  derivative-work disputes over the rules' text/structure. For oCAS's
+  commercial-embeddable positioning (LGPL, fully in-house), integrating would
+  introduce derivative-licence terms that cannot be closed for commercial
+  users; the "NC" (non-commercial) clause of CC BY-NC-SA directly conflicts
+  with oCAS's licensing strategy, and an independent rule-engine API wrapper
+  does not remove the derivative-work question.
+- **Dependency weight**: the Symbolica dependency chain is heavy (~1.5 GB-scale
+  source tree, cross-language builds), conflicting with oCAS's
+  zero-external-dependency, auditable pure-Rust delivery promise; even the
+  evaluation mirror (`ocas-tests/scripts/symbolica_runner`) needs a separate
+  workspace with a pinned Cargo.lock.
+- **API fit**: `symbolica-integrate`'s engine is bound to Symbolica's expression
+  model; there is no shared interface layer with this project's
+  arena/hash-consed atom model — integration would require a bidirectional
+  expression conversion layer with ongoing maintenance cost.
+- **Conclusion**: **0.27.0 does not integrate `symbolica-integrate`**; the
+  in-house rule-table engine (`ocas-calc/src/integral/rules.rs`, standard
+  calculus table, no Rubi rule text copied) is maintained. If future coverage
+  misses the acceptance bar (1892-problem subset +30 pp), any restart of the
+  integration evaluation must begin with an independent legal review, and only
+  the "reference structure, rewrite expression" path may be considered for the
+  rule list. Corpus use is unaffected: Rubi's official Axiom test problems
+  (AxiomSyntaxTestFiles.zip from rulebasedintegration.org, pinned SHA-256)
+  serve only as coverage-benchmark input, are not committed, and are not
+  distributed with oCAS.
+
 ---
 
 ## 8. Strategic Recommendations

@@ -58,6 +58,7 @@ pub mod prelude {
         symmetrise_sign,
     };
     pub use ocas_atom::{Atom, AtomArena, AtomNode, Symbol, normalize};
+    pub use ocas_calc::IntegrateOptions;
     pub use ocas_calc::ode::{
         ODE, ODESolution, ODEType, classify_ode, dsolve, dsolve_ivp, dsolve_system,
     };
@@ -66,7 +67,8 @@ pub mod prelude {
         solve_linear_rational, solve_polynomial_system,
     };
     pub use ocas_calc::{
-        apart, diff, integrate, integrate_heuristic, integrate_with_fuel, substitute, taylor,
+        apart, diff, integrate, integrate_heuristic, integrate_with_fuel, integrate_with_options,
+        substitute, taylor,
     };
     pub use ocas_core::arena::Arena;
     pub use ocas_core::error::{OcasError, Result};

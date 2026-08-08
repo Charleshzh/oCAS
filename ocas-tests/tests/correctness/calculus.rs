@@ -65,11 +65,13 @@ fn integrate_complex_rational() {
 }
 
 #[test]
-#[ignore = "very complex correctness test: run manually or via audit report"]
+#[ignore = "complex correctness test: run manually or via audit report"]
 fn integrate_very_complex_known_gap() {
-    // This is expected to fail or return an Integral form; it documents a gap.
+    // Historical gap note: exp(-x^2) is solved since 0.24 via the
+    // special-function table (√π/2·erf(x)); the test stays ignored because
+    // the SymPy comparison runs only in the audit workflow.
     let result = crate::integrate_to_string("exp(-x^2)", "x");
-    assert!(result.starts_with("Integral"));
+    assert!(!result.starts_with("Integral"));
 }
 
 #[test]

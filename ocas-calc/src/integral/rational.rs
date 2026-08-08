@@ -60,12 +60,33 @@ pub fn integrate_rational<'a>(
     let rf = atom_to_rational(expr, &gens)?;
     let num = sparse_to_dense(&rf.numerator);
     let den = sparse_to_dense(&rf.denominator);
+    let (num, den) = reduce_rational(num, den);
     let raw = integrate_dpoly(ctx, &num, &den, x)?;
     let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
     let after_default = simplify(ctx, raw, &default_rules, 20);
     let after_calc = simplify(ctx, after_default, &calc_rules, 10);
     Some(normalize(ctx, after_calc))
+}
+
+/// Cancel the polynomial GCD of `num`/`den` before integrating.
+///
+/// Substitution-based integrators (Euler, Weierstrass) build t-rationals
+/// with common factors between numerator and denominator; without
+/// reduction the Rothstein–Trager step would see an irreducible factor
+/// that the reduced form no longer has and return an unevaluated
+/// `Integral` for a rational integral that is in fact elementary.
+fn reduce_rational(num: DPoly, den: DPoly) -> (DPoly, DPoly) {
+    if num.is_zero() || den.is_zero() {
+        return (num, den);
+    }
+    let (g, _, _) = num.extended_gcd_poly(&den);
+    if g.is_zero() || g.degree() == Some(0) {
+        return (num, den);
+    }
+    let num = num.div_rem(&g).map(|(q, _)| q).unwrap_or(num);
+    let den = den.div_rem(&g).map(|(q, _)| q).unwrap_or(den);
+    (num, den)
 }
 
 /// Core integrator for `num / den` over `ℚ[x]`, building atoms over `x`.

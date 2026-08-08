@@ -21,6 +21,32 @@ use crate::complex::i;
 ///
 /// Returns `None` when `expr` contains no trigonometric functions (the
 /// caller then proceeds with the original expression).
+/// True when every `sin`/`cos` argument in `expr` is a linear form of
+/// `var` with numeric coefficients (the Risch tower handles those without
+/// grinding; symbolic linear arguments such as `cos(c + d*x)` are skipped
+/// by the caller).
+pub(crate) fn trig_args_numeric<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> bool {
+    match expr.node() {
+        AtomNode::Fun(name, args) if args.len() == 1 => {
+            let n = name.as_str();
+            if n == "sin" || n == "cos" {
+                if let Some((a, _b)) = crate::integral::linear_form(ctx, args[0], var) {
+                    return matches!(a.node(), AtomNode::Num(_));
+                }
+                return false;
+            }
+            true
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            args.iter().all(|a| trig_args_numeric(ctx, *a, var))
+        }
+        AtomNode::Pow(base, exp) => {
+            trig_args_numeric(ctx, *base, var) && trig_args_numeric(ctx, *exp, var)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => true,
+    }
+}
+
 pub(crate) fn trig_to_exp<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> Option<Atom<'a>> {
     let mut found = false;
     let out = rewrite(ctx, expr, &mut found);

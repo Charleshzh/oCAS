@@ -8,6 +8,49 @@ from typing import Callable
 
 _X, _Y, _Z = sp.symbols("x y z")
 
+# oCAS function names -> SymPy functions. Without this map SymPy's
+# parse_expr treats unknown names (csc, cot, sech, csch, ...) as opaque
+# symbols/functions, whose derivatives never simplify back to the integrand.
+_FUNCTIONS = {
+    "exp": sp.exp,
+    "log": sp.log,
+    "sqrt": sp.sqrt,
+    "sin": sp.sin,
+    "cos": sp.cos,
+    "tan": sp.tan,
+    "cot": sp.cot,
+    "sec": sp.sec,
+    "csc": sp.csc,
+    "asin": sp.asin,
+    "acos": sp.acos,
+    "atan": sp.atan,
+    "acot": sp.acot,
+    "asec": sp.asec,
+    "acsc": sp.acsc,
+    "sinh": sp.sinh,
+    "cosh": sp.cosh,
+    "tanh": sp.tanh,
+    "coth": sp.coth,
+    "sech": sp.sech,
+    "csch": sp.csch,
+    "asinh": sp.asinh,
+    "acosh": sp.acosh,
+    "atanh": sp.atanh,
+    "acoth": sp.acoth,
+    "asech": sp.asech,
+    "acsch": sp.acsch,
+    "erf": sp.erf,
+    "erfc": sp.erfc,
+    "erfi": sp.erfi,
+    "fresnels": sp.fresnels,
+    "fresnelc": sp.fresnelc,
+    "Ei": sp.Ei,
+    "Si": sp.Si,
+    "Ci": sp.Ci,
+    "Shi": sp.Shi,
+    "Chi": sp.Chi,
+}
+
 
 def _to_sympy(expr_str: str) -> str:
     """Convert oCAS ^ exponentiation to SymPy **."""
@@ -15,7 +58,7 @@ def _to_sympy(expr_str: str) -> str:
 
 
 def _parse_expr(expr_str: str):
-    return sp.parse_expr(_to_sympy(expr_str))
+    return sp.parse_expr(_to_sympy(expr_str), local_dict=_FUNCTIONS)
 
 
 def _normalize(expr) -> str:
@@ -164,9 +207,21 @@ def _check_equivalent(ocas_expr: str, sympy_expr: str, task: str, input_expr: st
 
     if task == "integrate":
         # Differentiate the oCAS antiderivative and compare with the original integrand.
-        # The constant of integration is irrelevant.
+        # The constant of integration is irrelevant. `trigsimp` is needed for
+        # tan(x/2)-form antiderivatives (e.g. ∫ csc³), whose residual `simplify`
+        # alone leaves as `tan(x/2)/4 + 1/(4·tan(x/2)) − 1/(2·sin(x))` — an
+        # identity that is zero but not canonicalised by plain simplify.
         integrand = _parse_expr(input_expr)
-        return sp.simplify(sp.diff(a, _X) - integrand) == 0
+        residual = sp.simplify(sp.diff(a, _X) - integrand)
+        if residual == 0:
+            return True
+        residual = sp.simplify(sp.trigsimp(residual))
+        if residual == 0:
+            return True
+        # SymPy splits √(x²−1) into √(x−1)·√(x+1) when differentiating
+        # acosh-family antiderivatives; powsimp(force=True) merges the
+        # roots back (valid on the generic branch).
+        return sp.simplify(sp.powsimp(residual, force=True)) == 0
     if task == "factor":
         return sp.expand(a - b) == 0
     if task == "roots":

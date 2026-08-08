@@ -53,6 +53,10 @@ docs/book/zh/book/
 .DS_Store
 Thumbs.db
 
+# Rubi corpus and benchmark artifacts (fetched by
+# ocas-tests/scripts/fetch_rubi_corpus.py; never committed)
+ocas-tests/data/
+
 # Test artifacts
 *.profraw
 coverage/

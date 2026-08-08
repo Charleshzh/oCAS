@@ -1054,6 +1054,7 @@ dependencies = [
  "ocas-atom",
  "ocas-core",
  "ocas-domain",
+ "ocas-parse",
  "ocas-poly",
  "ocas-rewrite",
  "proptest",

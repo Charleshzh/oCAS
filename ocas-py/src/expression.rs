@@ -5,7 +5,8 @@
 //! reference lifetime entanglement between Python objects.
 
 use ocas_atom::{Atom, AtomArena, Symbol, normalize::normalize};
-use ocas_calc::{diff, integrate, integrate_heuristic, substitute, taylor};
+use ocas_calc::IntegrateOptions;
+use ocas_calc::{diff, integrate_heuristic, integrate_with_options, substitute, taylor};
 use ocas_core::arena::Arena;
 use ocas_parse::parse;
 use ocas_rewrite::rules::default_rules;
@@ -264,11 +265,20 @@ impl Expression {
     }
 
     /// Integrate with respect to `var`.
-    fn integrate(&self, var: &str) -> PyResult<Expression> {
+    ///
+    /// `rules` toggles the rule-table engine (default on); pass
+    /// ``rules=False`` to use the pre-0.27 chain for comparison.
+    #[pyo3(signature = (var, rules = true))]
+    fn integrate(&self, var: &str, rules: bool) -> PyResult<Expression> {
         let src = self.inner.atom.to_string();
         let var_sym = Symbol::new(var);
         ExprInner::build(|ctx| match parse(ctx, &src) {
-            Ok(a) => Ok(integrate(ctx, a, var_sym)),
+            Ok(a) => Ok(integrate_with_options(
+                ctx,
+                a,
+                var_sym,
+                IntegrateOptions { rules },
+            )),
             Err(e) => Err(e.to_string()),
         })
         .map(|inner| Expression { inner })

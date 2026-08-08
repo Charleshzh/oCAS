@@ -101,8 +101,15 @@ public:
 
     /// Integrate with respect to `var`.
     Expression integrate(const std::string& var) const {
+        return integrate(var, true);
+    }
+
+    /// Integrate with respect to `var`, with the rule-table engine toggled
+    /// by `rules` (default on; pass `false` for the pre-0.27 chain).
+    Expression integrate(const std::string& var, bool rules) const {
         int err = 0;
-        ::ocas_OcasExpr* result = ::ocas_expr_integrate(handle_, var.c_str(), &err);
+        ::ocas_OcasExpr* result =
+            ::ocas_expr_integrate_with_options(handle_, var.c_str(), rules ? 1 : 0, &err);
         if (result == nullptr) {
             throw Error(error_message());
         }

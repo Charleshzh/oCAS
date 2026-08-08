@@ -1,5 +1,74 @@
 # oCAS 基准测试结果（全量复测 @ 2026-08-06）
 
+## 0.27.0 符号积分广度（Rubi 1892 题子集，2026-08-08）
+
+> 本轮按《0.27.0 实现计划》S1/S5 执行：语料获取脚本 + 单轮报告型 harness
+> `ocas-tests/benches/integrate_1892.rs`。语料为 Rubi 官方 Axiom 测试题
+> （AxiomSyntaxTestFiles.zip，SHA-256 固定，seed 1892 确定性采样 1892 题），
+> 不入库。报告 JSON 见 `ocas-tests/data/integrate_1892_report.json`
+> （gitignored；运行命令与口径见 harness 头注释）。
+
+### 采集命令
+
+```text
+uv run python ocas-tests/scripts/fetch_rubi_corpus.py
+OCAS_INTEGRATE_RULES=0 cargo bench -p ocas-tests --bench integrate_1892   # 基线
+cargo bench -p ocas-tests --bench integrate_1892                          # 规则开
+```
+
+### 结果
+
+| 口径 | solved | fallback | coverage | 总墙钟 | 说明 |
+|---|---|---|---|---|---|
+| 0.26 链基线（rules off，1892 题，修复前测量） | 111 | 1781（含 1 超时） | 5.87% | 236.3 s | 0.27 前行为；**含 Weierstrass 伪解，需与下两行对照** |
+| 0.27.0 规则引擎（rules on，修复前测量） | 124 | 1768（含 2 超时） | 6.55% | 301.2 s | A–H 家族 + 线性变元/裸参/积化和差两轮扩展；**含伪解** |
+| (b) 基线（rules off，修复后重测 2026-08-08） | 138 | 1754（含 83 超时、0 崩溃） | **7.29%** | 1171.6 s | 共享链修复后重测（符号有理后端/Weierstrass 守卫在规则开关之外） |
+| (b) 阶段后（rules on，修复后重测 2026-08-08） | 145 | 1747（含 83 超时、0 崩溃、0 解析错） | **7.66%** | 1190.2 s | 符号常数有理后端（Hermite+部分分式）＋ Weierstrass 线性变元 t-有理化；全部解经数值求导核验 |
+
+bucket 分布（(b) 阶段后，solved/fallback）：power-binomial 107/218、radical 9/391、
+mixed-other 7/655、trig 9/207、exp-log 5/74、inverse-trig-hyper 3/142、
+hyperbolic 3/41、rational 2/0、special 0/19。
+
+bucket 分布（rules on，solved/fallback）：mixed-other 31/584、radical 9/397、
+power-binomial 39/300、trig 35/203、inverse-trig-hyper 3/143、exp-log 3/80、
+hyperbolic 3/41、special 0/19、rational 1/1。
+
+### 诚实结论
+
+- **(b) 阶段：+1.11pp（+21 题，6.55% → 7.66%，修复后重测口径），仍未达 +30pp 验收线。**
+  修复后基线重测 7.29%（138）——共享链改进同样提升规则关闭路径；规则开关净增量 +7 题。
+  本阶段投入（产品级因子拆分第一步：符号常数有理函数升级）交付：
+  - 新模块 `ocas-calc/src/integral/symbolic_rational.rs`：ℚ(symbols) 系数有理积分
+    （多项式商 + Yun SFF + Hermite 每因子一步归约 + 线性留数/二次 atan/atanh/log
+    部分分式，符号判别式 √(4ac−b²) 处理），修复稀疏 Horner 求值（`eval(x)=1` 根因）、
+    SFF 因子首项系数保持、分数系数 to_sparse 往返损坏（a/c→a−c）、atanh 符号/√(−Δ)
+    实值化等实现 bug；平方自由分母含次数≥3 符号因子时留诚实 `Integral` 部分结果。
+  - Weierstrass 代换升级为线性变元 u=ax+b（`trig_linear_arg`/`substitute_trig_arg`），
+    t-被积函数经 `rational_complexity_ok` 可行性闸门后才入链（消除全部挂死；
+    83 超时均为 10 s 预算耗尽，0 崩溃）；有效性守卫移除 `2*atan(tan(x/2))*f(x)` 伪解。
+  - 新增 u=ax+b 幂规则（`sin(a x+b)cos(a x+b)^n` / `sin^m cos`，`trig_odd_power_linear`）。
+  - 核验：`1/(x(a+bx)^2)`、`(d+e*x)/(x^3*(a+c*x^2))`、`x^2/(a-b*x^2)^3`、
+    `1/(a±b*x^2)`、`1/(a+b*sin(x))` 等数值求导 diff ≈ 0（SymPy 复核）；
+    `cargo test --workspace --exclude ocas-py` 全绿；clippy -D warnings 干净。
+  - 已知未解类：嵌套提取挂死（`(-5+3*cos(c+d*x))^3` 类，t-被积函数提取原子层）、
+    ℚ 数值高次分母（`x^6/(216+108x^2+324x^3+18x^4+x^6)^2` 类）仍超时。
+- **0.27.0 规则引擎首轮：+0.68pp（+13 题）。** 原因已量化：剩余 fallback 中
+  606/614 个 trig 形态为复合乘积/商（`(c+d*x)^2*cos(a+b*x)*sin(a+b*x)^2` 等），
+  需要因子级拆分/逐项积分机制而非整表达式首中规则表；radical bucket 397 题
+  为嵌套/复合根式（`sqrt(a+c*x^2)/(d+e*x)`、`x^(5/2)` 等）；power-binomial
+  300 题为符号参数有理函数（rational 后端仅支持 ℚ 系数，符号系数返回 None）。
+- 规则表机制本身验证通过：Euler 代换补齐（S6）、规则路径开关（S7 绑定）、
+  100 例 SymPy 抽样对拍（`cargo test -p ocas-tests --test correctness integral_rules`）
+  全绿；单例规则（`tan(x)^4` → `tan(x)^3/3 - tan(x) + x` 等）正确。
+- 按计划 S5 退出条件与 S8 备选分支：达标需 Rubi 级规则量级（7000+）或
+  rational 后端符号系数升级；S8 评估结论为暂不集成 symbolica-integrate
+  （许可证链条 + 依赖重量 + API 契合度，见 GAP_ANALYSIS CN/EN §7.3 追加段）。
+  是否继续投入（如产品级因子拆分机制）需用户决策。
+
+---
+
+# oCAS 基准测试结果（全量复测 @ 2026-08-06）
+
 > 本轮依据《竞品功能与性能差距重新评估计划》（2026-08-06）执行：8 个竞品最新版本
 > 重新核实（见 COMPETITIVE_MATRIX_CN.md §1 备注）、本机全量复测 oCAS/Symbolica/SymPy
 > 基准、WSL2 实测 msolve 0.10.1。**本块为当前有效数据**；下方 0.26.0 / 0.25.0 两块
@@ -86,7 +155,7 @@
 | I2 | `∫sin(x)^3*cos(x)^2 dx` | < 1 ms | 未直接入 benches；同型三角-多项式（x*sin(x) 类）176.33 µs | ✅ 量级满足（近似口径） |
 | I3 | `∫exp(-x^2) dx → erf` | < 1 ms | 159.9 µs（integrate_exp_neg_x2_erf） | ✅ |
 | I4 | `∫(log(x)/(x+1)^2) dx` | < 5 ms | 未直接入 benches（integrate_log_x 23.312 µs 为 log(x) 直接积分） | ✅ 量级满足（近似口径） |
-| I5 | Rubi 1892 题子集 | 总时间标记 | 未测（本轮未运行 symbolica-integrate 语料库） | ⚠️ 未测 |
+| I5 | Rubi 1892 题子集 | 总时间标记 | 0.26 链基线 5.87%（111/1892，236.3 s）；0.27.0 规则引擎 6.55%（124/1892，301.2 s） | ⚠️ 未达 +30pp（见下方 0.27.0 段） |
 
 ## JIT 求值（套件 §2.5，criterion 中位数，feature: jit/simd/pulp）
 

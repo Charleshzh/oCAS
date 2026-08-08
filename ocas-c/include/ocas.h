@@ -268,6 +268,35 @@ struct ocas_OcasExpr *ocas_expr_integrate(const struct ocas_OcasExpr *handle,
                                           int *err_out);
 
 /**
+ * Integrate `handle` with respect to `var` using heuristic techniques only
+ * (parts, trig substitution, Weierstrass, Euler). Returns a new expression
+ * handle or `NULL` on failure. If no heuristic succeeds, the result is the
+ * unevaluated form `Integral(expr, var)`.
+ *
+ * # Safety
+ *
+ * See [`ocas_expr_diff`].
+ */
+struct ocas_OcasExpr *ocas_expr_integrate_heuristic(const struct ocas_OcasExpr *handle,
+                                                    const char *var,
+                                                    int *err_out);
+
+/**
+ * Integrate `handle` with respect to `var` with the rule-table engine
+ * toggled by `rules` (nonzero = on, zero = pre-0.27 chain). Returns a new
+ * expression handle or `NULL` on failure. If the integral cannot be solved
+ * analytically, the result is the unevaluated form `Integral(expr, var)`.
+ *
+ * # Safety
+ *
+ * See [`ocas_expr_diff`].
+ */
+struct ocas_OcasExpr *ocas_expr_integrate_with_options(const struct ocas_OcasExpr *handle,
+                                                       const char *var,
+                                                       int rules,
+                                                       int *err_out);
+
+/**
  * Compute the Taylor series of `handle` around `point` up to `order`.
  *
  * # Safety

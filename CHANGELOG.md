@@ -11,7 +11,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No changes yet._
+### Added / 新增
+
+- **0.27.0 符号积分广度：规则表驱动集成引擎**（`ocas-calc/src/integral/rules.rs`）：
+  自研标准微积分规则表（A 幂/二项式、B 指数/对数、C 三角、D 双曲、E 反三角/反双曲、
+  F 有理形拦截、G 根式、H 特殊形态；含线性变元推广与积化和差），模板含残项
+  `Integral(g, x)` 归约公式（`MAX_RULE_DEPTH` 预算，独立于结构深度上限）。
+- **规则路径选项 API**：`IntegrateOptions { rules }` 与 `integrate_with_options`，
+  `integrate` 默认启用规则路径；`OCAS_INTEGRATE_RULES=0` 可切回 0.26 链。
+- **ocas-rewrite 模板机制**：`Rule::from_template`（模式/模板字符串 + 通配实例化）、
+  `RuleTable` 头索引规则表、`Pattern` 同构嵌套展平（`a+b+c` 解析为
+  Add(Add(a,b),c) 现在正确匹配平铺原子）。
+- **Euler 代换补齐**（`heuristic.rs`）：`quadratic_coeffs` 泛化（隐式系数/缺项/
+  递归搜索），Euler I（a 为有理平方）与 Euler II（c 为有理平方）实装，
+  `integrate_rational` 入口增加多项式 GCD 归约。
+- **修复预存在问题**：`exp(ax)sin(bx)` 型积分的分部积分无限循环（parts 深度
+  计数穿透）、Weierstrass 对自身 t-被积函数递归自增（要求被积函数含 sin/cos）、
+  `x-1` 类 `-<digit>` 词法陷阱在语料转换/模板中规避。
+- **Rubi 1892 题覆盖率 harness**（`ocas-tests/benches/integrate_1892.rs`）与
+  语料获取脚本 `ocas-tests/scripts/fetch_rubi_corpus.py`（固定源 SHA-256 + 固定
+  seed 1892，语料 gitignored）；`SymPy 抽样 100 例` 对拍测试
+  （`correctness/integral_rules.rs`）。
+- **绑定开关**：ocas-py `Expression.integrate(var, rules=True)`；ocas-c
+  `ocas_expr_integrate_with_options` + 补齐 `ocas_expr_integrate_heuristic`
+  导出（头文件同步）；C++ RAII `integrate(var, rules)` 重载。
+- 评估记录：symbolica-integrate（MIT）集成评估结论（GAP_ANALYSIS CN/EN §7.3）。
+
+### Coverage / 覆盖率（诚实记录）
+
+- Rubi 1892 题子集：基线（0.26 链）5.87%（111/1892）→ 规则引擎 6.55%
+  （124/1892），+0.68pp；(b) 阶段（符号有理后端 + Weierstrass 线性变元）后
+  **7.66%（145/1892）**，+1.11pp，均**未达 +30pp 验收线**；成因与备选路径见
+  `docs/planning/BENCHMARK_RESULTS_CN.md` 0.27.0 段与 GAP_ANALYSIS §7.3。
+
+### Added（(b) 阶段补充，2026-08-08）/ Added ((b)-phase additions)
+
+- **符号常数有理积分器**（`ocas-calc/src/integral/symbolic_rational.rs`，新模块）：
+  ℚ(symbols)[x] 有理函数积分——多项式商 + Yun SFF + Hermite 每因子一步归约 +
+  部分分式（线性因子留数公式；二次因子 log + atan/atanh，符号判别式 √(4ac−b²)；
+  次数 ≥ 3 因子诚实留 `Integral` 部分结果）。修复实现 bug：稀疏 Horner 求值
+  忽略指数间隙（`eval(x)=1`，线性留数分母错误根因）、SFF 因子首项系数丢失
+  （log 部分分母先做首一化）、to_sparse/from_sparse 分数系数往返损坏
+  （a/c 变 a−c，整数因子分解限标量系数）、atanh 支取实 √(−Δ) 与符号
+  （判别式符号未知时按常数项首系数选 atan/atanh）。
+- **Weierstrass 线性变元代换**（`heuristic.rs`）：`trig_linear_arg` 抽取公共
+  u=ax+b，`substitute_trig_arg` 生成 t-被积函数，`rational_complexity_ok`
+  可行性闸门（符号数 ≤ 5、分母次数 ≤ 6、先约分）杜绝 t-有理链上挂死；
+  守卫拒绝含非可代换 var 的表达式（移除 `2*atan(tan(x/2))*f(x)` 伪解）。
+- **u=ax+b 三角幂规则**（`rules.rs`）：`sin(a x+b)·cos(a x+b)^n`、
+  `sin(a x+b)^m·cos(a x+b)` 模板与 `trig_odd_power_linear` 闭包。
+- 核验：`1/(x(a+bx)^2)`、`(d+e*x)/(x^3*(a+c*x^2))`、`x^2/(a-b*x^2)^3`、
+  `1/(a±b*x^2)`、`1/(a+b*sin(x))` 数值求导 diff ≈ 0；`cargo test --workspace
+  --exclude ocas-py` 全绿；clippy -D warnings 干净。
 
 ---
 

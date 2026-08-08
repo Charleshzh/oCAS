@@ -102,6 +102,10 @@ name = "integrate"
 harness = false
 
 [[bench]]
+name = "integrate_1892"
+harness = false
+
+[[bench]]
 name = "rewrite"
 harness = false
 

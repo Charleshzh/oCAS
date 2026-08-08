@@ -22,14 +22,22 @@ const PARTS_MAX_DEPTH: usize = 2;
 
 /// Try heuristic integration techniques on `expr`.
 ///
+/// `parts_depth` counts integration-by-parts expansions performed so far
+/// (threaded through [`integrate_raw`]); it bounds the parts loop even when
+/// the integrand alternates between two forms (e.g. `exp(ax)sin(bx)` ↔
+/// `exp(ax)cos(bx)`), which previously reset the parts depth on every
+/// re-entry and looped forever. Legitimate multi-level parts chains
+/// (`x²sin(x)` → `2x·cos(x)` → `−2sin(x)`) stay within the budget.
+///
 /// Returns `Some(result)` if any technique succeeds, `None` otherwise.
 pub(crate) fn heuristic_integrate<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
+    parts_depth: usize,
 ) -> Option<Atom<'a>> {
     // 1. Integration by parts
-    if let Some(r) = try_parts(ctx, expr, var, 0) {
+    if let Some(r) = try_parts(ctx, expr, var, parts_depth) {
         if !is_fallback(&r) {
             return Some(r);
         }
@@ -102,9 +110,9 @@ fn try_parts<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
-    depth: usize,
+    parts_depth: usize,
 ) -> Option<Atom<'a>> {
-    if depth >= PARTS_MAX_DEPTH {
+    if parts_depth >= PARTS_MAX_DEPTH {
         return None;
     }
 
@@ -154,7 +162,7 @@ fn try_parts<'a>(
     };
 
     // Compute V = ∫ v' dx (recursive, at higher depth)
-    let v = integrate_raw(ctx, v_prime, var, depth + 2);
+    let v = integrate_raw(ctx, v_prime, var, parts_depth + 2, true, 0, parts_depth + 1);
     if is_fallback(&v) {
         return None;
     }
@@ -169,7 +177,15 @@ fn try_parts<'a>(
     let u_prime_v = ctx.mul(&[u_prime, v]);
 
     // Compute ∫ u' * V dx (recursive)
-    let integral_u_prime_v = integrate_raw(ctx, u_prime_v, var, depth + 2);
+    let integral_u_prime_v = integrate_raw(
+        ctx,
+        u_prime_v,
+        var,
+        parts_depth + 2,
+        true,
+        0,
+        parts_depth + 1,
+    );
 
     // Build result: u * V - ∫ u' * V
     let u_times_v = ctx.mul(&[u, v]);
@@ -662,7 +678,10 @@ fn substitute_atom<'a>(
 fn is_trig_rational<'a>(expr: Atom<'a>, var: Symbol) -> bool {
     match expr.node() {
         AtomNode::Num(_) => true,
-        AtomNode::Var(v) => *v == var || is_constant(expr, var),
+        // A bare occurrence of the integration variable (outside sin/cos) is
+        // NOT trig-rational: Weierstrass would treat it as a constant of the
+        // t-integral and produce a wrong answer.
+        AtomNode::Var(_) => is_constant(expr, var),
         AtomNode::Add(args) | AtomNode::Mul(args) => args.iter().all(|a| is_trig_rational(*a, var)),
         AtomNode::Pow(base, exp) => {
             // Allow integer powers
@@ -706,199 +725,400 @@ fn is_linear_in<'a>(expr: Atom<'a>, var: Symbol) -> bool {
     }
 }
 
-/// Try Weierstrass substitution: `t = tan(u/2)`.
+/// Count sin/cos function applications anywhere in `expr`.
+///
+/// Weierstrass must only apply to expressions that actually contain trig
+/// functions: a "trig-rational" with none (e.g. the t-integrand of a
+/// previous Weierstrass pass, which is vacuously rational in `_t`) would be
+/// substituted again — multiplying by `dx/dt` once more — and loop forever.
+fn trig_count(expr: Atom<'_>) -> u32 {
+    match expr.node() {
+        AtomNode::Fun(name, args) => {
+            let n = name.as_str();
+            let base = if n == "sin" || n == "cos" { 1 } else { 0 };
+            base + args.iter().map(|a| trig_count(*a)).sum::<u32>()
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) => args.iter().map(|a| trig_count(*a)).sum(),
+        AtomNode::Pow(base, exp) => trig_count(*base) + trig_count(*exp),
+        AtomNode::Num(_) | AtomNode::Var(_) => 0,
+    }
+}
+
+/// True when every occurrence of `var` in `expr` sits inside a `sin`/`cos`
+/// call whose argument is exactly `var` (the only shapes
+/// [`substitute_trig`] replaces).
+///
+/// `is_trig_rational` accepts linear arguments (`cos(c+d*x)`), but the
+/// substitution does not replace them — the integration variable would then
+/// survive inside the t-integrand as a "constant", and the result would be
+/// a bogus `x·f(x)`-style antiderivative (observed as
+/// `2·atan(tan(x/2))·f(x)`). Rejecting such expressions keeps Weierstrass
+/// sound.
+/// The common linear argument `u = a·x + b` of every `sin`/`cos` in
+/// `expr`, with every occurrence of `var` inside such a call (the only
+/// shape Weierstrass can substitute). Returns `None` when `var` appears
+/// outside a substituted position (a bare factor, a non-trig function, or
+/// sin/cos with different arguments) — substituting then would treat `var`
+/// as a constant of the t-integral and produce a wrong `x·f(x)`-style
+/// antiderivative.
+fn trig_linear_arg(expr: Atom<'_>, var: Symbol) -> Option<Atom<'_>> {
+    fn visit<'a>(expr: Atom<'a>, var: Symbol, found: &mut Option<Atom<'a>>) -> Option<()> {
+        match expr.node() {
+            AtomNode::Fun(name, args) if args.len() == 1 => {
+                let n = name.as_str();
+                if n == "sin" || n == "cos" {
+                    let u = args[0];
+                    if !contains_var(u, var) {
+                        return Some(());
+                    }
+                    match found {
+                        Some(prev) if *prev != u => return None,
+                        _ => *found = Some(u),
+                    }
+                    Some(())
+                } else {
+                    // Other functions must not contain var.
+                    if contains_var(expr, var) {
+                        return None;
+                    }
+                    Some(())
+                }
+            }
+            AtomNode::Fun(_, _) => {
+                if contains_var(expr, var) {
+                    return None;
+                }
+                Some(())
+            }
+            AtomNode::Add(args) | AtomNode::Mul(args) => {
+                for a in args.iter() {
+                    visit(*a, var, found)?;
+                }
+                Some(())
+            }
+            AtomNode::Pow(base, exp) => {
+                visit(*base, var, found)?;
+                visit(*exp, var, found)?;
+                Some(())
+            }
+            AtomNode::Num(_) => Some(()),
+            AtomNode::Var(v) => {
+                if *v == var {
+                    return None;
+                }
+                Some(())
+            }
+        }
+    }
+    let mut found: Option<Atom<'_>> = None;
+    visit(expr, var, &mut found)?;
+    found
+}
+
+/// True if `expr` contains `var` anywhere.
+fn contains_var(expr: Atom<'_>, var: Symbol) -> bool {
+    match expr.node() {
+        AtomNode::Var(v) => *v == var,
+        AtomNode::Num(_) => false,
+        AtomNode::Fun(_, args) => args.iter().any(|a| contains_var(*a, var)),
+        AtomNode::Add(args) | AtomNode::Mul(args) => args.iter().any(|a| contains_var(*a, var)),
+        AtomNode::Pow(base, exp) => contains_var(*base, var) || contains_var(*exp, var),
+    }
+}
+
+/// Replace `sin(u)`/`cos(u)` in `expr` with the given t-forms; any other
+/// occurrence of `var` (or a different trig argument) aborts with `None`.
+fn substitute_trig_arg<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    u: Atom<'a>,
+    var: Symbol,
+    sin_u: Atom<'a>,
+    cos_u: Atom<'a>,
+) -> Option<Atom<'a>> {
+    match expr.node() {
+        AtomNode::Fun(name, args) if args.len() == 1 => {
+            let n = name.as_str();
+            if n == "sin" || n == "cos" {
+                if args[0] == u {
+                    return Some(if n == "sin" { sin_u } else { cos_u });
+                }
+                return None;
+            }
+            if contains_var(expr, var) {
+                return None;
+            }
+            Some(expr)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => {
+            if contains_var(expr, var) {
+                return None;
+            }
+            Some(expr)
+        }
+        AtomNode::Add(args) => {
+            let mut rebuilt = Vec::with_capacity(args.len());
+            for a in args.iter() {
+                rebuilt.push(substitute_trig_arg(ctx, *a, u, var, sin_u, cos_u)?);
+            }
+            Some(ctx.add(&rebuilt))
+        }
+        AtomNode::Mul(args) => {
+            let mut rebuilt = Vec::with_capacity(args.len());
+            for a in args.iter() {
+                rebuilt.push(substitute_trig_arg(ctx, *a, u, var, sin_u, cos_u)?);
+            }
+            Some(ctx.mul(&rebuilt))
+        }
+        AtomNode::Pow(base, exp) => {
+            let b = substitute_trig_arg(ctx, *base, u, var, sin_u, cos_u)?;
+            let e = substitute_trig_arg(ctx, *exp, u, var, sin_u, cos_u)?;
+            Some(ctx.pow(b, e))
+        }
+        AtomNode::Fun(_, _) => {
+            if contains_var(expr, var) {
+                return None;
+            }
+            Some(expr)
+        }
+    }
+}
+
+/// Try Weierstrass substitution: `t = tan(u/2)` for the linear argument
+/// `u = a·x + b`.
 fn try_weierstrass<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Option<Atom<'a>> {
     if !is_trig_rational(expr, var) {
         return None;
     }
-
+    // No sin/cos → nothing to substitute; applying the substitution would
+    // loop on the result.
+    if trig_count(expr) == 0 {
+        return None;
+    }
+    let u = trig_linear_arg(expr, var)?;
+    let (a, _b) = crate::integral::linear_form(ctx, u, var)?;
+    if matches!(a.node(), AtomNode::Num(0)) {
+        return None;
+    }
+    // Symbolic (non-numeric) `a` is allowed: the t-integral then has
+    // symbolic coefficients, handled by the symbolic-constant rational
+    // backend.
     let t = ctx.var("_t");
-    let x = ctx.var(var.as_str());
-
-    // For u = x (linear with a=1, b=0):
-    // sin(x) = 2t/(1+t²), cos(x) = (1-t²)/(1+t²), dx = 2dt/(1+t²)
     let one_plus_t2 = ctx.add(&[ctx.num(1), ctx.pow(t, ctx.num(2))]);
-    let sin_x = ctx.mul(&[ctx.num(2), t, ctx.pow(one_plus_t2, ctx.num(-1))]);
-    let cos_x = ctx.mul(&[
+    let sin_u = ctx.mul(&[ctx.num(2), t, ctx.pow(one_plus_t2, ctx.num(-1))]);
+    let cos_u = ctx.mul(&[
         ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(t, ctx.num(2))])]),
         ctx.pow(one_plus_t2, ctx.num(-1)),
     ]);
-    let dx_dt = ctx.mul(&[ctx.num(2), ctx.pow(one_plus_t2, ctx.num(-1))]);
+    // u = a·x + b ⇒ dx = du/a, and du = 2/(1+t²) dt.
+    let dx_dt = ctx.mul(&[
+        ctx.num(2),
+        ctx.pow(a, ctx.num(-1)),
+        ctx.pow(one_plus_t2, ctx.num(-1)),
+    ]);
 
-    // Replace sin(x) → 2t/(1+t²), cos(x) → (1-t²)/(1+t²)
-    let substituted = substitute_trig(ctx, expr, var, sin_x, cos_x);
+    let substituted = substitute_trig_arg(ctx, expr, u, var, sin_u, cos_u)?;
     let integrand = ctx.mul(&[substituted, dx_dt]);
 
-    // Integrate with respect to t
+    // Feasibility gate: if the t-integrand is beyond the symbolic rational
+    // backend's reach, skip Weierstrass entirely — feeding it to the rest
+    // of the chain grinds (rational/parts on the t-form) without solving.
     let t_sym = Symbol::new("_t");
-    let result_t = integrate_raw(ctx, integrand, t_sym, 2);
-
+    if !crate::integral::symbolic_rational::rational_complexity_ok(ctx, integrand, t_sym) {
+        return None;
+    }
+    let result_t = integrate_raw(ctx, integrand, t_sym, 2, true, 0, 0);
     if is_fallback(&result_t) {
         return None;
     }
 
-    // Back-substitute t = tan(x/2)
-    let back = ctx.fun("tan", &[ctx.mul(&[x, ctx.pow(ctx.num(2), ctx.num(-1))])]);
+    // Back-substitute t = tan(u/2).
+    let back = ctx.fun("tan", &[ctx.mul(&[u, ctx.pow(ctx.num(2), ctx.num(-1))])]);
     Some(substitute_atom(ctx, result_t, t_sym, back))
-}
-
-/// Replace `sin(var)` and `cos(var)` in `expr` with given expressions.
-fn substitute_trig<'a>(
-    ctx: &'a AtomArena<'a>,
-    expr: Atom<'a>,
-    var: Symbol,
-    sin_replacement: Atom<'a>,
-    cos_replacement: Atom<'a>,
-) -> Atom<'a> {
-    match expr.node() {
-        AtomNode::Fun(name, args) if name.as_str() == "sin" && args.len() == 1 => {
-            if matches!(args[0].node(), AtomNode::Var(v) if *v == var) {
-                sin_replacement
-            } else {
-                expr
-            }
-        }
-        AtomNode::Fun(name, args) if name.as_str() == "cos" && args.len() == 1 => {
-            if matches!(args[0].node(), AtomNode::Var(v) if *v == var) {
-                cos_replacement
-            } else {
-                expr
-            }
-        }
-        AtomNode::Num(_) | AtomNode::Var(_) => expr,
-        AtomNode::Add(args) => {
-            let new_args: Vec<Atom<'a>> = args
-                .iter()
-                .map(|a| substitute_trig(ctx, *a, var, sin_replacement, cos_replacement))
-                .collect();
-            ctx.add(&new_args)
-        }
-        AtomNode::Mul(args) => {
-            let new_args: Vec<Atom<'a>> = args
-                .iter()
-                .map(|a| substitute_trig(ctx, *a, var, sin_replacement, cos_replacement))
-                .collect();
-            ctx.mul(&new_args)
-        }
-        AtomNode::Pow(base, exp) => {
-            let new_base = substitute_trig(ctx, *base, var, sin_replacement, cos_replacement);
-            ctx.pow(new_base, *exp)
-        }
-        AtomNode::Fun(name, args) => {
-            let new_args: Vec<Atom<'a>> = args
-                .iter()
-                .map(|a| substitute_trig(ctx, *a, var, sin_replacement, cos_replacement))
-                .collect();
-            ctx.fun(name.as_str(), &new_args)
-        }
-    }
 }
 
 // =========================================================================
 // Euler substitution (1d)
 // =========================================================================
 
-/// Check if `expr` contains `√(ax² + bx + c)`.
-///
-/// Returns `(a_coeff, b_coeff, c_coeff)` if matched.
-fn is_quadratic_sqrt<'a>(expr: Atom<'a>, var: Symbol) -> Option<(Atom<'a>, Atom<'a>, Atom<'a>)> {
-    // Match Pow(inner, 1/2) where inner is a quadratic in var
-    let base = match expr.node() {
-        AtomNode::Pow(b, e) => {
-            let is_half = match e.node() {
-                AtomNode::Num(1) => false, // not 1/2
-                AtomNode::Mul(args) if args.len() == 2 => {
-                    args.iter().any(|a| matches!(a.node(), AtomNode::Pow(b2, e2)
-                        if matches!(b2.node(), AtomNode::Num(2)) && matches!(e2.node(), AtomNode::Num(-1))))
-                        && args.iter().any(|a| matches!(a.node(), AtomNode::Num(1)))
-                }
-                _ => false,
-            };
-            if !is_half {
-                return None;
-            }
-            *b
+/// Substitute `t` for the square-root term in `expr`: after substituting
+/// `x → x(t)`, the square root `√(a·x² + b·x + c)` becomes a rational
+/// expression in `t`. Every `Fun(sqrt, [q])` / `q^(±1/2)` node whose
+/// argument equals the substituted quadratic is replaced by that rational
+/// expression; other square roots are left untouched (and make the t-form
+/// non-rational, so [`crate::integral::rational::integrate_rational`] then
+/// declines and the substitution is abandoned).
+fn replace_sqrt<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    quad_t: Atom<'a>,
+    sqrt_t: Atom<'a>,
+) -> Atom<'a> {
+    match expr.node() {
+        AtomNode::Fun(name, args) if name.as_str() == "sqrt" && args.len() == 1 => {
+            let q = ocas_atom::normalize::normalize(ctx, args[0]);
+            if q == quad_t { sqrt_t } else { expr }
         }
-        _ => return None,
-    };
-
-    // Match ax² + bx + c
-    match base.node() {
+        AtomNode::Pow(base, exp) => {
+            // sqrt(q)^-1 and q^(±1/2) forms.
+            if let (AtomNode::Fun(name, args), AtomNode::Num(-1)) = (base.node(), exp.node())
+                && name.as_str() == "sqrt"
+                && args.len() == 1
+                && ocas_atom::normalize::normalize(ctx, args[0]) == quad_t
+            {
+                return ctx.pow(sqrt_t, ctx.num(-1));
+            }
+            let b = replace_sqrt(ctx, *base, quad_t, sqrt_t);
+            let e = replace_sqrt(ctx, *exp, quad_t, sqrt_t);
+            ctx.pow(b, e)
+        }
         AtomNode::Add(args) => {
-            let mut a_coeff = None;
-            let mut b_coeff = None;
-            let mut c_coeff = None;
-
-            for term in args.iter() {
-                match term.node() {
-                    // ax² term
-                    AtomNode::Mul(margs) if margs.len() == 2 => {
-                        if let Some(idx) = margs.iter().position(|a| {
-                            matches!(a.node(), AtomNode::Pow(b, e)
-                                if matches!(b.node(), AtomNode::Var(v) if *v == var)
-                                && matches!(e.node(), AtomNode::Num(2)))
-                        }) {
-                            let coeff_idx = 1 - idx;
-                            if is_constant(margs[coeff_idx], var) && a_coeff.is_none() {
-                                a_coeff = Some(margs[coeff_idx]);
-                            }
-                        }
-                        // bx term
-                        if let Some(idx) = margs
-                            .iter()
-                            .position(|a| matches!(a.node(), AtomNode::Var(v) if *v == var))
-                        {
-                            let coeff_idx = 1 - idx;
-                            if is_constant(margs[coeff_idx], var) && b_coeff.is_none() {
-                                b_coeff = Some(margs[coeff_idx]);
-                            }
-                        }
-                    }
-                    // x² term (coefficient = 1)
-                    AtomNode::Pow(b, e) => {
-                        if matches!(b.node(), AtomNode::Var(v) if *v == var)
-                            && matches!(e.node(), AtomNode::Num(2))
-                            && a_coeff.is_none()
-                        {
-                            // Implicit coefficient 1 — we'd need to represent this
-                            // For now, skip this case
-                        }
-                    }
-                    // Linear term: just `var`
-                    AtomNode::Var(v) => {
-                        if *v == var && b_coeff.is_none() {
-                            // Implicit coefficient 1
-                        }
-                    }
-                    // Constant term
-                    AtomNode::Num(_) if c_coeff.is_none() => {
-                        c_coeff = Some(*term);
-                    }
-                    _ => {}
-                }
-            }
-
-            match (a_coeff, b_coeff, c_coeff) {
-                (Some(a), Some(b), Some(c)) => Some((a, b, c)),
-                _ => None,
-            }
+            let rebuilt: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| replace_sqrt(ctx, *a, quad_t, sqrt_t))
+                .collect();
+            ctx.add(&rebuilt)
         }
-        _ => None,
+        AtomNode::Mul(args) => {
+            let rebuilt: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| replace_sqrt(ctx, *a, quad_t, sqrt_t))
+                .collect();
+            ctx.mul(&rebuilt)
+        }
+        AtomNode::Fun(name, args) => {
+            let rebuilt: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| replace_sqrt(ctx, *a, quad_t, sqrt_t))
+                .collect();
+            ctx.fun(name.as_str(), &rebuilt)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
     }
 }
 
-/// Try Euler substitution for `√(ax² + bx + c)`.
+/// Try Euler substitution for `√(a·x² + b·x + c)` with rational
+/// coefficients.
+///
+/// - **Euler I** (a is a positive rational square): `t = √(ax²+bx+c) − √a·x`
+///   makes the integrand a rational function of `t`.
+/// - **Euler II** (c is a positive rational square, a not): `t = (√(...) − √c)/x`.
+///
+/// Non-rational coefficients or no eligible square root → `None` (the
+/// heuristic chain continues). `integrate_rational` never re-enters the
+/// heuristic, so there is no recursion risk.
 fn try_euler_substitution<'a>(
-    _ctx: &'a AtomArena<'a>,
+    ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
-    let (_a, _b, _c) = is_quadratic_sqrt(expr, var)?;
+    let (a, b, c) = crate::integral::rules::quadratic_coeffs(ctx, expr, var)?;
+    let (pa, qa) = crate::integral::rules::rat_of(a)?;
+    let (pc, qc) = crate::integral::rules::rat_of(c)?;
 
-    // Euler substitution is complex to implement fully with back-substitution.
-    // For now, return None and let the fallback handle it.
-    // This is a placeholder for future implementation.
-    None
+    let t = ctx.var("_t");
+    let x = ctx.var(var.as_str());
+
+    // Rational value helper: build Atom(p)/Atom(q) as p*q^-1.
+    let rat = |ctx: &'a AtomArena<'a>, p: i64, q: i64| -> Atom<'a> {
+        ctx.mul(&[ctx.num(p), ctx.pow(ctx.num(q), ctx.num(-1))])
+    };
+
+    // Euler I: a = (r/s)² > 0.
+    let (x_t, sqrt_t, dx_dt): (Atom<'a>, Atom<'a>, Atom<'a>) =
+        if let Some((r, s)) = crate::integral::rules::rational_sqrt(pa, qa) {
+            let sq_a = rat(ctx, r, s);
+            // x = (t² − c)/(b − 2√a·t)
+            let denom = ctx.add(&[b, ctx.mul(&[ctx.num(-2), sq_a, t])]);
+            let x_t = ctx.mul(&[
+                ctx.add(&[ctx.pow(t, ctx.num(2)), ctx.mul(&[ctx.num(-1), c])]),
+                ctx.pow(denom, ctx.num(-1)),
+            ]);
+            // √(ax²+bx+c) = √a·x + t (rational in t after x → x(t))
+            let sqrt_t = ctx.add(&[ctx.mul(&[sq_a, x_t]), t]);
+            // dx/dt = [2t(b−2√a·t) + 2√a·(t²−c)] / (b−2√a·t)²
+            let num = ctx.add(&[
+                ctx.mul(&[ctx.num(2), t, denom]),
+                ctx.mul(&[
+                    ctx.mul(&[ctx.num(2), sq_a]),
+                    ctx.add(&[ctx.pow(t, ctx.num(2)), ctx.mul(&[ctx.num(-1), c])]),
+                ]),
+            ]);
+            let dx_dt = ctx.mul(&[num, ctx.pow(ctx.pow(denom, ctx.num(2)), ctx.num(-1))]);
+            (x_t, sqrt_t, dx_dt)
+        } else if let Some((r, s)) = crate::integral::rules::rational_sqrt(pc, qc) {
+            // Euler II: c = (r/s)² > 0, a not a square.
+            let sq_c = rat(ctx, r, s);
+            // x = (2√c·t − b)/(a − t²)
+            let denom = ctx.add(&[a, ctx.mul(&[ctx.num(-1), ctx.pow(t, ctx.num(2))])]);
+            let x_t = ctx.mul(&[
+                ctx.add(&[ctx.mul(&[ctx.num(2), sq_c, t]), ctx.mul(&[ctx.num(-1), b])]),
+                ctx.pow(denom, ctx.num(-1)),
+            ]);
+            // √(ax²+bx+c) = √c + t·x
+            let sqrt_t = ctx.add(&[sq_c, ctx.mul(&[t, x_t])]);
+            // dx/dt = [2√c(a−t²) + (2√c t − b)·2t] / (a−t²)²
+            let num = ctx.add(&[
+                ctx.mul(&[ctx.num(2), sq_c, denom]),
+                ctx.mul(&[
+                    ctx.add(&[ctx.mul(&[ctx.num(2), sq_c, t]), ctx.mul(&[ctx.num(-1), b])]),
+                    ctx.mul(&[ctx.num(2), t]),
+                ]),
+            ]);
+            let dx_dt = ctx.mul(&[num, ctx.pow(ctx.pow(denom, ctx.num(2)), ctx.num(-1))]);
+            (x_t, sqrt_t, dx_dt)
+        } else {
+            return None;
+        };
+
+    // Substitute x → x(t) throughout, then replace the sqrt node.
+    let substituted = substitute_atom(ctx, expr, var, x_t);
+    // The substituted quadratic, normalized (structural match target).
+    let quad_t = ocas_atom::normalize::normalize(
+        ctx,
+        ctx.add(&[
+            ctx.mul(&[a, ctx.pow(x_t, ctx.num(2))]),
+            ctx.mul(&[b, x_t]),
+            c,
+        ]),
+    );
+    let substituted = replace_sqrt(ctx, substituted, quad_t, sqrt_t);
+    let integrand = ctx.mul(&[substituted, dx_dt]);
+
+    let t_sym = Symbol::new("_t");
+    let result_t = crate::integral::rational::integrate_rational(ctx, integrand, t_sym)?;
+
+    // Back-substitute t = √(a·x²+b·x+c) − √a·x (Euler I) or
+    // t = (√(a·x²+b·x+c) − √c)/x (Euler II): rebuild from the original
+    // quadratic and the x-expression.
+    let x_back = x;
+    let sqrt_back = if crate::integral::rules::rational_sqrt(pa, qa).is_some() {
+        let (r, s) = crate::integral::rules::rational_sqrt(pa, qa).unwrap();
+        let sq_a = rat(ctx, r, s);
+        let quad = ctx.add(&[
+            ctx.mul(&[a, ctx.pow(x_back, ctx.num(2))]),
+            ctx.mul(&[b, x_back]),
+            c,
+        ]);
+        let sqrt = ctx.fun("sqrt", &[quad]);
+        ctx.add(&[sqrt, ctx.mul(&[ctx.num(-1), sq_a, x_back])])
+    } else {
+        let (r, s) = crate::integral::rules::rational_sqrt(pc, qc).unwrap();
+        let sq_c = rat(ctx, r, s);
+        let quad = ctx.add(&[
+            ctx.mul(&[a, ctx.pow(x_back, ctx.num(2))]),
+            ctx.mul(&[b, x_back]),
+            c,
+        ]);
+        let sqrt = ctx.fun("sqrt", &[quad]);
+        // t = (√(..) − √c)/x
+        ctx.mul(&[
+            ctx.add(&[sqrt, ctx.mul(&[ctx.num(-1), sq_c])]),
+            ctx.pow(x_back, ctx.num(-1)),
+        ])
+    };
+    let back = substitute_atom(ctx, result_t, t_sym, sqrt_back);
+    Some(ocas_atom::normalize::normalize(ctx, back))
 }
 
 // =========================================================================
@@ -1040,7 +1260,49 @@ mod tests {
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
         let expr = ctx.fun("unknown_func", &[x]);
-        let result = heuristic_integrate(&ctx, expr, Symbol::new("x"));
+        let result = heuristic_integrate(&ctx, expr, Symbol::new("x"), 0);
         assert!(result.is_none());
+    }
+
+    /// Euler I: ∫ dx/√(x²+2x+3) — no Integral residue (plan acceptance).
+    #[test]
+    fn euler_i_inv_sqrt_quadratic() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/sqrt(x^2+2*x+3)").unwrap();
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        let s = result.to_string();
+        assert!(!s.contains("Integral("), "got {s}");
+        assert!(s.contains("asinh") || s.contains("log"), "got {s}");
+    }
+
+    /// ∫ √(x²+1) dx — solved (Euler or rule G8).
+    #[test]
+    fn euler_i_sqrt_x2_plus_1() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "sqrt(x^2+1)").unwrap();
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!result.to_string().contains("Integral("), "got {result}");
+    }
+
+    /// ∫ dx/(x·√(x²+x+1)) — Euler I with the sqrt inside a product.
+    #[test]
+    fn euler_i_inv_x_sqrt_quadratic() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/(x*sqrt(x^2+x+1))").unwrap();
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!result.to_string().contains("Integral("), "got {result}");
+    }
+
+    /// Euler II: ∫ dx/√(2x²+3x+1) (a = 2 not a square, c = 1 a square).
+    #[test]
+    fn euler_ii_inv_sqrt_quadratic() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/sqrt(2*x^2+3*x+1)").unwrap();
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!result.to_string().contains("Integral("), "got {result}");
     }
 }

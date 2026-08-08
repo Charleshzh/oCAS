@@ -92,6 +92,15 @@ def test_integrate_basic():
     assert "2*(2^-1)" in s
 
 
+def test_integrate_rules_toggle():
+    # tan(x)^4 is a baseline fallback that the rule table solves.
+    e = ocas.Expression("tan(x)^4")
+    with_rules = str(e.integrate("x"))
+    assert "Integral" not in with_rules, with_rules
+    without_rules = str(e.integrate("x", rules=False))
+    assert "Integral" in without_rules, without_rules
+
+
 def test_taylor_exp():
     e = ocas.Expression("exp(x)")
     series = e.taylor("x", ocas.Expression("0"), 3)

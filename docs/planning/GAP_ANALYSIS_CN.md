@@ -358,6 +358,31 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 2. **方案 B**：自研规则集——工作量大但完全可控
 3. **方案 C**：混合——Risch 算法 + 启发式扩展 + 少量 Rubi 规则作为参考
 
+#### 0.27.0 symbolica-integrate（MIT）集成评估结论（2026-08-08）
+
+按 0.27.0 计划 S8，对首选自研（方案 C）执行后的评估记录：
+
+- **许可证链条**：symbolica-integrate crate 代码本身为 MIT，但其中规则的内容
+  来源是 Rubi（CC BY-NC-SA 3.0）的 Wolfram 移植；crate 的 MIT 不覆盖 Rubi
+  规则文本/结构本身的衍生权利争议。对 oCAS 商业可嵌入定位（LGPL 全栈自研）
+  而言，集成会引入无法向商业用户闭环解释的衍生条款风险；CC BY-NC-SA 的
+  "NC"（非商业）条款与 oCAS 的许可策略（允许商业闭源嵌入）直接冲突，即使
+  以独立规则引擎 API 封装也无法消除衍生作品争议。
+- **依赖重量**：symbolica 本体依赖链重（~1.5 GB 级源码树、跨语言构建），与
+  oCAS 的"零外部依赖、纯 Rust 可审计"交付承诺冲突；仅评估用镜像
+  （ocas-tests/scripts/symbolica_runner）已需独立 workspace 与 Cargo.lock
+  固定。
+- **API 契合度**：symbolica-integrate 的规则引擎绑定在 Symbolica 表达式模型
+  上，与本项目的 arena/hash-cons 原子模型无共享接口层；集成需要双向表达式
+  转换层，维护成本高。
+- **结论**：**0.27.0 不集成 symbolica-integrate**，维持自研规则表引擎
+  （ocas-calc/src/integral/rules.rs，标准微积分表，不复制 Rubi 规则文本）。
+  若未来覆盖率达不到验收线（1892 题子集 +30pp），重启集成评估时须先完成
+  独立法律审查，且只考虑规则列表层面的"参考其结构、重写其表述"路径。
+  语料使用不受影响：Rubi 官方 Axiom 测试题（rulebasedintegration.org 的
+  AxiomSyntaxTestFiles.zip，SHA-256 已固定）仅作为覆盖率基准输入，不入库、
+  不随 oCAS 分发。
+
 ---
 
 ## 8. 战略建议

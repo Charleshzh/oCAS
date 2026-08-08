@@ -101,13 +101,29 @@ impl<'a> Pattern<'a> {
                 Pattern::Fun(*name, pat_args)
             }
             AtomNode::Add(args) => {
-                let pat_args: Vec<Pattern<'a>> =
-                    args.iter().map(|a| Pattern::from_atom(_ctx, *a)).collect();
+                let mut pat_args: Vec<Pattern<'a>> = Vec::with_capacity(args.len());
+                for a in args.iter() {
+                    let child = Pattern::from_atom(_ctx, *a);
+                    // Flatten nested same-constructor patterns: the parser
+                    // builds `a+b+c` as Add(Add(a,b),c), but atoms are flat
+                    // n-ary nodes after normalize, and the AC matcher only
+                    // matches flat patterns against flat atoms.
+                    match child {
+                        Pattern::Add(inner) => pat_args.extend(inner),
+                        other => pat_args.push(other),
+                    }
+                }
                 Pattern::Add(pat_args)
             }
             AtomNode::Mul(args) => {
-                let pat_args: Vec<Pattern<'a>> =
-                    args.iter().map(|a| Pattern::from_atom(_ctx, *a)).collect();
+                let mut pat_args: Vec<Pattern<'a>> = Vec::with_capacity(args.len());
+                for a in args.iter() {
+                    let child = Pattern::from_atom(_ctx, *a);
+                    match child {
+                        Pattern::Mul(inner) => pat_args.extend(inner),
+                        other => pat_args.push(other),
+                    }
+                }
                 Pattern::Mul(pat_args)
             }
             AtomNode::Pow(base, exp) => {

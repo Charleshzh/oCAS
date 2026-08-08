@@ -14,7 +14,8 @@ use std::ptr;
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, Symbol};
-use ocas_calc::{diff, integrate, integrate_heuristic, substitute, taylor};
+use ocas_calc::IntegrateOptions;
+use ocas_calc::{diff, integrate, integrate_heuristic, integrate_with_options, substitute, taylor};
 use ocas_core::arena::Arena;
 use ocas_parse::parse;
 use ocas_rewrite::rules::default_rules;
@@ -187,6 +188,22 @@ impl ExprBox {
         let src = self.atom.to_string();
         Self::build(|ctx| match parse(ctx, &src) {
             Ok(a) => Ok(op(ctx, a, var_sym)),
+            Err(e) => Err(e.to_string()),
+        })
+    }
+
+    /// Integrate with respect to `var`, with the rule-table engine toggled
+    /// by `rules`.
+    fn apply_integrate(&self, var: &str, rules: bool) -> Result<Box<Self>, String> {
+        let var_sym = Symbol::new(var);
+        let src = self.atom.to_string();
+        Self::build(|ctx| match parse(ctx, &src) {
+            Ok(a) => Ok(integrate_with_options(
+                ctx,
+                a,
+                var_sym,
+                IntegrateOptions { rules },
+            )),
             Err(e) => Err(e.to_string()),
         })
     }
@@ -527,6 +544,43 @@ pub unsafe extern "C" fn ocas_expr_integrate_heuristic(
     unary_op(handle, var, err_out, |ctx, a, sym| {
         integrate_heuristic(ctx, a, sym)
     })
+}
+
+/// Integrate `handle` with respect to `var` with the rule-table engine
+/// toggled by `rules` (nonzero = on). Returns a new expression handle or
+/// `NULL` on failure. If the integral cannot be solved analytically, the
+/// result is the unevaluated form `Integral(expr, var)`.
+///
+/// # Safety
+///
+/// See [`ocas_expr_diff`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ocas_expr_integrate_with_options(
+    handle: *const OcasExpr,
+    var: *const c_char,
+    rules: c_int,
+    err_out: *mut c_int,
+) -> *mut OcasExpr {
+    crate::error::clear();
+    let Some(expr) = as_expr(handle) else {
+        if !err_out.is_null() {
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
+        }
+        return ptr::null_mut();
+    };
+    let Some(var_str) = cstr_to_str(var, "var") else {
+        crate::error::write_last_code(err_out);
+        return ptr::null_mut();
+    };
+    let expr_ref = std::panic::AssertUnwindSafe(expr);
+    let var_owned = var_str.to_string();
+    finish_op(
+        std::panic::catch_unwind(move || {
+            let expr: &ExprBox = *expr_ref;
+            expr.apply_integrate(&var_owned, rules != 0)
+        }),
+        err_out,
+    )
 }
 
 /// Compute the Taylor series of `handle` around `point` up to `order`.
