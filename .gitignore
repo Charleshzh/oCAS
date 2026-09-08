@@ -68,5 +68,8 @@ package-lock.json
 # AI assistant context (repository-local, not shared)
 CLAUDE.md
 
+# Code review artifacts (local review workspace, never committed)
+code-review-2026-08/
+
 .venv-sympy/
 ci_log.txt
