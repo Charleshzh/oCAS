@@ -42,9 +42,10 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 
 ## 忽略的测试（已知差距）
 
-部分测试标记 `#[ignore]`（当前 36 项），用于记录已知差距——它们预期失败，
+部分测试标记 `#[ignore]`（当前 35 项），用于记录已知差距——它们预期失败，
 仅在需要复现/推进时手动运行（`cargo test -p ocas-tests --test correctness
--- --ignored`）。例如 Wilkinson 多项式求根：10 个实根中仅找到 8 个。
+-- --ignored`）。Wilkinson n=10 实根隔离差距已闭合：精确二进分数 Sturm
+求值（0.27.x）找齐全部 10 个根。
 
 ---
 
@@ -107,7 +108,6 @@ python scripts/generate_audit_report.py
 
 | 问题 | 模块 | 状态 |
 |---|---|---|
-| Wilkinson n=10：10 个实根中仅找到 8 个 | `root_isolation` | 已知差距（`#[ignore]`） |
 | `sin(x)^2 + cos(x)^2 → 1` 需要 `egg` feature | `rewrite` | 启用 `egg` feature 后可化简 |
 | Bernoulli forcing y^n 使线性系数提取混淆 | `ode` | 已知限制（`#[ignore]`） |
 | 积分器缺 tan/sec 表项 | `ode` | 计划中（`#[ignore]`） |

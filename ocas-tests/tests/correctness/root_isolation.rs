@@ -37,7 +37,6 @@ fn root_isolation_complex_quintic() {
 }
 
 #[test]
-#[ignore = "very complex correctness test: run manually or via audit report"]
 fn root_isolation_very_complex_wilkinson() {
     let d = IntegerDomain;
     // Wilkinson n=10: product_{k=1}^{10} (x - k)
@@ -48,7 +47,8 @@ fn root_isolation_very_complex_wilkinson() {
         p = p.mul(&factor);
     }
     let intervals = p.isolate_real_roots();
-    // Current isolator only finds 8 of the 10 integer roots for the expanded
-    // Wilkinson polynomial; this documents the gap.
-    assert_eq!(intervals.len(), 8);
+    // The expanded Wilkinson polynomial is the classic ill-conditioned
+    // case: f64 Sturm sign evaluation found only 8 of the 10 roots before
+    // the exact dyadic path (0.27.x); the exact path finds all of them.
+    assert_eq!(intervals.len(), 10);
 }

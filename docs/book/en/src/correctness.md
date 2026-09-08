@@ -49,8 +49,8 @@ The modules cover the full breadth of oCAS functionality:
 Some tests are marked `#[ignore]` (35 in total) to track known gaps — they
 are expected to fail and are only run manually when reproducing or
 advancing the issue (`cargo test -p ocas-tests --test correctness
--- --ignored`). For example, Wilkinson polynomial root-finding: only 8 of
-the 10 real roots are found.
+-- --ignored`). The Wilkinson n=10 root-isolation gap is closed: the exact
+dyadic Sturm evaluation (0.27.x) finds all 10 roots.
 
 ---
 
@@ -118,7 +118,6 @@ includes:
 
 | Issue | Module | Status |
 |---|---|---|
-| Wilkinson n=10: only 8 of 10 real roots found | `root_isolation` | Known gap (`#[ignore]`) |
 | `sin(x)^2 + cos(x)^2 → 1` requires `egg` feature | `rewrite` | Simplifies with the `egg` feature |
 | Bernoulli forcing y^n confuses linear coefficient extraction | `ode` | Known limitation (`#[ignore]`) |
 | Integrator missing tan/sec table entries | `ode` | Planned (`#[ignore]`) |

@@ -6,6 +6,10 @@
 
 use std::fmt::Display;
 
+use num_bigint::{BigInt, Sign};
+use num_rational::BigRational;
+use num_traits::{ToPrimitive, Zero};
+
 use ocas_domain::EuclideanDomain;
 
 use crate::dense::DenseUnivariatePolynomial;
@@ -90,6 +94,11 @@ where
     /// exactly one real root.
     ///
     /// Uses bisection with Sturm-based counting to find intervals.
+    /// Sign evaluation is exact (dyadic-rational bisection points with
+    /// big-integer arithmetic) whenever the coefficients parse as
+    /// rationals; ill-conditioned polynomials like the expanded Wilkinson
+    /// `∏(x−k)` lose roots under f64 sign evaluation. Falls back to the
+    /// f64 path for coefficients without a rational representation.
     pub fn isolate_real_roots(&self) -> Vec<RootInterval> {
         let seq = self.sturm_sequence();
         if seq.len() < 2 {
@@ -103,6 +112,20 @@ where
 
         // Find a bounding interval [-M, M] that contains all real roots.
         let m = root_bound(self);
+        if let Some(exact) = ExactSturm::prepare(&seq) {
+            return self.isolate_exact(&exact, m, total_roots);
+        }
+        self.isolate_f64(&seq, m, total_roots)
+    }
+
+    /// f64 bisection fallback (pre-0.27 behaviour), for Sturm sequences
+    /// whose coefficients are not exactly representable as rationals.
+    fn isolate_f64(
+        &self,
+        seq: &[DenseUnivariatePolynomial<D>],
+        m: f64,
+        total_roots: usize,
+    ) -> Vec<RootInterval> {
         let mut intervals = Vec::new();
         let mut stack = vec![(-m, m)];
 
@@ -111,8 +134,8 @@ where
                 break;
             }
 
-            let lo_signs = count_sign_changes(&seq, lo);
-            let hi_signs = count_sign_changes(&seq, hi);
+            let lo_signs = count_sign_changes(seq, lo);
+            let hi_signs = count_sign_changes(seq, hi);
             let count = lo_signs.saturating_sub(hi_signs);
 
             if count == 0 {
@@ -132,6 +155,59 @@ where
             let mid = (lo + hi) / 2.0;
             stack.push((lo, mid));
             stack.push((mid, hi));
+        }
+
+        intervals
+    }
+
+    /// Exact bisection: endpoints are dyadics `m · 2⁻ᵏ`, sign counts are
+    /// computed with big-integer arithmetic (no f64 rounding).
+    fn isolate_exact(&self, seq: &ExactSturm, m: f64, total_roots: usize) -> Vec<RootInterval> {
+        let bound = BigInt::from(m.ceil() as i64);
+        let mut intervals = Vec::new();
+        // Stack entries: (lo_m, hi_m, k) representing [lo_m·2⁻ᵏ, hi_m·2⁻ᵏ].
+        let mut stack = vec![(-&bound, bound, 0u32)];
+
+        while let Some((lo_m, hi_m, k)) = stack.pop() {
+            if intervals.len() >= total_roots {
+                break;
+            }
+
+            let lo_signs = seq.count_at(&lo_m, k);
+            let hi_signs = seq.count_at(&hi_m, k);
+            let count = lo_signs.saturating_sub(hi_signs);
+
+            if count == 0 {
+                continue;
+            }
+            // Width as f64 is only used for the termination thresholds,
+            // never for sign decisions.
+            let width = (&hi_m - &lo_m).to_f64().unwrap_or(f64::INFINITY) / 2.0f64.powi(k as i32);
+            let low_f = dyadic_f64(&lo_m, k);
+            let high_f = dyadic_f64(&hi_m, k);
+            if count == 1 && width < 1e-10 {
+                intervals.push(RootInterval {
+                    low: low_f,
+                    high: high_f,
+                });
+                continue;
+            }
+            if width < 1e-12 {
+                if count == 1 {
+                    intervals.push(RootInterval {
+                        low: low_f,
+                        high: high_f,
+                    });
+                }
+                continue;
+            }
+
+            // mid = (lo + hi)/2; all endpoints move to scale k+1.
+            let lo2 = &lo_m << 1usize;
+            let hi2 = &hi_m << 1usize;
+            let mid = &lo_m + &hi_m;
+            stack.push((lo2, mid.clone(), k + 1));
+            stack.push((mid, hi2, k + 1));
         }
 
         intervals
@@ -165,6 +241,102 @@ where
 
         RootInterval { low: lo, high: hi }
     }
+}
+
+/// A Sturm sequence pre-scaled to integer coefficients for exact dyadic
+/// evaluation (per polynomial, coefficients are `cᵢ·lcm(denoms)`).
+struct ExactSturm {
+    polys: Vec<Vec<BigInt>>,
+}
+
+impl ExactSturm {
+    /// Clear denominators of every Sturm polynomial. Returns `None` when a
+    /// coefficient has no rational text form.
+    fn prepare<D: EuclideanDomain>(seq: &[DenseUnivariatePolynomial<D>]) -> Option<Self>
+    where
+        D::Element: Display,
+    {
+        let mut polys = Vec::with_capacity(seq.len());
+        for p in seq {
+            let mut coeffs = Vec::with_capacity(p.coeffs().len());
+            let mut lcm = BigInt::from(1);
+            for c in p.coeffs() {
+                let r = coeff_to_bigrational(c)?;
+                lcm = bigint_lcm(&lcm, r.denom());
+                coeffs.push(r);
+            }
+            let scale = BigRational::from_integer(lcm);
+            polys.push(coeffs.iter().map(|c| (c * &scale).to_integer()).collect());
+        }
+        Some(Self { polys })
+    }
+
+    /// Exact sign of every Sturm polynomial at `m·2⁻ᵏ`: for a degree-`n`
+    /// polynomial, `p(m·2⁻ᵏ) = 2⁻ᵏⁿ·L⁻¹·Σ aᵢ·mⁱ·2ᵏ⁽ⁿ⁻ⁱ⁾` and the scale
+    /// factors are positive, so the sum's sign is the value's sign.
+    fn count_at(&self, m: &BigInt, k: u32) -> usize {
+        let mut count = 0;
+        let mut prev: Option<bool> = None;
+        for icoeffs in &self.polys {
+            let sign = eval_sign_dyadic(icoeffs, m, k);
+            if sign == 0 {
+                continue;
+            }
+            let positive = sign > 0;
+            if let Some(p) = prev
+                && p != positive
+            {
+                count += 1;
+            }
+            prev = Some(positive);
+        }
+        count
+    }
+}
+
+/// Sign of `Σ aᵢ·mⁱ·2ᵏ⁽ⁿ⁻ⁱ⁾` for integer coefficients `aᵢ` (ascending).
+fn eval_sign_dyadic(coeffs: &[BigInt], m: &BigInt, k: u32) -> i8 {
+    let n = coeffs.len().saturating_sub(1);
+    let mut s = BigInt::zero();
+    for (i, a) in coeffs.iter().enumerate() {
+        if a.is_zero() {
+            continue;
+        }
+        let mut t = a * m.pow(i as u32);
+        t <<= k as usize * (n - i);
+        s += t;
+    }
+    match s.sign() {
+        Sign::Plus => 1,
+        Sign::Minus => -1,
+        Sign::NoSign => 0,
+    }
+}
+
+/// Convert a dyadic `m·2⁻ᵏ` to f64 (display/intervals only).
+fn dyadic_f64(m: &BigInt, k: u32) -> f64 {
+    m.to_f64().unwrap_or(f64::NAN) / 2.0f64.powi(k as i32)
+}
+
+/// Parse a domain element's display text as an exact rational
+/// ("n", "-n", or "n/d").
+fn coeff_to_bigrational(elem: &(impl Display + ?Sized)) -> Option<BigRational> {
+    elem.to_string().trim().parse::<BigRational>().ok()
+}
+
+/// lcm for positive big integers (Euclid).
+fn bigint_lcm(a: &BigInt, b: &BigInt) -> BigInt {
+    let mut x = a.clone();
+    let mut y = b.clone();
+    while !y.is_zero() {
+        let r = x % &y;
+        x = y;
+        y = r;
+    }
+    if x.is_zero() {
+        return BigInt::from(1);
+    }
+    (a / &x) * b
 }
 
 /// Count sign changes in the Sturm sequence at ±∞.
