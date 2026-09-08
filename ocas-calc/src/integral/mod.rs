@@ -8,6 +8,10 @@
 //! the unevaluated form `Integral(expr, var)`.
 
 #![allow(clippy::collapsible_if)]
+// The chain-budget thread_local initializer is already const; on targets
+// whose std thread_local implementation does not const-mark the init fn,
+// the lint fires anyway (clippy#12276 acknowledges the backend dependence).
+#![allow(clippy::missing_const_for_thread_local)]
 
 pub(crate) mod heuristic;
 pub mod rational;
@@ -17,6 +21,7 @@ pub(crate) mod rules;
 pub(crate) mod special;
 pub(crate) mod symbolic_rational;
 pub(crate) mod trig;
+pub(crate) mod trig_reduce;
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
@@ -30,6 +35,34 @@ use crate::rules::calculus_rules;
 /// Maximum recursion depth for `integrate_raw`, preventing infinite loops
 /// on patterns such as nested linear substitutions if the table is misapplied.
 const MAX_DEPTH: usize = 8;
+
+/// Maximum number of `try_risch_or_fallback` chain entries per top-level
+/// `integrate` call. The per-stage budgets (structural depth, rule depth,
+/// parts depth) reset at substitution boundaries (Weierstrass, rule
+/// residuals, expansion retries), so a cyclic interaction between stages
+/// — observed in the wild: parts ↔ Weierstrass ping-pong on t-forms
+/// carrying `atan(_t)` factors — can otherwise loop until the stack
+/// overflows. Legitimate integrations use far fewer entries (typically
+/// < 50), so tripping the budget degrades to the unevaluated form.
+const MAX_CHAIN_ENTRIES: u32 = 256;
+
+thread_local! {
+    static CHAIN_ENTRIES: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+/// Reset the chain-entry budget; called by every public entry point.
+fn reset_chain_budget() {
+    CHAIN_ENTRIES.with(|c| c.set(0));
+}
+
+/// Consume one chain entry; returns true when the budget is exhausted.
+fn chain_budget_exhausted() -> bool {
+    CHAIN_ENTRIES.with(|c| {
+        let v = c.get().saturating_add(1);
+        c.set(v);
+        v > MAX_CHAIN_ENTRIES
+    })
+}
 
 /// Options controlling the integration pipeline.
 ///
@@ -57,6 +90,7 @@ pub fn integrate_with_options<'a>(
     let normalized = normalize(ctx, expr);
     let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    reset_chain_budget();
     let raw = integrate_raw(ctx, normalized, var, 0, options.rules, 0, 0);
     // Combine default algebraic simplification with calculus-specific rules,
     // then normalize to a canonical form (removing *1, +0, sorting, etc.).
@@ -123,6 +157,7 @@ pub fn integrate_with_fuel<'a>(
     let normalized = normalize(ctx, expr);
     let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
+    reset_chain_budget();
     let raw = integrate_raw(ctx, normalized, var, 0, true, 0, 0);
     let after_default = simplify_with_fuel(ctx, raw, &default_rules, 20, fuel)?;
     let after_calc = simplify_with_fuel(ctx, after_default, &calc_rules, 10, fuel)?;
@@ -136,6 +171,7 @@ pub fn integrate_with_fuel<'a>(
 /// unevaluated `Integral(expr, var)` form if none do.
 pub fn integrate_heuristic<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
     let normalized = normalize(ctx, expr);
+    reset_chain_budget();
     if let Some(r) = heuristic::heuristic_integrate(ctx, normalized, var, 0) {
         let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
         let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
@@ -235,6 +271,10 @@ fn try_risch_or_fallback<'a>(
     rule_depth: usize,
     parts_depth: usize,
 ) -> Atom<'a> {
+    // Backstop against cyclic stage interactions (see MAX_CHAIN_ENTRIES).
+    if chain_budget_exhausted() {
+        return fallback(ctx, expr, var);
+    }
     if let Some(r) = rational::integrate_rational(ctx, expr, var) {
         return r;
     }
@@ -281,9 +321,34 @@ fn try_risch_or_fallback<'a>(
             return r;
         }
     }
+    // Trig product-to-sum reduction: products of sin/cos at linear
+    // arguments become a sum of single trig terms, then distribute and
+    // integrate termwise. Runs before the heuristic stage: the reduction
+    // yields clean multiple-angle forms where Weierstrass would return
+    // tan(u/2) shapes (or grind on the t-rational).
+    if let Some(reduced) = trig_reduce::trig_reduce_products(ctx, expr, var) {
+        let candidate = crate::expand::expand_bounded(ctx, reduced).unwrap_or(reduced);
+        let folded = crate::ode::util::collect_terms(ctx, candidate);
+        let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
+        if !is_fallback(&r) {
+            return r;
+        }
+    }
     // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
     if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var, parts_depth) {
         return r;
+    }
+    // Last-resort retry: distribute products over sums and integrate
+    // termwise. Only fires when every direct method declined the
+    // expression; the expansion is budgeted and idempotent, so the
+    // re-entered chain cannot loop back here on the same shape. Like terms
+    // are folded first so factors like `x*x` reach the integrator as `x^2`.
+    if let Some(expanded) = crate::expand::expand_bounded(ctx, expr) {
+        let folded = crate::ode::util::collect_terms(ctx, expanded);
+        let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
+        if !is_fallback(&r) {
+            return r;
+        }
     }
     fallback(ctx, expr, var)
 }
@@ -652,14 +717,11 @@ mod tests {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
-        // ∫ sin(x)·cos(x) dx — needs the trig → exp(Ix) → Risch path with
-        // a constant imaginary unit in the coefficient field. The RDE base
-        // solver currently works over ℚ[x] only, so the hyperexponential
-        // equation Dq + I·q = … cannot be solved yet; the pipeline falls
-        // back to the unevaluated form. Documented limitation.
+        // ∫ sin(x)·cos(x) dx — solved by the product-to-sum reduction
+        // (0.27.x): sin(x)cos(x) = ½ sin(2x).
         let expr = ctx.mul(&[ctx.fun("sin", &[x]), ctx.fun("cos", &[x])]);
         let result = integrate(&ctx, expr, Symbol::new("x"));
-        let _ = result;
+        assert!(!result.to_string().contains("Integral"), "got {result}");
     }
 
     #[test]
@@ -667,11 +729,10 @@ mod tests {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
-        // ∫ cos(x)² dx = x/2 + sin(2x)/4 — same coefficient-field
-        // limitation as above.
+        // ∫ cos(x)² dx = x/2 + sin(2x)/4 — via power reduction (0.27.x).
         let expr = ctx.pow(ctx.fun("cos", &[x]), ctx.num(2));
         let result = integrate(&ctx, expr, Symbol::new("x"));
-        let _ = result;
+        assert!(!result.to_string().contains("Integral"), "got {result}");
     }
 
     #[test]
@@ -685,6 +746,82 @@ mod tests {
         let result = integrate(&ctx, expr, Symbol::new("x"));
         assert!(result.to_string().contains("erf"), "got {result}");
         assert!(!result.to_string().starts_with("Integral"), "got {result}");
+    }
+
+    #[test]
+    fn integrate_expand_product_retry() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ x*(x+1)^2 dx — the direct chain declines the product; the
+        // bounded-expansion retry distributes and integrates termwise.
+        let expr = ctx.mul(&[x, ctx.pow(ctx.add(&[x, ctx.num(1)]), ctx.num(2))]);
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!result.to_string().contains("Integral"), "got {result}");
+        // Verify by differentiation: diff(result) - integrand folds to 0.
+        let d = crate::diff(&ctx, result, Symbol::new("x"));
+        let residual = ctx.add(&[d, ctx.mul(&[ctx.num(-1), expr])]);
+        let folded = crate::ode::util::collect_terms(&ctx, residual);
+        assert_eq!(folded.to_string(), "0", "residual: {folded}");
+    }
+
+    #[test]
+    fn integrate_expand_deep_product() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ (x+1)^2 * (x+2)^2 dx — double distribution, 9 expanded terms.
+        let s1 = ctx.pow(ctx.add(&[x, ctx.num(1)]), ctx.num(2));
+        let s2 = ctx.pow(ctx.add(&[x, ctx.num(2)]), ctx.num(2));
+        let expr = ctx.mul(&[s1, s2]);
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!result.to_string().contains("Integral"), "got {result}");
+        let d = crate::diff(&ctx, result, Symbol::new("x"));
+        let residual = ctx.add(&[d, ctx.mul(&[ctx.num(-1), expr])]);
+        let folded = crate::ode::util::collect_terms(&ctx, residual);
+        assert_eq!(folded.to_string(), "0", "residual: {folded}");
+    }
+
+    #[test]
+    fn integrate_expand_budget_keeps_fallback() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // (x+1)^8 * f(x): the power alone fits the budget, but the unknown
+        // function factor still cannot integrate — the original fallback
+        // form must be preserved (not the expanded one).
+        let s = ctx.pow(ctx.add(&[x, ctx.num(1)]), ctx.num(8));
+        let expr = ctx.mul(&[s, ctx.fun("f", &[x])]);
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        assert_eq!(result.to_string(), "Integral((f(x))*((1 + x)^8), x)");
+    }
+
+    #[test]
+    fn integrate_weierstrass_cubed_denominator_terminates() {
+        // 1/(a + b*cos(c + d*x))^3 — previously hung: the Weierstrass
+        // t-integrand re-entered the ℚ rational backend, whose dense gcd
+        // (naive pseudo-remainder) exploded coefficients at degree ~30.
+        // With the subresultant gcd the case terminates (~0.1 s in debug);
+        // a partial result with an honest Integral residue is acceptable.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/(-5 + 3*cos(c + d*x))^3").expect("parse");
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        let _ = result; // termination is the assertion
+    }
+
+    #[test]
+    fn integrate_parts_weierstrass_cycle_terminates() {
+        // (c + d*x)^2/(a + a*sin(e + f*x)) — the parts ↔ Weierstrass cycle
+        // (parts produces atan(_t)·T forms whose v' = T re-enters
+        // Weierstrass with a fresh parts budget) looped until stack
+        // overflow. The chain-entry budget caps it with an honest partial
+        // result.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "(c + d*x)^2/(a + a*sin(e + f*x))").expect("parse");
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        let _ = result; // termination is the assertion
     }
 
     #[test]

@@ -20,18 +20,32 @@ wins. This chapter explains each layer and when the unevaluated
 2. **Rational-function integrator** — Hermite reduction plus the
    logarithmic part (logarithmic-derivative identity, completing the
    square, Rothstein–Trager). Handles every rational function of `x`.
-3. **Risch algorithm** — elementary transcendental towers built from
+3. **Symbolic-constant rational integrator** (0.27) — rational functions
+   with coefficients in ℚ(symbols): Yun squarefree factorization +
+   Hermite + partial fractions (linear residues, quadratic factors via
+   log/atan/atanh).
+4. **Risch algorithm** — elementary transcendental towers built from
    `log` and `exp` (the tower recursion is capped by
    `MAX_RISCH_DEPTH = 16`).
-4. **Trigonometric rewrite** — `sin`/`cos`/`tan`/… rewritten into
+5. **Trigonometric rewrite** — `sin`/`cos`/`tan`/… rewritten into
    `exp(I·x)` and re-integrated by Risch, then converted back to real
    form on a best-effort basis.
-5. **Special-function table** — non-elementary integrals with closed
+6. **Special-function table** — non-elementary integrals with closed
    forms in terms of `erf`, `Ei`, `Si`, `Ci`, Fresnel `S`/`C`, …
-6. **Heuristic techniques** — integration by parts, trigonometric
-   substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions. Tried
-   after the special-function table, just before the unevaluated form.
-7. **Unevaluated form** — `Integral(expr, var)`.
+7. **Rule-table engine** (0.27) — a self-contained standard-calculus rule
+   library (families A–H: powers/binomials, exponentials/logarithms,
+   trigonometry, hyperbolic, inverse trig/hyperbolic, rational
+   intercepts, radicals, special forms); templates may carry residual
+   `Integral(g, x)` reductions. Disable with
+   `IntegrateOptions { rules: false }`.
+8. **Trig product-to-sum / power reduction** (0.27.x) — products and
+   powers of `sin`/`cos` at linear arguments reduce to multiple-angle
+   sums, integrated termwise.
+9. **Heuristic techniques** — integration by parts, trigonometric
+   substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.
+10. **Bounded expansion retry** (0.27.x) — products are distributed over
+    sums (64-term budget) and integrated termwise.
+11. **Unevaluated form** — `Integral(expr, var)`.
 
 ---
 

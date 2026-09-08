@@ -20,6 +20,7 @@ pub mod series;
 pub mod solve;
 pub mod tower;
 
+mod expand;
 mod pattern_alloc;
 mod rules;
 

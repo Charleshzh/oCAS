@@ -29,7 +29,7 @@ mod laplace;
 pub mod second_order;
 pub mod series;
 mod systems;
-mod util;
+pub(crate) mod util;
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, Symbol};
