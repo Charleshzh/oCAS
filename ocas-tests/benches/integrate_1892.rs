@@ -30,6 +30,8 @@ use std::time::Instant;
 
 const TSV_PATH: &str = "data/rubi_1892.tsv";
 const REPORT_PATH: &str = "data/integrate_1892_report.json";
+/// Per-case failure dump (JSONL), for offline failure classification.
+const FAILURES_PATH: &str = "data/integrate_1892_failures.jsonl";
 
 /// Bucket names from the 0.27.0 plan (S1).
 const BUCKETS: [&str; 9] = [
@@ -219,14 +221,40 @@ fn parse_child_line(line: &str) -> CaseOutcome {
     }
 }
 
+/// Bucket an integrand in the parent process; used to label timed-out and
+/// crashed cases whose child never reported a bucket.
+fn bucket_of(integrand: &str) -> Option<&'static str> {
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    parse(&ctx, integrand).ok().map(|e| bucket(e))
+}
+
+/// Escape a string for embedding in a JSONL record.
+fn json_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 8);
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
 fn main() {
     // Child mode: one problem per invocation, one line on stdout.
     let mut args = env::args().skip(1);
     if args.next().as_deref() == Some("--case") {
         let integrand = args.next().expect("case integrand");
         let var = args.next().expect("case var");
-        // Rules path toggle: `OCAS_INTEGRATE_RULES=0` uses the pre-0.27
-        // entry point for baseline comparison.
+        // Rules path toggle: `OCAS_INTEGRATE_RULES=0` disables only the
+        // rule-table engine; the 0.27.x additions (trig product-to-sum,
+        // bounded expansion retry, chain budget) stay active, so this is
+        // not a strict pre-0.27 baseline anymore.
         let rules = env::var("OCAS_INTEGRATE_RULES").map_or(true, |v| v != "0");
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
@@ -276,13 +304,14 @@ fn main() {
     let mut parse_errors = 0usize;
     let mut counts: BTreeMap<&'static str, (usize, usize)> =
         BUCKETS.iter().map(|b| (*b, (0, 0))).collect();
+    let mut failure_lines = String::new();
     let start = Instant::now();
 
     for (row_idx, line) in corpus.lines().enumerate() {
         if row_idx % 200 == 0 {
             eprintln!("integrate_1892: {row_idx}/1892 cases");
         }
-        let Some((_id, integrand, var)) = parse_row(line) else {
+        let Some((id, integrand, var)) = parse_row(line) else {
             eprintln!("integrate_1892: malformed row {}", row_idx + 1);
             continue;
         };
@@ -290,29 +319,50 @@ fn main() {
         // overflow the stack, loop forever, or panic without taking the
         // whole report down. The child prints one line and exits; the parent
         // abandons it at the budget and counts it as fallback.
+        let case_start = Instant::now();
         let outcome = run_case_in_child(integrand, var, rules_enabled, case_timeout_ms);
-        match outcome {
+        let case_ms = case_start.elapsed().as_millis();
+        let (outcome_name, case_bucket) = match outcome {
             CaseOutcome::Solved(b) => {
                 solved += 1;
                 counts.get_mut(b).unwrap().0 += 1;
+                ("solved", Some(b))
             }
             CaseOutcome::Fallback(b) => {
                 fallback += 1;
                 counts.get_mut(b).unwrap().1 += 1;
+                ("fallback", Some(b))
             }
             CaseOutcome::ParseErr => {
                 parse_errors += 1;
+                ("parse_err", None)
             }
             CaseOutcome::Crashed => {
                 crashed += 1;
                 fallback += 1;
-                counts.get_mut("mixed-other").unwrap().1 += 1;
+                let b = bucket_of(integrand).unwrap_or("mixed-other");
+                counts.get_mut(b).unwrap().1 += 1;
+                ("crashed", Some(b))
             }
             CaseOutcome::TimedOut => {
                 timed_out += 1;
                 fallback += 1;
-                counts.get_mut("mixed-other").unwrap().1 += 1;
+                let b = bucket_of(integrand).unwrap_or("mixed-other");
+                counts.get_mut(b).unwrap().1 += 1;
+                ("timeout", Some(b))
             }
+        };
+        if outcome_name != "solved" {
+            failure_lines.push_str(&format!(
+                "{{\"id\": \"{}\", \"bucket\": {}, \"outcome\": \"{outcome_name}\", \
+                 \"ms\": {case_ms}, \"var\": \"{}\", \"integrand\": \"{}\"}}\n",
+                json_escape(id),
+                case_bucket
+                    .map(|b| format!("\"{b}\""))
+                    .unwrap_or_else(|| "null".to_string()),
+                json_escape(var),
+                json_escape(integrand),
+            ));
         }
     }
 
@@ -375,6 +425,10 @@ fn main() {
     let report_path = manifest_dir.join(REPORT_PATH);
     fs::write(&report_path, report).expect("write report json");
     println!("  report:      {}", report_path.display());
+
+    let failures_path = manifest_dir.join(FAILURES_PATH);
+    fs::write(&failures_path, failure_lines).expect("write failures jsonl");
+    println!("  failures:    {}", failures_path.display());
 }
 
 /// RFC 3339 UTC timestamp (avoids pulling a time crate into the bench).
