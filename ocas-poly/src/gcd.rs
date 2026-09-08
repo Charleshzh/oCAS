@@ -71,8 +71,13 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
 
     /// Compute the greatest common divisor of `self` and `other`.
     ///
-    /// Uses the Euclidean algorithm with pseudo-remainders for non-field
-    /// domains. The result is always primitive (content-free).
+    /// Uses the subresultant PRS (Brown–Traub): the same recurrence as
+    /// [`Self::resultant`], with exact division by `beta` at every step.
+    /// The naive pseudo-remainder sequence without content control explodes
+    /// coefficient sizes at moderate degrees (≥ 16 over ℤ, and over ℚ where
+    /// `primitive_part` is only a unit scaling); the subresultant scaling
+    /// keeps intermediate coefficients at the theoretical subresultant
+    /// bound. The result is always primitive (content-free).
     ///
     /// # Example
     ///
@@ -98,21 +103,79 @@ impl<D: EuclideanDomain> DenseUnivariatePolynomial<D> {
             return other.primitive_part();
         }
 
-        let mut a = self.clone();
-        let mut b = other.clone();
-
-        while !b.is_zero() {
-            // Always use pseudo-remainder to guarantee degree reduction.
-            let r = match a.pseudo_remainder(&b) {
-                Some(rem) => rem,
-                None => break,
-            };
-
-            a = b;
-            b = r;
+        let d = self.domain();
+        let mut a = self.primitive_part();
+        let mut a_new = other.primitive_part();
+        if a.degree() < a_new.degree() {
+            std::mem::swap(&mut a, &mut a_new);
+        }
+        // A constant divisor divides every polynomial up to content.
+        if a_new.degree() == Some(0) {
+            return self.one();
         }
 
-        a.primitive_part()
+        let mut deg = (a.degree().expect("nonzero") - a_new.degree().expect("nonzero")) as u64;
+        let mut neg_lc = d.one(); // set before use
+        let mut init = false;
+        let mut beta = d.pow(&d.neg(&d.one()), deg + 1);
+        let mut psi = d.neg(&d.one());
+
+        loop {
+            if init {
+                // Update psi and beta (same recurrence as `resultant`).
+                psi = if deg == 0 {
+                    psi
+                } else if deg == 1 {
+                    neg_lc.clone()
+                } else {
+                    let num = d.pow(&neg_lc, deg);
+                    let den = d.pow(&psi, deg - 1);
+                    let (q, r) = d
+                        .div_rem(&num, &den)
+                        .expect("subresultant psi division is exact");
+                    debug_assert!(d.is_zero(&r));
+                    q
+                };
+                deg = (a.degree().expect("nonzero") - a_new.degree().expect("nonzero")) as u64;
+                beta = d.mul(&neg_lc, &d.pow(&psi, deg));
+            } else {
+                init = true;
+            }
+
+            neg_lc = d.neg(a_new.leading_coeff().expect("nonzero"));
+
+            // Pseudo-remainder: a · (−lc(b))^(deg+1) mod b, with sign.
+            let factor = d.pow(&neg_lc, deg + 1);
+            let (_, mut r) = a
+                .mul_scalar(&factor)
+                .div_rem(&a_new)
+                .expect("pseudo-division succeeds after scaling");
+            if (deg + 1) % 2 == 1 {
+                r = r.neg();
+            }
+
+            // Exact scalar division by beta (subresultant theorem).
+            let r_reduced = Self::from_coeffs(
+                d.clone(),
+                r.coeffs()
+                    .iter()
+                    .map(|c| {
+                        d.div(c, &beta)
+                            .expect("subresultant beta division is exact")
+                    })
+                    .collect(),
+            );
+
+            if r_reduced.is_zero() {
+                return a_new.primitive_part();
+            }
+            a = a_new;
+            a_new = r_reduced;
+            if a_new.degree() == Some(0) {
+                // Nonzero constant remainder: coprime.
+                return self.one();
+            }
+        }
     }
 
     /// Compute the content of this polynomial: the GCD of all its coefficients.
