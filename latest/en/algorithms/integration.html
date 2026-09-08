@@ -198,6 +198,10 @@ always attempted first.</li>
 <li><strong>Rational-function integrator</strong> — Hermite reduction plus the
 logarithmic part (logarithmic-derivative identity, completing the
 square, Rothstein–Trager). Handles every rational function of <code>x</code>.</li>
+<li><strong>Symbolic-constant rational integrator</strong> (0.27) — rational functions
+with coefficients in ℚ(symbols): Yun squarefree factorization +
+Hermite + partial fractions (linear residues, quadratic factors via
+log/atan/atanh).</li>
 <li><strong>Risch algorithm</strong> — elementary transcendental towers built from
 <code>log</code> and <code>exp</code> (the tower recursion is capped by
 <code>MAX_RISCH_DEPTH = 16</code>).</li>
@@ -206,9 +210,19 @@ square, Rothstein–Trager). Handles every rational function of <code>x</code>.<
 form on a best-effort basis.</li>
 <li><strong>Special-function table</strong> — non-elementary integrals with closed
 forms in terms of <code>erf</code>, <code>Ei</code>, <code>Si</code>, <code>Ci</code>, Fresnel <code>S</code>/<code>C</code>, …</li>
+<li><strong>Rule-table engine</strong> (0.27) — a self-contained standard-calculus rule
+library (families A–H: powers/binomials, exponentials/logarithms,
+trigonometry, hyperbolic, inverse trig/hyperbolic, rational
+intercepts, radicals, special forms); templates may carry residual
+<code>Integral(g, x)</code> reductions. Disable with
+<code>IntegrateOptions { rules: false }</code>.</li>
+<li><strong>Trig product-to-sum / power reduction</strong> (0.27.x) — products and
+powers of <code>sin</code>/<code>cos</code> at linear arguments reduce to multiple-angle
+sums, integrated termwise.</li>
 <li><strong>Heuristic techniques</strong> — integration by parts, trigonometric
-substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions. Tried
-after the special-function table, just before the unevaluated form.</li>
+substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.</li>
+<li><strong>Bounded expansion retry</strong> (0.27.x) — products are distributed over
+sums (64-term budget) and integrated termwise.</li>
 <li><strong>Unevaluated form</strong> — <code>Integral(expr, var)</code>.</li>
 </ol>
 <hr />

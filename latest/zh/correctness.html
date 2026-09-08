@@ -217,8 +217,9 @@
 </div>
 <hr />
 <h2 id="忽略的测试已知差距"><a class="header" href="#忽略的测试已知差距">忽略的测试（已知差距）</a></h2>
-<p>部分测试标记 <code>#[ignore]</code>（当前 36 项），用于记录已知差距——它们预期失败，
-仅在需要复现/推进时手动运行（<code>cargo test -p ocas-tests --test correctness -- --ignored</code>）。例如 Wilkinson 多项式求根：10 个实根中仅找到 8 个。</p>
+<p>部分测试标记 <code>#[ignore]</code>（当前 35 项），用于记录已知差距——它们预期失败，
+仅在需要复现/推进时手动运行（<code>cargo test -p ocas-tests --test correctness -- --ignored</code>）。Wilkinson n=10 实根隔离差距已闭合：精确二进分数 Sturm
+求值（0.27.x）找齐全部 10 个根。</p>
 <hr />
 <h2 id="运行测试"><a class="header" href="#运行测试">运行测试</a></h2>
 <pre><code class="language-bash"># 运行全部正确性测试
@@ -262,7 +263,6 @@ python scripts/generate_audit_report.py
 <hr />
 <h2 id="已知限制"><a class="header" href="#已知限制">已知限制</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>问题</th><th>模块</th><th>状态</th></tr></thead><tbody>
-<tr><td>Wilkinson n=10：10 个实根中仅找到 8 个</td><td><code>root_isolation</code></td><td>已知差距（<code>#[ignore]</code>）</td></tr>
 <tr><td><code>sin(x)^2 + cos(x)^2 → 1</code> 需要 <code>egg</code> feature</td><td><code>rewrite</code></td><td>启用 <code>egg</code> feature 后可化简</td></tr>
 <tr><td>Bernoulli forcing y^n 使线性系数提取混淆</td><td><code>ode</code></td><td>已知限制（<code>#[ignore]</code>）</td></tr>
 <tr><td>积分器缺 tan/sec 表项</td><td><code>ode</code></td><td>计划中（<code>#[ignore]</code>）</td></tr>

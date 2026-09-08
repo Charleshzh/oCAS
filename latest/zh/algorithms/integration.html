@@ -193,14 +193,25 @@
 总是最先尝试。</li>
 <li><strong>有理函数积分器</strong> —— Hermite 约化加对数部分（对数导数恒等式、
 配方、Rothstein–Trager）。处理 <code>x</code> 的任意有理函数。</li>
+<li><strong>符号常数有理积分器</strong>（0.27）—— 系数在 ℚ(symbols) 中的有理函数：
+Yun 无平方分解 + Hermite + 部分分式（线性留数、二次因子的
+log/atan/atanh）。</li>
 <li><strong>Risch 算法</strong> —— 由 <code>log</code> 和 <code>exp</code> 构建的初等超越塔（塔深受
 <code>MAX_RISCH_DEPTH = 16</code> 上限约束）。</li>
 <li><strong>三角重写</strong> —— <code>sin</code>/<code>cos</code>/<code>tan</code>/… 重写为 <code>exp(I·x)</code> 后由 Risch
 积分，再尽力转换回实数形式。</li>
 <li><strong>特殊函数表</strong> —— 具有 <code>erf</code>、<code>Ei</code>、<code>Si</code>、Ci、Fresnel <code>S</code>/<code>C</code> 等
 闭式的非初等积分。</li>
+<li><strong>规则表引擎</strong>（0.27）—— 自研标准微积分规则（A–H 族：幂/二项式、
+指数/对数、三角、双曲、反三角/反双曲、有理拦截、根式、特殊形态），
+模板可含残项 <code>Integral(g, x)</code> 归约。可用
+<code>IntegrateOptions { rules: false }</code> 关闭。</li>
+<li><strong>三角积化和差/降幂</strong>（0.27.x）—— 线性变元 <code>sin</code>/<code>cos</code> 乘积与幂化为
+多倍角和式后逐项积分。</li>
 <li><strong>启发式技巧</strong> —— 分部积分、三角替换、Weierstrass $t = \tan(x/2)$、
-Euler 替换。在特殊函数表之后、未求值形式之前尝试。</li>
+Euler 替换。</li>
+<li><strong>有界展开重试</strong>（0.27.x）—— 分配展开乘积为和式（项数预算 64）
+后逐项积分。</li>
 <li><strong>未求值形式</strong> —— <code>Integral(expr, var)</code>。</li>
 </ol>
 <hr />

@@ -223,8 +223,8 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <h2 id="ignored-tests-known-gaps"><a class="header" href="#ignored-tests-known-gaps">Ignored tests (known gaps)</a></h2>
 <p>Some tests are marked <code>#[ignore]</code> (35 in total) to track known gaps — they
 are expected to fail and are only run manually when reproducing or
-advancing the issue (<code>cargo test -p ocas-tests --test correctness -- --ignored</code>). For example, Wilkinson polynomial root-finding: only 8 of
-the 10 real roots are found.</p>
+advancing the issue (<code>cargo test -p ocas-tests --test correctness -- --ignored</code>). The Wilkinson n=10 root-isolation gap is closed: the exact
+dyadic Sturm evaluation (0.27.x) finds all 10 roots.</p>
 <hr />
 <h2 id="running-the-tests"><a class="header" href="#running-the-tests">Running the tests</a></h2>
 <pre><code class="language-bash"># Run all correctness tests
@@ -273,7 +273,6 @@ includes:</p>
 <hr />
 <h2 id="known-limitations"><a class="header" href="#known-limitations">Known limitations</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Issue</th><th>Module</th><th>Status</th></tr></thead><tbody>
-<tr><td>Wilkinson n=10: only 8 of 10 real roots found</td><td><code>root_isolation</code></td><td>Known gap (<code>#[ignore]</code>)</td></tr>
 <tr><td><code>sin(x)^2 + cos(x)^2 → 1</code> requires <code>egg</code> feature</td><td><code>rewrite</code></td><td>Simplifies with the <code>egg</code> feature</td></tr>
 <tr><td>Bernoulli forcing y^n confuses linear coefficient extraction</td><td><code>ode</code></td><td>Known limitation (<code>#[ignore]</code>)</td></tr>
 <tr><td>Integrator missing tan/sec table entries</td><td><code>ode</code></td><td>Planned (<code>#[ignore]</code>)</td></tr>
