@@ -1,5 +1,43 @@
 # oCAS 基准测试结果（全量复测 @ 2026-08-06）
 
+## 0.27.0 符号积分广度（Rubi 1892 题子集，(c) 阶段 2026-09-06）
+
+> (c) 阶段新增：有界分配展开重试（`expand_bounded`，项数 ≤ 64）+ 三角
+> 积化和差/降幂 pass（`trig_reduce`，因子 ≤ 8 / 输出 ≤ 64 项）+ 逐题失败
+> 转储（`data/integrate_1892_failures.jsonl`，超时题由父进程解析归桶）。
+> 修复两个稳定性缺陷：稠密 GCD 朴素伪余式 → subresultant PRS（Weierstrass
+> t-形高次 ℚ 系数爆炸挂死的根因）；积分链全局条目预算
+> `MAX_CHAIN_ENTRIES = 256`（parts ↔ Weierstrass 在 `atan(_t)`·T 形上的
+> 乒乓循环栈溢出的根因——各阶段局部预算在代换边界互相重置，必须有全局
+> backstop）。
+
+| 口径 | solved | fallback | coverage | 超时 | 崩溃 | 总墙钟 |
+|---|---|---|---|---|---|---|
+| (b) 阶段后（修复后重测 2026-08-08） | 145 | 1747 | 7.66% | 83 | 0 | 1190.2 s |
+| (c) 机制后、无预算守卫（2026-09-06） | 183 | 1709 | 9.67% | 67 | **1** | 1008.1 s |
+| **(c) 最终（预算守卫 256，2026-09-06）** | **182** | **1710** | **9.62%** | **49** | **0** | **696.1 s** |
+
+- 净增量（相对 (b) 修复后基线）：**+37 题，+1.96pp**；相对 0.26 链基线
+  （5.87%）+3.75pp。**仍未达 +30pp 验收线**；+30pp 需 Rubi 级规则量级，
+  见 GAP_ANALYSIS §7.3 与本段下文的失败分类。
+- 预算守卫代价：1 个需 >256 链条目的深题由 solved 转为 fallback；换来
+  0 崩溃 + 18 个循环超时消除 + 墙钟 −31%（相对无守卫）。
+- 崩溃修复链：`1/(-5+3*cos(c+d*x))^3` 类（(b) 记录的嵌套提取挂死）根因是
+  `RationalPolynomial::from_num_den` 归约走朴素伪余式 ℚ dense GCD 系数爆炸；
+  换 subresultant PRS 后 0.11 s 终止（诚实部分结果）。
+  `(c+d*x)^2/(a+a*sin(e+f*x))` 根因是 parts 选 u=atan(_t)、v'=T 后 T 经
+  Weierstrass 重置 parts 预算形成无限循环；条目预算 256 在 debug 默认栈上
+  513 ms 终止。
+- 失败分类（逐题转储驱动，(c) 最终口径）：mixed-other 597、radical 393、
+  power-binomial 216、trig 224、inverse-trig-hyper 143、exp-log 78、
+  hyperbolic 40、special 19。机制粗分：纯 sin/cos 乘积类仅 ~65 题
+  （trig_reduce 可及域），tan/sec 系 356 题多为嵌套/符号幂高阶形，
+  radical 396 题多为 Chebyshev 高阶/多根式嵌套——均需专门机制，
+  非规则表增量可及。
+- Wilkinson n=10 实根隔离：f64 Sturm 变号计数 8/10 → 精确二进分数
+  BigInt 求值 **10/10**（`roots.rs` 精确路径，系数不可解析为有理数时
+  回落 f64）；`root_isolation_very_complex_wilkinson` 移出 `#[ignore]`。
+
 ## 0.27.0 符号积分广度（Rubi 1892 题子集，2026-08-08）
 
 > 本轮按《0.27.0 实现计划》S1/S5 执行：语料获取脚本 + 单轮报告型 harness

@@ -117,7 +117,7 @@ ocas-domain +~1.1k）、数值积分/流式求值（ocas-eval，+~0.5k），以�
 | 多项式因式分解 | `DenseUnivariatePolynomial` 上 ℤ 与 ℤ_p 的 `factor()`，`SparseMultivariatePolynomial` 上任意多元 ℤ 与 ℤ_p 的 `factor()`（0.16.x Wang EEZ + 非常数 LC 强加），以及 `AlgebraicNumberField` 上的一元 `factor()`（0.17.0 Trager：平移范数 + 模 GCD） | 🟢 一元/二元/任意多元/代数数域（一元） |
 | Gröbner 基 | F4 真实线性代数（0.15.1）+ F5 签名约简（0.19.0：`Signature`/`SyzygySet` + ℤ_p 原生快速路径 `f5_fp`）+ FGLM + 统一 `groebner_basis()` 分派 + ℤ_p 原生 i64 管线 + MultiModular ℚ 管线（0.25）+ u128 打包 F5 快通道（0.26）；cyclic-6 ℤ₁₃ **55.04 ms** grevlex（2026-08-06 实测 criterion 中位数；0.19.0 基线 2.63 s，约 48×）；cyclic-5 ℤ₁₃ 8.97 ms grevlex | 🟢 F4 + F5 + MultiModular 完成 |
 | 符号积分 | Risch（初等超越塔 + RDE 多项式片段）+ 有理函数 Hermite + 三角 exp(I·x) + 特殊函数表（erf/Ei/Si/Ci/Fresnel）+ 0.24 启发式模块（分部/三角换元/Weierstrass/Euler 占位）接入 `try_risch_or_fallback`；回退 `Integral(...)`；**关键差距**：Symbolica 2.2 移植 Rubi 4.17（7000+ 规则、72,944 题库、MIT crate），覆盖面远超 Risch | 🟢 Risch + 启发式完成，Rubi 广度差距大 |
-| 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量）；已知缺口：Wilkinson n=10 展开多项式仅隔离 8/10 根 | 🟡 较完整 |
+| 实根隔离 | Sturm 序列 + 区间隔离 + refine（单变量）；0.27 起为精确二进分数求值（BigInt 符号判定），Wilkinson n=10 找齐 10/10 | 🟢 完整 |
 | 多项式 GCD | GCD + 本原部分 + 扩展 GCD（0.12）+ 经 EEZ 的任意元数多元 GCD（0.16）+ GF(p^d) 上模数域 GCD（CRT + 有理重构，0.17）+ 单变量 Brown 模 GCD 与二元多素数模 GCD（0.21，大整数系数无爆炸） | 🟢 完整（含模快速路径，无 HEVMGCD） |
 | 线性求解 | 有理/整数线性方程组 + 二元丢番图（`ax+by=c`） | 🟡 可用，规模有限 |
 | JIT 求值 | Cranelift 后端；≥10x 加速目标达成（按路线图标准） | 🟢 完整 |
@@ -258,7 +258,7 @@ oCAS/Symbolica/SymPy 基准、cyclic-6 grevlex 55 ms 达成 <0.5 s 里程碑）�
 
 | 优先级 | 缺口 | 现状 | 目标 | 理由 |
 |---|---|---|---|---|
-| **P0** | 符号积分广度（Rubi 规则集成或等效） | Risch + 0.24 启发式四技术，覆盖面仍窄 | 对标 symbolica-integrate 1892 题 | Symbolica 2.2 Rubi 7000+ 规则（72,944 题库）仍是最大功能缺口 |
+| **P0** | 符号积分广度（Rubi 规则集成或等效） | Risch + 启发式四技术 + 0.27 规则表引擎（A–H 族）+ 符号常数有理后端 + 展开重试 + 三角积化和差；1892 题 9.67%（诚实记录，详见 BENCHMARK_RESULTS_CN.md 0.27.0 段） | 对标 symbolica-integrate 1892 题 | Symbolica 2.2 Rubi 7000+ 规则（72,944 题库）仍是最大功能缺口 |
 | **P1** | Gröbner 大规模性能（katsura 系 + cyclic-7） | katsura-6/7 未完成（单轮 >30 min）；cyclic-7 Lex >2 h 未完成；cyclic-7 grevlex 3.829 s vs msolve 55 ms（~70×） | katsura-6 < 1 s；cyclic-7 可完成 | msolve 0.10.1 实测 katsura 3–7 ms、cyclic-7 55 ms；打包管线 + 多模策略向 katsura/cyclic-7 扩展 |
 | **P1** | 代码生成扩展（LLVM JIT + CUDA/WASM 导出） | 仅 Cranelift JIT | 至少 LLVM JIT | Symbolica SymJIT/CUDA/WASM 形成代差 |
 | **P2** | 矩阵/线性代数增强 | Bareiss 行列式/逆 | DomainMatrix 类似引擎 + Smith 标准形 | SymPy 1.14 DomainMatrix 10000× 加速后差距扩大 |
@@ -458,3 +458,4 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 | 0.23.0 竞品调研 | 2026-08-03 | **全面竞品差距调研与评估。** 头部更新至 0.23.0。新增配套文档 COMPETITIVE_MATRIX_CN.md（竞品能力矩阵）+ BENCHMARK_SUITE_CN.md（基准测试套件设计）。§1 版本表扩展至 0.23.0。§3 算法深度新增代数几何工具、高级模式匹配行，符号积分行标注 Rubi 广度差距。§4.1 Symbolica 对照重写（2.2.0 source-available + Rubi + SymJIT/CUDA/WASM + DoubleFloat）；新增 §4.4 msolve 对照（cyclic-6 0.04 s 标杆）；新增 §4.5 新兴竞品（Numerica/Graphica/mathcore/cas-rs）。§5 优先级重排（P0 积分广度、P1 Gröbner+代码生成、P2 矩阵+DoubleFloat+FLINT、P3 张量+二次筛）。新增 §7 许可证与生态位分析（Symbolica 许可证变更 + Rubi 许可证风险 + oCAS LGPL 优势）。新增 §8 战略建议（1.0 前 + Post-1.0 + 定位建议）。§6 总评重写。 |
 | 0.26.0 复测 | 2026-08-06 | **竞品版本重新核实 + 本机全量复测。** 头部更新至 0.26.0。竞品核实：FLINT 3.5.0→3.6.0（Kinoshita-Li 级数复合、padic_radix、subresultant 结式）、msolve 0.7.x→0.10.1（GM 改进、QQ 提升修复）、mathcore 更正为 0.3.1（0.5.0 不存在）、Numerica 无 tag、SageMath 日期更正 10.9@2026-05-05；Symbolica/SymPy/GiNaC 无更新。§1 版本表追加 0.24.0/0.25.0/0.26.0 行。§4.1 DoubleFloat 行 🔴→✅（0.24 DoubleF64）；§4.4 msolve 表以 WSL2 实测值替换引用值（cyclic-6 4 ms、cyclic-7 55 ms、katsura 3–7 ms）。§5 优先级重排：DoubleFloat 与 cyclic-6<0.5 s（grevlex 55.04 ms 实测）移入已完成项，Gröbner 剩余差距重定为 katsura+cyclic-7。§6/§8 同步改写（含 factor(x^n−1) 类 SymPy 快 ~50× 的诚实记录）。 |
 | 0.26.0 规划 | 2026-08-07 | **1.0 前新增版本排期（阶段 B++++ 0.27–0.30）。** 开放 §5 缺口映射到具体版本：积分广度 → 0.27.0、Gröbner katsura/cyclic-7 → 0.28.0、LLVM JIT → 0.29.0、矩阵引擎 + Windows FLINT + 二次筛 + 张量嵌套 → 0.30.0。§8.1 表版本列替换为具体版本号（新增 LLVM 与 FLINT/QS/张量行）；§8.2 移出已前置项（LLVM→0.29、QS/FLINT→0.30），仅留 CUDA/WASM 与 PDE。1.0.0 里程碑顺延至第 59 月。 |
+| 0.27.0 | 2026-09-06 | **符号积分广度交付 + 稳定性修复。** 规则表引擎（A–H 族）+ 符号常数有理后端 + Weierstrass 线性变元（(a)(b) 阶段）+ 有界展开重试 + 三角积化和差/降幂（(c) 阶段）；1892 题覆盖率 5.87% → 9.62%（+3.75pp，**未达 +30pp**；根因量化见 BENCHMARK_RESULTS_CN.md 0.27.0 段）。修复：稠密 GCD 朴素伪余式 → subresultant PRS（Weierstrass 挂死根因）；积分链全局条目预算 256（parts↔Weierstrass 循环栈溢出根因）；实根隔离精确二进分数求值（Wilkinson n=10 8/10 → 10/10，§3 实根隔离行 🟡→🟢，§5 已知缺口移除）。版本提升 0.27.0。 |

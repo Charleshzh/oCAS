@@ -337,25 +337,31 @@
 
 **交付物**：
 
-- [ ] 规则表驱动的积分规则引擎（match → 模板替换）
+- [x] 规则表驱动的积分规则引擎（match → 模板替换）
   - 幂/多项式/指数/对数规则族
   - 三角/双曲/反三角/反双曲规则族
   - 根式与二次型代换（在 0.24 三角换元/Weierstrass/Euler 框架上扩展，
     补齐 Euler 占位）
   - 特殊函数规则族（erf/Ei/Si/Ci/Fresnel，衔接 0.14 函数表）
-- [ ] 策略调度链：Risch（0.14）→ 启发式四技术（0.24）→ 规则库 →
+- [x] 策略调度链：Risch（0.14）→ 启发式四技术（0.24）→ 规则库 →
   `Integral(...)` 回退
-- [ ] 规则来源策略（参考 GAP_ANALYSIS_CN.md §7.3 许可证风险分析）：
+- [x] 规则来源策略（参考 GAP_ANALYSIS_CN.md §7.3 许可证风险分析）：
   - 首选自研规则集（方案 C 混合：Risch + 启发式 + 规则结构参考 Rubi 分类）
   - 评估 `symbolica-integrate`（MIT）作为可选 feature 的集成可行性
-- [ ] 1892 题覆盖率基准 harness：覆盖率报告 + 失败分类分析
-- [ ] Python/C 绑定：`integrate` 规则路径开关
+- [x] 1892 题覆盖率基准 harness：覆盖率报告 + 失败分类分析
+- [x] Python/C 绑定：`integrate` 规则路径开关
+- [x] （(c) 阶段增补）符号常数有理积分器、Weierstrass 线性变元、
+  有界分配展开重试、三角积化和差/降幂、subresultant 稠密 GCD、
+  积分链全局条目预算、Wilkinson 精确实根隔离（10/10）
 
-**成功标准**：
+**成功标准**（诚实记录）：
 
-- 1892 题子集覆盖率从当前水平提升 ≥30 个百分点
-- 规则路径与 SymPy `manualintegrate`/`integrate` 抽样交叉验证一致
-- `cargo test --workspace` 通过
+- 1892 题子集覆盖率从当前水平提升 ≥30 个百分点 —— **未达成**：
+  基线 5.87% → (b) 阶段 7.66% → (c) 阶段见 BENCHMARK_RESULTS_CN.md；
+  根因量化（Rubi 级规则量级/符号系数有理后端/嵌套根式均需更大投入），
+  备选路径评估见 GAP_ANALYSIS §7.3
+- 规则路径与 SymPy `manualintegrate`/`integrate` 抽样交叉验证一致 —— 达成
+- `cargo test --workspace` 通过 —— 达成
 
 ### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
 

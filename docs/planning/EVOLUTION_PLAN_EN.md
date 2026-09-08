@@ -1225,10 +1225,19 @@ coverage substantially.
 
 **Acceptance**
 
-- [ ] 1892-problem coverage benchmark run and recorded (with failure taxonomy)
-- [ ] Rule-library integrals agree with SymPy on 100 random standard cases
-- [ ] No regression in the dispatch chain (existing Risch-path tests green)
-- [ ] Python/C bindings usable
+- [x] 1892-problem coverage benchmark run and recorded (with failure
+  taxonomy): baseline 5.87% → 7.66% after phase (b) → see
+  BENCHMARK_RESULTS_EN/CN for phase (c); **the +30pp target was not met**
+  (root causes quantified: composite products need factor-level splitting,
+  nested radicals, and a symbolic-coefficient rational backend all require
+  much larger investment; +30pp needs Rubi-grade rule volume)
+- [x] Rule-library integrals agree with SymPy on 100 random standard cases
+- [x] No regression in the dispatch chain (existing Risch-path tests green)
+- [x] Python/C bindings usable
+- [x] (phase-(c) additions) Weierstrass hang class terminates (subresultant
+  dense GCD); parts ↔ Weierstrass ping-pong stack overflow terminates (chain
+  entry budget, 256); Wilkinson n=10 real-root isolation 10/10 (exact dyadic
+  Sturm evaluation)
 
 **Risks**
 

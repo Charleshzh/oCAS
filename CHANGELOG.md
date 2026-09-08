@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.27.0] - 2026-09-06
 
 ### Added / 新增
 
@@ -41,7 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rubi 1892 题子集：基线（0.26 链）5.87%（111/1892）→ 规则引擎 6.55%
   （124/1892），+0.68pp；(b) 阶段（符号有理后端 + Weierstrass 线性变元）后
-  **7.66%（145/1892）**，+1.11pp，均**未达 +30pp 验收线**；成因与备选路径见
+  7.66%（145/1892），+1.11pp；(c) 阶段（展开重试 + 积化和差 + 稳定性修复）
+  后 **9.62%（182/1892），超时 83→49、0 崩溃、墙钟 1190→696 s**，总计
+  +3.75pp，均**未达 +30pp 验收线**；成因与备选路径见
   `docs/planning/BENCHMARK_RESULTS_CN.md` 0.27.0 段与 GAP_ANALYSIS §7.3。
 
 ### Added（(b) 阶段补充，2026-08-08）/ Added ((b)-phase additions)
@@ -63,6 +65,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 核验：`1/(x(a+bx)^2)`、`(d+e*x)/(x^3*(a+c*x^2))`、`x^2/(a-b*x^2)^3`、
   `1/(a±b*x^2)`、`1/(a+b*sin(x))` 数值求导 diff ≈ 0；`cargo test --workspace
   --exclude ocas-py` 全绿；clippy -D warnings 干净。
+
+### Added（(c) 阶段补充，2026-09-06）/ Added ((c)-phase additions)
+
+- **有界分配展开重试**（`ocas-calc/src/expand.rs`，新模块）：直接方法全部
+  拒绝后，对乘积做有界分配展开（项数上限 64，防病理输入爆炸）并经
+  `collect_terms` 折叠同类项后逐项积分；展开幂等，重入链不会循环回同一
+  形态。修复积分链从不展开乘积的结构性缺口 / **Bounded distributive
+  expansion retry**: after every direct method declines, products are
+  distributed over sums (≤ 64 terms) and integrated termwise.
+- **三角积化和差/降幂 pass**（`ocas-calc/src/integral/trig_reduce.rs`，新
+  模块）：线性变元（允许符号系数）sin/cos 乘积与幂经积化和差恒等式化为
+  多倍角单三角项和式，再逐项积分；因子数 ≤ 8、输出项 ≤ 64 双预算；负角
+  规范化（cos(−u)=cos(u)、sin(−u)=−sin(u)）保证同角合并。关闭
+  `sin(x)·cos(x)`、`cos(x)²` 两个自 0.14 以来记录的已知限制 /
+  **Trig product-to-sum / power-reduction pass**: products and powers of
+  sin/cos at linear arguments reduce to multiple-angle sums; closes the
+  long-documented `sin(x)·cos(x)` and `cos(x)²` gaps.
+- **harness 逐题失败转储**：`integrate_1892` 新增
+  `data/integrate_1892_failures.jsonl`（题号/桶/被积函数/结果/耗时），
+  超时/崩溃题由父进程解析归桶（不再全部落入 mixed-other）/ **Per-case
+  failure dump** in the 1892 harness for offline failure classification.
+
+### Fixed（(c) 阶段）/ Fixed ((c)-phase)
+
+- **稠密 GCD 系数爆炸（挂死根因）**：`ocas-poly::gcd` 的朴素伪余式循环
+  （无逐步内容控制）在次数 ≥ 16 时 BigInt/BigRational 系数爆炸，表现为
+  挂死——Weierstrass t-被积函数（如 `1/(a+b·cos(c+d·x))^3` 类）经分部
+  积分产生的高次 ℚ 有理式触发。改为 subresultant PRS（与 `resultant.rs`
+  同一 Brown–Traub 递推，每步 β 精确除法），ℚ/ℤ 系数增长被理论界约束。
+  回归测试：该题 debug 模式 0.11 s 终止（原无限挂死）/ **Dense GCD
+  coefficient explosion (hang root cause)**: the naive pseudo-remainder
+  loop exploded coefficients at degree ≥ 16; replaced with the subresultant
+  PRS (same Brown–Traub recurrence as `resultant.rs`).
+- **Wilkinson n=10 实根隔离 8/10 → 10/10**：`isolate_real_roots` 的 Sturm
+  变号计数原用 f64 求值，在 Wilkinson 病态系数（~1e13）下丢失根。新增
+  精确路径：二分点取二进分数 m·2⁻ᵏ，Sturm 多项式通分为整数系数后
+  BigInt 精确求值取符号；系数无法解析为有理数时回落原 f64 路径。测试
+  `root_isolation_very_complex_wilkinson` 断言 10 并移出 `#[ignore]`；
+  双语 book 已知差距表同步移除该条 / **Wilkinson n=10 root isolation
+  8/10 → 10/10**: exact dyadic Sturm sign evaluation replaces f64
+  evaluation, which lost roots on the ill-conditioned coefficients.
+- **积分链全局条目预算**：`MAX_CHAIN_ENTRIES = 256`（每次顶层 `integrate`
+  调用重置）。分部积分与 Weierstrass 代换在含 `atan(_t)` 因子的 t-形上
+  可形成跨阶段乒乓循环（各部分预算在代换边界被重置，彼此推责永不停机；
+  语料中 `(c+d*x)²/(a+a*sin(e+f*x))` 实栈溢出复现），预算耗尽时诚实回落
+  为 `Integral` 残项 / **Global chain-entry budget for the integration
+  pipeline**: caps cyclic parts ↔ Weierstrass ping-pong that reset each
+  other's local budgets (observed as a stack overflow on
+  `(c+d*x)^2/(a+a*sin(e+f*x))`); exhaustion degrades to an honest
+  `Integral` residue.
 
 ---
 

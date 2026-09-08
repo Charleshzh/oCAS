@@ -357,26 +357,36 @@ coverage substantially.
 
 **Deliverables**:
 
-- [ ] Rule-table-driven integration engine (match → template substitution)
+- [x] Rule-table-driven integration engine (match → template substitution)
   - Power/polynomial/exponential/logarithm rule families
   - Trigonometric/hyperbolic/inverse-trigonometric/inverse-hyperbolic rule families
   - Radical and quadratic-form substitutions (extending the 0.24
     trig-substitution/Weierstrass/Euler framework, completing the Euler placeholder)
   - Special-function rule families (erf/Ei/Si/Ci/Fresnel, bridging the 0.14 table)
-- [ ] Strategy dispatch chain: Risch (0.14) → heuristic four techniques (0.24)
+- [x] Strategy dispatch chain: Risch (0.14) → heuristic four techniques (0.24)
   → rule library → `Integral(...)` fallback
-- [ ] Rule provenance strategy (per GAP_ANALYSIS_EN.md §7.3 licence risk):
+- [x] Rule provenance strategy (per GAP_ANALYSIS_EN.md §7.3 licence risk):
   - Preferred: self-developed rule set (Option C hybrid: Risch + heuristics +
     rule structure informed by Rubi's classification)
   - Evaluate integrating `symbolica-integrate` (MIT) as an optional feature
-- [ ] 1892-problem coverage benchmark harness: coverage report + failure taxonomy
-- [ ] Python/C bindings: `integrate` rule-path toggle
+- [x] 1892-problem coverage benchmark harness: coverage report + failure taxonomy
+- [x] Python/C bindings: `integrate` rule-path toggle
+- [x] (phase-(c) additions) symbolic-constant rational integrator, Weierstrass
+  linear arguments, bounded distributive expansion retry, trig
+  product-to-sum/power reduction, subresultant dense GCD, global chain-entry
+  budget for the integration pipeline, exact real-root isolation
+  (Wilkinson 10/10)
 
-**Success Criteria**:
+**Success Criteria** (honest record):
 
 - 1892-problem subset coverage ≥30 percentage points above the current level
-- Rule path agrees with SymPy `manualintegrate`/`integrate` on sampled cases
-- `cargo test --workspace` passes
+  — **NOT met**: baseline 5.87% → 7.66% after phase (b) → see
+  BENCHMARK_RESULTS_CN.md for phase (c); root causes quantified
+  (Rubi-grade rule volume / symbolic-coefficient rational backend / nested
+  radicals all need much larger investment); alternative paths evaluated in
+  GAP_ANALYSIS §7.3
+- Rule path agrees with SymPy `manualintegrate`/`integrate` on sampled cases — met
+- `cargo test --workspace` passes — met
 
 ### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
 
