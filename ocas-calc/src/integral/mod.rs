@@ -14,9 +14,13 @@
 #![allow(clippy::missing_const_for_thread_local)]
 
 pub(crate) mod binomial;
+pub(crate) mod elliptic;
 pub(crate) mod exp_log;
+pub(crate) mod halfpower;
 pub(crate) mod heuristic;
+pub(crate) mod hyperbolic_reduction;
 pub(crate) mod inverse_trig;
+pub(crate) mod kernel_subst;
 pub(crate) mod quad_power;
 pub mod rational;
 pub(crate) mod rde;
@@ -70,6 +74,115 @@ fn chain_budget_exhausted() -> bool {
         c.set(v);
         v > MAX_CHAIN_ENTRIES
     })
+}
+
+/// Whether stage tracing is enabled (`OCAS_INTEGRATE_TRACE=1`).
+///
+/// Diagnostic only: a hang leaves the last `enter <stage>` line on stderr,
+/// which attributes the case to a pipeline stage without guesswork.
+fn trace_enabled() -> bool {
+    thread_local! {
+        static TRACE: bool = std::env::var_os("OCAS_INTEGRATE_TRACE")
+            .is_some_and(|v| v != "0");
+    }
+    TRACE.with(|t| *t)
+}
+
+/// Run an `Option`-returning pipeline stage under the trace switch.
+fn traced_stage<'a, T>(stage: &str, expr: Atom<'a>, f: impl FnOnce() -> Option<T>) -> Option<T> {
+    if !trace_enabled() {
+        return f();
+    }
+    eprintln!("[trace] enter  {stage} :: {expr}");
+    let out = f();
+    if out.is_none() {
+        eprintln!("[trace] decline {stage}");
+    }
+    out
+}
+
+/// Trace a stage whose control flow cannot be expressed as `Option` (blocks
+/// that re-enter the chain).
+fn trace_enter(stage: &str, expr: Atom<'_>) {
+    if trace_enabled() {
+        eprintln!("[trace] enter  {stage} :: {expr}");
+    }
+}
+
+thread_local! {
+    /// Re-entry guard for the bounded-expansion pre-pass.
+    static EXPAND_PREPASS_ACTIVE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Whether `expr` contains any function head (transcendental node).
+fn has_function_head(expr: Atom<'_>) -> bool {
+    match expr.node() {
+        AtomNode::Fun(_, _) => true,
+        AtomNode::Add(args) | AtomNode::Mul(args) => args.iter().any(|a| has_function_head(*a)),
+        AtomNode::Pow(b, e) => has_function_head(*b) || has_function_head(*e),
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+    }
+}
+
+/// Bounded-distribution pre-pass for unexpanded products.
+///
+/// An unexpanded product of sums hangs the symbolic-rational backend on
+/// shapes whose expansion is a small Laurent polynomial (verified:
+/// `(A + B*x^2)*(b*x^2 + c*x^4)/x^6` never returns, while its expanded form
+/// solves in milliseconds). Distributing first — under the same term budget
+/// the late retry uses — turns those into ordinary termwise integrals.
+///
+/// The pass is deliberately restricted to **purely algebraic** expansions
+/// (no `Fun` head anywhere): transcendental products are owned by the later
+/// rule-table / trig / hyperbolic mechanisms, and expanding them here would
+/// steal those cases from the stages built for them (measured: termwise
+/// integration of `sec*cot^3`-style products routed work into paths that
+/// returned wrong answers, while the unexpanded shape had a correct owner
+/// downstream).
+///
+/// Returns `None` when the input is not a product of two or more
+/// non-constant factors, when the expansion contains a function head, when
+/// the expansion is already done, or when the expanded form does not
+/// integrate. The re-entry guard makes the pass idempotent: a nested call on
+/// the same shape declines immediately.
+fn expand_prepass<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    rules_enabled: bool,
+    rule_depth: usize,
+    parts_depth: usize,
+) -> Option<Atom<'a>> {
+    let AtomNode::Mul(args) = expr.node() else {
+        return None;
+    };
+    if args.iter().filter(|a| !is_constant(**a, var)).count() < 2 {
+        return None;
+    }
+    // Cheap pre-filter: a product with no sum factor cannot distribute.
+    if !args.iter().any(|a| matches!(a.node(), AtomNode::Add(_))) {
+        return None;
+    }
+    if has_function_head(expr) || node_count(expr) > 64 {
+        return None;
+    }
+    if EXPAND_PREPASS_ACTIVE.with(|c| c.replace(true)) {
+        return None;
+    }
+    let out = (|| {
+        let expanded = crate::expand::expand_bounded(ctx, expr)?;
+        if has_function_head(expanded) {
+            return None;
+        }
+        let folded = crate::ode::util::collect_terms(ctx, expanded);
+        if node_count(folded) > 256 {
+            return None;
+        }
+        let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
+        if contains_integral(r) { None } else { Some(r) }
+    })();
+    EXPAND_PREPASS_ACTIVE.with(|c| c.set(false));
+    out
 }
 
 /// Options controlling the integration pipeline.
@@ -283,7 +396,9 @@ fn try_risch_or_fallback<'a>(
     if chain_budget_exhausted() {
         return fallback(ctx, expr, var);
     }
-    if let Some(r) = rational::integrate_rational(ctx, expr, var) {
+    if let Some(r) = traced_stage("rational", expr, || {
+        rational::integrate_rational(ctx, expr, var)
+    }) {
         return r;
     }
     // Symbolic-constant rationals (coefficients in ℚ(symbols)): the ℚ
@@ -293,13 +408,40 @@ fn try_risch_or_fallback<'a>(
     // closed-form recurrences for `P(x)/q^n` — these shapes stall the
     // symbolic rational backend's multivariate coefficient gcd, so the
     // recurrence must preempt it.
-    if let Some(r) = quad_power::integrate_quad_power(ctx, expr, var) {
+    if let Some(r) = traced_stage("quad_power", expr, || {
+        quad_power::integrate_quad_power(ctx, expr, var)
+    }) {
         return r;
     }
-    if let Some(r) = symbolic_rational::integrate_rational_symbolic(ctx, expr, var) {
+    // Closed-form kernel families (0.27.2): they must preempt
+    // `symbolic_rational`/`risch`, whose field-Euclidean steps grind
+    // unboundedly on these shapes with symbolic coefficients (verified:
+    // `sinh(x)^3/(a+b*sinh(x))` and the Weierstrass t-forms of
+    // `1/(a+b*cos(u)+c*sin(u))^2` never return).
+    //
+    // The bounded-expansion pre-pass runs first: unexpanded products whose
+    // expansion is a small Laurent polynomial must not reach the symbolic
+    // backend at all (0.27.2 A1).
+    if let Some(r) = expand_prepass(ctx, expr, var, rules_enabled, rule_depth, parts_depth) {
+        trace_enter("expand_prepass", expr);
         return r;
     }
-    if let Some(r) = risch::risch_integrate(ctx, expr, var) {
+    if let Some(r) = traced_stage("kernel_subst", expr, || {
+        kernel_subst::integrate_kernel_subst(ctx, expr, var)
+    }) {
+        return r;
+    }
+    if let Some(r) = traced_stage("hyperbolic_reduction", expr, || {
+        hyperbolic_reduction::integrate_hyperbolic_reduction(ctx, expr, var)
+    }) {
+        return r;
+    }
+    if let Some(r) = traced_stage("symbolic_rational", expr, || {
+        symbolic_rational::integrate_rational_symbolic(ctx, expr, var)
+    }) {
+        return r;
+    }
+    if let Some(r) = traced_stage("risch", expr, || risch::risch_integrate(ctx, expr, var)) {
         return r;
     }
     // Trigonometric integrands: rewrite into complex exponentials, run
@@ -308,13 +450,17 @@ fn try_risch_or_fallback<'a>(
     // only runs when every sin/cos argument has numeric coefficients.
     if trig::trig_args_numeric(ctx, expr, var)
         && let Some(exp_form) = trig::trig_to_exp(ctx, expr)
-        && let Some(complex_ans) = risch::risch_integrate(ctx, exp_form, var)
+        && let Some(complex_ans) = traced_stage("risch(trig-exp)", expr, || {
+            risch::risch_integrate(ctx, exp_form, var)
+        })
     {
         return trig::realify(ctx, complex_ans);
     }
     // Non-elementary integrals with special-function closed forms
     // (erf, Ei, Si, Ci, Fresnel, …).
-    if let Some(r) = special::special_integrate(ctx, expr, ctx.var(var.as_str())) {
+    if let Some(r) = traced_stage("special", expr, || {
+        special::special_integrate(ctx, expr, ctx.var(var.as_str()))
+    }) {
         return r;
     }
     // Rule-table engine: standard-calculus breadth rules with residual
@@ -329,36 +475,45 @@ fn try_risch_or_fallback<'a>(
     // shapes the rule library is built for. Rules only fire where the
     // rational/Risch/special stages failed, and the heuristic still runs
     // for everything the rules do not cover.
-    if rules_enabled {
-        if let Some(table) = rules::build_rule_table(ctx, var)
-            && let Some(r) = rules::integrate_rules(ctx, &table, expr, var, rule_depth)
-        {
-            return r;
-        }
+    if rules_enabled
+        && let Some(table) = rules::build_rule_table(ctx, var)
+        && let Some(r) = traced_stage("rules", expr, || {
+            rules::integrate_rules(ctx, &table, expr, var, rule_depth)
+        })
+    {
+        return r;
     }
     // General quadratic-radical engine (0.27.1): direct forms for
     // √(a+b·x+c·x²) composites, reciprocal forms, Euler III. Runs BEFORE
     // binomial's Chebyshev cases: both accept `q^±1/2`-style radicands,
     // and this engine's asin/log direct forms are the canonical answers
     // (Chebyshev's t-form back-substitution produces uglier atan shapes).
-    if let Some(r) = sqrt_quadratic::integrate_sqrt_quadratic(ctx, expr, var) {
+    if let Some(r) = traced_stage("sqrt_quadratic", expr, || {
+        sqrt_quadratic::integrate_sqrt_quadratic(ctx, expr, var)
+    }) {
         return r;
     }
     // Chebyshev binomial differentials and fractional-power
     // rationalization: substitute to a rational t-form, reintegrate,
     // back-substitute. Declines (None) unless an exact integrability
     // condition holds.
-    if let Some(r) = binomial::integrate_binomial(ctx, expr, var) {
+    if let Some(r) = traced_stage("binomial", expr, || {
+        binomial::integrate_binomial(ctx, expr, var)
+    }) {
         return r;
     }
     // exp/log-kernel substitutions (0.27.1): rational-in-e^(ax) and
     // hyperbolic-rational forms, f(log x)/x, log-power gaps of rule B6.
-    if let Some(r) = exp_log::integrate_exp_log(ctx, expr, var) {
+    if let Some(r) = traced_stage("exp_log", expr, || {
+        exp_log::integrate_exp_log(ctx, expr, var)
+    }) {
         return r;
     }
     // Inverse-trig/hyperbolic mechanisms (0.27.1): kernel-derivative power
     // rule, inv-hyp substitution to hyperbolic t-forms, bare linear args.
-    if let Some(r) = inverse_trig::integrate_inverse_trig(ctx, expr, var) {
+    if let Some(r) = traced_stage("inverse_trig", expr, || {
+        inverse_trig::integrate_inverse_trig(ctx, expr, var)
+    }) {
         return r;
     }
     // Trig product-to-sum reduction: products of sin/cos at linear
@@ -367,6 +522,7 @@ fn try_risch_or_fallback<'a>(
     // yields clean multiple-angle forms where Weierstrass would return
     // tan(u/2) shapes (or grind on the t-rational).
     if let Some(reduced) = trig_reduce::trig_reduce_products(ctx, expr, var) {
+        trace_enter("trig_reduce", reduced);
         let candidate = crate::expand::expand_bounded(ctx, reduced).unwrap_or(reduced);
         let folded = crate::ode::util::collect_terms(ctx, candidate);
         let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
@@ -378,12 +534,16 @@ fn try_risch_or_fallback<'a>(
     // polynomial×trig closed forms (0.27.1). Intercepts `1/(a+b·T(u))^n`
     // before Weierstrass blows the t-rational up, and `x^m·T(ax+b)` shapes
     // that parts cannot finish within budget.
-    if let Some(r) = trig_reduction::integrate_trig_reduction(ctx, expr, var) {
+    if let Some(r) = traced_stage("trig_reduction", expr, || {
+        trig_reduction::integrate_trig_reduction(ctx, expr, var)
+    }) {
         return r;
     }
     // Single-trig-kernel rational forms and tan/sec-family reductions
     // (0.27.1): after trig_reduction so plain `1/(a+b·T)^n` stays there.
-    if let Some(r) = trig_kernel::integrate_trig_kernel(ctx, expr, var) {
+    if let Some(r) = traced_stage("trig_kernel", expr, || {
+        trig_kernel::integrate_trig_kernel(ctx, expr, var)
+    }) {
         return r;
     }
     // Bounded distributive expansion: distribute products over sums and
@@ -394,14 +554,31 @@ fn try_risch_or_fallback<'a>(
     // here on the same shape. Like terms are folded first so factors like
     // `x*x` reach the integrator as `x^2`.
     if let Some(expanded) = crate::expand::expand_bounded(ctx, expr) {
+        trace_enter("expand_retry", expanded);
         let folded = crate::ode::util::collect_terms(ctx, expanded);
         let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
         if !is_fallback(&r) {
             return r;
         }
     }
+    // Half-power front-end then elliptic reduction (0.27.2 D): placed after
+    // the bounded-expansion retry so the elementary engines and the expanded
+    // single-term shapes keep first claim, and before the heuristic stage so
+    // Weierstrass cannot route these radicals into the t-rational backend.
+    if let Some(r) = traced_stage("halfpower", expr, || {
+        halfpower::integrate_half_power(ctx, expr, var)
+    }) {
+        return r;
+    }
+    if let Some(r) = traced_stage("elliptic", expr, || {
+        elliptic::integrate_elliptic(ctx, expr, var)
+    }) {
+        return r;
+    }
     // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
-    if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var, parts_depth) {
+    if let Some(r) = traced_stage("heuristic", expr, || {
+        heuristic::heuristic_integrate(ctx, expr, var, parts_depth)
+    }) {
         return r;
     }
     fallback(ctx, expr, var)

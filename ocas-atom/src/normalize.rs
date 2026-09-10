@@ -6,6 +6,25 @@
 
 use crate::{Atom, AtomArena, AtomNode};
 
+/// Function heads whose argument order is semantic and must survive
+/// normalization. Every other head has its arguments sorted into canonical
+/// order.
+///
+/// - `Derivative` / `Integral` carry the variable of differentiation or
+///   integration, which is positional.
+/// - `EllipticF` / `EllipticE` / `EllipticPi` carry an amplitude and a
+///   parameter `m = k²` (plus a characteristic for `EllipticPi`) that are not
+///   interchangeable; sorting them would make `EllipticF(u, m)` and
+///   `EllipticF(m, u)` the same atom.
+/// - `Ei` is the exponential integral; its two-argument form is Rubi's
+///   `Ei(n, z)` (the incomplete gamma `Eₙ`), whose argument order is semantic.
+pub fn preserves_argument_order(name: &str) -> bool {
+    matches!(
+        name,
+        "Derivative" | "Integral" | "EllipticF" | "EllipticE" | "EllipticPi" | "Ei"
+    )
+}
+
 /// Normalize an atom into canonical form.
 ///
 /// The result is allocated in the same arena as the input via `ctx`.
@@ -32,8 +51,8 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
         AtomNode::Num(_) | AtomNode::Var(_) => atom,
         AtomNode::Fun(name, args) => {
             let mut normalized: Vec<Atom<'a>> = args.iter().map(|a| normalize(ctx, *a)).collect();
-            // Preserve argument order for calculus forms where order is semantic.
-            if !matches!(name.as_str(), "Derivative" | "Integral") {
+            // Preserve argument order for forms where order is semantic.
+            if !preserves_argument_order(name.as_str()) {
                 normalized.sort();
             }
             ctx.fun(name.as_str(), &normalized)
@@ -272,5 +291,32 @@ mod tests {
         let y = ctx.var("y");
         let f = ctx.fun("f", &[y, x]);
         assert_eq!(normalize(&ctx, f).to_string(), "f(x, y)");
+    }
+
+    #[test]
+    fn normalize_preserves_elliptic_argument_order() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        // Amplitude first, parameter second: the order is semantic.
+        let f = ctx.fun("EllipticF", &[x, y]);
+        assert_eq!(normalize(&ctx, f).to_string(), "EllipticF(x, y)");
+        let g = ctx.fun("EllipticF", &[y, x]);
+        assert_eq!(normalize(&ctx, g).to_string(), "EllipticF(y, x)");
+        // Round-trip is idempotent.
+        assert_eq!(
+            normalize(&ctx, normalize(&ctx, g)).to_string(),
+            "EllipticF(y, x)"
+        );
+        // Three-argument form keeps all three positions.
+        let p = ctx.fun("EllipticPi", &[y, x, ctx.num(1)]);
+        assert_eq!(normalize(&ctx, p).to_string(), "EllipticPi(y, x, 1)");
+        // Ei's two-argument (En) form is order-sensitive too.
+        let ei = ctx.fun("Ei", &[ctx.num(1), x]);
+        assert_eq!(normalize(&ctx, ei).to_string(), "Ei(1, x)");
+        // Ordinary heads keep sorting.
+        let h = ctx.fun("sin", &[y]);
+        assert_eq!(normalize(&ctx, h).to_string(), "sin(y)");
     }
 }

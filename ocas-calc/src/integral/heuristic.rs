@@ -11,10 +11,44 @@
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 
 use crate::derivative::diff;
-use crate::integral::{contains_integral, integrate_raw, is_constant, is_fallback};
+use crate::integral::{contains_integral, integrate_raw, is_constant, is_fallback, node_count};
 
 /// Maximum recursion depth for integration by parts.
 const PARTS_MAX_DEPTH: usize = 2;
+
+/// Node budget for the substituted forms this stage hands to the chain.
+///
+/// The Weierstrass and Euler substitutions square/cube the node count of
+/// their input (`sin(u) → 2t/(1+t²)` inside every power), and the resulting
+/// t-form is then fed back through the whole chain. The budget is a
+/// deterministic backstop: it is charged once per substitution step and
+/// per node of the emitted t-form, so a blow-up declines instead of
+/// grinding.
+///
+/// The cap is deliberately far above any legitimate substitution: corpus
+/// shapes that solve through this stage (e.g. `sinh(x)^4/(1+tanh(x))`,
+/// whose t-form is already large before the substitution) must stay
+/// admissible, so it only stops genuine blow-ups.
+const MAX_SUBST_NODES: usize = 100_000;
+
+thread_local! {
+    static SUBST_NODES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+/// Reset the substitution budget; called by the public stage entry point so
+/// the budget only ever covers one invocation.
+fn reset_subst_budget() {
+    SUBST_NODES.with(|c| c.set(0));
+}
+
+/// Charge one substituted node; returns `true` when the budget is spent.
+fn subst_budget_exhausted() -> bool {
+    SUBST_NODES.with(|c| {
+        let v = c.get().saturating_add(1);
+        c.set(v);
+        v > MAX_SUBST_NODES
+    })
+}
 
 // =========================================================================
 // Public API
@@ -36,6 +70,9 @@ pub(crate) fn heuristic_integrate<'a>(
     var: Symbol,
     parts_depth: usize,
 ) -> Option<Atom<'a>> {
+    // Fresh substitution budget for this invocation (the stage is re-entered
+    // once per chain entry, so nothing may accumulate across calls).
+    reset_subst_budget();
     // 1. Integration by parts
     if let Some(r) = try_parts(ctx, expr, var, parts_depth) {
         if !contains_integral(r) {
@@ -626,46 +663,54 @@ fn match_x_minus_a_sq_pattern<'a>(
 }
 
 /// Substitute every occurrence of `var` in `expr` with `replacement`.
+///
+/// Charges one unit of substitution budget per visited node; an exhausted
+/// budget returns `None` so the caller declines instead of building an
+/// unboundedly large result (back-substituting `t = tan(u/2)` into a large
+/// t-antiderivative is the blow-up site).
 fn substitute_atom<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
     replacement: Atom<'a>,
-) -> Atom<'a> {
+) -> Option<Atom<'a>> {
+    if subst_budget_exhausted() {
+        return None;
+    }
     match expr.node() {
         AtomNode::Var(v) => {
             if *v == var {
-                replacement
+                Some(replacement)
             } else {
-                expr
+                Some(expr)
             }
         }
-        AtomNode::Num(_) => expr,
+        AtomNode::Num(_) => Some(expr),
         AtomNode::Add(args) => {
             let new_args: Vec<Atom<'a>> = args
                 .iter()
                 .map(|a| substitute_atom(ctx, *a, var, replacement))
-                .collect();
-            ctx.add(&new_args)
+                .collect::<Option<_>>()?;
+            Some(ctx.add(&new_args))
         }
         AtomNode::Mul(args) => {
             let new_args: Vec<Atom<'a>> = args
                 .iter()
                 .map(|a| substitute_atom(ctx, *a, var, replacement))
-                .collect();
-            ctx.mul(&new_args)
+                .collect::<Option<_>>()?;
+            Some(ctx.mul(&new_args))
         }
         AtomNode::Pow(base, exp) => {
-            let new_base = substitute_atom(ctx, *base, var, replacement);
-            let new_exp = substitute_atom(ctx, *exp, var, replacement);
-            ctx.pow(new_base, new_exp)
+            let new_base = substitute_atom(ctx, *base, var, replacement)?;
+            let new_exp = substitute_atom(ctx, *exp, var, replacement)?;
+            Some(ctx.pow(new_base, new_exp))
         }
         AtomNode::Fun(name, args) => {
             let new_args: Vec<Atom<'a>> = args
                 .iter()
                 .map(|a| substitute_atom(ctx, *a, var, replacement))
-                .collect();
-            ctx.fun(name.as_str(), &new_args)
+                .collect::<Option<_>>()?;
+            Some(ctx.fun(name.as_str(), &new_args))
         }
     }
 }
@@ -836,6 +881,11 @@ fn substitute_trig_arg<'a>(
     sin_u: Atom<'a>,
     cos_u: Atom<'a>,
 ) -> Option<Atom<'a>> {
+    // Charge the shared substitution budget once per visited node so a large
+    // input declines before the t-form is materialised.
+    if subst_budget_exhausted() {
+        return None;
+    }
     match expr.node() {
         AtomNode::Fun(name, args) if args.len() == 1 => {
             let n = name.as_str();
@@ -919,6 +969,14 @@ fn try_weierstrass<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> O
 
     let substituted = substitute_trig_arg(ctx, expr, u, var, sin_u, cos_u)?;
     let integrand = ctx.mul(&[substituted, dx_dt]);
+    // Deterministic size gate in front of the two heavy calls below (the
+    // symbolic-rational feasibility check and the chain re-entry): the
+    // substitution grows the node count multiplicatively per trig power, and
+    // both callees grind on the large t-forms the corpus exposes
+    // (`cos(u)^4/(a + b·sin(u)^3)^2` and friends).
+    if node_count(integrand) > MAX_SUBST_NODES {
+        return None;
+    }
 
     // Feasibility gate: if the t-integrand is beyond the symbolic rational
     // backend's reach, skip Weierstrass entirely — feeding it to the rest
@@ -934,7 +992,7 @@ fn try_weierstrass<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> O
 
     // Back-substitute t = tan(u/2).
     let back = ctx.fun("tan", &[ctx.mul(&[u, ctx.pow(ctx.num(2), ctx.num(-1))])]);
-    Some(substitute_atom(ctx, result_t, t_sym, back))
+    substitute_atom(ctx, result_t, t_sym, back)
 }
 
 // =========================================================================
@@ -1072,7 +1130,7 @@ fn try_euler_substitution<'a>(
         };
 
     // Substitute x → x(t) throughout, then replace the sqrt node.
-    let substituted = substitute_atom(ctx, expr, var, x_t);
+    let substituted = substitute_atom(ctx, expr, var, x_t)?;
     // The substituted quadratic, normalized (structural match target).
     let quad_t = ocas_atom::normalize::normalize(
         ctx,
@@ -1084,6 +1142,11 @@ fn try_euler_substitution<'a>(
     );
     let substituted = replace_sqrt(ctx, substituted, quad_t, sqrt_t);
     let integrand = ctx.mul(&[substituted, dx_dt]);
+    // Size gate in front of the rational backend (the `x → x(t)` map is a
+    // rational function, so its powers inflate the t-form badly).
+    if node_count(integrand) > MAX_SUBST_NODES {
+        return None;
+    }
 
     let t_sym = Symbol::new("_t");
     let result_t = crate::integral::rational::integrate_rational(ctx, integrand, t_sym)?;
@@ -1117,7 +1180,7 @@ fn try_euler_substitution<'a>(
             ctx.pow(x_back, ctx.num(-1)),
         ])
     };
-    let back = substitute_atom(ctx, result_t, t_sym, sqrt_back);
+    let back = substitute_atom(ctx, result_t, t_sym, sqrt_back)?;
     Some(ocas_atom::normalize::normalize(ctx, back))
 }
 
@@ -1304,5 +1367,148 @@ mod tests {
         let expr = ocas_parse::parse(&ctx, "1/sqrt(2*x^2+3*x+1)").unwrap();
         let result = integrate(&ctx, expr, Symbol::new("x"));
         assert!(!result.to_string().contains("Integral("), "got {result}");
+    }
+
+    // ------------------- deterministic budget (0.27.1 timeouts) ---------
+
+    /// Constant values for the numeric antiderivative check.
+    fn consts() -> Vec<(Symbol, f64)> {
+        [
+            ("a", 1.3),
+            ("b", 0.7),
+            ("c", 0.4),
+            ("d", 0.9),
+            ("e", 0.5),
+            ("f", 0.8),
+            ("A", 1.1),
+            ("B", 0.6),
+            ("C", 0.8),
+        ]
+        .into_iter()
+        .map(|(n, v)| (Symbol::new(n), v))
+        .collect()
+    }
+
+    /// Numeric f64 evaluator over the emitted elementary functions.
+    fn eval_f64(expr: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
+        match expr.node() {
+            AtomNode::Num(n) => Some(*n as f64),
+            AtomNode::Var(v) => env.iter().find(|(s, _)| s == v).map(|(_, val)| *val),
+            AtomNode::Add(args) => args
+                .iter()
+                .try_fold(0.0, |acc, a| Some(acc + eval_f64(*a, env)?)),
+            AtomNode::Mul(args) => args
+                .iter()
+                .try_fold(1.0, |acc, a| Some(acc * eval_f64(*a, env)?)),
+            AtomNode::Pow(b, e) => Some(eval_f64(*b, env)?.powf(eval_f64(*e, env)?)),
+            AtomNode::Fun(name, args) => {
+                let v = eval_f64(*args.first()?, env)?;
+                Some(match name.as_str() {
+                    "sin" => v.sin(),
+                    "cos" => v.cos(),
+                    "tan" => v.tan(),
+                    "cot" => v.tan().recip(),
+                    "sec" => v.cos().recip(),
+                    "csc" => v.sin().recip(),
+                    "sinh" => v.sinh(),
+                    "cosh" => v.cosh(),
+                    "tanh" => v.tanh(),
+                    "coth" => v.tanh().recip(),
+                    "sech" => v.cosh().recip(),
+                    "csch" => v.sinh().recip(),
+                    "log" => v.ln(),
+                    "sqrt" => v.sqrt(),
+                    "atan" => v.atan(),
+                    "atanh" => v.atanh(),
+                    "asin" => v.asin(),
+                    "asinh" => v.asinh(),
+                    _ => return None,
+                })
+            }
+        }
+    }
+
+    /// The result must be an honest fallback or a numerically correct
+    /// antiderivative — never a wrong answer.
+    fn assert_returns_not_wrong(input: &str) {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let integrand = ocas_parse::parse(&ctx, input).unwrap();
+        let var = Symbol::new("x");
+        let result = integrate(&ctx, integrand, var);
+        let text = result.to_string();
+        if text.contains("Integral(") {
+            return;
+        }
+        let d = crate::diff(&ctx, result, var);
+        for &xv in &[0.3f64, 0.7] {
+            let mut env = consts();
+            env.push((var, xv));
+            let lhs = eval_f64(d, &env).expect("eval derivative");
+            let rhs = eval_f64(integrand, &env).expect("eval integrand");
+            assert!(
+                (lhs - rhs).abs() < 1e-5 * rhs.abs().max(1.0),
+                "{input} at x={xv}: derivative {lhs} vs integrand {rhs} (result: {text})"
+            );
+        }
+    }
+
+    /// Corpus shapes that used to exhaust the per-case budget with this
+    /// stage last entered (Rubi ids in the comments). Their Weierstrass
+    /// t-forms are big enough that the substitution and the symbolic
+    /// rational feasibility gate must decline deterministically.
+    const HANG_SHAPES: &[&str] = &[
+        "cos(c + d*x)^4/(a + b*sin(c + d*x)^3)^2", // rubi-00309
+        "sec(c + d*x)^7*(a*cos(c + d*x) + b*sin(c + d*x))^5", // rubi-01144
+        "1/(a + b*cos(d + e*x) + c*sin(d + e*x))^3", // rubi-01639
+        "sin(c + d*x)^4/(a - b*sin(c + d*x)^4)^3", // rubi-00656
+        "(a + a*cos(c + d*x))^4*(A + B*cos(c + d*x) + C*cos(c + d*x)^2)*sec(c + d*x)^7", // rubi-00548
+    ];
+
+    #[test]
+    fn corpus_hang_shapes_return() {
+        for input in HANG_SHAPES {
+            assert_returns_not_wrong(input);
+        }
+    }
+
+    /// A previously-fine input must still go through the heuristic stage.
+    #[test]
+    fn budget_keeps_solving_normal_inputs() {
+        for (input, expected) in [("1/(2+cos(x))", "atan"), ("1/(2*sin(x)+3*cos(x))", "")] {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let expr = ocas_parse::parse(&ctx, input).unwrap();
+            let result = heuristic_integrate(&ctx, expr, Symbol::new("x"), 0)
+                .unwrap_or_else(|| panic!("heuristic declined {input}"));
+            let s = result.to_string();
+            assert!(!s.contains("Integral("), "{input} left a residue: {s}");
+            if !expected.is_empty() {
+                assert!(s.contains(expected), "{input} -> {s}");
+            }
+        }
+    }
+
+    /// The substitution budget resets on every entry: repeating a
+    /// budget-tripping shape must neither slow down nor change the outcome.
+    ///
+    /// This shape costs ~1.7 s per call in a debug build (the substitution
+    /// budget is deliberately generous, so the work is real), which is why the
+    /// repetition count is small: 256 iterations made the module's test binary
+    /// look hung for minutes. The non-leakage property is what matters, and it
+    /// shows up within a handful of calls.
+    #[test]
+    fn budget_does_not_leak_across_calls() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let input = "cos(c + d*x)^4/(a + b*sin(c + d*x)^3)^2";
+        let expr = ocas_parse::parse(&ctx, input).unwrap();
+        let results: Vec<Option<String>> = (0..8)
+            .map(|_| heuristic_integrate(&ctx, expr, Symbol::new("x"), 0).map(|a| a.to_string()))
+            .collect();
+        let first = &results[0];
+        for (i, r) in results.iter().enumerate() {
+            assert_eq!(r, first, "call {i} diverged");
+        }
     }
 }

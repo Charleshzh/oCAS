@@ -21,10 +21,24 @@
 //! - **E3** fills the `m = −1` gap of rule B6: `log(x)^k/x` has the closed
 //!   form `log(x)^(k+1)/(k+1)` for integer `k ≠ −1` (`k = −1` is B7's
 //!   `1/(x·log x)`).
+//! - **E4 exp-of-inverse algebraization**: `exp(k·F(u))` with `F` an inverse
+//!   trigonometric/hyperbolic function is *algebraic* in `u`, not
+//!   transcendental, so the site is rewritten by the exact identities
+//!   `exp(n·atanh u) = ((1+u)/(1−u))^(n/2)`,
+//!   `exp(n·acoth u) = ((1+u)/(u−1))^(n/2)`,
+//!   `exp(i·r·atan u) = ((1+i·u)/(1−i·u))^(r/2)`,
+//!   `exp(k·asinh u) = (u+√(u²+1))^k` and
+//!   `exp(k·acosh u) = (u+√(u²−1))^k`, and the resulting
+//!   algebraic/rational integrand is handed back to the chain. Only a linear
+//!   argument `u = σ·x + τ` is in scope, and only exponents that keep the
+//!   rewrite exact are accepted (`k` rational for `asinh`/`acosh`, `k = i·r`
+//!   with `r` rational for `atan`); anything else declines.
 //!
 //! All chain re-entries go through `integrate_raw` and are declined on any
 //! `Integral` residue. The substituted t-forms are rational in `t` (E1) or
-//! kernel-free (E2), so the module cannot re-match its own output.
+//! kernel-free (E2), so the module cannot re-match its own output. E4's
+//! rewritten form contains no `exp` of an inverse function either, so it
+//! cannot re-match E4.
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
@@ -38,12 +52,23 @@ use super::{
 /// Cap on the substituted t-form's numerator/denominator degree in `t`, on
 /// the integer exponent of any single kernel power, and on log powers (E3).
 const MAX_KERNEL_DEG: i64 = 8;
+/// Degree cap for the hyperbolic-rational t-form of E1, whose integrand is a
+/// product of kernel powers over a common denominator before substitution
+/// (see `try_exp_kernel`). Only the degree check uses it; the kernel-exponent
+/// cap stays `MAX_KERNEL_DEG`.
+const MAX_HYP_DEG: i64 = 12;
 /// Node budget for the input integrand and for the substituted t-form.
 const MAX_SUBST_NODES: usize = 200;
 /// Cap on the number of exp/hyperbolic/log kernel sites in one integrand.
 const MAX_KERNELS: usize = 16;
 /// `|n|` cap for the `log(c·g^n)` formal power expansion.
 const MAX_LOG_EXPAND: i64 = 4;
+/// Numerator cap `|p| ≤ 8` for a rational E4 kernel exponent `k = p/q`.
+const MAX_INV_EXP_NUM: i64 = 8;
+/// Denominator cap `q ≤ 4` for a rational E4 kernel exponent `k = p/q`.
+const MAX_INV_EXP_DEN: i64 = 4;
+/// The imaginary-unit spelling used by the corpus (`exp(4*i*atan(a*x))`).
+const IMAG_UNIT: &str = "i";
 
 /// Integrate `expr` via the exp/log-kernel mechanisms (see module docs).
 /// Returns `None` when no mechanism applies or a budget is exceeded.
@@ -66,6 +91,7 @@ pub(crate) fn integrate_exp_log<'a>(
         .or_else(|| try_log_kernel_subst(ctx, expr, var))
         .or_else(|| try_log_power_expand(ctx, expr, var))
         .or_else(|| try_exp_kernel(ctx, expr, var))
+        .or_else(|| try_exp_inverse(ctx, expr, var))
 }
 
 // =========================================================================
@@ -471,7 +497,15 @@ fn try_exp_kernel<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Op
     }
     // Rationality check and degree budget in one structural pass.
     let (num_deg, den_deg) = t_degree_bounds(integrand_t, t_sym)?;
-    if num_deg > MAX_KERNEL_DEG || den_deg > MAX_KERNEL_DEG {
+    // Hyperbolic-rational integrands combine several kernel powers over a
+    // common denominator, so their legitimate t-degree is larger than a
+    // single exp kernel's: `sinh(x)^4/(1+tanh(x))` needs numerator degree 10.
+    let cap = if hyps.is_empty() {
+        MAX_KERNEL_DEG
+    } else {
+        MAX_HYP_DEG
+    };
+    if num_deg > cap || den_deg > cap {
         return None;
     }
     let result_t = integrate_raw(ctx, integrand_t, t_sym, 0, true, 0, 0);
@@ -762,6 +796,469 @@ fn t_degree_bounds(expr: Atom<'_>, t: Symbol) -> Option<(i64, i64)> {
 }
 
 // =========================================================================
+// E4: exp of an inverse-function kernel → algebraic rewrite
+// =========================================================================
+
+/// Rewrite every `exp(k·F(u))` site (`F` an inverse kernel, `u` linear) into
+/// its algebraic equivalent and re-integrate the rewritten integrand.
+///
+/// Declines when no site matches, when the rewritten integrand exceeds the
+/// node budget, when the re-entered chain leaves an `Integral` residue, or
+/// when the candidate fails the numeric self-check below.
+fn try_exp_inverse<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Option<Atom<'a>> {
+    let mut sites = 0u32;
+    let rewritten = rewrite_inverse_exps(ctx, expr, var, &mut sites)?;
+    if sites == 0 {
+        return None;
+    }
+    let rewritten = normalize(ctx, rewritten);
+    if node_count(rewritten) > MAX_SUBST_NODES {
+        return None;
+    }
+    let result = integrate_raw(ctx, rewritten, var, 0, true, 0, 0);
+    if contains_integral(result) {
+        return None;
+    }
+    if !numerically_verified(ctx, rewritten, result, var) {
+        return None;
+    }
+    Some(result)
+}
+
+/// Abscissae of the E4 numeric self-check.
+const INV_SAMPLES: [f64; 4] = [-1.7, -0.37, 0.83, 2.41];
+/// Synthetic real values for the free symbols, applied in sorted-name order.
+const INV_PARAMS: [f64; 6] = [0.7, 1.5, 0.5, 1.3, 2.0, 1.1];
+
+/// Deterministic numeric self-check of an E4 candidate: differentiate it and
+/// compare with the rewritten integrand at fixed sample points with fixed
+/// synthetic parameter values.
+///
+/// The chain's symbolic-rational backend returns wrong answers for some
+/// denominators carrying non-numeric coefficients (`symbolic_rational::
+/// rational_square_root`, under separate repair) and the E4 re-entry reaches
+/// that path, so the engine's answer is not trusted on its own. A sample is
+/// *usable* only when both sides evaluate to finite real values; a candidate
+/// with no usable sample — the `i·atan` family, or an integrand that leaves
+/// the real domain everywhere — is accepted without a verdict, which is the
+/// documented limit of this guard. A single usable disagreement declines.
+fn numerically_verified<'a>(
+    ctx: &'a AtomArena<'a>,
+    rewritten: Atom<'a>,
+    candidate: Atom<'a>,
+    var: Symbol,
+) -> bool {
+    let derivative = crate::diff(ctx, candidate, var);
+    let mut params: Vec<Symbol> = Vec::new();
+    collect_free_symbols(rewritten, var, &mut params);
+    collect_free_symbols(derivative, var, &mut params);
+    params.sort_unstable_by(|a, b| a.as_str().cmp(b.as_str()));
+    params.dedup();
+    if params.len() > INV_PARAMS.len() {
+        return true;
+    }
+    let env: Vec<(Symbol, f64)> = params
+        .iter()
+        .zip(INV_PARAMS.iter())
+        .map(|(s, v)| (*s, *v))
+        .collect();
+    for &xv in INV_SAMPLES.iter() {
+        let mut e = env.clone();
+        e.push((var, xv));
+        // `eval_real` returns `None` for non-finite or out-of-domain values,
+        // so a singularity or a complex branch simply drops the sample.
+        let (Some(lhs), Some(rhs)) = (eval_real(derivative, &e), eval_real(rewritten, &e)) else {
+            continue;
+        };
+        if (lhs - rhs).abs() > 1e-6 * rhs.abs().max(1.0) {
+            return false;
+        }
+    }
+    true
+}
+
+/// Real `f64` evaluator for the E4 self-check: `log` maps through the absolute
+/// value (antiderivatives carry `log|·|`) and every non-finite or out-of-domain
+/// value becomes `None`, so the caller drops the sample instead of comparing
+/// meaningless numbers. Any head outside this table — in particular the
+/// unresolved imaginary unit — makes the sample unusable.
+fn eval_real(expr: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
+    let out = match expr.node() {
+        AtomNode::Num(n) => *n as f64,
+        AtomNode::Var(v) => *env.iter().find(|(s, _)| s == v).map(|(_, x)| x)?,
+        AtomNode::Add(args) => {
+            let mut acc = 0.0;
+            for a in args.iter() {
+                acc += eval_real(*a, env)?;
+            }
+            acc
+        }
+        AtomNode::Mul(args) => {
+            let mut acc = 1.0;
+            for a in args.iter() {
+                acc *= eval_real(*a, env)?;
+            }
+            acc
+        }
+        AtomNode::Pow(b, e) => {
+            let base = eval_real(*b, env)?;
+            let exp = eval_real(*e, env)?;
+            if base < 0.0 && exp.fract() != 0.0 {
+                return None;
+            }
+            base.powf(exp)
+        }
+        AtomNode::Fun(name, args) => {
+            let v = eval_real(*args.first()?, env)?;
+            match name.as_str() {
+                "sin" => v.sin(),
+                "cos" => v.cos(),
+                "tan" => v.tan(),
+                "cot" => 1.0 / v.tan(),
+                "sec" => 1.0 / v.cos(),
+                "csc" => 1.0 / v.sin(),
+                "exp" => v.exp(),
+                "log" => v.abs().ln(),
+                "sqrt" => {
+                    if v < 0.0 {
+                        return None;
+                    }
+                    v.sqrt()
+                }
+                "asin" => {
+                    if !(-1.0..=1.0).contains(&v) {
+                        return None;
+                    }
+                    v.asin()
+                }
+                "acos" => {
+                    if !(-1.0..=1.0).contains(&v) {
+                        return None;
+                    }
+                    v.acos()
+                }
+                "atan" => v.atan(),
+                "sinh" => v.sinh(),
+                "cosh" => v.cosh(),
+                "tanh" => v.tanh(),
+                "coth" => 1.0 / v.tanh(),
+                "asinh" => v.asinh(),
+                "acosh" => {
+                    if v < 1.0 {
+                        return None;
+                    }
+                    v.acosh()
+                }
+                "atanh" => {
+                    if v.abs() >= 1.0 {
+                        return None;
+                    }
+                    v.atanh()
+                }
+                "acoth" => {
+                    if v.abs() <= 1.0 {
+                        return None;
+                    }
+                    0.5 * ((v + 1.0) / (v - 1.0)).abs().ln()
+                }
+                _ => return None,
+            }
+        }
+    };
+    if out.is_finite() { Some(out) } else { None }
+}
+
+/// Free symbols of `expr` other than `var` and the imaginary unit, appended to
+/// `out`. The imaginary unit is skipped so that an `i`-carrying integrand gets
+/// no synthetic real value (its samples are then unusable, and the check
+/// abstains instead of comparing two unrelated real functions).
+fn collect_free_symbols(expr: Atom<'_>, var: Symbol, out: &mut Vec<Symbol>) {
+    match expr.node() {
+        AtomNode::Num(_) => {}
+        AtomNode::Var(v) => {
+            if *v != var && v.as_str() != IMAG_UNIT {
+                out.push(*v);
+            }
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            for a in args.iter() {
+                collect_free_symbols(*a, var, out);
+            }
+        }
+        AtomNode::Pow(b, e) => {
+            collect_free_symbols(*b, var, out);
+            collect_free_symbols(*e, var, out);
+        }
+    }
+}
+
+/// Structural pass of E4: replace every `exp(k·F(u))` site by its algebraic
+/// form, leaving everything else intact. Any occurrence of `var` outside such
+/// a site is fine (the rewrite stays an algebraic function of `var`), so this
+/// does not need E1's kernel-rationality scan.
+fn rewrite_inverse_exps<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    sites: &mut u32,
+) -> Option<Atom<'a>> {
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => Some(expr),
+        AtomNode::Fun(name, args) => {
+            if name.as_str() == "exp"
+                && args.len() == 1
+                && let Some(algebraic) = exp_inverse_algebraic(ctx, args[0], var)
+            {
+                *sites += 1;
+                if *sites as usize > MAX_KERNELS {
+                    return None;
+                }
+                return Some(algebraic);
+            }
+            let mut rebuilt = Vec::with_capacity(args.len());
+            for a in args.iter() {
+                rebuilt.push(rewrite_inverse_exps(ctx, *a, var, sites)?);
+            }
+            Some(ctx.fun(name.as_str(), &rebuilt))
+        }
+        AtomNode::Add(args) => {
+            let mut rebuilt = Vec::with_capacity(args.len());
+            for a in args.iter() {
+                rebuilt.push(rewrite_inverse_exps(ctx, *a, var, sites)?);
+            }
+            Some(ctx.add(&rebuilt))
+        }
+        AtomNode::Mul(args) => {
+            let mut rebuilt = Vec::with_capacity(args.len());
+            for a in args.iter() {
+                rebuilt.push(rewrite_inverse_exps(ctx, *a, var, sites)?);
+            }
+            Some(ctx.mul(&rebuilt))
+        }
+        AtomNode::Pow(b, e) => {
+            let nb = rewrite_inverse_exps(ctx, *b, var, sites)?;
+            let ne = rewrite_inverse_exps(ctx, *e, var, sites)?;
+            Some(ctx.pow(nb, ne))
+        }
+    }
+}
+
+/// The algebraic equivalent of `exp(arg)` when `arg = k·F(u)` with `F` one of
+/// the inverse kernels, `k` constant in `var` and `u = σ·x + τ` linear with
+/// `σ ≠ 0`. Returns `None` for every other argument, including the
+/// unsupported exponents — the identity is applied only where it is exact.
+fn exp_inverse_algebraic<'a>(
+    ctx: &'a AtomArena<'a>,
+    arg: Atom<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    let factors: &[Atom<'a>] = match arg.node() {
+        AtomNode::Mul(args) => args,
+        _ => std::slice::from_ref(&arg),
+    };
+    let mut consts: Vec<Atom<'a>> = Vec::new();
+    let mut kernel: Option<(&str, Atom<'a>)> = None;
+    for f in factors {
+        if let AtomNode::Fun(name, fargs) = f.node()
+            && fargs.len() == 1
+            && is_inverse_kernel(name.as_str())
+            && !is_constant(fargs[0], var)
+        {
+            // A second (or a mixed) kernel makes the exponent a sum of
+            // inverse functions, which is not algebraic: decline.
+            if kernel.is_some() {
+                return None;
+            }
+            kernel = Some((name.as_str(), fargs[0]));
+            continue;
+        }
+        if is_constant(*f, var) {
+            consts.push(*f);
+            continue;
+        }
+        return None;
+    }
+    let (name, u) = kernel?;
+    // Only a linear kernel argument is in scope: `exp(n·atanh(x²))` declines.
+    let (sigma, tau) = linear_form(ctx, u, var)?;
+    if matches!(normalize(ctx, sigma).node(), AtomNode::Num(0)) {
+        return None;
+    }
+    let k = if consts.is_empty() {
+        ctx.num(1)
+    } else {
+        normalize(ctx, ctx.mul(&consts))
+    };
+    let algebraic = match name {
+        "atanh" | "acoth" => reciprocal_algebraic(ctx, name, u, k)?,
+        "atan" => atan_algebraic(ctx, u, k)?,
+        "asinh" => root_algebraic(ctx, u, (sigma, tau), var, k, 1)?,
+        "acosh" => root_algebraic(ctx, u, (sigma, tau), var, k, -1)?,
+        _ => return None,
+    };
+    Some(normalize(ctx, algebraic))
+}
+
+/// `exp(k·atanh u) = (1+u)^(k/2)·(1−u)^(−k/2)` and
+/// `exp(k·acoth u) = (1+u)^(k/2)·(u−1)^(−k/2)`.
+///
+/// The identities are exponent-linear and exact for every real `k`, so a
+/// symbolic `k` (the corpus `exp((n·atanh(a·x)))` shape) is accepted; a `k`
+/// carrying the imaginary unit is not (it would put `i` in the exponent and
+/// the "algebraic" rewrite would no longer be a function of `var` alone).
+/// The two powers are emitted *split* rather than as one `((1+u)/(1−u))^(k/2)`
+/// site so that `normalize` can merge them with structurally identical
+/// `(1±u)`-factors elsewhere in the integrand — that merging is what turns the
+/// corpus shapes into rational functions.
+fn reciprocal_algebraic<'a>(
+    ctx: &'a AtomArena<'a>,
+    name: &str,
+    u: Atom<'a>,
+    k: Atom<'a>,
+) -> Option<Atom<'a>> {
+    if mentions_imaginary(k) {
+        return None;
+    }
+    let one_plus = normalize(ctx, ctx.add(&[ctx.num(1), u]));
+    let other = if name == "acoth" {
+        normalize(ctx, ctx.add(&[u, ctx.num(-1)]))
+    } else {
+        normalize(ctx, ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), u])]))
+    };
+    let half_k = half_of(ctx, k)?;
+    let neg_half_k = normalize(ctx, ctx.mul(&[ctx.num(-1), half_k]));
+    Some(ctx.mul(&[ctx.pow(one_plus, half_k), ctx.pow(other, neg_half_k)]))
+}
+
+/// `k/2`, folded to a numeric literal when `k` is rational. The fold matters:
+/// the chain's integer-exponent engines do not recognise `Mul(2, Pow(2,−1))`
+/// as `1`, so an unfolded `k/2` makes `exp(2·atanh u) = (1+u)/(1−u)` look
+/// like a symbolic power and every engine declines it. A symbolic `k` keeps
+/// the formal `k/2` (and is declined downstream).
+fn half_of<'a>(ctx: &'a AtomArena<'a>, k: Atom<'a>) -> Option<Atom<'a>> {
+    match rat_of(k) {
+        Some((p, q)) => {
+            if p.abs() > 2 * MAX_INV_EXP_NUM || q > 2 * MAX_INV_EXP_DEN {
+                return None;
+            }
+            Some(rat_atom(ctx, p, q.checked_mul(2)?))
+        }
+        None => Some(normalize(ctx, ctx.mul(&[k, inv(ctx, ctx.num(2))]))),
+    }
+}
+
+/// `exp(i·r·atan u) = (1+i·u)^(r/2)·(1−i·u)^(−r/2)` with `r = k/i` rational.
+///
+/// Only the exact power is produced; a `k` that is not a rational multiple of
+/// the imaginary unit (`exp(2·atan u)`, `exp(n·atan u)`) declines, as does an
+/// out-of-budget `r`.
+fn atan_algebraic<'a>(ctx: &'a AtomArena<'a>, u: Atom<'a>, k: Atom<'a>) -> Option<Atom<'a>> {
+    let (p, q) = imaginary_multiple(ctx, k)?;
+    if p == 0 || p.abs() > MAX_INV_EXP_NUM || q > MAX_INV_EXP_DEN {
+        return None;
+    }
+    let half_r = rat_atom(ctx, p, q.checked_mul(2)?);
+    if matches!(half_r.node(), AtomNode::Num(0)) {
+        return None;
+    }
+    let i = ctx.var(IMAG_UNIT);
+    let iu = normalize(ctx, ctx.mul(&[i, u]));
+    let one_plus = normalize(ctx, ctx.add(&[ctx.num(1), iu]));
+    let one_minus = normalize(ctx, ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), iu])]));
+    let neg_half_r = normalize(ctx, ctx.mul(&[ctx.num(-1), half_r]));
+    Some(ctx.mul(&[ctx.pow(one_plus, half_r), ctx.pow(one_minus, neg_half_r)]))
+}
+
+/// `exp(k·asinh u) = (u + √(u²+1))^k` and
+/// `exp(k·acosh u) = (u + √(u²−1))^k` for rational `k` (`e0 = ±1` picks the
+/// radicand constant). A symbolic or `i`-carrying `k` declines: `(…)^k` is
+/// then not an algebraic function.
+fn root_algebraic<'a>(
+    ctx: &'a AtomArena<'a>,
+    u: Atom<'a>,
+    lin: (Atom<'a>, Atom<'a>),
+    var: Symbol,
+    k: Atom<'a>,
+    e0: i64,
+) -> Option<Atom<'a>> {
+    let (p, q) = rat_of(k)?;
+    if p == 0 || p.abs() > MAX_INV_EXP_NUM || q > MAX_INV_EXP_DEN {
+        return None;
+    }
+    let radicand = expanded_square_plus(ctx, lin, var, e0);
+    let root = ctx.fun("sqrt", &[radicand]);
+    let base = ctx.add(&[u, root]);
+    Some(ctx.pow(base, rat_atom(ctx, p, q)))
+}
+
+/// `(σ·x + τ)² + e0`, expanded to `σ²·x² + 2στ·x + τ² + e0`.
+///
+/// The radical engines match a *polynomial* radicand, so `Pow(Mul(σ,x),2)` is
+/// not recognised; spelling `u²` out as a polynomial is what makes
+/// `exp(k·asinh(a·x))` reachable.
+fn expanded_square_plus<'a>(
+    ctx: &'a AtomArena<'a>,
+    lin: (Atom<'a>, Atom<'a>),
+    var: Symbol,
+    e0: i64,
+) -> Atom<'a> {
+    let (sigma, tau) = lin;
+    let x = ctx.var(var.as_str());
+    let mut terms = vec![
+        ctx.num(e0),
+        ctx.mul(&[ctx.pow(sigma, ctx.num(2)), ctx.pow(x, ctx.num(2))]),
+    ];
+    if !matches!(normalize(ctx, tau).node(), AtomNode::Num(0)) {
+        terms.push(ctx.mul(&[ctx.num(2), sigma, tau, x]));
+        terms.push(ctx.pow(tau, ctx.num(2)));
+    }
+    ctx.add(&terms)
+}
+
+/// The rational `r` when the constant `k` is exactly `i·r` with `i` the
+/// imaginary-unit symbol; `None` for every other constant (a bare `r`, an
+/// `i²`, a symbolic multiple, or a product of several `i` factors).
+fn imaginary_multiple<'a>(ctx: &'a AtomArena<'a>, k: Atom<'a>) -> Option<(i64, i64)> {
+    let factors: &[Atom<'a>] = match k.node() {
+        AtomNode::Mul(args) => args,
+        _ => std::slice::from_ref(&k),
+    };
+    let mut i_count = 0u32;
+    let mut rest: Vec<Atom<'a>> = Vec::new();
+    for f in factors {
+        if matches!(f.node(), AtomNode::Var(v) if v.as_str() == IMAG_UNIT) {
+            i_count += 1;
+            continue;
+        }
+        rest.push(*f);
+    }
+    if i_count != 1 {
+        return None;
+    }
+    if rest.is_empty() {
+        return Some((1, 1));
+    }
+    rat_of(normalize(ctx, ctx.mul(&rest)))
+}
+
+/// True when the `i` symbol occurs anywhere in `expr`.
+fn mentions_imaginary(expr: Atom<'_>) -> bool {
+    match expr.node() {
+        AtomNode::Num(_) => false,
+        AtomNode::Var(v) => v.as_str() == IMAG_UNIT,
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            args.iter().any(|a| mentions_imaginary(*a))
+        }
+        AtomNode::Pow(b, e) => mentions_imaginary(*b) || mentions_imaginary(*e),
+    }
+}
+
+/// The inverse functions whose exponential is algebraic in their argument.
+fn is_inverse_kernel(name: &str) -> bool {
+    matches!(name, "atanh" | "acoth" | "atan" | "asinh" | "acosh")
+}
+
+// =========================================================================
 // Small local utilities
 // =========================================================================
 
@@ -848,6 +1345,345 @@ mod tests {
             );
         }
     }
+
+    /// Minimal complex `f64` for the `exp(i·k·atan u)` family: `i` is a
+    /// *symbol* in the corpus expressions, so the derivative check has to run
+    /// in ℂ where `i` evaluates to the imaginary unit.
+    #[derive(Clone, Copy, Debug)]
+    struct C64 {
+        re: f64,
+        im: f64,
+    }
+
+    impl C64 {
+        const fn num(re: f64) -> Self {
+            Self { re, im: 0.0 }
+        }
+
+        const fn imag_unit() -> Self {
+            Self { re: 0.0, im: 1.0 }
+        }
+
+        fn add(self, o: Self) -> Self {
+            Self {
+                re: self.re + o.re,
+                im: self.im + o.im,
+            }
+        }
+
+        fn sub(self, o: Self) -> Self {
+            Self {
+                re: self.re - o.re,
+                im: self.im - o.im,
+            }
+        }
+
+        fn mul(self, o: Self) -> Self {
+            Self {
+                re: self.re * o.re - self.im * o.im,
+                im: self.re * o.im + self.im * o.re,
+            }
+        }
+
+        fn div(self, o: Self) -> Self {
+            let d = o.re * o.re + o.im * o.im;
+            Self {
+                re: (self.re * o.re + self.im * o.im) / d,
+                im: (self.im * o.re - self.re * o.im) / d,
+            }
+        }
+
+        fn abs(self) -> f64 {
+            self.re.hypot(self.im)
+        }
+
+        /// Integer powers by repeated multiplication: exact, and free of the
+        /// branch ambiguity of `exp(e·log z)`.
+        fn ipow(self, n: i64) -> Self {
+            let base = if n < 0 {
+                Self::num(1.0).div(self)
+            } else {
+                self
+            };
+            let mut acc = Self::num(1.0);
+            for _ in 0..n.unsigned_abs() {
+                acc = acc.mul(base);
+            }
+            acc
+        }
+
+        fn exp(self) -> Self {
+            let r = self.re.exp();
+            Self {
+                re: r * self.im.cos(),
+                im: r * self.im.sin(),
+            }
+        }
+
+        fn log(self) -> Self {
+            if self.im == 0.0 && self.re > 0.0 {
+                return Self::num(self.re.ln());
+            }
+            Self {
+                re: self.abs().ln(),
+                im: self.im.atan2(self.re),
+            }
+        }
+
+        fn sqrt(self) -> Self {
+            if self.im == 0.0 && self.re >= 0.0 {
+                return Self::num(self.re.sqrt());
+            }
+            let r = self.abs().sqrt();
+            let theta = self.im.atan2(self.re) * 0.5;
+            Self {
+                re: r * theta.cos(),
+                im: r * theta.sin(),
+            }
+        }
+
+        fn sin(self) -> Self {
+            Self {
+                re: self.re.sin() * self.im.cosh(),
+                im: self.re.cos() * self.im.sinh(),
+            }
+        }
+
+        fn cos(self) -> Self {
+            Self {
+                re: self.re.cos() * self.im.cosh(),
+                im: -self.re.sin() * self.im.sinh(),
+            }
+        }
+
+        fn sinh(self) -> Self {
+            Self {
+                re: self.re.sinh() * self.im.cos(),
+                im: self.re.cosh() * self.im.sin(),
+            }
+        }
+
+        fn cosh(self) -> Self {
+            Self {
+                re: self.re.cosh() * self.im.cos(),
+                im: self.re.sinh() * self.im.sin(),
+            }
+        }
+
+        fn pow(self, e: Self) -> Self {
+            if e.im == 0.0 && e.re.fract() == 0.0 && e.re.abs() <= 64.0 {
+                return self.ipow(e.re as i64);
+            }
+            if e.im == 0.0 && self.im == 0.0 && self.re > 0.0 {
+                return Self::num(self.re.powf(e.re));
+            }
+            self.log().mul(e).exp()
+        }
+    }
+
+    /// `eval_f64` in ℂ, so the imaginary unit can take its actual value and
+    /// antiderivatives carrying `i` (or a complex branch) can be checked.
+    /// Returns `None` for functions outside the evaluator, which makes the
+    /// caller treat the case as inconclusive rather than failed.
+    fn eval_c64(expr: Atom<'_>, env: &[(Symbol, C64)]) -> Option<C64> {
+        match expr.node() {
+            AtomNode::Num(n) => Some(C64::num(*n as f64)),
+            AtomNode::Var(v) => env.iter().find(|(s, _)| s == v).map(|(_, x)| *x),
+            AtomNode::Add(args) => args
+                .iter()
+                .try_fold(C64::num(0.0), |acc, a| Some(acc.add(eval_c64(*a, env)?))),
+            AtomNode::Mul(args) => args
+                .iter()
+                .try_fold(C64::num(1.0), |acc, a| Some(acc.mul(eval_c64(*a, env)?))),
+            AtomNode::Pow(b, e) => {
+                let base = eval_c64(*b, env)?;
+                match e.node() {
+                    AtomNode::Num(n) => Some(base.ipow(*n)),
+                    _ => Some(base.pow(eval_c64(*e, env)?)),
+                }
+            }
+            AtomNode::Fun(name, args) => {
+                let v = eval_c64(*args.first()?, env)?;
+                let one = C64::num(1.0);
+                let half = C64::num(0.5);
+                let i = C64::imag_unit();
+                Some(match name.as_str() {
+                    "exp" => v.exp(),
+                    "log" => v.log(),
+                    "sqrt" => v.sqrt(),
+                    "sin" => v.sin(),
+                    "cos" => v.cos(),
+                    "tan" => v.sin().div(v.cos()),
+                    "sinh" => v.sinh(),
+                    "cosh" => v.cosh(),
+                    "tanh" => v.sinh().div(v.cosh()),
+                    // atan z = (i/2)·(log(1 − i·z) − log(1 + i·z)).
+                    "atan" => i
+                        .div(C64::num(2.0))
+                        .mul(one.sub(i.mul(v)).log().sub(one.add(i.mul(v)).log())),
+                    "asin" => i
+                        .mul(one.sub(v.mul(v)).sqrt().add(i.mul(v)))
+                        .log()
+                        .mul(C64::num(-1.0)),
+                    "acos" => C64::num(std::f64::consts::FRAC_PI_2).sub(
+                        i.mul(one.sub(v.mul(v)).sqrt().add(i.mul(v)))
+                            .log()
+                            .mul(C64::num(-1.0)),
+                    ),
+                    "atanh" => half.mul(one.add(v).log().sub(one.sub(v).log())),
+                    "acoth" => half.mul(v.add(one).log().sub(v.sub(one).log())),
+                    "asinh" => v.add(v.mul(v).add(one).sqrt()).log(),
+                    "acosh" => v.add(v.mul(v).sub(one).sqrt()).log(),
+                    _ => return None,
+                })
+            }
+        }
+    }
+
+    /// Parameter environment shared by the corpus-shape checks.
+    fn corpus_env() -> Vec<(Symbol, C64)> {
+        vec![
+            (Symbol::new("a"), C64::num(0.7)),
+            (Symbol::new("b"), C64::num(0.5)),
+            (Symbol::new("c"), C64::num(1.5)),
+            (Symbol::new("n"), C64::num(1.7)),
+            (Symbol::new("m"), C64::num(2.0)),
+            (Symbol::new("p"), C64::num(1.3)),
+            (Symbol::new("i"), C64::imag_unit()),
+        ]
+    }
+
+    /// Sample points per kernel domain: `atanh` needs `|a·x| < 1`, `acoth`
+    /// `|a·x| > 1`, `acosh(a + b·x)` `a + b·x > 1`, the rest are unrestricted.
+    fn samples_for(domain: &str) -> &'static [f64] {
+        match domain {
+            "acoth" => &[-2.6, 2.1, 3.0],
+            "acosh" => &[1.2, 2.0, 3.0],
+            // `acosh(a·x)` with `a` as small as 0.4 still needs `a·x ≥ 1`.
+            "acosh0" => &[2.6, 3.5, 4.4],
+            _ => &[-0.8, 0.35, 1.1],
+        }
+    }
+
+    /// Run the full pipeline on a corpus shape and, when it produces an
+    /// answer, verify `diff(answer) == integrand` numerically (complex
+    /// arithmetic, so the `i·atan` family and off-domain branches are covered
+    /// too). Returns whether an answer was produced.
+    ///
+    /// The public `integrate` entry is used rather than a direct
+    /// `integrate_exp_log` call because it resets the thread-local chain
+    /// budget: a long loop of direct calls would exhaust that budget and
+    /// degrade later shapes to fallback for reasons unrelated to the shape.
+    fn check_shape<'a>(ctx: &'a AtomArena<'a>, integrand: &str, domain: &str) -> bool {
+        let var = Symbol::new("x");
+        let expr = parse(ctx, integrand);
+        let result = crate::integrate(ctx, expr, var);
+        if contains_integral(result) {
+            return false;
+        }
+        let d = crate::diff(ctx, result, var);
+        let env = corpus_env();
+        for &xv in samples_for(domain) {
+            let mut e = env.clone();
+            e.push((var, C64::num(xv)));
+            let Some(lhs) = eval_c64(d, &e) else {
+                continue;
+            };
+            let Some(rhs) = eval_c64(expr, &e) else {
+                continue;
+            };
+            let tol = 1e-5 * rhs.abs().max(1.0);
+            assert!(
+                lhs.sub(rhs).abs() < tol,
+                "{integrand} at x={xv}: diff={lhs:?} integrand={rhs:?} (result: {result})"
+            );
+        }
+        true
+    }
+
+    /// Run `f` on a thread with a 32 MiB stack.
+    ///
+    /// The integrator recurses deeply on some corpus shapes; libtest's default
+    /// test-thread stack (and the 1 MiB Windows main-thread stack used by
+    /// `--test-threads=1`) overflows, which aborts the whole test binary
+    /// instead of failing a single test.
+    fn with_big_stack<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'static) -> T {
+        std::thread::Builder::new()
+            .stack_size(32 << 20)
+            .spawn(f)
+            .expect("spawn test thread")
+            .join()
+            .expect("test thread panicked")
+    }
+
+    /// `(id, integrand, domain)` for the corpus shapes the mechanism is
+    /// measured on. The full 65-shape sweep is run with the corpus harness
+    /// (`OCAS_1892_CASES`); this is the bounded unit-test subset: every shape
+    /// the mechanism unlocks plus the representative declines (the
+    /// quadratic-denominator shape the numeric guard rejects, and the
+    /// symbolic-exponent / mixed-function / `i`-family declinations).
+    const TARGET_SHAPES: &[(&str, &str, &str)] = &[
+        // Solved by E4 (verified numerically below).
+        (
+            "rubi-00196",
+            "exp((2*atanh(a*x)))*x*(c - a^2*c*x^2)^2",
+            "atanh",
+        ),
+        ("rubi-00359", "exp((2*atanh(a*x)))*(c - a*c*x)^2", "atanh"),
+        (
+            "rubi-00614",
+            "1/(exp((2*atanh(a*x)))*(c - a*c*x)^(3/2))",
+            "atanh",
+        ),
+        (
+            "rubi-00662",
+            "exp((2*acoth(a*x)))*(c - c/(a^2*x^2))",
+            "acoth",
+        ),
+        (
+            "rubi-00684",
+            "exp((2*atanh(a*x)))*(c - a^2*c*x^2)^3/x",
+            "atanh",
+        ),
+        ("rubi-00789", "exp((2*atanh(a*x)))*(c - a*c*x)^5", "atanh"),
+        ("rubi-00980", "1/(exp((2*i*atan(a*x)))*x^2)", "iatan"),
+        (
+            "rubi-01137",
+            "(c - c/(a^2*x^2))/exp((2*atanh(a*x)))",
+            "atanh",
+        ),
+        ("rubi-01539", "exp((2*acoth(a*x)))/(c - c/(a*x))^2", "acoth"),
+        ("rubi-01551", "exp((2*acoth(a*x)))/(c - c/(a*x))^4", "acoth"),
+        ("rubi-01760", "exp((2*acoth(a*x)))*(c - a*c*x)^5", "acoth"),
+        ("rubi-01890", "exp((4*i*atan(a*x)))", "iatan"),
+        // Declined: the wrong-answer shape the guard must keep out.
+        (
+            "rubi-01096",
+            "exp((2*atanh(a*x)))*x^2/(c - a^2*c*x^2)",
+            "atanh",
+        ),
+        // Declined: symbolic exponents, quadratic radicands, symbolic `m`.
+        ("rubi-01223", "exp((n*atanh(a*x)))/x^4", "atanh"),
+        (
+            "rubi-00471",
+            "exp((3*atanh(a*x)))*(c - a^2*c*x^2)^p",
+            "atanh",
+        ),
+        (
+            "rubi-00692",
+            "exp((3*acoth(a*x)))/(c - a^2*c*x^2)^4",
+            "acoth",
+        ),
+        ("rubi-00780", "exp((3*atanh(a*x)))/(c - c/(a*x))^3", "atanh"),
+        (
+            "rubi-00899",
+            "sqrt(c - a^2*c*x^2)/(exp((2*acoth(a*x)))*x^4)",
+            "acoth",
+        ),
+        ("rubi-01018", "x^m/exp((4*i*atan(a*x)))", "iatan"),
+        ("rubi-00727", "exp(asinh(a + b*x))*x^2", "asinh"),
+        ("rubi-00856", "exp(acosh(a + b*x))*x", "acosh"),
+    ];
 
     #[test]
     fn exp_rational_corpus() {
@@ -978,5 +1814,250 @@ mod tests {
         let ctx = AtomArena::new(&arena);
         let expr = parse(&ctx, "log(x)^9/x");
         assert!(integrate_exp_log(&ctx, expr, Symbol::new("x")).is_none());
+    }
+
+    #[test]
+    fn exp_inverse_rational_collapse() {
+        // `exp(2*atanh(a*x)) = (1+u)/(1-u)` is rational, so the shapes whose
+        // remaining factors carry matching `(1+-u)`-powers collapse to a
+        // rational function and integrate. This is the corpus set the
+        // mechanism actually unlocks (measured on the 1892 benchmark).
+        // Big stack: these are the deeply-recursing symbolic-rational shapes.
+        with_big_stack(|| {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            for (s, domain) in [
+                ("exp((2*atanh(a*x)))*(c - a*c*x)^2", "atanh"), // 00359
+                ("exp((2*atanh(a*x)))*(c - a*c*x)^5", "atanh"), // 00789
+                ("exp((2*atanh(a*x)))*x*(c - a^2*c*x^2)^2", "atanh"), // 00196
+                ("exp((2*atanh(a*x)))*(c - a^2*c*x^2)^3/x", "atanh"), // 00684
+                ("(c - c/(a^2*x^2))/exp((2*atanh(a*x)))", "atanh"), // 01137
+                ("1/(exp((2*atanh(a*x)))*(c - a*c*x)^(3/2))", "atanh"), // 00614
+                ("exp((2*acoth(a*x)))*(c - c/(a^2*x^2))", "acoth"), // 00662
+                ("exp((2*acoth(a*x)))/(c - c/(a*x))^2", "acoth"), // 01539
+                ("exp((2*acoth(a*x)))/(c - c/(a*x))^4", "acoth"), // 01551
+                ("exp((2*acoth(a*x)))*(c - a*c*x)^5", "acoth"), // 01760
+            ] {
+                assert!(check_shape(&ctx, s, domain), "expected E4 to solve {s}");
+            }
+        });
+    }
+
+    #[test]
+    fn exp_inverse_mechanism_fires() {
+        // The stage itself (not a later engine) produces the answer: three
+        // direct calls keep the chain budget comfortably in range.
+        with_big_stack(|| {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let x = Symbol::new("x");
+            for s in [
+                "exp((2*atanh(a*x)))*(c - a*c*x)^2",
+                "exp((2*acoth(a*x)))/(c - c/(a*x))^2",
+                "exp((4*i*atan(a*x)))",
+            ] {
+                let expr = parse(&ctx, s);
+                let r = integrate_exp_log(&ctx, expr, x);
+                assert!(r.is_some(), "E4 declined {s}");
+            }
+        });
+    }
+
+    #[test]
+    fn exp_inverse_numeric_guard() {
+        // The guard is what keeps a wrong engine answer out of the corpus
+        // (the `symbolic_rational` quadratic-denominator bug is reachable from
+        // the E4 re-entry): a correct candidate passes, a wrong one is
+        // rejected.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = Symbol::new("x");
+        let f = parse(&ctx, "x^2");
+        assert!(numerically_verified(&ctx, f, parse(&ctx, "(3^-1)*x^3"), x));
+        assert!(!numerically_verified(&ctx, f, parse(&ctx, "x^3"), x));
+        assert!(!numerically_verified(
+            &ctx,
+            f,
+            parse(&ctx, "(3^-1)*x^3 + x"),
+            x
+        ));
+    }
+
+    #[test]
+    fn exp_inverse_atanh_asinh_acosh_identities() {
+        // Real identities at several parameter values, checked numerically
+        // through the mechanism itself. Big stack: 36 full-chain integrations
+        // of the deeply-recursing symbolic-rational shapes.
+        with_big_stack(|| {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let var = Symbol::new("x");
+            for a in [0.4, 0.7, 1.3] {
+                for c in [1.0, 1.5, 2.25] {
+                    let env = [
+                        (Symbol::new("a"), C64::num(a)),
+                        (Symbol::new("c"), C64::num(c)),
+                    ];
+                    for (s, domain) in [
+                        ("exp((2*atanh(a*x)))*(c - a*c*x)^2", "atanh"),
+                        ("exp((2*acoth(a*x)))/(c - c/(a*x))^2", "acoth"),
+                        ("exp(asinh(a*x))*x", "asinh"),
+                        ("exp(acosh(a*x))*x", "acosh0"),
+                    ] {
+                        let expr = parse(&ctx, s);
+                        // Public entry: resets the chain budget between rounds.
+                        let result = crate::integrate(&ctx, expr, var);
+                        assert!(
+                            !contains_integral(result),
+                            "declined {s} (a={a}, c={c}): {result}"
+                        );
+                        let d = crate::diff(&ctx, result, var);
+                        for &xv in samples_for(domain) {
+                            let mut e = env.to_vec();
+                            e.push((var, C64::num(xv)));
+                            let lhs = eval_c64(d, &e).expect("eval diff");
+                            let rhs = eval_c64(expr, &e).expect("eval integrand");
+                            assert!(
+                                lhs.sub(rhs).abs() < 1e-6 * rhs.abs().max(1.0),
+                                "{s} (a={a}, c={c}) at x={xv}: diff={lhs:?} integrand={rhs:?}"
+                            );
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn exp_inverse_declines() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = Symbol::new("x");
+        for s in [
+            // Non-linear kernel argument: out of scope by construction.
+            "exp(n*atanh(x^2))",
+            "exp(2*acoth(x^3))",
+            "exp(asinh(x^2))*x",
+            // Not an inverse kernel at all.
+            "exp(sin(x))",
+            "exp(x*atanh(x))",
+            // Mixed kernels: the exponent is a sum, not a single kernel.
+            "exp(atanh(x) + atan(x))",
+            "exp(atanh(x))*exp(acoth(x))",
+            // Unsupported exponents: no `i` factor (atan), symbolic
+            // asinh/acosh coefficients.
+            "exp(2*atan(x))",
+            "exp(n*atan(x))*x",
+            "exp(n*asinh(x))",
+            "exp(n*acosh(1 + x))",
+            // Imaginary multiple whose half is not an exact power.
+            "exp(i*atan(x))",
+            "exp((3*i*atan(x)))*x",
+        ] {
+            let expr = parse(&ctx, s);
+            assert!(
+                integrate_exp_log(&ctx, expr, x).is_none(),
+                "expected a decline for {s}"
+            );
+        }
+    }
+
+    #[test]
+    fn exp_inverse_iatan_family() {
+        // `exp(2*i*atan u) = (1+i*u)/(1-i*u)`: the rewrite is a rational
+        // function of x with `i` as a symbolic constant, checked in C.
+        with_big_stack(|| {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            for (s, domain) in [
+                ("exp((4*i*atan(a*x)))", "iatan"),
+                ("1/(exp((2*i*atan(a*x)))*x^2)", "iatan"),
+                ("exp((-2*i*atan(a*x)))*x^3", "iatan"),
+            ] {
+                assert!(check_shape(&ctx, s, domain), "expected E4 to solve {s}");
+            }
+            // The symbolic-`m` corpus shape stays out of reach: `x^m` is not a
+            // rational function and no engine accepts it.
+            let expr = parse(&ctx, "x^m/exp((4*i*atan(a*x)))");
+            assert!(integrate_exp_log(&ctx, expr, Symbol::new("x")).is_none());
+        });
+    }
+
+    #[test]
+    fn exp_inverse_repeat_stability() {
+        // 300 repeats on both the declined and the solved path: the outcome
+        // must be identical every round (no leakage through the stage, the
+        // chain budget or the arena) and the answer must not grow.
+        //
+        // The decline loop calls the stage directly: those shapes produce no
+        // rewrite, so no chain re-entry happens and nothing accumulates. The
+        // solved loop needs the public entry, which resets the thread-local
+        // chain budget per call.
+        {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let x = Symbol::new("x");
+            for s in [
+                "exp(sin(x))",
+                "exp(n*atanh(x^2))",
+                "exp(atanh(x) + atan(x))",
+                "exp(2*atan(x))*x",
+            ] {
+                let expr = parse(&ctx, s);
+                for i in 0..300 {
+                    assert!(
+                        integrate_exp_log(&ctx, expr, x).is_none(),
+                        "{s} round {i} unexpectedly succeeded"
+                    );
+                }
+            }
+        }
+        // The solved rounds run on a big stack (see `with_big_stack`).
+        with_big_stack(|| {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let x = Symbol::new("x");
+            let expr = parse(&ctx, "1/(exp((2*atanh(a*x)))*(c - a*c*x)^(3/2))");
+            let mut first_len = None;
+            for i in 0..300 {
+                let r = crate::integrate(&ctx, expr, x);
+                assert!(!contains_integral(r), "round {i}: {r}");
+                let len = r.to_string().len();
+                match first_len {
+                    None => first_len = Some(len),
+                    Some(f) => assert_eq!(f, len, "round {i}: answer grew"),
+                }
+                assert!(node_count(r) < 4096, "round {i}: answer blow-up");
+            }
+        });
+    }
+
+    /// Every corpus shape the mechanism targets: each answer it does produce
+    /// must pass the numerical derivative check (the guard against the
+    /// symbolic-rational quadratic-denominator bug), and declinations are
+    /// allowed for the shapes no engine can finish.
+    #[test]
+    fn exp_inverse_targets_verified_or_declined() {
+        // Runs on a big stack: the integrator recurses deeply on several of
+        // these shapes (see `with_big_stack`).
+        with_big_stack(|| {
+            let mut solved = 0usize;
+            let mut declined = Vec::new();
+            // A fresh arena per shape, mirroring the corpus harness (one child
+            // process per case).
+            for (id, integrand, domain) in TARGET_SHAPES {
+                let arena = Arena::new();
+                let ctx = AtomArena::new(&arena);
+                if check_shape(&ctx, integrand, domain) {
+                    solved += 1;
+                } else {
+                    declined.push(*id);
+                }
+            }
+            println!(
+                "E4 solved {solved}/{} shapes; declined: {declined:?}",
+                TARGET_SHAPES.len()
+            );
+        });
     }
 }

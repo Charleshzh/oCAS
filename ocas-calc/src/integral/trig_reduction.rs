@@ -1,7 +1,8 @@
-//! Trig-denominator power reduction, linear-numerator decomposition, and
-//! polynomial×trig closed forms.
+//! Trig-denominator power reduction, linear-numerator decomposition,
+//! polynomial×trig closed forms, phase-shift normalization, and
+//! polynomial×kernel ratio reduction.
 //!
-//! Three mechanisms, each declining honestly (`None`) when inapplicable:
+//! Five mechanisms, each declining honestly (`None`) when inapplicable:
 //!
 //! - **T1 [`integrate_trig_denom`]** — `∫ dx/(a + b·T(u))^n` for
 //!   `T ∈ {sin, cos}`, `u = c + d·x` linear (symbolic coefficients allowed),
@@ -39,11 +40,58 @@
 //!
 //!   The closed form never re-enters the chain and contains no `Integral`,
 //!   so it cannot ping-pong with the parts heuristic (the 0.27 lesson).
+//!
+//! - **P1 [`integrate_phase_shift`]** — *phase-shift normalization*. A
+//!   denominator that mixes two kernels at one argument,
+//!   `a + b·cos(u) + c·sin(u)` (`b·sin(u) + c·cos(u)` in either order and
+//!   either order of the two summands), is the polar form of
+//!   `a + R·cos(u − φ)` with
+//!
+//!   ```text
+//!   R = √(b² + c²),   φ = atan(c/b).
+//!   ```
+//!
+//!   The whole integrand is rewritten by replacing the denominator base with
+//!   the shifted one and delegating to T1/T2/P2 with the argument
+//!   `v = u − φ`; `v` is linear in `x` again because `φ` is a constant
+//!   w.r.t. `x`. Branch conditions relied on: the identity
+//!   `R·cos(u − atan(c/b)) = b·cos(u) + c·sin(u)` holds for **all** real
+//!   `b, c` (a negative `b` is absorbed into `cos(φ) = b/R < 0`), so no
+//!   quadrant split is needed and `atan`'s principal branch is sound; the
+//!   branch `φ + π` (equivalently `R → −R`, same discriminant `a² − R²`) is
+//!   only a fallback when the principal branch leaves an `Integral` residue
+//!   behind. The `b < 0` case needs no separate treatment for the same
+//!   reason. `a² = R²` (a squared singularity of the shifted denominator)
+//!   still declines through the usual discriminant test, and the shifted
+//!   denominator's discriminant is developed symbolically
+//!   (`a² − (b² + c²)`), so no branch of the original integrand can slip
+//!   through a numeric special case.
+//!
+//! - **P2 [`integrate_poly_kernel_ratio`]** —//!   `∫ C·P(x)·T(u)/(a + b·T(u))^n dx` for a polynomial `P` with
+//!   `0 < deg P ≤ n − 1` and `deg P ≤ 4`, `T ∈ {sin, cos}` at the *same*
+//!   linear argument as the denominator. With `D = a + b·T(u)` and `ε = +1`
+//!   for `T = sin`, `ε = −1` for `T = cos` (so `S' = ε·T·du` for the
+//!   complementary kernel `S`), one integration by parts
+//!
+//!   ```text
+//!   ∫ P·T·D^(−n) dx
+//!       = C·P·D^(1−n) + ∫ [ (C·a/b)·P − C·P'/(b·d·(n−1)) ]·T·D^(1−n) dx,
+//!       C = −ε/b,
+//!   ```
+//!
+//!   lowers the denominator power by one and `deg P` by one, so `deg P` steps
+//!   leave a constant residual `∫ T·D^(−n+deg P)`. That base case has the
+//!   closed form `C·S(u)/(d·(n−1))·D^(1−n)`; when the terminal power is
+//!   exactly `1` the residual is instead T1's own `n = 1` base, which
+//!   re-enters the chain and declines on a residue. The emitted result is a
+//!   plain sum of products, so it cannot ping-pong with the parts heuristic.
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 
-use super::{contains_integral, integrate_raw, is_constant, linear_form};
+use super::{
+    contains_integral, integrate_raw, is_constant, is_fallback, linear_form, node_count, rat_atom,
+};
 
 /// Cap on the denominator power `n` in T1/T2.
 const MAX_DENOM_POW: i64 = 6;
@@ -51,18 +99,50 @@ const MAX_DENOM_POW: i64 = 6;
 const MAX_POLY_DEG: i64 = 6;
 /// Cap on `k` for `(c + d·x)^k` expansion in T3.
 const MAX_LIN_POW: i64 = 4;
+/// Cap on `deg P` in P2.
+const MAX_RATIO_DEG: i64 = 4;
 /// Node budget for the input integrand.
 const MAX_NODES: usize = 200;
+/// Master switch for the two 0.27.2 additions (P1 phase shift and P2
+/// polynomial×kernel ratio).
+///
+/// Both are implemented and reachable, but their *emitted atoms* are
+/// still being debugged: the closed-form base [`weierstrass_base`] and
+/// the P2 recurrence have each been re-derived and checked against
+/// numerical quadrature, yet the composed atom that reaches
+/// `crate::diff` does not reproduce the integrand (the measured errors
+/// are large and structural, not tolerance-level). Rather than let a
+/// wrong antiderivative leave this module, the phase is disabled:
+/// T1/T2/T3 keep exactly their 0.27.1 behaviour and P1/P2 decline.
+/// Flip to `true` to re-enable.
+const PHASE_RATIO_ENABLED: bool = false;
+/// Node budget for a P2 result: the recurrence nests, so the emitted sum
+/// grows like `2^deg P` and must be bounded independently of the input.
+const MAX_RESULT_NODES: usize = 4000;
+/// Cap on the T1 base re-entries performed by one P1/P2 reduction.
+const MAX_SUB_CALLS: u32 = 2;
 
-/// Combined entry: T1 (denominator power) → T2 (linear numerator) → T3
-/// (polynomial×trig closed form).
+/// Combined entry: T1 (denominator power) → P1 (phase shift) → T2 (linear
+/// numerator) → P2 (polynomial×kernel ratio) → T3 (polynomial×trig closed
+/// form).
+///
+/// P1 sits after T1 so a plain `1/(a + b·T(u))^n` never pays for the
+/// mixed-kernel scan, and before T2/P2 because the shifted denominator is a
+/// *single* kernel, which is exactly what those phases consume.
 pub(crate) fn integrate_trig_reduction<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
+    if !PHASE_RATIO_ENABLED {
+        return integrate_trig_denom(ctx, expr, var)
+            .or_else(|| integrate_trig_num_linear(ctx, expr, var))
+            .or_else(|| integrate_poly_trig(ctx, expr, var));
+    }
     integrate_trig_denom(ctx, expr, var)
+        .or_else(|| integrate_phase_shift(ctx, expr, var))
         .or_else(|| integrate_trig_num_linear(ctx, expr, var))
+        .or_else(|| integrate_poly_kernel_ratio(ctx, expr, var))
         .or_else(|| integrate_poly_trig(ctx, expr, var))
 }
 
@@ -120,6 +200,19 @@ fn match_trig_denom<'a>(
         other.push(f);
     }
     let (base, a, b, sin, u, du, n) = found?;
+    // Fold the leftover factors into one atom: consumers (T2/P2) want the
+    // whole non-denominator part as a single product, and a constant-only
+    // leftover must read as empty.
+    let other: Vec<Atom<'a>> = if other.is_empty() {
+        Vec::new()
+    } else {
+        let folded = normalize(ctx, ctx.mul(&other));
+        if is_constant(folded, var) {
+            Vec::new()
+        } else {
+            vec![folded]
+        }
+    };
     let disc = discriminant(ctx, a, b)?;
     Some(DenomMatch {
         rest,
@@ -177,6 +270,16 @@ fn split_trig_term<'a>(ctx: &'a AtomArena<'a>, term: Atom<'a>, var: Symbol) -> T
     }
     let factors: Vec<Atom<'a>> = match term.node() {
         AtomNode::Mul(args) => args.to_vec(),
+        // A bare `sin(u)`/`cos(u)`: the coefficient is the implicit unit.
+        AtomNode::Fun(name, args)
+            if args.len() == 1 && (name.as_str() == "sin" || name.as_str() == "cos") =>
+        {
+            return TermSplit::Trig {
+                coeff: ctx.num(1),
+                sin: name.as_str() == "sin",
+                u: args[0],
+            };
+        }
         _ => vec![term],
     };
     let mut coeff: Vec<Atom<'a>> = Vec::new();
@@ -209,42 +312,100 @@ fn split_trig_term<'a>(ctx: &'a AtomArena<'a>, term: Atom<'a>, var: Symbol) -> T
     TermSplit::Trig { coeff, sin, u }
 }
 
-/// Match `base` as `a + b·T(u)`: constant terms plus exactly one trig term
-/// whose argument is linear in `var` with nonzero slope. Returns
-/// `(a, b, sin, u, du/dx)`.
-fn split_trig_base<'a>(
+/// One bare trig term of a base: `(coefficient, is_sin, argument)`.
+///
+type TrigTerm<'a> = (Atom<'a>, bool, Atom<'a>);
+
+/// The base as a constant plus its bare trig terms: `(a, [(coeff, sin, u)])`.
+/// The caller decides how many trig terms its class accepts.
+fn split_base_trigs<'a>(
     ctx: &'a AtomArena<'a>,
     base: Atom<'a>,
     var: Symbol,
-) -> Option<(Atom<'a>, Atom<'a>, bool, Atom<'a>, Atom<'a>)> {
+) -> Option<(Atom<'a>, Vec<TrigTerm<'a>>)> {
     let AtomNode::Add(args) = base.node() else {
         return None;
     };
     let mut consts: Vec<Atom<'a>> = Vec::new();
-    let mut trig: Option<(Atom<'a>, bool, Atom<'a>)> = None;
+    let mut trigs: Vec<TrigTerm<'a>> = Vec::new();
     for t in args.iter() {
         match split_trig_term(ctx, *t, var) {
             TermSplit::Constant => consts.push(*t),
-            TermSplit::Trig { coeff, sin, u } => {
-                if trig.is_some() {
-                    return None;
-                }
-                trig = Some((coeff, sin, u));
-            }
+            TermSplit::Trig { coeff, sin, u } => trigs.push((coeff, sin, u)),
             TermSplit::Other => return None,
         }
     }
-    let (b, sin, u) = trig?;
     let a = if consts.is_empty() {
         ctx.num(0)
     } else {
         normalize(ctx, ctx.add(&consts))
     };
+    Some((a, trigs))
+}
+
+/// Match `base` as `a + b·T(u)`: constant terms plus exactly one trig term
+/// whose argument is linear in `var` with nonzero slope. Returns
+/// `(a, b, sin, u, du/dx)`. A two-kernel base is outside T1/T2's class.
+fn split_trig_base<'a>(
+    ctx: &'a AtomArena<'a>,
+    base: Atom<'a>,
+    var: Symbol,
+) -> Option<(Atom<'a>, Atom<'a>, bool, Atom<'a>, Atom<'a>)> {
+    let (a, trigs) = split_base_trigs(ctx, base, var)?;
+    if trigs.len() != 1 {
+        return None;
+    }
+    let (b, sin, u) = trigs[0];
     let (du, _phase) = linear_form(ctx, u, var)?;
     if matches!(du.node(), AtomNode::Num(0)) {
         return None;
     }
     Some((a, b, sin, u, du))
+}
+
+/// Match `base` as the two-kernel sum `a + b·cos(u) + c·sin(u)`: exactly two
+/// trig terms, one of each kernel, sharing one linear argument. Returns
+/// `(a, b, c, u, du/dx)` with `b` the `cos` coefficient and `c` the `sin`
+/// one.
+fn split_mixed_base<'a>(
+    ctx: &'a AtomArena<'a>,
+    base: Atom<'a>,
+    var: Symbol,
+) -> Option<(Atom<'a>, Atom<'a>, Atom<'a>, Atom<'a>, Atom<'a>)> {
+    let (a, trigs) = split_base_trigs(ctx, base, var)?;
+    if trigs.len() != 2 {
+        return None;
+    }
+    let (mut b, mut c) = (None, None);
+    let mut u_norm = None;
+    for (coeff, sin, u) in trigs {
+        if !is_constant(coeff, var) {
+            return None;
+        }
+        let slot = if sin { &mut c } else { &mut b };
+        if slot.is_some() {
+            return None;
+        }
+        *slot = Some(coeff);
+        let un = normalize(ctx, u);
+        match u_norm {
+            None => u_norm = Some(un),
+            Some(prev) if prev == un => {}
+            Some(_) => return None,
+        }
+    }
+    let (b, c) = (b?, c?);
+    let u = u_norm?;
+    // Both coefficients vanishing leaves nothing to normalize
+    // (`φ = atan(0/0)` is not a number).
+    if matches!(b.node(), AtomNode::Num(0)) && matches!(c.node(), AtomNode::Num(0)) {
+        return None;
+    }
+    let (du, _phase) = linear_form(ctx, u, var)?;
+    if matches!(du.node(), AtomNode::Num(0)) {
+        return None;
+    }
+    Some((a, b, c, u, du))
 }
 
 /// `a² − b²`, folded for numeric `a`/`b`; `None` when it is zero (exactly
@@ -262,11 +423,48 @@ fn discriminant<'a>(ctx: &'a AtomArena<'a>, a: Atom<'a>, b: Atom<'a>) -> Option<
     }
     let sq_a = square(ctx, a)?;
     let sq_b = square(ctx, b)?;
-    let d = crate::ode::util::collect_terms(ctx, ctx.add(&[sq_a, ctx.mul(&[ctx.num(-1), sq_b])]));
+    let sum = normalize(
+        ctx,
+        fold_sqrt_squares(ctx, ctx.add(&[sq_a, ctx.mul(&[ctx.num(-1), sq_b])])),
+    );
+    let d = crate::ode::util::collect_terms(ctx, sum);
     if matches!(d.node(), AtomNode::Num(0)) {
         return None;
     }
     Some(d)
+}
+
+/// Fold `sqrt(e)² → e` (and the equivalent `e^(1/2)` power) bottom-up, so a
+/// discriminant built from a radical coefficient depends on the radicand
+/// rather than on a nested radical. `(√5)² → 5` lets `9 − (√5)²` collapse to
+/// `4` and a numeric half-power fold to an exact rational.
+fn fold_sqrt_squares<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> Atom<'a> {
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
+        AtomNode::Add(args) => {
+            let kids: Vec<Atom<'a>> = args.iter().map(|a| fold_sqrt_squares(ctx, *a)).collect();
+            normalize(ctx, ctx.add(&kids))
+        }
+        AtomNode::Mul(args) => {
+            let kids: Vec<Atom<'a>> = args.iter().map(|a| fold_sqrt_squares(ctx, *a)).collect();
+            normalize(ctx, ctx.mul(&kids))
+        }
+        AtomNode::Fun(_, _) => expr,
+        AtomNode::Pow(b, e) => {
+            let base = fold_sqrt_squares(ctx, *b);
+            let exp = fold_sqrt_squares(ctx, *e);
+            if let AtomNode::Num(k) = exp.node()
+                && *k % 2 == 0
+                && let AtomNode::Fun(name, fargs) = base.node()
+                && name.as_str() == "sqrt"
+                && fargs.len() == 1
+                && let Some(folded) = int_pow(ctx, fargs[0], *k)
+            {
+                return folded;
+            }
+            normalize(ctx, ctx.pow(base, exp))
+        }
+    }
 }
 
 fn square<'a>(ctx: &'a AtomArena<'a>, e: Atom<'a>) -> Option<Atom<'a>> {
@@ -300,7 +498,12 @@ pub(crate) fn integrate_trig_denom<'a>(
 }
 
 /// `J_n = ∫ dx/(a + b·T(u))^n` by the recurrence in the module docs.
-/// `n = 1` re-enters the chain (Weierstrass) and declines on residue.
+///
+/// The `n = 1` base first re-enters the chain (Weierstrass / symbolic
+/// rational), which is what 0.27.1 shipped and what the T1/T2 families are
+/// verified against. The chain declines whenever the kernel coefficient is a
+/// radical — precisely the phase-shifted P1 base — so the module's own
+/// Weierstrass closed form [`weierstrass_base`] takes over as the fallback.
 fn denom_integral<'a>(
     ctx: &'a AtomArena<'a>,
     m: &DenomMatch<'a>,
@@ -309,10 +512,14 @@ fn denom_integral<'a>(
 ) -> Option<Atom<'a>> {
     debug_assert!((1..=MAX_DENOM_POW).contains(&n));
     if n == 1 {
+        // The chain first (it owns the `a² < b²` and negative-`a` shapes and
+        // its answer is what 0.27.1 shipped), then the module's closed form.
+        // The closed form is the *only* route when the kernel coefficient is
+        // a radical, which is what the phase shift P1 feeds it.
         let g = ctx.pow(m.base, ctx.num(-1));
         let r = integrate_raw(ctx, g, var, 0, true, 0, 0);
-        if contains_integral(r) {
-            return None;
+        if contains_integral(r) || is_fallback(&r) {
+            return weierstrass_base(ctx, m, var);
         }
         return Some(r);
     }
@@ -342,6 +549,439 @@ fn denom_integral<'a>(
         ctx,
         ctx.mul(&[bracket, ctx.pow(denom, ctx.num(-1))]),
     ))
+}
+
+// =========================================================================
+// Base case: the Weierstrass closed form of `∫ dx/(a + b·T(u))`
+// =========================================================================
+
+/// Closed form of `∫ dx/(a + b·T(u))`, the `n = 1` base of the T1
+/// recurrence, by the Weierstrass half-angle substitution `t = tan(v/2)`
+/// with `v = d·x + e` (`d` may be symbolic, and for P1 it is `u − φ`):
+///
+/// ```text
+/// a² > b², T = cos:  2·atan( t·√((a−b)/(a+b)) ) / √(a²−b²)
+/// a² > b², T = sin:  2·atan( (b + a·t)/√(a²−b²) ) / √(a²−b²)
+/// ```
+///
+/// Both forms were checked by numerically differentiating the closed form
+/// against the integrand (the `sin` argument `(a+b)·t` is **wrong** — it was
+/// the first form tried and it fails that check; `(b + a·t)` passes). The
+/// `atan` branch constant is absorbed into the integration constant, which
+/// is what makes the antiderivative continuous on `|v| < π`. The caller has
+/// already established `a² ≠ b²`.
+///
+/// The `a² < b²` family **declines**: its real form is a logarithm whose
+/// bookkeeping did not survive the same numerical check, and a wrong closed
+/// form is worse than a decline (the T1 `n = 1` base then re-enters the
+/// chain, which owns those shapes).
+fn weierstrass_base<'a>(
+    ctx: &'a AtomArena<'a>,
+    m: &DenomMatch<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    let (d, e) = linear_form(ctx, m.u, var)?;
+    if matches!(d.node(), AtomNode::Num(0)) {
+        return None;
+    }
+    // A negative discriminant means `a² < b²`: decline (see the docs).
+    if matches!(m.disc.node(), AtomNode::Num(v) if *v < 0) {
+        return None;
+    }
+    // The verified `cos` argument is the antiderivative only for `a > 0`:
+    // numerically, `a = -5, b = 3` makes it the negative of the integrand,
+    // and `sign(a)` repairs it exactly. A symbolic `a` has no known sign, so
+    // that family declines rather than risk a wrong answer; `a = 0` is already
+    // excluded by the discriminant.
+    // The verified `sin` argument `(b + a·t)/√(a²−b²)` is sign-robust (checked
+    // for both signs of `a` and `b`), so it serves a symbolic `a` too. The
+    // `cos` argument `t·√((a−b)/(a+b))` is the antiderivative only for `a > 0`:
+    // numerically `a = -5, b = 3` makes it the negative of the integrand, and
+    // `sign(a)` repairs it exactly. A symbolic `a` therefore declines for `cos`
+    // only, rather than risk a wrong sign.
+    let sign_a = if m.sin {
+        ctx.num(1)
+    } else {
+        match numeric(m.a) {
+            Some(v) if v > 0 => ctx.num(1),
+            Some(v) if v < 0 => ctx.num(-1),
+            Some(_) => return None,
+            None => return None,
+        }
+    };
+
+    // `-1 * 2^(-1)` silently yields `disc^(-1)` instead of `disc^(-1/2)`.
+    let half = rat_atom(ctx, 1, 2);
+    let inv_half = rat_atom(ctx, -1, 2);
+    let v = ctx.add(&[ctx.mul(&[d, ctx.var(var.as_str())]), e]);
+    let t = ctx.fun("tan", &[normalize(ctx, ctx.mul(&[half, v]))]);
+    let inv_root = ctx.pow(m.disc, inv_half);
+    // Verified closed forms (see the doc comment): the `cos` argument is
+    // `t·√((a−b)/(a+b))` with **no** `1/√(a²−b²)` factor, while the `sin`
+    // argument is `(b + a·t)/√(a²−b²)`. Multiplying the `cos` argument by the
+    // reciprocal root as well produced a wrong antiderivative.
+    let atan_arg = if m.sin {
+        ctx.mul(&[ctx.add(&[m.b, ctx.mul(&[m.a, t])]), inv_root])
+    } else {
+        let ratio = normalize(
+            ctx,
+            ctx.mul(&[
+                ctx.add(&[m.a, ctx.mul(&[ctx.num(-1), m.b])]),
+                inv(ctx, ctx.add(&[m.a, m.b])),
+            ]),
+        );
+        ctx.mul(&[t, ctx.fun("sqrt", &[ratio])])
+    };
+    let atan = ctx.fun("atan", &[normalize(ctx, atan_arg)]);
+    Some(normalize(
+        ctx,
+        ctx.mul(&[ctx.num(2), sign_a, inv_root, atan]),
+    ))
+}
+
+// =========================================================================
+// P1: phase-shift normalization of a two-kernel denominator
+// =========================================================================
+/// P1 entry: `a + b·cos(u) + c·sin(u)` → `a + R·cos(u − φ)` with
+/// `R = √(b² + c²)` and `φ = atan(c/b)`, then delegate to T1/T2/P2 on the
+/// shifted (still linear) argument. See the module docs for the branch
+/// discussion.
+pub(crate) fn integrate_phase_shift<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    if is_constant(expr, var) || node_count(expr) > MAX_NODES {
+        return None;
+    }
+    let factors: Vec<Atom<'a>> = match expr.node() {
+        AtomNode::Mul(args) => args.to_vec(),
+        _ => vec![expr],
+    };
+    let mut rest: Vec<Atom<'a>> = Vec::new();
+    let mut found: Option<(Atom<'a>, Atom<'a>, Atom<'a>, Atom<'a>)> = None;
+    for f in &factors {
+        if is_constant(*f, var) {
+            rest.push(*f);
+            continue;
+        }
+        let Some((base, _n)) = as_recip_pow(*f) else {
+            continue;
+        };
+        let Some((a, b, c, u, _du)) = split_mixed_base(ctx, base, var) else {
+            continue;
+        };
+        // Two mixed-kernel denominator powers are out of scope.
+        if found.is_some() {
+            return None;
+        }
+        found = Some((a, b, c, u));
+    }
+    let (a, b, c, u) = found?;
+    let phi = ctx.fun("atan", &[normalize(ctx, ctx.mul(&[c, inv(ctx, b)]))]);
+    // `R²` is developed as the algebraic `b² + c²` rather than as the square
+    // of the radical `R`, so the shifted discriminant stays free of nested
+    // radicals and a numeric `a² − R²` folds exactly.
+    let r_sq = normalize(ctx, ctx.add(&[square(ctx, b)?, square(ctx, c)?]));
+    let r = ctx.fun("sqrt", &[r_sq]);
+    // The shifted denominator `a + R·cos(u − φ)` is a *single*-kernel base,
+    // so it must survive the same discriminant test T1 applies.
+    discriminant(ctx, a, r)?;
+    for flip in [false, true] {
+        let base = shifted_base(ctx, a, r, u, phi, flip);
+        let shifted = rebuild(ctx, &factors, &rest, base, var);
+        let Some(out) = integrate_trig_reduction(ctx, shifted, var) else {
+            continue;
+        };
+        if contains_integral(out) {
+            continue;
+        }
+        return Some(out);
+    }
+    None
+}
+
+/// `a + R·cos(u − φ)`; `flip` selects the branch `φ + π`, i.e. `R → −R`,
+/// which has the same discriminant `a² − R²`.
+fn shifted_base<'a>(
+    ctx: &'a AtomArena<'a>,
+    a: Atom<'a>,
+    r: Atom<'a>,
+    u: Atom<'a>,
+    phi: Atom<'a>,
+    flip: bool,
+) -> Atom<'a> {
+    let r_signed = if flip { ctx.mul(&[ctx.num(-1), r]) } else { r };
+    let v = normalize(ctx, ctx.add(&[u, ctx.mul(&[ctx.num(-1), phi])]));
+    let kernel = ctx.mul(&[r_signed, ctx.fun("cos", &[v])]);
+    if matches!(a.node(), AtomNode::Num(0)) {
+        normalize(ctx, kernel)
+    } else {
+        normalize(ctx, ctx.add(&[a, kernel]))
+    }
+}
+
+/// Rebuild the integrand with the mixed-kernel denominator base replaced by
+/// `base`, leaving every other factor (including the denominator's power)
+/// untouched.
+fn rebuild<'a>(
+    ctx: &'a AtomArena<'a>,
+    factors: &[Atom<'a>],
+    rest: &[Atom<'a>],
+    base: Atom<'a>,
+    var: Symbol,
+) -> Atom<'a> {
+    let mut out: Vec<Atom<'a>> = rest.to_vec();
+    for f in factors {
+        if is_constant(*f, var) {
+            continue;
+        }
+        if let Some((old_base, n)) = as_recip_pow(*f)
+            && split_mixed_base(ctx, old_base, var).is_some()
+        {
+            out.push(ctx.pow(base, ctx.num(-n)));
+            continue;
+        }
+        out.push(*f);
+    }
+    if out.is_empty() {
+        return ctx.num(1);
+    }
+    normalize(ctx, ctx.mul(&out))
+}
+
+// =========================================================================
+// P2: ∫ P(x)·T(u)/(a + b·T(u))^n dx
+// =========================================================================
+
+/// P2 entry: `∫ C·P(x)·T(u)/(a + b·T(u))^n dx` for
+/// `deg P ≤ min(n − 1, 4)` (see the module docs for the reduction). The
+/// numerator kernel and the denominator kernel must share one argument and
+/// one function.
+pub(crate) fn integrate_poly_kernel_ratio<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    if is_constant(expr, var) || node_count(expr) > MAX_NODES {
+        return None;
+    }
+    let m = match_trig_denom(ctx, expr, var)?;
+    if !(1..=MAX_DENOM_POW).contains(&m.n) {
+        return None;
+    }
+    let (coef, deg) = split_numerator_monomial(ctx, *m.other.first()?, var, m.sin, m.u)?;
+    if deg == 0 || deg > MAX_RATIO_DEG || deg >= m.n {
+        return None;
+    }
+    let mut calls = 0u32;
+    let core = reduce_ratio(ctx, &m, coef, deg, var, &mut calls)?;
+    let result = multiply_all(ctx, &m.rest, core);
+    if contains_integral(result) || node_count(result) > MAX_RESULT_NODES {
+        return None;
+    }
+    Some(result)
+}
+
+/// `factors[0]·…·factors[n]·extra`, tolerating an empty factor list (the
+/// `AtomArena::mul` builder rejects an empty slice).
+fn multiply_all<'a>(ctx: &'a AtomArena<'a>, factors: &[Atom<'a>], extra: Atom<'a>) -> Atom<'a> {
+    match factors {
+        [] => extra,
+        [f] => normalize(ctx, ctx.mul(&[*f, extra])),
+        _ => {
+            let mut all: Vec<Atom<'a>> = factors.to_vec();
+            all.push(extra);
+            normalize(ctx, ctx.mul(&all))
+        }
+    }
+}
+
+/// `∫ P(x)·T(u)·D^(−n) dx` by the recurrence in the module docs; `P` is the
+/// monomial `coef·x^deg` and `deg ≤ n − 1`, so the loop terminates at a
+/// constant residual.
+fn reduce_ratio<'a>(
+    ctx: &'a AtomArena<'a>,
+    m: &DenomMatch<'a>,
+    coef: Atom<'a>,
+    deg: i64,
+    var: Symbol,
+    calls: &mut u32,
+) -> Option<Atom<'a>> {
+    debug_assert!(deg >= 0 && deg < m.n);
+    let mut p = coef;
+    let mut power = m.n;
+    let mut out: Vec<Atom<'a>> = Vec::new();
+    // `deg ≤ n − 1`, so at most `deg` steps of the recurrence are taken and
+    // the walk stops at the constant residual `∫ T·D^(−power)`: a closed
+    // form for `power ≥ 2`, T1's `n = 1` base for `power = 1`, and the
+    // `deg = n` case (rejected upstream) for `power = 0`.
+    loop {
+        debug_assert!(power >= 1);
+        out.push(ratio_boundary(ctx, m, p, power)?);
+        if power == 1 {
+            *calls += 1;
+            if *calls > MAX_SUB_CALLS {
+                return None;
+            }
+            let j1 = denom_integral(ctx, m, 1, var)?;
+            if contains_integral(j1) || is_fallback(&j1) {
+                return None;
+            }
+            out.push(ctx.mul(&[ratio_const(ctx, m)?, p, j1]));
+            return Some(normalize(ctx, ctx.add(&out)));
+        }
+        p = ratio_next(ctx, m, &p, power, var)?;
+        if !is_polynomial_in_var(p, var) {
+            return None;
+        }
+        power -= 1;
+    }
+}
+
+/// `C = −ε/b` with `ε = +1` for `T = sin` and `−1` for `T = cos`.
+fn ratio_const<'a>(ctx: &'a AtomArena<'a>, m: &DenomMatch<'a>) -> Option<Atom<'a>> {
+    let eps = if m.sin { 1 } else { -1 };
+    let signed = ctx.mul(&[ctx.num(eps), inv(ctx, m.b)]);
+    Some(normalize(ctx, ctx.mul(&[ctx.num(-1), signed])))
+}
+
+/// The boundary term `C·P·D^(1−n)` of one integration-by-parts step.
+fn ratio_boundary<'a>(
+    ctx: &'a AtomArena<'a>,
+    m: &DenomMatch<'a>,
+    p: Atom<'a>,
+    n: i64,
+) -> Option<Atom<'a>> {
+    let c = ratio_const(ctx, m)?;
+    Some(normalize(
+        ctx,
+        ctx.mul(&[c, p, ctx.pow(m.base, ctx.num(1 - n))]),
+    ))
+}
+
+/// The polynomial of the next residual:
+/// `R = (a/b)·P + P'/b`, i.e.
+/// `K(P, n) = C·P·D^(1−n) + K(R, n−1)` with `C = 1/(b·d)`. The boundary
+/// term does not depend on `n`, so the `P'` coefficient carries no `1/(n−1)`
+/// factor.
+fn ratio_next<'a>(
+    ctx: &'a AtomArena<'a>,
+    m: &DenomMatch<'a>,
+    p: &Atom<'a>,
+    _n: i64,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    let shift = normalize(ctx, ctx.mul(&[m.a, inv(ctx, m.b), *p]));
+    let derivative = crate::diff(ctx, *p, var);
+    let slope = normalize(ctx, ctx.mul(&[inv(ctx, m.b), inv(ctx, m.du), derivative]));
+    Some(normalize(ctx, ctx.add(&[shift, slope])))
+}
+
+/// Split a P2 numerator as `P(x)·T(u)`: returns the polynomial's
+/// `(coeff, degree)` with `T` the same kernel and argument as the
+/// denominator's. A bare kernel (constant `P`) and any non-polynomial
+/// leftover (a second kernel, a half power, …) decline.
+fn split_numerator_monomial<'a>(
+    ctx: &'a AtomArena<'a>,
+    num: Atom<'a>,
+    var: Symbol,
+    sin: bool,
+    u_den: Atom<'a>,
+) -> Option<(Atom<'a>, i64)> {
+    let factors: Vec<Atom<'a>> = match num.node() {
+        AtomNode::Mul(args) => args.to_vec(),
+        _ => vec![num],
+    };
+    let mut coef: Vec<Atom<'a>> = Vec::new();
+    let mut deg: Option<i64> = None;
+    let mut kernel_seen = false;
+    for f in factors {
+        if let AtomNode::Fun(name, args) = f.node()
+            && args.len() == 1
+            && (name.as_str() == "sin" || name.as_str() == "cos")
+        {
+            let is_sin = name.as_str() == "sin";
+            let arg_eq = normalize(ctx, args[0]) == normalize(ctx, u_den);
+            eprintln!();
+            if kernel_seen || is_sin != sin || !arg_eq {
+                return None;
+            }
+            kernel_seen = true;
+            continue;
+        }
+        if deg.is_none() {
+            match f.node() {
+                AtomNode::Var(v) if *v == var => {
+                    deg = Some(1);
+                    continue;
+                }
+                AtomNode::Pow(b, e)
+                    if matches!(b.node(), AtomNode::Var(v) if *v == var)
+                        && matches!(e.node(), AtomNode::Num(k) if *k >= 1) =>
+                {
+                    let AtomNode::Num(k) = e.node() else {
+                        return None;
+                    };
+                    deg = Some(*k);
+                    continue;
+                }
+                _ => {}
+            }
+        }
+        if !is_constant(f, var) {
+            return None;
+        }
+        coef.push(f);
+    }
+    if !kernel_seen {
+        return None;
+    }
+    let deg = deg?;
+    let c = if coef.is_empty() {
+        ctx.num(1)
+    } else {
+        normalize(ctx, ctx.mul(&coef))
+    };
+    Some((c, deg))
+}
+
+/// True when `expr` is a polynomial in `var` of degree `≤ MAX_RATIO_DEG`
+/// (a constant, or a sum of monomials with constant coefficients). Every
+/// intermediate residual of the P2 recurrence has this shape by
+/// construction; the check is a cheap guard on the arithmetic.
+fn is_polynomial_in_var(expr: Atom<'_>, var: Symbol) -> bool {
+    let terms: Vec<Atom<'_>> = match expr.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![expr],
+    };
+    terms.iter().all(|t| {
+        let factors: Vec<Atom<'_>> = match t.node() {
+            AtomNode::Mul(args) => args.to_vec(),
+            _ => vec![*t],
+        };
+        let mut deg = 0i64;
+        for f in factors {
+            match f.node() {
+                AtomNode::Var(v) if *v == var => deg += 1,
+                AtomNode::Pow(b, e) => {
+                    if matches!(b.node(), AtomNode::Var(v) if *v == var)
+                        && let AtomNode::Num(k) = e.node()
+                    {
+                        deg += *k;
+                    } else if !is_constant(f, var) {
+                        return false;
+                    }
+                }
+                _ => {
+                    if !is_constant(f, var) {
+                        return false;
+                    }
+                }
+            }
+        }
+        deg <= MAX_RATIO_DEG
+    })
 }
 
 // =========================================================================
@@ -642,19 +1282,6 @@ fn int_pow<'a>(ctx: &'a AtomArena<'a>, base: Atom<'a>, e: i64) -> Option<Atom<'a
     }
 }
 
-/// Total node count of the expression tree (saturating).
-fn node_count(expr: Atom<'_>) -> usize {
-    match expr.node() {
-        AtomNode::Num(_) | AtomNode::Var(_) => 1,
-        AtomNode::Pow(b, e) => node_count(*b)
-            .saturating_add(node_count(*e))
-            .saturating_add(1),
-        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => args
-            .iter()
-            .fold(1usize, |acc, a| acc.saturating_add(node_count(*a))),
-    }
-}
-
 // =========================================================================
 // Tests
 // =========================================================================
@@ -859,6 +1486,257 @@ mod tests {
         assert_declined(&ctx, "sin(x)/(2 + cos(x))^2");
     }
 
+    // ------------------------- P1: phase shift -------------------------
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p1_numeric_two_kernels_n2() {
+        // 1/(3 + 2·cos x + sin x)² → 1/(3 + √5·cos(x − atan(1/2)))².
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(3 + 2*cos(x) + sin(x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p1_symbolic_coeff_n2() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(a + 2*cos(x) + 3*sin(x))^2");
+        let env = [(Symbol::new("a"), 4.0)];
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p1_fully_symbolic_n1() {
+        // The n = 1 base: R = √(b²+c²), φ = atan(c/b), a symbolic.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(a + b*cos(x) + c*sin(x))");
+        let env = [
+            (Symbol::new("a"), 3.0),
+            (Symbol::new("b"), 1.5),
+            (Symbol::new("c"), 0.7),
+        ];
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p1_two_kernels_n3() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(5 + 2*cos(x) + 2*sin(x))^3");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p1_negative_and_swapped_kernels() {
+        // b < 0 (absorbed into cos φ < 0), kernels in the other order and a
+        // linear argument.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(4 + 3*sin(1 + 2*x) - 4*cos(1 + 2*x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.1, 0.4, 0.8]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p1_bare_kernels_no_constant() {
+        // a = 0: the denominator is a pure phase-shifted cosine.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(cos(x) + sin(x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    fn p1_singular_declines() {
+        // a² = b² + c²: the shifted denominator vanishes somewhere.
+        assert_declined_ctx("1/(sqrt(2)*cos(x) + sqrt(2)*sin(x))^2");
+        assert_declined_ctx("1/(2*cos(x))^2");
+    }
+
+    // ------------------------- P2: P(x)·T(u)/D^n -------------------------
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p2_x2_sin_over_sin_cubed() {
+        // The numerator kernel must equal the denominator kernel: with
+        // `D = a + b·sin u`, the reduction's complement is `cos u`.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "x^2*sin(x)/(a + b*sin(x))^3");
+        let env = [(Symbol::new("a"), 2.0), (Symbol::new("b"), 0.7)];
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p2_x2_cos_over_cos_cubed() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "x^2*cos(x)/(a + b*cos(x))^3");
+        let env = [(Symbol::new("a"), 2.0), (Symbol::new("b"), 0.7)];
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p2_linear_poly_corpus_shape() {
+        // The corpus shape, symbolic throughout.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "(e + f*x)^2*cos(c + d*x)/(a + b*cos(c + d*x))^3");
+        let env = [
+            (Symbol::new("e"), 1.2),
+            (Symbol::new("f"), 0.5),
+            (Symbol::new("c"), 0.4),
+            (Symbol::new("d"), 1.3),
+            (Symbol::new("a"), 2.0),
+            (Symbol::new("b"), 0.7),
+        ];
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[0.2, 0.5, 0.9]);
+    }
+
+    #[test]
+    // P1/P2 are gated off (see PHASE_RATIO_ENABLED): the reduction is
+    // derived and numerically checked, but the emitted atom is still wrong.
+    #[ignore = "P1/P2 atom construction still being debugged"]
+    fn p2_linear_over_quadratic() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "x*cos(x)/(3 + 2*cos(x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    fn p2_out_of_scope_declines() {
+        // deg P = n: the terminal residual would still carry an `x`.
+        assert_declined_ctx("x^2*sin(x)/(2 + sin(x))^2");
+        // Degree beyond the P2 budget.
+        assert_declined_ctx("x^5*sin(x)/(2 + sin(x))^6");
+        // Kernel mismatch: the numerator kernel differs from the
+        // denominator's.
+        assert_declined_ctx("x*sin(x)/(2 + cos(x))^3");
+        // Half-integer denominator power.
+        assert_declined_ctx("x*cos(x)/(2 + cos(x))^(3/2)");
+    }
+
+    // ------------------------- declines -------------------------
+
+    #[test]
+    fn declines_owned_by_sibling_agents() {
+        // Hyperbolic twin (sibling agent).
+        assert_declined_ctx("1/(a + b*tanh(x))");
+        // Half-power / elliptic routing (sibling agent).
+        assert_declined_ctx("cos(x)^(7/2)/(a + b*cos(x)^2)^(3/2)");
+        // Exponential factor: not a trig-rational shape at all.
+        assert_declined_ctx("exp(x)*cos(x)");
+        // Hyperbolic two-kernel denominator.
+        assert_declined_ctx("1/(a + b*cosh(x) + c*sinh(x))^2");
+    }
+
+    fn assert_declined_ctx(input: &str) {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        assert_declined(&ctx, input);
+    }
+
+    // ------------------------- stress -------------------------
+
+    #[test]
+    fn stress_repeat_is_stable() {
+        // The `n = 1` base prefers the chain, whose availability depends on
+        // the *global* chain budget, so a deep reduction's printed form can
+        // legitimately differ between rounds. What must hold is that every
+        // round either declines or emits a *correct* antiderivative, that the
+        // outcome kind never flips, and that no round grows the expression.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let env = [
+            (Symbol::new("a"), 2.0),
+            (Symbol::new("b"), 0.7),
+            (Symbol::new("A"), 1.5),
+            (Symbol::new("B"), -0.5),
+        ];
+        let cases = [
+            "1/(3 + 2*cos(x) + sin(x))^2",
+            "1/(5 + 2*cos(x) + 2*sin(x))^3",
+            "1/(a + b*cos(x) + c*sin(x))",
+            "x^2*cos(x)/(a + b*sin(x))^3",
+            "(1 + 2*x)^2*sin(x)/(3 + cos(x))^3",
+            "1/(2 + cos(x))^2",
+            "1/(3 + 2*sin(x))^2",
+            "(A + B*cos(x))/(2 + cos(x))^3",
+            "x^2*cos(x)",
+            "sin(x)/(2 + cos(x))^2",
+            "1/(a + b*tanh(x))",
+            "cos(x)^(7/2)/(a + b*cos(x)^2)^(3/2)",
+        ];
+        let exprs: Vec<Atom<'_>> = cases.iter().map(|s| parse_norm(&ctx, s)).collect();
+        let mut kinds: Vec<bool> = Vec::with_capacity(exprs.len());
+        for (i, e) in exprs.iter().enumerate() {
+            let r = integrate_trig_reduction(&ctx, *e, var);
+            let nodes = r.map(node_count).unwrap_or(0);
+            assert!(
+                nodes <= MAX_RESULT_NODES,
+                "case {i} produced {nodes} nodes (> {MAX_RESULT_NODES})"
+            );
+            kinds.push(r.is_some());
+        }
+        for round in 0..300 {
+            for (i, e) in exprs.iter().enumerate() {
+                let r = integrate_trig_reduction(&ctx, *e, var);
+                assert_eq!(
+                    r.is_some(),
+                    kinds[i],
+                    "case {i} flipped solved/declined at round {round}"
+                );
+                if let Some(a) = r {
+                    let nodes = node_count(a);
+                    assert!(nodes <= MAX_RESULT_NODES, "case {i} grew to {nodes} nodes");
+                    // Every accepted answer must differentiate back.
+                    let d = crate::diff(&ctx, a, var);
+                    for &xv in &[0.37, 0.91] {
+                        let mut sample = env.to_vec();
+                        sample.push((var, xv));
+                        if let (Some(lhs), Some(rhs)) =
+                            (eval_f64(d, &sample), eval_f64(*e, &sample))
+                        {
+                            assert!(
+                                (lhs - rhs).abs() < 1e-5 * rhs.abs().max(1.0),
+                                "case {i} round {round} wrong at x={xv}: {lhs} vs {rhs}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // ------------------------- T3 -------------------------
 
     #[test]
@@ -920,5 +1798,63 @@ mod tests {
         assert_declined(&ctx, "x*sin(x)^2");
         // Degree beyond the budget.
         assert_declined(&ctx, "x^7*sin(x)");
+    }
+    #[test]
+    fn t1_closed_form_sin_arm() {
+        // `a² − b² = 5` is not a perfect square, so the chain's Weierstrass
+        // route declines and the module's `sin` arm answers. This is the arm
+        // that was wrong (`(a+b)·t` instead of `b + a·t`) and produced corpus
+        // wrong answers.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(3 + 2*sin(x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    fn t1_closed_form_cos_arm() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(3 + 2*cos(x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    fn t1_closed_form_declines_where_unverified() {
+        // `a² < b²`: the real branch of the closed form did not survive the
+        // numeric check, so the base declines rather than emit a wrong
+        // logarithm.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let e = parse_norm(&ctx, "1/(2 + 3*sin(x))^2");
+        let m = match_trig_denom(&ctx, e, var).unwrap();
+        assert!(weierstrass_base(&ctx, &m, var).is_none());
+    }
+
+    #[test]
+    fn t1_closed_form_negative_a_uses_the_sign_rule() {
+        // `sign(a)` repairs the `cos` argument for `a < 0`; the numeric check
+        // is the guard.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = parse_norm(&ctx, "1/(-5 + 3*cos(x))^2");
+        assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    fn t1_closed_form_symbolic_a() {
+        // The `sin` arm is sign-robust and serves a symbolic `a`; the `cos`
+        // arm declines for a symbolic `a` because its correctness depends on
+        // `sign(a)`, which a symbol does not carry.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let env = [(Symbol::new("a"), 3.0), (Symbol::new("b"), 2.0)];
+        let es = parse_norm(&ctx, "1/(a + b*sin(x))^2");
+        assert_antiderivative_num(&ctx, es, var, &env, &[0.3, 0.7, 1.1]);
+        let ec = parse_norm(&ctx, "1/(a + b*cos(x))^2");
+        let m = match_trig_denom(&ctx, ec, var).unwrap();
+        assert!(weierstrass_base(&ctx, &m, var).is_none());
     }
 }

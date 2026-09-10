@@ -47,6 +47,35 @@ use super::{
 
 /// Node budget for the input integrand and for substituted t-forms (S3).
 const MAX_NODES: usize = 200;
+/// Node budget for the S3 t-form handed back to the chain.
+const MAX_REENTRY_NODES: usize = 400;
+
+/// Work units a single entry into this module may charge.
+///
+/// `quadratic_coeffs` rescans the whole tree at every node it descends
+/// through (it is quadratic in the node count), and the S3 substitution
+/// squares that tree before re-entering the chain. Charging the node count
+/// at those call sites makes the stage's cost linear in the input size
+/// instead of quadratic-unbounded.
+const MAX_SQRT_WORK: u64 = 100_000;
+
+thread_local! {
+    static SQRT_WORK: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// Reset the work budget; called by the public stage entry point.
+fn reset_sqrt_budget() {
+    SQRT_WORK.with(|c| c.set(0));
+}
+
+/// Charge `units` against the module budget; `true` when exhausted.
+fn charge_sqrt_work(units: u64) -> bool {
+    SQRT_WORK.with(|c| {
+        let v = c.get().saturating_add(units);
+        c.set(v);
+        v > MAX_SQRT_WORK
+    })
+}
 
 /// A quadratic `q = a + b·x + c·x²` with coefficients constant w.r.t. the
 /// integration variable, plus the variable atom and the canonical `q` /
@@ -845,6 +874,11 @@ fn match_radical<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Opt
 // =========================================================================
 
 fn try_direct<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Option<Atom<'a>> {
+    // Charge the structural size of the scan before `match_radical` and the
+    // coefficient extraction walk the tree.
+    if charge_sqrt_work(node_count(expr) as u64) {
+        return None;
+    }
     let m = match_radical(ctx, expr, var)?;
     let qd = Quad::parse(ctx, m.inner, var)?;
     let p = m.num;
@@ -983,6 +1017,13 @@ fn is_rational_t(expr: Atom<'_>, orig_var: Symbol) -> bool {
 /// `dx/dt = 2t·c·(r₁−r₂)/(t² − c)²` — any rational-in-`(x, √q)` integrand
 /// becomes rational in `t`.
 fn try_euler3<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Option<Atom<'a>> {
+    // `quadratic_coeffs` rescans the whole tree at every node it descends
+    // through; charging the structural size up front bounds that quadratic
+    // scan deterministically.
+    let nodes = node_count(expr) as u64;
+    if charge_sqrt_work(nodes.saturating_mul(nodes).min(MAX_SQRT_WORK)) {
+        return None;
+    }
     let (c2, c1, c0) = quadratic_coeffs(ctx, expr, var)?;
     let (p2, _) = rat_of(c2)?;
     if p2 == 0 {
@@ -1067,7 +1108,10 @@ fn try_euler3<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Option
     let subbed = replace_symbol(ctx, expr, var, x_t);
     let subbed = replace_sqrt_forms(ctx, subbed, q_t, sqrt_t);
     let integrand_t = normalize(ctx, ctx.mul(&[subbed, dx_dt]));
-    if node_count(integrand_t) > MAX_NODES || !is_rational_t(integrand_t, var) {
+    if node_count(integrand_t) > MAX_REENTRY_NODES || !is_rational_t(integrand_t, var) {
+        return None;
+    }
+    if charge_sqrt_work(node_count(integrand_t) as u64) {
         return None;
     }
     let result_t = integrate_raw(ctx, integrand_t, t_sym, 0, true, 0, 0);
@@ -1103,6 +1147,9 @@ pub(crate) fn integrate_sqrt_quadratic<'a>(
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
+    // Fresh budget for this invocation (the stage runs once per chain
+    // re-entry, so nothing may accumulate across calls).
+    reset_sqrt_budget();
     if is_constant(expr, var) || matches!(expr.node(), AtomNode::Add(_)) {
         return None;
     }
@@ -1529,5 +1576,75 @@ mod tests {
         let q2 = mk_quad(&ctx, 1, 0, 1);
         let f = ctx.mul(&[ctx.fun("sqrt", &[q1]), ctx.fun("sqrt", &[q2])]);
         assert!(integrate_sqrt_quadratic(&ctx, f, Symbol::new("x")).is_none());
+    }
+
+    // ------------------- deterministic budget (0.27.1 timeouts) ---------
+
+    /// Corpus shape whose last entered stage was this one (rubi-00644): an
+    /// integrand with no radical must decline immediately instead of
+    /// driving the O(n²) `quadratic_coeffs` rescan and the S3 re-entry.
+    #[test]
+    fn corpus_hang_shape_declines() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr =
+            ocas_parse::parse(&ctx, "(e + f*x)^2*sinh(c + d*x)^3/(a + i*a*sinh(c + d*x))").unwrap();
+        let var = Symbol::new("x");
+        let r = integrate_sqrt_quadratic(&ctx, expr, var);
+        if let Some(atom) = r {
+            assert!(!atom.to_string().contains("Integral"), "residue: {atom}");
+        }
+    }
+
+    /// A synthetic large input must be declined by the structural size gate
+    /// rather than rescanned quadratically.
+    #[test]
+    fn oversized_input_is_declined_structurally() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // > MAX_NODES nodes: `sqrt(x^2+1)` times a long sum.
+        let mut terms = vec![ctx.num(1), ctx.fun("sqrt", &[mk_quad(&ctx, 1, 0, 1)])];
+        for k in 1..120 {
+            terms.push(ctx.mul(&[ctx.num(k), ctx.pow(ctx.var("x"), ctx.num(k))]));
+        }
+        let expr = ctx.add(&terms);
+        assert!(integrate_sqrt_quadratic(&ctx, expr, Symbol::new("x")).is_none());
+        let prod = ctx.mul(&[ctx.fun("sqrt", &[mk_quad(&ctx, 1, 0, 1)]), expr]);
+        assert!(integrate_sqrt_quadratic(&ctx, prod, Symbol::new("x")).is_none());
+    }
+
+    /// The budget resets on every entry: repeating a hanging shape 256 times
+    /// must give identical results and stay fast (no cross-call leakage).
+    #[test]
+    fn budget_does_not_leak_across_calls() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr =
+            ocas_parse::parse(&ctx, "(e + f*x)^2*sinh(c + d*x)^3/(a + i*a*sinh(c + d*x))").unwrap();
+        let var = Symbol::new("x");
+        let start = std::time::Instant::now();
+        let first = integrate_sqrt_quadratic(&ctx, expr, var).map(|a| a.to_string());
+        for i in 0..256 {
+            let r = integrate_sqrt_quadratic(&ctx, expr, var).map(|a| a.to_string());
+            assert_eq!(r, first, "call {i} diverged");
+        }
+        assert!(
+            start.elapsed().as_secs() < 30,
+            "256 calls took {:?}; the budget is not containing the shape",
+            start.elapsed()
+        );
+    }
+
+    /// The S3 Euler III re-entry must stay inside its node budget: the
+    /// shapes that already solve keep solving.
+    #[test]
+    fn budget_keeps_solving_normal_inputs() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let q = mk_quad(&ctx, 1, 0, -1); // x² − 1 has rational roots → Euler III
+        let x = ctx.var("x");
+        let f = ctx.mul(&[ctx.fun("sqrt", &[q]), ctx.pow(x, ctx.num(-1))]);
+        let r = integrate_sqrt_quadratic(&ctx, f, Symbol::new("x"));
+        assert!(r.is_some(), "Euler III shape regressed to a decline");
     }
 }
