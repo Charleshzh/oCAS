@@ -220,14 +220,23 @@ fn try_chebyshev<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Opt
             factors.push(coeff);
             factors.push(int_pow(ctx, t, te));
             factors.push(int_pow(ctx, frac, e));
-            let g = ctx.add(&[
-                ctx.mul(&[
-                    m0.a,
-                    ctx.pow(x, rat_atom(ctx, m0.n.n.checked_neg()?, m0.n.d)),
-                ]),
-                m0.b,
+            // `t^s = a·x^{−n} + b` defines `t` up to an `s`-th root of unity;
+            // the branch that keeps the answer valid on **both** half-lines is
+            // `t = (a + b·xⁿ)^{1/s} · x^{−n/s}`.
+            //
+            // Back-substituting the branch-free `(a·x^{−n} + b)^{1/s}` instead
+            // silently replaces `x^{−n/s}` by `|x|^{−n/s}`: for odd powers of
+            // `t` in the answer that flips the sign on `x < 0`. That was the
+            // 0.27.1 bug in `∫(a+b·x²)^{9/2}/x^12 dx`, whose result
+            // `−(11a)^{−1}·(b + a·x^{−2})^{11/2}` is the negative of the true
+            // antiderivative for every `x < 0`.
+            let back = ctx.mul(&[
+                ctx.pow(m0.base, rat_atom(ctx, 1, s)),
+                ctx.pow(
+                    x,
+                    rat_atom(ctx, m0.n.n.checked_neg()?, m0.n.d.checked_mul(s)?),
+                ),
             ]);
-            let back = ctx.pow(g, rat_atom(ctx, 1, s));
             (factors, back)
         }
     };
@@ -688,6 +697,42 @@ mod tests {
         let base = ctx.add(&[ctx.num(1), ctx.pow(x, ctx.num(2))]);
         let expr = ctx.mul(&[powq(&ctx, base, 1, 2), ctx.pow(x, ctx.num(-2))]);
         assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &[], &[0.6, 1.1, 2.0]);
+    }
+
+    /// Regression for the 0.27.1 wrong answer `rubi-00027`
+    /// (`∫(a + b·x²)^(9/2)/x^12 dx`).
+    ///
+    /// Chebyshev case 3 substitutes `t^s = a·x^{−n} + b`, which pins `t` only
+    /// up to an `s`-th root of unity. Back-substituting the branch-free
+    /// `(a·x^{−n} + b)^{1/s}` silently replaces `x^{−n/s}` by `|x|^{−n/s}` —
+    /// harmless when the answer's powers of `t` are even, but a sign flip on
+    /// `x < 0` when they are odd. Here `s = n = 2`, the answer carries
+    /// `t^11`, and the emitted form `−(11a)^{−1}·(b + a·x^{−2})^{11/2}` was the
+    /// exact negative of the true antiderivative on the whole half-line.
+    ///
+    /// The mechanism now uses the branch `t = (a + b·xⁿ)^{1/s}·x^{−n/s}`; the
+    /// sample set deliberately spans both half-lines.
+    #[test]
+    fn chebyshev_case3_branch_sign_on_both_half_lines() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // The parser leaves `a/b` as `a·(b^-1)`; the mechanism (like the rest
+        // of the pipeline) expects the normalized atom, where the `x^-12`
+        // factor is explicit.
+        let expr = ocas_atom::normalize::normalize(
+            &ctx,
+            ocas_parse::parse(&ctx, "(a + b*x^2)^(9/2)/x^12").expect("parse"),
+        );
+        let env = [(Symbol::new("a"), 1.5), (Symbol::new("b"), 0.5)];
+        // `b > 0` keeps the radicand positive everywhere, so every sample is
+        // usable — including the `x < 0` ones the old form got wrong.
+        assert_antiderivative_num(
+            &ctx,
+            expr,
+            Symbol::new("x"),
+            &env,
+            &[-2.0, -1.3, -0.6, -0.25, 0.25, 0.6, 1.3, 2.0],
+        );
     }
 
     #[test]

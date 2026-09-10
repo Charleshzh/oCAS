@@ -361,6 +361,18 @@ fn integrate_kpoly_primitive<'a>(
         return None;
     }
     let (a_elem, a_logs, a_extras) = split_result(&int_pm);
+    // `q_m = ∫(p_m − (m+1)·q_{m+1}·Dt)` must be an element of the
+    // coefficient field `k`. A logarithm `log(v)` with `v ≠ u` or an
+    // unevaluated special term (`atan`, `Integral`, …) is *not* in `k`, so
+    // the layer-`m` coefficient cannot be formed: the recurrence has no
+    // solution in `k[t]` and we must decline.
+    //
+    // Only for `m = 0` may those terms be passed through: there the
+    // coefficient *is* the whole answer term (`t⁰ = 1`), so accumulating
+    // them at the top level is sound.
+    if m >= 1 && !a_extras.is_empty() {
+        return None;
+    }
     let mut c = RationalDomain.zero();
     let mut found = false;
     for (d, v) in a_logs {
@@ -370,6 +382,8 @@ fn integrate_kpoly_primitive<'a>(
             }
             found = true;
             c = RationalDomain.div(&d, &Rational::new((m + 1) as i64, 1))?;
+        } else if m >= 1 {
+            return None;
         } else {
             logs.push((d, v));
         }
@@ -387,6 +401,12 @@ fn integrate_kpoly_primitive<'a>(
         );
         let int_h = integrate_kelem_or_fallback(ctx, tower, level - 1, h)?;
         let (e, ls, es) = split_result(&int_h);
+        // Same field membership requirement as above, for every layer but
+        // the `t⁰` one: `q_i = ∫h` must lie in `k`, so a surviving
+        // logarithm or special term makes the recurrence unsolvable.
+        if i >= 1 && (!ls.is_empty() || !es.is_empty()) {
+            return None;
+        }
         q[i] = e;
         for (d, v) in ls {
             if v.eq_cross(&u_k) {
@@ -816,5 +836,83 @@ mod tests {
         // ∫ (x² + exp(x)) dx
         let expr = ctx.add(&[ctx.pow(x, ctx.num(2)), ctx.fun("exp", &[x])]);
         assert_risch_antiderivative(&ctx, expr, Symbol::new("x"));
+    }
+
+    /// Regression for the 0.27.1 wrong answers `rubi-01482`, `rubi-01662`
+    /// and `rubi-00531`.
+    ///
+    /// The primitive-level recurrence requires every coefficient `q_i` to be
+    /// an element of the coefficient field `k`: `q_i = ∫h_i` must therefore
+    /// contribute no logarithm and no "extra" (a special function or an
+    /// unevaluated `Integral`). The old code split those terms off, kept only
+    /// the element part, and re-attached them at the top level — sound for the
+    /// `t⁰` layer (where the coefficient *is* the answer term), unsound for
+    /// every layer above it, because there the term would have to be
+    /// multiplied by `t^i`.
+    ///
+    /// The two shapes below are the exact residuals the `heuristic` parts step
+    /// fed back into risch for those corpus cases; both used to come back with
+    /// a bogus closed form (`log(1+x²)/(1+x²) → atan(x)`), dropping the `log`
+    /// factor. The true antiderivatives are non-elementary (dilogarithm), so
+    /// the only correct answer is `None`.
+    #[test]
+    fn primitive_level_declines_when_a_coefficient_integral_leaves_the_field() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        for input in [
+            // Minimal reproducer: `∫dx/(1+x²) = atan(x)` is an extra, not a
+            // field element, so the layer-1 coefficient cannot be formed.
+            "log(1 + x^2)*(1 + x^2)^-1",
+            // The same residual with the polynomial part that `∫ x^m/(1+x²)^n`
+            // contributes; risch used to return `x - 2*atan(x) - …`.
+            "(x^2 + (-1)*log(1 + x^2) + (-1*(2^-1))*((1 + x^2)^-1))*((1 + x^2)^-1)",
+        ] {
+            let expr = ocas_parse::parse(&ctx, input).expect("parse");
+            assert!(
+                risch_integrate(&ctx, expr, Symbol::new("x")).is_none(),
+                "risch must decline `{input}`: its primitive-level coefficient \
+                 integral is not an element of the coefficient field"
+            );
+        }
+    }
+
+    /// The pipeline must fall back to an honest `Integral(...)` residue for
+    /// those shapes rather than emit a closed form risch cannot justify.
+    #[test]
+    fn out_of_field_residuals_fall_back_to_an_unevaluated_integral() {
+        for input in [
+            "log(1 + x^2)*(1 + x^2)^-1",
+            "x^5*atan(x)/(1 + x^2)^2",
+            "x^3*atan(x)/(1 + x^2)^2",
+            "atanh(1 + x)/(2 + 2*x)",
+        ] {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let expr = ocas_parse::parse(&ctx, input).expect("parse");
+            let r = crate::integrate(&ctx, expr, Symbol::new("x")).to_string();
+            assert!(
+                r.contains("Integral("),
+                "`{input}` must be left unevaluated, got a closed form: {r}"
+            );
+        }
+    }
+
+    /// The restriction must not cost the primitive level its working cases:
+    /// logarithms produced by the `t⁰` layer are still accumulated, and the
+    /// polynomial recurrence still solves exact shapes.
+    #[test]
+    fn primitive_level_still_solves_its_fragment() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // ∫ x·log(x) dx and ∫ log(x)² dx exercise the layer-1/layer-2
+        // recurrence end to end.
+        let xl = ctx.mul(&[x, ctx.fun("log", &[x])]);
+        assert_risch_antiderivative(&ctx, xl, Symbol::new("x"));
+        let l2 = ctx.pow(ctx.fun("log", &[x]), ctx.num(2));
+        assert_risch_antiderivative(&ctx, l2, Symbol::new("x"));
+        // ∫ x²·log(x)² dx: the `t⁰` layer's own `log(x)` terms stay additive.
+        let x2l2 = ctx.mul(&[ctx.pow(x, ctx.num(2)), l2]);
+        assert_risch_antiderivative(&ctx, x2l2, Symbol::new("x"));
     }
 }

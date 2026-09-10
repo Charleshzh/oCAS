@@ -349,11 +349,73 @@ pub(crate) mod pred {
         int_val(bindings, name).is_some_and(|n| (1..=9).contains(&n) && n % 2 == 1)
     }
 
-    /// Product-to-sum guard: not both `a` and `b` bound to the same literal.
-    pub(crate) fn a_neq_b(bindings: &Bindings<'_>, _var: Symbol) -> bool {
-        match (int_val(bindings, "a"), int_val(bindings, "b")) {
-            (Some(na), Some(nb)) => na != nb,
+    /// `a == -1`.
+    fn is_minus_one(a: Atom<'_>) -> bool {
+        matches!(a.node(), AtomNode::Num(n) if *n == -1)
+    }
+
+    /// Structural `a == b || a == -b`.
+    ///
+    /// `Mul` factors are compared positionally, which is how the template
+    /// renderer builds them.
+    fn same_or_opposite<'a>(a: Atom<'a>, b: Atom<'a>) -> bool {
+        if a == b {
+            return true;
+        }
+        let (xs, ys) = match (a.node(), b.node()) {
+            (AtomNode::Num(m), AtomNode::Num(n)) => return *m == -*n,
+            (AtomNode::Mul(xs), AtomNode::Mul(ys)) => (xs, ys),
+            // `-1*x` against `x` — the shape a negated slope renders as.
+            (AtomNode::Mul(xs), _) => {
+                return matches!(xs, [f, g] if is_minus_one(*f) && *g == b);
+            }
+            (_, AtomNode::Mul(ys)) => {
+                return matches!(ys, [f, g] if is_minus_one(*f) && *g == a);
+            }
+            _ => return false,
+        };
+        if xs.len() != ys.len() {
+            return false;
+        }
+        let mut flips = 0usize;
+        for (x, y) in xs.iter().zip(ys.iter()) {
+            if x == y {
+                continue;
+            }
+            match (x.node(), y.node()) {
+                (AtomNode::Num(m), AtomNode::Num(n)) if *m == -*n => flips += 1,
+                _ => return false,
+            }
+        }
+        flips == 1
+    }
+
+    /// `nonresonant_q(s1, s2)`: the two linear-argument slopes bound to `s1`
+    /// and `s2` are neither equal nor opposite.
+    ///
+    /// A product-to-sum split of `T(s₁·x + t₁)·U(s₂·x + t₂)` produces the
+    /// denominators `2(s₁ − s₂)` and `2(s₁ + s₂)`. When `s₁ == s₂` the first
+    /// is *identically* zero, when `s₁ == −s₂` the second is — and the corpus
+    /// writes the same linear argument on both factors, so this is the rule
+    /// rather than the exception (`sin(u)·cos(u)`, `(a·cos u + b·sin u)²`).
+    /// The rendered result is then `±∞` at **every** parameter assignment.
+    ///
+    /// Distinct symbolic slopes (`d` vs `e`) are accepted: they are equal only
+    /// for a measure-zero parameter choice, which is not the same defect.
+    pub(crate) fn nonresonant_q(bindings: &Bindings<'_>, s1: &str, s2: &str) -> bool {
+        match (bound(bindings, s1), bound(bindings, s2)) {
+            (Some(p), Some(q)) => !same_or_opposite(p, q),
             _ => true,
+        }
+    }
+
+    /// `nonresonant_unit_q(name)`: the slope bound to `name` is not the
+    /// literal `±1` — the resonant case of the bare-`x` product-to-sum
+    /// variants, whose slopes are `1` and the bound one.
+    pub(crate) fn nonresonant_unit_q(bindings: &Bindings<'_>, name: &str) -> bool {
+        match bound(bindings, name) {
+            Some(a) => !matches!(a.node(), AtomNode::Num(n) if *n == 1 || *n == -1),
+            None => true,
         }
     }
 }
@@ -585,21 +647,30 @@ fn rule_specs() -> &'static [RuleSpec] {
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         // C15: two-linear-argument product-to-sum (the dominant corpus
-        // shape); subsumes one-side-bare variants.
+        // shape); subsumes one-side-bare variants. The guards reject the
+        // resonant slope pairs (`s₁ == ±s₂`) whose denominators are
+        // identically zero — see `pred::nonresonant_q`.
         RuleSpec::Template {
             pat: "sin(a_*x+b_)*sin(c_*x+d_)",
             tmpl: "sin((a_+(-1)*c_)*x+(b_+(-1)*d_))*((a_+(-1)*c_)*2)^-1 + (-1)*sin((a_+c_)*x+(b_+d_))*((a_+c_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && a_neq_b(b, var)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_q(b, "a", "c")),
         },
         RuleSpec::Template {
             pat: "cos(a_*x+b_)*cos(c_*x+d_)",
             tmpl: "sin((a_+(-1)*c_)*x+(b_+(-1)*d_))*((a_+(-1)*c_)*2)^-1 + sin((a_+c_)*x+(b_+d_))*((a_+c_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && a_neq_b(b, var)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_q(b, "a", "c")),
+        },
+        // C15a: the resonant same-argument `sin(u)·cos(u)` — the shape C15 now
+        // rejects. ∫ sin(u)·cos(u) du = −cos(u)²/(2a) with `u = a·x+b`.
+        RuleSpec::Template {
+            pat: "sin(a_*x+b_)*cos(a_*x+b_)",
+            tmpl: "(-1)*cos(a_*x+b_)^2*((2*a_)^-1)",
+            cond: Some(|b, var| free_q(b, var) && nonzero(b, "a")),
         },
         RuleSpec::Template {
             pat: "sin(a_*x+b_)*cos(c_*x+d_)",
             tmpl: "(-1)*cos((a_+c_)*x+(b_+d_))*((a_+c_)*2)^-1 + (-1)*cos((a_+(-1)*c_)*x+(b_+(-1)*d_))*((a_+(-1)*c_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && a_neq_b(b, var)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_q(b, "a", "c")),
         },
         // C5: cot(x)^n reduction, n ≥ 2.
         RuleSpec::Template {
@@ -617,51 +688,51 @@ fn rule_specs() -> &'static [RuleSpec] {
         RuleSpec::Template {
             pat: "sin(a_*x)*sin(b_*x)",
             tmpl: "sin((a_+(-1)*b_)*x)*((a_+(-1)*b_)*2)^-1 + (-1)*sin((a_+b_)*x)*((a_+b_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && a_neq_b(b, var)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_q(b, "a", "b")),
         },
         // C8: cos(a*x)*cos(b*x) product-to-sum.
         RuleSpec::Template {
             pat: "cos(a_*x)*cos(b_*x)",
             tmpl: "sin((a_+(-1)*b_)*x)*((a_+(-1)*b_)*2)^-1 + sin((a_+b_)*x)*((a_+b_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && a_neq_b(b, var)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_q(b, "a", "b")),
         },
         // C9: sin(a*x)*cos(b*x) product-to-sum.
         RuleSpec::Template {
             pat: "sin(a_*x)*cos(b_*x)",
             tmpl: "(-1)*cos((a_+b_)*x)*((a_+b_)*2)^-1 + (-1)*cos((a_+(-1)*b_)*x)*((a_+(-1)*b_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && a_neq_b(b, var)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_q(b, "a", "b")),
         },
         // C7b–C9b: bare-x product-to-sum variants (`sin(x)`/`cos(x)` args
         // are not `a*x` products, so the general patterns do not match).
         RuleSpec::Template {
             pat: "sin(x)*sin(b_*x)",
             tmpl: "sin((1+(-1)*b_)*x)*((1+(-1)*b_)*2)^-1 + (-1)*sin((1+b_)*x)*((1+b_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && int_val(b, "b") != Some(1)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_unit_q(b, "b")),
         },
         RuleSpec::Template {
             pat: "sin(a_*x)*sin(x)",
             tmpl: "sin((a_+(-1)*1)*x)*((a_+(-1)*1)*2)^-1 + (-1)*sin((a_+1)*x)*((a_+1)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && int_val(b, "a") != Some(1)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_unit_q(b, "a")),
         },
         RuleSpec::Template {
             pat: "cos(x)*cos(b_*x)",
             tmpl: "sin((1+(-1)*b_)*x)*((1+(-1)*b_)*2)^-1 + sin((1+b_)*x)*((1+b_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && int_val(b, "b").is_none_or(|v| v != 1)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_unit_q(b, "b")),
         },
         RuleSpec::Template {
             pat: "cos(a_*x)*cos(x)",
             tmpl: "sin((a_+(-1)*1)*x)*((a_+(-1)*1)*2)^-1 + sin((a_+1)*x)*((a_+1)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && int_val(b, "a").is_none_or(|v| v != 1)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_unit_q(b, "a")),
         },
         RuleSpec::Template {
             pat: "sin(x)*cos(b_*x)",
             tmpl: "(-1)*cos((1+b_)*x)*((1+b_)*2)^-1 + (-1)*cos((1+(-1)*b_)*x)*((1+(-1)*b_)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && int_val(b, "b").is_none_or(|v| v != 1)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_unit_q(b, "b")),
         },
         RuleSpec::Template {
             pat: "sin(a_*x)*cos(x)",
             tmpl: "(-1)*cos((a_+1)*x)*((a_+1)*2)^-1 + (-1)*cos((a_+(-1)*1)*x)*((a_+(-1)*1)*2)^-1",
-            cond: Some(|b, var| free_q(b, var) && int_val(b, "a").is_none_or(|v| v != 1)),
+            cond: Some(|b, var| free_q(b, var) && nonresonant_unit_q(b, "a")),
         },
         // C10: sin(x)*cos(x)^n → −cos(x)^(n+1)/(n+1), n ≥ 0.
         RuleSpec::Template {
@@ -1032,8 +1103,26 @@ fn binomial_integrate<'a>(
         return None;
     }
     // Constant coefficient: product of the `c___` sequence (1 when empty).
+    //
+    // The sequence wildcard is only a *constant* multiplier if every factor it
+    // absorbed is free of the integration variable. `free_q` in the rule's
+    // condition cannot check this: it reads bindings through `pred::bound`,
+    // which deliberately returns `None` for a sequence. Without the check the
+    // pattern `c___*x^m_*(a_+b_*x)^n_` swallows an `x`-dependent factor and
+    // pulls it out of the integral — `rubi-01135` returned
+    // `(a + b·log(c·xⁿ))·∫x²·(d+e·x)³ dx`, which is not a derivative of
+    // anything near the integrand.
     let coeff: Atom<'a> = match bindings.get(Symbol::new("c")) {
-        Some(MatchValue::Sequence(slice)) if !slice.is_empty() => ctx.mul(slice),
+        Some(MatchValue::Sequence(slice)) => {
+            if slice.iter().any(|f| !crate::integral::is_constant(*f, var)) {
+                return None;
+            }
+            if slice.is_empty() {
+                ctx.num(1)
+            } else {
+                ctx.mul(slice)
+            }
+        }
         _ => ctx.num(1),
     };
     let x = ctx.var(var.as_str());
@@ -1324,7 +1413,17 @@ fn pattern_head_key(pattern: &Pattern<'_>) -> HeadKey {
 
 impl<'a> IntegralRuleTable<'a> {
     fn apply(&self, ctx: &'a AtomArena<'a>, atom: Atom<'a>, var: Symbol) -> Option<Atom<'a>> {
-        if let Some(r) = self.table.apply(ctx, atom) {
+        // Safety net: a rule whose substituted denominator collapses for this
+        // argument pair renders a coefficient that is `±∞` for *every*
+        // parameter value. No antiderivative looks like that, so the result is
+        // rejected instead of returned. The targeted guards
+        // (`pred::nonresonant_q`) keep the resonant product-to-sum shapes
+        // reachable by the rules that do handle them; this net catches
+        // whatever they miss, including future rules and the numeric-exponent
+        // guards (`(n_+1)^-1` with `n_ = -1` renders as `(1 + (-1))^-1`).
+        if let Some(r) = self.table.apply(ctx, atom)
+            && !has_zero_denominator(ctx, r)
+        {
             return Some(r);
         }
         let key = head_of(atom);
@@ -1342,12 +1441,48 @@ impl<'a> IntegralRuleTable<'a> {
             {
                 continue;
             }
-            if let Some(r) = (rule.f)(ctx, &bindings, var) {
+            if let Some(r) = (rule.f)(ctx, &bindings, var)
+                && !has_zero_denominator(ctx, r)
+            {
                 return Some(r);
             }
         }
         None
     }
+}
+
+/// True when `expr` contains a coefficient whose denominator is identically
+/// zero in the free parameters.
+///
+/// The template renderer substitutes wildcards literally, so a rule whose
+/// denominator collapses for a resonant argument pair is emitted as
+/// `(d + (-1)·d)^-1` — for example the product-to-sum split of `sin(u)·cos(u)`
+/// with `u = c + d·x`, whose `2(d − d)` divisor is zero for *every* `d`.
+/// `normalize` and the algebraic simplifier both leave `d + (-1)·d` alone;
+/// `collect_terms` folds it (and sums such as `d + d + (-2)·d`) to `0`, which
+/// is the test used here. Declining is always correct, because no
+/// antiderivative has an identically zero denominator.
+fn has_zero_denominator<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> bool {
+    match expr.node() {
+        AtomNode::Pow(b, e) => {
+            if matches!(e.node(), AtomNode::Num(n) if *n < 0) && is_identically_zero(ctx, *b) {
+                return true;
+            }
+            has_zero_denominator(ctx, *b) || has_zero_denominator(ctx, *e)
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            args.iter().any(|a| has_zero_denominator(ctx, *a))
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+    }
+}
+
+/// `collect_terms` reduces `expr` to `0` exactly when it is identically zero
+/// in the free parameters.
+fn is_identically_zero<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> bool {
+    let collected =
+        ocas_atom::normalize::normalize(ctx, crate::ode::util::collect_terms(ctx, expr));
+    matches!(collected.node(), AtomNode::Num(n) if *n == 0)
 }
 
 /// Fold `f(x)^1 -> f(x)` and `f(x)^0 -> 1` throughout an expression.
@@ -1619,16 +1754,198 @@ mod tests {
     #[test]
     fn rules_off_returns_unevaluated() {
         use ocas_core::arena::Arena;
-        let arena = Arena::new();
-        let ctx = AtomArena::new(&arena);
-        let expr = ocas_parse::parse(&ctx, "tan(x)^4").unwrap();
-        let r = crate::integrate_with_options(
-            &ctx,
-            expr,
-            Symbol::new("x"),
-            crate::IntegrateOptions { rules: false },
+        // A single fixed probe is not robust: other mechanisms grow and take
+        // shapes over. `tan(x)^4` used to be table-owned, but the 0.27.2
+        // `kernel_subst` stage (which ignores the `rules` option, as it
+        // should) now solves it, so it no longer isolates the table.
+        //
+        // Instead, probe a set of shapes the table owns (the `sec`/`csc`
+        // power reductions C4/C6 and the inverse-trig radical families
+        // F/G) and require that *at least one* of them is solved with the
+        // table enabled and unevaluated with it disabled. That is exactly
+        // the statement "the `rules` flag gates the rule table", and it
+        // stays true no matter which of the probes a different mechanism
+        // learns to solve in the future — while a flag that is ignored (no
+        // probe flips) still fails the test.
+        let probes = ["csc(x)^5", "sec(x)^6", "csc(x)^7", "sec(x)^3", "csc(x)^3"];
+        let mut gated = 0usize;
+        let mut details = Vec::new();
+        for input in probes {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let expr = ocas_parse::parse(&ctx, input).unwrap();
+            let var = Symbol::new("x");
+            let on = crate::integrate_with_options(
+                &ctx,
+                expr,
+                var,
+                crate::IntegrateOptions { rules: true },
+            );
+            let off = crate::integrate_with_options(
+                &ctx,
+                expr,
+                var,
+                crate::IntegrateOptions { rules: false },
+            );
+            let solved_on = !on.to_string().contains("Integral(");
+            let solved_off = !off.to_string().contains("Integral(");
+            if solved_on && !solved_off {
+                gated += 1;
+            }
+            details.push(format!(
+                "{input}: rules=on solved={solved_on}, rules=off solved={solved_off}"
+            ));
+        }
+        assert!(
+            gated > 0,
+            "no probe distinguishes `rules: true` from `rules: false`, so the rule \
+             table is either always or never consulted:\n{}",
+            details.join("\n")
         );
-        assert!(r.to_string().contains("Integral("));
+    }
+
+    /// `rubi-01135` regression: the A4 binomial rule
+    /// (`c___*x^m_*(a_+b_*x)^n_`) let its `c___` sequence wildcard swallow the
+    /// `x`-dependent factor `a + b·log(c·xⁿ)` and then multiplied the whole
+    /// termwise expansion by it — i.e. it returned
+    /// `(a + b·log(c·xⁿ))·∫x²·(d+e·x)³ dx`, a genuine wrong answer.
+    ///
+    /// `free_q` cannot catch this: it reads bindings through `pred::bound`,
+    /// which returns `None` for a sequence binding. The closure now requires
+    /// every absorbed factor to be `is_constant`, so the rule declines and the
+    /// pipeline reports an honest residue.
+    ///
+    /// If a future stage learns this shape, replace the residue expectation
+    /// with a numerical derivative check — never with the pulled-out form.
+    #[test]
+    fn a4_declines_when_the_coefficient_sequence_depends_on_the_variable() {
+        let r = int_str("x^2*(d + e*x)^3*(a + b*log(c*x^n))", "x");
+        assert!(
+            r.contains("Integral("),
+            "A4 must not pull an `x`-dependent factor out of the integral: {r}"
+        );
+        // The rule's own shapes still work (the sequence is genuinely
+        // constant there, and `2*x^3*(a+b*x)^2` keeps A4's `c___` non-empty).
+        assert_solved("x^2*(a+b*x)^3");
+        assert_solved("2*x^3*(a+b*x)^2");
+    }
+
+    /// f64 evaluation under a concrete parameter environment, for the
+    /// resonant product-to-sum checks below.
+    fn eval_env(atom: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
+        match atom.node() {
+            AtomNode::Num(n) => Some(*n as f64),
+            AtomNode::Var(v) => env.iter().find(|(s, _)| s == v).map(|(_, x)| *x),
+            AtomNode::Add(args) => args
+                .iter()
+                .try_fold(0.0, |acc, a| Some(acc + eval_env(*a, env)?)),
+            AtomNode::Mul(args) => args
+                .iter()
+                .try_fold(1.0, |acc, a| Some(acc * eval_env(*a, env)?)),
+            AtomNode::Pow(b, e) => Some(eval_env(*b, env)?.powf(eval_env(*e, env)?)),
+            AtomNode::Fun(name, args) => {
+                let v = eval_env(*args.first()?, env)?;
+                Some(match name.as_str() {
+                    "sin" => v.sin(),
+                    "cos" => v.cos(),
+                    "tan" => v.tan(),
+                    "sec" => v.cos().recip(),
+                    "csc" => v.sin().recip(),
+                    "cot" => v.tan().recip(),
+                    "log" => v.ln(),
+                    _ => return None,
+                })
+            }
+        }
+    }
+
+    /// With `u = c + d·x` at `(a,b,c,d) = (1,2,1/2,3/2)`: the concrete
+    /// assignment the resonant denominator collapses to `1/0` under.
+    fn resonant_env() -> Vec<(Symbol, f64)> {
+        vec![
+            (Symbol::new("a"), 1.0),
+            (Symbol::new("b"), 2.0),
+            (Symbol::new("c"), 0.5),
+            (Symbol::new("d"), 1.5),
+        ]
+    }
+
+    /// The rule table must never hand back a coefficient with an identically
+    /// zero denominator, and whatever it *does* hand back must differentiate
+    /// back to the integrand at concrete parameter values.
+    ///
+    /// `rubi-01135`-style checks cover the general invariant; this one is the
+    /// resonant product-to-sum class. Before the `pred::nonresonant_q` guards,
+    /// `sin(c+d·x)·cos(c+d·x)` produced `(d + (-1)·d)^-1` — infinite at every
+    /// parameter assignment — because the C15 split divides by `2(s₁ − s₂)`
+    /// and the corpus writes the same linear argument on both factors.
+    #[test]
+    fn product_to_sum_never_emits_a_resonant_denominator() {
+        let shapes = [
+            "cos(c + d*x)^2",
+            "sin(c + d*x)^2",
+            "sin(c + d*x)*cos(c + d*x)",
+            "sin(c + d*x)*sin(c + d*x)",
+            "cos(c + d*x)*cos(c + d*x)",
+            "(a*cos(c + d*x) + b*sin(c + d*x))^2",
+            "cos(c + d*x)^3*(a + a*sin(c + d*x))",
+            "sin(c + d*x)^2*(a + b*sin(c + d*x)^2)",
+            // Non-resonant shapes must keep working.
+            "sin(2*x)*cos(3*x)",
+            "sin(x)*sin(2*x)",
+            "cos(2*x)*cos(3*x)",
+        ];
+        for input in shapes {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let expr =
+                ocas_atom::normalize::normalize(&ctx, ocas_parse::parse(&ctx, input).unwrap());
+            let table = build_rule_table(&ctx, Symbol::new("x")).unwrap();
+            let Some(r) = integrate_rules(&ctx, &table, expr, Symbol::new("x"), 0) else {
+                continue; // declined: another stage owns it
+            };
+            assert!(
+                !has_zero_denominator(&ctx, r),
+                "identically zero denominator for {input}: {r}"
+            );
+            // Everything the table returns must be finite and correct at the
+            // concrete assignment.
+            let d = crate::diff(&ctx, r, Symbol::new("x"));
+            for &xv in &[-1.3, -0.4, 0.7, 1.9] {
+                let mut env = resonant_env();
+                env.push((Symbol::new("x"), xv));
+                let lhs = eval_env(d, &env).expect("eval derivative");
+                let rhs = eval_env(expr, &env).expect("eval integrand");
+                assert!(
+                    lhs.is_finite() && rhs.is_finite(),
+                    "{input} at x={xv}: non-finite (derivative {lhs}, integrand {rhs}) in {r}"
+                );
+                let tol = 1e-6 * rhs.abs().max(1.0);
+                assert!(
+                    (lhs - rhs).abs() < tol,
+                    "{input} at x={xv}: derivative {lhs} != integrand {rhs} (result {r})"
+                );
+            }
+        }
+    }
+
+    /// The resonant shapes the old templates got wrong are still *solved*
+    /// (by the same-argument rule C15a / the power reductions), not dropped
+    /// into a residue.
+    #[test]
+    fn resonant_shapes_stay_solved() {
+        for input in [
+            "cos(c + d*x)^2",
+            "sin(c + d*x)^2",
+            "sin(c + d*x)*cos(c + d*x)",
+            "(a*cos(c + d*x) + b*sin(c + d*x))^2",
+        ] {
+            let r = int_str(input, "x");
+            assert!(
+                !r.contains("Integral("),
+                "resonant shape {input} left a residue: {r}"
+            );
+        }
     }
 
     /// f64 evaluation for numeric antiderivative checks (linear-arg power

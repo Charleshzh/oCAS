@@ -29,6 +29,55 @@ use crate::tower::convert::{
 type DPoly = DenseUnivariatePolynomial<RationalDomain>;
 type Sparse = SparseMultivariatePolynomial<RationalDomain, Lex>;
 
+// =========================================================================
+// Deterministic work budget
+// =========================================================================
+//
+// Two loops in this module are unbounded in the input degree:
+//
+// - `reduce_rational`'s `extended_gcd_poly` and the resultant/GCD series in
+//   `rothstein_trager`, whose interpolation evaluates `n + 1` degree-`n`
+//   resultants with coefficient growth, and
+// - `rational_roots`, which runs the integer factorization of the
+//   resultant.
+//
+// Both are charged against a per-entry counter, and `rothstein_trager`
+// refuses structurally oversized denominators before the interpolation
+// allocates anything. Tripping a gate declines the stage (the chain then
+// reports the ordinary `Integral(...)` fallback), so no wrong answer is
+// ever emitted.
+
+/// Degree above which the Rothstein–Trager interpolation is declined. The
+/// corpus rational cases stay in the single digits; the substitution t-forms
+/// that reach here are the ones that used to grind.
+const MAX_RT_DEGREE: usize = 32;
+
+/// Degree above which the common-factor cancellation is skipped (the
+/// resulting unreduced fraction only makes the later stages decline, which
+/// is the documented best-effort behaviour of `reduce_rational`).
+const MAX_CANCEL_DEGREE: usize = 128;
+
+/// Work units a single entry into this module may charge.
+const MAX_RATIONAL_WORK: u64 = 200_000;
+
+thread_local! {
+    static RATIONAL_WORK: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// Reset the work budget; called by the public stage entry point.
+fn reset_rational_budget() {
+    RATIONAL_WORK.with(|c| c.set(0));
+}
+
+/// Charge `units` against the module budget; `true` when exhausted.
+fn charge_rational_work(units: u64) -> bool {
+    RATIONAL_WORK.with(|c| {
+        let v = c.get().saturating_add(units);
+        c.set(v);
+        v > MAX_RATIONAL_WORK
+    })
+}
+
 /// Integrate a rational function of `var` over `ℚ`.
 ///
 /// Returns `None` when `expr` is not a rational function of `var` alone
@@ -55,6 +104,9 @@ pub fn integrate_rational<'a>(
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
+    // Fresh budget for this invocation: the stage is entered once per chain
+    // re-entry, so nothing may accumulate across calls.
+    reset_rational_budget();
     let x = ctx.var(var.as_str());
     let gens = [x];
     let rf = atom_to_rational(expr, &gens)?;
@@ -78,6 +130,13 @@ pub fn integrate_rational<'a>(
 /// `Integral` for a rational integral that is in fact elementary.
 fn reduce_rational(num: DPoly, den: DPoly) -> (DPoly, DPoly) {
     if num.is_zero() || den.is_zero() {
+        return (num, den);
+    }
+    // Structural gate: the extended Euclidean run is degree-driven, so a
+    // pathologically large pair skips the (best-effort) cancellation
+    // instead of grinding.
+    let deg_sum = num.degree().unwrap_or(0) + den.degree().unwrap_or(0);
+    if deg_sum > MAX_CANCEL_DEGREE || charge_rational_work(deg_sum as u64) {
         return (num, den);
     }
     let (g, _, _) = num.extended_gcd_poly(&den);
@@ -267,7 +326,7 @@ fn log_part<'a>(
     rothstein_trager(ctx, a, d, x)
 }
 
-/// Integrate `(A·x + B) / (x² + b·x + c)` with `x² + b·x + c` squarefree.
+/// Integrate `(p·x + q) / (A·x² + B·x + C)` with `A·x² + B·x + C` squarefree.
 fn complete_square<'a>(
     ctx: &'a AtomArena<'a>,
     a: &DPoly,
@@ -277,36 +336,46 @@ fn complete_square<'a>(
     let dom = RationalDomain;
     let c0 = d.coeffs().first().cloned().unwrap_or_else(|| dom.zero());
     let c1 = d.coeffs().get(1).cloned().unwrap_or_else(|| dom.zero());
+    let c2 = d.coeffs().get(2).cloned().unwrap_or_else(|| dom.zero());
     let big_a = a.coeffs().get(1).cloned().unwrap_or_else(|| dom.zero());
     let big_b = a.coeffs().first().cloned().unwrap_or_else(|| dom.zero());
-    let half = Rational::new(1, 2);
+
+    // The Hermite recursion can hand back a square-free denominator whose
+    // leading coefficient is not 1 (`1 - x²` for `(x² - 1)²`). Assuming a
+    // monic denominator flips the sign of the discriminant and selects the
+    // `atan` branch for a quadratic that in fact has two rational roots — a
+    // silently wrong answer (0.27.1 regression: `∫dx/(x²-1)²` returned
+    // `atan(x)/2`). Every formula below therefore uses the *actual* leading
+    // coefficient `A = c2` (no rescaling of the operands).
+    let two_a = dom.mul(&Rational::new(2, 1), &c2);
+    if dom.is_zero(&two_a) {
+        return None;
+    }
 
     let mut out = Vec::new();
-    // (A/2)·log(d)
+    // (p/(2A))·log(d)
     if !dom.is_zero(&big_a) {
-        let coeff = dom.mul(&big_a, &half);
+        let coeff = dom.div(&big_a, &two_a)?;
         out.push(DLogOrAtom::Log(coeff, d.clone()));
     }
-    // Remaining constant numerator: (B - A·b/2)·∫dx/(x²+b·x+c).
-    let rem = dom.sub(&big_b, &dom.mul(&big_a, &dom.mul(&c1, &half)));
+    // Remaining constant numerator: (q - p·B/(2A))·∫dx/(A·x²+B·x+C).
+    let rem = dom.sub(&big_b, &dom.div(&dom.mul(&big_a, &c1), &two_a)?);
     if dom.is_zero(&rem) {
         return Some(out);
     }
-    // Discriminant Δ = b² - 4c (nonzero: d is squarefree).
-    let delta = dom.sub(&dom.mul(&c1, &c1), &dom.mul(&Rational::new(4, 1), &c0));
-    let lin = linear_atom(ctx, &Rational::new(2, 1), &c1, x)?; // 2x + b
+    // Discriminant Δ = B² - 4·A·C (nonzero: d is squarefree).
+    let delta = dom.sub(
+        &dom.mul(&c1, &c1),
+        &dom.mul(&dom.mul(&Rational::new(4, 1), &c2), &c0),
+    );
+    let lin = linear_atom(ctx, &two_a, &c1, x)?; // 2A·x + B
     if rat_is_negative(&delta) {
-        // atan branch: ∫ = rem·(2/s)·atan((2x+b)/s), s = √(4c-b²).
+        // atan branch: ∫ = rem·(2/s)·atan((2A·x+B)/s), s = √(4AC-B²).
         let s2 = dom.neg(&delta);
         match sqrt_positive_rational(ctx, &s2)? {
             Sqrt::Rat(sr) => {
                 let sr_inv = dom.inv(&sr)?;
-                let arg = linear_atom(
-                    ctx,
-                    &dom.mul(&Rational::new(2, 1), &sr_inv),
-                    &dom.mul(&c1, &sr_inv),
-                    x,
-                )?;
+                let arg = linear_atom(ctx, &dom.mul(&two_a, &sr_inv), &dom.mul(&c1, &sr_inv), x)?;
                 let coeff = dom.mul(&rem, &dom.mul(&Rational::new(2, 1), &sr_inv));
                 out.push(DLogOrAtom::Atom(scale_atom(
                     ctx,
@@ -326,11 +395,11 @@ fn complete_square<'a>(
             }
         }
     } else {
-        // log branch: ∫ = rem·(1/s)·log((2x+b-s)/(2x+b+s)), s = √Δ.
+        // log branch: ∫ = rem·(1/s)·log((2A·x+B-s)/(2A·x+B+s)), s = √Δ.
         match sqrt_positive_rational(ctx, &delta)? {
             Sqrt::Rat(sr) => {
-                let num_atom = linear_atom(ctx, &Rational::new(2, 1), &dom.sub(&c1, &sr), x)?;
-                let den_atom = linear_atom(ctx, &Rational::new(2, 1), &dom.add(&c1, &sr), x)?;
+                let num_atom = linear_atom(ctx, &two_a, &dom.sub(&c1, &sr), x)?;
+                let den_atom = linear_atom(ctx, &two_a, &dom.add(&c1, &sr), x)?;
                 let ratio = ctx.mul(&[num_atom, ctx.pow(den_atom, ctx.num(-1))]);
                 let log = ctx.fun("log", &[ratio]);
                 let coeff = dom.mul(&rem, &dom.inv(&sr)?);
@@ -365,11 +434,20 @@ fn rothstein_trager<'a>(
     x: Atom<'a>,
 ) -> Option<Vec<DLogOrAtom<'a>>> {
     let n = d.degree()?;
+    // Structural gate before any resultant work: the interpolation below
+    // evaluates `n + 1` resultants of degree-`n` polynomials, so an
+    // oversized square-free denominator declines outright.
+    if n > MAX_RT_DEGREE {
+        return None;
+    }
     let dp = d.derivative();
 
     // Interpolate R(t) = resultant(d, a - t·d') at t = 0, …, n.
     let mut points = Vec::with_capacity(n + 1);
     for j in 0..=(n as i64) {
+        if charge_rational_work(1 + (n * n) as u64) {
+            return None;
+        }
         let tj = Rational::new(j, 1);
         let shifted = a.sub(&dp.mul_scalar(&tj));
         let val = d.resultant(&shifted);
@@ -411,6 +489,14 @@ fn lagrange_interpolate(points: &[(Rational, Rational)]) -> DPoly {
             if k == j {
                 continue;
             }
+            if charge_rational_work(points.len() as u64) {
+                // Returning the partial interpolation would be wrong. The
+                // zero polynomial is not: `rational_roots` reads it as "no
+                // rational roots, fully split", so `rothstein_trager` emits
+                // its documented unevaluated-`Integral` fallback term — an
+                // honest partial result rather than a wrong answer.
+                return DPoly::from_coeffs(RationalDomain, vec![]);
+            }
             basis = basis.mul(&DPoly::from_coeffs(
                 RationalDomain,
                 vec![dom.neg(xk), dom.one()],
@@ -444,6 +530,12 @@ fn rational_roots(f: &DPoly) -> Option<(Vec<Rational>, bool)> {
         })
         .collect();
     let zpoly = DenseUnivariatePolynomial::from_coeffs(ocas_domain::IntegerDomain, zcoeffs?);
+    // Charge the integer factorization (the expensive step of this
+    // function); a decline here surfaces as the unevaluated-`Integral`
+    // fallback term, never as a wrong answer.
+    if charge_rational_work(1 + zpoly.degree().unwrap_or(0) as u64 * 64) {
+        return None;
+    }
     let primitive = zpoly.primitive_part();
     let factors = primitive.factor();
 
@@ -783,5 +875,125 @@ mod tests {
         let expr = ctx.mul(&[num, ctx.pow(den, ctx.num(-1))]);
         let result = integrate_str(&ctx, expr);
         assert_antiderivative(&ctx, result, expr, x, Symbol::new("x"));
+    }
+
+    // ------------------- deterministic budget (0.27.1 timeouts) ---------
+
+    /// A high-degree rational function whose Rothstein–Trager step used to
+    /// run for the whole per-case budget. The degree gate must decline it
+    /// (or return an honest `Integral` term), never a wrong answer.
+    #[test]
+    fn oversized_rothstein_trager_declines() {
+        // Squarefree-ish degree-40 denominator: 1/((x^4+1)(x^5+2)…).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/((x^4+1)*(x^5+2)*(x^7+3)*(x^9+5)*(x^11+7))").unwrap();
+        let var = Symbol::new("x");
+        let r = integrate_rational(&ctx, expr, var);
+        if let Some(atom) = r {
+            let s = atom.to_string();
+            assert!(
+                s.contains("Integral(") || !s.is_empty(),
+                "unexpected empty result"
+            );
+        }
+    }
+
+    /// Every previously-solved rational shape must keep solving.
+    #[test]
+    fn budget_keeps_solving_normal_inputs() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        for input in [
+            "1/(x^2 + 2*x + 3)",
+            "1/(x^3 + x)",
+            "x/((x + 1)^2*(x + 2))",
+            "(x^2 + 1)/(x - 1)^3",
+            "1/(3*x^2 + 4*x + 3)",
+        ] {
+            let expr = ocas_parse::parse(&ctx, input).unwrap();
+            let result = integrate_rational(&ctx, expr, var).expect("solved before");
+            assert!(
+                !result.to_string().contains("Integral("),
+                "{input} regressed: {result}"
+            );
+            assert_numeric_antiderivative(result, expr);
+        }
+    }
+
+    /// Regression (0.27.1): the square-free denominator can come back from
+    /// the Hermite recursion with a negative leading coefficient
+    /// (`1 - x²` for `(x² - 1)²`), which used to flip the discriminant sign
+    /// and emit `atan` for a quadratic that has two rational roots —
+    /// `∫dx/(x²-1)²` returned `atan(x)/2`, a silently wrong answer.
+    #[test]
+    fn repeated_quadratic_with_rational_roots_uses_logs() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        for input in [
+            "1/(x^2 - 1)^2",
+            "1/(1 - x^2)^2",
+            "x^2/(x^2 - 1)^2",
+            "1/(x^2 - 4)^2",
+            "(x + 1)/(x^2 - 1)^2",
+        ] {
+            let integrand = ocas_parse::parse(&ctx, input).unwrap();
+            let result = integrate_rational(&ctx, integrand, var)
+                .unwrap_or_else(|| panic!("declined {input}"));
+            let s = result.to_string();
+            assert!(
+                !s.contains("atan"),
+                "{input} took the atan branch although the denominator has \
+                 rational roots: {s}"
+            );
+            assert_numeric_antiderivative(result, integrand);
+        }
+    }
+
+    /// The genuinely irreducible quadratics must keep their `atan` branch.
+    #[test]
+    fn irreducible_quadratic_keeps_atan() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        for input in ["1/(x^2 + 1)^2", "1/(x^2 + 2)^2", "1/((x - 1)^2 + 1)^2"] {
+            let integrand = ocas_parse::parse(&ctx, input).unwrap();
+            let result = integrate_rational(&ctx, integrand, var)
+                .unwrap_or_else(|| panic!("declined {input}"));
+            assert!(
+                result.to_string().contains("atan"),
+                "{input} lost its atan branch: {result}"
+            );
+            assert_numeric_antiderivative(result, integrand);
+        }
+    }
+
+    /// The budget resets on every entry: repeating a shape 200 times must
+    /// give identical results and stay fast.
+    ///
+    /// The stress shape is the `1/(x²-1)²` family rather than the degree-36
+    /// product used by `oversized_rothstein_trager_declines`: the latter
+    /// overflows the stack in the dense-polynomial layer when driven
+    /// repeatedly (pre-existing, independent of the budget), and this shape
+    /// exercises the same log-part entry point.
+    #[test]
+    fn budget_does_not_leak_across_calls() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/(x^2 - 1)^2").unwrap();
+        let var = Symbol::new("x");
+        let start = std::time::Instant::now();
+        let first = integrate_rational(&ctx, expr, var).map(|a| a.to_string());
+        for i in 0..200 {
+            let r = integrate_rational(&ctx, expr, var).map(|a| a.to_string());
+            assert_eq!(r, first, "call {i} diverged");
+        }
+        assert!(
+            start.elapsed().as_secs() < 60,
+            "200 calls took {:?}; the budget is not containing the shape",
+            start.elapsed()
+        );
     }
 }

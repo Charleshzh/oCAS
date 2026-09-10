@@ -1064,4 +1064,27 @@ mod tests {
             "chain left residue: {r}"
         );
     }
+
+    /// `rubi-01458`, `rubi-00597`, `rubi-01308` and `rubi-00367` were listed
+    /// against this module; it is not their source. All four are *outside* its
+    /// L1/L2/L3 shape classes and must decline here, so the module can never
+    /// be the origin of a wrong answer for them:
+    ///
+    /// - `csc(e+f·x)^5·(a + b·sec(e+f·x)²)²` is transcendental in `x` (the
+    ///   module only matches polynomial numerators over polynomial bases), and
+    ///   the pipeline reports it as an honest `Integral(...)` residue;
+    /// - the two `(1−2x)^k/((2+3x)^m·(3+5x)^n)` rationals exceed the L3
+    ///   combined-power and numerator-degree caps, so they fall to
+    ///   `rational` (which solves them exactly — the corpus oracle's
+    ///   `Mismatch` for those two is float64 cancellation in the *oracle's*
+    ///   5-point stencil, not a wrong antiderivative);
+    /// - `1/((a+b·x)·(a²−b²·x²))` has a repeated (non-squarefree) quadratic
+    ///   factor, which L2 deliberately leaves to `rational`.
+    #[test]
+    fn non_owned_corpus_shapes_decline() {
+        assert_module_declined("csc(e + f*x)^5*(a + b*sec(e + f*x)^2)^2");
+        assert_module_declined("(1 - 2*x)^3/((2 + 3*x)^7*(3 + 5*x)^2)");
+        assert_module_declined("(1 - 2*x)^2/((2 + 3*x)^6*(3 + 5*x)^3)");
+        assert_module_declined("1/((a + b*x)*(a^2 - b^2*x^2))");
+    }
 }

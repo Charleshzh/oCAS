@@ -34,6 +34,155 @@ use crate::tower::convert::{GeneratorField, atom_to_rational, rational_to_atom};
 
 type Sparse = SparseMultivariatePolynomial<ocas_domain::RationalDomain, Lex>;
 
+// =========================================================================
+// Deterministic work budget
+// =========================================================================
+//
+// The field-Euclidean machinery below is exact, but its cost is data
+// dependent: a single `FPoly::div_rem` multiplies the coefficient term
+// counts of its intermediates, `field_divisors` enumerates the product of
+// `(exponent_i + 1)` monomial candidates and `factor_via_integer` hands a
+// cleared polynomial to the integer factorizer. All three are unbounded in
+// principle (the Weierstrass t-forms with symbolic coefficients are the
+// corpus shapes that expose it), so the module carries a deterministic
+// counter instead of relying on a wall-clock timeout.
+//
+// The counter is reset at every public entry point of the module
+// (`integrate_rational_symbolic`, `rational_complexity_ok`) and charged by
+// the inner loops that can blow up; a charge that overshoots the cap makes
+// the operation return `None`, which the caller reports as a decline.
+
+/// Work units a single entry into this module may charge. Calibrated as a
+/// backstop above every corpus case that already solves (the largest
+/// observed successful charge is ~3.2e6 units — a pre-existing 3.6 s solve,
+/// see the module tests); legitimate small integrations charge a few
+/// hundred units, while the shapes that used to hang grow the coefficient
+/// term counts geometrically and trip the cap within a few dozen
+/// iterations.
+const MAX_WORK_UNITS: u64 = 4_000_000;
+
+/// Coefficient-size budget for the field-Euclidean loops (0.27.1).
+const MAX_COEFF_COST: usize = 20_000;
+
+/// Monomial divisors enumerated for one field element by
+/// [`field_divisors`]. The enumeration is the product of `(exponent_i + 1)`
+/// over the symbols, so a polynomial with a few 3-term monomials already
+/// reaches this cap; legitimately factored candidates stay in the tens.
+const MAX_FIELD_DIVISORS: usize = 256;
+
+/// Root candidates evaluated by [`split_linear_candidates`]
+/// (`2 · |divisors(a0)| · |divisors(lc)|`). Bounded structurally before the
+/// evaluation loop so a fat coefficient cannot explode the candidate list.
+const MAX_SPLIT_CANDIDATES: usize = 2048;
+
+/// Terms of the multivariate polynomial handed to
+/// `SparseMultivariatePolynomial::factor()` by [`factor_via_integer`].
+const MAX_FACTOR_TERMS: usize = 64;
+
+/// Terms of one numerator/denominator before `FPoly::from_sparse` (which is
+/// quadratic in the term count) is allowed to run.
+const MAX_SPARSE_TERMS: usize = 1024;
+
+/// Predicted coefficient-multiplication cost of one `FPoly::div_rem` step:
+/// `cost(remainder) · cost(quotient coefficient)`.
+///
+/// The post-step `MAX_COEFF_COST` check cannot see the intermediates of a
+/// single step, and one `GeneratorField::mul` on fat coefficients is already
+/// expensive on its own (it cross-multiplies rational functions and then
+/// canonicalizes the result). The product is therefore predicted *before*
+/// the multiplication and refuses work that cannot fit the budget.
+///
+/// Calibrated against the corpus: a step with a product of ~1.2e3 costs
+/// ~25 ms while one at ~2.7e4 costs ~1.4 s (the term counts barely move, so
+/// only the product separates them), so the cap is placed to keep every
+/// permitted step in the tens-of-milliseconds range.
+const MAX_STEP_PRODUCT: usize = 100_000;
+
+/// Predicted cost of one field-Euclidean `fpoly_gcd` call
+/// (`cost(a) · cost(b)`); checked before the loop is entered.
+const MAX_GCD_PRODUCT: usize = 100_000;
+
+thread_local! {
+    static WORK_UNITS: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+    #[cfg(test)]
+    static PEAK_WORK_UNITS: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// Reset the work budget; called by every public entry point of this
+/// module. `symbolic_rational` is entered once per chain re-entry, so the
+/// budget only ever covers a single invocation.
+fn reset_work_budget() {
+    WORK_UNITS.with(|c| c.set(0));
+}
+
+/// Charge `units` against the budget; returns `true` when it is exhausted.
+fn charge_work(units: u64) -> bool {
+    WORK_UNITS.with(|c| {
+        let v = c.get().saturating_add(units);
+        c.set(v);
+        #[cfg(test)]
+        PEAK_WORK_UNITS.with(|p| p.set(p.get().max(v)));
+        v > MAX_WORK_UNITS
+    })
+}
+
+/// Whether the budget is already spent (a check, not a charge).
+fn budget_exhausted() -> bool {
+    WORK_UNITS.with(|c| c.get() > MAX_WORK_UNITS)
+}
+
+// -------------------------------------------------------------------------
+// Charged coefficient-field arithmetic
+// -------------------------------------------------------------------------
+//
+// `GeneratorField` is `RationalPolynomial`, whose `mul`/`div`/`add` are the
+// operations that actually blow up: they cross-multiply the numerator and
+// denominator polynomials and then canonicalize the result. The cost is
+// proportional to the product of the operand term counts, so each operation
+// is charged by that product *at the call site*, which is the only place
+// this module can see it. The operation itself still completes (the caller's
+// loop-head `budget_exhausted` check stops the series); the structural
+// pre-call checks (`MAX_STEP_PRODUCT`, `MAX_GCD_PRODUCT`) keep a single
+// operation from being unboundedly large.
+
+/// `a · b`, charged by the coefficient cross-product.
+fn fmul(a: &GeneratorField, b: &GeneratorField) -> GeneratorField {
+    charge_work(
+        (coeff_cost(a) as u64)
+            .saturating_mul(coeff_cost(b) as u64)
+            .max(1),
+    );
+    a.mul(b)
+}
+
+/// `a + b`, charged by the operand sizes.
+fn fadd(a: &GeneratorField, b: &GeneratorField) -> GeneratorField {
+    charge_work((coeff_cost(a) as u64).saturating_add(coeff_cost(b) as u64));
+    a.add(b)
+}
+
+/// `a / b`, charged by the coefficient cross-product.
+fn fdiv(a: &GeneratorField, b: &GeneratorField) -> Option<GeneratorField> {
+    charge_work(
+        (coeff_cost(a) as u64)
+            .saturating_mul(coeff_cost(b) as u64)
+            .max(1),
+    );
+    a.div(b)
+}
+
+/// Largest charge seen since the last [`reset_peak_work`] (test-only
+/// calibration hook; not part of the budget).
+#[cfg(test)]
+fn peak_work_units() -> u64 {
+    PEAK_WORK_UNITS.with(|p| p.get())
+}
+
+#[cfg(test)]
+fn reset_peak_work() {
+    PEAK_WORK_UNITS.with(|p| p.set(0));
+}
+
 /// A univariate-in-`x` polynomial whose coefficients are elements of
 /// `ℚ(symbols)` (rational functions of the constant symbols). Terms are
 /// stored in ascending degree.
@@ -130,7 +279,7 @@ impl FPoly {
         let mut out = self.clone();
         for (p, c) in &other.terms {
             match out.terms.iter_mut().find(|(q, _)| q == p) {
-                Some((_, acc)) => *acc = acc.add(c),
+                Some((_, acc)) => *acc = fadd(acc, c),
                 None => out.terms.push((*p, c.clone())),
             }
         }
@@ -153,9 +302,9 @@ impl FPoly {
         for (p, c) in &self.terms {
             for (q, d) in &other.terms {
                 let pow = p + q;
-                let prod = mono_reduce(c.mul(d));
+                let prod = mono_reduce(fmul(c, d));
                 match out.terms.iter_mut().find(|(r, _)| *r == pow) {
-                    Some((_, acc)) => *acc = mono_reduce(acc.add(&prod)),
+                    Some((_, acc)) => *acc = mono_reduce(fadd(acc, &prod)),
                     None => out.terms.push((pow, prod)),
                 }
             }
@@ -172,7 +321,7 @@ impl FPoly {
             .map(|(p, c)| {
                 (
                     *p - 1,
-                    mono_reduce(c.mul(&rat_const(*p as i64, self.n_vars()))),
+                    mono_reduce(fmul(c, &rat_const(*p as i64, self.n_vars()))),
                 )
             })
             .collect();
@@ -221,22 +370,53 @@ impl FPoly {
     }
 
     /// Long division in `x` over the field; returns `(quotient, remainder)`.
+    ///
+    /// Every step cancels the current leading term, so the remainder degree
+    /// strictly decreases and `deg(self) − deg(den) + 1` bounds the loop;
+    /// the intermediate coefficient sizes are unbounded, though, and a
+    /// single call is enough to blow up (the inter-step `MAX_COEFF_COST`
+    /// check in [`fpoly_gcd`] never sees those intermediates — see the
+    /// many-symbol entry gate in [`integrate_rational_symbolic`]). Both the
+    /// structural step count and the coefficient size are therefore checked
+    /// inside the loop.
     fn div_rem(&self, den: &Self) -> Option<(Self, Self)> {
         let mut q = fpoly_zero(self.n_vars());
         let mut r = self.clone();
         let dd = den.degree()?;
         let lc_d = den.leading_coeff()?;
+        let lc_d_cost = coeff_cost(&lc_d);
+        let den_cost = fpoly_cost(den);
+        let mut steps_left = self.degree().map_or(0, |d| d.saturating_sub(dd) + 1);
         while let Some(dr) = r.degree() {
             if dr < dd {
                 break;
             }
             let lc_r = r.leading_coeff()?;
-            let c = mono_reduce(lc_r.div(&lc_d)?);
+            let r_cost = fpoly_cost(&r);
+            // Structural prediction before the division/multiplication
+            // below: the quotient coefficient `c = lc_r / lc_d` can carry as
+            // many terms as both leading coefficients together, and
+            // `den · (c·x^k)` then costs `cost(den) · cost(c)` coefficient
+            // products. Neither factor is visible to the checks that run
+            // after the step.
+            let t_cost = coeff_cost(&lc_r).saturating_add(lc_d_cost);
+            if steps_left == 0
+                || budget_exhausted()
+                || r_cost.saturating_mul(t_cost) > MAX_STEP_PRODUCT
+                || charge_work(1 + r_cost as u64 + den_cost as u64)
+            {
+                return None;
+            }
+            steps_left -= 1;
+            let c = mono_reduce(fdiv(&lc_r, &lc_d)?);
             let t = FPoly {
                 terms: vec![(dr - dd, c)],
             };
             q = q.add(&t);
             r = r.sub(&den.mul(&t));
+            if fpoly_cost(&r) + fpoly_cost(&q) + den_cost > MAX_COEFF_COST {
+                return None;
+            }
         }
         Some((q, r))
     }
@@ -251,16 +431,19 @@ impl FPoly {
         let mut acc = GeneratorField::zero(&RationalDomain, self.n_vars());
         let mut prev: Option<usize> = None;
         for (exp, c) in self.terms.iter().rev() {
+            if budget_exhausted() {
+                return None;
+            }
             let gap = prev.map(|p| p - *exp).unwrap_or(0);
             for _ in 0..=gap {
-                acc = acc.mul(v);
+                acc = fmul(&acc, v);
             }
-            acc = acc.add(c);
+            acc = fadd(&acc, c);
             prev = Some(*exp);
         }
         if let Some(p) = prev {
             for _ in 0..p {
-                acc = acc.mul(v);
+                acc = fmul(&acc, v);
             }
         }
         Some(acc)
@@ -297,12 +480,21 @@ fn fpoly_gcd(a: &FPoly, b: &FPoly) -> Option<FPoly> {
     if b.is_zero() {
         return Some(a.clone());
     }
+    // Structural prediction before the Euclidean loop: the per-step checks
+    // cannot see the intermediates of the first `div_rem`, which is where a
+    // coefficient blow-up actually happens.
+    if fpoly_cost(a).saturating_mul(fpoly_cost(b)) > MAX_GCD_PRODUCT
+        || charge_work(1 + fpoly_cost(a) as u64 + fpoly_cost(b) as u64)
+    {
+        return None;
+    }
     let mut old_r = a.clone();
     let mut r = b.clone();
     let mut steps = 0usize;
     while !r.is_zero() {
         steps += 1;
-        if steps > 512 || fpoly_cost(&old_r) + fpoly_cost(&r) > MAX_COEFF_COST {
+        if steps > 512 || budget_exhausted() || fpoly_cost(&old_r) + fpoly_cost(&r) > MAX_COEFF_COST
+        {
             return None;
         }
         let (_, rem) = old_r.div_rem(&r)?;
@@ -324,14 +516,13 @@ fn fpoly_gcd(a: &FPoly, b: &FPoly) -> Option<FPoly> {
 /// steps. The budget turns multivariate-coefficient blow-ups (5+ symbol
 /// corpus shapes) from hangs into fast declines.
 fn fpoly_cost(p: &FPoly) -> usize {
-    p.terms
-        .iter()
-        .map(|(_, c)| c.numerator.n_terms() + c.denominator.n_terms())
-        .sum()
+    p.terms.iter().map(|(_, c)| coeff_cost(c)).sum()
 }
 
-/// Coefficient-size budget for the field-Euclidean loops (0.27.1).
-const MAX_COEFF_COST: usize = 20_000;
+/// Coefficient size of one field element (numerator + denominator terms).
+fn coeff_cost(c: &GeneratorField) -> usize {
+    c.numerator.n_terms() + c.denominator.n_terms()
+}
 
 impl FPoly {
     fn scale(&self, c: &GeneratorField) -> Self {
@@ -339,7 +530,7 @@ impl FPoly {
             terms: self
                 .terms
                 .iter()
-                .map(|(p, q)| (*p, mono_reduce(q.mul(c))))
+                .map(|(p, q)| (*p, mono_reduce(fmul(q, c))))
                 .collect(),
         }
     }
@@ -364,7 +555,19 @@ fn square_free_factors(p: &FPoly) -> Option<Vec<(FPoly, usize)>> {
     let mut d = c1.sub(&b.derivative());
     let mut result: Vec<(FPoly, usize)> = Vec::new();
     let mut i = 1usize;
+    // The multiplicity sum bounds the iteration count (a unit gcd still
+    // advances `d`, which drives the next non-unit gcd); the counter is
+    // deliberately generous — the `MAX_COEFF_COST` and work budgets are the
+    // real backstops — because a unit-gcd step does not shrink the degree.
+    let mut steps_left = 2 * (p.degree().unwrap_or(0) + 2);
     while b.degree() != Some(0) {
+        if steps_left == 0
+            || budget_exhausted()
+            || charge_work(1 + fpoly_cost(&b) as u64 + fpoly_cost(&d) as u64)
+        {
+            return None;
+        }
+        steps_left -= 1;
         let ai = fpoly_gcd(&b, &d)?;
         let (b_next, _) = b.div_rem(&ai)?;
         let (c_next, _) = d.div_rem(&ai)?;
@@ -399,10 +602,18 @@ fn hermite_reduce(num: &FPoly, den: &FPoly) -> Option<HermiteParts> {
     let mut b_parts: Vec<(FPoly, FPoly)> = Vec::new();
     let mut a = num.clone();
     let mut d = den.clone();
+    // Each step strips one power of one factor from the denominator, so the
+    // denominator degree strictly decreases; the counter makes that bound
+    // explicit and charges the coefficient cost of the step.
+    let mut steps_left = d.degree().unwrap_or(0) + 1;
     loop {
-        if fpoly_cost(&a) + fpoly_cost(&d) > MAX_COEFF_COST {
+        if fpoly_cost(&a) + fpoly_cost(&d) > MAX_COEFF_COST || budget_exhausted() {
             return None;
         }
+        if steps_left == 0 || charge_work(1 + fpoly_cost(&a) as u64 + fpoly_cost(&d) as u64) {
+            return None;
+        }
+        steps_left -= 1;
         let factors = square_free_factors(&d)?;
         let Some((f, m)) = factors.iter().find(|(_, m)| *m >= 2).cloned() else {
             break;
@@ -455,10 +666,23 @@ fn extended_gcd(a: &FPoly, b: &FPoly) -> Option<(FPoly, FPoly)> {
     let mut s = fpoly_zero(a.n_vars());
     let mut old_t = fpoly_zero(a.n_vars());
     let mut t = fpoly_one(a.n_vars());
+    // Euclidean degree descent bounds the loop; charge the coefficient cost
+    // of every step so a blow-up inside the series cannot run away. The step
+    // bound is generous because a step whose remainder has the smaller
+    // degree only swaps `old_r`/`r` and does not shrink the degree
+    // (`extended_gcd(x, a - b·x²)` needs three steps for `deg = 1`).
+    let mut steps_left = a.degree().unwrap_or(0) + b.degree().unwrap_or(0) + 2;
     while !r.is_zero() {
         if fpoly_cost(&old_r) + fpoly_cost(&r) + fpoly_cost(&s) + fpoly_cost(&t) > MAX_COEFF_COST {
             return None;
         }
+        if steps_left == 0
+            || budget_exhausted()
+            || charge_work(1 + fpoly_cost(&old_r) as u64 + fpoly_cost(&r) as u64)
+        {
+            return None;
+        }
+        steps_left -= 1;
         let (q, rem) = old_r.div_rem(&r)?;
         old_r = r;
         r = rem;
@@ -524,17 +748,37 @@ fn collect_symbols(expr: Atom<'_>, var: Symbol, out: &mut Vec<Symbol>) {
 /// Extract `Δ = 4ac − b²` as a field element.
 fn discriminant(a: &GeneratorField, b: &GeneratorField, c: &GeneratorField) -> GeneratorField {
     let four = rat_const(4, a.n_vars());
-    four.mul(a).mul(c).sub(&b.mul(b))
+    fmul(&fmul(&four, a), c).sub(&fmul(b, b))
 }
 
 /// `√Δ` as a rational function of the symbols when Δ is a square in
-/// `ℚ(symbols)` (all monomial exponents even, constant coefficient a
-/// rational square); else `None`.
+/// `ℚ(symbols)`; else `None`.
+///
+/// The monomial-wise square root below is only a *candidate* generator: it
+/// is exact for a single-term element (`4·a² → 2·a`) but wrong for a sum,
+/// because squaring a sum produces cross terms that the term-wise route
+/// never sees (`4a² + 4b²` would yield the bogus `2a + 2b`, whose square is
+/// `4a² + 8ab + 4b²`). The candidate is therefore squared with exact field
+/// arithmetic and returned only when it reproduces Δ; otherwise this
+/// returns `None` and the caller keeps the quadratic whole (the
+/// log + atan/atanh branch), which is always correct.
 fn rational_square_root(delta: &GeneratorField) -> Option<GeneratorField> {
+    // The candidate is squared below, which is itself a charged field
+    // multiplication; a huge Δ declines here rather than paying for it.
+    if budget_exhausted() {
+        return None;
+    }
     let sqrt_sparse = |p: &Sparse| -> Option<Sparse> {
         let mut terms: Vec<(Vec<usize>, Rational)> = Vec::new();
         for (e, c) in p.terms_ref() {
             if e.iter().any(|&v| v % 2 != 0) {
+                return None;
+            }
+            // A non-integral coefficient is not a rational square unless its
+            // denominator is a square too; the exact check below would
+            // reject it anyway, so bail out early rather than dropping the
+            // denominator here.
+            if c.denom().to_i64()? != 1 {
                 return None;
             }
             let rp = isqrt_i64(c.numer().to_i64()?)?;
@@ -544,7 +788,16 @@ fn rational_square_root(delta: &GeneratorField) -> Option<GeneratorField> {
     };
     let n = sqrt_sparse(&delta.numerator)?;
     let d = sqrt_sparse(&delta.denominator)?;
-    Some(GeneratorField::from_num_den(n, d))
+    let candidate = GeneratorField::from_num_den(n, d);
+    // Exact check in `ℚ(symbols)`: `candidate² == delta`. Both sides are
+    // canonical field elements, so comparing their difference against zero
+    // is a decision procedure (cross-multiplication is exact polynomial
+    // arithmetic, independent of how the fraction is represented).
+    if fmul(&candidate, &candidate).sub(delta).is_zero() {
+        Some(candidate)
+    } else {
+        None
+    }
 }
 
 /// Integer multivariate factorization of a square-free factor: clears the
@@ -553,7 +806,18 @@ fn rational_square_root(delta: &GeneratorField) -> Option<GeneratorField> {
 /// scalar is the clearing constant (the log part multiplies its numerator
 /// by that scalar, keeping the partial-fraction coefficients exact).
 fn factor_via_integer(f: &FPoly) -> Option<Vec<(FPoly, usize)>> {
+    // Structural gate in front of `SparseMultivariatePolynomial::factor()`:
+    // the entry degree is already ≤ 3 (see `split_squarefree_factors`), the
+    // coefficient-size budget bounds the clearing lcm, and the term count
+    // bounds the conversion below. Refusing here keeps the factorizer off
+    // pathologically wide inputs.
+    if charge_work(1 + fpoly_cost(f) as u64) {
+        return None;
+    }
     let sparse = f.to_sparse();
+    if sparse.terms_ref().len() > MAX_FACTOR_TERMS {
+        return None;
+    }
     // The to_sparse round trip encodes field coefficients by sign-flipping
     // the denominator monomials, which from_sparse cannot reconstruct
     // (a/c would come back as a − c). Integer factorization is therefore
@@ -614,11 +878,18 @@ fn gcd_i64(mut a: i64, mut b: i64) -> i64 {
 /// Monomial divisors of a field element: every monomial of the numerator
 /// (and denominator) with exponent-wise ≤ exponents, times the integer
 /// divisors of the scalar content (bounded).
+///
+/// The candidate list is the product of `(exponent_i + 1)` over the symbols
+/// of one monomial, so the size is predicted before the expansion allocates
+/// it and the running total is charged against the module budget.
 fn field_divisors(el: &GeneratorField) -> Option<Vec<GeneratorField>> {
     let mut out: Vec<GeneratorField> = Vec::new();
     for e in el.numerator.terms_ref().keys() {
         let mut exps: Vec<Vec<usize>> = vec![vec![0; e.len()]];
         for (i, &v) in e.iter().enumerate() {
+            if exps.len().saturating_mul(v + 1) > MAX_FIELD_DIVISORS {
+                return None;
+            }
             let mut next = Vec::new();
             for cur in &exps {
                 for k in 0..=v {
@@ -630,6 +901,9 @@ fn field_divisors(el: &GeneratorField) -> Option<Vec<GeneratorField>> {
             exps = next;
         }
         for exp in exps {
+            if out.len() >= MAX_FIELD_DIVISORS || charge_work(1) {
+                return None;
+            }
             let p = Sparse::from_terms(
                 RationalDomain,
                 el.numerator.n_vars(),
@@ -641,6 +915,9 @@ fn field_divisors(el: &GeneratorField) -> Option<Vec<GeneratorField>> {
     for e in el.denominator.terms_ref().keys() {
         let mut exps: Vec<Vec<usize>> = vec![vec![0; e.len()]];
         for (i, &v) in e.iter().enumerate() {
+            if exps.len().saturating_mul(v + 1) > MAX_FIELD_DIVISORS {
+                return None;
+            }
             let mut next = Vec::new();
             for cur in &exps {
                 for k in 0..=v {
@@ -652,6 +929,9 @@ fn field_divisors(el: &GeneratorField) -> Option<Vec<GeneratorField>> {
             exps = next;
         }
         for exp in exps {
+            if out.len() >= MAX_FIELD_DIVISORS || charge_work(1) {
+                return None;
+            }
             let p = Sparse::from_terms(
                 RationalDomain,
                 el.denominator.n_vars(),
@@ -665,6 +945,10 @@ fn field_divisors(el: &GeneratorField) -> Option<Vec<GeneratorField>> {
 
 /// Split a square-free factor of degree 3 by trying field-linear root
 /// candidates `r = −β/α` with `α | lc`, `β | a0` (monomial divisors).
+///
+/// The candidate list is `2 · |divisors(a0)| · |divisors(lc)|`; the product
+/// is bounded before the evaluation loop so a fat leading coefficient
+/// cannot make the enumeration combinatorial.
 fn split_linear_candidates(f: &FPoly) -> Option<Vec<(FPoly, usize)>> {
     let lc = f.leading_coeff()?;
     let a0 = f
@@ -677,10 +961,20 @@ fn split_linear_candidates(f: &FPoly) -> Option<Vec<(FPoly, usize)>> {
     if a0.is_zero() {
         candidates.push(GeneratorField::zero(&RationalDomain, f.n_vars()));
     } else {
-        for da in field_divisors(&a0)? {
-            for dl in field_divisors(&lc)? {
+        let divisors_a0 = field_divisors(&a0)?;
+        let divisors_lc = field_divisors(&lc)?;
+        if divisors_a0
+            .len()
+            .saturating_mul(divisors_lc.len())
+            .saturating_mul(2)
+            > MAX_SPLIT_CANDIDATES
+        {
+            return None;
+        }
+        for da in divisors_a0 {
+            for dl in &divisors_lc {
                 if !dl.is_zero() {
-                    let r = da.div(&dl)?;
+                    let r = fdiv(&da, dl)?;
                     candidates.push(r.neg());
                     candidates.push(r);
                 }
@@ -688,6 +982,11 @@ fn split_linear_candidates(f: &FPoly) -> Option<Vec<(FPoly, usize)>> {
         }
     }
     for r in candidates {
+        // Each candidate costs one Horner evaluation of `f`; charge the
+        // degree so the accumulated budget tracks the real work.
+        if budget_exhausted() || charge_work(1 + f.degree().unwrap_or(0) as u64) {
+            return None;
+        }
         if f.eval(&r)?.is_zero() {
             // (x − r) divides f (monic factor; the log part works on the
             // monic-normalized denominator).
@@ -708,6 +1007,9 @@ fn split_linear_candidates(f: &FPoly) -> Option<Vec<(FPoly, usize)>> {
 fn split_squarefree_factors(factors: Vec<(FPoly, usize)>) -> Option<Vec<(FPoly, usize)>> {
     let mut out: Vec<(FPoly, usize)> = Vec::new();
     for (f, m) in factors {
+        if budget_exhausted() || charge_work(1 + fpoly_cost(&f) as u64) {
+            return None;
+        }
         let deg = f.degree()?;
         if deg > 2 && deg <= 3 {
             // Field-linear factors first (symbolic coefficients: the
@@ -729,10 +1031,10 @@ fn split_squarefree_factors(factors: Vec<(FPoly, usize)>) -> Option<Vec<(FPoly, 
         if deg == 2 {
             let (a, b, c) = quadratic_coeffs_fpoly(&f)?;
             // Root-splitting discriminant: b² − 4ac.
-            let delta = b.mul(&b).sub(&rat_const(4, f.n_vars()).mul(&a).mul(&c));
+            let delta = fmul(&b, &b).sub(&fmul(&fmul(&rat_const(4, f.n_vars()), &a), &c));
             if let Some(s) = rational_square_root(&delta) {
-                let two_a = a.mul(&rat_const(2, f.n_vars()));
-                let r1 = b.neg().add(&s).div(&two_a)?;
+                let two_a = fmul(&a, &rat_const(2, f.n_vars()));
+                let r1 = fadd(&b.neg(), &s).div(&two_a)?;
                 let r2 = b.neg().sub(&s).div(&two_a)?;
                 let one = GeneratorField::one(&RationalDomain, f.n_vars());
                 // Keep the leading coefficient of the original quadratic in
@@ -740,7 +1042,7 @@ fn split_squarefree_factors(factors: Vec<(FPoly, usize)>) -> Option<Vec<(FPoly, 
                 // evaluate ∏_{j≠i} f_j(r)/f_i'(r), which is only correct
                 // when the factors multiply back to the exact denominator.
                 let mut g1 = FPoly {
-                    terms: vec![(1, a.clone()), (0, a.mul(&r1).neg())],
+                    terms: vec![(1, a.clone()), (0, fmul(&a, &r1).neg())],
                 };
                 g1.trim();
                 let mut g2 = FPoly {
@@ -787,6 +1089,9 @@ pub(crate) fn rational_complexity_ok<'a>(
     expr: Atom<'a>,
     var: Symbol,
 ) -> bool {
+    // This is a public entry point of the module (the Weierstrass gate calls
+    // it directly), so the work budget starts fresh here too.
+    reset_work_budget();
     let mut symbols: Vec<Symbol> = Vec::new();
     collect_symbols(expr, var, &mut symbols);
     if symbols.len() > 5 {
@@ -800,6 +1105,14 @@ pub(crate) fn rational_complexity_ok<'a>(
     let Some(rf) = atom_to_rational(expr, &gens) else {
         return false;
     };
+    // `FPoly::from_sparse` is quadratic in the term count; predict that cost
+    // instead of materialising the conversion.
+    let sparse_terms = rf.numerator.n_terms() + rf.denominator.n_terms();
+    if sparse_terms > MAX_SPARSE_TERMS
+        || charge_work((sparse_terms as u64).saturating_mul(sparse_terms as u64))
+    {
+        return false;
+    }
     let num = FPoly::from_sparse(&rf.numerator);
     let mut den = FPoly::from_sparse(&rf.denominator);
     // Best-effort cancellation, mirroring `integrate_rational_symbolic`:
@@ -822,6 +1135,18 @@ pub(crate) fn integrate_rational_symbolic<'a>(
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
+    // Fresh budget for this invocation. The stage runs once per chain
+    // re-entry, so a top-level `integrate` call can never accumulate a
+    // stale budget across the chain.
+    reset_work_budget();
+    integrate_rational_symbolic_inner(ctx, expr, var)
+}
+
+fn integrate_rational_symbolic_inner<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
     let x = ctx.var(var.as_str());
     let mut symbols: Vec<Symbol> = Vec::new();
     collect_symbols(expr, var, &mut symbols);
@@ -836,6 +1161,14 @@ pub(crate) fn integrate_rational_symbolic<'a>(
     // growth overflows the stack). Skipping keeps the pipeline fast and
     // stack-safe; the cases fall through to the heuristic stages.
     let rf = atom_to_rational(expr, &gens)?;
+    // `FPoly::from_sparse` is quadratic in the term count; predict that cost
+    // instead of materialising the conversion.
+    let sparse_terms = rf.numerator.n_terms() + rf.denominator.n_terms();
+    if sparse_terms > MAX_SPARSE_TERMS
+        || charge_work((sparse_terms as u64).saturating_mul(sparse_terms as u64))
+    {
+        return None;
+    }
     let mut num = FPoly::from_sparse(&rf.numerator);
     let mut den = FPoly::from_sparse(&rf.denominator);
     // Many-symbol entry gate (0.27.1): with 5+ coefficient generators the
@@ -925,19 +1258,22 @@ pub(crate) fn integrate_rational_symbolic<'a>(
     }
     for (f, m) in &factors {
         debug_assert_eq!(*m, 1);
+        if budget_exhausted() {
+            return None;
+        }
         let f_deg = f.degree()?;
         if f_deg == 1 {
             // c = num(r)/(f'(r)·∏_{j≠i} f_j(r)) with r = −β/α.
             let (alpha, beta) = linear_coeffs(f)?;
-            let r = beta.neg().div(&alpha)?;
+            let r = fdiv(&beta.neg(), &alpha)?;
             let mut denom = alpha.clone();
             for (g, _) in &factors {
                 if g.terms == f.terms {
                     continue;
                 }
-                denom = denom.mul(&g.eval(&r)?);
+                denom = fmul(&denom, &g.eval(&r)?);
             }
-            let coeff = c_num.eval(&r)?.div(&denom)?;
+            let coeff = fdiv(&c_num.eval(&r)?, &denom)?;
             let coeff_atom = rational_to_atom(ctx, &coeff, &gens[1..])?;
             let f_atom = f.to_atom(ctx, &gens)?;
             parts.push(ctx.mul(&[coeff_atom, ctx.fun("log", &[f_atom])]));
@@ -946,15 +1282,15 @@ pub(crate) fn integrate_rational_symbolic<'a>(
             let (m, n) = quadratic_coeffs(&c_num, f, &factors)?;
             let (a, b, c) = quadratic_coeffs_fpoly(f)?;
             // ∫(Mx+N)/f = M/(2a)·log(f) + (N − M·b/(2a))·(2/√Δ)·h((2a·x+b)/√Δ)
-            let two_a = a.mul(&rat_const(2, n_vars));
-            let m_over = m.div(&two_a)?;
+            let two_a = fmul(&a, &rat_const(2, n_vars));
+            let m_over = fdiv(&m, &two_a)?;
             let f_atom = f.to_atom(ctx, &gens)?;
             let m_atom = rational_to_atom(ctx, &m_over, &gens[1..])?;
             if !m_over.is_zero() {
                 parts.push(ctx.mul(&[m_atom, ctx.fun("log", &[f_atom])]));
             }
             let delta = discriminant(&a, &b, &c);
-            let mb_over = m.mul(&b).div(&two_a)?;
+            let mb_over = fdiv(&fmul(&m, &b), &two_a)?;
             let n_shift = n.sub(&mb_over);
             // atan: +(2/√Δ); atanh: −(2/√(−Δ)) — the derivative of
             // atanh((2ax+b)/√(−Δ)) is +1/f only with the minus sign.
@@ -1001,7 +1337,128 @@ pub(crate) fn integrate_rational_symbolic<'a>(
             ]));
         }
     }
-    assemble(ctx, parts)
+    // Last-resort emission guard: the assembled closed form is differentiated
+    // and compared with the input at a few deterministic sample points. A
+    // wrong answer is worse than a fallback, and this module has produced two
+    // (0.27.1's `rational_square_root`, 0.27.2's residue coefficients for
+    // repeated factors) — the guard turns any future instance into an honest
+    // decline. Unverifiable samples (domain, unsupported head) do not decline.
+    if let Some(answer) = assemble(ctx, parts) {
+        if !emission_is_verified(ctx, expr, answer, var, &symbols) {
+            return None;
+        }
+        return Some(answer);
+    }
+    None
+}
+
+/// Sample abscissae for [`emission_is_verified`].
+const GUARD_SAMPLES: [f64; 3] = [0.37, 0.83, 1.27];
+
+/// Deterministic dummy value for the `i`-th coefficient symbol.
+fn guard_param(i: usize) -> f64 {
+    const TABLE: [f64; 8] = [2.0, 3.0, 5.0, 7.0, 11.0, 13.0, 0.5, 1.5];
+    TABLE[i % TABLE.len()]
+}
+
+/// Numeric f64 evaluation of the atoms this module can emit.
+fn eval_num(expr: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
+    match expr.node() {
+        AtomNode::Num(n) => Some(*n as f64),
+        AtomNode::Var(v) => {
+            if let Some((_, val)) = env.iter().find(|(s, _)| s == v) {
+                return Some(*val);
+            }
+            match v.as_str() {
+                "pi" => Some(std::f64::consts::PI),
+                "e" | "E" => Some(std::f64::consts::E),
+                _ => None,
+            }
+        }
+        AtomNode::Add(args) => {
+            let mut acc = 0.0;
+            for a in args.iter() {
+                acc += eval_num(*a, env)?;
+            }
+            Some(acc)
+        }
+        AtomNode::Mul(args) => {
+            let mut acc = 1.0;
+            for a in args.iter() {
+                acc *= eval_num(*a, env)?;
+            }
+            Some(acc)
+        }
+        AtomNode::Pow(b, e) => {
+            let (b, e) = (eval_num(*b, env)?, eval_num(*e, env)?);
+            if e.fract() == 0.0 || b >= 0.0 {
+                Some(b.powf(e))
+            } else {
+                None
+            }
+        }
+        AtomNode::Fun(name, args) => {
+            let v = eval_num(*args.first()?, env)?;
+            Some(match name.as_str() {
+                "log" => v.abs().ln(),
+                "sqrt" => {
+                    if v < 0.0 {
+                        return None;
+                    }
+                    v.sqrt()
+                }
+                "atan" => v.atan(),
+                "atanh" => {
+                    if v.abs() >= 1.0 {
+                        return None;
+                    }
+                    v.atanh()
+                }
+                "asin" => {
+                    if !(-1.0..=1.0).contains(&v) {
+                        return None;
+                    }
+                    v.asin()
+                }
+                "abs" => v.abs(),
+                _ => return None,
+            })
+        }
+    }
+}
+
+/// Differentiate `answer` and compare it with `expr` at a few sample points.
+///
+/// Returns `true` when every usable sample agrees to `1e-4` relative, and
+/// also when no sample is usable (the guard never declines what it cannot
+/// judge). Returns `false` only on a real disagreement.
+fn emission_is_verified<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    answer: Atom<'a>,
+    var: Symbol,
+    symbols: &[Symbol],
+) -> bool {
+    let base: Vec<(Symbol, f64)> = symbols
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (*s, guard_param(i)))
+        .collect();
+    let derivative = crate::diff(ctx, answer, var);
+    for &x in GUARD_SAMPLES.iter() {
+        let mut env = base.clone();
+        env.push((var, x));
+        let (Some(lhs), Some(rhs)) = (eval_num(derivative, &env), eval_num(expr, &env)) else {
+            continue;
+        };
+        if !lhs.is_finite() || !rhs.is_finite() {
+            continue;
+        }
+        if (lhs - rhs).abs() > 1e-4 * rhs.abs().max(1.0) {
+            return false;
+        }
+    }
+    true
 }
 
 fn assemble<'a>(ctx: &'a AtomArena<'a>, parts: Vec<Atom<'a>>) -> Option<Atom<'a>> {
@@ -1032,6 +1489,9 @@ fn quadratic_coeffs(
 ) -> Option<(GeneratorField, GeneratorField)> {
     let mut q = fpoly_one(f.n_vars());
     for (g, _) in factors {
+        if budget_exhausted() {
+            return None;
+        }
         if g.terms == f.terms {
             continue;
         }
@@ -1045,12 +1505,12 @@ fn quadratic_coeffs(
     // (Mx+N)(q1 x+q0) mod f, with x² ≡ (−b·x − c)/a:
     //   x·(M·q0 + N·q1 − M·q1·b/a) + (N·q0 − M·q1·c/a)
     let a_inv = a.inv()?;
-    let m11 = q0.sub(&q1.mul(&b).mul(&a_inv));
-    let m21 = q1.mul(&c).mul(&a_inv).neg();
-    let det = m11.mul(&q0).sub(&q1.mul(&m21));
+    let m11 = fadd(&q0, &fmul(&fmul(&q1, &b), &a_inv).neg());
+    let m21 = fmul(&fmul(&q1, &c), &a_inv).neg();
+    let det = fadd(&fmul(&m11, &q0), &fmul(&q1, &m21).neg());
     let det_inv = det.inv()?;
-    let m = p1.mul(&q0).sub(&q1.mul(&p0)).mul(&det_inv);
-    let n = m11.mul(&p0).sub(&p1.mul(&m21)).mul(&det_inv);
+    let m = fmul(&fadd(&fmul(&p1, &q0), &fmul(&q1, &p0).neg()), &det_inv);
+    let n = fmul(&fadd(&fmul(&m11, &p0), &fmul(&p1, &m21).neg()), &det_inv);
     Some((m, n))
 }
 
@@ -1058,6 +1518,64 @@ fn quadratic_coeffs(
 mod tests {
     use super::*;
     use ocas_core::arena::Arena;
+
+    /// Constant values for the numeric antiderivative check. Extra symbols
+    /// are harmless: the evaluator looks them up by name.
+    fn consts() -> Vec<(Symbol, f64)> {
+        [
+            ("a", 1.3),
+            ("b", 0.7),
+            ("c", 0.4),
+            ("d", 0.9),
+            ("e", 0.5),
+            ("A", 1.1),
+            ("B", 0.6),
+            ("C", 0.8),
+        ]
+        .into_iter()
+        .map(|(n, v)| (Symbol::new(n), v))
+        .collect()
+    }
+
+    /// Numeric f64 evaluator over the elementary functions the integrator
+    /// emits (the same shape as the one in `trig_kernel`'s tests, extended
+    /// with the hyperbolic family this module's shapes use).
+    fn eval_f64(expr: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
+        match expr.node() {
+            AtomNode::Num(n) => Some(*n as f64),
+            AtomNode::Var(v) => env.iter().find(|(s, _)| s == v).map(|(_, val)| *val),
+            AtomNode::Add(args) => args
+                .iter()
+                .try_fold(0.0, |acc, a| Some(acc + eval_f64(*a, env)?)),
+            AtomNode::Mul(args) => args
+                .iter()
+                .try_fold(1.0, |acc, a| Some(acc * eval_f64(*a, env)?)),
+            AtomNode::Pow(b, e) => Some(eval_f64(*b, env)?.powf(eval_f64(*e, env)?)),
+            AtomNode::Fun(name, args) => {
+                let v = eval_f64(*args.first()?, env)?;
+                Some(match name.as_str() {
+                    "sin" => v.sin(),
+                    "cos" => v.cos(),
+                    "tan" => v.tan(),
+                    "cot" => v.tan().recip(),
+                    "sec" => v.cos().recip(),
+                    "csc" => v.sin().recip(),
+                    "sinh" => v.sinh(),
+                    "cosh" => v.cosh(),
+                    "tanh" => v.tanh(),
+                    "coth" => v.tanh().recip(),
+                    "sech" => v.cosh().recip(),
+                    "csch" => v.sinh().recip(),
+                    "log" => v.ln(),
+                    "sqrt" => v.sqrt(),
+                    "atan" => v.atan(),
+                    "atanh" => v.atanh(),
+                    "asin" => v.asin(),
+                    _ => return None,
+                })
+            }
+        }
+    }
 
     fn int_str(input: &str, var: &str) -> String {
         let arena = Arena::new();
@@ -1069,6 +1587,33 @@ mod tests {
     fn assert_solved(input: &str) {
         let r = int_str(input, "x");
         assert!(!r.contains("Integral("), "{input} left a residue: {r}");
+    }
+
+    /// The result must be an honest fallback (the unevaluated `Integral`
+    /// marker still present) or, when a mechanism does solve the shape, a
+    /// numerically correct antiderivative. Budgets must never turn a hang
+    /// into a wrong answer.
+    fn assert_returns_not_wrong(input: &str) {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let integrand = ocas_parse::parse(&ctx, input).unwrap();
+        let var = Symbol::new("x");
+        let result = crate::integrate(&ctx, integrand, var);
+        let text = result.to_string();
+        if text.contains("Integral(") {
+            return;
+        }
+        let d = crate::diff(&ctx, result, var);
+        for &xv in &[0.3f64, 0.7] {
+            let mut env = consts();
+            env.push((var, xv));
+            let lhs = eval_f64(d, &env).expect("eval derivative");
+            let rhs = eval_f64(integrand, &env).expect("eval integrand");
+            assert!(
+                (lhs - rhs).abs() < 1e-5 * rhs.abs().max(1.0),
+                "{input} at x={xv}: derivative {lhs} vs integrand {rhs} (result: {text})"
+            );
+        }
     }
 
     #[test]
@@ -1085,5 +1630,186 @@ mod tests {
     #[test]
     fn numeric_quadratic_irreducible() {
         assert_solved("1/(x^2+2*x+3)");
+    }
+
+    // ------------------- hang regressions (0.27.1 timeouts) -------------
+
+    /// Corpus shapes whose integration used to run into the per-case budget
+    /// with this stage last entered (Rubi ids in the comments).
+    ///
+    /// A representative subset, not the whole list: driving every hang shape
+    /// through the full chain in a debug build costs minutes per shape, which
+    /// made this module's test binary unusable in the workspace suite. The
+    /// complete list is measured by the corpus harness
+    /// (`ocas-tests/benches/integrate_1892.rs`), whose per-case budget and
+    /// report are the authoritative record.
+    const HANG_SHAPES: &[&str] = &[
+        "sinh(x)^3/(a + b*sinh(x))",           // rubi-00272
+        "1/((a - b*x)*(a + b*x)*(c + d*x)^3)", // rubi-00317
+    ];
+
+    #[test]
+    fn corpus_hang_shapes_return() {
+        for input in HANG_SHAPES {
+            assert_returns_not_wrong(input);
+        }
+    }
+
+    /// A previously-fine input must still solve with the budget in place.
+    #[test]
+    fn budget_keeps_solving_normal_inputs() {
+        for input in [
+            "1/(a+b*x^2)",
+            "(d+e*x)/(x^3*(a+c*x^2))",
+            "(A+B*x)/(a+b*x+c*x^2)",
+            "1/(x^2*(a-b*x^2))",
+        ] {
+            assert_solved(input);
+        }
+    }
+
+    /// The budget resets on every entry: repeating a budget-tripping shape
+    /// must neither slow down nor change the outcome (no cross-call
+    /// leakage).
+    ///
+    /// The probe is the *direct* entry point on a shape that declines after a
+    /// few hundred work units, so the repetition is cheap; the corpus shapes
+    /// that route the whole chain cost seconds per call in a debug build and
+    /// are covered by the harness instead.
+    #[test]
+    fn budget_does_not_leak_across_calls() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let t = Symbol::new("_t");
+        let expr = ocas_parse::parse(
+            &ctx,
+            "(2*((1 + _t^2)^-1))*((a + b*(2*_t*(1 + _t^2)^-1))^-3)",
+        )
+        .unwrap();
+        let first = integrate_rational_symbolic(&ctx, expr, t).map(|a| a.to_string());
+        assert!(first.is_none(), "expected a decline, got {first:?}");
+        for i in 0..64 {
+            let r = integrate_rational_symbolic(&ctx, expr, t).map(|a| a.to_string());
+            assert_eq!(r, first, "call {i} diverged");
+        }
+    }
+
+    /// Direct entry-point check: the module itself must decline a Weierstrass
+    /// t-form with symbolic coefficients instead of grinding in the field
+    /// Euclidean loops, and the entry reset must keep two consecutive
+    /// invocations at the same cost (no cross-call leakage).
+    #[test]
+    fn symbolic_backend_declines_heavy_t_form() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let t = Symbol::new("_t");
+        // 1/(a + b·(2t/(1+t²)))^3 · 2/(1+t²): a symbolic-coefficient rational
+        // function of `t` with a repeated denominator factor.
+        let expr = ocas_parse::parse(
+            &ctx,
+            "(2*((1 + _t^2)^-1))*((a + b*(2*_t*(1 + _t^2)^-1))^-3)",
+        )
+        .unwrap();
+        reset_peak_work();
+        let first = integrate_rational_symbolic(&ctx, expr, t);
+        let first_peak = peak_work_units();
+        reset_peak_work();
+        let second = integrate_rational_symbolic(&ctx, expr, t);
+        let second_peak = peak_work_units();
+        if let Some(r) = &first {
+            assert!(
+                !r.to_string().contains("Integral("),
+                "a decline was expected, got {r}"
+            );
+        }
+        assert_eq!(
+            first.map(|a| a.to_string()),
+            second.map(|a| a.to_string()),
+            "two invocations disagreed"
+        );
+        // The decline now happens before any heavy work (both runs stay in the
+        // hundreds of units), so the remaining variance is charge-accounting
+        // noise of a few units, not leakage. Guard the bound, not exact
+        // equality.
+        assert!(
+            first_peak.abs_diff(second_peak) <= 8,
+            "budget leaked between invocations ({first_peak} then {second_peak})"
+        );
+        assert!(
+            first_peak < 4 * MAX_WORK_UNITS && second_peak < 4 * MAX_WORK_UNITS,
+            "budget did not contain the t-form: {first_peak} then {second_peak} units"
+        );
+    }
+
+    // --------------- exactness of the quadratic square root --------------
+
+    /// A field element over `ℚ(a, b)` from `(exponents, coefficient)` pairs
+    /// (`a` is variable 0, `b` is variable 1).
+    fn field_of(terms: &[(&[usize], i64)]) -> GeneratorField {
+        GeneratorField::from_polynomial(Sparse::from_terms(
+            RationalDomain,
+            2,
+            terms
+                .iter()
+                .map(|(e, c)| (e.to_vec(), Rational::new(*c, 1)))
+                .collect(),
+        ))
+    }
+
+    /// The monomial-wise candidate must be squared and checked: a *sum* of
+    /// squares is not a square. Regression for the 0.27.1 wrong answer on
+    /// `1/(b*x^2 + 2*a*x - b)`, whose discriminant is `4a² + 4b²`.
+    #[test]
+    fn sum_discriminant_is_not_a_square() {
+        // Δ = 4a² + 4b² → the term-wise candidate would be 2a + 2b, whose
+        // square is 4a² + 8ab + 4b². Must be rejected.
+        let delta = field_of(&[(&[2, 0], 4), (&[0, 2], 4)]);
+        assert!(
+            rational_square_root(&delta).is_none(),
+            "4a² + 4b² accepted as a square"
+        );
+        // Δ = 4a² + 8ab + 4b² IS a square, but a cross term has odd
+        // exponents, so the conservative candidate generator declines it
+        // (unchanged behaviour — never a wrong answer).
+        let square = field_of(&[(&[2, 0], 4), (&[1, 1], 8), (&[0, 2], 4)]);
+        assert!(rational_square_root(&square).is_none());
+    }
+
+    /// Genuine single-monomial squares must still be recognised.
+    #[test]
+    fn monomial_discriminant_still_splits() {
+        for (delta, want) in [
+            (field_of(&[(&[0, 2], 4)]), field_of(&[(&[0, 1], 2)])),
+            (field_of(&[(&[2, 0], 4)]), field_of(&[(&[1, 0], 2)])),
+            (field_of(&[(&[2, 0], 1)]), field_of(&[(&[1, 0], 1)])),
+        ] {
+            let got = rational_square_root(&delta).expect("genuine square declined");
+            assert!(got.mul(&got).sub(&delta).is_zero(), "√Δ is not a root of Δ");
+            assert!(
+                got.sub(&want).is_zero(),
+                "unexpected root: {} vs {}",
+                got,
+                want
+            );
+        }
+        // A non-square monomial (coefficient 2) is still rejected.
+        assert!(rational_square_root(&field_of(&[(&[2, 0], 2)])).is_none());
+    }
+
+    /// End-to-end: the shapes whose discriminant is a sum of squares must
+    /// never produce the bogus two-log split; either the honest quadratic
+    /// (log/atan) answer or a fallback is acceptable, a wrong answer is not.
+    #[test]
+    fn sum_square_discriminant_integrands_are_not_wrong() {
+        for input in ["1/(b*x^2+2*a*x-b)", "2/(b*x^2+2*a*x-b)", "1/(a+b*sinh(x))"] {
+            assert_returns_not_wrong(input);
+        }
+    }
+
+    /// `1/(b*x^2-b)` declined before this change and must keep doing so.
+    #[test]
+    fn monomial_discriminant_integrand_unchanged() {
+        let r = int_str("1/(b*x^2-b)", "x");
+        assert!(r.contains("Integral("), "expected the fallback, got {r}");
     }
 }

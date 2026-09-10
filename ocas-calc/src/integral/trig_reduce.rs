@@ -261,21 +261,43 @@ fn build_trig<'a>(ctx: &'a AtomArena<'a>, f: TrigLin<'a>, var: Symbol) -> Atom<'
 /// Rebuild `a*x + b`, dropping zero parts.
 fn build_linear<'a>(ctx: &'a AtomArena<'a>, a: Atom<'a>, b: Atom<'a>, var: Symbol) -> Atom<'a> {
     let x = ctx.var(var.as_str());
-    let ax = if is_one(a) { x } else { ctx.mul(&[a, x]) };
+    let a = fold(ctx, a);
+    let b = fold(ctx, b);
+    let ax = if is_one(a) {
+        x
+    } else if is_zero(a) {
+        ctx.num(0)
+    } else {
+        ctx.mul(&[a, x])
+    };
     let sum = if is_zero(b) { ax } else { ctx.add(&[b, ax]) };
-    normalize(ctx, sum)
+    fold(ctx, sum)
 }
 
 fn add<'a>(ctx: &'a AtomArena<'a>, u: Atom<'a>, v: Atom<'a>) -> Atom<'a> {
-    normalize(ctx, ctx.add(&[u, v]))
+    fold(ctx, ctx.add(&[u, v]))
 }
 
-/// `u − v` with numeric merging; structurally identical atoms cancel to 0.
+/// `u − v` with like-term folding; structurally identical atoms cancel to 0.
+///
+/// The folding step is essential, not cosmetic: `normalize` alone does not
+/// collect `d + (−1)·d`, so two *mathematically* equal slopes coming from
+/// different spellings would produce a non-zero-looking slope atom. A later
+/// stage would then integrate `cos(slope·x + …)` as `sin(…)/slope` and emit a
+/// coefficient dividing by an identically zero expression — the resonant
+/// product-to-sum defect (`(a·cos(c+d·x) + b·sin(c+d·x))^2` and friends).
 fn sub<'a>(ctx: &'a AtomArena<'a>, u: Atom<'a>, v: Atom<'a>) -> Atom<'a> {
     if u == v {
         return ctx.num(0);
     }
-    normalize(ctx, ctx.add(&[u, ctx.mul(&[ctx.num(-1), v])]))
+    let folded = fold(ctx, ctx.add(&[u, ctx.mul(&[ctx.num(-1), v])]));
+    if is_zero(folded) { ctx.num(0) } else { folded }
+}
+
+/// `normalize` plus like-term collection, so equal slopes/phases fold to `0`
+/// instead of staying as `d + (−1)·d`.
+fn fold<'a>(ctx: &'a AtomArena<'a>, e: Atom<'a>) -> Atom<'a> {
+    normalize(ctx, crate::ode::util::collect_terms(ctx, e))
 }
 
 fn is_zero(e: Atom<'_>) -> bool {
@@ -427,5 +449,43 @@ mod tests {
         let x2 = ctx.pow(x, ctx.num(2));
         let expr = ctx.mul(&[ctx.fun("sin", &[x2]), ctx.fun("cos", &[x2])]);
         assert!(trig_reduce_products(&ctx, expr, Symbol::new("x")).is_none());
+    }
+
+    /// Resonance: both factors share the *same* linear argument, so the
+    /// difference angle is identically zero. Before the folding fix the
+    /// reduction left a slope atom `d + (−1)·d` behind and the chain emitted
+    /// `1/(2·(d + (−1)·d))` — infinite at every parameter value (0.27.2
+    /// corpus class: `(a·cos(c+d·x) + b·sin(c+d·x))^2`, `cos(u)^2·…`,
+    /// `sin(u)·cos(u)·…`).
+    #[test]
+    fn resonant_equal_slopes_stay_finite_and_correct() {
+        let inputs = [
+            "sin(c + d*x)*cos(c + d*x)",
+            "cos(c + d*x)^2",
+            "sin(c + d*x)^2",
+            "sin(c + d*x)^2*(a + b*sin(c + d*x)^2)",
+            "cos(c + d*x)^3*(a + a*sin(c + d*x))",
+            "(a*cos(c + d*x) + b*sin(c + d*x))^2",
+        ];
+        for input in inputs {
+            let arena = Arena::new();
+            let ctx = AtomArena::new(&arena);
+            let expr = ocas_parse::parse(&ctx, input).expect("parse");
+            let result = integrate(&ctx, expr, Symbol::new("x"));
+            let text = result.to_string();
+            assert!(!text.contains("Integral"), "{input}: fallback {text}");
+            // No coefficient may divide by an identically zero expression.
+            assert!(
+                !text.contains("(-1*d)") || !text.contains("d + (-1*d)"),
+                "{input}: resonant denominator left behind: {text}"
+            );
+            let env = [
+                (Symbol::new("a"), 1.5),
+                (Symbol::new("b"), 2.0),
+                (Symbol::new("c"), 0.5),
+                (Symbol::new("d"), 1.5),
+            ];
+            assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[0.3, 0.7, 1.9]);
+        }
     }
 }
