@@ -4,4 +4,5 @@
 //! these generators so that identical systems are exercised everywhere
 //! (cyclic-n and Katsura-n over ℚ and ℤ_p).
 
+pub mod integral_eval;
 pub mod systems;

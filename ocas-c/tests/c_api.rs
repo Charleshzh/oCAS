@@ -94,8 +94,12 @@ fn parse_integrate_roundtrip() {
 
 #[test]
 fn integrate_with_options_toggles_rules() {
-    // tan(x)^4 is a baseline fallback that the rule table solves.
-    let expr = parse("tan(x)^4");
+    // `csc(x)^5` is solved by the rule table and by nothing else: the
+    // kernel-substitution / trig-reduction mechanisms decline `csc` (its
+    // derivative needs a second radical), so the flag is observable. The old
+    // probe `tan(x)^4` is now owned by the rational-derivative kernel
+    // substitution, which is independent of this option.
+    let expr = parse("csc(x)^5");
     let var = CString::new("x").unwrap();
     let mut err = 0;
     let with_rules = unsafe { ocas_expr_integrate_with_options(expr, var.as_ptr(), 1, &mut err) };

@@ -22,6 +22,7 @@
 use ocas::prelude::*;
 use ocas_atom::{Atom, AtomArena, AtomNode};
 use ocas_core::arena::Arena;
+use ocas_tests::integral_eval;
 use std::collections::BTreeMap;
 use std::env;
 use std::fs;
@@ -32,6 +33,8 @@ const TSV_PATH: &str = "data/rubi_1892.tsv";
 const REPORT_PATH: &str = "data/integrate_1892_report.json";
 /// Per-case failure dump (JSONL), for offline failure classification.
 const FAILURES_PATH: &str = "data/integrate_1892_failures.jsonl";
+/// Solved cases whose numerical verification did not succeed (JSONL).
+const UNVERIFIED_PATH: &str = "data/integrate_1892_unverified.jsonl";
 
 /// Bucket names from the 0.27.0 plan (S1).
 const BUCKETS: [&str; 9] = [
@@ -128,7 +131,19 @@ fn bucket(expr: Atom<'_>) -> &'static str {
             "radical"
         } else if matches!(
             name,
-            "erf" | "erfc" | "erfi" | "Ei" | "Si" | "Ci" | "Shi" | "Chi" | "fresnels" | "fresnelc"
+            "erf"
+                | "erfc"
+                | "erfi"
+                | "Ei"
+                | "Si"
+                | "Ci"
+                | "Shi"
+                | "Chi"
+                | "fresnels"
+                | "fresnelc"
+                | "EllipticF"
+                | "EllipticE"
+                | "EllipticPi"
         ) {
             "special"
         } else {
@@ -150,8 +165,9 @@ fn parse_row(line: &str) -> Option<(&str, &str, &str)> {
 
 /// Outcome of a single corpus problem.
 enum CaseOutcome {
-    /// Antiderivative found; no `Integral(...)` residue.
-    Solved(&'static str),
+    /// Antiderivative found; no `Integral(...)` residue. Carries the printed
+    /// result so the parent can verify it numerically.
+    Solved(&'static str, String),
     /// `Integral(...)` residue (or abandoned at the budget / crashed).
     Fallback(&'static str),
     /// The integrand did not parse.
@@ -214,7 +230,7 @@ fn parse_child_line(line: &str) -> CaseOutcome {
             if result.contains("Integral(") {
                 CaseOutcome::Fallback(bucket)
             } else {
-                CaseOutcome::Solved(bucket)
+                CaseOutcome::Solved(bucket, result.to_string())
             }
         }
         _ => CaseOutcome::Crashed,
@@ -297,20 +313,42 @@ fn main() {
         .and_then(|v| v.parse().ok())
         .unwrap_or(10_000);
     let corpus = fs::read_to_string(&tsv).expect("read corpus tsv");
+    // Independent numerical verification of the solved set
+    // (`OCAS_1892_VERIFY=0` disables it; the string-coverage metric is
+    // unaffected either way).
+    let verify_enabled = env::var("OCAS_1892_VERIFY").map_or(true, |v| v != "0");
     let mut solved = 0usize;
     let mut fallback = 0usize;
     let mut timed_out = 0usize;
     let mut crashed = 0usize;
     let mut parse_errors = 0usize;
+    let mut verified_solved = 0usize;
+    let mut unverified_solved = 0usize;
+    let mut verify_indeterminate = 0usize;
+    let mut mismatches = 0usize;
+    let mut verify_worst = 0.0f64;
     let mut counts: BTreeMap<&'static str, (usize, usize)> =
         BUCKETS.iter().map(|b| (*b, (0, 0))).collect();
     let mut failure_lines = String::new();
+    let mut verified_lines = String::new();
     let start = Instant::now();
 
     // Optional subset filter: comma-separated corpus ids for fast
     // per-mechanism verification runs (OCAS_1892_CASES="id1,id2,...").
     let only: Option<std::collections::HashSet<String>> =
         env::var("OCAS_1892_CASES").ok().map(|v| {
+            v.split(',')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+                .collect()
+        });
+
+    // Optional bucket filter: comma-separated bucket names for per-family
+    // runs (OCAS_1892_BUCKET="radical,trig"). The reported `n` is the
+    // filtered case count, so subset runs are not comparable to full runs.
+    let only_buckets: Option<std::collections::HashSet<String>> =
+        env::var("OCAS_1892_BUCKET").ok().map(|v| {
             v.split(',')
                 .map(str::trim)
                 .filter(|s| !s.is_empty())
@@ -331,6 +369,12 @@ fn main() {
         {
             continue;
         }
+        if let Some(buckets) = &only_buckets {
+            let b = bucket_of(integrand).unwrap_or("mixed-other");
+            if !buckets.contains(b) {
+                continue;
+            }
+        }
         // Each problem runs in a child process: a pathological case can
         // overflow the stack, loop forever, or panic without taking the
         // whole report down. The child prints one line and exits; the parent
@@ -339,9 +383,42 @@ fn main() {
         let outcome = run_case_in_child(integrand, var, rules_enabled, case_timeout_ms);
         let case_ms = case_start.elapsed().as_millis();
         let (outcome_name, case_bucket) = match outcome {
-            CaseOutcome::Solved(b) => {
+            CaseOutcome::Solved(b, ref result) => {
                 solved += 1;
                 counts.get_mut(b).unwrap().0 += 1;
+                if verify_enabled {
+                    match verify_case(integrand, var, result) {
+                        VerifyClass::Verified(info) => {
+                            verified_solved += 1;
+                            verify_worst = verify_worst.max(info.worst_rel);
+                        }
+                        VerifyClass::Mismatch(info) => {
+                            unverified_solved += 1;
+                            mismatches += 1;
+                            verified_lines.push_str(&format!(
+                                "{{\"id\": \"{}\", \"bucket\": \"{b}\", \"class\": \"mismatch\", \
+                                 \"detail\": \"{}\", \"integrand\": \"{}\", \"result\": \"{}\"}}\n",
+                                json_escape(id),
+                                json_escape(&info),
+                                json_escape(integrand),
+                                json_escape(result),
+                            ));
+                        }
+                        VerifyClass::Indeterminate(info) => {
+                            unverified_solved += 1;
+                            verify_indeterminate += 1;
+                            verified_lines.push_str(&format!(
+                                "{{\"id\": \"{}\", \"bucket\": \"{b}\", \
+                                 \"class\": \"indeterminate\", \"detail\": \"{}\", \
+                                 \"integrand\": \"{}\", \"result\": \"{}\"}}\n",
+                                json_escape(id),
+                                json_escape(&info),
+                                json_escape(integrand),
+                                json_escape(result),
+                            ));
+                        }
+                    }
+                }
                 ("solved", Some(b))
             }
             CaseOutcome::Fallback(b) => {
@@ -409,6 +486,16 @@ fn main() {
     println!("  crashed:     {crashed}");
     println!("  parse errs:  {parse_errors}");
     println!("  coverage:    {coverage:.2}% ({solved}/{total})");
+    if verify_enabled {
+        println!(
+            "  verified:    {verified_solved} / {solved} solved \
+             (worst rel err {verify_worst:.2e})"
+        );
+        println!("  mismatches:  {mismatches}");
+        println!(
+            "  unverified:  {unverified_solved} (of which {verify_indeterminate} inconclusive)"
+        );
+    }
     println!("  wall time:   {total_ms} ms");
     println!("  buckets:");
     for (b, (s, f)) in &counts {
@@ -430,6 +517,10 @@ fn main() {
          \"source_sha256\": {},\n  \"digest_matched\": {},\n  \"timestamp\": \"{}\",\n  \
          \"rules_enabled\": {rules_enabled},\n  \"solved\": {solved},\n  \"fallback\": {fallback},\n  \
          \"timed_out\": {timed_out},\n  \"crashed\": {crashed},\n  \"parse_errors\": {parse_errors},\n  \"coverage_pct\": {coverage},\n  \"total_ms\": {total_ms},\n  \
+         \"verify_enabled\": {verify_enabled},\n  \"verified_solved\": {verified_solved},\n  \
+         \"unverified_solved\": {unverified_solved},\n  \
+         \"verify_indeterminate\": {verify_indeterminate},\n  \
+         \"verify_mismatches\": {mismatches},\n  \"verify_worst_rel\": {verify_worst},\n  \
          \"buckets\": {{{buckets_obj}}}\n}}",
         meta.get("seed"),
         meta.get("requested"),
@@ -445,6 +536,53 @@ fn main() {
     let failures_path = manifest_dir.join(FAILURES_PATH);
     fs::write(&failures_path, failure_lines).expect("write failures jsonl");
     println!("  failures:    {}", failures_path.display());
+
+    if verify_enabled && !verified_lines.is_empty() {
+        let verified_path = manifest_dir.join(UNVERIFIED_PATH);
+        fs::write(&verified_path, verified_lines).expect("write unverified jsonl");
+        println!("  unverified:  {}", verified_path.display());
+    }
+}
+
+/// Classification of one numerically verified solved case.
+enum VerifyClass {
+    /// The antiderivative differentiates back to the integrand.
+    Verified(VerifiedInfo),
+    /// The antiderivative disagrees with the integrand: a wrong answer.
+    Mismatch(String),
+    /// The oracle cannot decide (unsupported head, domain, inconclusive).
+    Indeterminate(String),
+}
+
+/// Aggregate statistics of a successful verification.
+struct VerifiedInfo {
+    /// Number of sample points that produced a comparison.
+    #[allow(dead_code)]
+    checked: usize,
+    /// Largest observed relative error.
+    worst_rel: f64,
+}
+
+/// Numerically verify one solved case: re-parse the integrand and the printed
+/// result and compare `d/dx result` against the integrand.
+fn verify_case(integrand: &str, var: &str, result: &str) -> VerifyClass {
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&arena);
+    let Ok(f) = parse(&ctx, integrand) else {
+        return VerifyClass::Indeterminate("integrand re-parse failed".to_string());
+    };
+    let Ok(big_f) = parse(&ctx, result) else {
+        return VerifyClass::Indeterminate("result re-parse failed".to_string());
+    };
+    match integral_eval::verify_antiderivative(f, big_f, Symbol::new(var)) {
+        integral_eval::Verify::Verified { checked, worst_rel } => {
+            VerifyClass::Verified(VerifiedInfo { checked, worst_rel })
+        }
+        integral_eval::Verify::Mismatch { checked, detail } => {
+            VerifyClass::Mismatch(format!("checked={checked} {detail}"))
+        }
+        integral_eval::Verify::Indeterminate { reason } => VerifyClass::Indeterminate(reason),
+    }
 }
 
 /// RFC 3339 UTC timestamp (avoids pulling a time crate into the bench).
