@@ -1,0 +1,1917 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Python API Reference - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html" class="active"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/python.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="python-api-reference"><a class="header" href="#python-api-reference">Python API Reference</a></h1>
+<p>This chapter documents the complete API of the oCAS Python bindings (the <code>ocas</code> module). Every class and function includes its signature, parameter descriptions, return value, exceptions, and complete examples.</p>
+<blockquote>
+<p><strong>Version</strong>: This document corresponds to oCAS 0.24.x.</p>
+</blockquote>
+<h2 id="import"><a class="header" href="#import">Import</a></h2>
+<pre><code class="language-python">import ocas
+</code></pre>
+<p>The module exports all classes and functions at the top level; no submodule imports are required.</p>
+<hr />
+<h2 id="expressions"><a class="header" href="#expressions">Expressions</a></h2>
+<h3 id="expression"><a class="header" href="#expression">Expression</a></h3>
+<p>Symbolic expression class. Constructed by parsing a string; supports arithmetic operations, calculus, simplification, and more.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.Expression(input: str)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>str</code></td><td>Symbolic expression string; <code>^</code> denotes exponentiation and <code>*</code> denotes multiplication</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: an <code>Expression</code> instance.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the expression string failed to parse.</p>
+<p><strong>Supported operations</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Method</th><th>Description</th></tr></thead><tbody>
+<tr><td>Addition</td><td><code>__add__</code></td><td><code>e1 + e2</code></td></tr>
+<tr><td>Subtraction</td><td><code>__sub__</code></td><td><code>e1 - e2</code></td></tr>
+<tr><td>Multiplication</td><td><code>__mul__</code></td><td><code>e1 * e2</code></td></tr>
+<tr><td>Power</td><td><code>__pow__</code></td><td><code>e1 ** e2</code></td></tr>
+<tr><td>Negation</td><td><code>__neg__</code></td><td><code>-e</code></td></tr>
+<tr><td>Equality</td><td><code>__eq__</code></td><td><code>e1 == e2</code> (comparison based on the normalized form)</td></tr>
+<tr><td>Hash</td><td><code>__hash__</code></td><td>Usable as a dictionary key or set element</td></tr>
+<tr><td>String</td><td><code>__str__</code></td><td>Outputs the internal representation</td></tr>
+<tr><td>Representation</td><td><code>__repr__</code></td><td><code>Expression("...")</code> format</td></tr>
+</tbody></table>
+</div>
+<p><strong>Methods</strong>:</p>
+<hr />
+<h4 id="expressionclone"><a class="header" href="#expressionclone">Expression.clone</a></h4>
+<pre><code class="language-python">Expression.clone() -&gt; Expression
+</code></pre>
+<p>Returns a deep copy of the expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x + 1")
+&gt;&gt;&gt; f = e.clone()
+&gt;&gt;&gt; e == f
+True
+</code></pre>
+<hr />
+<h4 id="expressionsimplify"><a class="header" href="#expressionsimplify">Expression.simplify</a></h4>
+<pre><code class="language-python">Expression.simplify() -&gt; Expression
+</code></pre>
+<p>Simplifies the expression using the built-in rule set (fixed-point iteration).</p>
+<p><strong>Returns</strong>: the simplified <code>Expression</code>.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — an internal error occurred during simplification.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x + x")
+&gt;&gt;&gt; print(e.simplify())
+2*x
+</code></pre>
+<hr />
+<h4 id="expressiondiff"><a class="header" href="#expressiondiff">Expression.diff</a></h4>
+<pre><code class="language-python">Expression.diff(var: str) -&gt; Expression
+</code></pre>
+<p>Differentiates the expression with respect to the variable <code>var</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The differentiation variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the derivative expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^3 + 2*x")
+&gt;&gt;&gt; print(e.diff("x"))
+2 + (3*(x^2))
+</code></pre>
+<hr />
+<h4 id="expressionintegrate"><a class="header" href="#expressionintegrate">Expression.integrate</a></h4>
+<pre><code class="language-python">Expression.integrate(var: str) -&gt; Expression
+</code></pre>
+<p>Symbolically integrates the expression with respect to the variable <code>var</code>. Uses a layered integration pipeline: fast lookup table → rational functions → Risch → trigonometric rewrite + realify → special functions → heuristic → unevaluated form.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The integration variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the resulting expression. If no closed form can be found, returns the unevaluated <code>Integral(expr, var)</code> form.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2")
+&gt;&gt;&gt; print(e.integrate("x"))
+(3^-1)*(x^3)
+</code></pre>
+<hr />
+<h4 id="expressionintegrate_heuristic"><a class="header" href="#expressionintegrate_heuristic">Expression.integrate_heuristic</a></h4>
+<pre><code class="language-python">Expression.integrate_heuristic(var: str) -&gt; Expression
+</code></pre>
+<p>Integrates using heuristic methods only (integration by parts, trigonometric substitutions, etc.), without invoking the full Risch algorithm. Returns a closed form on success and an unevaluated form on failure.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The integration variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the integral result or the unevaluated <code>Integral(expr, var)</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("sin(x)")
+&gt;&gt;&gt; print(e.integrate_heuristic("x"))
+-1*(cos(x))
+</code></pre>
+<hr />
+<h4 id="expressiontaylor"><a class="header" href="#expressiontaylor">Expression.taylor</a></h4>
+<pre><code class="language-python">Expression.taylor(var: str, point: Expression, order: int) -&gt; Expression
+</code></pre>
+<p>Computes the Taylor expansion of the expression in <code>var</code> about <code>point</code> up to order <code>order</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The expansion variable</td></tr>
+<tr><td><code>point</code></td><td><code>Expression</code></td><td>The expansion center</td></tr>
+<tr><td><code>order</code></td><td><code>int</code></td><td>Expansion order (a non-negative integer)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the Taylor polynomial.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("exp(x)")
+&gt;&gt;&gt; p = ocas.Expression("0")
+&gt;&gt;&gt; print(e.taylor("x", p, 4))
+1 + x + ((2^-1)*(x^2)) + ((6^-1)*(x^3)) + ((24^-1)*(x^4))
+</code></pre>
+<hr />
+<h4 id="expressionsubstitute"><a class="header" href="#expressionsubstitute">Expression.substitute</a></h4>
+<pre><code class="language-python">Expression.substitute(var: str, replacement: Expression) -&gt; Expression
+</code></pre>
+<p>Replaces every occurrence of <code>var</code> in the expression with <code>replacement</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The variable to be replaced</td></tr>
+<tr><td><code>replacement</code></td><td><code>Expression</code></td><td>The replacement expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the substituted expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2 + y")
+&gt;&gt;&gt; r = ocas.Expression("3")
+&gt;&gt;&gt; print(e.substitute("x", r))
+y + (3^2)
+</code></pre>
+<hr />
+<h2 id="polynomials"><a class="header" href="#polynomials">Polynomials</a></h2>
+<h3 id="polynomial"><a class="header" href="#polynomial">Polynomial</a></h3>
+<p>Dense univariate polynomial supporting three coefficient domains: integers ℤ, rationals ℚ, and finite fields GF(p).</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.Polynomial(coeffs, domain=None)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>coeffs</code></td><td><code>list</code></td><td>Coefficient list, ordered from lowest to highest degree</td></tr>
+<tr><td><code>domain</code></td><td><code>str</code>, <code>FiniteField</code>, or <code>None</code></td><td>Coefficient domain: <code>"integer"</code> (default), <code>"rational"</code>, or <code>FiniteField(p)</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Coefficient formats</strong>:</p>
+<ul>
+<li>Integer domain: a list of integers, e.g. <code>[1, 2, 1]</code> represents $1 + 2x + x^2$</li>
+<li>Rational domain: a list of integers or a list of <code>(numerator, denominator)</code> tuples</li>
+<li>Finite field: a list of integers; arithmetic is automatically reduced modulo p</li>
+</ul>
+<p><strong>Exceptions</strong>: <code>TypeError</code> — coefficient types do not match the selected domain.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Polynomial
+&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; print(p.degree())
+2
+</code></pre>
+<hr />
+<h4 id="polynomialcoeffs"><a class="header" href="#polynomialcoeffs">Polynomial.coeffs</a></h4>
+<pre><code class="language-python">Polynomial.coeffs() -&gt; list[str]
+</code></pre>
+<p>Returns the coefficient list (as strings), ordered from lowest to highest degree.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; p.coeffs()
+['1', '2', '1']
+</code></pre>
+<hr />
+<h4 id="polynomialdegree"><a class="header" href="#polynomialdegree">Polynomial.degree</a></h4>
+<pre><code class="language-python">Polynomial.degree() -&gt; int | None
+</code></pre>
+<p>Returns the degree of the polynomial. The zero polynomial returns <code>None</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; Polynomial([1, 2, 1]).degree()
+2
+&gt;&gt;&gt; Polynomial([0]).degree() is None
+True
+</code></pre>
+<hr />
+<h4 id="polynomiallen"><a class="header" href="#polynomiallen">Polynomial.len</a></h4>
+<pre><code class="language-python">Polynomial.len() -&gt; int
+</code></pre>
+<p>Returns the number of stored coefficients.</p>
+<hr />
+<h4 id="polynomialis_zero"><a class="header" href="#polynomialis_zero">Polynomial.is_zero</a></h4>
+<pre><code class="language-python">Polynomial.is_zero() -&gt; bool
+</code></pre>
+<p>Whether the polynomial is the zero polynomial.</p>
+<hr />
+<h4 id="polynomialeval"><a class="header" href="#polynomialeval">Polynomial.eval</a></h4>
+<pre><code class="language-python">Polynomial.eval(x) -&gt; str
+</code></pre>
+<p>Evaluates the polynomial at the point <code>x</code>. Over the integer domain <code>x</code> is an integer; over the rational domain <code>x</code> is an integer or a <code>(numerator, denominator)</code> tuple.</p>
+<p><strong>Returns</strong>: the string representation of the evaluation result.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; p.eval(2)
+'9'
+</code></pre>
+<hr />
+<h4 id="polynomialderivative"><a class="header" href="#polynomialderivative">Polynomial.derivative</a></h4>
+<pre><code class="language-python">Polynomial.derivative() -&gt; Polynomial
+</code></pre>
+<p>Returns the formal derivative.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; q = p.derivative()
+&gt;&gt;&gt; q.coeffs()
+['2', '2']
+</code></pre>
+<hr />
+<h4 id="polynomialintegral"><a class="header" href="#polynomialintegral">Polynomial.integral</a></h4>
+<pre><code class="language-python">Polynomial.integral() -&gt; Polynomial
+</code></pre>
+<p>Returns the formal integral (with zero constant term). Available on all three coefficient domains: exact over the rationals; over the integers and finite fields, coefficients whose division by $i+1$ does not divide exactly are set to zero (no exception is raised).</p>
+<hr />
+<h4 id="polynomialprimitive_part"><a class="header" href="#polynomialprimitive_part">Polynomial.primitive_part</a></h4>
+<pre><code class="language-python">Polynomial.primitive_part() -&gt; Polynomial
+</code></pre>
+<p>Returns the primitive part (content removed). Supported on the integer domain only.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the polynomial is not over the integer domain.</p>
+<hr />
+<h4 id="polynomialfactor"><a class="header" href="#polynomialfactor">Polynomial.factor</a></h4>
+<pre><code class="language-python">Polynomial.factor() -&gt; list[PolynomialFactor]
+</code></pre>
+<p>Complete factorization. Returns a list of <code>(factor, multiplicity)</code> pairs: over the integers each factor is primitive; over a finite field each factor is monic.</p>
+<p><strong>Factorization strategy</strong>:</p>
+<ul>
+<li>ℤ[x]: square-free factorization + Berlekamp–Zassenhaus + Hensel lifting</li>
+<li>GF(p)[x]: Berlekamp's algorithm</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; for f in p.factor():
+...     print(f.factor.coeffs(), f.multiplicity)
+['1', '1'] 2
+</code></pre>
+<hr />
+<h4 id="polynomialsquare_free_factorization"><a class="header" href="#polynomialsquare_free_factorization">Polynomial.square_free_factorization</a></h4>
+<pre><code class="language-python">Polynomial.square_free_factorization() -&gt; list[PolynomialFactor]
+</code></pre>
+<p>Square-free factorization. Returns the pairwise-distinct square-free factors together with their multiplicities.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; for f in p.square_free_factorization():
+...     print(f.factor.coeffs(), f.multiplicity)
+['1', '1'] 2
+</code></pre>
+<hr />
+<h4 id="polynomialis_square_free"><a class="header" href="#polynomialis_square_free">Polynomial.is_square_free</a></h4>
+<pre><code class="language-python">Polynomial.is_square_free() -&gt; bool
+</code></pre>
+<p>Whether the polynomial is square-free (has no repeated irreducible factors).</p>
+<hr />
+<h4 id="polynomialgcd"><a class="header" href="#polynomialgcd">Polynomial.gcd</a></h4>
+<pre><code class="language-python">Polynomial.gcd(other: Polynomial) -&gt; Polynomial
+</code></pre>
+<p>Computes the greatest common divisor with <code>other</code>. Both polynomials must be over the same coefficient domain.</p>
+<p><strong>Exceptions</strong>: <code>TypeError</code> — the coefficient domains do not match.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Polynomial([0, 1])         # x
+&gt;&gt;&gt; b = Polynomial([0, 0, 1])     # x^2
+&gt;&gt;&gt; a.gcd(b).coeffs()
+['0', '1']
+</code></pre>
+<hr />
+<h4 id="polynomialdiv_rem"><a class="header" href="#polynomialdiv_rem">Polynomial.div_rem</a></h4>
+<pre><code class="language-python">Polynomial.div_rem(other: Polynomial) -&gt; tuple[Polynomial, Polynomial] | None
+</code></pre>
+<p>Division with remainder, returning <code>(quotient, remainder)</code>. Returns <code>None</code> when <code>other</code> is zero.</p>
+<p><strong>Exceptions</strong>: <code>TypeError</code> — the coefficient domains do not match.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Polynomial([1, 2, 1])
+&gt;&gt;&gt; b = Polynomial([1, 1])
+&gt;&gt;&gt; q, r = a.div_rem(b)
+&gt;&gt;&gt; q.coeffs()
+['1', '1']
+&gt;&gt;&gt; r.is_zero()
+True
+</code></pre>
+<hr />
+<h4 id="polynomial-arithmetic"><a class="header" href="#polynomial-arithmetic">Polynomial arithmetic</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Syntax</th><th>Description</th></tr></thead><tbody>
+<tr><td>Addition</td><td><code>p + q</code></td><td>Polynomial addition</td></tr>
+<tr><td>Subtraction</td><td><code>p - q</code></td><td>Polynomial subtraction</td></tr>
+<tr><td>Multiplication</td><td><code>p * q</code></td><td>Polynomial multiplication</td></tr>
+<tr><td>Negation</td><td><code>-p</code></td><td>Negates the coefficients</td></tr>
+<tr><td>Equality</td><td><code>p == q</code></td><td>Comparison of normalized coefficients</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="polynomialfactor-1"><a class="header" href="#polynomialfactor-1">PolynomialFactor</a></h3>
+<p>A single factor in a factorization result.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>factor</code></td><td><code>Polynomial</code></td><td>The factor polynomial (primitive over ℤ, monic over GF(p))</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>int</code></td><td>The multiplicity</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="multivariatepolynomial"><a class="header" href="#multivariatepolynomial">MultivariatePolynomial</a></h3>
+<p>Sparse multivariate polynomial ($\mathbb{Q}[x_1, \dots, x_n]$), using the lexicographic order (Lex).</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.MultivariatePolynomial(terms: dict, n_vars: int)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>terms</code></td><td><code>dict[tuple[int,...], int]</code></td><td>Keys are exponent tuples (of length <code>n_vars</code>), values are coefficients</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>The number of variables</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial
+&gt;&gt;&gt; # x² + y² - 1
+&gt;&gt;&gt; p = MultivariatePolynomial({(2, 0): 1, (0, 2): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; p.n_vars()
+2
+</code></pre>
+<hr />
+<h4 id="multivariatepolynomialn_vars"><a class="header" href="#multivariatepolynomialn_vars">MultivariatePolynomial.n_vars</a></h4>
+<pre><code class="language-python">MultivariatePolynomial.n_vars() -&gt; int
+</code></pre>
+<p>Returns the number of variables.</p>
+<hr />
+<h2 id="matrices"><a class="header" href="#matrices">Matrices</a></h2>
+<h3 id="matrix"><a class="header" href="#matrix">Matrix</a></h3>
+<p>Dense matrix over a field, supporting ℤ, ℚ, and GF(p).</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.Matrix(rows, domain=None)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>list[list]</code></td><td>Row-major two-dimensional list</td></tr>
+<tr><td><code>domain</code></td><td><code>str</code>, <code>FiniteField</code>, or <code>None</code></td><td>Coefficient domain: <code>"integer"</code> (default), <code>"rational"</code>, or <code>FiniteField(p)</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>TypeError</code> — element types do not match the selected domain.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Matrix
+&gt;&gt;&gt; a = Matrix([[1, 2], [3, 4]])
+&gt;&gt;&gt; a.determinant()
+'-2'
+</code></pre>
+<hr />
+<h4 id="matrixnrows"><a class="header" href="#matrixnrows">Matrix.nrows</a></h4>
+<pre><code class="language-python">Matrix.nrows -&gt; int  # property
+</code></pre>
+<p>The number of rows.</p>
+<hr />
+<h4 id="matrixncols"><a class="header" href="#matrixncols">Matrix.ncols</a></h4>
+<pre><code class="language-python">Matrix.ncols -&gt; int  # property
+</code></pre>
+<p>The number of columns.</p>
+<hr />
+<h4 id="matrixshape"><a class="header" href="#matrixshape">Matrix.shape</a></h4>
+<pre><code class="language-python">Matrix.shape() -&gt; tuple[int, int]
+</code></pre>
+<p>Returns <code>(nrows, ncols)</code>.</p>
+<hr />
+<h4 id="matrixgetitem"><a class="header" href="#matrixgetitem">Matrix.<strong>getitem</strong></a></h4>
+<pre><code class="language-python">Matrix[i, j] -&gt; str
+</code></pre>
+<p>Returns the element at position <code>(i, j)</code> (as a string).</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — index out of bounds.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Matrix([[1, 2], [3, 4]])
+&gt;&gt;&gt; a[1, 0]
+'3'
+</code></pre>
+<hr />
+<h4 id="matrixrows"><a class="header" href="#matrixrows">Matrix.rows</a></h4>
+<pre><code class="language-python">Matrix.rows() -&gt; list[list[str]]
+</code></pre>
+<p>Returns the two-dimensional list of all rows (as strings).</p>
+<hr />
+<h4 id="matrixtranspose"><a class="header" href="#matrixtranspose">Matrix.transpose</a></h4>
+<pre><code class="language-python">Matrix.transpose() -&gt; Matrix
+</code></pre>
+<p>Returns the transposed matrix.</p>
+<hr />
+<h4 id="matrixtrace"><a class="header" href="#matrixtrace">Matrix.trace</a></h4>
+<pre><code class="language-python">Matrix.trace() -&gt; str
+</code></pre>
+<p>Returns the trace of the square matrix (sum of diagonal elements).</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the matrix is not square.</p>
+<hr />
+<h4 id="matrixrank"><a class="header" href="#matrixrank">Matrix.rank</a></h4>
+<pre><code class="language-python">Matrix.rank() -&gt; int
+</code></pre>
+<p>Returns the rank of the matrix.</p>
+<hr />
+<h4 id="matrixdeterminant"><a class="header" href="#matrixdeterminant">Matrix.determinant</a></h4>
+<pre><code class="language-python">Matrix.determinant() -&gt; str
+</code></pre>
+<p>Returns the determinant of the square matrix (Bareiss fraction-free algorithm).</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the matrix is not square.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Matrix([[1, 2], [3, 4]])
+&gt;&gt;&gt; a.determinant()
+'-2'
+</code></pre>
+<hr />
+<h4 id="matrixinverse"><a class="header" href="#matrixinverse">Matrix.inverse</a></h4>
+<pre><code class="language-python">Matrix.inverse() -&gt; Matrix
+</code></pre>
+<p>Returns the inverse matrix.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the matrix is singular or not square.</p>
+<hr />
+<h4 id="matrixsolve"><a class="header" href="#matrixsolve">Matrix.solve</a></h4>
+<pre><code class="language-python">Matrix.solve(rhs) -&gt; list[str]
+</code></pre>
+<p>Solves the linear system <code>self · x = rhs</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rhs</code></td><td><code>list</code></td><td>The right-hand side vector</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the solution vector (as a list of strings).</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — no solution or the solution is not unique.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Matrix([[2, 0], [0, 3]])
+&gt;&gt;&gt; a.solve([4, 9])
+['2', '3']
+</code></pre>
+<hr />
+<h4 id="matrix-arithmetic"><a class="header" href="#matrix-arithmetic">Matrix arithmetic</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Syntax</th><th>Description</th></tr></thead><tbody>
+<tr><td>Matrix multiplication</td><td><code>a @ b</code></td><td><code>__matmul__</code></td></tr>
+<tr><td>Addition</td><td><code>a + b</code></td><td>Element-wise addition</td></tr>
+<tr><td>Subtraction</td><td><code>a - b</code></td><td>Element-wise subtraction</td></tr>
+<tr><td>Equality</td><td><code>a == b</code></td><td>Element-wise comparison</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="coefficient-domains"><a class="header" href="#coefficient-domains">Coefficient Domains</a></h2>
+<h3 id="integerdomain"><a class="header" href="#integerdomain">IntegerDomain</a></h3>
+<p>Selector class for the integer domain ℤ.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.IntegerDomain()
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: the <code>domain</code> parameter of <code>Polynomial</code> and <code>Matrix</code> currently accepts strings (<code>"integer"</code> / <code>"rational"</code>) or a <code>FiniteField</code> instance; <code>IntegerDomain()</code> / <code>RationalDomain()</code> instances cannot yet be passed directly as that parameter.</p>
+</blockquote>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import IntegerDomain, Polynomial
+&gt;&gt;&gt; d = IntegerDomain()
+&gt;&gt;&gt; repr(d)
+'IntegerDomain()'
+&gt;&gt;&gt; p = Polynomial([1, 2, 1], domain="integer")
+&gt;&gt;&gt; p.coeffs()
+['1', '2', '1']
+</code></pre>
+<hr />
+<h3 id="rationaldomain"><a class="header" href="#rationaldomain">RationalDomain</a></h3>
+<p>Selector for the rational number domain ℚ.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.RationalDomain()
+</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import RationalDomain, Polynomial
+&gt;&gt;&gt; d = RationalDomain()
+&gt;&gt;&gt; repr(d)
+'RationalDomain()'
+&gt;&gt;&gt; p = Polynomial([(1, 2), (3, 4)], domain="rational")
+&gt;&gt;&gt; p.coeffs()
+['1/2', '3/4']
+</code></pre>
+<hr />
+<h3 id="finitefield"><a class="header" href="#finitefield">FiniteField</a></h3>
+<p>The finite field GF(p), where $p$ is a prime.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.FiniteField(modulus: int)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>modulus</code></td><td><code>int</code></td><td>Prime modulus, $p \geq 2$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a <code>FiniteField</code> instance.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — <code>modulus &lt; 2</code>.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>modulus</code></td><td><code>str</code></td><td>Decimal string of the prime modulus</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import FiniteField, Polynomial
+&gt;&gt;&gt; gf5 = FiniteField(5)
+&gt;&gt;&gt; p = Polynomial([1, 2, 1], domain=gf5)
+&gt;&gt;&gt; print(repr(gf5))
+FiniteField(5)
+</code></pre>
+<hr />
+<h2 id="solvers"><a class="header" href="#solvers">Solvers</a></h2>
+<h3 id="solve_linear_rational"><a class="header" href="#solve_linear_rational">solve_linear_rational</a></h3>
+<pre><code class="language-python">ocas.solve_linear_rational(a: list[list[int]], b: list[int]) -&gt; list[tuple[int, int]]
+</code></pre>
+<p>Solves the linear system $A \mathbf{x} = \mathbf{b}$ over ℚ.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>list[list[int]]</code></td><td>Coefficient matrix (row-major, integers)</td></tr>
+<tr><td><code>b</code></td><td><code>list[int]</code></td><td>Right-hand side vector (integers)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the solution vector, each component being a <code>(numerator, denominator)</code> tuple.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the solution is not unique.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.solve_linear_rational([[2, 0], [0, 3]], [4, 9])
+[(2, 1), (3, 1)]
+</code></pre>
+<hr />
+<h3 id="solve_linear_integer"><a class="header" href="#solve_linear_integer">solve_linear_integer</a></h3>
+<pre><code class="language-python">ocas.solve_linear_integer(a: list[list[int]], b: list[int]) -&gt; list[int]
+</code></pre>
+<p>Solves the linear system $A \mathbf{x} = \mathbf{b}$ over ℤ.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>list[list[int]]</code></td><td>Coefficient matrix (row-major, integers)</td></tr>
+<tr><td><code>b</code></td><td><code>list[int]</code></td><td>Right-hand side vector (integers)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the integer solution vector.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — no integer solution exists.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.solve_linear_integer([[2, 0], [0, 3]], [4, 9])
+[2, 3]
+</code></pre>
+<hr />
+<h3 id="solve_diophantine"><a class="header" href="#solve_diophantine">solve_diophantine</a></h3>
+<pre><code class="language-python">ocas.solve_diophantine(a: int, b: int, c: int) -&gt; DiophantineSolution | None
+</code></pre>
+<p>Solves the linear Diophantine equation $ax + by = c$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>int</code></td><td>Coefficient of $x$</td></tr>
+<tr><td><code>b</code></td><td><code>int</code></td><td>Coefficient of $y$</td></tr>
+<tr><td><code>c</code></td><td><code>int</code></td><td>Right-hand side constant</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a <code>DiophantineSolution</code> (when a solution exists) or <code>None</code> (when no integer solution exists).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; sol = ocas.solve_diophantine(3, 5, 1)
+&gt;&gt;&gt; sol.particular
+(2, -1)
+&gt;&gt;&gt; sol.general
+(5, -3)
+</code></pre>
+<hr />
+<h3 id="diophantinesolution"><a class="header" href="#diophantinesolution">DiophantineSolution</a></h3>
+<p>The solution of a Diophantine equation.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>particular</code></td><td><code>tuple[int, int]</code></td><td>A particular solution $(x_0, y_0)$</td></tr>
+<tr><td><code>general</code></td><td><code>tuple[int, int]</code></td><td>The general-solution direction $(t_x, t_y)$; the general solution is $(x_0 + k \cdot t_x, ; y_0 + k \cdot t_y)$, $k \in \mathbb{Z}$</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="ode"><a class="header" href="#ode">ODE</a></h2>
+<h3 id="classify_ode"><a class="header" href="#classify_ode">classify_ode</a></h3>
+<pre><code class="language-python">ocas.classify_ode(equation: Expression, func: str, var: str) -&gt; list[str]
+</code></pre>
+<p>Classifies an ordinary differential equation and returns the list of available solver method names.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Expression</code></td><td>The ODE expression (in the form equal to zero), e.g. <code>Derivative(y(x), x) - y(x)</code></td></tr>
+<tr><td><code>func</code></td><td><code>str</code></td><td>Name of the unknown function, e.g. <code>"y"</code></td></tr>
+<tr><td><code>var</code></td><td><code>str</code></td><td>Name of the independent variable, e.g. <code>"x"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a list of method names, e.g. <code>["LinearFirst", "PowerSeries"]</code>.</p>
+<p><strong>Supported ODE types</strong>: <code>Separable</code>, <code>LinearFirst</code>, <code>Bernoulli</code>, <code>Exact</code>, <code>Homogeneous</code>, <code>LinearConstantCoeff</code>, <code>CauchyEuler</code>, <code>ReductionOfOrder</code>, <code>PowerSeries</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; eq = ocas.Expression("Derivative(y(x), x) - y(x)")
+&gt;&gt;&gt; ocas.classify_ode(eq, "y", "x")
+['LinearFirst', 'PowerSeries']
+</code></pre>
+<hr />
+<h3 id="dsolve"><a class="header" href="#dsolve">dsolve</a></h3>
+<pre><code class="language-python">ocas.dsolve(equation: Expression, func: str, var: str, hint: str | None = None) -&gt; str
+</code></pre>
+<p>Symbolically solves an ODE.</p>
+<p><strong>Signature</strong> (with defaults): <code>dsolve(equation, func, var, hint=None)</code></p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Expression</code></td><td>The ODE expression (in the form equal to zero)</td></tr>
+<tr><td><code>func</code></td><td><code>str</code></td><td>Name of the unknown function</td></tr>
+<tr><td><code>var</code></td><td><code>str</code></td><td>Name of the independent variable</td></tr>
+<tr><td><code>hint</code></td><td><code>str</code> or <code>None</code></td><td>A specific solver method (one of the names returned by <code>classify_ode</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the string representation of the solution (explicit, implicit, series, or unevaluated form).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; eq = ocas.Expression("Derivative(y(x), x) - y(x)")
+&gt;&gt;&gt; ocas.dsolve(eq, "y", "x")
+'y = C1*exp(x)'
+</code></pre>
+<hr />
+<h3 id="dsolve_ivp"><a class="header" href="#dsolve_ivp">dsolve_ivp</a></h3>
+<pre><code class="language-python">ocas.dsolve_ivp(equation: Expression, func: str, var: str, y0: str, y1: str | None = None) -&gt; str
+</code></pre>
+<p>Solves an initial value problem for a constant-coefficient linear ODE via the Laplace transform.</p>
+<p><strong>Signature</strong> (with defaults): <code>dsolve_ivp(equation, func, var, y0, y1=None)</code></p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Expression</code></td><td>The ODE expression (in the form equal to zero)</td></tr>
+<tr><td><code>func</code></td><td><code>str</code></td><td>Name of the unknown function</td></tr>
+<tr><td><code>var</code></td><td><code>str</code></td><td>Name of the independent variable</td></tr>
+<tr><td><code>y0</code></td><td><code>str</code></td><td>The value of $y(0)$ (string expression, e.g. <code>"1"</code>)</td></tr>
+<tr><td><code>y1</code></td><td><code>str</code> or <code>None</code></td><td>The value of $y'(0)$ (required for second-order problems)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the explicit solution string without arbitrary constants.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; eq = ocas.Expression("Derivative(y(x), x, 2) + y(x)")
+&gt;&gt;&gt; ocas.dsolve_ivp(eq, "y", "x", "0", "1")
+'y = sin(x)'
+</code></pre>
+<hr />
+<h2 id="number-theory"><a class="header" href="#number-theory">Number Theory</a></h2>
+<h3 id="factorint"><a class="header" href="#factorint">factorint</a></h3>
+<pre><code class="language-python">ocas.factorint(n: int) -&gt; list[tuple[str, int]]
+</code></pre>
+<p>Factors $|n|$ into prime factors. Negative inputs start with <code>("-1", 1)</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>The integer to be factored (arbitrary precision)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a list of <code>(prime, exponent)</code> tuples, sorted by prime in ascending order.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.factorint(60)
+[('2', 2), ('3', 1), ('5', 1)]
+&gt;&gt;&gt; ocas.factorint(-12)
+[('-1', 1), ('2', 2), ('3', 1)]
+</code></pre>
+<hr />
+<h3 id="isprime"><a class="header" href="#isprime">isprime</a></h3>
+<pre><code class="language-python">ocas.isprime(n: int) -&gt; bool
+</code></pre>
+<p>BPSW probabilistic primality test. Deterministic for $n &lt; 2^{64}$; no composite numbers of any size are currently known to pass.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>The integer to test (arbitrary precision)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>True</code> if (probably) prime.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.isprime(97)
+True
+&gt;&gt;&gt; ocas.isprime(100)
+False
+</code></pre>
+<hr />
+<h3 id="isprime_u64"><a class="header" href="#isprime_u64">isprime_u64</a></h3>
+<pre><code class="language-python">ocas.isprime_u64(n: int) -&gt; bool
+</code></pre>
+<p>Deterministic primality test for $n &lt; 2^{64}$ (u64 fast path).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>The integer to test (must fit in the u64 range)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>True</code> if prime.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.isprime_u64(2**61 - 1)
+True
+</code></pre>
+<hr />
+<h3 id="nextprime"><a class="header" href="#nextprime">nextprime</a></h3>
+<pre><code class="language-python">ocas.nextprime(n: int) -&gt; int
+</code></pre>
+<p>Returns the smallest prime strictly greater than $n$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>The starting integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the next prime (arbitrary precision).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.nextprime(10)
+11
+&gt;&gt;&gt; ocas.nextprime(11)
+13
+</code></pre>
+<hr />
+<h3 id="discrete_log"><a class="header" href="#discrete_log">discrete_log</a></h3>
+<pre><code class="language-python">ocas.discrete_log(p: int, base: int, target: int) -&gt; int
+</code></pre>
+<p>Solves the discrete logarithm $\text{base}^x \equiv \text{target} \pmod{p}$. Uses the Pohlig–Hellman algorithm for prime $p$, otherwise BSGS.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>p</code></td><td><code>int</code></td><td>The modulus</td></tr>
+<tr><td><code>base</code></td><td><code>int</code></td><td>The base</td></tr>
+<tr><td><code>target</code></td><td><code>int</code></td><td>The target value</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the discrete logarithm $x$.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the logarithm does not exist.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.discrete_log(13, 2, 9)
+8
+&gt;&gt;&gt; pow(2, 8, 13)
+9
+</code></pre>
+<hr />
+<h3 id="crt"><a class="header" href="#crt">crt</a></h3>
+<pre><code class="language-python">ocas.crt(moduli: list[int], residues: list[int]) -&gt; tuple[int, int]
+</code></pre>
+<p>Chinese remainder theorem: solves the system of congruences $x \equiv r_i \pmod{m_i}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>moduli</code></td><td><code>list[int]</code></td><td>List of moduli (need not be pairwise coprime)</td></tr>
+<tr><td><code>residues</code></td><td><code>list[int]</code></td><td>List of residues</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>(r, m)</code> such that $x \equiv r \pmod{m}$.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the system is inconsistent.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.crt([3, 5, 7], [2, 3, 2])
+(23, 105)
+</code></pre>
+<hr />
+<h3 id="jacobi_symbol"><a class="header" href="#jacobi_symbol">jacobi_symbol</a></h3>
+<pre><code class="language-python">ocas.jacobi_symbol(a: int, n: int) -&gt; int
+</code></pre>
+<p>Computes the Jacobi symbol $\left(\frac{a}{n}\right)$, where $n$ is a positive odd integer.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>int</code></td><td>Numerator</td></tr>
+<tr><td><code>n</code></td><td><code>int</code></td><td>Denominator (positive odd)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $-1$, $0$, or $1$.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — <code>n</code> is not a positive odd integer.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.jacobi_symbol(2, 7)
+1
+&gt;&gt;&gt; ocas.jacobi_symbol(3, 7)
+-1
+</code></pre>
+<hr />
+<h3 id="totient"><a class="header" href="#totient">totient</a></h3>
+<pre><code class="language-python">ocas.totient(n: int) -&gt; int
+</code></pre>
+<p>Euler totient function $\varphi(n)$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>A positive integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $\varphi(n)$ (arbitrary precision).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.totient(12)
+4
+</code></pre>
+<hr />
+<h3 id="mobius"><a class="header" href="#mobius">mobius</a></h3>
+<pre><code class="language-python">ocas.mobius(n: int) -&gt; int
+</code></pre>
+<p>Möbius function $\mu(n)$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>A positive integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $-1$, $0$, or $1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.mobius(6)
+1
+&gt;&gt;&gt; ocas.mobius(4)
+0
+</code></pre>
+<hr />
+<h3 id="divisor_count"><a class="header" href="#divisor_count">divisor_count</a></h3>
+<pre><code class="language-python">ocas.divisor_count(n: int) -&gt; int
+</code></pre>
+<p>Number of positive divisors $\tau(n)$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>A positive integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the number of positive divisors.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.divisor_count(12)
+6
+</code></pre>
+<hr />
+<h3 id="divisor_sigma"><a class="header" href="#divisor_sigma">divisor_sigma</a></h3>
+<pre><code class="language-python">ocas.divisor_sigma(n: int, k: int = 1) -&gt; int
+</code></pre>
+<p>Sum of the $k$-th powers of the divisors $\sigma_k(n) = \sum_{d \mid n} d^k$.</p>
+<p><strong>Signature</strong> (with defaults): <code>divisor_sigma(n, k=1)</code></p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>A positive integer</td></tr>
+<tr><td><code>k</code></td><td><code>int</code></td><td>The exponent (default 1, i.e. the sum of divisors $\sigma_1$)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $\sigma_k(n)$.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.divisor_sigma(12)      # 1+2+3+4+6+12
+28
+&gt;&gt;&gt; ocas.divisor_sigma(12, 2)   # 1+4+9+16+36+144
+210
+</code></pre>
+<hr />
+<h3 id="liouville_lambda"><a class="header" href="#liouville_lambda">liouville_lambda</a></h3>
+<pre><code class="language-python">ocas.liouville_lambda(n: int) -&gt; int
+</code></pre>
+<p>Liouville function $\lambda(n) = (-1)^{\Omega(n)}$, where $\Omega(n)$ is the number of prime factors of $n$ counted with multiplicity.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>A positive integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $-1$ or $1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.liouville_lambda(12)  # Ω(12)=3
+-1
+&gt;&gt;&gt; ocas.liouville_lambda(9)   # Ω(9)=2
+1
+</code></pre>
+<hr />
+<h2 id="gröbner-bases--ideals"><a class="header" href="#gröbner-bases--ideals">Gröbner Bases &amp; Ideals</a></h2>
+<blockquote>
+<p><strong>Note</strong>: The following functions keep their <code>py_</code> prefix (the Rust side does not use <code>#[pyo3(name=...)]</code> renaming). The actual call names in Python are <code>ocas.py_groebner_basis</code>, <code>ocas.py_ideal_contains</code>, etc.</p>
+</blockquote>
+<h3 id="py_groebner_basis"><a class="header" href="#py_groebner_basis">py_groebner_basis</a></h3>
+<pre><code class="language-python">ocas.py_groebner_basis(generators, n_vars: int = 1, algorithm: str = "auto") -&gt; GroebnerBasis
+</code></pre>
+<p>Computes a Gröbner basis of the polynomial ideal.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>List of generators (<code>MultivariatePolynomial</code> or <code>Polynomial</code> objects)</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables (default 1; auto-detected if the generators are <code>MultivariatePolynomial</code>)</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>Algorithm selection: <code>"auto"</code> (default), <code>"f4"</code>, <code>"f5"</code>, <code>"buchberger"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a <code>GroebnerBasis</code> object.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — invalid algorithm name.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_groebner_basis
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=2)   # x² - 1
+&gt;&gt;&gt; g = MultivariatePolynomial({(0, 2): 1, (0, 0): -1}, n_vars=2)   # y² - 1
+&gt;&gt;&gt; gb = py_groebner_basis([f, g], n_vars=2)
+&gt;&gt;&gt; len(gb)
+2
+</code></pre>
+<hr />
+<h3 id="py_ideal_contains"><a class="header" href="#py_ideal_contains">py_ideal_contains</a></h3>
+<pre><code class="language-python">ocas.py_ideal_contains(generators, f, n_vars: int = 1, algorithm: str = "auto") -&gt; bool
+</code></pre>
+<p>Determines whether the polynomial $f$ belongs to the ideal generated by <code>generators</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>List of generators of the ideal</td></tr>
+<tr><td><code>f</code></td><td><code>MultivariatePolynomial</code> or <code>Polynomial</code></td><td>The polynomial to test</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables (default 1)</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>Algorithm selection (default <code>"auto"</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>True</code> if $f \in I$.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_ideal_contains
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; g = MultivariatePolynomial({(0, 2): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; x = MultivariatePolynomial({(1, 0): 1}, n_vars=2)
+&gt;&gt;&gt; py_ideal_contains([f, g], f, n_vars=2)
+True
+&gt;&gt;&gt; py_ideal_contains([f, g], x, n_vars=2)
+False
+</code></pre>
+<hr />
+<h3 id="py_solve_polynomial_system"><a class="header" href="#py_solve_polynomial_system">py_solve_polynomial_system</a></h3>
+<pre><code class="language-python">ocas.py_solve_polynomial_system(equations, n_vars: int = 1, algorithm: str = "auto") -&gt; PolynomialSystemSolution
+</code></pre>
+<p>Solves a system of polynomial equations.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equations</code></td><td><code>list</code></td><td>List of equations (each a polynomial in the form equal to zero)</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables (default 1)</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>Algorithm selection (default <code>"auto"</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a <code>PolynomialSystemSolution</code> object.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_solve_polynomial_system
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 2): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; g = MultivariatePolynomial({(1, 0): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; sol = py_solve_polynomial_system([f, g], n_vars=2)
+&gt;&gt;&gt; sol.kind
+'zero_dimensional'
+&gt;&gt;&gt; for s in sol.solutions():
+...     print(s.values, s.multiplicity)
+[1.0, 0.0] 1
+</code></pre>
+<hr />
+<h3 id="py_hilbert_series"><a class="header" href="#py_hilbert_series">py_hilbert_series</a></h3>
+<pre><code class="language-python">ocas.py_hilbert_series(gb: GroebnerBasis) -&gt; HilbertSeries
+</code></pre>
+<p>Computes the Hilbert series of the Gröbner basis.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>GroebnerBasis</code></td><td>A Gröbner basis</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a <code>HilbertSeries</code> object.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_groebner_basis, py_hilbert_series
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; gb = py_groebner_basis([f], n_vars=2)
+&gt;&gt;&gt; hs = py_hilbert_series(gb)
+&gt;&gt;&gt; hs.dimension
+1
+</code></pre>
+<hr />
+<h3 id="py_ideal_radical"><a class="header" href="#py_ideal_radical">py_ideal_radical</a></h3>
+<pre><code class="language-python">ocas.py_ideal_radical(generators, n_vars: int = 1) -&gt; GroebnerBasis
+</code></pre>
+<p>Computes the radical $\sqrt{I}$ of the ideal.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>List of generators of the ideal</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables (default 1)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a Gröbner basis of $\sqrt{I}$.</p>
+<p><strong>Algorithm</strong>: square-free factorization for zero-dimensional ideals; Jacobian saturation $\sqrt{I} = I : h^\infty$ for positive-dimensional ideals.</p>
+<hr />
+<h3 id="py_primary_decomposition"><a class="header" href="#py_primary_decomposition">py_primary_decomposition</a></h3>
+<pre><code class="language-python">ocas.py_primary_decomposition(generators, n_vars: int = 1) -&gt; list[PrimaryComponent]
+</code></pre>
+<p>Computes the primary decomposition of the ideal.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>List of generators of the ideal</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables (default 1)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a list of <code>PrimaryComponent</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_primary_decomposition
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=1)
+&gt;&gt;&gt; comps = py_primary_decomposition([f], n_vars=1)
+&gt;&gt;&gt; len(comps)
+2
+</code></pre>
+<hr />
+<h3 id="py_is_zero_dimensional"><a class="header" href="#py_is_zero_dimensional">py_is_zero_dimensional</a></h3>
+<pre><code class="language-python">ocas.py_is_zero_dimensional(gb: GroebnerBasis) -&gt; bool
+</code></pre>
+<p>Determines whether the ideal of the Gröbner basis is zero-dimensional.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>GroebnerBasis</code></td><td>A Gröbner basis</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>True</code> if zero-dimensional.</p>
+<hr />
+<h3 id="py_eliminate"><a class="header" href="#py_eliminate">py_eliminate</a></h3>
+<pre><code class="language-python">ocas.py_eliminate(generators, elim_vars: int, n_vars: int = 1, algorithm: str = "auto") -&gt; GroebnerBasis
+</code></pre>
+<p>Elimination: computes a Gröbner basis of the elimination ideal $I \cap k[x_{e+1}, \dots, x_n]$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>List of generators of the ideal</td></tr>
+<tr><td><code>elim_vars</code></td><td><code>int</code></td><td>Number of variables to eliminate (from the front)</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Total number of variables (default 1)</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>Algorithm selection (default <code>"auto"</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a Gröbner basis of the elimination ideal.</p>
+<hr />
+<h3 id="multivariatepolynomial-gröbner-helper-class"><a class="header" href="#multivariatepolynomial-gröbner-helper-class">MultivariatePolynomial (Gröbner helper class)</a></h3>
+<p>Already introduced in the Polynomials section. The Gröbner functions accept both <code>MultivariatePolynomial</code> and <code>Polynomial</code> as generators; the latter are automatically mapped to univariate multivariate polynomials.</p>
+<hr />
+<h3 id="groebnerbasis"><a class="header" href="#groebnerbasis">GroebnerBasis</a></h3>
+<p>The result of a Gröbner basis computation.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables</td></tr>
+</tbody></table>
+</div>
+<p><strong>Methods</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>__len__()</code></td><td><code>int</code></td><td>Number of polynomials in the basis</td></tr>
+<tr><td><code>is_groebner_basis()</code></td><td><code>bool</code></td><td>Verifies whether it is indeed a Gröbner basis</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="realsolution"><a class="header" href="#realsolution">RealSolution</a></h3>
+<p>A real solution of a polynomial system.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>list[float]</code></td><td>Coordinates of the solution</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>int</code></td><td>The multiplicity</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="polynomialsystemsolution"><a class="header" href="#polynomialsystemsolution">PolynomialSystemSolution</a></h3>
+<p>The solving result of a polynomial system.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>str</code></td><td><code>"zero_dimensional"</code>, <code>"positive_dimensional"</code>, or <code>"empty"</code></td></tr>
+<tr><td><code>vector_space_dimension</code></td><td><code>int</code> or <code>None</code></td><td>Dimension of the vector space (only set for the zero-dimensional case)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Methods</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>solutions()</code></td><td><code>list[RealSolution]</code></td><td>List of real solutions (non-empty only in the zero-dimensional case)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="hilbertseries"><a class="header" href="#hilbertseries">HilbertSeries</a></h3>
+<p>The Hilbert series.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>dimension</code></td><td><code>int</code></td><td>Krull dimension</td></tr>
+<tr><td><code>degree</code></td><td><code>int</code></td><td>Multiplicity (degree)</td></tr>
+<tr><td><code>numerator</code></td><td><code>list[int]</code></td><td>Coefficients of the numerator polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Methods</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Parameters</th><th>Returns</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>hilbert_function(d)</code></td><td><code>d: int</code></td><td><code>int</code></td><td>Value of the Hilbert function at degree $d$</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="primarycomponent"><a class="header" href="#primarycomponent">PrimaryComponent</a></h3>
+<p>A component of a primary decomposition.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of variables</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="algebraic-numbers"><a class="header" href="#algebraic-numbers">Algebraic Numbers</a></h2>
+<h3 id="algebraicextension"><a class="header" href="#algebraicextension">AlgebraicExtension</a></h3>
+<p>The algebraic number field $K = \mathbb{Q}(\alpha)$, defined by a monic minimal polynomial.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.AlgebraicExtension(min_poly: list)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>min_poly</code></td><td><code>list[int]</code> or <code>list[tuple[int,int]]</code></td><td>Coefficients of the minimal polynomial (ascending powers); the last entry (leading coefficient) must be 1</td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — the coefficient list is too short, the leading coefficient is not 1, or irreducibility verification fails.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import AlgebraicExtension
+&gt;&gt;&gt; # α² - 2 (i.e. ℚ(√2))
+&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; field.extension_degree()
+2
+</code></pre>
+<hr />
+<h4 id="algebraicextensionextension_degree"><a class="header" href="#algebraicextensionextension_degree">AlgebraicExtension.extension_degree</a></h4>
+<pre><code class="language-python">AlgebraicExtension.extension_degree() -&gt; int
+</code></pre>
+<p>Returns the degree of the extension $[K:\mathbb{Q}] = \deg(m)$.</p>
+<hr />
+<h4 id="algebraicextensionalpha"><a class="header" href="#algebraicextensionalpha">AlgebraicExtension.alpha</a></h4>
+<pre><code class="language-python">AlgebraicExtension.alpha() -&gt; AlgebraicElement
+</code></pre>
+<p>Returns the generator $\alpha$ of the extension.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; a = field.alpha()
+&gt;&gt;&gt; a.coeffs()
+['0', '1']
+</code></pre>
+<hr />
+<h4 id="algebraicextensionfrom_base"><a class="header" href="#algebraicextensionfrom_base">AlgebraicExtension.from_base</a></h4>
+<pre><code class="language-python">AlgebraicExtension.from_base(c) -&gt; AlgebraicElement
+</code></pre>
+<p>Embeds the rational number $c$ as a constant element of the field.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>c</code></td><td><code>int</code> or <code>tuple[int, int]</code></td><td>A rational number (an integer or a <code>(numerator, denominator)</code> tuple)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h4 id="algebraicextensionelement"><a class="header" href="#algebraicextensionelement">AlgebraicExtension.element</a></h4>
+<pre><code class="language-python">AlgebraicExtension.element(coeffs: list) -&gt; AlgebraicElement
+</code></pre>
+<p>Creates an element from the $\alpha$-polynomial coefficients (ascending powers).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>coeffs</code></td><td><code>list[int]</code> or <code>list[tuple[int,int]]</code></td><td>List of rational coefficients (ascending powers)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; # 3 + 2α
+&gt;&gt;&gt; e = field.element([3, 2])
+&gt;&gt;&gt; e.coeffs()
+['3', '2']
+</code></pre>
+<hr />
+<h3 id="algebraicelement"><a class="header" href="#algebraicelement">AlgebraicElement</a></h3>
+<p>An element of the algebraic number field $\mathbb{Q}(\alpha)$, stored as a polynomial in $\alpha$.</p>
+<h4 id="algebraicelementcoeffs"><a class="header" href="#algebraicelementcoeffs">AlgebraicElement.coeffs</a></h4>
+<pre><code class="language-python">AlgebraicElement.coeffs() -&gt; list[str]
+</code></pre>
+<p>Returns the $\alpha$-polynomial coefficients (list of strings, ascending powers).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; e = field.element([1, 1])  # 1 + α = 1 + √2
+&gt;&gt;&gt; e.coeffs()
+['1', '1']
+</code></pre>
+<hr />
+<h3 id="algebraicpolynomial"><a class="header" href="#algebraicpolynomial">AlgebraicPolynomial</a></h3>
+<p>Dense univariate polynomial over the algebraic number field $\mathbb{Q}(\alpha)$.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.AlgebraicPolynomial(field: AlgebraicExtension, coeffs: list)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>field</code></td><td><code>AlgebraicExtension</code></td><td>The algebraic number field containing the coefficients</td></tr>
+<tr><td><code>coeffs</code></td><td><code>list</code></td><td>Coefficient list (ascending powers), each entry being an <code>int</code>, an <code>(int, int)</code> tuple, or an <code>AlgebraicElement</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import AlgebraicExtension, AlgebraicPolynomial
+&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; # x² - 2 over ℚ(√2)
+&gt;&gt;&gt; p = AlgebraicPolynomial(field, [-2, 0, 1])
+&gt;&gt;&gt; p.degree()
+2
+</code></pre>
+<hr />
+<h4 id="algebraicpolynomialdegree"><a class="header" href="#algebraicpolynomialdegree">AlgebraicPolynomial.degree</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.degree() -&gt; int | None
+</code></pre>
+<p>Returns the degree. The zero polynomial returns <code>None</code>.</p>
+<hr />
+<h4 id="algebraicpolynomiallen"><a class="header" href="#algebraicpolynomiallen">AlgebraicPolynomial.len</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.len() -&gt; int
+</code></pre>
+<p>Returns the number of stored coefficients.</p>
+<hr />
+<h4 id="algebraicpolynomialis_zero"><a class="header" href="#algebraicpolynomialis_zero">AlgebraicPolynomial.is_zero</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.is_zero() -&gt; bool
+</code></pre>
+<p>Whether the polynomial is the zero polynomial.</p>
+<hr />
+<h4 id="algebraicpolynomialcoeffs"><a class="header" href="#algebraicpolynomialcoeffs">AlgebraicPolynomial.coeffs</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.coeffs() -&gt; list[list[str]]
+</code></pre>
+<p>Returns the coefficient list. Each coefficient is a list of rationals (as strings) representing the $\alpha$-polynomial coefficients.</p>
+<hr />
+<h4 id="algebraicpolynomialfactor"><a class="header" href="#algebraicpolynomialfactor">AlgebraicPolynomial.factor</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.factor() -&gt; list[AlgebraicFactor]
+</code></pre>
+<p>Factors the polynomial over the algebraic number field (Trager's algorithm).</p>
+<p><strong>Returns</strong>: a list of <code>AlgebraicFactor</code>, each containing an irreducible factor and its multiplicity.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; p = AlgebraicPolynomial(field, [-2, 0, 1])  # x² - 2 = (x-α)(x+α)
+&gt;&gt;&gt; facs = p.factor()
+&gt;&gt;&gt; len(facs)
+2
+&gt;&gt;&gt; [f.multiplicity for f in facs]
+[1, 1]
+</code></pre>
+<hr />
+<h3 id="algebraicfactor"><a class="header" href="#algebraicfactor">AlgebraicFactor</a></h3>
+<p>A factor in the factorization of an algebraic-number-field polynomial.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>factor</code></td><td><code>AlgebraicPolynomial</code></td><td>The irreducible factor</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>int</code></td><td>The multiplicity</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="automatic-differentiation"><a class="header" href="#automatic-differentiation">Automatic Differentiation</a></h2>
+<h3 id="dualshape"><a class="header" href="#dualshape">DualShape</a></h3>
+<p>First-order dual-number layout description, declaring the number of tracked differentiation variables. Construct once, share everywhere.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python"># Not constructed directly; use the static method
+shape = DualShape.first_order(n_vars)
+</code></pre>
+<hr />
+<h4 id="dualshapefirst_order-static-method"><a class="header" href="#dualshapefirst_order-static-method">DualShape.first_order (static method)</a></h4>
+<pre><code class="language-python">DualShape.first_order(n_vars: int) -&gt; DualShape
+</code></pre>
+<p>Creates a layout with <code>n_vars</code> differentiation variables.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>Number of differentiation variables ($\geq 1$)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — <code>n_vars == 0</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DualShape
+&gt;&gt;&gt; shape = DualShape.first_order(3)
+&gt;&gt;&gt; shape.n_vars
+3
+&gt;&gt;&gt; shape.n_components
+4
+</code></pre>
+<hr />
+<h4 id="dualshapen_vars"><a class="header" href="#dualshapen_vars">DualShape.n_vars</a></h4>
+<pre><code class="language-python">DualShape.n_vars -&gt; int  # property
+</code></pre>
+<p>Number of differentiation variables.</p>
+<hr />
+<h4 id="dualshapen_components"><a class="header" href="#dualshapen_components">DualShape.n_components</a></h4>
+<pre><code class="language-python">DualShape.n_components -&gt; int  # property
+</code></pre>
+<p>Total number of components (value + derivative slots).</p>
+<hr />
+<h3 id="hyperdual"><a class="header" href="#hyperdual">HyperDual</a></h3>
+<p>Hyper-dual number: a scalar value together with partial derivatives with respect to the variables of a <code>DualShape</code>. Computes exactly with rational numbers.</p>
+<p><strong>Limitations</strong>: supports only polynomial/rational arithmetic (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, negation). Transcendental functions (sin/exp/log) are not implemented; use repeated multiplication for integer powers.</p>
+<hr />
+<h4 id="hyperdualvariable-static-method"><a class="header" href="#hyperdualvariable-static-method">HyperDual.variable (static method)</a></h4>
+<pre><code class="language-python">HyperDual.variable(shape: DualShape, i: int, value) -&gt; HyperDual
+</code></pre>
+<p>Creates an independent variable $x_i = \text{value}$ (derivative 1 with respect to the $i$-th variable, 0 with respect to the others).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>DualShape</code></td><td>The dual-number layout</td></tr>
+<tr><td><code>i</code></td><td><code>int</code></td><td>Variable index</td></tr>
+<tr><td><code>value</code></td><td><code>int</code> or <code>tuple[int, int]</code></td><td>The variable value (an integer or a rational tuple)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — index out of bounds.</p>
+<hr />
+<h4 id="hyperdualconstant-static-method"><a class="header" href="#hyperdualconstant-static-method">HyperDual.constant (static method)</a></h4>
+<pre><code class="language-python">HyperDual.constant(shape: DualShape, value) -&gt; HyperDual
+</code></pre>
+<p>Creates a constant (all derivatives zero).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>DualShape</code></td><td>The dual-number layout</td></tr>
+<tr><td><code>value</code></td><td><code>int</code> or <code>tuple[int, int]</code></td><td>The constant value</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h4 id="hyperdualvalue"><a class="header" href="#hyperdualvalue">HyperDual.value</a></h4>
+<pre><code class="language-python">HyperDual.value() -&gt; str
+</code></pre>
+<p>Returns the scalar value (as a string, e.g. <code>"5"</code> or <code>"3/7"</code>).</p>
+<hr />
+<h4 id="hyperdualderiv"><a class="header" href="#hyperdualderiv">HyperDual.deriv</a></h4>
+<pre><code class="language-python">HyperDual.deriv(i: int) -&gt; str | None
+</code></pre>
+<p>Returns the partial derivative with respect to the $i$-th variable. Returns <code>None</code> if <code>i</code> is out of bounds.</p>
+<hr />
+<h4 id="hyperdualn_vars"><a class="header" href="#hyperdualn_vars">HyperDual.n_vars</a></h4>
+<pre><code class="language-python">HyperDual.n_vars -&gt; int  # property
+</code></pre>
+<p>Number of differentiation variables.</p>
+<hr />
+<h4 id="hyperdual-arithmetic"><a class="header" href="#hyperdual-arithmetic">HyperDual arithmetic</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Syntax</th><th>Description</th></tr></thead><tbody>
+<tr><td>Addition</td><td><code>a + b</code></td><td>Component-wise addition</td></tr>
+<tr><td>Subtraction</td><td><code>a - b</code></td><td>Component-wise subtraction</td></tr>
+<tr><td>Multiplication</td><td><code>a * b</code></td><td>Product rule</td></tr>
+<tr><td>Division</td><td><code>a / b</code></td><td>Quotient rule</td></tr>
+<tr><td>Negation</td><td><code>-a</code></td><td>Component-wise negation</td></tr>
+</tbody></table>
+</div>
+<p>All operations require both operands to share the same <code>DualShape</code>. Different shapes raise <code>ValueError</code>.</p>
+<p><strong>Complete example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DualShape, HyperDual
+&gt;&gt;&gt; shape = DualShape.first_order(2)
+&gt;&gt;&gt; x = HyperDual.variable(shape, 0, 3)
+&gt;&gt;&gt; y = HyperDual.variable(shape, 1, 5)
+&gt;&gt;&gt; f = x * y
+&gt;&gt;&gt; f.value()
+'15'
+&gt;&gt;&gt; f.deriv(0)   # ∂f/∂x = y
+'5'
+&gt;&gt;&gt; f.deriv(1)   # ∂f/∂y = x
+'3'
+</code></pre>
+<hr />
+<h2 id="tensors"><a class="header" href="#tensors">Tensors</a></h2>
+<h3 id="tensor"><a class="header" href="#tensor">Tensor</a></h3>
+<p>Named tensor object with index slots and optional symmetry.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.Tensor(name: str, slots: list[tuple[str, str]], symmetry: str = "none")
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>str</code></td><td>Tensor name</td></tr>
+<tr><td><code>slots</code></td><td><code>list[tuple[str, str]]</code></td><td>List of index slots, each being <code>(label, position)</code>. Position is <code>"upper"</code> (contravariant) or <code>"lower"</code> (covariant)</td></tr>
+<tr><td><code>symmetry</code></td><td><code>str</code></td><td>Symmetry: <code>"none"</code> (default), <code>"symmetric"</code>, or <code>"antisymmetric"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — invalid position or symmetry string.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Tensor
+&gt;&gt;&gt; t = Tensor("T", [("i", "upper"), ("j", "lower")])
+&gt;&gt;&gt; t.name
+'T'
+&gt;&gt;&gt; t.rank
+2
+</code></pre>
+<hr />
+<h4 id="tensorname"><a class="header" href="#tensorname">Tensor.name</a></h4>
+<pre><code class="language-python">Tensor.name -&gt; str  # property
+</code></pre>
+<p>The tensor name.</p>
+<hr />
+<h4 id="tensorrank"><a class="header" href="#tensorrank">Tensor.rank</a></h4>
+<pre><code class="language-python">Tensor.rank -&gt; int  # property
+</code></pre>
+<p>The tensor rank (number of slots).</p>
+<hr />
+<h4 id="tensorsymmetry"><a class="header" href="#tensorsymmetry">Tensor.symmetry</a></h4>
+<pre><code class="language-python">Tensor.symmetry -&gt; str  # property
+</code></pre>
+<p>The symmetry string (<code>"none"</code>, <code>"symmetric"</code>, <code>"antisymmetric"</code>).</p>
+<hr />
+<h4 id="tensorslots"><a class="header" href="#tensorslots">Tensor.slots</a></h4>
+<pre><code class="language-python">Tensor.slots() -&gt; list[tuple[str, str]]
+</code></pre>
+<p>Returns the list of slots, each being <code>(label, position)</code>.</p>
+<hr />
+<h4 id="tensordummy_labels"><a class="header" href="#tensordummy_labels">Tensor.dummy_labels</a></h4>
+<pre><code class="language-python">Tensor.dummy_labels() -&gt; list[str]
+</code></pre>
+<p>Returns the labels of the current dummy indices (those appearing twice).</p>
+<hr />
+<h4 id="tensorto_string_atom"><a class="header" href="#tensorto_string_atom">Tensor.to_string_atom</a></h4>
+<pre><code class="language-python">Tensor.to_string_atom() -&gt; str
+</code></pre>
+<p>Renders the tensor as the string form of an expression function node <code>name(slot, slot, ...)</code>.</p>
+<hr />
+<h3 id="contract_tensors"><a class="header" href="#contract_tensors">contract_tensors</a></h3>
+<pre><code class="language-python">ocas.contract_tensors(a: Tensor, b: Tensor) -&gt; tuple[str, list | str]
+</code></pre>
+<p>Contracts two tensors: sums over shared dummy indices (same label, opposite variance).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>Tensor</code></td><td>The first tensor</td></tr>
+<tr><td><code>b</code></td><td><code>Tensor</code></td><td>The second tensor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a <code>(kind, payload)</code> tuple:</p>
+<ul>
+<li>when <code>kind = "product"</code>, <code>payload</code> is the list of tensors after contraction (free indices concatenated)</li>
+<li>when <code>kind = "scalar"</code>, <code>payload</code> is the string of the contracted scalar expression</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Tensor, contract_tensors
+&gt;&gt;&gt; t = Tensor("T", [("i", "upper"), ("j", "lower")])
+&gt;&gt;&gt; u = Tensor("U", [("j", "upper"), ("k", "lower")])
+&gt;&gt;&gt; kind, payload = contract_tensors(t, u)
+&gt;&gt;&gt; kind
+'product'
+</code></pre>
+<hr />
+<h3 id="tensor_symmetrise_sign"><a class="header" href="#tensor_symmetrise_sign">tensor_symmetrise_sign</a></h3>
+<pre><code class="language-python">ocas.tensor_symmetrise_sign(tensor: Tensor) -&gt; int
+</code></pre>
+<p>Returns the symmetrization sign of the tensor ($+1$ or $-1$). <code>"none"</code> and <code>"symmetric"</code> always return $+1$; <code>"antisymmetric"</code> returns the parity of the slot permutation.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>tensor</code></td><td><code>Tensor</code></td><td>The input tensor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: $+1$ or $-1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Tensor, tensor_symmetrise_sign
+&gt;&gt;&gt; eps = Tensor("eps", [("a", "lower"), ("b", "lower")], symmetry="antisymmetric")
+&gt;&gt;&gt; tensor_symmetrise_sign(eps) in (1, -1)
+True
+</code></pre>
+<hr />
+<h3 id="canonicalize_tensors"><a class="header" href="#canonicalize_tensors">canonicalize_tensors</a></h3>
+<pre><code class="language-python">ocas.canonicalize_tensors(expr: str, specs: dict[str, str], index_groups: dict[str, int] | None = None) -&gt; str
+</code></pre>
+<p>Canonicalizes a tensor expression using the graph isomorphism engine.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>expr</code></td><td><code>str</code></td><td>The tensor expression string</td></tr>
+<tr><td><code>specs</code></td><td><code>dict[str, str]</code></td><td>Tensor name → symmetry specification (<code>"none"</code>, <code>"symmetric"</code>, <code>"antisymmetric"</code>)</td></tr>
+<tr><td><code>index_groups</code></td><td><code>dict[str, int]</code> or <code>None</code></td><td>Index dimension groups (optional)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the canonicalized expression string.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — parsing or canonicalization failed.</p>
+<hr />
+<h3 id="young_project"><a class="header" href="#young_project">young_project</a></h3>
+<pre><code class="language-python">ocas.young_project(expr: str, tableau: list[int]) -&gt; str
+</code></pre>
+<p>Applies a Young projection to a tensor expression.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>expr</code></td><td><code>str</code></td><td>The tensor expression string</td></tr>
+<tr><td><code>tableau</code></td><td><code>list[int]</code></td><td>Row lengths of the Young diagram, e.g. <code>[2, 1]</code> denotes □□/□</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the projected expression string.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; proj = ocas.young_project("f(a,b,c)", [1, 1, 1])  # □/□/□ fully antisymmetric projection
+&gt;&gt;&gt; "f(a,b,c)" in proj
+True
+</code></pre>
+<hr />
+<h3 id="refresh_dummies"><a class="header" href="#refresh_dummies">refresh_dummies</a></h3>
+<pre><code class="language-python">ocas.refresh_dummies(expr: str, specs: dict[str, str]) -&gt; str
+</code></pre>
+<p>Renames (refreshes) the dummy indices in a tensor expression.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>expr</code></td><td><code>str</code></td><td>The tensor expression string</td></tr>
+<tr><td><code>specs</code></td><td><code>dict[str, str]</code></td><td>Tensor name → symmetry specification</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the expression string with the dummy indices renamed.</p>
+<hr />
+<h2 id="evaluation"><a class="header" href="#evaluation">Evaluation</a></h2>
+<h3 id="expressionevaluator"><a class="header" href="#expressionevaluator">ExpressionEvaluator</a></h3>
+<p>Compiles an expression for fast numerical evaluation. Compile once, evaluate many times.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.ExpressionEvaluator(input: str, param_names: list[str])
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>str</code></td><td>The expression string</td></tr>
+<tr><td><code>param_names</code></td><td><code>list[str]</code></td><td>List of parameter names (in evaluation order)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — parsing or compilation error.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import ExpressionEvaluator
+&gt;&gt;&gt; ev = ExpressionEvaluator("x^2 + y", ["x", "y"])
+&gt;&gt;&gt; ev.evaluate([3.0, 1.0])
+[10.0]
+&gt;&gt;&gt; ev.evaluate([2.0, 0.0])
+[4.0]
+</code></pre>
+<hr />
+<h4 id="expressionevaluatorevaluate"><a class="header" href="#expressionevaluatorevaluate">ExpressionEvaluator.evaluate</a></h4>
+<pre><code class="language-python">ExpressionEvaluator.evaluate(values: list[float]) -&gt; list[float]
+</code></pre>
+<p>Evaluates with the given parameter values.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>list[float]</code></td><td>List of floating-point values; its length must match the number of parameters</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: the list of result floats.</p>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — parameter count mismatch or evaluation error.</p>
+<hr />
+<h4 id="expressionevaluatorn_params"><a class="header" href="#expressionevaluatorn_params">ExpressionEvaluator.n_params</a></h4>
+<pre><code class="language-python">ExpressionEvaluator.n_params -&gt; int  # property
+</code></pre>
+<p>The number of parameters.</p>
+<hr />
+<h2 id="numerical-integration"><a class="header" href="#numerical-integration">Numerical Integration</a></h2>
+<h3 id="vegas"><a class="header" href="#vegas">Vegas</a></h3>
+<p>Adaptive Monte Carlo integrator (the Vegas algorithm), supporting multi-dimensional integrals.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.Vegas(n_dims: int, *, n_bins=None, n_samples=None, iterations=None, learning_rate=None, seed=None)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n_dims</code></td><td><code>int</code></td><td>The integration dimension</td></tr>
+<tr><td><code>n_bins</code></td><td><code>int</code> or <code>None</code></td><td>Number of bins per dimension (default 64)</td></tr>
+<tr><td><code>n_samples</code></td><td><code>int</code> or <code>None</code></td><td>Number of samples per iteration (default 10000)</td></tr>
+<tr><td><code>iterations</code></td><td><code>int</code> or <code>None</code></td><td>Number of iterations (default 10)</td></tr>
+<tr><td><code>learning_rate</code></td><td><code>float</code> or <code>None</code></td><td>Grid adaptation learning rate (default 1.5)</td></tr>
+<tr><td><code>seed</code></td><td><code>int</code> or <code>None</code></td><td>RNG seed (default <code>0x0C45</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Vegas
+&gt;&gt;&gt; v = Vegas(2, n_samples=20000, iterations=8, seed=1)
+&gt;&gt;&gt; r = v.integrate(lambda xs: xs[0] * xs[1])
+&gt;&gt;&gt; abs(r.integral - 0.25) &lt; 0.01
+True
+</code></pre>
+<hr />
+<h4 id="vegasintegrate"><a class="header" href="#vegasintegrate">Vegas.integrate</a></h4>
+<pre><code class="language-python">Vegas.integrate(f: Callable[[list[float]], float]) -&gt; IntegrateResult
+</code></pre>
+<p>Integrates the callable $f$ over the unit hypercube $[0, 1]^n$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>Callable</code></td><td>Accepts a list of <code>n_dims</code> floats in <code>[0, 1]</code> and returns a single float</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: an <code>IntegrateResult</code>.</p>
+<hr />
+<h4 id="vegasresult"><a class="header" href="#vegasresult">Vegas.result</a></h4>
+<pre><code class="language-python">Vegas.result -&gt; IntegrateResult  # property
+</code></pre>
+<p>The latest accumulated estimate and error.</p>
+<hr />
+<h4 id="vegasiterations"><a class="header" href="#vegasiterations">Vegas.iterations</a></h4>
+<pre><code class="language-python">Vegas.iterations -&gt; int  # property
+</code></pre>
+<p>The number of completed iterations.</p>
+<hr />
+<h3 id="integrate_1d"><a class="header" href="#integrate_1d">integrate_1d</a></h3>
+<pre><code class="language-python">ocas.integrate_1d(f: Callable[[float], float], a: float, b: float, *, n_bins=None, n_samples=None, iterations=None, learning_rate=None, seed=None) -&gt; IntegrateResult
+</code></pre>
+<p>Convenience function for one-dimensional numerical integration.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>Callable</code></td><td>A unary floating-point function</td></tr>
+<tr><td><code>a</code></td><td><code>float</code></td><td>Lower integration limit</td></tr>
+<tr><td><code>b</code></td><td><code>float</code></td><td>Upper integration limit</td></tr>
+<tr><td><code>n_bins</code> etc.</td><td>Same as <code>Vegas</code></td><td>Optional tuning parameters</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: an <code>IntegrateResult</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import ocas
+&gt;&gt;&gt; r = ocas.integrate_1d(lambda x: x, 0.0, 1.0)
+&gt;&gt;&gt; abs(r.integral - 0.5) &lt; 0.01
+True
+</code></pre>
+<hr />
+<h3 id="integrateresult"><a class="header" href="#integrateresult">IntegrateResult</a></h3>
+<p>The result of a numerical integration.</p>
+<p><strong>Attributes</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>integral</code></td><td><code>float</code></td><td>The integral estimate</td></tr>
+<tr><td><code>error</code></td><td><code>float</code></td><td>The estimated standard error</td></tr>
+</tbody></table>
+</div>
+<p>Supports indexing: <code>result[0]</code> = <code>integral</code>, <code>result[1]</code> = <code>error</code>; supports unpacking: <code>integral, error = result</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import ocas
+&gt;&gt;&gt; r = ocas.integrate_1d(lambda x: x**2, 0.0, 1.0, seed=42)
+&gt;&gt;&gt; r[0]       # integral
+0.333...
+&gt;&gt;&gt; r[1]       # error
+0.00...
+&gt;&gt;&gt; i, e = r   # unpacking
+</code></pre>
+<hr />
+<h2 id="double-precision-floats"><a class="header" href="#double-precision-floats">Double-Precision Floats</a></h2>
+<h3 id="doublef64"><a class="header" href="#doublef64">DoubleF64</a></h3>
+<p>Double-precision floating-point arithmetic (~31 significant decimal digits, ~84 binary bits), using the Dekker/Knuth "double-float" algorithm.</p>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-python">ocas.DoubleF64(hi: float, lo: float = 0.0)
+</code></pre>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>hi</code></td><td><code>float</code></td><td>The primary value</td></tr>
+<tr><td><code>lo</code></td><td><code>float</code></td><td>The error term (default 0.0)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DoubleF64
+&gt;&gt;&gt; a = DoubleF64(1.0)
+&gt;&gt;&gt; b = DoubleF64(2.0)
+&gt;&gt;&gt; str(a + b)
+'3'
+</code></pre>
+<hr />
+<h4 id="doublef64to_f64"><a class="header" href="#doublef64to_f64">DoubleF64.to_f64</a></h4>
+<pre><code class="language-python">DoubleF64.to_f64() -&gt; float
+</code></pre>
+<p>Converts to a standard <code>float</code> (loses the precision of the error term).</p>
+<hr />
+<h4 id="doublef64components"><a class="header" href="#doublef64components">DoubleF64.components</a></h4>
+<pre><code class="language-python">DoubleF64.components() -&gt; tuple[float, float]
+</code></pre>
+<p>Returns the <code>(hi, lo)</code> tuple.</p>
+<hr />
+<h4 id="doublef64-arithmetic"><a class="header" href="#doublef64-arithmetic">DoubleF64 arithmetic</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Syntax</th><th>Description</th></tr></thead><tbody>
+<tr><td>Addition</td><td><code>a + b</code></td><td>Double-precision addition</td></tr>
+<tr><td>Subtraction</td><td><code>a - b</code></td><td>Double-precision subtraction</td></tr>
+<tr><td>Multiplication</td><td><code>a * b</code></td><td>Double-precision multiplication</td></tr>
+<tr><td>Division</td><td><code>a / b</code></td><td>Double-precision division</td></tr>
+<tr><td>Negation</td><td><code>-a</code></td><td>Component-wise negation</td></tr>
+<tr><td>Absolute value</td><td><code>abs(a)</code></td><td>Double-precision absolute value</td></tr>
+<tr><td>Power</td><td><code>a ** n</code></td><td>Integer power (<code>n</code> is an <code>int</code>)</td></tr>
+<tr><td>Comparison</td><td><code>==</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></td><td>Total order comparison</td></tr>
+</tbody></table>
+</div>
+<p><strong>Exceptions</strong>: <code>ValueError</code> — division by zero (<code>__truediv__</code>).</p>
+<hr />
+<h4 id="doublef64-transcendental-functions"><a class="header" href="#doublef64-transcendental-functions">DoubleF64 transcendental functions</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Description</th><th>Exceptions</th></tr></thead><tbody>
+<tr><td><code>sin()</code></td><td>Sine</td><td>—</td></tr>
+<tr><td><code>cos()</code></td><td>Cosine</td><td>—</td></tr>
+<tr><td><code>tan()</code></td><td>Tangent</td><td>—</td></tr>
+<tr><td><code>exp()</code></td><td>Natural exponential $e^x$</td><td>—</td></tr>
+<tr><td><code>ln()</code></td><td>Natural logarithm</td><td><code>ValueError</code>: non-positive input</td></tr>
+<tr><td><code>sqrt()</code></td><td>Square root</td><td><code>ValueError</code>: negative input</td></tr>
+</tbody></table>
+</div>
+<p><strong>Complete example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DoubleF64
+&gt;&gt;&gt; DoubleF64(0.0).sin().to_f64()
+0.0
+&gt;&gt;&gt; DoubleF64(4.0).sqrt().components()
+(2.0, 0.0)
+</code></pre>
+<hr />
+<h2 id="function-quick-reference"><a class="header" href="#function-quick-reference">Function Quick Reference</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Signature</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>solve_linear_rational</code></td><td><code>(a, b) -&gt; list[tuple]</code></td><td>Solves Ax=b over ℚ</td></tr>
+<tr><td><code>solve_linear_integer</code></td><td><code>(a, b) -&gt; list[int]</code></td><td>Solves Ax=b over ℤ</td></tr>
+<tr><td><code>solve_diophantine</code></td><td><code>(a, b, c) -&gt; DiophantineSolution | None</code></td><td>ax+by=c</td></tr>
+<tr><td><code>classify_ode</code></td><td><code>(equation, func, var) -&gt; list[str]</code></td><td>ODE classification</td></tr>
+<tr><td><code>dsolve</code></td><td><code>(equation, func, var, hint=None) -&gt; str</code></td><td>Symbolically solves ODEs</td></tr>
+<tr><td><code>dsolve_ivp</code></td><td><code>(equation, func, var, y0, y1=None) -&gt; str</code></td><td>Laplace IVP</td></tr>
+<tr><td><code>factorint</code></td><td><code>(n) -&gt; list[tuple]</code></td><td>Integer prime factorization</td></tr>
+<tr><td><code>isprime</code></td><td><code>(n) -&gt; bool</code></td><td>BPSW primality test</td></tr>
+<tr><td><code>isprime_u64</code></td><td><code>(n) -&gt; bool</code></td><td>Deterministic primality (u64)</td></tr>
+<tr><td><code>nextprime</code></td><td><code>(n) -&gt; int</code></td><td>Next prime</td></tr>
+<tr><td><code>discrete_log</code></td><td><code>(p, base, target) -&gt; int</code></td><td>Discrete logarithm</td></tr>
+<tr><td><code>crt</code></td><td><code>(moduli, residues) -&gt; tuple</code></td><td>Chinese remainder theorem</td></tr>
+<tr><td><code>jacobi_symbol</code></td><td><code>(a, n) -&gt; int</code></td><td>Jacobi symbol</td></tr>
+<tr><td><code>totient</code></td><td><code>(n) -&gt; int</code></td><td>Euler totient</td></tr>
+<tr><td><code>mobius</code></td><td><code>(n) -&gt; int</code></td><td>Möbius function</td></tr>
+<tr><td><code>divisor_count</code></td><td><code>(n) -&gt; int</code></td><td>Number of divisors</td></tr>
+<tr><td><code>divisor_sigma</code></td><td><code>(n, k=1) -&gt; int</code></td><td>Sum of divisor powers</td></tr>
+<tr><td><code>liouville_lambda</code></td><td><code>(n) -&gt; int</code></td><td>Liouville function</td></tr>
+<tr><td><code>py_groebner_basis</code></td><td><code>(generators, n_vars=1, algorithm="auto")</code></td><td>Gröbner basis</td></tr>
+<tr><td><code>py_ideal_contains</code></td><td><code>(generators, f, n_vars=1, algorithm="auto")</code></td><td>Ideal membership test</td></tr>
+<tr><td><code>py_solve_polynomial_system</code></td><td><code>(equations, n_vars=1, algorithm="auto")</code></td><td>Solves polynomial systems</td></tr>
+<tr><td><code>py_hilbert_series</code></td><td><code>(gb) -&gt; HilbertSeries</code></td><td>Hilbert series</td></tr>
+<tr><td><code>py_ideal_radical</code></td><td><code>(generators, n_vars=1)</code></td><td>Ideal radical</td></tr>
+<tr><td><code>py_primary_decomposition</code></td><td><code>(generators, n_vars=1)</code></td><td>Primary decomposition</td></tr>
+<tr><td><code>py_is_zero_dimensional</code></td><td><code>(gb) -&gt; bool</code></td><td>Zero-dimensionality test</td></tr>
+<tr><td><code>py_eliminate</code></td><td><code>(generators, elim_vars, n_vars=1, algorithm="auto")</code></td><td>Elimination</td></tr>
+<tr><td><code>contract_tensors</code></td><td><code>(a, b) -&gt; tuple</code></td><td>Tensor contraction</td></tr>
+<tr><td><code>tensor_symmetrise_sign</code></td><td><code>(tensor) -&gt; int</code></td><td>Symmetrization sign</td></tr>
+<tr><td><code>canonicalize_tensors</code></td><td><code>(expr, specs, index_groups=None)</code></td><td>Tensor canonicalization</td></tr>
+<tr><td><code>young_project</code></td><td><code>(expr, tableau) -&gt; str</code></td><td>Young projection</td></tr>
+<tr><td><code>refresh_dummies</code></td><td><code>(expr, specs) -&gt; str</code></td><td>Dummy index refresh</td></tr>
+<tr><td><code>integrate_1d</code></td><td><code>(f, a, b, **opts) -&gt; IntegrateResult</code></td><td>One-dimensional numerical integration</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="class-quick-reference"><a class="header" href="#class-quick-reference">Class Quick Reference</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Class</th><th>Constructor</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Expression</code></td><td><code>Expression(input)</code></td><td>Symbolic expression</td></tr>
+<tr><td><code>Polynomial</code></td><td><code>Polynomial(coeffs, domain=None)</code></td><td>Univariate polynomial</td></tr>
+<tr><td><code>MultivariatePolynomial</code></td><td><code>MultivariatePolynomial(terms, n_vars)</code></td><td>Multivariate polynomial</td></tr>
+<tr><td><code>Matrix</code></td><td><code>Matrix(rows, domain=None)</code></td><td>Matrix over a domain</td></tr>
+<tr><td><code>IntegerDomain</code></td><td><code>IntegerDomain()</code></td><td>ℤ selector</td></tr>
+<tr><td><code>RationalDomain</code></td><td><code>RationalDomain()</code></td><td>ℚ selector</td></tr>
+<tr><td><code>FiniteField</code></td><td><code>FiniteField(modulus)</code></td><td>GF(p)</td></tr>
+<tr><td><code>AlgebraicExtension</code></td><td><code>AlgebraicExtension(min_poly)</code></td><td>Algebraic number field</td></tr>
+<tr><td><code>AlgebraicElement</code></td><td>(created by <code>AlgebraicExtension</code>)</td><td>Field element</td></tr>
+<tr><td><code>AlgebraicPolynomial</code></td><td><code>AlgebraicPolynomial(field, coeffs)</code></td><td>Polynomial over an algebraic field</td></tr>
+<tr><td><code>DualShape</code></td><td><code>DualShape.first_order(n_vars)</code></td><td>Dual-number layout</td></tr>
+<tr><td><code>HyperDual</code></td><td><code>HyperDual.variable(...)</code> / <code>.constant(...)</code></td><td>Hyper-dual number</td></tr>
+<tr><td><code>Tensor</code></td><td><code>Tensor(name, slots, symmetry="none")</code></td><td>Named tensor</td></tr>
+<tr><td><code>ExpressionEvaluator</code></td><td><code>ExpressionEvaluator(input, param_names)</code></td><td>Numerical evaluator</td></tr>
+<tr><td><code>Vegas</code></td><td><code>Vegas(n_dims, **opts)</code></td><td>Monte Carlo integrator</td></tr>
+<tr><td><code>IntegrateResult</code></td><td><code>IntegrateResult(integral, error)</code></td><td>Integration result</td></tr>
+<tr><td><code>DoubleF64</code></td><td><code>DoubleF64(hi, lo=0.0)</code></td><td>Double-precision float</td></tr>
+<tr><td><code>GroebnerBasis</code></td><td>(returned by functions)</td><td>Gröbner basis result</td></tr>
+<tr><td><code>RealSolution</code></td><td>(returned by functions)</td><td>Real solution</td></tr>
+<tr><td><code>PolynomialSystemSolution</code></td><td>(returned by functions)</td><td>System solving result</td></tr>
+<tr><td><code>HilbertSeries</code></td><td>(returned by functions)</td><td>Hilbert series</td></tr>
+<tr><td><code>PrimaryComponent</code></td><td>(returned by functions)</td><td>Primary decomposition component</td></tr>
+<tr><td><code>DiophantineSolution</code></td><td>(returned by functions)</td><td>Diophantine equation solution</td></tr>
+<tr><td><code>PolynomialFactor</code></td><td>(returned by functions)</td><td>Factorization factor</td></tr>
+<tr><td><code>AlgebraicFactor</code></td><td>(returned by functions)</td><td>Algebraic-field factorization factor</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-numeric-integration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/c.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-numeric-integration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/c.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

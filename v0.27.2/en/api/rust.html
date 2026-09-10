@@ -1,0 +1,536 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Rust API Reference - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html" class="active"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference"><a class="header" href="#rust-api-reference">Rust API Reference</a></h1>
+<p>oCAS's Rust API uses a layered crate architecture. The top-level <code>ocas</code> crate re-exports all commonly used types and functions through its <code>prelude</code> module, so a single import is all you need:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="module-hierarchy"><a class="header" href="#module-hierarchy">Module Hierarchy</a></h2>
+<pre><code class="language-mermaid">graph TD
+    OC["ocas&lt;br/&gt;top-level entry point + prelude"]
+    CORE["ocas-core&lt;br/&gt;Arena, errors, fuel"]
+    DOMAIN["ocas-domain&lt;br/&gt;coefficient domains, number theory, algebraic number fields"]
+    ATOM["ocas-atom&lt;br/&gt;expression trees, tensors"]
+    PARSE["ocas-parse&lt;br/&gt;string parsing"]
+    POLY["ocas-poly&lt;br/&gt;polynomials, matrices, Gröbner bases"]
+    REWRITE["ocas-rewrite&lt;br/&gt;pattern matching, simplification, rewriting"]
+    CALC["ocas-calc&lt;br/&gt;calculus, ODEs, solvers"]
+    EVAL["ocas-eval&lt;br/&gt;evaluator, JIT, numeric integration"]
+
+    OC --&gt; CORE
+    OC --&gt; DOMAIN
+    OC --&gt; ATOM
+    OC --&gt; PARSE
+    OC --&gt; POLY
+    OC --&gt; REWRITE
+    OC --&gt; CALC
+    OC --&gt; EVAL
+
+    ATOM --&gt; CORE
+    ATOM --&gt; DOMAIN
+    PARSE --&gt; CORE
+    PARSE --&gt; ATOM
+    POLY --&gt; CORE
+    POLY --&gt; DOMAIN
+    REWRITE --&gt; CORE
+    REWRITE --&gt; ATOM
+    REWRITE --&gt; PARSE
+    CALC --&gt; CORE
+    CALC --&gt; DOMAIN
+    CALC --&gt; ATOM
+    CALC --&gt; POLY
+    CALC --&gt; REWRITE
+    EVAL --&gt; CORE
+    EVAL --&gt; ATOM
+    EVAL --&gt; DOMAIN
+
+    style OC fill:#4a9eff,stroke:#2d7ad4,color:#fff
+    style CORE fill:#6c757d,stroke:#545b62,color:#fff
+    style DOMAIN fill:#28a745,stroke:#1e7e34,color:#fff
+    style ATOM fill:#17a2b8,stroke:#117a8b,color:#fff
+    style PARSE fill:#6f42c1,stroke:#59359a,color:#fff
+    style POLY fill:#fd7e14,stroke:#ca6510,color:#fff
+    style REWRITE fill:#e83e8c,stroke:#b82d6e,color:#fff
+    style CALC fill:#20c997,stroke:#17a085,color:#fff
+    style EVAL fill:#ffc107,stroke:#d39e00,color:#333
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Crate</th><th>Responsibility</th></tr></thead><tbody>
+<tr><td><code>ocas-core</code></td><td><code>Arena</code> bump allocator, unified error type <code>OcasError</code>, fuel counter <code>Fuel</code></td></tr>
+<tr><td><code>ocas-domain</code></td><td>Coefficient-domain traits (<code>Domain</code>, <code>EuclideanDomain</code>) and implementations (integers, rationals, finite fields, real balls, complex numbers, double-precision floats, algebraic number fields), number-theory function library, hyper-dual automatic differentiation</td></tr>
+<tr><td><code>ocas-atom</code></td><td>Expression tree (<code>Atom</code>, <code>AtomNode</code>, <code>AtomArena</code>), hash-consing, tensor system</td></tr>
+<tr><td><code>ocas-parse</code></td><td>String → <code>Atom</code> parser</td></tr>
+<tr><td><code>ocas-poly</code></td><td>Polynomials (dense univariate, sparse multivariate, rational function fields), matrices, Gröbner-basis algorithms (Buchberger/F4/F5), ideal operations, FGLM order conversion</td></tr>
+<tr><td><code>ocas-rewrite</code></td><td>Pattern matching (AC matching), simplification (fixed-point iteration), bottom-up transformation, E-graph (optional)</td></tr>
+<tr><td><code>ocas-calc</code></td><td>Symbolic differentiation, integration (Risch pipeline), Taylor expansion, ODE solving, Diophantine/linear/polynomial-system solvers</td></tr>
+<tr><td><code>ocas-eval</code></td><td>Stack-VM interpreter, JIT compilation (Cranelift), SIMD batch evaluation, Vegas Monte Carlo numeric integration</td></tr>
+</tbody></table>
+</div>
+<h2 id="prelude-contents"><a class="header" href="#prelude-contents">Prelude Contents</a></h2>
+<p><code>use ocas::prelude::*</code> imports all of the following items. The most commonly used types can also be accessed directly as <code>ocas::TypeName</code>.</p>
+<h3 id="expression-trees"><a class="header" href="#expression-trees">Expression Trees</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Atom</code></td><td>struct</td><td><code>Copy</code> handle pointing to an expression node in the arena</td></tr>
+<tr><td><code>AtomArena</code></td><td>struct</td><td>Hash-consing constructor that builds expressions from an <code>Arena</code></td></tr>
+<tr><td><code>AtomNode</code></td><td>enum</td><td>Node variants: <code>Num</code>/<code>Var</code>/<code>Fun</code>/<code>Add</code>/<code>Mul</code>/<code>Pow</code></td></tr>
+<tr><td><code>Symbol</code></td><td>struct</td><td>Interned string identifier, <code>Copy</code></td></tr>
+<tr><td><code>normalize</code></td><td>fn</td><td>Normalizes an expression (sorting, merging like terms)</td></tr>
+<tr><td><code>parse</code></td><td>fn</td><td>Parses a string into an <code>Atom</code></td></tr>
+<tr><td><code>ParseError</code></td><td>enum</td><td>Parse error</td></tr>
+</tbody></table>
+</div>
+<h3 id="coefficient-domains"><a class="header" href="#coefficient-domains">Coefficient Domains</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Domain</code></td><td>trait</td><td>Basic coefficient-domain arithmetic (<code>zero</code>/<code>one</code>/<code>add</code>/<code>mul</code>/<code>sub</code>/<code>neg</code>, etc.)</td></tr>
+<tr><td><code>EuclideanDomain</code></td><td>trait</td><td>Euclidean domain (+ <code>div_rem</code>/<code>gcd</code>/<code>lcm</code>)</td></tr>
+<tr><td><code>Integer</code></td><td>struct</td><td>Arbitrary-precision integer</td></tr>
+<tr><td><code>IntegerDomain</code></td><td>struct</td><td>Integer domain implementation</td></tr>
+<tr><td><code>Rational</code></td><td>struct</td><td>Arbitrary-precision rational number</td></tr>
+<tr><td><code>RationalDomain</code></td><td>struct</td><td>Rational number field implementation</td></tr>
+<tr><td><code>FiniteField</code></td><td>struct</td><td>𝔽ₚ finite field</td></tr>
+<tr><td><code>FiniteFieldElement</code></td><td>struct</td><td>Finite-field element</td></tr>
+<tr><td><code>RealBall</code></td><td>struct</td><td>Real ball arithmetic (requires the <code>mpfr</code> feature)</td></tr>
+<tr><td><code>RealBallDomain</code></td><td>struct</td><td>Real ball domain implementation</td></tr>
+<tr><td><code>Complex</code></td><td>struct</td><td>Complex number</td></tr>
+<tr><td><code>ComplexDomain</code></td><td>struct</td><td>Complex number field implementation</td></tr>
+<tr><td><code>DoubleF64</code></td><td>struct</td><td>Double-precision float (~31 significant digits)</td></tr>
+<tr><td><code>DoubleF64Domain</code></td><td>struct</td><td>Double-precision float domain implementation</td></tr>
+<tr><td><code>AlgebraicExtension</code></td><td>struct</td><td>Algebraic number field ℚ(α) or GF(p^d)</td></tr>
+<tr><td><code>AlgebraicElement</code></td><td>struct</td><td>Algebraic number field element</td></tr>
+<tr><td><code>AlgebraicNumberField</code></td><td>struct</td><td>Algebraic number field constructor</td></tr>
+<tr><td><code>Assumption</code></td><td>enum</td><td>Assumption variants (<code>Positive</code>/<code>Negative</code>/<code>Integer</code>/<code>Real</code>/<code>Complex</code>, and 8 more)</td></tr>
+<tr><td><code>Assumptions</code></td><td>struct</td><td>Assumption set</td></tr>
+<tr><td><code>SymbolAssumptions</code></td><td>struct</td><td>Per-symbol assumption management</td></tr>
+</tbody></table>
+</div>
+<h3 id="polynomials"><a class="header" href="#polynomials">Polynomials</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>DenseUnivariatePolynomial</code></td><td>struct</td><td>Dense univariate polynomial</td></tr>
+<tr><td><code>SparseMultivariatePolynomial</code></td><td>struct</td><td>Sparse multivariate polynomial</td></tr>
+<tr><td><code>RationalPolynomial</code></td><td>struct</td><td>Element p/q of a rational function field</td></tr>
+<tr><td><code>RootInterval</code></td><td>struct</td><td>An interval containing exactly one real root (<code>low</code>/<code>high</code> bounds)</td></tr>
+<tr><td><code>MonomialOrder</code></td><td>trait</td><td>Monomial order trait</td></tr>
+<tr><td><code>Lex</code></td><td>struct</td><td>Lexicographic order</td></tr>
+<tr><td><code>Grlex</code></td><td>struct</td><td>Graded lexicographic order</td></tr>
+<tr><td><code>Grevlex</code></td><td>struct</td><td>Graded reverse lexicographic order</td></tr>
+<tr><td><code>WeightOrder</code></td><td>struct</td><td>Weighted order</td></tr>
+<tr><td><code>BlockOrder</code></td><td>struct</td><td>Block elimination order</td></tr>
+<tr><td><code>SubOrder</code></td><td>struct</td><td>Sub-order</td></tr>
+<tr><td><code>monomial_divides</code></td><td>fn</td><td>Monomial divisibility test</td></tr>
+<tr><td><code>monomial_lcm</code></td><td>fn</td><td>Monomial least common multiple</td></tr>
+<tr><td><code>monomial_are_coprime</code></td><td>fn</td><td>Monomial coprimality test</td></tr>
+</tbody></table>
+</div>
+<h3 id="matrices"><a class="header" href="#matrices">Matrices</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Matrix</code></td><td>struct</td><td>Matrix over a domain (Bareiss determinant, Gaussian-elimination solving)</td></tr>
+<tr><td><code>MatrixError</code></td><td>enum</td><td>Matrix operation error</td></tr>
+</tbody></table>
+</div>
+<h3 id="gröbner-bases"><a class="header" href="#gröbner-bases">Gröbner Bases</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>GroebnerBasis</code></td><td>struct</td><td>Gröbner-basis result (polynomial list plus metadata)</td></tr>
+<tr><td><code>buchberger</code></td><td>fn</td><td>Buchberger algorithm entry point</td></tr>
+<tr><td><code>f4</code></td><td>fn</td><td>F4 algorithm entry point (matrix row-echelon batching)</td></tr>
+</tbody></table>
+</div>
+<h3 id="calculus"><a class="header" href="#calculus">Calculus</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>diff</code></td><td>fn</td><td>Symbolic differentiation</td></tr>
+<tr><td><code>integrate</code></td><td>fn</td><td>Symbolic integration (layered pipeline)</td></tr>
+<tr><td><code>integrate_heuristic</code></td><td>fn</td><td>Heuristic integration (without Risch)</td></tr>
+<tr><td><code>integrate_with_fuel</code></td><td>fn</td><td>Integration with a fuel limit</td></tr>
+<tr><td><code>taylor</code></td><td>fn</td><td>Taylor expansion</td></tr>
+<tr><td><code>substitute</code></td><td>fn</td><td>Expression substitution</td></tr>
+<tr><td><code>apart</code></td><td>fn</td><td>Partial-fraction decomposition</td></tr>
+</tbody></table>
+</div>
+<h3 id="solvers"><a class="header" href="#solvers">Solvers</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>solve_linear_rational</code></td><td>fn</td><td>Linear system Ax=b over ℚ</td></tr>
+<tr><td><code>solve_linear_integer</code></td><td>fn</td><td>Linear system Ax=b over ℤ</td></tr>
+<tr><td><code>solve_diophantine</code></td><td>fn</td><td>Diophantine equation ax+by=c</td></tr>
+<tr><td><code>DiophantineSolution</code></td><td>struct</td><td>Diophantine solution (particular solution + steps)</td></tr>
+<tr><td><code>SolveError</code></td><td>enum</td><td>Solve error</td></tr>
+<tr><td><code>solve_polynomial_system</code></td><td>fn</td><td>Polynomial system solving (zero-dimensional / positive-dimensional / empty)</td></tr>
+<tr><td><code>classify_ode</code></td><td>fn</td><td>ODE type classification</td></tr>
+<tr><td><code>dsolve</code></td><td>fn</td><td>Symbolic ODE solving</td></tr>
+<tr><td><code>dsolve_ivp</code></td><td>fn</td><td>ODE initial-value problem (Laplace)</td></tr>
+<tr><td><code>dsolve_system</code></td><td>fn</td><td>2×2 ODE system solving</td></tr>
+<tr><td><code>ODE</code></td><td>struct</td><td>ODE description</td></tr>
+<tr><td><code>ODESolution</code></td><td>enum</td><td>ODE solution (explicit/implicit/parametric/series/system/unsolved)</td></tr>
+<tr><td><code>ODEType</code></td><td>enum</td><td>ODE type enumeration</td></tr>
+</tbody></table>
+</div>
+<h3 id="rewriting--simplification"><a class="header" href="#rewriting--simplification">Rewriting &amp; Simplification</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Pattern</code></td><td>enum</td><td>Match pattern (<code>Literal</code>/<code>Wildcard</code>/<code>Add</code>/<code>Mul</code>/<code>Pow</code>/<code>Fun</code>)</td></tr>
+<tr><td><code>Rule</code></td><td>struct</td><td>Rewrite rule</td></tr>
+<tr><td><code>Bindings</code></td><td>struct</td><td>Pattern binding results</td></tr>
+<tr><td><code>MatchError</code></td><td>enum</td><td>Match error (incl. <code>BudgetExhausted</code>)</td></tr>
+<tr><td><code>WildcardLevel</code></td><td>enum</td><td>Wildcard level (<code>Single</code>/<code>Sequence</code>/<code>NullSequence</code>)</td></tr>
+<tr><td><code>match_pattern</code></td><td>fn</td><td>AC pattern matching</td></tr>
+<tr><td><code>simplify</code></td><td>fn</td><td>Fixed-point simplification</td></tr>
+<tr><td><code>simplify_with_fuel</code></td><td>fn</td><td>Simplification with a fuel limit</td></tr>
+<tr><td><code>transform</code></td><td>fn</td><td>Bottom-up transformation</td></tr>
+</tbody></table>
+</div>
+<h3 id="evaluation--jit"><a class="header" href="#evaluation--jit">Evaluation &amp; JIT</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ExpressionEvaluator</code></td><td>struct</td><td>Stack-VM interpreter</td></tr>
+<tr><td><code>FunctionMap</code></td><td>struct</td><td>Custom function registry</td></tr>
+<tr><td><code>EvaluationDomain</code></td><td>trait</td><td>Evaluation-domain constraint</td></tr>
+<tr><td><code>EvaluationError</code></td><td>enum</td><td>Evaluation error</td></tr>
+<tr><td><code>EvalTree</code></td><td>struct</td><td>Evaluation tree</td></tr>
+<tr><td><code>Instr</code></td><td>enum</td><td>Instruction enum</td></tr>
+<tr><td><code>Instruction</code></td><td>struct</td><td>Instruction details</td></tr>
+<tr><td><code>Slot</code></td><td>enum</td><td>Operand slot (<code>Param</code>/<code>Const</code>/<code>Temp</code>)</td></tr>
+<tr><td><code>PowfExtension</code></td><td>trait</td><td>Floating-point power extension</td></tr>
+<tr><td><code>VectorEvaluator</code></td><td>struct</td><td>SIMD batch evaluation (requires the <code>simd</code> feature)</td></tr>
+<tr><td><code>JitEngine</code></td><td>struct</td><td>JIT compilation engine (requires the <code>jit</code> feature)</td></tr>
+<tr><td><code>JitCompiledFunction</code></td><td>struct</td><td>JIT compilation result</td></tr>
+</tbody></table>
+</div>
+<h3 id="numeric-integration"><a class="header" href="#numeric-integration">Numeric Integration</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Vegas</code></td><td>struct</td><td>Vegas Monte Carlo integrator</td></tr>
+<tr><td><code>VegasOptions</code></td><td>struct</td><td>Vegas options (bin count, sample count, iterations, etc.)</td></tr>
+<tr><td><code>IntegrateResult</code></td><td>struct</td><td>Integration result (value + error)</td></tr>
+<tr><td><code>Integrator</code></td><td>struct</td><td>Integrator interface</td></tr>
+<tr><td><code>StatisticsAccumulator</code></td><td>struct</td><td>Inverse-variance weighted accumulator</td></tr>
+<tr><td><code>integrate_1d</code></td><td>fn</td><td>1-D numeric integration convenience function</td></tr>
+</tbody></table>
+</div>
+<h3 id="automatic-differentiation"><a class="header" href="#automatic-differentiation">Automatic Differentiation</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>DualShape</code></td><td>struct</td><td>Derivative layout description</td></tr>
+<tr><td><code>HyperDual</code></td><td>struct</td><td>Hyper-dual number</td></tr>
+<tr><td><code>DualCoeff</code></td><td>trait</td><td>Dual coefficient constraint</td></tr>
+<tr><td><code>new_first_order</code></td><td>fn</td><td>First-order dual convenience constructor</td></tr>
+</tbody></table>
+</div>
+<h3 id="tensors"><a class="header" href="#tensors">Tensors</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Tensor</code></td><td>struct</td><td>Named-index tensor</td></tr>
+<tr><td><code>IndexSlot</code></td><td>struct</td><td>Index slot (label + position)</td></tr>
+<tr><td><code>IndexPosition</code></td><td>enum</td><td><code>Upper</code> (contravariant) / <code>Lower</code> (covariant)</td></tr>
+<tr><td><code>Symmetry</code></td><td>enum</td><td><code>None</code>/<code>Symmetric</code>/<code>Antisymmetric</code></td></tr>
+<tr><td><code>Contracted</code></td><td>enum</td><td>Contraction result (<code>Scalar</code>/<code>Product</code>)</td></tr>
+<tr><td><code>TensorProduct</code></td><td>struct</td><td>Tensor product</td></tr>
+<tr><td><code>contract</code></td><td>fn</td><td>Index contraction</td></tr>
+<tr><td><code>symmetrise_sign</code></td><td>fn</td><td>Antisymmetrization sign</td></tr>
+</tbody></table>
+</div>
+<h3 id="runtime"><a class="header" href="#runtime">Runtime</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Arena</code></td><td>struct</td><td>Bump allocator</td></tr>
+<tr><td><code>OcasError</code></td><td>enum</td><td>Unified error type</td></tr>
+<tr><td><code>Result</code></td><td>type</td><td><code>Result&lt;T, OcasError&gt;</code></td></tr>
+<tr><td><code>Fuel</code></td><td>struct</td><td>Fuel counter (prevents infinite loops)</td></tr>
+</tbody></table>
+</div>
+<h2 id="feature-flags-quick-reference"><a class="header" href="#feature-flags-quick-reference">Feature Flags Quick Reference</a></h2>
+<p>Enable optional backends and acceleration features via the <code>features</code> key in <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+ocas = { version = "0.24", features = ["gmp", "jit"] }
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Default</th><th>Description</th><th>Sub-crate features involved</th></tr></thead><tbody>
+<tr><td><code>gmp</code></td><td>no</td><td>Use GMP arbitrary-precision arithmetic (significantly speeds up big-integer operations)</td><td><code>ocas-domain/gmp</code>, <code>ocas-poly/gmp</code>, <code>ocas-core/gmp</code></td></tr>
+<tr><td><code>mpfr</code></td><td>no</td><td>Enable MPFR real ball arithmetic (the <code>RealBall</code> type)</td><td><code>ocas-domain/mpfr</code></td></tr>
+<tr><td><code>flint</code></td><td>no</td><td>Use the FLINT number-theory library to accelerate polynomial operations</td><td><code>ocas-poly/flint</code></td></tr>
+<tr><td><code>python</code></td><td>no</td><td>Enable Python bindings (PyO3)</td><td><code>dep:ocas-py</code></td></tr>
+<tr><td><code>gpl</code></td><td>no</td><td>Enable GPL-licensed feature modules</td><td><code>dep:ocas-gpl</code></td></tr>
+<tr><td><code>egg</code></td><td>no</td><td>Enable E-graph simplification (the <code>egg_simplify</code> function)</td><td><code>ocas-rewrite/egg</code></td></tr>
+<tr><td><code>jit</code></td><td>no</td><td>Enable Cranelift JIT compilation (the <code>compile_jit</code> method)</td><td><code>ocas-eval/jit</code></td></tr>
+<tr><td><code>simd</code></td><td>no</td><td>Enable SIMD batch evaluation (<code>VectorEvaluator</code>)</td><td><code>ocas-eval/simd</code></td></tr>
+<tr><td><code>mimalloc</code></td><td>no</td><td>Use the mimalloc global allocator (accelerates many-small-allocation workloads)</td><td><code>dep:mimalloc</code></td></tr>
+<tr><td><code>system-libs</code></td><td>no</td><td>Link against preinstalled system GMP/MPFR/MPC (required on MinGW)</td><td><code>ocas-domain/system-libs</code></td></tr>
+<tr><td><code>ntt</code></td><td>no</td><td>NTT number-theoretic transform acceleration for polynomial multiplication over 𝔽ₚ</td><td><code>ocas-poly/ntt</code></td></tr>
+<tr><td><code>sprs</code></td><td>no</td><td>Sparse matrix backend (used for the F4 prep phase)</td><td><code>ocas-poly/sprs</code></td></tr>
+<tr><td><code>fast-poly</code></td><td>no</td><td>fast_polynomial Estrin evaluation acceleration</td><td><code>ocas-eval/fast-poly</code></td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>Tip</strong>: <code>default = []</code> — all backends are off by default for maximum portability (including Windows MSVC). Recommended development configuration: <code>features = ["gmp", "jit"]</code>.</p>
+</blockquote>
+<h2 id="subpage-index"><a class="header" href="#subpage-index">Subpage Index</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Topic</th><th>File</th><th>Contents</th></tr></thead><tbody>
+<tr><td>Expression system</td><td><a href="./rust-expressions.html">rust-expressions</a></td><td><code>Arena</code>, <code>Atom</code>, <code>AtomArena</code>, <code>Symbol</code>, pattern matching, parsing</td></tr>
+<tr><td>Coefficient domains</td><td><a href="./rust-domains.html">rust-domains</a></td><td><code>Domain</code> trait, integers/rationals/finite fields/real balls/complex/doubles/algebraic number fields, assumption system</td></tr>
+<tr><td>Polynomials</td><td><a href="./rust-polynomials.html">rust-polynomials</a></td><td>Dense univariate, sparse multivariate, rational function fields, monomial orders</td></tr>
+<tr><td>Matrices</td><td><a href="./rust-matrix.html">rust-matrix</a></td><td><code>Matrix</code> (Bareiss determinant, Gaussian elimination)</td></tr>
+<tr><td>Calculus</td><td><a href="./rust-calculus.html">rust-calculus</a></td><td><code>diff</code>, <code>integrate</code>, <code>taylor</code>, integration pipeline layers</td></tr>
+<tr><td>Solvers</td><td><a href="./rust-solvers.html">rust-solvers</a></td><td>Linear systems, Diophantine equations, polynomial systems, ODE solving</td></tr>
+<tr><td>Rewriting &amp; simplification</td><td><a href="./rust-rewrite.html">rust-rewrite</a></td><td><code>Pattern</code>, <code>Rule</code>, <code>simplify</code>, <code>transform</code>, E-graph</td></tr>
+<tr><td>Evaluation &amp; JIT</td><td><a href="./rust-evaluation.html">rust-evaluation</a></td><td><code>ExpressionEvaluator</code>, JIT, SIMD, <code>FunctionMap</code></td></tr>
+<tr><td>Automatic differentiation</td><td><a href="./rust-autodiff.html">rust-autodiff</a></td><td><code>DualShape</code>, <code>HyperDual</code>, <code>DualCoeff</code></td></tr>
+<tr><td>Tensors</td><td><a href="./rust-tensors.html">rust-tensors</a></td><td><code>Tensor</code>, contraction, symmetry, canonicalization, Young projection</td></tr>
+<tr><td>Number theory</td><td><a href="./rust-ntheory.html">rust-ntheory</a></td><td>Primality, factorization, discrete logarithms, CRT, number-theoretic functions, quadratic residues</td></tr>
+<tr><td>Gröbner bases &amp; ideals</td><td><a href="./rust-groebner.html">rust-groebner</a></td><td>Buchberger/F4/F5, FGLM, ideal operations, primary decomposition</td></tr>
+<tr><td>Factoring</td><td><a href="./rust-factoring.html">rust-factoring</a></td><td>Univariate/multivariate ℤ[x]/𝔽ₚ[x] factoring, algebraic number fields, rational functions</td></tr>
+<tr><td>Numeric integration</td><td><a href="./rust-numeric-integration.html">rust-numeric-integration.md</a></td><td>Vegas Monte Carlo, <code>integrate_1d</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+<pre><pre class="playground"><code class="language-rust">use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+fn main() {
+    // 1. Create the arena and expression context
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+
+    // 2. Build the expression sin(x)
+    let x = ctx.var("x");
+    let expr = ctx.fun("sin", &amp;[x]);
+
+    // 3. Differentiate symbolically (diff takes a Symbol as the variable)
+    let deriv = diff(&amp;ctx, expr, Symbol::new("x"));
+    assert_eq!(deriv.to_string(), "cos(x)");
+
+    // 4. Simplify (an empty rule set keeps the expression unchanged)
+    let simplified = simplify(&amp;ctx, expr, &amp;[], 100);
+    assert_eq!(simplified.to_string(), "sin(x)");
+
+    println!("d/dx sin(x) = {}", deriv);
+}</code></pre></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="../architecture.html">Architecture Overview</a> — overall design and data flow</li>
+<li><a href="../math/overview.html">Mathematics Overview</a> — background mathematics and learning paths</li>
+<li><a href="./python.html">Python API Reference</a> — Python bindings</li>
+<li><a href="./c.html">C/C++ API Reference</a> — C/C++ bindings</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../architecture.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-expressions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../architecture.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-expressions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

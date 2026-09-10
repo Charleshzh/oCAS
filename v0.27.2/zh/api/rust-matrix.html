@@ -1,0 +1,1151 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>矩阵 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html" class="active"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-matrix.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="矩阵"><a class="header" href="#矩阵">矩阵</a></h1>
+<blockquote>
+<p>来源：<code>ocas-poly/src/matrix.rs</code></p>
+</blockquote>
+<p><code>Matrix&lt;D&gt;</code> 是 oCAS 中通用的稠密矩阵类型，元素来自任意 <code>EuclideanDomain</code>。采用行优先存储，所有消元操作使用 <strong>无分数（fraction-free）</strong> 算法，避免域元素的分数膨胀。</p>
+<hr />
+<h2 id="matrixerror"><a class="header" href="#matrixerror"><code>MatrixError</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MatrixError {
+    ShapeMismatch,
+    RightHandSideIsNotVector,
+    Inconsistent,
+    Underdetermined { rank: usize },
+    ResultNotInDomain,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>矩阵运算中可能产生的错误。实现了 <code>Display</code> 和 <code>std::error::Error</code>。</p>
+<h3 id="shapemismatch"><a class="header" href="#shapemismatch"><code>ShapeMismatch</code></a></h3>
+<p><strong>功能</strong>：矩阵形状不兼容。</p>
+<p><strong>触发场景</strong>：<code>trace</code> 用于非方阵；<code>matmul</code> 的 <code>self.ncols != other.nrows</code>；<code>solve</code> 中 <code>self.nrows != b.len()</code>；<code>augment</code> 中行数不一致。</p>
+<h3 id="righthandsideisnotvector"><a class="header" href="#righthandsideisnotvector"><code>RightHandSideIsNotVector</code></a></h3>
+<p><strong>功能</strong>：右端不是列向量。</p>
+<p><strong>触发场景</strong>：当前版本中未直接由 <code>solve</code> 使用（<code>solve</code> 接受 <code>&amp;[D::Element]</code> 切片），但保留供扩展。</p>
+<h3 id="inconsistent"><a class="header" href="#inconsistent"><code>Inconsistent</code></a></h3>
+<p><strong>功能</strong>：线性方程组无解（不相容）。</p>
+<p><strong>触发场景</strong>：<code>solve</code> 中消元后增广矩阵的自由行在最后一列（常数项）非零。</p>
+<h3 id="underdetermined--rank-"><a class="header" href="#underdetermined--rank-"><code>Underdetermined { rank }</code></a></h3>
+<p><strong>功能</strong>：线性方程组有无穷多解（欠定）。</p>
+<p><strong>触发场景</strong>：<code>solve</code> 中系数矩阵的秩 <code>rank</code> 小于变量数 <code>nvars</code>。</p>
+<h3 id="resultnotindomain"><a class="header" href="#resultnotindomain"><code>ResultNotInDomain</code></a></h3>
+<p><strong>功能</strong>：解不在目标域中。</p>
+<p><strong>触发场景</strong>：<code>solve</code> 的最终除法步骤中，<code>div</code> 返回 <code>None</code>（例如整数域中不能整除）。</p>
+<p><strong>Display 输出</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>输出</th></tr></thead><tbody>
+<tr><td><code>ShapeMismatch</code></td><td><code>"matrix shape mismatch"</code></td></tr>
+<tr><td><code>RightHandSideIsNotVector</code></td><td><code>"right-hand side must be a column vector"</code></td></tr>
+<tr><td><code>Inconsistent</code></td><td><code>"inconsistent linear system"</code></td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td><code>"underdetermined system (rank N)"</code></td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td><code>"solution does not lie in the expected domain"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::{Matrix, MatrixError};
+
+let d = IntegerDomain;
+
+// 不相容系统：两行相同但常数项不同
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(1)],
+         vec![Integer::from(1), Integer::from(1)]],
+    d,
+);
+let b = vec![Integer::from(1), Integer::from(2)];
+assert_eq!(a.solve(&amp;b), Err(MatrixError::Inconsistent));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve">solve</a></p>
+<hr />
+<h2 id="matrixd"><a class="header" href="#matrixd"><code>Matrix&lt;D&gt;</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Matrix&lt;D: EuclideanDomain&gt; {
+    data: Vec&lt;D::Element&gt;,   // 行优先存储
+    nrows: usize,
+    ncols: usize,
+    domain: D,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：域 <code>D</code> 上的稠密矩阵，元素以行优先顺序存储于 <code>Vec&lt;D::Element&gt;</code> 中。</p>
+<p><strong>设计不变量</strong>：</p>
+<ul>
+<li><code>data.len() == nrows * ncols</code>（由构造函数保证）</li>
+<li>元素 <code>(i, j)</code> 在 <code>data</code> 中的位置为 <code>i * ncols + j</code></li>
+<li><code>D</code> 约束为 <code>EuclideanDomain</code>，支持 <code>div</code>、<code>gcd</code> 等操作，使无分数消元成为可能</li>
+</ul>
+<p><strong>Trait 实现</strong>：</p>
+<ul>
+<li><code>Index&lt;(usize, usize)&gt;</code> / <code>IndexMut&lt;(usize, usize)&gt;</code> — 通过 <code>matrix[(i, j)]</code> 访问元素</li>
+<li><code>Display</code> — 每行一行，元素间空格分隔</li>
+<li><code>Debug</code>、<code>Clone</code>、<code>PartialEq</code>、<code>Eq</code></li>
+</ul>
+<hr />
+<h2 id="构造方法"><a class="header" href="#构造方法">构造方法</a></h2>
+<h3 id="new"><a class="header" href="#new"><code>new</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn new(nrows: usize, ncols: usize, data: Vec&lt;D::Element&gt;, domain: D) -&gt; Self</code></p>
+<p><strong>功能</strong>：从行优先的一维数据创建矩阵。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>nrows</code></td><td><code>usize</code></td><td>行数</td></tr>
+<tr><td><code>ncols</code></td><td><code>usize</code></td><td>列数</td></tr>
+<tr><td><code>data</code></td><td><code>Vec&lt;D::Element&gt;</code></td><td>行优先排列的元素，长度必须等于 <code>nrows * ncols</code></td></tr>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Matrix&lt;D&gt;</code></p>
+<p><strong>错误</strong>：若 <code>data.len() != nrows * ncols</code>，运行时 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+// 创建 2×3 矩阵：
+// [ 1  2  3 ]
+// [ 4  5  6 ]
+let m = Matrix::new(2, 3, vec![
+    Integer::from(1), Integer::from(2), Integer::from(3),
+    Integer::from(4), Integer::from(5), Integer::from(6),
+], d);
+assert_eq!(m.nrows(), 2);
+assert_eq!(m.ncols(), 3);
+assert_eq!(m[(0, 0)], Integer::from(1));
+assert_eq!(m[(1, 2)], Integer::from(6));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#from_rows">from_rows</a>、<a href="#zeros">zeros</a>、<a href="#identity">identity</a></p>
+<hr />
+<h3 id="zeros"><a class="header" href="#zeros"><code>zeros</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn zeros(nrows: usize, ncols: usize, domain: D) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建指定形状的零矩阵。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>nrows</code></td><td><code>usize</code></td><td>行数</td></tr>
+<tr><td><code>ncols</code></td><td><code>usize</code></td><td>列数</td></tr>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：所有元素为 <code>domain.zero()</code> 的 <code>Matrix&lt;D&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let z = Matrix::zeros(2, 3, d);
+assert_eq!(z[(0, 0)], Integer::from(0));
+assert_eq!(z[(1, 2)], Integer::from(0));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#identity">identity</a>、<a href="#new">new</a></p>
+<hr />
+<h3 id="identity"><a class="header" href="#identity"><code>identity</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn identity(n: usize, domain: D) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建 <code>n × n</code> 单位矩阵。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>usize</code></td><td>矩阵维度</td></tr>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：对角线为 <code>domain.one()</code>、其余为 <code>domain.zero()</code> 的方阵。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let id = Matrix::identity(3, d);
+assert_eq!(id[(0, 0)], Integer::from(1));
+assert_eq!(id[(0, 1)], Integer::from(0));
+assert_eq!(id[(2, 2)], Integer::from(1));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#zeros">zeros</a></p>
+<hr />
+<h3 id="from_rows"><a class="header" href="#from_rows"><code>from_rows</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn from_rows(rows: Vec&lt;Vec&lt;D::Element&gt;&gt;, domain: D) -&gt; Self</code></p>
+<p><strong>功能</strong>：从嵌套行向量创建矩阵。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>Vec&lt;Vec&lt;D::Element&gt;&gt;</code></td><td>每个内层 <code>Vec</code> 是一行，所有行长度必须相同</td></tr>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Matrix&lt;D&gt;</code></p>
+<p><strong>错误</strong>：若行长度不一致，运行时 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![
+        vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+        vec![Integer::from(4), Integer::from(5), Integer::from(6)],
+    ],
+    d,
+);
+assert_eq!(m.nrows(), 2);
+assert_eq!(m.ncols(), 3);
+assert_eq!(m[(0, 2)], Integer::from(3));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#new">new</a>、<a href="#into_rows">into_rows</a></p>
+<hr />
+<h2 id="访问器方法"><a class="header" href="#访问器方法">访问器方法</a></h2>
+<h3 id="nrows"><a class="header" href="#nrows"><code>nrows</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn nrows(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回矩阵行数。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::new(3, 2, vec![Integer::from(0); 6], d);
+assert_eq!(m.nrows(), 3);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="ncols"><a class="header" href="#ncols"><code>ncols</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn ncols(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回矩阵列数。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::new(3, 2, vec![Integer::from(0); 6], d);
+assert_eq!(m.ncols(), 2);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="shape"><a class="header" href="#shape"><code>shape</code></a></h3>
+<p>矩阵没有单独的 <code>shape()</code> 方法。形状通过组合 <code>nrows()</code> 和 <code>ncols()</code> 获取：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::new(3, 4, vec![Integer::from(0); 12], d);
+let (rows, cols) = (m.nrows(), m.ncols());
+assert_eq!((rows, cols), (3, 4));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="domain"><a class="header" href="#domain"><code>domain</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>功能</strong>：返回矩阵系数域的引用。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, EuclideanDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::zeros(1, 1, d);
+let dom = m.domain();
+assert!(dom.is_zero(&amp;dom.zero()));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="data"><a class="header" href="#data"><code>data</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn data(&amp;self) -&gt; &amp;[D::Element]</code></p>
+<p><strong>功能</strong>：返回底层行优先存储的只读切片。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+let raw = m.data();
+assert_eq!(raw.len(), 4);
+assert_eq!(raw[0], Integer::from(1));  // (0,0)
+assert_eq!(raw[3], Integer::from(4));  // (1,1)
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="row"><a class="header" href="#row"><code>row</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn row(&amp;self, i: usize) -&gt; Vec&lt;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回第 <code>i</code> 行的拷贝。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>i</code></td><td><code>usize</code></td><td>行索引，从 0 开始</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;D::Element&gt;</code>，长度等于 <code>ncols</code>。</p>
+<p><strong>错误</strong>：索引越界时 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+let r = m.row(1);
+assert_eq!(r, vec![Integer::from(3), Integer::from(4)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#column">column</a>、<a href="#into_rows">into_rows</a></p>
+<hr />
+<h3 id="column"><a class="header" href="#column"><code>column</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn column(&amp;self, j: usize) -&gt; Vec&lt;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回第 <code>j</code> 列的拷贝。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>j</code></td><td><code>usize</code></td><td>列索引，从 0 开始</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;D::Element&gt;</code>，长度等于 <code>nrows</code>。</p>
+<p><strong>错误</strong>：索引越界时 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+let c = m.column(0);
+assert_eq!(c, vec![Integer::from(1), Integer::from(3)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#row">row</a></p>
+<hr />
+<h3 id="into_rows"><a class="header" href="#into_rows"><code>into_rows</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn into_rows(self) -&gt; Vec&lt;Vec&lt;D::Element&gt;&gt;</code></p>
+<p><strong>功能</strong>：将矩阵消费并转换为嵌套行向量。</p>
+<p><strong>返回值</strong>：外层 <code>Vec</code> 长度为 <code>nrows</code>，每个内层 <code>Vec</code> 长度为 <code>ncols</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+let rows = m.into_rows();
+assert_eq!(rows.len(), 2);
+assert_eq!(rows[0], vec![Integer::from(1), Integer::from(2)]);
+assert_eq!(rows[1], vec![Integer::from(3), Integer::from(4)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#from_rows">from_rows</a>、<a href="#row">row</a></p>
+<hr />
+<h2 id="索引与显示"><a class="header" href="#索引与显示">索引与显示</a></h2>
+<h3 id="indexusize-usize"><a class="header" href="#indexusize-usize"><code>Index&lt;(usize, usize)&gt;</code></a></h3>
+<p><strong>签名</strong>：<code>impl Index&lt;(usize, usize)&gt; for Matrix&lt;D&gt;</code></p>
+<p><strong>功能</strong>：通过 <code>matrix[(i, j)]</code> 只读访问元素 <code>(i, j)</code>，等价于 <code>data[i * ncols + j]</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![vec![Integer::from(5), Integer::from(6)]], d,
+);
+assert_eq!(m[(0, 0)], Integer::from(5));
+assert_eq!(m[(0, 1)], Integer::from(6));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="indexmutusize-usize"><a class="header" href="#indexmutusize-usize"><code>IndexMut&lt;(usize, usize)&gt;</code></a></h3>
+<p><strong>签名</strong>：<code>impl IndexMut&lt;(usize, usize)&gt; for Matrix&lt;D&gt;</code></p>
+<p><strong>功能</strong>：通过 <code>matrix[(i, j)] = val</code> 可写访问元素。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let mut m = Matrix::zeros(2, 2, d);
+m[(0, 1)] = Integer::from(42);
+m[(1, 0)] = Integer::from(-7);
+assert_eq!(m[(0, 1)], Integer::from(42));
+assert_eq!(m[(1, 0)], Integer::from(-7));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="display"><a class="header" href="#display"><code>Display</code></a></h3>
+<p><strong>签名</strong>：<code>impl Display for Matrix&lt;D&gt; where D::Element: Display</code></p>
+<p><strong>功能</strong>：格式化输出矩阵，每行占一行，元素间空格分隔。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+let s = format!("{:?}", m);
+// 输出：Debug 表示（IntegerDomain 未实现 Display，Matrix 的 Display 需要元素实现 Display）
+assert!(s.contains("1"));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="矩阵运算"><a class="header" href="#矩阵运算">矩阵运算</a></h2>
+<h3 id="swap_rows"><a class="header" href="#swap_rows"><code>swap_rows</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn swap_rows(&amp;mut self, i: usize, j: usize, start_col: usize)</code></p>
+<p><strong>功能</strong>：交换第 <code>i</code> 行和第 <code>j</code> 行，从第 <code>start_col</code> 列开始。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>i</code></td><td><code>usize</code></td><td>第一行索引</td></tr>
+<tr><td><code>j</code></td><td><code>usize</code></td><td>第二行索引</td></tr>
+<tr><td><code>start_col</code></td><td><code>usize</code></td><td>起始列（含），此列之前的元素不变</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：无（就地修改）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let mut m = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+m.swap_rows(0, 1, 0);
+assert_eq!(m[(0, 0)], Integer::from(3));
+assert_eq!(m[(0, 1)], Integer::from(4));
+assert_eq!(m[(1, 0)], Integer::from(1));
+assert_eq!(m[(1, 1)], Integer::from(2));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="transpose"><a class="header" href="#transpose"><code>transpose</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn transpose(&amp;self) -&gt; Matrix&lt;D&gt;</code></p>
+<p><strong>功能</strong>：返回矩阵的转置。$(A^T)<em>{ij} = A</em>{ji}$。</p>
+<p><strong>返回值</strong>：新的 <code>Matrix&lt;D&gt;</code>，形状为 <code>(ncols, nrows)</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+         vec![Integer::from(4), Integer::from(5), Integer::from(6)]],
+    d,
+);
+let t = a.transpose();
+assert_eq!(t.nrows(), 3);
+assert_eq!(t.ncols(), 2);
+assert_eq!(t[(0, 0)], Integer::from(1));
+assert_eq!(t[(0, 1)], Integer::from(4));
+assert_eq!(t[(2, 1)], Integer::from(6));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#trace">trace</a></p>
+<hr />
+<h3 id="trace"><a class="header" href="#trace"><code>trace</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn trace(&amp;self) -&gt; Result&lt;D::Element, MatrixError&gt;</code></p>
+<p><strong>功能</strong>：计算方阵的迹，即对角线元素之和：$\text{tr}(A) = \sum_{i=0}^{n-1} a_{ii}$。</p>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(sum)</code> — 迹的值</li>
+<li><code>Err(MatrixError::ShapeMismatch)</code> — 矩阵非方阵</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+// tr = 1 + 4 = 5
+assert_eq!(a.trace().unwrap(), Integer::from(5));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>非方阵错误</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::{Matrix, MatrixError};
+
+let d = IntegerDomain;
+let m = Matrix::from_rows(vec![vec![Integer::from(1), Integer::from(2)]], d);
+assert_eq!(m.trace(), Err(MatrixError::ShapeMismatch));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#determinant">determinant</a></p>
+<hr />
+<h3 id="matmul"><a class="header" href="#matmul"><code>matmul</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn matmul(&amp;self, other: &amp;Matrix&lt;D&gt;) -&gt; Result&lt;Matrix&lt;D&gt;, MatrixError&gt;</code></p>
+<p><strong>功能</strong>：计算矩阵乘积 $C = AB$，其中 $C_{ij} = \sum_k A_{ik} \cdot B_{kj}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Matrix&lt;D&gt;</code></td><td>右乘矩阵</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(Matrix)</code> — 乘积矩阵，形状为 <code>(self.nrows, other.ncols)</code></li>
+<li><code>Err(MatrixError::ShapeMismatch)</code> — <code>self.ncols != other.nrows</code></li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+let b = Matrix::from_rows(
+    vec![vec![Integer::from(5), Integer::from(6)],
+         vec![Integer::from(7), Integer::from(8)]],
+    d,
+);
+let c = a.matmul(&amp;b).unwrap();
+// C = [[1*5+2*7, 1*6+2*8], [3*5+4*7, 3*6+4*8]]
+//   = [[19, 22], [43, 50]]
+assert_eq!(c[(0, 0)], Integer::from(19));
+assert_eq!(c[(0, 1)], Integer::from(22));
+assert_eq!(c[(1, 0)], Integer::from(43));
+assert_eq!(c[(1, 1)], Integer::from(50));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>形状不兼容</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::{Matrix, MatrixError};
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(vec![vec![Integer::from(1), Integer::from(2)]], d);
+let b = Matrix::from_rows(vec![vec![Integer::from(3), Integer::from(4)]], d);
+// a: 1×2, b: 1×2 → ncols(a)=2 ≠ nrows(b)=1
+assert_eq!(a.matmul(&amp;b), Err(MatrixError::ShapeMismatch));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve">solve</a></p>
+<hr />
+<h3 id="determinant"><a class="header" href="#determinant"><code>determinant</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn determinant(&amp;self) -&gt; Result&lt;D::Element, MatrixError&gt;</code></p>
+<p><strong>功能</strong>：使用 <strong>Bareiss 无分数算法</strong>（带部分选主元）计算方阵行列式。</p>
+<p><strong>算法要点</strong>：</p>
+<ul>
+<li>通过消元将矩阵化为上三角，每步除以前一步的主元（Bareiss 保证整除）</li>
+<li>部分选主元：遇到零主元时向下搜索非零行并交换</li>
+<li>若消元过程中整列全零，行列式为零</li>
+<li>符号由行交换次数的奇偶性决定</li>
+</ul>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(det)</code> — 行列式值</li>
+<li><code>Err(MatrixError::ShapeMismatch)</code> — 矩阵非方阵</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+
+// 2×2: det = 1*4 - 2*3 = -2
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(3), Integer::from(4)]],
+    d,
+);
+assert_eq!(a.determinant().unwrap(), Integer::from(-2));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>奇异矩阵</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+// 第二行是第一行的 2 倍
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(2), Integer::from(4)]],
+    d,
+);
+assert_eq!(a.determinant().unwrap(), Integer::from(0));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#inverse">inverse</a>、<a href="#rank">rank</a></p>
+<hr />
+<h3 id="rank"><a class="header" href="#rank"><code>rank</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn rank(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：通过无分数高斯消元计算矩阵的秩。克隆矩阵后执行 <code>row_echelon</code>，返回非零行数。</p>
+<p><strong>返回值</strong>：<code>usize</code>，矩阵的秩。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+
+// 满秩 2×2
+let id = Matrix::identity(2, d);
+assert_eq!(id.rank(), 2);
+
+// 秩亏缺：第二行 = 2 × 第一行
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+         vec![Integer::from(2), Integer::from(4), Integer::from(6)],
+         vec![Integer::from(1), Integer::from(1), Integer::from(1)]],
+    d,
+);
+assert_eq!(a.rank(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#determinant">determinant</a>、<a href="#row_echelon">row_echelon</a></p>
+<hr />
+<h3 id="inverse"><a class="header" href="#inverse"><code>inverse</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn inverse(&amp;self) -&gt; Result&lt;Matrix&lt;D&gt;, MatrixError&gt;</code></p>
+<p><strong>功能</strong>：计算方阵的逆矩阵 $A^{-1}$。通过逐列求解 $A x_j = e_j$（$e_j$ 为单位矩阵第 $j$ 列）实现。</p>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(Matrix)</code> — 逆矩阵，满足 $A \cdot A^{-1} = I$</li>
+<li><code>Err(MatrixError::ShapeMismatch)</code> — 矩阵非方阵</li>
+<li><code>Err(MatrixError::Inconsistent)</code> — 矩阵奇异（无解）</li>
+<li><code>Err(MatrixError::Underdetermined { .. })</code> — 奇异导致欠定</li>
+<li><code>Err(MatrixError::ResultNotInDomain)</code> — 逆矩阵元素不在域中</li>
+</ul>
+<p><strong>⚠️ 注意</strong>：在整数域 <code>IntegerDomain</code> 上，仅单模矩阵（$\det = \pm 1$）有整数逆。一般矩阵在有理数域 <code>RationalDomain</code> 上求逆。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+// 单模矩阵：det = 1*1 - 0*2 = 1
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(0), Integer::from(1)]],
+    d,
+);
+let inv = a.inverse().unwrap();
+assert_eq!(inv[(0, 0)], Integer::from(1));
+assert_eq!(inv[(0, 1)], Integer::from(-2));
+assert_eq!(inv[(1, 0)], Integer::from(0));
+assert_eq!(inv[(1, 1)], Integer::from(1));
+
+// 验证 A * A^{-1} = I
+let prod = a.matmul(&amp;inv).unwrap();
+assert_eq!(prod, Matrix::identity(2, IntegerDomain));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>奇异矩阵错误</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(2)],
+         vec![Integer::from(2), Integer::from(4)]],
+    d,
+);
+assert!(a.inverse().is_err());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve">solve</a>、<a href="#determinant">determinant</a></p>
+<hr />
+<h3 id="augment"><a class="header" href="#augment"><code>augment</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn augment(&amp;self, other: &amp;Matrix&lt;D&gt;) -&gt; Result&lt;Matrix&lt;D&gt;, MatrixError&gt;</code></p>
+<p><strong>功能</strong>：水平拼接两个矩阵，得到增广矩阵 $[A \mid B]$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Matrix&lt;D&gt;</code></td><td>要拼接在右侧的矩阵</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(Matrix)</code> — 增广矩阵，形状为 <code>(nrows, ncols_a + ncols_b)</code></li>
+<li><code>Err(MatrixError::ShapeMismatch)</code> — 两矩阵行数不一致</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(3), Integer::from(2)],
+         vec![Integer::from(1), Integer::from(1)]],
+    d,
+);
+let b = Matrix::new(2, 1, vec![Integer::from(5), Integer::from(2)], d);
+let aug = a.augment(&amp;b).unwrap();
+assert_eq!(aug.nrows(), 2);
+assert_eq!(aug.ncols(), 3);
+assert_eq!(aug[(0, 0)], Integer::from(3));
+assert_eq!(aug[(0, 2)], Integer::from(5));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve">solve</a></p>
+<hr />
+<h3 id="solve"><a class="header" href="#solve"><code>solve</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn solve(&amp;self, b: &amp;[D::Element]) -&gt; Result&lt;Vec&lt;D::Element&gt;, MatrixError&gt;</code></p>
+<p><strong>功能</strong>：求解线性方程组 $Ax = b$。使用无分数高斯消元 + 回代。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>b</code></td><td><code>&amp;[D::Element]</code></td><td>右端向量，长度必须等于 <code>self.nrows</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li><code>Ok(Vec&lt;D::Element&gt;)</code> — 解向量，长度等于 <code>self.ncols</code></li>
+<li><code>Err(MatrixError::ShapeMismatch)</code> — <code>b.len() != self.nrows</code></li>
+<li><code>Err(MatrixError::Inconsistent)</code> — 方程组无解</li>
+<li><code>Err(MatrixError::Underdetermined { rank })</code> — 无穷多解，<code>rank &lt; ncols</code></li>
+<li><code>Err(MatrixError::ResultNotInDomain)</code> — 解不在域中（如整数除法失败）</li>
+</ul>
+<p><strong>算法步骤</strong>：</p>
+<ol>
+<li>构造增广矩阵 $[A \mid b]$</li>
+<li>对前 <code>ncols</code> 列执行无分数行阶梯化（<code>row_echelon</code>）</li>
+<li>检查秩以下行的常数项是否为零（一致性检查）</li>
+<li>执行无分数回代（<code>back_substitution</code>）</li>
+<li>若秩 &lt; 变量数，返回 <code>Underdetermined</code></li>
+<li>最终除以主元得到解</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+
+// 2x + y = 4
+// x  + y = 3  → x = 1, y = 2
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(2), Integer::from(1)],
+         vec![Integer::from(1), Integer::from(1)]],
+    d,
+);
+let b = vec![Integer::from(4), Integer::from(3)];
+let x = a.solve(&amp;b).unwrap();
+assert_eq!(x, vec![Integer::from(1), Integer::from(2)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>3×3 系统</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+// x + y + z = 6
+// 2x - y + z = 3
+// x + 2y - z = 2  → x=1, y=2, z=3
+let a = Matrix::from_rows(
+    vec![
+        vec![Integer::from(1), Integer::from(1), Integer::from(1)],
+        vec![Integer::from(2), Integer::from(-1), Integer::from(1)],
+        vec![Integer::from(1), Integer::from(2), Integer::from(-1)],
+    ],
+    d,
+);
+let b = vec![Integer::from(6), Integer::from(3), Integer::from(2)];
+let x = a.solve(&amp;b).unwrap();
+assert_eq!(x, vec![Integer::from(1), Integer::from(2), Integer::from(3)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>不相容系统</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::{Matrix, MatrixError};
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(1)],
+         vec![Integer::from(1), Integer::from(1)]],
+    d,
+);
+let b = vec![Integer::from(1), Integer::from(2)];
+assert_eq!(a.solve(&amp;b), Err(MatrixError::Inconsistent));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>欠定系统</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::{Matrix, MatrixError};
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(
+    vec![vec![Integer::from(1), Integer::from(1), Integer::from(1)]],
+    d,
+);
+let b = vec![Integer::from(3)];
+assert!(matches!(a.solve(&amp;b), Err(MatrixError::Underdetermined { .. })));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#inverse">inverse</a>、<a href="#augment">augment</a></p>
+<hr />
+<h2 id="内部消元方法"><a class="header" href="#内部消元方法">内部消元方法</a></h2>
+<p>以下两个方法为 <code>pub</code>，通常不需要直接调用，但在某些高级场景下（如自定义消元管线）可能有用。</p>
+<h3 id="row_echelon"><a class="header" href="#row_echelon"><code>row_echelon</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn row_echelon(&amp;mut self, max_col: usize) -&gt; usize</code></p>
+<p><strong>功能</strong>：对前 <code>max_col</code> 列执行无分数高斯消元，将矩阵化为行阶梯形。就地修改矩阵。返回秩（非零行数）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>max_col</code></td><td><code>usize</code></td><td>消元涉及的最大列数（不含），自动钳制到 <code>ncols</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>usize</code> — 矩阵的秩。</p>
+<p><strong>算法细节</strong>：</p>
+<ul>
+<li>每列寻找非零主元，必要时交换行</li>
+<li>从主元行提取 GCD 内容以防止系数增长</li>
+<li>消元采用 gcd 约化的无分数缩放：设 $g = \gcd(\text{pivot}, a_{kj})$，被消行乘以 $\text{pivot} / g$，主元行乘以 $a_{kj} / g$，相减后不含分数</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let mut a = Matrix::from_rows(
+    vec![
+        vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+        vec![Integer::from(2), Integer::from(4), Integer::from(6)],
+        vec![Integer::from(0), Integer::from(1), Integer::from(1)],
+    ],
+    d,
+);
+let rank = a.row_echelon(3);
+assert_eq!(rank, 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#back_substitution">back_substitution</a>、<a href="#rank">rank</a></p>
+<hr />
+<h3 id="back_substitution"><a class="header" href="#back_substitution"><code>back_substitution</code></a></h3>
+<p><strong>签名</strong>：<code>pub fn back_substitution(&amp;mut self, max_col: usize)</code></p>
+<p><strong>功能</strong>：对已处于行阶梯形的矩阵执行无分数回代。就地修改矩阵的前 <code>max_col</code> 列。</p>
+<p><strong>算法细节</strong>：</p>
+<ul>
+<li>从最后一行开始向上处理</li>
+<li>对每个主元行，先提取 GCD 内容</li>
+<li>对主元上方的行，用同样的 gcd 约化缩放（被消行乘以 $\text{pivot} / g$、主元行乘以 $a_{kj} / g$，其中 $g = \gcd(\text{pivot}, a_{kj})$）后消去主元列</li>
+</ul>
+<p><strong>参见</strong>：<a href="#row_echelon">row_echelon</a>、<a href="#solve">solve</a></p>
+<hr />
+<h2 id="完整示例"><a class="header" href="#完整示例">完整示例</a></h2>
+<p>以下综合示例演示矩阵的基本工作流：构造、运算、求解。</p>
+<pre><pre class="playground"><code class="language-rust">use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+fn main() {
+    let d = IntegerDomain;
+
+    // 构造矩阵 A
+    let a = Matrix::from_rows(
+        vec![
+            vec![Integer::from(2), Integer::from(1), Integer::from(-1)],
+            vec![Integer::from(-3), Integer::from(-1), Integer::from(2)],
+            vec![Integer::from(-2), Integer::from(1), Integer::from(2)],
+        ],
+        d,
+    );
+
+    // 行列式
+    let det = a.determinant().unwrap();
+    assert_eq!(det, Integer::from(-1)); // det = -1（单模）
+
+    // 秩
+    assert_eq!(a.rank(), 3);
+
+    // 迹
+    let tr = a.trace().unwrap();
+    assert_eq!(tr, Integer::from(3)); // 2 + (-1) + 2
+
+    // 转置
+    let at = a.transpose();
+    assert_eq!(at[(0, 1)], Integer::from(-3));
+
+    // 求解 Ax = b
+    let b = vec![Integer::from(8), Integer::from(-11), Integer::from(-3)];
+    let x = a.solve(&amp;b).unwrap();
+    assert_eq!(x, vec![Integer::from(2), Integer::from(3), Integer::from(-1)]);
+
+    // 逆矩阵（det = -1，整数逆存在）
+    let inv = a.inverse().unwrap();
+    // 验证 A * A^{-1} = I
+    let prod = a.matmul(&amp;inv).unwrap();
+    assert_eq!(prod, Matrix::identity(3, IntegerDomain));
+
+    // 矩阵乘法
+    let c = a.matmul(&amp;a).unwrap();
+    assert_eq!(c.nrows(), 3);
+    assert_eq!(c.ncols(), 3);
+}</code></pre></pre>
+<hr />
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./rust-expressions.html">表达式系统</a> — 表达式树构造与操作</li>
+<li><a href="./rust-domains.html">系数域</a> — <code>EuclideanDomain</code> trait 与域实现</li>
+<li><a href="./rust-polynomials.html">多项式</a> — 多项式类型，使用相同的域 trait</li>
+<li><a href="../math/linear-algebra.html">线性代数基础</a> — Bareiss 算法与高斯消元的数学原理</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-polynomials.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-calculus.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-polynomials.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-calculus.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

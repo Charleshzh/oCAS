@@ -1,0 +1,790 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>进阶：Gröbner 基理论 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html" class="active"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/groebner-theory.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="进阶gröbner-基理论"><a class="header" href="#进阶gröbner-基理论">进阶：Gröbner 基理论</a></h1>
+<p>Gröbner 基是多元多项式理想论的核心工具。本章从单项式理想和 S-多项式的
+基本定义出发，系统讲解 Buchberger 算法、F4 矩阵方法和 F5 签名方法的理论
+基础，并说明 oCAS 如何在 Rust 中实现这些算法。</p>
+<hr />
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<p>阅读本章前，建议具备以下基础：</p>
+<ul>
+<li><strong>多项式代数</strong>：多元多项式环 $\mathbb{F}[x_1, \ldots, x_n]$、单项式序（Lex / Grlex / Grevlex）、多元带余除法——参见<a href="./polynomial-algebra.html">多项式代数</a></li>
+<li><strong>线性代数</strong>：矩阵运算、高斯消元、行阶梯形——参见<a href="./linear-algebra.html">线性代数</a></li>
+<li><strong>有限域</strong>：$\mathbb{F}_p$ 的构造与基本运算——参见<a href="./finite-fields.html">有限域与模算术</a></li>
+<li><strong>理想与商环</strong>：理想 $I \subseteq \mathbb{F}[x_1, \ldots, x_n]$、商环 $R/I$ 的基本概念</li>
+</ul>
+<p>如需系统学习路径，请参考<a href="./overview.html">数学基础总览</a>中的路径 A。</p>
+<hr />
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="单项式理想"><a class="header" href="#单项式理想">单项式理想</a></h3>
+<p><strong>定义</strong>。设 $R = \mathbb{F}[x_1, \ldots, x_n]$。由单项式生成的理想</p>
+<p>$$M = \langle x^{\alpha^{(1)}}, x^{\alpha^{(2)}}, \ldots, x^{\alpha^{(s)}} \rangle$$</p>
+<p>称为<strong>单项式理想</strong>（monomial ideal）。$f \in M$ 当且仅当 $f$ 的每个非零项的单项式都被某个 $x^{\alpha^{(i)}}$ 整除。</p>
+<p><strong>例</strong>。$M = \langle x^2, xy \rangle \subseteq \mathbb{F}[x, y]$。多项式 $f = x^2 y + x y^2$ 的各项：$x^2 y$ 被 $x^2$ 整除，$xy^2$ 被 $xy$ 整除，故 $f \in M$。而 $g = y^3$ 的单项式 $y^3$ 不被 $x^2$ 或 $xy$ 整除，故 $g \notin M$。</p>
+<h3 id="dickson-引理"><a class="header" href="#dickson-引理">Dickson 引理</a></h3>
+<p><strong>引理（Dickson）</strong>。$\mathbb{N}^n$ 的每个子集 $S$ 都有有限的<strong>极小元</strong>集合 $M \subseteq S$，使得对每个 $\alpha \in S$，存在 $\beta \in M$ 满足 $\beta \leq \alpha$（逐分量比较）。</p>
+<p>等价表述：$\mathbb{F}[x_1, \ldots, x_n]$ 中的每个单项式理想都由有限个单项式生成。</p>
+<p><strong>证明思路</strong>（对 $n$ 归纳）。</p>
+<ul>
+<li>$n = 1$：$\mathbb{N}$ 的非空子集有最小元，取该最小元即得 $M$。</li>
+<li>$n \to n+1$：对 $S \subseteq \mathbb{N}^{n+1}$，对每个 $a \in \mathbb{N}$ 考虑截面 $S_a = {(\alpha_2, \ldots, \alpha_{n+1}) : (a, \alpha_2, \ldots, \alpha_{n+1}) \in S}$。由归纳假设，每个 $S_a$ 有有限极小元。进一步分析"被更小的第一分量支配"的情况，可构造 $S$ 的有限极小元集。</li>
+</ul>
+<blockquote>
+<p><strong>意义</strong>：Dickson 引理保证了单项式理想的有限生成性，这直接推出 Hilbert 基定理——每个多项式理想都是有限生成的。Gröbner 基理论正是在此基础上建立了"找到合适生成元"的系统方法。</p>
+</blockquote>
+<h3 id="s-多项式"><a class="header" href="#s-多项式">S-多项式</a></h3>
+<p><strong>定义</strong>。设 $f, g \in R$ 为非零多项式。令 $\gamma = \text{lcm}(\text{lm}(f), \text{lm}(g))$——指数向量逐分量取最大值。$f$ 和 $g$ 的 <strong>S-多项式</strong>（S-polynomial）为</p>
+<p>$$S(f, g) = \frac{x^\gamma}{\text{lt}(f)} \cdot f - \frac{x^\gamma}{\text{lt}(g)} \cdot g = \frac{x^\gamma}{\text{lm}(f)} \cdot f - \frac{x^\gamma}{\text{lm}(g)} \cdot g$$</p>
+<p>S-多项式的关键性质：它的首项被<strong>消去</strong>了。直觉上，$S(f,g)$ 度量了 $f$ 和 $g$ 在首项之外的"不一致性"。当 $f$ 和 $g$ 的首项互素（即 $\text{lcm} = \text{lm}(f) \cdot \text{lm}(g)$）时，$S(f,g)$ 通常可以直接化简为零——这是 Buchberger 的第一条优化判据。</p>
+<p><strong>例</strong>。在 $\mathbb{F}[x, y]$ 中，取 $f = x^2 - y$，$g = xy - 1$（Grevlex 序）。</p>
+<p>$$\gamma = \text{lcm}(x^2, xy) = x^2 y$$</p>
+<p>$$S(f, g) = \frac{x^2 y}{x^2} \cdot (x^2 - y) - \frac{x^2 y}{xy} \cdot (xy - 1) = y(x^2 - y) - x(xy - 1) = -y^2 + x$$</p>
+<h3 id="gröbner-基的定义"><a class="header" href="#gröbner-基的定义">Gröbner 基的定义</a></h3>
+<p><strong>定义</strong>。固定单项式序 $\succ$。理想 $I$ 的生成集 ${g_1, \ldots, g_t}$ 称为 $I$ 关于 $\succ$ 的 <strong>Gröbner 基</strong>（Gröbner basis），如果</p>
+<p>$$\langle \text{lt}(g_1), \ldots, \text{lt}(g_t) \rangle = \langle \text{lt}(f) : f \in I \rangle$$</p>
+<p>即生成元的首项生成的理想恰好等于 $I$ 中所有多项式首项生成的理想（$I$ 的<strong>首项理想</strong> $L(I)$）。</p>
+<p><strong>等价刻画</strong>（Buchberger 判据）。${g_1, \ldots, g_t}$ 是 $I$ 的 Gröbner 基当且仅当对每对 $i \neq j$，$S(g_i, g_j)$ 对 ${g_1, \ldots, g_t}$ 的余数为零。</p>
+<p><strong>Gröbner 基的核心价值</strong>：</p>
+<ol>
+<li><strong>成员判定</strong>：$f \in I$ 当且仅当 $f$ 对 Gröbner 基的余数为零（正规形唯一性）</li>
+<li><strong>理想相等判定</strong>：两个理想 $I = J$ 当且仅当它们的（约化）Gröbner 基相同</li>
+<li><strong>消元</strong>：Lex 序下的 Gröbner 基天然具有消元性质（消元理想的生成元出现在基中）</li>
+<li><strong>商环结构</strong>：$R/I$ 的 $k$-向量空间基由不被首项理想整除的单项式给出（阶梯）</li>
+</ol>
+<p><strong>约化 Gröbner 基</strong>。Gröbner 基 ${g_1, \ldots, g_t}$ 是<strong>约化的</strong>（reduced），如果：</p>
+<ol>
+<li>每个 $g_i$ 是首一的（$\text{lc}(g_i) = 1$）</li>
+<li>对 $i \neq j$，$g_i$ 的任何非零项都不被 $\text{lm}(g_j)$ 整除</li>
+</ol>
+<p>约化 Gröbner 基是唯一的（固定序和域下）。oCAS 的所有算法都输出约化 Gröbner 基。</p>
+<hr />
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="buchberger-算法"><a class="header" href="#buchberger-算法">Buchberger 算法</a></h3>
+<p>Buchberger 算法（1965）是 Gröbner 基计算的经典方法。其思想朴素而直接：
+反复构造 S-多项式、化简，直到所有 S-多项式化简为零。</p>
+<pre><code>输入: F = {f1, ..., fs}（理想生成元）
+输出: G（Gröbner 基）
+
+G ← F
+P ← {(fi, fj) | i &lt; j}  // 初始临界对集合
+while P ≠ ∅:
+    从 P 中取出一对 (f, g)
+    h ← NF(S(f, g), G)   // S-多项式对 G 的余数
+    if h ≠ 0:
+        P ← P ∪ {(h, g') | g' ∈ G}  // 新增临界对
+        G ← G ∪ {h}
+return G
+</code></pre>
+<p><strong>终止性</strong>：由 Buchberger 判据保证——每增加一个新元素，首项理想严格扩大，而 Hilbert 基定理保证链终止。实际实现中还需 <code>minimize</code>（移除冗余元素）和 <code>auto_reduce</code>（互相约化），得到约化基。</p>
+<p><strong>效率问题</strong>：朴素 Buchberger 算法的主要瓶颈在于——</p>
+<ol>
+<li><strong>临界对数量</strong>：$O(|G|^2)$ 个临界对，大部分是冗余的</li>
+<li><strong>逐个处理</strong>：每次只化简一个 S-多项式，无法利用批处理</li>
+<li><strong>反复扫描</strong>：寻找约化器需要线性扫描整个基</li>
+</ol>
+<p>以下三节分别介绍解决这些问题的方法：Gebauer–Moeller 筛选（Buchberger 加速）、F4（批处理）、F5（避免零约化）。</p>
+<h3 id="buchberger-判据与优化"><a class="header" href="#buchberger-判据与优化">Buchberger 判据与优化</a></h3>
+<p>Buchberger 的两个判据可以大幅减少需要处理的临界对数量。</p>
+<p><strong>第一判据（首项互素判据）</strong>。若 $\text{lm}(f_i)$ 和 $\text{lm}(f_j)$ 互素（即 $\gcd = 1$），则</p>
+<p>$$S(f_i, f_j) \xrightarrow{G} 0$$</p>
+<p>即该 S-多项式直接化简为零，可以从临界对集合中删除。</p>
+<p><strong>证明</strong>：设 $\text{lm}(f_i) = m_i$，$\text{lm}(f_j) = m_j$，$\gcd(m_i, m_j) = 1$。则 $\text{lcm}(m_i, m_j) = m_i m_j$，且 $S(f_i, f_j) = m_j f_i - m_i f_j$。对其逐项化简时，每个非零项 $c \cdot x^\alpha$ 满足 $x^\alpha$ 被 $m_i$ 或 $m_j$ 之一整除，因此可以被对应的 $f_i$ 或 $f_j$ 化简，最终余数为零。$\square$</p>
+<p><strong>第二判据（链判据 / Buchberger 判据的推广）</strong>。设 $f_k \in G$。若 $\text{lm}(f_k)$ 整除 $\text{lcm}(\text{lm}(f_i), \text{lm}(f_j))$，且 $\text{lcm}(\text{lm}(f_i), \text{lm}(f_k))$ 和 $\text{lcm}(\text{lm}(f_j), \text{lm}(f_k))$ 都<strong>严格</strong>整除 $\text{lcm}(\text{lm}(f_i), \text{lm}(f_j))$，则</p>
+<p>$$S(f_i, f_j) \xrightarrow{G} 0$$</p>
+<p>可以不处理临界对 $(f_i, f_j)$。</p>
+<blockquote>
+<p><strong>冗余对</strong>：更一般地，若临界对 $(f_i, f_j)$ 的 $\text{lcm}$ 被另一个已有临界对的 $\text{lcm}$ 整除，则 $(f_i, f_j)$ 是冗余的——化简另一个已隐含此对的处理。</p>
+</blockquote>
+<h3 id="gebauermoeller-临界对管理"><a class="header" href="#gebauermoeller-临界对管理">Gebauer–Moeller 临界对管理</a></h3>
+<p>Gebauer 和 Moeller（1988）将 Buchberger 判据系统化，提供了高效的临界对管理框架。在新多项式 $f_{\text{new}}$ 加入基 $G = {f_1, \ldots, f_m}$ 时：</p>
+<ol>
+<li><strong>生成候选对</strong>：$P_{\text{new}} = {(f_{\text{new}}, f_i) \mid 1 \leq i \leq m}$</li>
+<li><strong>第一判据过滤</strong>：删除 $\text{lm}(f_{\text{new}})$ 与 $\text{lm}(f_i)$ 互素的对</li>
+<li><strong>第二判据过滤</strong>：删除 $\text{lcm}$ 被其他（仍存活）对的 $\text{lcm}$ 整除的对（整除关系含相等，重复对会被丢弃）</li>
+<li><strong>冗余对清理</strong>：将被新对的 $\text{lcm}$ 整除的旧对标记为冗余</li>
+<li><strong>合并</strong>：将筛选后的 $P_{\text{new}}$ 合并到主临界对集合</li>
+</ol>
+<p>关键优化：按 $\text{lcm}$ 的大小（用单项式序比较）对临界对排序，优先处理
+小的——这使得更大的对更可能被第二判据过滤。</p>
+<h3 id="f4-算法矩阵行阶梯批处理"><a class="header" href="#f4-算法矩阵行阶梯批处理">F4 算法：矩阵行阶梯批处理</a></h3>
+<p>F4 算法（Faugère 1999）的核心思想是：<strong>将多个 S-多项式的化简批处理为一次稀疏矩阵的行阶梯运算</strong>。</p>
+<h4 id="符号预处理"><a class="header" href="#符号预处理">符号预处理</a></h4>
+<p>F4 不直接对 S-多项式做除法，而是先进行<strong>符号预处理</strong>（symbolic preprocessing）：对选定的临界对集合，找出所有需要的约化器（基元素的单项式倍），将它们的非零项展开并映射到列编号。</p>
+<p>具体步骤：</p>
+<ol>
+<li><strong>选择临界对</strong>：从队列中选取一批临界对（按 $\text{lcm}$ 排序）</li>
+<li><strong>收集单项式</strong>：对每个选出的临界对，计算 S-多项式涉及的单项式；对每个需要约化的单项式，查找基中的约化器并将其乘以相应的单项式倍展开</li>
+<li><strong>建立列映射</strong>：将所有出现的单项式按序排列，编号为 $0, 1, \ldots, N-1$</li>
+<li><strong>构造矩阵</strong>：每行对应一个多项式（S-多项式或约化器的倍），每列对应一个单项式，矩阵元素为系数</li>
+</ol>
+<p>这产生一个<strong>稀疏矩阵</strong> $M$，其中每行的非零元素对应多项式的非零项。</p>
+<h4 id="行阶梯运算"><a class="header" href="#行阶梯运算">行阶梯运算</a></h4>
+<p>对矩阵 $M$ 执行高斯消元（行阶梯化）：</p>
+<ol>
+<li>按行的首非零列排序</li>
+<li>逐列消元：找到首非零元素为当前列的行作为主元，将其余行的该列消为零</li>
+<li>消元后的行中，非零行对应的多项式即为新基元素</li>
+</ol>
+<p><strong>ℓ_p 原生快速路径</strong>。当系数域为有限域 $\mathbb{F}_p$（$p &lt; 2^{31}$）时，所有矩阵运算使用 <code>i64</code> 模算术——无 BigInt 开销。这包括：</p>
+<ul>
+<li>稀疏行减法 <code>sub_scaled_fp</code>：归并两列升序行，跳过首列（已消去），逐项 $(row_j - c \cdot pivot_j) \bmod p$，丢弃零项</li>
+<li>模逆查找 <code>mod_inv</code>：扩展 Euclid</li>
+<li>模归约 <code>norm_mod</code>：确保系数在 $[0, p)$</li>
+</ul>
+<h4 id="提取新基元素"><a class="header" href="#提取新基元素">提取新基元素</a></h4>
+<p>消元后，矩阵的每个非零行 $r$ 对应一个多项式 $h_r$。对 $h_r$：</p>
+<ol>
+<li>若 $h_r$ 的首项是"新"的（不在之前已收集的首项集合中），则加入基</li>
+<li>用尾部约化（tail reduction）进一步简化：用已有基元素化简 $h_r$ 的尾项</li>
+</ol>
+<h4 id="f4-的复杂度"><a class="header" href="#f4-的复杂度">F4 的复杂度</a></h4>
+<p>F4 的主要开销在于行阶梯运算——对 $m$ 行 $N$ 列的矩阵，高斯消元需要 $O(m \cdot N \cdot \text{nnz_per_row})$ 次域运算。实际中矩阵是稀疏的（$\text{nnz_per_row} \ll N$），加上 Gebauer–Moeller 筛选减少了临界对数量，F4 比朴素 Buchberger 算法快一到两个数量级。</p>
+<h3 id="f5-算法基于签名的-gröbner-基"><a class="header" href="#f5-算法基于签名的-gröbner-基">F5 算法：基于签名的 Gröbner 基</a></h3>
+<p>F5 算法（Faugère 2002）的革命性贡献在于：<strong>在矩阵构造之前就识别并拒绝会产生零约化的 S-多项式</strong>。这通过给每个多项式附加一个<strong>签名</strong>（signature）实现。</p>
+<h4 id="签名与模表示"><a class="header" href="#签名与模表示">签名与模表示</a></h4>
+<p>将理想生成问题转化为<strong>模元素</strong>问题。设 $I = \langle f_1, \ldots, f_s \rangle$。考虑自由模 $R^s$ 的标准基 $e_1, \ldots, e_s$。每个多项式 $h = \sum q_i f_i$ 对应一个模元素</p>
+<p>$$\vec{h} = (q_1, \ldots, q_s) = \sum q_i e_i$$</p>
+<p>$h$ 的<strong>签名</strong>定义为模元素中"最高"的单项式倍：</p>
+<p>$$\text{sig}(h) = \max_\succ {x^{\alpha_i} e_i : q_i \neq 0}$$</p>
+<p>其中比较使用 <strong>pot</strong>（position-over-term）序：先比较模块位置（$e_i$ 的索引 $i$，索引小者签名更小、更先被处理），再比较单项式。即 $x^\alpha e_i \succ x^\beta e_j$ 当且仅当 $i &gt; j$，或 $i = j$ 且 $\alpha \succ \beta$。</p>
+<p><strong>直觉</strong>：签名记录了多项式 $h$ 的"来源"——它是由哪个生成元（$f_i$）的哪个倍（$x^\alpha$）开始推导的。多项式的签名是其推导历史的最简表示。</p>
+<h4 id="f5-准则"><a class="header" href="#f5-准则">F5 准则</a></h4>
+<p><strong>签名判据</strong>（Signature Criterion）。若一个候选 S-多项式的签名是某个<strong>已知 syzygy</strong> 的单项式倍，则该 S-多项式必化简为零——可直接拒绝，无需进入矩阵。</p>
+<p><strong>syzygy 的含义</strong>：当矩阵中某行化简为零时，该行对应多项式 $h = 0$，但其模表示 $(q_1, \ldots, q_s) \neq 0$。这给出一个 syzygy（关系）$\sum q_i f_i = 0$。该行的签名 $\text{sig}(h)$ 记录了这个 syzygy。</p>
+<p><strong>SyzygySet 数据结构</strong>：对每个模块位置 $k$，维护已知 syzygy 的首单项式集合。判断签名 $(k, t)$ 是否为 syzygy 时，检查是否有已存储的 $k$-位置 syzygy 的首单项式整除 $t$。</p>
+<h4 id="正则序列与零约化的完全避免"><a class="header" href="#正则序列与零约化的完全避免">正则序列与零约化的完全避免</a></h4>
+<p><strong>定理（Faugère 2002）</strong>。若输入生成元 $f_1, \ldots, f_s$ 构成一个<strong>正则序列</strong>（regular sequence），则 F5 的签名判据足以拒绝<strong>全部</strong>零约化——即矩阵中不会出现化简为零的行。</p>
+<p>正则序列的定义：$f_1, \ldots, f_s$ 是正则序列，如果 $f_1$ 不是零因子，且对 $i &gt; 1$，$f_i$ 在 $R/\langle f_1, \ldots, f_{i-1} \rangle$ 中不是零因子。</p>
+<p>实践中，即使生成元不是正则序列，F5 的签名判据也能过滤掉大量零约化。文献中在困难的 benchmark 理想上，F5 相比 F4 可获得数量级的加速（oCAS 的 F5 实现仍在持续优化中）。</p>
+<h4 id="f5-的矩阵构造"><a class="header" href="#f5-的矩阵构造">F5 的矩阵构造</a></h4>
+<p>F5 的矩阵构造与 F4 类似，但每行额外携带签名信息：</p>
+<ol>
+<li><strong>增量处理</strong>：逐个添加生成元 $f_1, f_2, \ldots, f_s$</li>
+<li><strong>带标签的 S-多项式</strong>：每个 S-多项式都带着签名进入矩阵</li>
+<li><strong>符号预处理</strong>：与 F4 相同，但约化器的签名也需传播——当用基元素 $g$ 的倍 $x^\delta g$ 约化时，新行的签名为 $x^\delta \cdot \text{sig}(g)$</li>
+<li><strong>syzygy 更新</strong>：化简为零的行的签名加入 SyzygySet</li>
+</ol>
+<p><strong>标签行（LabeledRow）</strong>：矩阵中每行存储为 <code>(Signature, Vec&lt;(coefficient, column)&gt;)</code>——签名与稀疏行数据的配对。行阶梯运算时，签名不变（因为行运算是行之间的线性组合，签名取诸参与行中的最大者）。</p>
+<h4 id="f5-的复杂度优势"><a class="header" href="#f5-的复杂度优势">F5 的复杂度优势</a></h4>
+<p>理论上，F5 的签名判据保证了：</p>
+<ul>
+<li>对正则序列：矩阵中无零行，矩阵大小最小化</li>
+<li>对一般理想：大幅减少零行，节省行阶梯运算开销</li>
+</ul>
+<p>实践中的主要瓶颈是签名比较和 SyzygySet 查询。oCAS 的实现通过 SmallVec 和 HashMap 优化了这些操作。</p>
+<h3 id="单项式序的等价与换序"><a class="header" href="#单项式序的等价与换序">单项式序的等价与换序</a></h3>
+<p>不同的计算任务需要不同的单项式序：</p>
+<div class="table-wrapper"><table><thead><tr><th>任务</th><th>需要的序</th></tr></thead><tbody>
+<tr><td>消元</td><td>Lex</td></tr>
+<tr><td>求解多项式系统</td><td>Lex（结合 Sturm 根隔离）</td></tr>
+<tr><td>理想成员判定</td><td>任意序均可</td></tr>
+<tr><td>高效计算</td><td>Grevlex（中间多项式最小）</td></tr>
+</tbody></table>
+</div>
+<p>标准策略是"先快后换"：</p>
+<ol>
+<li>用 <strong>Grevlex</strong> 计算基（最快——中间多项式次数最低）</li>
+<li>转换为 <strong>Lex</strong>（消元、求解需要）</li>
+</ol>
+<p>两种转换方法：</p>
+<p><strong>方法一：重新计算</strong>（<code>reorder</code>）。将 Grevlex 基的多项式重新解释为 Lex 序，然后在 Lex 序下重跑 F4。对一般理想，这是默认方法——因为基的元素在新序下可能需要额外约化。</p>
+<p><strong>方法二：FGLM</strong>（零维理想专用）。FGLM 算法（下一小节详述）对零维理想提供 $O(n \cdot D^3)$ 的换序，远快于重新计算。</p>
+<h3 id="fglm-算法"><a class="header" href="#fglm-算法">FGLM 算法</a></h3>
+<p>FGLM（Faugère–Gianni–Lazard–Mora 1993）对<strong>零维理想</strong>提供高效的换序算法。</p>
+<p><strong>前提条件</strong>：理想 $I$ 是零维的，即 $R/I$ 作为 $k$-向量空间是有限维的。</p>
+<h4 id="阶梯与正规形"><a class="header" href="#阶梯与正规形">阶梯与正规形</a></h4>
+<p><strong>阶梯</strong>（staircase）：不被任何首项单项式 $\text{lm}(g_i)$ 整除的单项式集合。对零维理想，阶梯是有限集，大小 $D = \dim_k(R/I)$。</p>
+<p>阶梯中的单项式构成 $R/I$ 的一组 $k$-向量空间基。任何多项式 $f$ 的<strong>正规形</strong>（normal form）$f \bmod I$ 可以唯一表示为阶梯单项式的 $k$-线性组合。</p>
+<h4 id="算法思路"><a class="header" href="#算法思路">算法思路</a></h4>
+<p>FGLM 按目标序递增遍历单项式，计算其正规形，并检测线性关系：</p>
+<pre><code>输入: GB_src（源序下的约化 Gröbner 基）
+输出: GB_tgt（目标序下的约化 Gröbner 基）
+
+S ← {1}                    // 已处理的单项式（阶梯中）
+B ← {x1, x2, ..., xn}     // 边界：已处理单项式的"邻居"
+GB_tgt ← ∅
+seen_nf ← {}               // 已见正规形
+
+for m in 目标序递增:
+    nf ← normal_form(m, GB_src)  // 在源序基下求正规形
+    if nf ∈ span(seen_nf):        // 线性相关？
+        coeffs ← find_relation(seen_nf, nf)
+        new_poly ← m - Σ coeffs_i · m_i
+        GB_tgt ← GB_tgt ∪ {new_poly}
+    else:
+        S ← S ∪ {m}
+        seen_nf ← seen_nf ∪ {nf}
+        B ← B ∪ {m · xi : i = 1..n}  // 扩展边界
+    if |S| = D:                     // 阶梯满了
+        break
+return minimize(GB_tgt)
+</code></pre>
+<p><strong>关键性质</strong>：</p>
+<ul>
+<li>每个线性相关产生目标序基中的一个多项式</li>
+<li>每个线性无关扩展阶梯，直到阶梯大小达到 $D$</li>
+<li>总操作数 $O(n \cdot D^3)$——$D$ 次正规形计算（每次 $O(D^2)$），加上 $D$ 次高斯消元（每次 $O(D^2)$）</li>
+</ul>
+<p><strong>非零维情况</strong>：当阶梯无限时，FGLM 无法终止——<code>fglm</code> 返回 <code>None</code>，此时必须使用 <code>reorder</code>。</p>
+<h3 id="hilbert-函数与正则性"><a class="header" href="#hilbert-函数与正则性">Hilbert 函数与正则性</a></h3>
+<p>Hilbert 函数是描述分次环结构的强大工具，在 Gröbner 基计算中提供提前终止界。</p>
+<h4 id="hilbert-函数与-hilbert-级数"><a class="header" href="#hilbert-函数与-hilbert-级数">Hilbert 函数与 Hilbert 级数</a></h4>
+<p><strong>定义</strong>。设 $I \subseteq R = \mathbb{F}[x_1, \ldots, x_n]$ 是齐次理想。<strong>Hilbert 函数</strong></p>
+<p>$$H_{R/I}(d) = \dim_\mathbb{F} (R/I)_d$$</p>
+<p>度量商环在次数 $d$ 处的齐次分量的向量空间维数。</p>
+<p><strong>Hilbert 级数</strong>是 Hilbert 函数的生成函数：</p>
+<p>$$\text{HS}<em>{R/I}(t) = \sum</em>{d=0}^{\infty} H_{R/I}(d) \cdot t^d$$</p>
+<p><strong>定理（Macaulay）</strong>。$R/I$ 的 Hilbert 级数只依赖于首项理想 $\langle \text{lm}(g) : g \in \text{GB}(I) \rangle$，即</p>
+<p>$$\text{HS}<em>{R/I}(t) = \text{HS}</em>{R/\langle\text{LM}(I)\rangle}(t)$$</p>
+<p>这意味着我们可以仅从 Gröbner 基的首项计算 Hilbert 级数，无需知道理想的其他信息。</p>
+<h4 id="单项式理想的-hilbert-级数"><a class="header" href="#单项式理想的-hilbert-级数">单项式理想的 Hilbert 级数</a></h4>
+<p>对由单项式 $m_1, \ldots, m_s$ 生成的理想 $M$，容斥原理给出：</p>
+<p>$$\text{HS}_{R/M}(t) = \frac{N(t)}{(1-t)^n}$$</p>
+<p>其中分子 $N(t)$ 为</p>
+<p>$$N(t) = \sum_{k=0}^{s} (-1)^k \sum_{\substack{S \subseteq {1,\ldots,s} \ |S| = k}} t^{\deg \text{lcm}(S)}$$</p>
+<p>这里 $\text{lcm}(\emptyset) = 1$（次数 0），$\text{lcm}({m_i}) = m_i$。</p>
+<p><strong>展开</strong>：</p>
+<p>$$N(t) = 1 - \sum_{i} t^{\deg m_i} + \sum_{i &lt; j} t^{\deg \text{lcm}(m_i, m_j)} - \sum_{i &lt; j &lt; k} t^{\deg \text{lcm}(m_i, m_j, m_k)} + \cdots$$</p>
+<p><strong>示例</strong>。$M = \langle x^2, xy \rangle \subseteq \mathbb{F}[x, y]$（$n = 2$）。</p>
+<ul>
+<li>$|S| = 0$: $t^0 = 1$</li>
+<li>$|S| = 1$: $-t^2 - t^2 = -2t^2$（$\deg(x^2) = \deg(xy) = 2$）</li>
+<li>$|S| = 2$: $+t^{\deg \text{lcm}(x^2, xy)} = +t^{\deg(x^2 y)} = +t^3$</li>
+</ul>
+<p>$$N(t) = 1 - 2t^2 + t^3$$</p>
+<p>$$\text{HS}_{R/M}(t) = \frac{1 - 2t^2 + t^3}{(1-t)^2}$$</p>
+<h4 id="正则性与提前终止"><a class="header" href="#正则性与提前终止">正则性与提前终止</a></h4>
+<p><strong>正则性</strong>（regularity）定义为 Hilbert 分子 $N(t)$ 的最高次非零项的次数：</p>
+<p>$$\text{reg}(M) = \max{d : [t^d] N(t) \neq 0}$$</p>
+<p><strong>定理（Bayer–Stillman）</strong>。对零维理想，Gröbner 基中所有多项式的次数不超过 $\text{reg}(M)$。</p>
+<p>这意味着 F4 可以安全地<strong>忽略</strong>次数超过正则性界的临界对——它们必然化简为零。oCAS 的 <code>hilbert</code> 模块通过 <code>regularity_bound</code> 计算此界，作为 F4 的提前终止提示（advisory bound，不影响正确性）。</p>
+<h4 id="完整-hilbert-级数"><a class="header" href="#完整-hilbert-级数">完整 Hilbert 级数</a></h4>
+<p>对一般（非齐次）理想的 Gröbner 基，Hilbert 级数也可计算：</p>
+<p>$$\text{HS}_{R/I}(t) = \frac{N(t)}{(1-t)^n}$$</p>
+<p>其中 $N(t)$ 由首项理想的容斥公式给出。oCAS 提供 <code>HilbertSeries</code> 结构体，支持：</p>
+<ul>
+<li><code>hilbert_function(d)</code>：$\dim_k (R/I)_d$（通过展开 $\frac{N(t)}{(1-t)^n}$ 的 $t^d$ 系数）</li>
+<li><code>dimension()</code>：$N(1) \neq 0$ 时维数为 $n - \text{ord}_{t=1}(N(t))$，即 $(1-t)$ 的消去次数</li>
+<li><code>degree()</code>：射影簇的次数 $= h(1)$，其中 $h(t) = N(t)/(1-t)^{n-\dim}$ 是约去 $(1-t)^{n-\dim}$ 后的分子；对零维理想（$\dim = 0$）这等于 $\dim_k(R/I)$（点的个数）</li>
+<li><code>hilbert_polynomial()</code>：对充分大的 $d$，$H_{R/I}(d)$ 是 $d$ 的多项式，通过 Lagrange 插值计算</li>
+</ul>
+<hr />
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<p>oCAS 在 <code>ocas-poly/src/groebner/</code> 中实现三种 Gröbner 基算法和 Hilbert 级数计算。统一入口 <code>groebner_basis(ideal, Algorithm::Auto)</code> 目前默认路由到 F4。</p>
+<h3 id="f4rsf4-矩阵行阶梯算法"><a class="header" href="#f4rsf4-矩阵行阶梯算法">f4.rs：F4 矩阵行阶梯算法</a></h3>
+<h4 id="gebauermoeller-临界对管理-1"><a class="header" href="#gebauermoeller-临界对管理-1">Gebauer–Moeller 临界对管理</a></h4>
+<p><code>update_pairs</code> 函数在每次新多项式加入基时执行 Gebauer–Moeller 筛选：</p>
+<ol>
+<li><strong>生成候选</strong>：新多项式与基中每个现有元素配对</li>
+<li><strong>第一判据</strong>（<code>monomial_are_coprime</code>）：若首项互素，直接跳过（乘积判据）</li>
+<li><strong>第二判据</strong>（链判据，顺序消去）：若另一个（仍存活）候选对的 $\text{lcm}$ 整除当前对的 $\text{lcm}$（整除关系含相等，重复对被丢弃），当前对冗余、不保留</li>
+<li><strong>更新判据</strong>（针对旧对）：仅当新首项整除旧对的 $\text{lcm}$，且 $\text{lcm}(i, \text{new})$、$\text{lcm}(j, \text{new})$ 都<strong>严格小于</strong> $\text{lcm}(i,j)$ 时，旧对才被移除；等号情形必须保留（否则会丢掉完整性所需的 S-多项式）</li>
+</ol>
+<p><code>CriticalPair</code> 结构体预计算了 $\text{lcm}$ 和单项式差（S-多项式的构造信息），避免在后续步骤中重复计算。</p>
+<h4 id="divisorindexo1-ish-约化器查找"><a class="header" href="#divisorindexo1-ish-约化器查找">DivisorIndex：O(1)-ish 约化器查找</a></h4>
+<p>符号预处理的核心操作是"查找基中首项整除给定单项式的元素"。朴素实现需要 $O(\text{monomials} \times |\text{basis}|)$ 的线性扫描。oCAS 使用<strong>支持位掩码</strong>（support bitmask）索引加速此操作。</p>
+<p><strong>support_mask</strong>：对指数向量 $\alpha = (\alpha_1, \ldots, \alpha_n)$，定义位掩码</p>
+<p>$$\text{mask}(\alpha) = \sum_{v : \alpha_v &gt; 0} 2^v$$</p>
+<p>即第 $v$ 位被设置当且仅当变量 $x_v$ 出现在单项式中（变量索引不超过 63）。</p>
+<p><strong>关键观察</strong>：若 $\text{lm}(g)$ 整除 $x^\alpha$，则 $\text{support}(\text{lm}(g)) \subseteq \text{support}(x^\alpha)$。因此查询时只需枚举 $\text{mask}(x^\alpha)$ 的<strong>子掩码</strong>，检查对应桶中的基元素。</p>
+<p><strong>DivisorIndex</strong> 结构：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct DivisorIndex {
+    // support_mask → 拥有该 mask 的基元素索引列表
+    buckets: HashMap&lt;u64, Vec&lt;usize&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>查询 <code>find_reducer(index, basis, exp)</code>：</p>
+<ol>
+<li>计算 $m = \text{mask}(\text{exp})$</li>
+<li>枚举 $m$ 的所有子掩码 $s \subseteq m$</li>
+<li>对 <code>buckets[s]</code> 中的每个基元素 $g$，精确检查 $\text{lm}(g) \mid x^\text{exp}$</li>
+<li>在所有满足条件的约化器中，选择<strong>项数最少</strong>的（加速约化）</li>
+</ol>
+<p>子掩码枚举的复杂度 $O(3^v)$（$v$ 为变量数），但实际中 $v$ 通常很小（$\leq 10$），且桶内元素极少。</p>
+<h4 id="simpcache约化器倍的缓存"><a class="header" href="#simpcache约化器倍的缓存">SimpCache：约化器倍的缓存</a></h4>
+<p>符号预处理中，同一基元素可能被多个单项式乘以不同的差来约化。<code>SimpCache&lt;P&gt;</code> 缓存已计算的多项式倍：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>type SimpCache&lt;P&gt; = Vec&lt;(SmallVec&lt;[usize; 4]&gt;, P)&gt;;
+<span class="boring">}</span></code></pre></pre>
+<p><code>get_simplified(cache, diff, basis_poly)</code> 先查缓存，命中则直接返回；否则计算 $x^{\text{diff}} \cdot \text{basis_poly}$ 并存入缓存。缓存跨轮次持久化。</p>
+<h4 id="ℤ_p-原生快速路径"><a class="header" href="#ℤ_p-原生快速路径">ℤ_p 原生快速路径</a></h4>
+<p>当系数域为 <code>FiniteField(p)</code>（$p &lt; 2^{31}$）时，F4 使用 <code>FpPoly</code> 替代泛型多项式：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct FpPoly {
+    terms: Vec&lt;(i64, SmallVec&lt;[usize; 4]&gt;)&gt;,  // (coeff, exponent)
+    // coeff ∈ [0, p)，按降序排列
+}
+<span class="boring">}</span></code></pre></pre>
+<p>所有矩阵运算在 <code>i64</code> 上进行——无 BigInt 开销。<code>sub_scaled_fp</code> 通过<strong>双指针归并</strong>实现 O(nnz) 的稀疏行减法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn sub_scaled_fp(
+    row: &amp;mut Vec&lt;(i64, usize)&gt;,     // 列升序
+    pivot: &amp;[(i64, usize)],           // 列升序
+    c: i64,                           // 乘数
+    p: i64,                           // 模数
+    scratch: &amp;mut Vec&lt;(i64, usize)&gt;,  // 临时缓冲
+) {
+    // 两个指针归并：row -= c * pivot
+    // 首列（主元列）自动消去（c = row[head_col] / pivot[head_col]）
+    // 所有结果取 mod p，零系数丢弃
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>register_row_fp</code> 进一步缓存 S-多项式和约化器倍的 <code>FpPoly</code> 表示，跨轮次复用。</p>
+<h4 id="矩阵消元流程"><a class="header" href="#矩阵消元流程">矩阵消元流程</a></h4>
+<p>完整 F4 流程：</p>
+<ol>
+<li><strong>选择临界对</strong>：从队列按 $\text{lcm}$ 大小排序选取</li>
+<li><strong>符号预处理</strong>：展开每个对的 S-多项式和所有约化器，建立列映射</li>
+<li><strong>行阶梯化</strong>：<code>echelonize_fp</code>（ℤ_p 快速路径）或 <code>echelonize_generic</code>（泛型）</li>
+<li><strong>提取新元素</strong>：非零行转回多项式，检查首项是否为"新的"</li>
+<li><strong>更新基和对</strong>：新元素加入基，<code>update_pairs</code> 更新临界对队列</li>
+</ol>
+<h3 id="f5rsf5-签名算法"><a class="header" href="#f5rsf5-签名算法">f5.rs：F5 签名算法</a></h3>
+<h4 id="签名结构"><a class="header" href="#签名结构">签名结构</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Signature {
+    module_pos: usize,              // 生成元索引 k
+    monomial: SmallVec&lt;[usize; 4]&gt;, // 单项式指数
+}
+<span class="boring">}</span></code></pre></pre>
+<p>签名按 <strong>pot</strong>（position-over-term）序比较：先比较 <code>module_pos</code>（小者优先），再按单项式序 <code>O</code> 比较 <code>monomial</code>。</p>
+<h4 id="labeledpoly带签名的基元素"><a class="header" href="#labeledpoly带签名的基元素">LabeledPoly：带签名的基元素</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct LabeledPoly&lt;D: Domain, O: MonomialOrder&gt; {
+    poly: SparseMultivariatePolynomial&lt;D, O&gt;,
+    sig: Signature,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>每个基元素携带签名。当用 $g$ 的倍 $x^\delta g$ 约化时，新多项式的签名为 $x^\delta \cdot \text{sig}(g)$。</p>
+<h4 id="syzygyset零约化追踪"><a class="header" href="#syzygyset零约化追踪">SyzygySet：零约化追踪</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct SyzygySet {
+    // module_pos → 该位置已知 syzygy 的首单项式列表
+    lms: HashMap&lt;usize, Vec&lt;SmallVec&lt;[usize; 4]&gt;&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>insert(sig)</code>：当矩阵行化简为零时，其签名 $(k, t)$ 被记录——在 <code>lms[k]</code> 中存入 $t$。</p>
+<p><code>contains(sig)</code>：检查签名 $(k, t)$——若 <code>lms[k]</code> 中存在 $s$ 使 $s \mid t$，则为 syzygy。使用 <code>monomial_divides(t, s)</code> 做逐分量比较（$t_i \geq s_i$ 对所有 $i$）。</p>
+<h4 id="矩阵构造与消元"><a class="header" href="#矩阵构造与消元">矩阵构造与消元</a></h4>
+<p>F5 的 <code>build_and_reduce</code> 流程：</p>
+<ol>
+<li><strong>选择对</strong>：与 F4 类似的临界对选择（使用 <code>update_pairs</code> 共享实现）</li>
+<li><strong>syzygy 过滤</strong>：在将对加入矩阵前，检查其签名——若为 syzygy 则<strong>跳过</strong></li>
+<li><strong>带标签的行</strong>：每行携带 <code>(Signature, Vec&lt;(coefficient, column)&gt;)</code></li>
+<li><strong>符号预处理</strong>：与 F4 相同的列映射构建，但约化器的签名需传播</li>
+<li><strong>行阶梯化</strong>：按签名升序排列行，执行高斯消元</li>
+<li><strong>新元素提取</strong>：非零行提取为 <code>LabeledPoly</code>，签名保留</li>
+<li><strong>syzygy 更新</strong>：零行的签名加入 <code>SyzygySet</code></li>
+</ol>
+<h4 id="ℤ_p-快速路径"><a class="header" href="#ℤ_p-快速路径">ℤ_p 快速路径</a></h4>
+<p>F5 复用 F4 的 <code>FpPoly</code>、<code>CriticalPair</code>、<code>update_pairs</code> 等基础设施，通过 <code>LabeledFpPoly</code> 和 <code>LabeledFpRow</code> 添加签名标签。<code>f5_fp</code> 的结构与泛型 <code>f5</code> 完全对称——仅多项式表示从泛型域切换为 <code>i64</code> 模算术。</p>
+<h3 id="hilbertrshilbert-级数计算"><a class="header" href="#hilbertrshilbert-级数计算">hilbert.rs：Hilbert 级数计算</a></h3>
+<h4 id="容斥原理实现"><a class="header" href="#容斥原理实现">容斥原理实现</a></h4>
+<p><code>hilbert_numerator(generators)</code> 计算单项式理想 $\langle m_1, \ldots, m_s \rangle$ 的 Hilbert 分子：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_numerator(generators: &amp;[Vec&lt;usize&gt;]) -&gt; Vec&lt;(usize, i64)&gt; {
+    // 对所有子集 S ⊆ {0, ..., s-1} 遍历
+    // |S| = k 贡献 (-1)^k · t^{deg lcm(S)}
+    // 返回 (degree, coefficient) 对的稀疏表示
+}
+<span class="boring">}</span></code></pre></pre>
+<p>枚举所有 $2^s$ 个子集（实用上限约 $s \leq 20$），对每个子集计算 $\text{lcm}$ 的次数（逐分量取最大值后求和），按符号累加到对应次数。</p>
+<h4 id="正则性界"><a class="header" href="#正则性界">正则性界</a></h4>
+<p><code>regularity_bound(generators)</code> 返回 Hilbert 分子的最高次非零项次数：</p>
+<p>$$\text{reg} = \max{d : [t^d] N(t) \neq 0}$$</p>
+<p>F4 将此界用作<strong>提前终止提示</strong>——选择临界对时，若 $\deg(\text{lcm}) &gt; \text{reg}$，可安全跳过。这不影响正确性（只影响效率），且仅对零维理想有效。</p>
+<h4 id="完整-hilbert-级数-1"><a class="header" href="#完整-hilbert-级数-1">完整 Hilbert 级数</a></h4>
+<p><code>hilbert_series(gb)</code> 从 Gröbner 基计算 $R/I$ 的完整 Hilbert 级数 $\frac{N(t)}{(1-t)^n}$：</p>
+<ol>
+<li><strong>提取首项</strong>：从基中取出每个多项式的首项指数向量</li>
+<li><strong>容斥计算</strong>：调用 <code>hilbert_numerator</code> 得到 $N(t)$</li>
+<li><strong>展开级数</strong>：$\frac{N(t)}{(1-t)^n} = N(t) \cdot \sum_{k \geq 0} \binom{n+k-1}{k} t^k$</li>
+</ol>
+<p><code>HilbertSeries</code> 结构体的方法：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>计算方式</th></tr></thead><tbody>
+<tr><td><code>hilbert_function(d)</code></td><td>展开 $\frac{N(t)}{(1-t)^n}$ 的 $t^d$ 系数</td></tr>
+<tr><td><code>dimension()</code></td><td>$N(1) \neq 0$ 时为 $n$，否则递归检查 $(1-t)$ 的消去</td></tr>
+<tr><td><code>degree()</code></td><td>对 $N(t)$ 求 $(n-\dim)$ 阶导数并在 $t=1$ 求值，再除以 $(n-\dim)!$；零维（$\dim=0$）时等于 $\dim_k(R/I) = \text{HS}(1)$（点的个数）</td></tr>
+<tr><td><code>hilbert_polynomial()</code></td><td>Lagrange 插值：在足够多的 $d$ 处计算 $H(d)$，拟合多项式</td></tr>
+</tbody></table>
+</div>
+<p><code>binomial_general(n, k)</code> 计算广义二项式系数 $\binom{n+k-1}{k}$（$n$ 可为负数或零），用于展开 $(1-t)^{-n}$。</p>
+<h3 id="fglmrs零维换序算法"><a class="header" href="#fglmrs零维换序算法">fglm.rs：零维换序算法</a></h3>
+<h4 id="阶梯计算"><a class="header" href="#阶梯计算">阶梯计算</a></h4>
+<p><code>compute_staircase(lms, n_vars)</code> 枚举不被任何首项单项式整除的单项式：</p>
+<ol>
+<li>从 $1 = x_1^0 \cdots x_n^0$ 开始 BFS</li>
+<li>对每个单项式 $m$，检查是否被某个 $\text{lm}(g_i)$ 整除</li>
+<li>不被整除的加入阶梯，其所有"邻居"（$m \cdot x_i$）加入队列</li>
+<li>若阶梯大小超过阈值仍未停止，返回 <code>None</code>（正维理想）</li>
+</ol>
+<h4 id="正规形计算"><a class="header" href="#正规形计算">正规形计算</a></h4>
+<p><code>normal_form_monomial(m, gb, staircase, domain)</code> 在源序基下计算单项式 $m$ 的正规形，结果表示为阶梯坐标的 $k$-向量：</p>
+<p>$$m \bmod I = \sum_{i=1}^{D} c_i \cdot s_i$$</p>
+<p>其中 $s_1, \ldots, s_D$ 是阶梯单项式。计算方式是标准的多元除法算法。</p>
+<h4 id="线性相关检测"><a class="header" href="#线性相关检测">线性相关检测</a></h4>
+<p><code>find_relation(seen, nf, domain)</code> 检测新正规形 <code>nf</code> 是否在已见正规形的张成空间中。使用<strong>增量高斯消元</strong>：维护一个阶梯形矩阵，每次新向量尝试化简——化简为零则找到关系。</p>
+<h4 id="边界管理"><a class="header" href="#边界管理">边界管理</a></h4>
+<p><code>mark_multiples(visited, m, n_vars, max_deg)</code> 标记单项式 $m$ 的所有倍（至全次数 <code>max_deg</code>）为已访问，避免重复插入边界。使用递归枚举。</p>
+<h3 id="统一入口与算法选择"><a class="header" href="#统一入口与算法选择">统一入口与算法选择</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn groebner_basis&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+    algo: Algorithm,
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><code>Algorithm</code> 枚举：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>行为</th></tr></thead><tbody>
+<tr><td><code>Auto</code></td><td>当前路由到 F4；未来将基于 cyclic-n 基准校准 F5 交叉点</td></tr>
+<tr><td><code>Buchberger</code></td><td>经典 S-多项式迭代（教学用）</td></tr>
+<tr><td><code>F4</code></td><td>矩阵行阶梯批处理</td></tr>
+<tr><td><code>F5</code></td><td>签名判据 + 矩阵构造</td></tr>
+</tbody></table>
+</div>
+<p>所有路径最终输出<strong>约化 Gröbner 基</strong>：先 <code>minimize</code>（移除被其他元素首项整除的冗余元素），再 <code>auto_reduce</code>（互相约化尾项）。</p>
+<hr />
+<h2 id="进阶话题"><a class="header" href="#进阶话题">进阶话题</a></h2>
+<h3 id="f4-vs-buchberger-的实际性能"><a class="header" href="#f4-vs-buchberger-的实际性能">F4 vs Buchberger 的实际性能</a></h3>
+<p>oCAS 的基准（<code>ocas-tests/benches/groebner.rs</code>）在 cyclic-n 理想上比较 Buchberger 与 F4：</p>
+<div class="table-wrapper"><table><thead><tr><th>基准</th><th>Buchberger</th><th>F4</th><th>说明</th></tr></thead><tbody>
+<tr><td>cyclic-3（$\mathbb{Q}$）</td><td>可行</td><td>快</td><td>Buchberger 在此规模已很慢</td></tr>
+<tr><td>cyclic-4（$\mathbb{Q}$）</td><td>过慢</td><td>可行</td><td>只有 F4 可行</td></tr>
+<tr><td>cyclic-3/4/5（$\mathbb{Z}<em>{13}$、$\mathbb{Z}</em>{101}$）</td><td>—</td><td>快</td><td>i64 快速路径可延伸到 cyclic-5</td></tr>
+</tbody></table>
+</div>
+<p>F5 的签名判据在理论上能避免零约化，对困难理想有数量级加速的潜力，但 oCAS 的 F5 实现较新，尚无正式基准数据。</p>
+<p><strong>实践建议</strong>：对一般理想使用 <code>Algorithm::Auto</code>（当前 = F4）；对已知为正则序列的系统，显式指定 <code>Algorithm::F5</code> 可能更快。</p>
+<h3 id="f5-的理论保证"><a class="header" href="#f5-的理论保证">F5 的理论保证</a></h3>
+<p><strong>定理</strong>。F5 算法在以下意义下是"最优"的：</p>
+<ol>
+<li><strong>无冗余约化</strong>：对正则序列，矩阵中无化简为零的行</li>
+<li><strong>完备性</strong>：产生与 F4 完全相同的约化 Gröbner 基</li>
+<li><strong>签名唯一性</strong>：每个多项式的签名唯一确定其来源</li>
+</ol>
+<p>这些保证使 F5 成为处理困难理想的理论首选，尽管实际中 F4 的简洁实现常在中小规模问题上更快。</p>
+<h3 id="hilbert-级数的应用"><a class="header" href="#hilbert-级数的应用">Hilbert 级数的应用</a></h3>
+<p>Hilbert 级数不仅是理论工具，在 oCAS 中有以下实际应用：</p>
+<ol>
+<li><strong>提前终止</strong>：正则性界 $\text{reg}(M)$ 为 F4 提供可靠的次数上界</li>
+<li><strong>维数判定</strong>：$R/I$ 的 Krull 维数 = $\text{ord}_{t=1} \text{HS}(t)$ 的阶数</li>
+<li><strong>次数计算</strong>：射影簇的次数 = $N(1)$（零维时为阶梯大小）</li>
+<li><strong>零维判定</strong>：$N(1) \neq 0$ 当且仅当理想为零维</li>
+</ol>
+<h3 id="计算代数几何中的-gröbner-基"><a class="header" href="#计算代数几何中的-gröbner-基">计算代数几何中的 Gröbner 基</a></h3>
+<p>Gröbner 基是计算代数几何的通用工具。在 oCAS 中，它们支撑着以下应用（详见 <a href="./fglm-elimination.html">FGLM 与消元理论</a> 和 <a href="../algorithms/groebner.html">Gröbner 基实现</a>）：</p>
+<ul>
+<li><strong>多项式方程组求解</strong>：Gröbner 基 → 消元 → 一元方程 → 根隔离</li>
+<li><strong>理想运算</strong>：成员判定、和、积、商、饱和、交集、消元、根式、准素分解</li>
+<li><strong>代数簇的几何性质</strong>：维数、次数、不可约分量</li>
+</ul>
+<hr />
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ol>
+<li>
+<p><strong>Cox, D., Little, J. &amp; O'Shea, D.</strong> <em>Ideals, Varieties, and Algorithms.</em> 4th ed., Springer, 2015.</p>
+<ul>
+<li>第 2 章：Gröbner 基的定义、Buchberger 算法、Buchberger 判据</li>
+<li>第 3 章：消元定理与理想运算</li>
+<li>第 8 章：FGLM 与换序</li>
+</ul>
+</li>
+<li>
+<p><strong>Adams, W.W. &amp; Loustaunau, P.</strong> <em>An Introduction to Gröbner Bases.</em> AMS, 1994.</p>
+<ul>
+<li>第 4–5 章：Buchberger 算法的详细分析、Gebauer–Moeller 优化</li>
+</ul>
+</li>
+<li>
+<p><strong>Faugère, J.-C.</strong> "A New Efficient Algorithm for Computing Gröbner Bases (F4)." <em>Journal of Pure and Applied Algebra</em>, 139(1–3):61–88, 1999.</p>
+<ul>
+<li>F4 算法的原始论文：矩阵行阶梯批处理</li>
+</ul>
+</li>
+<li>
+<p><strong>Faugère, J.-C.</strong> "A New Efficient Algorithm for Computing Gröbner Bases without Reduction to Zero (F5)." <em>ISSAC 2002</em>, pp. 75–83.</p>
+<ul>
+<li>F5 算法的原始论文：签名判据与正则序列</li>
+</ul>
+</li>
+<li>
+<p><strong>Faugère, J.-C., Gianni, P., Lazard, D. &amp; Mora, T.</strong> "Efficient Computation of Zero-dimensional Gröbner Bases by Change of Ordering." <em>Journal of Symbolic Computation</em>, 16(4):329–344, 1993.</p>
+<ul>
+<li>FGLM 算法的原始论文</li>
+</ul>
+</li>
+<li>
+<p><strong>Gebauer, R. &amp; Möller, H.M.</strong> "On an Installation of Buchberger's Algorithm." <em>Journal of Symbolic Computation</em>, 6(2–3):275–286, 1988.</p>
+<ul>
+<li>Gebauer–Moeller 临界对筛选准则</li>
+</ul>
+</li>
+<li>
+<p><strong>Eder, C. &amp; Perry, J.</strong> "Signature-based Algorithms to Compute Gröbner Bases." <em>ISSAC 2009</em>, pp. 139–146.</p>
+<ul>
+<li>Eder–Perry 的 F5 形式化</li>
+</ul>
+</li>
+<li>
+<p><strong>Bayer, D. &amp; Stillman, M.</strong> "A Criterion for Detecting m-Regularity." <em>Inventiones Mathematicae</em>, 87(1):1–11, 1987.</p>
+<ul>
+<li>正则性界与 Hilbert 函数的关系</li>
+</ul>
+</li>
+<li>
+<p><strong>Gathen, J. von zur &amp; Gerhard, J.</strong> <em>Modern Computer Algebra.</em> 3rd ed., Cambridge University Press, 2013.</p>
+<ul>
+<li>第 21 章：Gröbner 基的全面综述</li>
+</ul>
+</li>
+</ol>
+<p><strong>参见</strong>：</p>
+<ul>
+<li><a href="./polynomial-algebra.html">多项式代数</a> — 单项式序、多元除法算法的基础</li>
+<li><a href="./linear-algebra.html">线性代数</a> — Bareiss 算法与高斯消元</li>
+<li><a href="./fglm-elimination.html">FGLM 与消元理论</a> — FGLM 详细分析与理想运算</li>
+<li><a href="../algorithms/groebner.html">Gröbner 基实现</a> — 使用指南、基准与理想运算 API</li>
+<li><a href="../api/rust-groebner.html">Rust API：Gröbner 基与理想</a> — 函数签名与完整示例</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/poly-gcd-factoring.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/number-theory-algorithms.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/poly-gcd-factoring.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/number-theory-algorithms.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

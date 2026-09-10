@@ -1,0 +1,1427 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Evaluation &amp; JIT - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html" class="active"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-evaluation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-evaluation-and-jit"><a class="header" href="#rust-api-reference-evaluation-and-jit">Rust API Reference: Evaluation and JIT</a></h1>
+<p>oCAS's evaluation system compiles symbolic expressions into stack-machine instruction sequences and then executes them efficiently on numeric types. Three execution backends are supported: an interpreter (general purpose), JIT compilation (Cranelift generates native machine code), and SIMD batch evaluation (vectorized processing of many parameter sets).</p>
+<p><strong>Module path</strong>: <code>ocas_eval</code></p>
+<p><strong>Compilation pipeline</strong>:</p>
+<pre><code class="language-text">Atom (arena-backed)
+  → EvalTree (owned intermediate, optional constant-folding optimization)
+  → Instr sequence (compilation + optimization passes)
+  → ExpressionEvaluator (stack VM interpreter)
+  → or JitCompiledFunction (Cranelift, feature = "jit")
+  → or VectorEvaluator (SIMD batch, feature = "simd")
+</code></pre>
+<p><strong>Feature flags</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Flag</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>jit</code></td><td>enables the Cranelift JIT compilation backend</td></tr>
+<tr><td><code>simd</code></td><td>enables SIMD batch evaluation (<code>pulp</code>, runtime detection of SSE2/AVX2/AVX-512)</td></tr>
+<tr><td><code>fast-poly</code></td><td>enables fast polynomial evaluation optimizations</td></tr>
+</tbody></table>
+</div>
+<p><strong>Imports</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{
+    ExpressionEvaluator, EvaluationDomain, PowfExtension,
+    FunctionMap, EvalTree,
+    Instr, Instruction, Slot,
+    EvaluationError,
+    StreamingEvaluator,
+    compile_atom, compile_atom_with,
+    compile_atoms_multi, compile_atoms_multi_with,
+};
+use ocas_eval::instruction::BuiltinOp;
+
+// JIT (feature = "jit")
+use ocas_eval::jit::{JitCompiledFunction, JitCompiledF32, JitEngine, FloatWidth};
+
+// SIMD (feature = "simd")
+use ocas_eval::simd::{VectorEvaluator, VectorEvaluatorF32};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="evaltree"><a class="header" href="#evaltree">EvalTree</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum EvalTree {
+    Num(f64),
+    Var(String),
+    Fun(String, Vec&lt;EvalTree&gt;),
+    Add(Vec&lt;EvalTree&gt;),
+    Mul(Vec&lt;EvalTree&gt;),
+    Pow(Box&lt;EvalTree&gt;, Box&lt;EvalTree&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: an arena-independent, owned intermediate representation. Converted from <code>Atom</code>, it is decoupled from the arena lifetime, so the compilation pipeline can run multiple optimization passes freely.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Num(f64)</code></td><td>numeric constant</td></tr>
+<tr><td><code>Var(String)</code></td><td>variable reference</td></tr>
+<tr><td><code>Fun(String, Vec&lt;EvalTree&gt;)</code></td><td>named function application</td></tr>
+<tr><td><code>Add(Vec&lt;EvalTree&gt;)</code></td><td>summation</td></tr>
+<tr><td><code>Mul(Vec&lt;EvalTree&gt;)</code></td><td>product</td></tr>
+<tr><td><code>Pow(Box&lt;EvalTree&gt;, Box&lt;EvalTree&gt;)</code></td><td>power base^exp</td></tr>
+</tbody></table>
+</div>
+<h4 id="evaltreefrom_atom"><a class="header" href="#evaltreefrom_atom">EvalTree::from_atom</a></h4>
+<p><strong>Signature</strong>: <code>pub fn from_atom(atom: Atom&lt;'_&gt;) -&gt; Self</code></p>
+<p><strong>Description</strong>: converts an <code>Atom</code> into an owned <code>EvalTree</code>. Recursively traverses the expression tree, turning arena handles into independent data.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'_&gt;</code></td><td>the source expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: an owned <code>EvalTree</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_eval::EvalTree;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let atom = ctx.add(&amp;[ctx.var("x"), ctx.num(2)]);
+let tree = EvalTree::from_atom(atom);
+// tree = Add([Var("x"), Num(2.0)])
+<span class="boring">}</span></code></pre></pre>
+<h4 id="evaltreefold_constants"><a class="header" href="#evaltreefold_constants">EvalTree::fold_constants</a></h4>
+<p><strong>Signature</strong>: <code>pub fn fold_constants(&amp;self) -&gt; EvalTree</code></p>
+<p><strong>Description</strong>: folds constant subtrees and applies algebraic identities. Runs before compilation to reduce the instruction count.</p>
+<p><strong>Optimization rules</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Pattern</th><th>Rule</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td>remove zero terms; sum fully constant terms; fold single terms</td></tr>
+<tr><td><code>Mul</code></td><td>absorb zero factors; remove unit factors; multiply fully constant factors; fold single factors</td></tr>
+<tr><td><code>Pow</code></td><td><code>x^1 → x</code>, <code>x^0 → 1</code>, evaluate <code>Num^Num</code> directly</td></tr>
+<tr><td><code>Fun</code></td><td>evaluate built-in functions with fully constant arguments directly (external functions are not folded; they may have side effects)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: an optimized new <code>EvalTree</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::EvalTree;
+
+let tree = EvalTree::Add(vec![
+    EvalTree::Num(3.0),
+    EvalTree::Mul(vec![
+        EvalTree::Num(0.0),
+        EvalTree::Var("x".into()),
+    ]),
+]);
+let folded = tree.fold_constants();
+assert_eq!(folded, EvalTree::Num(3.0));
+// Output: 3 + 0*x → 3
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="expressionevaluatort"><a class="header" href="#expressionevaluatort">ExpressionEvaluator&lt;T&gt;</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct ExpressionEvaluator&lt;T: EvaluationDomain&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a compiled expression that can be evaluated numerically many times. It holds the instruction sequence, a preallocated stack, the constant table, and an optional user-defined function registry. The type parameter <code>T</code> implements <code>EvaluationDomain</code>, usually <code>f64</code>.</p>
+<h3 id="compilation-methods"><a class="header" href="#compilation-methods">Compilation methods</a></h3>
+<h4 id="expressionevaluatorcompile"><a class="header" href="#expressionevaluatorcompile">ExpressionEvaluator::compile</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile(atom: Atom&lt;'_&gt;) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles an <code>Atom</code> into an executable evaluator. Internally it first converts to an <code>EvalTree</code>, then folds constants and generates the instruction sequence.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'_&gt;</code></td><td>the source expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(ExpressionEvaluator&lt;T&gt;)</code> or a compilation error.</p>
+<p><strong>Errors</strong>: see <a href="#evaluationerror"><code>EvaluationError</code></a>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+assert_eq!(eval.param_count(), 1);
+assert_eq!(eval.result_count(), 1);
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorcompile_with"><a class="header" href="#expressionevaluatorcompile_with">ExpressionEvaluator::compile_with</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile_with(atom: Atom&lt;'_&gt;, map: FunctionMap&lt;T&gt;) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles an expression with a user-defined function registry. <code>ExternalFun</code> nodes appearing in the expression are resolved through <code>map</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'_&gt;</code></td><td>the source expression</td></tr>
+<tr><td><code>map</code></td><td><code>FunctionMap&lt;T&gt;</code></td><td>the user-defined function registry (pass an empty map when no external functions are needed)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(ExpressionEvaluator&lt;T&gt;)</code> or a compilation/resolution error.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, FunctionMap};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("myfunc", &amp;[ctx.var("x")]);
+
+let mut fmap = FunctionMap::&lt;f64&gt;::new();
+fmap.register("myfunc", 1, Box::new(|args| args[0] * args[0]));
+
+let eval = ExpressionEvaluator::compile_with(expr, fmap).unwrap();
+let result = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(result, vec![9.0]);
+// Output: myfunc(3) = 3² = 9
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorcompile_multi"><a class="header" href="#expressionevaluatorcompile_multi">ExpressionEvaluator::compile_multi</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile_multi(atoms: &amp;[Atom&lt;'_&gt;]) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles multiple <code>Atom</code>s into a single multi-output evaluator. Constants, common subexpressions (CSE), and stack slots are shared across all outputs to avoid redundant computation.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atoms</code></td><td><code>&amp;[Atom&lt;'_&gt;]</code></td><td>the multiple expressions</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(ExpressionEvaluator&lt;T&gt;)</code> with <code>result_count() == atoms.len()</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let expr1 = ctx.mul(&amp;[x, x]);       // x²
+let expr2 = ctx.add(&amp;[x, ctx.num(1)]); // x+1
+
+let eval: ExpressionEvaluator&lt;f64&gt; =
+    ExpressionEvaluator::compile_multi(&amp;[expr1, expr2]).unwrap();
+let results = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(results, vec![9.0, 4.0]);
+// Output: x²=9, x+1=4
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorcompile_multi_with"><a class="header" href="#expressionevaluatorcompile_multi_with">ExpressionEvaluator::compile_multi_with</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile_multi_with(atoms: &amp;[Atom&lt;'_&gt;], map: FunctionMap&lt;T&gt;) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the <code>compile_multi</code> variant with a function map (the map is passed by value, not as an <code>Option</code>).</p>
+<h3 id="execution-methods"><a class="header" href="#execution-methods">Execution methods</a></h3>
+<h4 id="expressionevaluatorevaluate"><a class="header" href="#expressionevaluatorevaluate">ExpressionEvaluator::evaluate</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn evaluate(&amp;self, params: &amp;[T]) -&gt; Result&lt;Vec&lt;T&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: executes the compiled expression with the given parameter values. Allocates a fresh stack and result buffer on every call.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[T]</code></td><td>the parameter values; length must equal <code>param_count()</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(Vec&lt;T&gt;)</code> with length equal to <code>result_count()</code>.</p>
+<p><strong>Errors</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Error</th><th>Condition</th></tr></thead><tbody>
+<tr><td><code>WrongArity</code></td><td><code>params.len() != param_count()</code></td></tr>
+<tr><td><code>DivisionByZero</code></td><td>division by zero encountered during evaluation</td></tr>
+<tr><td><code>FunctionNotFound</code></td><td>an external function is not registered</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let result = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(result[0], 10.0);
+// Output: 3² + 1 = 10
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorevaluate_with_stack"><a class="header" href="#expressionevaluatorevaluate_with_stack">ExpressionEvaluator::evaluate_with_stack</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn evaluate_with_stack(
+        &amp;self,
+        params: &amp;[T],
+        stack: &amp;mut Vec&lt;T&gt;,
+        results: &amp;mut Vec&lt;T&gt;,
+    ) -&gt; Result&lt;()&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: evaluates using caller-provided buffers, avoiding per-call heap allocation. Prefer this method in streaming and batch scenarios.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[T]</code></td><td>the parameter values</td></tr>
+<tr><td><code>stack</code></td><td><code>&amp;mut Vec&lt;T&gt;</code></td><td>the stack buffer (automatically resized to <code>stack_size()</code>)</td></tr>
+<tr><td><code>results</code></td><td><code>&amp;mut Vec&lt;T&gt;</code></td><td>the result buffer (filled automatically)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(())</code> or an evaluation error.</p>
+<h3 id="accessors"><a class="header" href="#accessors">Accessors</a></h3>
+<h4 id="expressionevaluatorparam_count"><a class="header" href="#expressionevaluatorparam_count">ExpressionEvaluator::param_count</a></h4>
+<p><strong>Signature</strong>: <code>pub fn param_count(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: returns the expected number of parameters.</p>
+<h4 id="expressionevaluatorresult_count"><a class="header" href="#expressionevaluatorresult_count">ExpressionEvaluator::result_count</a></h4>
+<p><strong>Signature</strong>: <code>pub fn result_count(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: returns the number of outputs (1 for a single-output expression, possibly greater for one created by <code>compile_multi</code>).</p>
+<h4 id="expressionevaluatorstack_size"><a class="header" href="#expressionevaluatorstack_size">ExpressionEvaluator::stack_size</a></h4>
+<p><strong>Signature</strong>: <code>pub fn stack_size(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: returns the stack size needed for evaluation (parameters + constants + temporaries + outputs). The <code>stack</code> argument of <code>evaluate_with_stack</code> should be preallocated with this capacity.</p>
+<hr />
+<h2 id="jit-compilation-feature--jit"><a class="header" href="#jit-compilation-feature--jit">JIT compilation (feature = "jit")</a></h2>
+<p>The JIT backend uses Cranelift to compile the instruction sequence into native machine code. Constants are embedded as immediates, and libm is used for transcendental functions. Performance is typically more than 10× faster than the interpreter.</p>
+<h3 id="expressionevaluatorcompile_jit"><a class="header" href="#expressionevaluatorcompile_jit">ExpressionEvaluator::compile_jit</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_jit(&amp;self) -&gt; Result&lt;JitCompiledFunction&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles the current evaluator's instruction sequence into double-precision (f64) native code.</p>
+<p><strong>Returns</strong>: <code>Ok(JitCompiledFunction)</code> or a compilation error.</p>
+<p><strong>Errors</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Error</th><th>Condition</th></tr></thead><tbody>
+<tr><td><code>UnsupportedOperation</code></td><td>contains instructions the JIT cannot lower (e.g., external functions, <code>sec</code>/<code>csc</code>/<code>cot</code>)</td></tr>
+<tr><td><code>JitCompilationError</code></td><td>the Cranelift backend failed to compile</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+let result = jit.call(&amp;[3.0]);
+assert_eq!(result, vec![10.0]);
+// Output: 3² + 1 = 10 (executed as native machine code)
+<span class="boring">}</span></code></pre></pre>
+<h3 id="expressionevaluatorcompile_jit_f32"><a class="header" href="#expressionevaluatorcompile_jit_f32">ExpressionEvaluator::compile_jit_f32</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_jit_f32(&amp;self) -&gt; Result&lt;JitCompiledF32&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles the instruction sequence into single-precision (f32) native code. Constants are narrowed from f64 to f32; results have f32 precision.</p>
+<p><strong>Errors</strong>: same as <code>compile_jit</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.mul(&amp;[ctx.var("x"), ctx.num(2)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit_f32 = eval.compile_jit_f32().unwrap();
+let result = jit_f32.call(&amp;[3.0_f32]);
+assert_eq!(result, vec![6.0_f32]);
+// Output: 3 × 2 = 6 (f32 precision)
+<span class="boring">}</span></code></pre></pre>
+<h3 id="jitcompiledfunction"><a class="header" href="#jitcompiledfunction">JitCompiledFunction</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct JitCompiledFunction { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a JIT-compiled double-precision function that can be called repeatedly.</p>
+<h4 id="jitcompiledfunctioncall"><a class="header" href="#jitcompiledfunctioncall">JitCompiledFunction::call</a></h4>
+<p><strong>Signature</strong>: <code>pub fn call(&amp;self, params: &amp;[f64]) -&gt; Vec&lt;f64&gt;</code></p>
+<p><strong>Description</strong>: calls the JIT-compiled function with the given parameters. Allocates a new result vector on every call.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[f64]</code></td><td>the parameter values</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a result vector of length equal to <code>result_count()</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+let result = jit.call(&amp;[3.0]);
+assert_eq!(result, vec![10.0]);
+// Output: value of x²+1 at x=3 → 10
+<span class="boring">}</span></code></pre></pre>
+<h4 id="jitcompiledfunctioncall_into"><a class="header" href="#jitcompiledfunctioncall_into">JitCompiledFunction::call_into</a></h4>
+<p><strong>Signature</strong>: <code>pub fn call_into(&amp;self, params: &amp;[f64], results: &amp;mut [f64])</code></p>
+<p><strong>Description</strong>: calls the JIT function, writing results into a caller-provided buffer to avoid per-call heap allocation. <code>results.len()</code> must be at least <code>result_count()</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[f64]</code></td><td>the parameter values</td></tr>
+<tr><td><code>results</code></td><td><code>&amp;mut [f64]</code></td><td>the result buffer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+let mut buf = vec![0.0_f64; jit.result_count()];
+jit.call_into(&amp;[42.0], &amp;mut buf);
+assert_eq!(buf, vec![1765.0]);
+// Results are in buf (42² + 1 = 1765), no heap allocation
+<span class="boring">}</span></code></pre></pre>
+<h4 id="jitcompiledfunctionparam_count"><a class="header" href="#jitcompiledfunctionparam_count">JitCompiledFunction::param_count</a></h4>
+<p><strong>Signature</strong>: <code>pub fn param_count(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: returns the expected number of parameters.</p>
+<h4 id="jitcompiledfunctionresult_count"><a class="header" href="#jitcompiledfunctionresult_count">JitCompiledFunction::result_count</a></h4>
+<p><strong>Signature</strong>: <code>pub fn result_count(&amp;self) -&gt; usize</code></p>
+<p><strong>Description</strong>: returns the number of results.</p>
+<h3 id="jitcompiledf32"><a class="header" href="#jitcompiledf32">JitCompiledF32</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct JitCompiledF32 { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a JIT-compiled single-precision function. The API is fully symmetric with <code>JitCompiledFunction</code>; parameters and return values are <code>f32</code>.</p>
+<h4 id="jitcompiledf32call"><a class="header" href="#jitcompiledf32call">JitCompiledF32::call</a></h4>
+<p><strong>Signature</strong>: <code>pub fn call(&amp;self, params: &amp;[f32]) -&gt; Vec&lt;f32&gt;</code></p>
+<h4 id="jitcompiledf32call_into"><a class="header" href="#jitcompiledf32call_into">JitCompiledF32::call_into</a></h4>
+<p><strong>Signature</strong>: <code>pub fn call_into(&amp;self, params: &amp;[f32], results: &amp;mut [f32])</code></p>
+<h4 id="jitcompiledf32param_count"><a class="header" href="#jitcompiledf32param_count">JitCompiledF32::param_count</a></h4>
+<p><strong>Signature</strong>: <code>pub fn param_count(&amp;self) -&gt; usize</code></p>
+<h4 id="jitcompiledf32result_count"><a class="header" href="#jitcompiledf32result_count">JitCompiledF32::result_count</a></h4>
+<p><strong>Signature</strong>: <code>pub fn result_count(&amp;self) -&gt; usize</code></p>
+<h3 id="jitengine"><a class="header" href="#jitengine">JitEngine</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct JitEngine;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the entry point of the JIT compilation engine. Provides the low-level <code>compile</code> method that compiles directly from an instruction sequence.</p>
+<h4 id="jitenginecompile"><a class="header" href="#jitenginecompile">JitEngine::compile</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl JitEngine {
+    pub fn compile(
+        instructions: &amp;[Instr],
+        param_count: usize,
+        constants: &amp;[f64],
+        result_indices: &amp;[usize],
+    ) -&gt; Result&lt;JitCompiledFunction&gt;
+
+    pub fn compile_f32(
+        instructions: &amp;[Instr],
+        param_count: usize,
+        constants: &amp;[f32],
+        result_indices: &amp;[usize],
+    ) -&gt; Result&lt;JitCompiledF32&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles an instruction sequence into a callable JIT function. <code>compile</code> produces a double-precision <code>JitCompiledFunction</code>; <code>compile_f32</code> produces a single-precision <code>JitCompiledF32</code> (libm calls use the <code>*f</code> symbol variants). This is the low-level implementation behind <code>ExpressionEvaluator::compile_jit</code> / <code>compile_jit_f32</code>. Internally, <code>compile_module</code> returns the JIT module (kept alive by the caller) and the entry function pointer, but only the compiled function objects are exposed publicly.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>instructions</code></td><td><code>&amp;[Instr]</code></td><td>the instruction sequence</td></tr>
+<tr><td><code>param_count</code></td><td><code>usize</code></td><td>the number of parameters</td></tr>
+<tr><td><code>constants</code></td><td><code>&amp;[f64]</code> (<code>compile</code>) / <code>&amp;[f32]</code> (<code>compile_f32</code>)</td><td>the constant values (embedded as immediates)</td></tr>
+<tr><td><code>result_indices</code></td><td><code>&amp;[usize]</code></td><td>the result slot indices</td></tr>
+</tbody></table>
+</div>
+<h3 id="floatwidth"><a class="header" href="#floatwidth">FloatWidth</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum FloatWidth {
+    F32,
+    F64,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the floating-point width selection for JIT code generation. <code>F32</code> uses the <code>*f</code> variants of libm functions (e.g., <code>sinf</code>); <code>F64</code> uses standard libm.</p>
+<hr />
+<h2 id="simd-batch-evaluation-feature--simd"><a class="header" href="#simd-batch-evaluation-feature--simd">SIMD batch evaluation (feature = "simd")</a></h2>
+<p><code>VectorEvaluator</code> uses the <code>pulp</code> crate to provide runtime-detected SIMD-vectorized evaluation. On x86_64 it automatically selects SSE2 (2-lane f64), AVX2 (4-lane f64), or AVX-512 (8-lane f64). The f32 variant has twice the lane count.</p>
+<h3 id="vectorevaluator"><a class="header" href="#vectorevaluator">VectorEvaluator</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct VectorEvaluator { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a double-precision SIMD batch evaluator. Splits multiple sets of input parameters into SIMD-width chunks processed in parallel; the remainder falls back to scalar.</p>
+<h4 id="expressionevaluatorcompile_vector_evaluator"><a class="header" href="#expressionevaluatorcompile_vector_evaluator">ExpressionEvaluator::compile_vector_evaluator</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_vector_evaluator(&amp;self) -&gt; Result&lt;VectorEvaluator&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: creates a SIMD batch evaluator from a compiled <code>ExpressionEvaluator</code>. Detects the SIMD width at construction and preallocates the stack and constant buffers. Returns <code>UnsupportedOperation</code> if the expression contains external functions (not supported in SIMD mode).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>self</code></td><td><code>&amp;ExpressionEvaluator&lt;f64&gt;</code></td><td>the source evaluator</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, simd::VectorEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let simd_eval = eval.compile_vector_evaluator().unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h4 id="vectorevaluatorevaluate"><a class="header" href="#vectorevaluatorevaluate">VectorEvaluator::evaluate</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl VectorEvaluator {
+    pub fn evaluate(&amp;self, params: &amp;[Vec&lt;f64&gt;]) -&gt; Result&lt;Vec&lt;Vec&lt;f64&gt;&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: batch evaluation. <code>params[i]</code> holds all sample points of the <code>i</code>-th parameter. All <code>params[i]</code> must have the same length. Returns <code>Vec&lt;Vec&lt;f64&gt;&gt;</code> where <code>result[j][i]</code> is the <code>j</code>-th output at the <code>i</code>-th sample point.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[Vec&lt;f64&gt;]</code></td><td>the parameter vectors, each <code>Vec</code> of the same length</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(Vec&lt;Vec&lt;f64&gt;&gt;)</code> or an evaluation error.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, simd::VectorEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let simd_eval = eval.compile_vector_evaluator().unwrap();
+let x_values: Vec&lt;f64&gt; = (0..1000).map(|i| i as f64 * 0.01).collect();
+let results = simd_eval.evaluate(&amp;[x_values]).unwrap();
+assert_eq!(results.len(), 1);
+assert_eq!(results[0].len(), 1000);
+assert_eq!(results[0][0], 1.0);
+// results[0] holds the 1000 values of x²+1, computed in parallel via SIMD
+<span class="boring">}</span></code></pre></pre>
+<h3 id="vectorevaluatorf32"><a class="header" href="#vectorevaluatorf32">VectorEvaluatorF32</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct VectorEvaluatorF32 { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a single-precision SIMD batch evaluator. Its lane count is twice that of <code>VectorEvaluator</code> (e.g., 8-lane f32 vs 4-lane f64 on AVX2).</p>
+<h4 id="expressionevaluatorcompile_vector_evaluator_f32"><a class="header" href="#expressionevaluatorcompile_vector_evaluator_f32">ExpressionEvaluator::compile_vector_evaluator_f32</a></h4>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_vector_evaluator_f32(&amp;self) -&gt; Result&lt;VectorEvaluatorF32&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: creates an f32 SIMD evaluator from an f64 evaluator, narrowing the constants to f32. External functions are likewise unsupported (returns <code>UnsupportedOperation</code>).</p>
+<h4 id="vectorevaluatorf32evaluate"><a class="header" href="#vectorevaluatorf32evaluate">VectorEvaluatorF32::evaluate</a></h4>
+<p><strong>Signature</strong>: <code>pub fn evaluate(&amp;self, params: &amp;[Vec&lt;f32&gt;]) -&gt; Result&lt;Vec&lt;Vec&lt;f32&gt;&gt;&gt;</code></p>
+<p><strong>Description</strong>: single-precision batch evaluation; the interface is symmetric with <code>VectorEvaluator::evaluate</code>.</p>
+<hr />
+<h2 id="streamingevaluatora-t"><a class="header" href="#streamingevaluatora-t">StreamingEvaluator&lt;'a, T&gt;</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct StreamingEvaluator&lt;'a, T: EvaluationDomain&gt; {
+    evaluator: &amp;'a ExpressionEvaluator&lt;T&gt;,
+    params: Vec&lt;T&gt;,
+    stack: Vec&lt;T&gt;,
+    results: Vec&lt;T&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a streaming evaluator that reuses internal buffers, keeping memory usage constant for input streams of arbitrary length. All scratch memory (parameter staging, evaluation stack, result buffers) is allocated once at construction and reused for every row.</p>
+<h3 id="streamingevaluatornew"><a class="header" href="#streamingevaluatornew">StreamingEvaluator::new</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; StreamingEvaluator&lt;'_, T&gt; {
+    pub fn new(evaluator: &amp;ExpressionEvaluator&lt;T&gt;) -&gt; StreamingEvaluator&lt;'_, T&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: creates a streaming evaluator, preallocating all buffers.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>evaluator</code></td><td><code>&amp;ExpressionEvaluator&lt;T&gt;</code></td><td>the source evaluator (borrowed)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="streamingevaluatorfor_each"><a class="header" href="#streamingevaluatorfor_each">StreamingEvaluator::for_each</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; StreamingEvaluator&lt;'_, T&gt; {
+    pub fn for_each&lt;I, S, F&gt;(&amp;mut self, rows: I, mut sink: F) -&gt; Result&lt;usize&gt;
+    where
+        I: IntoIterator&lt;Item = S&gt;,
+        S: AsRef&lt;[T]&gt;,
+        F: FnMut(&amp;[T]),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: processes every row of the input stream, calling the <code>sink</code> callback with each row's results. Memory usage is constant and does not grow with the number of rows.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>I: IntoIterator&lt;Item = S&gt;</code></td><td>the input row iterator; each row is <code>AsRef&lt;[T]&gt;</code> of length <code>param_count()</code></td></tr>
+<tr><td><code>sink</code></td><td><code>FnMut(&amp;[T])</code></td><td>the result callback; its <code>&amp;[T]</code> has length <code>result_count()</code> and is only valid inside the callback</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(number of rows processed)</code> or an evaluation error.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+let rows = (0..1_000_000).map(|i| [i as f64]);
+let n = stream.for_each(rows, |results| {
+    // results[0] is x+1 for the current row, only valid inside the callback
+}).unwrap();
+assert_eq!(n, 1_000_000);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#streamingevaluatorevaluate_chunk">StreamingEvaluator::evaluate_chunk</a></p>
+<h3 id="streamingevaluatorevaluate_chunk"><a class="header" href="#streamingevaluatorevaluate_chunk">StreamingEvaluator::evaluate_chunk</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; StreamingEvaluator&lt;'_, T&gt; {
+    pub fn evaluate_chunk&lt;S: AsRef&lt;[T]&gt;&gt;(&amp;mut self, rows: &amp;[S]) -&gt; Result&lt;Vec&lt;Vec&lt;T&gt;&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: processes a batch of rows and collects all results. Suitable for bounded batches; for unbounded streams use <code>for_each</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>&amp;[S]</code></td><td>the input row slice</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Ok(Vec&lt;Vec&lt;T&gt;&gt;)</code>, each <code>Vec&lt;T&gt;</code> holding one row's results.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+let rows: Vec&lt;[f64; 1]&gt; = (0..100).map(|i| [i as f64]).collect();
+let all_results = stream.evaluate_chunk(&amp;rows).unwrap();
+assert_eq!(all_results.len(), 100);
+assert_eq!(all_results[0][0], 1.0); // x=0 → 0+1=1
+assert_eq!(all_results[99][0], 100.0); // x=99 → 99+1=100
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="functionmapt"><a class="header" href="#functionmapt">FunctionMap&lt;T&gt;</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct FunctionMap&lt;T: EvaluationDomain&gt; {
+    entries: Vec&lt;(String, FunctionEntry&lt;T&gt;)&gt;,
+    name_to_idx: HashMap&lt;String, usize&gt;,
+    aliases: HashMap&lt;String, String&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a user-defined function registry. Allows calling registered external functions during expression evaluation. Name lookup is case-insensitive and supports aliases.</p>
+<h3 id="functionmapnew"><a class="header" href="#functionmapnew">FunctionMap::new</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn new() -&gt; Self
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: creates an empty function map.</p>
+<h3 id="functionmapregister"><a class="header" href="#functionmapregister">FunctionMap::register</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn register(&amp;mut self, name: &amp;str, arity: usize, func: Box&lt;dyn Fn(&amp;[T]) -&gt; T + Send + Sync&gt;)
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: registers an external function.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>the function name (case-insensitive)</td></tr>
+<tr><td><code>arity</code></td><td><code>usize</code></td><td>the expected number of arguments</td></tr>
+<tr><td><code>func</code></td><td><code>Box&lt;dyn Fn(&amp;[T]) -&gt; T + Send + Sync&gt;</code></td><td>the function implementation</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::FunctionMap;
+
+let mut fmap = FunctionMap::&lt;f64&gt;::new();
+fmap.register("square", 1, Box::new(|args| args[0] * args[0]));
+fmap.register("add3", 3, Box::new(|args| args[0] + args[1] + args[2]));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="functionmapregister_alias"><a class="header" href="#functionmapregister_alias">FunctionMap::register_alias</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn register_alias(&amp;mut self, alias: &amp;str, canonical: &amp;str)
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: adds an alias for a registered function name. Looking up <code>alias</code> is redirected to <code>canonical</code>.</p>
+<h3 id="functionmapresolve"><a class="header" href="#functionmapresolve">FunctionMap::resolve</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn resolve(&amp;self, name: &amp;str) -&gt; Option&lt;&amp;FunctionEntry&lt;T&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: looks up a function by name (resolving aliases and case).</p>
+<h3 id="functionmapindex_of"><a class="header" href="#functionmapindex_of">FunctionMap::index_of</a></h3>
+<p><strong>Signature</strong>: <code>pub fn index_of(&amp;self, name: &amp;str) -&gt; Option&lt;usize&gt;</code></p>
+<p><strong>Description</strong>: returns the function's index in the map (used for <code>fn_idx</code> in instructions).</p>
+<h3 id="functionmapcall_by_index"><a class="header" href="#functionmapcall_by_index">FunctionMap::call_by_index</a></h3>
+<p><strong>Signature</strong>: <code>pub fn call_by_index(&amp;self, idx: usize, args: &amp;[T]) -&gt; Option&lt;T&gt;</code></p>
+<p><strong>Description</strong>: calls a function by index.</p>
+<h3 id="functionmaplen--is_empty"><a class="header" href="#functionmaplen--is_empty">FunctionMap::len / is_empty</a></h3>
+<p><strong>Signature</strong>: <code>pub fn len(&amp;self) -&gt; usize</code> / <code>pub fn is_empty(&amp;self) -&gt; bool</code></p>
+<p><strong>Description</strong>: returns the number of registered functions / whether the map is empty.</p>
+<h3 id="functionentryt"><a class="header" href="#functionentryt">FunctionEntry&lt;T&gt;</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct FunctionEntry&lt;T: EvaluationDomain&gt; {
+    pub arity: usize,
+    // private func field
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a registered external function entry. <code>arity</code> is the expected number of arguments.</p>
+<hr />
+<h2 id="instruction-set"><a class="header" href="#instruction-set">Instruction set</a></h2>
+<h3 id="slot"><a class="header" href="#slot">Slot</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Slot {
+    Param(usize),
+    Const(usize),
+    Temp(usize),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a named slot in the evaluator stack. Used by the public <code>Instruction</code> type to reference stack positions semantically rather than by raw index.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Param(usize)</code></td><td>parameter slot, 0-based index</td></tr>
+<tr><td><code>Const(usize)</code></td><td>constant slot, 0-based index</td></tr>
+<tr><td><code>Temp(usize)</code></td><td>temporary value slot, 0-based index</td></tr>
+</tbody></table>
+</div>
+<h3 id="instruction"><a class="header" href="#instruction">Instruction</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Instruction {
+    Add(Slot, Vec&lt;Slot&gt;),
+    Mul(Slot, Vec&lt;Slot&gt;),
+    Pow(Slot, Slot, i64),
+    Powf(Slot, Slot, Slot),
+    Fun(Slot, Symbol, Slot),
+    ExternalFun(Slot, usize, Vec&lt;Slot&gt;),
+    Assign(Slot, Slot),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: a self-documenting public instruction. Unlike the internal <code>Instr</code>, it uses <code>Slot</code> instead of raw indices, making it convenient for inspection and serialization.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Format</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td><code>dst = sum(sources)</code></td><td>summation</td></tr>
+<tr><td><code>Mul</code></td><td><code>dst = product(sources)</code></td><td>product</td></tr>
+<tr><td><code>Pow</code></td><td><code>dst = base^exp</code></td><td>integer power</td></tr>
+<tr><td><code>Powf</code></td><td><code>dst = base^exp</code></td><td>floating-point power</td></tr>
+<tr><td><code>Fun</code></td><td><code>dst = builtin(src)</code></td><td>built-in function</td></tr>
+<tr><td><code>ExternalFun</code></td><td><code>dst = fns[idx](srcs...)</code></td><td>external function</td></tr>
+<tr><td><code>Assign</code></td><td><code>dst = src</code></td><td>copy</td></tr>
+</tbody></table>
+</div>
+<h3 id="instr"><a class="header" href="#instr">Instr</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Instr {
+    Add { dst: usize, srcs: Vec&lt;usize&gt; },
+    Mul { dst: usize, srcs: Vec&lt;usize&gt; },
+    Pow { dst: usize, base: usize, exp: i64 },
+    Powf { dst: usize, base: usize, exp: usize },
+    BuiltinOp { dst: usize, op: BuiltinOp, src: usize },
+    ExternalFun { dst: usize, fn_idx: usize, srcs: Vec&lt;usize&gt; },
+    Copy { dst: usize, src: usize },
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: an internal index-based instruction, executed by <code>ExpressionEvaluator</code>. All indices are absolute positions in the stack.</p>
+<p><strong>Stack layout</strong>:</p>
+<pre><code class="language-text">[params (param_count)] [constants (const_count)] [temporaries (temp_count)] [outputs (result_count)]
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Add { dst, srcs }</code></td><td><code>stack[dst] = stack[srcs[0]] + stack[srcs[1]] + ...</code></td></tr>
+<tr><td><code>Mul { dst, srcs }</code></td><td><code>stack[dst] = stack[srcs[0]] * stack[srcs[1]] * ...</code></td></tr>
+<tr><td><code>Pow { dst, base, exp }</code></td><td><code>stack[dst] = stack[base]^exp</code>, with <code>exp</code> an <code>i64</code></td></tr>
+<tr><td><code>Powf { dst, base, exp }</code></td><td><code>stack[dst] = stack[base]^stack[exp]</code>, floating-point exponent</td></tr>
+<tr><td><code>BuiltinOp { dst, op, src }</code></td><td><code>stack[dst] = op(stack[src])</code></td></tr>
+<tr><td><code>ExternalFun { dst, fn_idx, srcs }</code></td><td><code>stack[dst] = fns[fn_idx](&amp;stack[srcs...])</code></td></tr>
+<tr><td><code>Copy { dst, src }</code></td><td><code>stack[dst] = stack[src]</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="builtinop"><a class="header" href="#builtinop">BuiltinOp</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum BuiltinOp {
+    Sin, Cos, Tan,
+    Sec, Csc, Cot,
+    Exp, Log,
+    Sqrt, Abs,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: pre-resolved built-in function opcodes. The compiler converts <code>Symbol</code> names into <code>BuiltinOp</code> variants at compile time, avoiding string matching on the hot path.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Math</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Sin</code></td><td>$\sin(x)$</td><td>sine</td></tr>
+<tr><td><code>Cos</code></td><td>$\cos(x)$</td><td>cosine</td></tr>
+<tr><td><code>Tan</code></td><td>$\tan(x)$</td><td>tangent</td></tr>
+<tr><td><code>Sec</code></td><td>$\sec(x) = 1/\cos(x)$</td><td>secant</td></tr>
+<tr><td><code>Csc</code></td><td>$\csc(x) = 1/\sin(x)$</td><td>cosecant</td></tr>
+<tr><td><code>Cot</code></td><td>$\cot(x) = 1/\tan(x)$</td><td>cotangent</td></tr>
+<tr><td><code>Exp</code></td><td>$e^x$</td><td>exponential function</td></tr>
+<tr><td><code>Log</code></td><td>$\ln(x)$</td><td>natural logarithm</td></tr>
+<tr><td><code>Sqrt</code></td><td>$\sqrt{x}$</td><td>square root</td></tr>
+<tr><td><code>Abs</code></td><td>$</td><td>x</td></tr>
+</tbody></table>
+</div>
+<h4 id="builtinopfrom_name"><a class="header" href="#builtinopfrom_name">BuiltinOp::from_name</a></h4>
+<p><strong>Signature</strong>: <code>pub fn from_name(name: &amp;str) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: tries to resolve a function name into a built-in opcode. Case-insensitive. Both <code>"log"</code> and <code>"ln"</code> map to <code>Log</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>the function name</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Some(BuiltinOp)</code> or <code>None</code> (not a built-in function).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::instruction::BuiltinOp;
+
+assert_eq!(BuiltinOp::from_name("sin"), Some(BuiltinOp::Sin));
+assert_eq!(BuiltinOp::from_name("Log"), Some(BuiltinOp::Log));
+assert_eq!(BuiltinOp::from_name("ln"), Some(BuiltinOp::Log));
+assert_eq!(BuiltinOp::from_name("myfunc"), None);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="evaluationdomain-trait"><a class="header" href="#evaluationdomain-trait">EvaluationDomain trait</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait EvaluationDomain: Sized + Clone + 'static {
+    fn from_f64(value: f64) -&gt; Self;
+    fn zero() -&gt; Self;
+    fn one() -&gt; Self;
+    fn add_ref(&amp;self, other: &amp;Self) -&gt; Self;
+    fn sub_ref(&amp;self, other: &amp;Self) -&gt; Self;
+    fn mul_ref(&amp;self, other: &amp;Self) -&gt; Self;
+    fn div_ref(&amp;self, other: &amp;Self) -&gt; Result&lt;Self&gt;;
+    fn neg_ref(&amp;self) -&gt; Self;
+    fn powi_ref(&amp;self, exp: i64) -&gt; Self;
+    fn resolve_builtin(name: &amp;str, arg: &amp;Self) -&gt; Result&lt;Self&gt;;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the trait for types that can serve as evaluation domains. Unlike the algebraic <code>Domain</code> trait (<code>Domain</code> is object-safe and uses <code>&amp;self</code> receivers), <code>EvaluationDomain</code> uses static methods and value operations, making it compatible with <code>Copy</code> types such as <code>f64</code>.</p>
+<p><strong>Methods</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Signature</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>from_f64</code></td><td><code>fn from_f64(f64) -&gt; Self</code></td><td>create a value from an <code>f64</code></td></tr>
+<tr><td><code>zero</code></td><td><code>fn zero() -&gt; Self</code></td><td>additive identity</td></tr>
+<tr><td><code>one</code></td><td><code>fn one() -&gt; Self</code></td><td>multiplicative identity</td></tr>
+<tr><td><code>add_ref</code></td><td><code>fn add_ref(&amp;self, &amp;Self) -&gt; Self</code></td><td>addition</td></tr>
+<tr><td><code>sub_ref</code></td><td><code>fn sub_ref(&amp;self, &amp;Self) -&gt; Self</code></td><td>subtraction</td></tr>
+<tr><td><code>mul_ref</code></td><td><code>fn mul_ref(&amp;self, &amp;Self) -&gt; Self</code></td><td>multiplication</td></tr>
+<tr><td><code>div_ref</code></td><td><code>fn div_ref(&amp;self, &amp;Self) -&gt; Result&lt;Self&gt;</code></td><td>division; division by zero returns <code>DivisionByZero</code></td></tr>
+<tr><td><code>neg_ref</code></td><td><code>fn neg_ref(&amp;self) -&gt; Self</code></td><td>negation</td></tr>
+<tr><td><code>powi_ref</code></td><td><code>fn powi_ref(&amp;self, i64) -&gt; Self</code></td><td>integer power; returns 1 when <code>exp == 0</code></td></tr>
+<tr><td><code>resolve_builtin</code></td><td><code>fn resolve_builtin(name: &amp;str, &amp;Self) -&gt; Result&lt;Self&gt;</code></td><td>execute a built-in function</td></tr>
+</tbody></table>
+</div>
+<p><strong>Implementations</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f64</code></td><td>standard double precision (always available)</td></tr>
+<tr><td><code>DoubleF64</code></td><td>oCAS double-precision float (~31 significant digits)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::EvaluationDomain;
+
+let x = f64::from_f64(3.0);
+let y = f64::from_f64(2.0);
+assert_eq!(x.add_ref(&amp;y), 5.0);
+assert_eq!(f64::resolve_builtin("sin", &amp;std::f64::consts::FRAC_PI_2).unwrap(), 1.0);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="powfextension-trait"><a class="header" href="#powfextension-trait">PowfExtension trait</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait PowfExtension: EvaluationDomain {
+    fn powf_ref(&amp;self, exp: &amp;Self) -&gt; Result&lt;Self&gt;;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: an extension trait for powers with floating-point exponents. It is separated from <code>EvaluationDomain</code> because integer domains cannot meaningfully compute $a^b$ (with non-integer $b$).</p>
+<p><strong>Implementations</strong>: <code>f64</code>, <code>DoubleF64</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::PowfExtension;
+
+let base = 2.0_f64;
+let exp = 0.5_f64;
+let result = base.powf_ref(&amp;exp).unwrap();
+assert!((result - std::f64::consts::SQRT_2).abs() &lt; 1e-15);
+// Output: 2^0.5 ≈ 1.4142135623730951
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="compilation-functions"><a class="header" href="#compilation-functions">Compilation functions</a></h2>
+<p>The following free functions are the low-level entry points behind <code>ExpressionEvaluator</code>'s compilation methods.</p>
+<h3 id="compile_atom"><a class="header" href="#compile_atom">compile_atom</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_atom&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atom: Atom&lt;'_&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles an <code>Atom</code> into an evaluator. Equivalent to <code>ExpressionEvaluator::compile</code>.</p>
+<h3 id="compile_atom_with"><a class="header" href="#compile_atom_with">compile_atom_with</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_atom_with&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atom: Atom&lt;'_&gt;,
+    function_map: Option&lt;FunctionMap&lt;T&gt;&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles with an optional function map.</p>
+<h3 id="compile_tree--compile_tree_with"><a class="header" href="#compile_tree--compile_tree_with">compile_tree / compile_tree_with</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_tree&lt;T: EvaluationDomain + PowfExtension&gt;(
+    tree: &amp;EvalTree,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+
+pub fn compile_tree_with&lt;T: EvaluationDomain + PowfExtension&gt;(
+    tree: &amp;EvalTree,
+    function_map: Option&lt;FunctionMap&lt;T&gt;&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles from an <code>EvalTree</code>. Suitable when you need to apply custom optimizations to the <code>EvalTree</code> before compiling.</p>
+<h3 id="compile_atoms_multi--compile_atoms_multi_with"><a class="header" href="#compile_atoms_multi--compile_atoms_multi_with">compile_atoms_multi / compile_atoms_multi_with</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_atoms_multi&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atoms: &amp;[Atom&lt;'_&gt;],
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+
+pub fn compile_atoms_multi_with&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atoms: &amp;[Atom&lt;'_&gt;],
+    function_map: Option&lt;FunctionMap&lt;T&gt;&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles multiple <code>Atom</code>s into a single multi-output evaluator, sharing CSEs and constants across outputs.</p>
+<h3 id="compile_trees_multi"><a class="header" href="#compile_trees_multi">compile_trees_multi</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_trees_multi&lt;T: EvaluationDomain + PowfExtension&gt;(
+    trees: &amp;[&amp;EvalTree],
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: compiles multiple <code>EvalTree</code>s into a single multi-output evaluator.</p>
+<hr />
+<h2 id="evaluationerror"><a class="header" href="#evaluationerror">EvaluationError</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[non_exhaustive]
+pub enum EvaluationError {
+    UndefinedVariable { name: String },
+    TypeMismatch { expected: String, found: String },
+    DivisionByZero,
+    FunctionNotFound { name: String },
+    WrongArity { name: String, expected: usize, got: usize },
+    JitCompilationError { message: String },
+    UnsupportedOperation { message: String },
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the errors that can occur during evaluation.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>UndefinedVariable { name }</code></td><td>the expression references a variable that was not supplied</td></tr>
+<tr><td><code>TypeMismatch { expected, found }</code></td><td>type mismatch (e.g., expected a float but got an integer)</td></tr>
+<tr><td><code>DivisionByZero</code></td><td>division by zero</td></tr>
+<tr><td><code>FunctionNotFound { name }</code></td><td>a user-defined function was not found in the registry</td></tr>
+<tr><td><code>WrongArity { name, expected, got }</code></td><td>wrong number of arguments in a function call</td></tr>
+<tr><td><code>JitCompilationError { message }</code></td><td>JIT compilation failed (Cranelift backend error)</td></tr>
+<tr><td><code>UnsupportedOperation { message }</code></td><td>the requested operation is not supported in the current domain</td></tr>
+</tbody></table>
+</div>
+<p><strong>Display format</strong>:</p>
+<pre><code class="language-text">undefined variable 'x'
+type mismatch: expected float, found integer
+division by zero
+function 'f' not found
+wrong arity for 'f': expected 2, got 1
+JIT compilation error: &lt;message&gt;
+unsupported operation: &lt;message&gt;
+</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::EvaluationError;
+
+let err = EvaluationError::UndefinedVariable { name: "x".into() };
+assert_eq!(err.to_string(), "undefined variable 'x'");
+
+let err = EvaluationError::WrongArity {
+    name: "f".into(),
+    expected: 2,
+    got: 1,
+};
+assert_eq!(err.to_string(), "wrong arity for 'f': expected 2, got 1");
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="usage-patterns"><a class="header" href="#usage-patterns">Usage patterns</a></h2>
+<h3 id="basic-evaluation"><a class="header" href="#basic-evaluation">Basic evaluation</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// Build x² + 2x + 1
+let x = ctx.var("x");
+let expr = ctx.add(&amp;[
+    ctx.mul(&amp;[x, x]),
+    ctx.mul(&amp;[ctx.num(2), x]),
+    ctx.num(1),
+]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+
+// Evaluate
+let result = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(result[0], 16.0); // 9 + 6 + 1 = 16
+<span class="boring">}</span></code></pre></pre>
+<h3 id="jit-hot-loop"><a class="header" href="#jit-hot-loop">JIT hot loop</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("sin", &amp;[ctx.var("x")]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+
+let mut results = vec![0.0; jit.result_count()];
+for i in 0..1_000_000 {
+    jit.call_into(&amp;[i as f64 * 0.001], &amp;mut results);
+    // use results[0]...
+}
+// Zero-allocation hot loop, native machine code
+<span class="boring">}</span></code></pre></pre>
+<h3 id="simd-batch-processing"><a class="header" href="#simd-batch-processing">SIMD batch processing</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, simd::VectorEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("exp", &amp;[ctx.var("x")]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let simd = eval.compile_vector_evaluator().unwrap();
+
+let x: Vec&lt;f64&gt; = (0..10000).map(|i| i as f64 * 0.001).collect();
+let results = simd.evaluate(&amp;[x]).unwrap();
+// results[0] holds the 10000 values of e^x
+<span class="boring">}</span></code></pre></pre>
+<h3 id="streaming-large-datasets"><a class="header" href="#streaming-large-datasets">Streaming large datasets</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+
+// Process 1 million rows with constant memory usage
+let rows = (0..1_000_000).map(|i| [i as f64]);
+let n = stream.for_each(rows, |_results| {
+    // process results...
+}).unwrap();
+assert_eq!(n, 1_000_000);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="custom-functions"><a class="header" href="#custom-functions">Custom functions</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, FunctionMap};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("sigmoid", &amp;[ctx.var("x")]);
+
+let mut fmap = FunctionMap::&lt;f64&gt;::new();
+fmap.register("sigmoid", 1, Box::new(|args| {
+    1.0 / (1.0 + (-args[0]).exp())
+}));
+
+let eval = ExpressionEvaluator::compile_with(expr, fmap).unwrap();
+let result = eval.evaluate(&amp;[0.0]).unwrap();
+assert!((result[0] - 0.5).abs() &lt; 1e-15);
+// Output: sigmoid(0) = 0.5
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="./rust-expressions.html">Expression system</a> (<code>Atom</code>, <code>AtomArena</code>), <a href="./rust-numeric-integration.html">Numerical integration</a> (<code>Vegas</code> uses the evaluator), <a href="./rust-autodiff.html">Automatic differentiation</a> (evaluation over the <code>HyperDual</code> domain)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-rewrite.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-autodiff.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-rewrite.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-autodiff.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

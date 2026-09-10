@@ -1,0 +1,1208 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Expression System - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html" class="active"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-expressions.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-expression-system"><a class="header" href="#rust-api-reference-expression-system">Rust API Reference: Expression System</a></h1>
+<p>This chapter documents the core types and functions of the oCAS expression system: the Arena allocator, symbols, expression nodes, construction contexts, parsing, normalization, and pattern matching.</p>
+<hr />
+<h2 id="core-type-overview"><a class="header" href="#core-type-overview">Core Type Overview</a></h2>
+<p>The core type hierarchy of the expression system is:</p>
+<pre><code>Arena (bump allocator)
+ └── AtomArena (hash-consing constructor)
+      └── Atom (Copy handle)
+           └── AtomNode (enum: Num/Var/Fun/Add/Mul/Pow)
+                └── Symbol (interned string)
+</code></pre>
+<p><strong>Design invariants</strong>: <code>Atom</code> is a <code>Copy</code> arena handle pointing to an <code>AtomNode</code> allocated in the <code>Arena</code>. Because <code>AtomArena</code> uses hash-consing (structurally identical subexpressions return the same pointer within the same <code>AtomArena</code>), <strong>structural equality is equivalent to pointer equality</strong> — the result of <code>==</code> agrees with pointer comparison. Note the implementation detail: <code>Atom</code>'s <code>PartialEq</code> is a derived structural comparison (recursively comparing <code>AtomNode</code>s); hash-consing guarantees its truth value agrees with pointer equality rather than comparing pointers directly. Subtraction and division are desugared at parse time: $x - y$ becomes <code>Add([x, Mul([Num(-1), y])])</code>, and $x / y$ becomes <code>Mul([x, Pow(y, Num(-1))])</code>.</p>
+<hr />
+<h2 id="arena"><a class="header" href="#arena">Arena</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+<span class="boring">}</span></code></pre></pre>
+<p><code>Arena</code> is a bump allocator that provides bulk memory management for expression nodes. All expression nodes are allocated in an <code>Arena</code>, and the entire memory is freed at once when the <code>Arena</code> is dropped. The current version does not run destructors, so it is only safe to store <code>Copy</code> types.</p>
+<h3 id="arenanew"><a class="header" href="#arenanew">Arena::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new() -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an <code>Arena</code> using the default block size (64 KiB).</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: <code>Arena</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let value = arena.allocate_with(|| 42);
+assert_eq!(*value, 42);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenawith_capacity"><a class="header" href="#arenawith_capacity">Arena::with_capacity</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn with_capacity(block_size: usize) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an <code>Arena</code> using the given block size.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>block_size</code></td><td><code>usize</code></td><td>Size of each memory block, in bytes.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Arena</code>.</p>
+<h3 id="arenaallocate_with"><a class="header" href="#arenaallocate_with">Arena::allocate_with</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn allocate_with&lt;T&gt;(&amp;self, init: impl FnOnce() -&gt; T) -&gt; &amp;mut T
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Allocates a value in the <code>Arena</code>, constructed via the closure, and returns a mutable reference bound to the <code>Arena</code>'s lifetime.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>init</code></td><td><code>impl FnOnce() -&gt; T</code></td><td>Closure that constructs the value.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>&amp;mut T</code>.</p>
+<p><strong>Errors</strong>: Panics if <code>T</code> has zero size.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let value = arena.allocate_with(|| "hello");
+assert_eq!(*value, "hello");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenaallocate_slice"><a class="header" href="#arenaallocate_slice">Arena::allocate_slice</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn allocate_slice&lt;T: Copy&gt;(&amp;self, values: &amp;[T]) -&gt; &amp;[T]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Copies a slice into the <code>Arena</code> and returns a slice reference bound to the <code>Arena</code>'s lifetime. An empty slice returns <code>&amp;[]</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>&amp;[T]</code></td><td>Slice to allocate, <code>T: Copy</code>.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>&amp;[T]</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let data = [1, 2, 3];
+let slice = arena.allocate_slice(&amp;data);
+assert_eq!(slice, &amp;[1, 2, 3]);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenareset"><a class="header" href="#arenareset">Arena::reset</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn reset(&amp;self)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Resets the <code>Arena</code> — keeps the first memory block and resets the offset, freeing the remaining blocks. After a reset, any references allocated previously <strong>must not be used</strong>.</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: None.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let _ = arena.allocate_with(|| 1);
+arena.reset();
+let value = arena.allocate_with(|| 2);
+assert_eq!(*value, 2);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenachunk_count"><a class="header" href="#arenachunk_count">Arena::chunk_count</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn chunk_count(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Returns the number of memory blocks currently held by the <code>Arena</code>.</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: <code>usize</code>.</p>
+<hr />
+<h2 id="symbol"><a class="header" href="#symbol">Symbol</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::Symbol;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Symbol(&amp;'static str);
+<span class="boring">}</span></code></pre></pre>
+<p><code>Symbol</code> is a globally interned symbol name used for variable names, function names, and constant names. <code>Symbol</code>s with identical contents point to the same static memory within the process, making comparisons $O(1)$ pointer comparisons. <code>Symbol</code> implements <code>Copy</code>.</p>
+<h3 id="symbolnew"><a class="header" href="#symbolnew">Symbol::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(name: &amp;str) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates or looks up an existing <code>Symbol</code>. The string is interned on first call; subsequent calls return the existing <code>Symbol</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>The symbol name.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Symbol</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::Symbol;
+
+let x = Symbol::new("x");
+let also_x = Symbol::new("x");
+assert_eq!(x, also_x);
+assert_eq!(x.as_str(), "x");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symbolas_str"><a class="header" href="#symbolas_str">Symbol::as_str</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn as_str(&amp;self) -&gt; &amp;str
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Returns the string slice of the symbol.</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: <code>&amp;str</code>.</p>
+<p><strong>See also</strong>: <a href="#atom">Atom</a>, <a href="#atomarena">AtomArena</a></p>
+<hr />
+<h2 id="atom"><a class="header" href="#atom">Atom</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::Atom;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Atom&lt;'a&gt;(&amp;'a AtomNode&lt;'a&gt;);
+<span class="boring">}</span></code></pre></pre>
+<p><code>Atom</code> is a lightweight <code>Copy</code> handle to an <code>AtomNode</code> in the <code>Arena</code>. Copying an <code>Atom</code> only copies a pointer, not the underlying data. Thanks to hash-consing, the truth value of <code>a == b</code> agrees with pointer comparison (within the same <code>AtomArena</code>); the implementation is a derived structural comparison.</p>
+<p><code>Atom</code> implements <code>Display</code>, with the following output formats:</p>
+<ul>
+<li><code>Num(42)</code> → <code>42</code></li>
+<li><code>Var("x")</code> → <code>x</code></li>
+<li><code>Fun("sin", [x])</code> → <code>sin(x)</code></li>
+<li><code>Add([x, y])</code> → <code>x + y</code> (subexpressions are parenthesized unless they are leaf nodes)</li>
+<li><code>Mul([x, y])</code> → <code>x*y</code></li>
+<li><code>Pow(x, n)</code> → <code>x^n</code> (base/exponent parenthesized unless they are leaves)</li>
+</ul>
+<h3 id="atomnode"><a class="header" href="#atomnode">Atom::node</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn node(&amp;self) -&gt; &amp;'a AtomNode&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Returns a reference to the underlying node data. Used for pattern-matching the expression structure.</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: <code>&amp;'a AtomNode&lt;'a&gt;</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+assert!(matches!(x.node(), AtomNode::Var(_)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomchildren"><a class="header" href="#atomchildren">Atom::children</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn children(&amp;self) -&gt; &amp;'a [Atom&lt;'a&gt;]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Returns the slice of direct child expressions (left to right). <code>Num</code> and <code>Var</code> return an empty slice; <code>Fun</code>, <code>Add</code>, and <code>Mul</code> return their argument slices; <code>Pow</code> returns an empty slice (use <code>binary_children</code> to get the two operands).</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: <code>&amp;'a [Atom&lt;'a&gt;]</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y, ctx.num(1)]);
+assert_eq!(sum.children().len(), 3);
+assert_eq!(x.children().len(), 0);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atombinary_children"><a class="header" href="#atombinary_children">Atom::binary_children</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn binary_children(&amp;self) -&gt; Option&lt;(Atom&lt;'a&gt;, Atom&lt;'a&gt;)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: If this <code>Atom</code> is a <code>Pow</code> node, returns <code>(base, exp)</code>; otherwise returns <code>None</code>.</p>
+<p><strong>Parameters</strong>: None.</p>
+<p><strong>Return value</strong>: <code>Option&lt;(Atom&lt;'a&gt;, Atom&lt;'a&gt;)&gt;</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let power = ctx.pow(x, y);
+let (base, exp) = power.binary_children().unwrap();
+assert_eq!(base.to_string(), "x");
+assert_eq!(exp.to_string(), "y");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#atomchildren">Atom::children</a>, <a href="#atomnode">AtomNode</a></p>
+<hr />
+<h2 id="atomnode-1"><a class="header" href="#atomnode-1">AtomNode</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomNode;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum AtomNode&lt;'a&gt; {
+    Num(i64),
+    Var(Symbol),
+    Fun(Symbol, &amp;'a [Atom&lt;'a&gt;]),
+    Add(&amp;'a [Atom&lt;'a&gt;]),
+    Mul(&amp;'a [Atom&lt;'a&gt;]),
+    Pow(Atom&lt;'a&gt;, Atom&lt;'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The concrete data of each node in the expression tree. An <code>Atom</code> handle obtains an <code>AtomNode</code> reference via the <code>node()</code> method.</p>
+<h3 id="variant-descriptions"><a class="header" href="#variant-descriptions">Variant descriptions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Num(i64)</code></td><td>64-bit signed integer literal.</td></tr>
+<tr><td><code>Var(Symbol)</code></td><td>Named variable or constant.</td></tr>
+<tr><td><code>Fun(Symbol, &amp;'a [Atom&lt;'a&gt;])</code></td><td>Function application. The first argument is the function name; the second is the argument list (at least one element).</td></tr>
+<tr><td><code>Add(&amp;'a [Atom&lt;'a&gt;])</code></td><td>Addition. The argument list has at least one element.</td></tr>
+<tr><td><code>Mul(&amp;'a [Atom&lt;'a&gt;])</code></td><td>Multiplication. The argument list has at least one element.</td></tr>
+<tr><td><code>Pow(Atom&lt;'a&gt;, Atom&lt;'a&gt;)</code></td><td>Exponentiation. The first argument is the base; the second is the exponent.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Design notes</strong>:</p>
+<ul>
+<li>Subtraction/division are desugared <strong>at parse time</strong>: $x - y$ becomes <code>Add([x, Mul([Num(-1), y])])</code>, and $x / y$ becomes <code>Mul([x, Pow(y, Num(-1))])</code>. There are no standalone subtraction or division nodes in the AST.</li>
+<li>The argument lists of <code>Add</code> and <code>Mul</code> are sorted after <code>normalize</code>, ensuring that structurally equal expressions produce the same AST.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+match x.node() {
+    AtomNode::Var(s) =&gt; assert_eq!(s.as_str(), "x"),
+    _ =&gt; panic!("expected variable"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#atom">Atom</a>, <a href="#symbol">Symbol</a></p>
+<hr />
+<h2 id="atomarena"><a class="header" href="#atomarena">AtomArena</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct AtomArena&lt;'a&gt; {
+    arena: &amp;'a Arena,
+    cons_table: RefCell&lt;FastHashMap&lt;AtomNode&lt;'a&gt;, Atom&lt;'a&gt;&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>AtomArena</code> is the only entry point for constructing <code>Atom</code>s. It wraps an <code>Arena</code> reference and a hash-consing table (interior mutability via <code>RefCell</code>). All construction methods are immutable from the caller's perspective. Structurally identical subexpressions always return the same <code>Atom</code> handle within the same <code>AtomArena</code> — this makes structural equality equivalent to pointer equality.</p>
+<h3 id="atomarenanew"><a class="header" href="#atomarenanew">AtomArena::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(arena: &amp;'a Arena) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an <code>AtomArena</code> backed by the given <code>Arena</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>arena</code></td><td><code>&amp;'a Arena</code></td><td>Reference to the bump allocator.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>AtomArena&lt;'a&gt;</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let n = ctx.num(42);
+assert_eq!(n.to_string(), "42");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenanum"><a class="header" href="#atomarenanum">AtomArena::num</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn num(&amp;self, value: i64) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an integer literal <code>Atom</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>value</code></td><td><code>i64</code></td><td>The integer value.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — a <code>Num(value)</code> node.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let n = ctx.num(7);
+assert_eq!(n.to_string(), "7");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenavar"><a class="header" href="#atomarenavar">AtomArena::var</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn var(&amp;self, name: &amp;str) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates a variable <code>Atom</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>The variable name.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — a <code>Var(Symbol)</code> node.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+assert_eq!(x.to_string(), "x");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenafun"><a class="header" href="#atomarenafun">AtomArena::fun</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn fun(&amp;self, name: &amp;str, args: &amp;[Atom&lt;'a&gt;]) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates a function-application <code>Atom</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>The function name.</td></tr>
+<tr><td><code>args</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>Argument list. Panics on an empty list in debug mode.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — a <code>Fun(Symbol, &amp;[Atom])</code> node.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let f = ctx.fun("sin", &amp;[x]);
+assert_eq!(f.to_string(), "sin(x)");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenaadd"><a class="header" href="#atomarenaadd">AtomArena::add</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn add(&amp;self, args: &amp;[Atom&lt;'a&gt;]) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an addition <code>Atom</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>args</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>Operand list. Panics on an empty list in debug mode.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — an <code>Add(&amp;[Atom])</code> node.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+assert_eq!(sum.to_string(), "x + y");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenamul"><a class="header" href="#atomarenamul">AtomArena::mul</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn mul(&amp;self, args: &amp;[Atom&lt;'a&gt;]) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates a multiplication <code>Atom</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>args</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>Operand list. Panics on an empty list in debug mode.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — a <code>Mul(&amp;[Atom])</code> node.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let product = ctx.mul(&amp;[x, y]);
+assert_eq!(product.to_string(), "x*y");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenapow"><a class="header" href="#atomarenapow">AtomArena::pow</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn pow(&amp;self, base: Atom&lt;'a&gt;, exp: Atom&lt;'a&gt;) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an exponentiation <code>Atom</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The base.</td></tr>
+<tr><td><code>exp</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The exponent.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — a <code>Pow(base, exp)</code> node.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let p = ctx.pow(x, ctx.num(3));
+assert_eq!(p.to_string(), "x^3");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenaslice"><a class="header" href="#atomarenaslice">AtomArena::slice</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn slice(&amp;self, atoms: &amp;[Atom&lt;'a&gt;]) -&gt; &amp;'a [Atom&lt;'a&gt;]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Allocates a slice of <code>Atom</code>s into the <code>Arena</code> and returns the reference. Used for multi-result scenarios that share the <code>Arena</code> lifetime (e.g., component solutions of ODE systems).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atoms</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>Slice of <code>Atom</code>s to allocate.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>&amp;'a [Atom&lt;'a&gt;]</code>.</p>
+<p><strong>See also</strong>: <a href="#arena">Arena</a>, <a href="#atom">Atom</a></p>
+<hr />
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="parse"><a class="header" href="#parse">parse</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_parse::parse;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn parse&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, input: &amp;str) -&gt; Result&lt;Atom&lt;'a&gt;, ParseError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Parses a mathematical expression string into an <code>Atom</code> tree. Supports integers, variables, function calls (<code>f(x)</code>), addition, subtraction, multiplication, division, exponentiation, and parentheses. Subtraction desugars to addition with a negative coefficient; division desugars to multiplication with a negative exponent.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The arena context used to allocate nodes.</td></tr>
+<tr><td><code>input</code></td><td><code>&amp;str</code></td><td>The expression string to parse.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Result&lt;Atom&lt;'a&gt;, ParseError&gt;</code>.</p>
+<p><strong>Errors</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ParseError::Lex(LexError)</code></td><td>The input contains an illegal character.</td></tr>
+<tr><td><code>ParseError::UnexpectedEof</code></td><td>The input ends unexpectedly (e.g., <code>"x +"</code>).</td></tr>
+<tr><td><code>ParseError::UnexpectedToken</code></td><td>An unexpected token is encountered (e.g., <code>"*x"</code>).</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_parse::parse;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = parse(&amp;ctx, "x^2 + 2*x + 1").unwrap();
+assert_eq!(expr.to_string(), "((x^2) + (2*x)) + 1");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#normalize">normalize</a></p>
+<h3 id="normalize"><a class="header" href="#normalize">normalize</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::normalize::normalize;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn normalize&lt;'a&gt;(ctx: &amp;AtomArena&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Normalizes an expression into a deterministic canonical form. Specifically:</p>
+<ul>
+<li>Flattens nested <code>Add</code> and <code>Mul</code> (e.g., <code>Add([Add([x, y]), z])</code> → <code>Add([x, y, z])</code>)</li>
+<li>Sorts the operands</li>
+<li>Combines numeric coefficients (e.g., <code>Add([x, Num(2), Num(3)])</code> → <code>Add([Num(5), x])</code>)</li>
+</ul>
+<p>The result is allocated in the same arena as the input.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The arena context used to allocate the result.</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to normalize.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the normalized expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::normalize::normalize;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let z = ctx.var("z");
+let inner = ctx.add(&amp;[x, y]);
+let outer = ctx.add(&amp;[inner, z, ctx.num(2), ctx.num(3)]);
+let result = normalize(&amp;ctx, outer);
+assert_eq!(result.to_string(), "5 + x + y + z");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#parse">parse</a>, <a href="#transform">transform</a></p>
+<h3 id="substitute"><a class="header" href="#substitute">substitute</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::series::substitute;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    replacement: Atom&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Replaces every occurrence of the variable <code>var</code> in the expression with <code>replacement</code>. A convenience function implemented on top of <code>transform</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The arena context.</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to substitute into.</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>The variable name to replace.</td></tr>
+<tr><td><code>replacement</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The replacement expression.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the substituted expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::series::substitute;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), ctx.num(1)]);
+let result = substitute(&amp;ctx, expr, Symbol::new("x"), y);
+assert_eq!(result.to_string(), "(y^2) + 1");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#transform">transform</a></p>
+<h3 id="transform"><a class="header" href="#transform">transform</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::transform;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn transform&lt;'a, F&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, atom: Atom&lt;'a&gt;, mut f: F) -&gt; Atom&lt;'a&gt;
+where
+    F: FnMut(Atom&lt;'a&gt;) -&gt; Option&lt;Atom&lt;'a&gt;&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Traverses the expression tree bottom-up and applies the transform function <code>f</code> to each node. <code>f</code> is called after the node's children have been transformed. Returning <code>Some(atom)</code> replaces the node; returning <code>None</code> keeps the node (with its transformed children). This is the standard rewrite traversal pattern used by the oCAS rule engine and simplifier.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The arena context.</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to transform.</td></tr>
+<tr><td><code>f</code></td><td><code>FnMut(Atom&lt;'a&gt;) -&gt; Option&lt;Atom&lt;'a&gt;&gt;</code></td><td>The transform function.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the transformed expression.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{Atom, AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+use ocas_rewrite::transform;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+
+let result = transform(&amp;ctx, sum, |a| {
+    if let AtomNode::Add(args) = a.node() {
+        if args.len() == 2 &amp;&amp; args[0] == x &amp;&amp; args[1] == y {
+            return Some(ctx.add(&amp;[y, x]));
+        }
+    }
+    None
+});
+
+assert_eq!(result.to_string(), "y + x");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#substitute">substitute</a>, <a href="#normalize">normalize</a></p>
+<h3 id="collect_funs"><a class="header" href="#collect_funs">collect_funs</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::walk::collect_funs;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn collect_funs&lt;'a&gt;(atom: Atom&lt;'a&gt;) -&gt; Vec&lt;(Symbol, Atom&lt;'a&gt;)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Collects all function applications in the expression in post-order (innermost first), deduplicated (hash-consing guarantees that structurally identical applications appear only once).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to traverse.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Vec&lt;(Symbol, Atom&lt;'a&gt;)&gt;</code> — a list of <code>(function name, function application node)</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, walk::collect_funs};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let sin_x = ctx.fun("sin", &amp;[x]);
+let expr = ctx.fun("cos", &amp;[sin_x]);
+let funs = collect_funs(expr);
+assert_eq!(funs.len(), 2);
+assert_eq!(funs[0].0.as_str(), "sin");
+assert_eq!(funs[1].0.as_str(), "cos");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#collect_vars">collect_vars</a></p>
+<h3 id="collect_vars"><a class="header" href="#collect_vars">collect_vars</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::walk::collect_vars;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn collect_vars(atom: Atom) -&gt; Vec&lt;Symbol&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Collects all distinct variable names in the expression, in order of first appearance (depth-first, left to right).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom</code></td><td>The expression to traverse.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Vec&lt;Symbol&gt;</code> — the list of variable names.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, walk::collect_vars};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.mul(&amp;[x, y]), x]);
+let vars = collect_vars(expr);
+assert_eq!(vars.len(), 2);
+assert_eq!(vars[0].as_str(), "x");
+assert_eq!(vars[1].as_str(), "y");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#collect_funs">collect_funs</a></p>
+<hr />
+<h2 id="pattern-matching"><a class="header" href="#pattern-matching">Pattern Matching</a></h2>
+<p>The pattern-matching system matches <code>Atom</code> expression trees against patterns with wildcards (<code>Pattern</code>), with support for associative/commutative (AC) matching and backtracking-budget control.</p>
+<h3 id="pattern"><a class="header" href="#pattern">Pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::pattern::Pattern;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Pattern&lt;'a&gt; {
+    Literal(Atom&lt;'a&gt;),
+    Wildcard(Symbol, WildcardLevel),
+    Add(Vec&lt;Pattern&lt;'a&gt;&gt;),
+    Mul(Vec&lt;Pattern&lt;'a&gt;&gt;),
+    Pow(Box&lt;(Pattern&lt;'a&gt;, Pattern&lt;'a&gt;)&gt;),
+    Fun(Symbol, Vec&lt;Pattern&lt;'a&gt;&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Patterns mirror the structure of <code>AtomNode</code> but add wildcard nodes. Matching of <code>Add</code> and <code>Mul</code> supports associative-commutative (AC) matching: subpatterns can match any subset of the argument list.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Literal(Atom)</code></td><td>Matches the given <code>Atom</code> exactly.</td></tr>
+<tr><td><code>Wildcard(Symbol, WildcardLevel)</code></td><td>Wildcard match; the name and level determine the binding behavior.</td></tr>
+<tr><td><code>Add(Vec&lt;Pattern&gt;)</code></td><td>Matches an <code>Add</code> node; the argument list is matched AC-wise.</td></tr>
+<tr><td><code>Mul(Vec&lt;Pattern&gt;)</code></td><td>Matches a <code>Mul</code> node; the argument list is matched AC-wise.</td></tr>
+<tr><td><code>Pow(Box&lt;(Pattern, Pattern)&gt;)</code></td><td>Matches a <code>Pow</code> node; base and exponent are matched separately.</td></tr>
+<tr><td><code>Fun(Symbol, Vec&lt;Pattern&gt;)</code></td><td>Matches a <code>Fun</code> node; function name and argument list are matched separately.</td></tr>
+</tbody></table>
+</div>
+<h4 id="patternfrom_atom"><a class="header" href="#patternfrom_atom">Pattern::from_atom</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_atom(_ctx: &amp;'a impl PatternAlloc&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Pattern&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Converts an <code>Atom</code> into a <code>Pattern</code>. Variables whose names end in <code>_</code> (or begin with <code>_</code>) are treated as wildcards:</p>
+<ul>
+<li><code>x_</code> → <code>Wildcard(Symbol("x"), Single)</code></li>
+<li><code>x__</code> → <code>Wildcard(Symbol("x"), Sequence)</code></li>
+<li><code>x___</code> → <code>Wildcard(Symbol("x"), NullSequence)</code></li>
+</ul>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>_ctx</code></td><td><code>&amp;'a impl PatternAlloc&lt;'a&gt;</code></td><td>The pattern allocator (usually <code>&amp;()</code>).</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to convert.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Pattern&lt;'a&gt;</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x_");
+let pat = Pattern::from_atom(&amp;(), x);
+assert!(matches!(pat, Pattern::Wildcard(s, WildcardLevel::Single) if s.as_str() == "x"));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#wildcardlevel">WildcardLevel</a>, <a href="#match_pattern">match_pattern</a></p>
+<h3 id="wildcardlevel"><a class="header" href="#wildcardlevel">WildcardLevel</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::pattern::WildcardLevel;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WildcardLevel {
+    Single,
+    Sequence,
+    NullSequence,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The matching scope of a wildcard.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Naming convention</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Single</code></td><td>One trailing <code>_</code> in the name (e.g., <code>x_</code>; a leading <code>_</code> also works, e.g. <code>_x</code>)</td><td>Matches exactly one <code>Atom</code>.</td></tr>
+<tr><td><code>Sequence</code></td><td>Two trailing <code>_</code> in the name (e.g., <code>x__</code>; two leading <code>_</code> also work, e.g. <code>__x</code>)</td><td>Matches one or more <code>Atom</code>s in an <code>Add</code>/<code>Mul</code>/<code>Fun</code> argument list.</td></tr>
+<tr><td><code>NullSequence</code></td><td>Three trailing <code>_</code> in the name (e.g., <code>x___</code>; three leading <code>_</code> also work, e.g. <code>___x</code>)</td><td>Matches zero or more <code>Atom</code>s.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::pattern::WildcardLevel;
+
+assert!(matches!(WildcardLevel::Single, WildcardLevel::Single));
+assert!(matches!(WildcardLevel::Sequence, WildcardLevel::Sequence));
+assert!(matches!(WildcardLevel::NullSequence, WildcardLevel::NullSequence));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="match_pattern"><a class="header" href="#match_pattern">match_pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::match_pattern;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn match_pattern&lt;'a&gt;(pattern: Pattern&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Result&lt;Bindings&lt;'a&gt;, MatchError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Attempts to match <code>pattern</code> against <code>atom</code>, returning the binding set on success. Uses the default backtracking budget (<code>DEFAULT_MAX_BACKTRACKS = 10_000</code>). <code>Add</code>/<code>Mul</code> use AC matching (full backtracking search); <code>Fun</code> uses ordered matching (with sequence wildcard support).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The matching pattern.</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to match against.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Result&lt;Bindings&lt;'a&gt;, MatchError&gt;</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::matcher::match_pattern;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let sum = ctx.add(&amp;[x, ctx.num(1)]);
+
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+    Pattern::Literal(ctx.num(1)),
+]);
+let bindings = match_pattern(pat, sum).unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="match_pattern_with_budget"><a class="header" href="#match_pattern_with_budget">match_pattern_with_budget</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::match_pattern_with_budget;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn match_pattern_with_budget&lt;'a&gt;(
+    pattern: Pattern&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    max_backtracks: usize,
+) -&gt; Result&lt;Bindings&lt;'a&gt;, MatchError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Same as <code>match_pattern</code>, but allows a custom backtracking budget to prevent exponential-time blowups on pathological inputs.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The matching pattern.</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to match against.</td></tr>
+<tr><td><code>max_backtracks</code></td><td><code>usize</code></td><td>The maximum number of backtracks.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Result&lt;Bindings&lt;'a&gt;, MatchError&gt;</code>.</p>
+<p><strong>Errors</strong>: Returns <code>MatchError::BudgetExhausted</code> if the backtracking limit is exceeded.</p>
+<p><strong>See also</strong>: <a href="#match_pattern">match_pattern</a></p>
+<h3 id="bindings"><a class="header" href="#bindings">Bindings</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::Bindings;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Default)]
+pub struct Bindings&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p>The set of wildcard bindings produced by a successful match.</p>
+<h4 id="bindingsnew"><a class="header" href="#bindingsnew">Bindings::new</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new() -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an empty binding set.</p>
+<h4 id="bindingsget"><a class="header" href="#bindingsget">Bindings::get</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn get(&amp;self, name: Symbol) -&gt; Option&lt;&amp;MatchValue&lt;'a&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Looks up the bound value by wildcard name.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>The wildcard name (without trailing underscores).</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;&amp;MatchValue&lt;'a&gt;&gt;</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::matcher::match_pattern;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+    Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
+]);
+let bindings = match_pattern(pat, sum).unwrap();
+let val = bindings.get(Symbol::new("a")).unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matchvalue"><a class="header" href="#matchvalue">MatchValue</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::MatchValue;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MatchValue&lt;'a&gt; {
+    Single(Atom&lt;'a&gt;),
+    Sequence(&amp;'a [Atom&lt;'a&gt;]),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The value type of a wildcard binding.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Single(Atom&lt;'a&gt;)</code></td><td>A <code>Single</code>-level wildcard bound to a single <code>Atom</code>.</td></tr>
+<tr><td><code>Sequence(&amp;'a [Atom&lt;'a&gt;])</code></td><td>A <code>Sequence</code>- or <code>NullSequence</code>-level wildcard bound to a slice of <code>Atom</code>s.</td></tr>
+</tbody></table>
+</div>
+<h3 id="matcherror"><a class="header" href="#matcherror">MatchError</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::MatchError;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MatchError {
+    NoMatch,
+    InconsistentBinding,
+    BudgetExhausted,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Pattern-matching errors.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Display</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>NoMatch</code></td><td><code>"pattern did not match"</code></td><td>The pattern does not match the target expression.</td></tr>
+<tr><td><code>InconsistentBinding</code></td><td><code>"inconsistent wildcard binding"</code></td><td>The same wildcard name is bound to different values at different positions.</td></tr>
+<tr><td><code>BudgetExhausted</code></td><td><code>"backtrack budget exhausted"</code></td><td>The backtracking budget of AC matching is exhausted. Indicates the input may cause exponential-time matching; increase the budget or simplify the pattern.</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="./rust-rewrite.html">Rewrite &amp; Simplification</a> — the full rewrite engine: <code>Rule</code>, <code>simplify</code>, <code>replace_all</code>, and more</li>
+<li><a href="./rust-calculus.html">Calculus</a> — <code>diff</code>, <code>integrate</code>, <code>taylor</code>, and other operations built on the expression system</li>
+<li><a href="./rust-domains.html">Coefficient Domains</a> — the <code>Domain</code> trait and the various domain types</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-domains.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-domains.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

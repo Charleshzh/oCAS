@@ -1,0 +1,536 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Rust API 参考 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html" class="active"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考"><a class="header" href="#rust-api-参考">Rust API 参考</a></h1>
+<p>oCAS 的 Rust API 采用分层 crate 架构，顶层 <code>ocas</code> crate 通过 <code>prelude</code> 模块统一导出所有常用类型和函数。用户只需一行导入即可开始使用：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="模块层级"><a class="header" href="#模块层级">模块层级</a></h2>
+<pre><code class="language-mermaid">graph TD
+    OC["ocas&lt;br/&gt;顶层统一入口 + prelude"]
+    CORE["ocas-core&lt;br/&gt;Arena、错误、燃料"]
+    DOMAIN["ocas-domain&lt;br/&gt;系数域、数论、代数数域"]
+    ATOM["ocas-atom&lt;br/&gt;表达式树、张量"]
+    PARSE["ocas-parse&lt;br/&gt;字符串解析"]
+    POLY["ocas-poly&lt;br/&gt;多项式、矩阵、Gröbner 基"]
+    REWRITE["ocas-rewrite&lt;br/&gt;模式匹配、化简、重写"]
+    CALC["ocas-calc&lt;br/&gt;微积分、ODE、求解器"]
+    EVAL["ocas-eval&lt;br/&gt;求值器、JIT、数值积分"]
+
+    OC --&gt; CORE
+    OC --&gt; DOMAIN
+    OC --&gt; ATOM
+    OC --&gt; PARSE
+    OC --&gt; POLY
+    OC --&gt; REWRITE
+    OC --&gt; CALC
+    OC --&gt; EVAL
+
+    ATOM --&gt; CORE
+    ATOM --&gt; DOMAIN
+    PARSE --&gt; CORE
+    PARSE --&gt; ATOM
+    POLY --&gt; CORE
+    POLY --&gt; DOMAIN
+    REWRITE --&gt; CORE
+    REWRITE --&gt; ATOM
+    REWRITE --&gt; PARSE
+    CALC --&gt; CORE
+    CALC --&gt; DOMAIN
+    CALC --&gt; ATOM
+    CALC --&gt; POLY
+    CALC --&gt; REWRITE
+    EVAL --&gt; CORE
+    EVAL --&gt; ATOM
+    EVAL --&gt; DOMAIN
+
+    style OC fill:#4a9eff,stroke:#2d7ad4,color:#fff
+    style CORE fill:#6c757d,stroke:#545b62,color:#fff
+    style DOMAIN fill:#28a745,stroke:#1e7e34,color:#fff
+    style ATOM fill:#17a2b8,stroke:#117a8b,color:#fff
+    style PARSE fill:#6f42c1,stroke:#59359a,color:#fff
+    style POLY fill:#fd7e14,stroke:#ca6510,color:#fff
+    style REWRITE fill:#e83e8c,stroke:#b82d6e,color:#fff
+    style CALC fill:#20c997,stroke:#17a085,color:#fff
+    style EVAL fill:#ffc107,stroke:#d39e00,color:#333
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Crate</th><th>职责</th></tr></thead><tbody>
+<tr><td><code>ocas-core</code></td><td>Arena bump 分配器、统一错误类型 <code>OcasError</code>、燃料计数 <code>Fuel</code></td></tr>
+<tr><td><code>ocas-domain</code></td><td>系数域 trait（<code>Domain</code>、<code>EuclideanDomain</code>）及实现（整数、有理数、有限域、实数球、复数、双精度浮点、代数数域）、数论函数库、对偶数自动微分</td></tr>
+<tr><td><code>ocas-atom</code></td><td>表达式树（<code>Atom</code>、<code>AtomNode</code>、<code>AtomArena</code>）、hash-consing、张量系统</td></tr>
+<tr><td><code>ocas-parse</code></td><td>字符串 → <code>Atom</code> 解析器</td></tr>
+<tr><td><code>ocas-poly</code></td><td>多项式（稠密一元、稀疏多元、有理分式域）、矩阵、Gröbner 基算法（Buchberger/F4/F5）、理想运算、FGLM 换序</td></tr>
+<tr><td><code>ocas-rewrite</code></td><td>模式匹配（AC 匹配）、化简（不动点迭代）、自底向上变换、E-graph（可选）</td></tr>
+<tr><td><code>ocas-calc</code></td><td>符号微分、积分（Risch 管线）、Taylor 展开、ODE 求解、丢番图/线性/多项式系统求解器</td></tr>
+<tr><td><code>ocas-eval</code></td><td>栈 VM 解释器、JIT 编译（Cranelift）、SIMD 批量求值、Vegas 蒙特卡洛数值积分</td></tr>
+</tbody></table>
+</div>
+<h2 id="prelude-导入内容清单"><a class="header" href="#prelude-导入内容清单"><code>prelude</code> 导入内容清单</a></h2>
+<p><code>use ocas::prelude::*</code> 导入以下所有项。同时也可通过 <code>ocas::TypeName</code> 直接访问最常用的类型。</p>
+<h3 id="表达式树"><a class="header" href="#表达式树">表达式树</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Atom</code></td><td>struct</td><td>Copy 句柄，指向 arena 中的表达式节点</td></tr>
+<tr><td><code>AtomArena</code></td><td>struct</td><td>hash-consing 构造器，从 <code>Arena</code> 创建表达式</td></tr>
+<tr><td><code>AtomNode</code></td><td>enum</td><td>节点变体：<code>Num</code>/<code>Var</code>/<code>Fun</code>/<code>Add</code>/<code>Mul</code>/<code>Pow</code></td></tr>
+<tr><td><code>Symbol</code></td><td>struct</td><td>interned 字符串标识符，Copy</td></tr>
+<tr><td><code>normalize</code></td><td>fn</td><td>规范化表达式（排序、合并同类项）</td></tr>
+<tr><td><code>parse</code></td><td>fn</td><td>字符串解析为 <code>Atom</code></td></tr>
+<tr><td><code>ParseError</code></td><td>enum</td><td>解析错误</td></tr>
+</tbody></table>
+</div>
+<h3 id="系数域"><a class="header" href="#系数域">系数域</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Domain</code></td><td>trait</td><td>系数域基本算术（<code>zero</code>/<code>one</code>/<code>add</code>/<code>mul</code>/<code>sub</code>/<code>neg</code> 等）</td></tr>
+<tr><td><code>EuclideanDomain</code></td><td>trait</td><td>欧几里得域（+ <code>div_rem</code>/<code>gcd</code>/<code>lcm</code>）</td></tr>
+<tr><td><code>Integer</code></td><td>struct</td><td>任意精度整数</td></tr>
+<tr><td><code>IntegerDomain</code></td><td>struct</td><td>整数域实现</td></tr>
+<tr><td><code>Rational</code></td><td>struct</td><td>任意精度有理数</td></tr>
+<tr><td><code>RationalDomain</code></td><td>struct</td><td>有理数域实现</td></tr>
+<tr><td><code>FiniteField</code></td><td>struct</td><td>𝔽ₚ 有限域</td></tr>
+<tr><td><code>FiniteFieldElement</code></td><td>struct</td><td>有限域元素</td></tr>
+<tr><td><code>RealBall</code></td><td>struct</td><td>实数球算术（需 <code>mpfr</code> feature）</td></tr>
+<tr><td><code>RealBallDomain</code></td><td>struct</td><td>实数球域实现</td></tr>
+<tr><td><code>Complex</code></td><td>struct</td><td>复数</td></tr>
+<tr><td><code>ComplexDomain</code></td><td>struct</td><td>复数域实现</td></tr>
+<tr><td><code>DoubleF64</code></td><td>struct</td><td>双精度浮点（~31 位有效数字）</td></tr>
+<tr><td><code>DoubleF64Domain</code></td><td>struct</td><td>双精度浮点域实现</td></tr>
+<tr><td><code>AlgebraicExtension</code></td><td>struct</td><td>代数数域 ℚ(α) 或 GF(p^d)</td></tr>
+<tr><td><code>AlgebraicElement</code></td><td>struct</td><td>代数数域元素</td></tr>
+<tr><td><code>AlgebraicNumberField</code></td><td>struct</td><td>代数数域构造器</td></tr>
+<tr><td><code>Assumption</code></td><td>enum</td><td>假设变体（<code>Positive</code>/<code>Negative</code>/<code>Integer</code>/<code>Real</code>/<code>Complex</code> 等 13 种）</td></tr>
+<tr><td><code>Assumptions</code></td><td>struct</td><td>假设集合</td></tr>
+<tr><td><code>SymbolAssumptions</code></td><td>struct</td><td>符号级假设管理</td></tr>
+</tbody></table>
+</div>
+<h3 id="多项式"><a class="header" href="#多项式">多项式</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>DenseUnivariatePolynomial</code></td><td>struct</td><td>稠密一元多项式</td></tr>
+<tr><td><code>SparseMultivariatePolynomial</code></td><td>struct</td><td>稀疏多元多项式</td></tr>
+<tr><td><code>RationalPolynomial</code></td><td>struct</td><td>多项式分式域元素 p/q</td></tr>
+<tr><td><code>RootInterval</code></td><td>struct</td><td>恰好包含一个实根的区间（<code>low</code>/<code>high</code> 边界）</td></tr>
+<tr><td><code>MonomialOrder</code></td><td>trait</td><td>单项式序 trait</td></tr>
+<tr><td><code>Lex</code></td><td>struct</td><td>字典序</td></tr>
+<tr><td><code>Grlex</code></td><td>struct</td><td>分次字典序</td></tr>
+<tr><td><code>Grevlex</code></td><td>struct</td><td>分次反字典序</td></tr>
+<tr><td><code>WeightOrder</code></td><td>struct</td><td>加权序</td></tr>
+<tr><td><code>BlockOrder</code></td><td>struct</td><td>分块消元序</td></tr>
+<tr><td><code>SubOrder</code></td><td>struct</td><td>子序</td></tr>
+<tr><td><code>monomial_divides</code></td><td>fn</td><td>单项式整除测试</td></tr>
+<tr><td><code>monomial_lcm</code></td><td>fn</td><td>单项式最小公倍</td></tr>
+<tr><td><code>monomial_are_coprime</code></td><td>fn</td><td>单项式互素测试</td></tr>
+</tbody></table>
+</div>
+<h3 id="矩阵"><a class="header" href="#矩阵">矩阵</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Matrix</code></td><td>struct</td><td>域上矩阵（Bareiss 行列式、高斯消元求解）</td></tr>
+<tr><td><code>MatrixError</code></td><td>enum</td><td>矩阵运算错误</td></tr>
+</tbody></table>
+</div>
+<h3 id="gröbner-基"><a class="header" href="#gröbner-基">Gröbner 基</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>GroebnerBasis</code></td><td>struct</td><td>Gröbner 基结果（含多项式列表与元数据）</td></tr>
+<tr><td><code>buchberger</code></td><td>fn</td><td>Buchberger 算法入口</td></tr>
+<tr><td><code>f4</code></td><td>fn</td><td>F4 算法入口（矩阵行阶梯批处理）</td></tr>
+</tbody></table>
+</div>
+<h3 id="微积分"><a class="header" href="#微积分">微积分</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>diff</code></td><td>fn</td><td>符号微分</td></tr>
+<tr><td><code>integrate</code></td><td>fn</td><td>符号积分（分层管线）</td></tr>
+<tr><td><code>integrate_heuristic</code></td><td>fn</td><td>启发式积分（不含 Risch）</td></tr>
+<tr><td><code>integrate_with_fuel</code></td><td>fn</td><td>带燃料限制的积分</td></tr>
+<tr><td><code>taylor</code></td><td>fn</td><td>Taylor 展开</td></tr>
+<tr><td><code>substitute</code></td><td>fn</td><td>表达式替换</td></tr>
+<tr><td><code>apart</code></td><td>fn</td><td>部分分式分解</td></tr>
+</tbody></table>
+</div>
+<h3 id="求解器"><a class="header" href="#求解器">求解器</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>solve_linear_rational</code></td><td>fn</td><td>ℚ 上线性方程组 Ax=b</td></tr>
+<tr><td><code>solve_linear_integer</code></td><td>fn</td><td>ℤ 上线性方程组 Ax=b</td></tr>
+<tr><td><code>solve_diophantine</code></td><td>fn</td><td>丢番图方程 ax+by=c</td></tr>
+<tr><td><code>DiophantineSolution</code></td><td>struct</td><td>丢番图解（特解 + 步长）</td></tr>
+<tr><td><code>SolveError</code></td><td>enum</td><td>求解错误</td></tr>
+<tr><td><code>solve_polynomial_system</code></td><td>fn</td><td>多项式系统求解（零维/正维/空解集）</td></tr>
+<tr><td><code>classify_ode</code></td><td>fn</td><td>ODE 类型分类</td></tr>
+<tr><td><code>dsolve</code></td><td>fn</td><td>符号 ODE 求解</td></tr>
+<tr><td><code>dsolve_ivp</code></td><td>fn</td><td>ODE 初值问题（Laplace）</td></tr>
+<tr><td><code>dsolve_system</code></td><td>fn</td><td>2×2 ODE 系统求解</td></tr>
+<tr><td><code>ODE</code></td><td>struct</td><td>ODE 描述</td></tr>
+<tr><td><code>ODESolution</code></td><td>enum</td><td>ODE 解（显式/隐式/参数/级数/系统/未解）</td></tr>
+<tr><td><code>ODEType</code></td><td>enum</td><td>ODE 类型枚举</td></tr>
+</tbody></table>
+</div>
+<h3 id="重写与化简"><a class="header" href="#重写与化简">重写与化简</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Pattern</code></td><td>enum</td><td>匹配模式（<code>Literal</code>/<code>Wildcard</code>/<code>Add</code>/<code>Mul</code>/<code>Pow</code>/<code>Fun</code>）</td></tr>
+<tr><td><code>Rule</code></td><td>struct</td><td>重写规则</td></tr>
+<tr><td><code>Bindings</code></td><td>struct</td><td>模式绑定结果</td></tr>
+<tr><td><code>MatchError</code></td><td>enum</td><td>匹配错误（含 <code>BudgetExhausted</code>）</td></tr>
+<tr><td><code>WildcardLevel</code></td><td>enum</td><td>通配符级别（<code>Single</code>/<code>Sequence</code>/<code>NullSequence</code>）</td></tr>
+<tr><td><code>match_pattern</code></td><td>fn</td><td>AC 模式匹配</td></tr>
+<tr><td><code>simplify</code></td><td>fn</td><td>不动点化简</td></tr>
+<tr><td><code>simplify_with_fuel</code></td><td>fn</td><td>带燃料限制的化简</td></tr>
+<tr><td><code>transform</code></td><td>fn</td><td>自底向上变换</td></tr>
+</tbody></table>
+</div>
+<h3 id="求值与-jit"><a class="header" href="#求值与-jit">求值与 JIT</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ExpressionEvaluator</code></td><td>struct</td><td>栈 VM 解释器</td></tr>
+<tr><td><code>FunctionMap</code></td><td>struct</td><td>自定义函数注册表</td></tr>
+<tr><td><code>EvaluationDomain</code></td><td>trait</td><td>求值域约束</td></tr>
+<tr><td><code>EvaluationError</code></td><td>enum</td><td>求值错误</td></tr>
+<tr><td><code>EvalTree</code></td><td>struct</td><td>求值树</td></tr>
+<tr><td><code>Instr</code></td><td>enum</td><td>指令枚举</td></tr>
+<tr><td><code>Instruction</code></td><td>struct</td><td>指令详情</td></tr>
+<tr><td><code>Slot</code></td><td>enum</td><td>操作数槽（<code>Param</code>/<code>Const</code>/<code>Temp</code>）</td></tr>
+<tr><td><code>PowfExtension</code></td><td>trait</td><td>浮点幂扩展</td></tr>
+<tr><td><code>VectorEvaluator</code></td><td>struct</td><td>SIMD 批量求值（需 <code>simd</code> feature）</td></tr>
+<tr><td><code>JitEngine</code></td><td>struct</td><td>JIT 编译引擎（需 <code>jit</code> feature）</td></tr>
+<tr><td><code>JitCompiledFunction</code></td><td>struct</td><td>JIT 编译结果</td></tr>
+</tbody></table>
+</div>
+<h3 id="数值积分"><a class="header" href="#数值积分">数值积分</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Vegas</code></td><td>struct</td><td>Vegas 蒙特卡洛积分器</td></tr>
+<tr><td><code>VegasOptions</code></td><td>struct</td><td>Vegas 选项（bin 数、样本数、迭代数等）</td></tr>
+<tr><td><code>IntegrateResult</code></td><td>struct</td><td>积分结果（值 + 误差）</td></tr>
+<tr><td><code>Integrator</code></td><td>struct</td><td>积分器接口</td></tr>
+<tr><td><code>StatisticsAccumulator</code></td><td>struct</td><td>逆方差加权累加器</td></tr>
+<tr><td><code>integrate_1d</code></td><td>fn</td><td>一维数值积分便捷函数</td></tr>
+</tbody></table>
+</div>
+<h3 id="自动微分"><a class="header" href="#自动微分">自动微分</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>DualShape</code></td><td>struct</td><td>导数布局描述</td></tr>
+<tr><td><code>HyperDual</code></td><td>struct</td><td>超对偶数</td></tr>
+<tr><td><code>DualCoeff</code></td><td>trait</td><td>对偶数系数约束</td></tr>
+<tr><td><code>new_first_order</code></td><td>fn</td><td>一阶对偶便捷构造</td></tr>
+</tbody></table>
+</div>
+<h3 id="张量"><a class="header" href="#张量">张量</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Tensor</code></td><td>struct</td><td>命名指标张量</td></tr>
+<tr><td><code>IndexSlot</code></td><td>struct</td><td>指标槽（标签 + 位置）</td></tr>
+<tr><td><code>IndexPosition</code></td><td>enum</td><td><code>Upper</code>（逆变）/ <code>Lower</code>（协变）</td></tr>
+<tr><td><code>Symmetry</code></td><td>enum</td><td><code>None</code>/<code>Symmetric</code>/<code>Antisymmetric</code></td></tr>
+<tr><td><code>Contracted</code></td><td>enum</td><td>缩并结果（<code>Scalar</code>/<code>Product</code>）</td></tr>
+<tr><td><code>TensorProduct</code></td><td>struct</td><td>张量积</td></tr>
+<tr><td><code>contract</code></td><td>fn</td><td>指标缩并</td></tr>
+<tr><td><code>symmetrise_sign</code></td><td>fn</td><td>反对称化符号</td></tr>
+</tbody></table>
+</div>
+<h3 id="运行时"><a class="header" href="#运行时">运行时</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Arena</code></td><td>struct</td><td>bump 分配器</td></tr>
+<tr><td><code>OcasError</code></td><td>enum</td><td>统一错误类型</td></tr>
+<tr><td><code>Result</code></td><td>type</td><td><code>Result&lt;T, OcasError&gt;</code></td></tr>
+<tr><td><code>Fuel</code></td><td>struct</td><td>燃料计数（防无限循环）</td></tr>
+</tbody></table>
+</div>
+<h2 id="feature-flags-速查表"><a class="header" href="#feature-flags-速查表">Feature Flags 速查表</a></h2>
+<p>在 <code>Cargo.toml</code> 中通过 <code>features</code> 启用可选后端和加速功能：</p>
+<pre><code class="language-toml">[dependencies]
+ocas = { version = "0.24", features = ["gmp", "jit"] }
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>默认</th><th>说明</th><th>依赖的子 crate feature</th></tr></thead><tbody>
+<tr><td><code>gmp</code></td><td>否</td><td>使用 GMP 任意精度算术（显著加速大整数运算）</td><td><code>ocas-domain/gmp</code>, <code>ocas-poly/gmp</code>, <code>ocas-core/gmp</code></td></tr>
+<tr><td><code>mpfr</code></td><td>否</td><td>启用 MPFR 实数球算术（<code>RealBall</code> 类型）</td><td><code>ocas-domain/mpfr</code></td></tr>
+<tr><td><code>flint</code></td><td>否</td><td>使用 FLINT 数论库加速多项式运算</td><td><code>ocas-poly/flint</code></td></tr>
+<tr><td><code>python</code></td><td>否</td><td>启用 Python 绑定（PyO3）</td><td><code>dep:ocas-py</code></td></tr>
+<tr><td><code>gpl</code></td><td>否</td><td>启用 GPL 许可的功能模块</td><td><code>dep:ocas-gpl</code></td></tr>
+<tr><td><code>egg</code></td><td>否</td><td>启用 E-graph 化简（<code>egg_simplify</code> 函数）</td><td><code>ocas-rewrite/egg</code></td></tr>
+<tr><td><code>jit</code></td><td>否</td><td>启用 Cranelift JIT 编译（<code>compile_jit</code> 方法）</td><td><code>ocas-eval/jit</code></td></tr>
+<tr><td><code>simd</code></td><td>否</td><td>启用 SIMD 批量求值（<code>VectorEvaluator</code>）</td><td><code>ocas-eval/simd</code></td></tr>
+<tr><td><code>mimalloc</code></td><td>否</td><td>使用 mimalloc 全局分配器（加速大量小分配场景）</td><td><code>dep:mimalloc</code></td></tr>
+<tr><td><code>system-libs</code></td><td>否</td><td>链接系统预装的 GMP/MPFR/MPC（MinGW 必需）</td><td><code>ocas-domain/system-libs</code></td></tr>
+<tr><td><code>ntt</code></td><td>否</td><td>NTT 数论变换加速 𝔽ₚ 上多项式乘法</td><td><code>ocas-poly/ntt</code></td></tr>
+<tr><td><code>sprs</code></td><td>否</td><td>稀疏矩阵后端（用于 F4 准备阶段）</td><td><code>ocas-poly/sprs</code></td></tr>
+<tr><td><code>fast-poly</code></td><td>否</td><td>fast_polynomial Estrin 求值加速</td><td><code>ocas-eval/fast-poly</code></td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>提示</strong>：<code>default = []</code>，所有后端默认关闭以保持最大可移植性（包括 Windows MSVC）。推荐开发配置：<code>features = ["gmp", "jit"]</code>。</p>
+</blockquote>
+<h2 id="子页面索引"><a class="header" href="#子页面索引">子页面索引</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>主题</th><th>文件</th><th>内容概述</th></tr></thead><tbody>
+<tr><td>表达式系统</td><td><a href="./rust-expressions.html">rust-expressions</a></td><td><code>Arena</code>、<code>Atom</code>、<code>AtomArena</code>、<code>Symbol</code>、模式匹配、解析</td></tr>
+<tr><td>系数域</td><td><a href="./rust-domains.html">rust-domains</a></td><td><code>Domain</code> trait、整数/有理数/有限域/实数球/复数/双精度/代数数域、假设系统</td></tr>
+<tr><td>多项式</td><td><a href="./rust-polynomials.html">rust-polynomials</a></td><td>稠密一元、稀疏多元、有理分式域、单项式序</td></tr>
+<tr><td>矩阵</td><td><a href="./rust-matrix.html">rust-matrix</a></td><td><code>Matrix</code>（Bareiss 行列式、高斯消元）</td></tr>
+<tr><td>微积分</td><td><a href="./rust-calculus.html">rust-calculus</a></td><td><code>diff</code>、<code>integrate</code>、<code>taylor</code>、积分管线分层</td></tr>
+<tr><td>求解器</td><td><a href="./rust-solvers.html">rust-solvers</a></td><td>线性方程组、丢番图、多项式系统、ODE 求解</td></tr>
+<tr><td>重写与化简</td><td><a href="./rust-rewrite.html">rust-rewrite</a></td><td><code>Pattern</code>、<code>Rule</code>、<code>simplify</code>、<code>transform</code>、E-graph</td></tr>
+<tr><td>求值与 JIT</td><td><a href="./rust-evaluation.html">rust-evaluation</a></td><td><code>ExpressionEvaluator</code>、JIT、SIMD、<code>FunctionMap</code></td></tr>
+<tr><td>自动微分</td><td><a href="./rust-autodiff.html">rust-autodiff</a></td><td><code>DualShape</code>、<code>HyperDual</code>、<code>DualCoeff</code></td></tr>
+<tr><td>张量</td><td><a href="./rust-tensors.html">rust-tensors</a></td><td><code>Tensor</code>、缩并、对称性、规范化、Young 投影</td></tr>
+<tr><td>数论</td><td><a href="./rust-ntheory.html">rust-ntheory</a></td><td>素性、分解、离散对数、CRT、数论函数、二次剩余</td></tr>
+<tr><td>Gröbner 基与理想</td><td><a href="./rust-groebner.html">rust-groebner</a></td><td>Buchberger/F4/F5、FGLM、理想运算、准素分解</td></tr>
+<tr><td>因式分解</td><td><a href="./rust-factoring.html">rust-factoring</a></td><td>一元/多元 ℤ[x]/𝔽ₚ[x] 因式分解、代数数域、有理函数</td></tr>
+<tr><td>数值积分</td><td><a href="./rust-numeric-integration.html">rust-numeric-integration.md</a></td><td>Vegas 蒙特卡洛、<code>integrate_1d</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="快速开始"><a class="header" href="#快速开始">快速开始</a></h2>
+<pre><pre class="playground"><code class="language-rust">use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+fn main() {
+    // 1. 创建 arena 和表达式上下文
+    let arena = Arena::new();
+    let ctx = AtomArena::new(&amp;arena);
+
+    // 2. 构造表达式 sin(x)
+    let x = ctx.var("x");
+    let expr = ctx.fun("sin", &amp;[x]);
+
+    // 3. 符号微分（diff 接受 Symbol 作为求导变量）
+    let deriv = diff(&amp;ctx, expr, Symbol::new("x"));
+    assert_eq!(deriv.to_string(), "cos(x)");
+
+    // 4. 化简（空规则集保持表达式不变）
+    let simplified = simplify(&amp;ctx, expr, &amp;[], 100);
+    assert_eq!(simplified.to_string(), "sin(x)");
+
+    println!("d/dx sin(x) = {}", deriv);
+}</code></pre></pre>
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="../architecture.html">架构概览</a> — 整体设计与数据流</li>
+<li><a href="../math/overview.html">数学基础总览</a> — 背景数学知识与学习路径</li>
+<li><a href="./python.html">Python API 参考</a> — Python 绑定</li>
+<li><a href="./c.html">C/C++ API 参考</a> — C/C++ 绑定</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../architecture.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-expressions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../architecture.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-expressions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

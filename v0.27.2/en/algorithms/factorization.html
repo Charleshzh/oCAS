@@ -1,0 +1,537 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Polynomial Factorization - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html" class="active"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/algorithms/factorization.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="polynomial-factorization"><a class="header" href="#polynomial-factorization">Polynomial Factorization</a></h1>
+<p>oCAS implements polynomial factorization for both univariate and bivariate
+polynomials over the integers and over prime finite fields. This chapter
+describes the algorithms, their scope, and the public APIs used to access them.</p>
+<hr />
+<h2 id="scope"><a class="header" href="#scope">Scope</a></h2>
+<p>Current factorization support covers:</p>
+<div class="table-wrapper"><table><thead><tr><th>Domain</th><th>Polynomials</th><th>Algorithms</th></tr></thead><tbody>
+<tr><td>$\mathbb{Z}[x]$</td><td>Univariate</td><td>Square-free factorization, Berlekamp–Zassenhaus, Hensel lifting</td></tr>
+<tr><td>$\mathbb{F}_p[x]$</td><td>Univariate</td><td>Square-free factorization, Berlekamp</td></tr>
+<tr><td>$\mathbb{Z}[x,y]$</td><td>Bivariate (any LC)</td><td>Wang's Hensel lifting; constant-LC fast path, non-constant LC via EEZ</td></tr>
+<tr><td>$\mathbb{F}_p[x,y]$</td><td>Bivariate (monic in $x$)</td><td>Hensel lifting over $\mathbb{F}_p$</td></tr>
+<tr><td>$\mathbb{Z}[x_1,\dots,x_n]$</td><td>Multivariate</td><td>Wang EEZ Hensel lifting + leading-coefficient preprocessing + p-adic coefficient Hensel lift (non-constant LC) + skeleton-interpolation Diophantine + Zassenhaus recombination</td></tr>
+<tr><td>$\mathbb{F}_p[x_1,\dots,x_n]$</td><td>Multivariate</td><td>EEZ Hensel lifting (with characteristic-$p$ $p$-th power handling; non-constant LC via field Wang preprocessing)</td></tr>
+<tr><td>$\mathbb{Q}(\alpha)[x]$</td><td>Univariate</td><td>Trager's algorithm: norm + factorization over $\mathbb{Q}$ + modular GCD over $\mathrm{GF}(p^d)$</td></tr>
+</tbody></table>
+</div>
+<p>Since 0.16.0, multivariate factorization with more than two variables is
+supported. Since 0.16.1, non-constant leading coefficients in the main
+variable are fully handled via a p-adic coefficient Hensel lift that imposes
+Wang's reconstructed leading coefficients at every iteration; the bivariate
+constant-LC fast path is retained for efficiency. Since 0.17.0, univariate
+factorization over algebraic number fields is supported (Trager).</p>
+<hr />
+<h2 id="univariate-factorization-over-a-finite-field"><a class="header" href="#univariate-factorization-over-a-finite-field">Univariate Factorization over a Finite Field</a></h2>
+<p>For a prime field $\mathbb{F}_p$, oCAS uses <strong>Berlekamp's algorithm</strong>. The
+polynomial is first made square-free, then the Frobenius matrix $Q$ is built
+($Q[i][j]$ = coefficient of $x^j$ in $x^{ip} \bmod f$) and the nullspace of
+$Q^T - I$ is computed. Every non-trivial nullspace vector $v$ satisfies
+$v^p \equiv v \pmod f$ and yields a splitting via
+$\gcd(f, v - a)$ ($a \in \mathbb{F}_p$). Small primes ($p \le 1000$) take
+the Berlekamp matrix path; larger primes use Cantor–Zassenhaus.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{FiniteField, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let p = FiniteField::new(Integer::from(101));
+let mut f = DenseUnivariatePolynomial::&lt;FiniteField&gt;::from_coeffs(p.clone(), vec![
+    p.element(1), // constant term
+    p.element(0),
+    p.element(1), // x^2
+]);
+let factors = f.factor();
+<span class="boring">}</span></code></pre></pre>
+<p>The returned factorization is a list of <code>(factor, multiplicity)</code> pairs. Over
+finite fields, multiplicities are always <code>1</code> after the square-free step.</p>
+<hr />
+<h2 id="univariate-factorization-over-the-integers"><a class="header" href="#univariate-factorization-over-the-integers">Univariate Factorization over the Integers</a></h2>
+<p>For $\mathbb{Z}[x]$, oCAS combines <strong>square-free factorization</strong> with
+<strong>Berlekamp–Zassenhaus-style Hensel lifting</strong>. The high-level steps are:</p>
+<ol>
+<li>Compute the content and reduce to a primitive polynomial.</li>
+<li>Compute the square-free decomposition.</li>
+<li>Choose a small prime $p$ such that the reduction stays square-free and has
+the same degree as the input.</li>
+<li>Factor modulo $p$ using Cantor–Zassenhaus (which internally uses the
+Berlekamp matrix method for small primes $p \le 1000$).</li>
+<li>Lift the modular factors to factors over $\mathbb{Z}[x]$ using Hensel
+lifting.</li>
+</ol>
+<p>The actual call chain is: <code>factor()</code> → <code>factor_primitive</code> (Yun square-free
+decomposition; factors are emitted in ascending multiplicity order, so
+$k = 1$ factors come first) → for each square-free component
+<code>factor_square_free</code> (<strong>leading-coefficient transformation</strong>: for leading
+coefficient $a$ and degree $d$, build the monic polynomial
+$g(x) = a^{d-1} f(x/a)$; for $|a| = 1$ it goes straight to the monic path)
+→ <code>factor_square_free_monic</code> (Mignotte coefficient bound $B$, modular
+factorization, Hensel lifting up to $p^k &gt; 2B$, Zassenhaus subset
+recombination). Each monic factor $G$ of the transformed path is mapped
+back to $\mathbb{Z}[x]$ via the primitive part $\operatorname{pp}(G(a x))$.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::IntegerDomain;
+use ocas_poly::DenseUnivariatePolynomial;
+
+let f = DenseUnivariatePolynomial::&lt;IntegerDomain&gt;::from_coeffs(
+    IntegerDomain,
+    vec![1.into(), 0.into(), 1.into()], // x^2 + 1
+);
+let factors = f.factor();
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="bivariate-factorization-over-the-integers"><a class="header" href="#bivariate-factorization-over-the-integers">Bivariate Factorization over the Integers</a></h2>
+<p><code>ocas-poly</code> provides bivariate factorization over $\mathbb{Z}[x,y]$ using
+<strong>Wang's Hensel lifting</strong>, assuming the polynomial is monic in $x$.</p>
+<p>The algorithm:</p>
+<ol>
+<li>Choose an evaluation point $y = \alpha$ so that the univariate image
+$f(x, \alpha)$ is square-free and has the fewest irreducible factors.</li>
+<li>Factor the univariate image over $\mathbb{Z}[x]$.</li>
+<li>Lift the univariate factors back to bivariate factors by correcting the
+Taylor coefficients of $f$ around $y = \alpha$.</li>
+</ol>
+<p>The correction step uses rational Bézout coefficients for the univariate
+factors, then reconstructs integral corrections with integer division. If the
+reconstruction fails (non-integral remainder) or the lifted product does not
+match the original polynomial, the implementation tries the next candidate
+evaluation point and eventually falls back to returning the polynomial as
+irreducible.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::IntegerDomain;
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::sparse::Lex;
+
+type MPoly = SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt;;
+
+let domain = IntegerDomain;
+let f = MPoly::from_terms(domain, 2, vec![
+    (vec![3, 0], 1.into()),  // x^3
+    (vec![2, 1], 1.into()),  // x^2*y
+    (vec![2, 0], 2.into()),  // 2*x^2
+    (vec![1, 1], 1.into()),  // x*y
+    (vec![1, 0], 1.into()),  // x
+    (vec![0, 2], 1.into()),  // y^2
+    (vec![0, 1], 3.into()),  // 3*y
+    (vec![0, 0], 2.into()),  // 2
+]);
+
+let factors = f.factor();
+// factors contains (x^2 + y + 1, 1) and (x + y + 2, 1)
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="bivariate-factorization-over-a-finite-field"><a class="header" href="#bivariate-factorization-over-a-finite-field">Bivariate Factorization over a Finite Field</a></h2>
+<p>Over $\mathbb{F}_p[x,y]$, the same Hensel-lifting structure is used, but the
+arithmetic is performed directly in the finite field. Bézout coefficients are
+computed with finite-field gcds, and all corrections are guaranteed to remain in
+the field, so no integral reconstruction is required.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::FiniteField;
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::sparse::Lex;
+
+let domain = FiniteField::new(101.into());
+type FpPoly = SparseMultivariatePolynomial&lt;FiniteField, Lex&gt;;
+
+let f = FpPoly::from_terms(domain.clone(), 2, vec![
+    (vec![2, 0], 1.into()), // x^2
+    (vec![0, 1], 1.into()), // y
+    (vec![0, 0], 1.into()), // 1
+]);
+let factors = f.factor();
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="cc-polynomial-api"><a class="header" href="#cc-polynomial-api">C/C++ Polynomial API</a></h2>
+<p>The C bindings expose opaque handles for bivariate integer and finite-field
+polynomials. Polynomials are created from ASCII strings, factored, printed, and
+freed through the C API.</p>
+<pre><code class="language-c">#include &lt;ocas.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void) {
+    int err = 0;
+    OcasPolyZ *f = ocas_poly_z_create("x^2 + y + 1", &amp;err);
+    if (f == NULL) {
+        fprintf(stderr, "parse error: %s\n", ocas_error_last_message());
+        return 1;
+    }
+
+    OcasPolyFactorArray factors = {0};
+    int rc = ocas_poly_z_factor(f, &amp;factors, &amp;err);
+    if (rc != OCAS_OK) {
+        fprintf(stderr, "factor error: %s\n", ocas_error_last_message());
+        ocas_poly_z_free(f);
+        return 1;
+    }
+
+    printf("factors: %zu\n", factors.len);
+    for (size_t i = 0; i &lt; factors.len; ++i) {
+        OcasPolyZ *factor = (OcasPolyZ *)factors.factors[i].poly;
+        char *s = ocas_poly_z_to_string(factor, &amp;err);
+        printf("  %s^%zu\n", s, factors.factors[i].multiplicity);
+        ocas_string_free(s);
+        ocas_poly_z_free(factor);
+    }
+    ocas_poly_factor_array_free(&amp;factors);
+    ocas_poly_z_free(f);
+    return 0;
+}
+</code></pre>
+<p>For finite fields, use <code>OcasPolyFp</code>, <code>ocas_poly_fp_create</code>, and
+<code>ocas_poly_fp_factor</code>. The factor array stores <code>void*</code> polynomial handles, so
+the caller must cast the pointer back to the correct concrete type before
+printing or freeing it.</p>
+<hr />
+<h2 id="multivariate-factorization-wang-eez"><a class="header" href="#multivariate-factorization-wang-eez">Multivariate Factorization (Wang EEZ)</a></h2>
+<p>Since 0.16.0, oCAS factors polynomials in any number of variables over
+$\mathbb{Z}$ and $\mathbb{F}_p$ using <strong>Wang's EEZ (Evaluation and
+EZ-lifting) algorithm</strong>:</p>
+<ol>
+<li><strong>Square-free factorization</strong> (Yun): differentiate in the main variable
+$x_1$ and peel repeated factors via $n$-variate GCD (dense recursive
+evaluation–interpolation); characteristic-$p$ $p$-th powers are shrunk and
+expanded.</li>
+<li><strong>Sample-point search</strong>: substitute the secondary variables
+$x_2,\dots,x_n$ at sample points so the univariate image keeps its degree
+and stays square-free.</li>
+<li><strong>Wang leading-coefficient preprocessing</strong>: factor the leading
+coefficient $\ell(x_2,\dots)$ and distribute its factors among the
+univariate factors using their pairwise-coprime integer images, reconstructing
+the true leading coefficients $\ell_i$.</li>
+<li><strong>Variable-by-variable Hensel lifting</strong>: lift the univariate factors back
+to multivariate ones through the ideals $(x_k - a_k)$, solving multivariate
+Diophantine equations at each step.</li>
+<li><strong>Zassenhaus recombination</strong>: when the lifted factors are finer than the
+true factors, enumerate subsets and trial-divide to obtain the irreducible
+factors.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::sparse::{Lex, SparseMultivariatePolynomial};
+
+// (x + y + z)(x - y + 2z)
+let f = SparseMultivariatePolynomial::&lt;IntegerDomain, Lex&gt;::from_terms(
+    IntegerDomain, 3,
+    vec![
+        (vec![2, 0, 0], Integer::from(1)),
+        (vec![1, 0, 1], Integer::from(3)),
+        (vec![0, 1, 1], Integer::from(1)),
+        (vec![0, 2, 0], Integer::from(-1)),
+        (vec![0, 0, 2], Integer::from(2)),
+    ],
+);
+let factors = f.factor();
+<span class="boring">}</span></code></pre></pre>
+<p>The result is a list of <code>(factor, multiplicity)</code> pairs, normalized to be
+primitive with a positive leading coefficient.</p>
+<hr />
+<h2 id="factorization-over-algebraic-number-fields-trager"><a class="header" href="#factorization-over-algebraic-number-fields-trager">Factorization over Algebraic Number Fields (Trager)</a></h2>
+<p>Since 0.17.0, oCAS factors univariate polynomials over an algebraic number
+field $K = \mathbb{Q}(\alpha)$, where $\alpha$ is given by a monic minimal
+polynomial over $\mathbb{Q}$. The domain lives in <code>ocas-domain</code> as
+<code>AlgebraicExtension&lt;D&gt;</code> (<code>AlgebraicNumberField</code> for $D = \mathbb{Q}$);
+the same type with $D = \mathbb{F}_p$ represents $\mathrm{GF}(p^d)$.</p>
+<p>The factorizer implements <strong>Trager's algorithm</strong>:</p>
+<ol>
+<li><strong>Square-free factorization</strong> (Yun) over $K$, using the modular GCD
+below instead of a pseudo-remainder sequence.</li>
+<li><strong>Norm with shift</strong>: for $s = 0, 1, 2, \dots$ compute the norm of
+$g(x) = f(x - s\alpha)$ down to $\mathbb{Q}[x]$ by
+evaluation–interpolation of the scalar resultant
+$\operatorname{Res}_\alpha(m, g)$, until the norm is square-free
+(checked modulo small primes; acceptance is exact).</li>
+<li><strong>Rational factorization</strong>: the square-free norm is factored over
+$\mathbb{Z}$ (Hensel path).</li>
+<li><strong>Modular GCD over $K$</strong>: each rational factor is mapped into $K[x]$
+and its GCD with $g$ is computed by the modular method — map to
+$\mathrm{GF}(p^d)$ for primes with $m$ irreducible mod $p$, combine
+monic modular GCDs by CRT, rational-reconstruct the coefficients, and
+verify by trial division.</li>
+<li><strong>Shift back</strong> with $x \mapsto x + s\alpha$ and normalize monic.</li>
+</ol>
+<p>A <strong>rational fast path</strong> applies when all coefficients of $f$ are rational
+constants: $f$ is first factored over $\mathbb{Q}$, and only the
+$\mathbb{Q}$-irreducible factors go through Trager's norm machinery.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicNumberField, Domain, Rational, RationalDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+// ℚ(√2): minimal polynomial α² − 2.
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+// x² − 2 = (x − √2)(x + √2) splits over ℚ(√2).
+let f = DenseUnivariatePolynomial::from_coeffs(
+    field.clone(),
+    vec![field.from_base(Rational::new(-2, 1)), field.zero(), field.one()],
+);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p>Benchmarks (criterion group <code>poly_factor_anf</code>): degree ≤ 12 over
+$\mathbb{Q}(\sqrt2)$, $\mathbb{Q}(\sqrt[3]{2})$, and the cyclotomic field
+$\mathbb{Q}(\zeta_5)$ all factor in well under 100 ms.</p>
+<hr />
+<h2 id="limitations-and-future-work"><a class="header" href="#limitations-and-future-work">Limitations and Future Work</a></h2>
+<ul>
+<li>Non-constant leading coefficients in the main variable are fully supported
+since 0.16.1 via a p-adic coefficient Hensel lift with skeleton-interpolation
+Diophantine.</li>
+<li>The bivariate Wang Hensel limitation that the leading coefficient be a
+constant is subsumed by the 0.16.0 arbitrary-multivariate (EEZ) path; bivariate
+non-constant-LC inputs now dispatch to the EEZ path automatically.</li>
+<li>Since 0.16.2 the $\mathbb{F}_p$ multivariate path also supports non-constant
+leading coefficients via field Wang LC preprocessing
+(<code>wang_reconstruct_lcoeffs_fp</code>) and <code>eez_lift_imposed</code>.</li>
+<li>Algebraic number field factorization (0.17.0) is currently <strong>univariate
+only</strong>; extension-field factorization of multivariate polynomials and a
+<code>RootOf</code>/radical syntax in the parser are future work. The minimal
+polynomial's irreducibility is the caller's responsibility (over a
+reducible modulus the ring has zero divisors and inversion fails).</li>
+<li>The adaptive evaluation-point search has been widened (7 → 25 for $\mathbb{Z}$,
+8 → 32 for $\mathbb{F}_p$); very sparse or highly specialized polynomials may
+still need an extended range or additional Diophantine interpolation passes.</li>
+</ul>
+<p>These limitations are tracked in the project roadmap and will be lifted as the
+algebra kernel matures.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../algorithms/groebner.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../algorithms/number-theory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../algorithms/groebner.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../algorithms/number-theory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

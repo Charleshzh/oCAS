@@ -1,0 +1,1917 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Python API 参考 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html" class="active"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/python.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="python-api-参考"><a class="header" href="#python-api-参考">Python API 参考</a></h1>
+<p>本章记录 oCAS Python 绑定 (<code>ocas</code> 模块) 的完整 API。每个类和函数均包含签名、参数说明、返回值、异常和完整示例。</p>
+<blockquote>
+<p><strong>版本</strong>：本文档对应 oCAS 0.24.x。</p>
+</blockquote>
+<h2 id="导入"><a class="header" href="#导入">导入</a></h2>
+<pre><code class="language-python">import ocas
+</code></pre>
+<p>模块顶层导出所有类和函数，无需子模块导入。</p>
+<hr />
+<h2 id="表达式"><a class="header" href="#表达式">表达式</a></h2>
+<h3 id="expression"><a class="header" href="#expression">Expression</a></h3>
+<p>符号表达式类。从字符串解析构造，支持算术运算、微积分、化简等操作。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.Expression(input: str)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>str</code></td><td>符号表达式字符串，使用 <code>^</code> 表示幂次，<code>*</code> 表示乘法</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Expression</code> 实例。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 表达式字符串解析失败。</p>
+<p><strong>支持的运算</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>方法</th><th>说明</th></tr></thead><tbody>
+<tr><td>加法</td><td><code>__add__</code></td><td><code>e1 + e2</code></td></tr>
+<tr><td>减法</td><td><code>__sub__</code></td><td><code>e1 - e2</code></td></tr>
+<tr><td>乘法</td><td><code>__mul__</code></td><td><code>e1 * e2</code></td></tr>
+<tr><td>幂</td><td><code>__pow__</code></td><td><code>e1 ** e2</code></td></tr>
+<tr><td>取负</td><td><code>__neg__</code></td><td><code>-e</code></td></tr>
+<tr><td>相等比较</td><td><code>__eq__</code></td><td><code>e1 == e2</code>（基于规范化形式比较）</td></tr>
+<tr><td>哈希</td><td><code>__hash__</code></td><td>可用作字典键或集合元素</td></tr>
+<tr><td>字符串化</td><td><code>__str__</code></td><td>输出内部表示</td></tr>
+<tr><td>表示</td><td><code>__repr__</code></td><td><code>Expression("...")</code> 格式</td></tr>
+</tbody></table>
+</div>
+<p><strong>方法</strong>：</p>
+<hr />
+<h4 id="expressionclone"><a class="header" href="#expressionclone">Expression.clone</a></h4>
+<pre><code class="language-python">Expression.clone() -&gt; Expression
+</code></pre>
+<p>返回表达式的深拷贝。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x + 1")
+&gt;&gt;&gt; f = e.clone()
+&gt;&gt;&gt; e == f
+True
+</code></pre>
+<hr />
+<h4 id="expressionsimplify"><a class="header" href="#expressionsimplify">Expression.simplify</a></h4>
+<pre><code class="language-python">Expression.simplify() -&gt; Expression
+</code></pre>
+<p>使用内置规则集对表达式进行化简（不动点迭代）。</p>
+<p><strong>返回值</strong>：化简后的 <code>Expression</code>。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 化简过程中发生内部错误。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x + x")
+&gt;&gt;&gt; print(e.simplify())
+2*x
+</code></pre>
+<hr />
+<h4 id="expressiondiff"><a class="header" href="#expressiondiff">Expression.diff</a></h4>
+<pre><code class="language-python">Expression.diff(var: str) -&gt; Expression
+</code></pre>
+<p>对表达式关于变量 <code>var</code> 求导。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>微分变量名</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：导数表达式。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^3 + 2*x")
+&gt;&gt;&gt; print(e.diff("x"))
+2 + (3*(x^2))
+</code></pre>
+<hr />
+<h4 id="expressionintegrate"><a class="header" href="#expressionintegrate">Expression.integrate</a></h4>
+<pre><code class="language-python">Expression.integrate(var: str) -&gt; Expression
+</code></pre>
+<p>对表达式关于变量 <code>var</code> 进行符号积分。采用分层积分管线：快速查表 → 有理函数 → Risch → 三角重写+realify → 特殊函数 → 启发式 → 未求值形式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>积分变量名</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：积分结果表达式。若无法求出闭式解，返回未求值的 <code>Integral(expr, var)</code> 形式。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2")
+&gt;&gt;&gt; print(e.integrate("x"))
+(3^-1)*(x^3)
+</code></pre>
+<hr />
+<h4 id="expressionintegrate_heuristic"><a class="header" href="#expressionintegrate_heuristic">Expression.integrate_heuristic</a></h4>
+<pre><code class="language-python">Expression.integrate_heuristic(var: str) -&gt; Expression
+</code></pre>
+<p>仅使用启发式方法积分（分部积分、三角替换等），不调用完整 Risch 算法。成功时返回闭式解，失败时返回未求值形式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>积分变量名</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：积分结果或未求值 <code>Integral(expr, var)</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("sin(x)")
+&gt;&gt;&gt; print(e.integrate_heuristic("x"))
+-1*(cos(x))
+</code></pre>
+<hr />
+<h4 id="expressiontaylor"><a class="header" href="#expressiontaylor">Expression.taylor</a></h4>
+<pre><code class="language-python">Expression.taylor(var: str, point: Expression, order: int) -&gt; Expression
+</code></pre>
+<p>计算表达式在 <code>point</code> 处关于 <code>var</code> 的 Taylor 展开至 <code>order</code> 阶。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>展开变量名</td></tr>
+<tr><td><code>point</code></td><td><code>Expression</code></td><td>展开中心点</td></tr>
+<tr><td><code>order</code></td><td><code>int</code></td><td>展开阶数（非负整数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：Taylor 多项式。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("exp(x)")
+&gt;&gt;&gt; p = ocas.Expression("0")
+&gt;&gt;&gt; print(e.taylor("x", p, 4))
+1 + x + ((2^-1)*(x^2)) + ((6^-1)*(x^3)) + ((24^-1)*(x^4))
+</code></pre>
+<hr />
+<h4 id="expressionsubstitute"><a class="header" href="#expressionsubstitute">Expression.substitute</a></h4>
+<pre><code class="language-python">Expression.substitute(var: str, replacement: Expression) -&gt; Expression
+</code></pre>
+<p>将表达式中所有 <code>var</code> 的出现替换为 <code>replacement</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>被替换的变量名</td></tr>
+<tr><td><code>replacement</code></td><td><code>Expression</code></td><td>替换表达式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：替换后的表达式。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2 + y")
+&gt;&gt;&gt; r = ocas.Expression("3")
+&gt;&gt;&gt; print(e.substitute("x", r))
+y + (3^2)
+</code></pre>
+<hr />
+<h2 id="多项式"><a class="header" href="#多项式">多项式</a></h2>
+<h3 id="polynomial"><a class="header" href="#polynomial">Polynomial</a></h3>
+<p>稠密一元多项式，支持整数 ℤ、有理数 ℚ 和有限域 GF(p) 三种系数域。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.Polynomial(coeffs, domain=None)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>coeffs</code></td><td><code>list</code></td><td>系数列表，从低次到高次排列</td></tr>
+<tr><td><code>domain</code></td><td><code>str</code> 或 <code>FiniteField</code> 或 <code>None</code></td><td>系数域：<code>"integer"</code>（默认）、<code>"rational"</code>、<code>FiniteField(p)</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>系数格式</strong>：</p>
+<ul>
+<li>整数域：整数列表，如 <code>[1, 2, 1]</code> 表示 $1 + 2x + x^2$</li>
+<li>有理数域：整数列表或 <code>(分子, 分母)</code> 元组列表</li>
+<li>有限域：整数列表，运算自动取模</li>
+</ul>
+<p><strong>异常</strong>：<code>TypeError</code> — 系数类型不匹配所选域。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Polynomial
+&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; print(p.degree())
+2
+</code></pre>
+<hr />
+<h4 id="polynomialcoeffs"><a class="header" href="#polynomialcoeffs">Polynomial.coeffs</a></h4>
+<pre><code class="language-python">Polynomial.coeffs() -&gt; list[str]
+</code></pre>
+<p>返回系数列表（字符串形式），从低次到高次。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; p.coeffs()
+['1', '2', '1']
+</code></pre>
+<hr />
+<h4 id="polynomialdegree"><a class="header" href="#polynomialdegree">Polynomial.degree</a></h4>
+<pre><code class="language-python">Polynomial.degree() -&gt; int | None
+</code></pre>
+<p>返回多项式的次数。零多项式返回 <code>None</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; Polynomial([1, 2, 1]).degree()
+2
+&gt;&gt;&gt; Polynomial([0]).degree() is None
+True
+</code></pre>
+<hr />
+<h4 id="polynomiallen"><a class="header" href="#polynomiallen">Polynomial.len</a></h4>
+<pre><code class="language-python">Polynomial.len() -&gt; int
+</code></pre>
+<p>返回存储的系数个数。</p>
+<hr />
+<h4 id="polynomialis_zero"><a class="header" href="#polynomialis_zero">Polynomial.is_zero</a></h4>
+<pre><code class="language-python">Polynomial.is_zero() -&gt; bool
+</code></pre>
+<p>是否为零多项式。</p>
+<hr />
+<h4 id="polynomialeval"><a class="header" href="#polynomialeval">Polynomial.eval</a></h4>
+<pre><code class="language-python">Polynomial.eval(x) -&gt; str
+</code></pre>
+<p>在点 <code>x</code> 处求值。整数域下 <code>x</code> 为整数；有理数域下 <code>x</code> 为整数或 <code>(分子, 分母)</code> 元组。</p>
+<p><strong>返回值</strong>：求值结果的字符串表示。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; p.eval(2)
+'9'
+</code></pre>
+<hr />
+<h4 id="polynomialderivative"><a class="header" href="#polynomialderivative">Polynomial.derivative</a></h4>
+<pre><code class="language-python">Polynomial.derivative() -&gt; Polynomial
+</code></pre>
+<p>返回形式导数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; q = p.derivative()
+&gt;&gt;&gt; q.coeffs()
+['2', '2']
+</code></pre>
+<hr />
+<h4 id="polynomialintegral"><a class="header" href="#polynomialintegral">Polynomial.integral</a></h4>
+<pre><code class="language-python">Polynomial.integral() -&gt; Polynomial
+</code></pre>
+<p>返回形式积分（常数项为零）。三个系数域均可调用：在有理数域上精确；在整数域和有限域上，当系数除以 $i+1$ 不能整除时该系数被置零（不抛异常）。</p>
+<hr />
+<h4 id="polynomialprimitive_part"><a class="header" href="#polynomialprimitive_part">Polynomial.primitive_part</a></h4>
+<pre><code class="language-python">Polynomial.primitive_part() -&gt; Polynomial
+</code></pre>
+<p>返回本原部分（去除内容）。仅支持整数域。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 非整数域多项式。</p>
+<hr />
+<h4 id="polynomialfactor"><a class="header" href="#polynomialfactor">Polynomial.factor</a></h4>
+<pre><code class="language-python">Polynomial.factor() -&gt; list[PolynomialFactor]
+</code></pre>
+<p>完整因式分解。返回 <code>(因子, 重数)</code> 对的列表：整数域上每个因子为本原多项式，有限域上为首一多项式。</p>
+<p><strong>因式分解策略</strong>：</p>
+<ul>
+<li>ℤ[x]：无平方分解 + Berlekamp–Zassenhaus + Hensel 提升</li>
+<li>GF(p)[x]：Berlekamp 算法</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; for f in p.factor():
+...     print(f.factor.coeffs(), f.multiplicity)
+['1', '1'] 2
+</code></pre>
+<hr />
+<h4 id="polynomialsquare_free_factorization"><a class="header" href="#polynomialsquare_free_factorization">Polynomial.square_free_factorization</a></h4>
+<pre><code class="language-python">Polynomial.square_free_factorization() -&gt; list[PolynomialFactor]
+</code></pre>
+<p>无平方分解。返回互不相同的无平方因子及其重数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; p = Polynomial([1, 2, 1])
+&gt;&gt;&gt; for f in p.square_free_factorization():
+...     print(f.factor.coeffs(), f.multiplicity)
+['1', '1'] 2
+</code></pre>
+<hr />
+<h4 id="polynomialis_square_free"><a class="header" href="#polynomialis_square_free">Polynomial.is_square_free</a></h4>
+<pre><code class="language-python">Polynomial.is_square_free() -&gt; bool
+</code></pre>
+<p>是否无平方（无重复不可约因子）。</p>
+<hr />
+<h4 id="polynomialgcd"><a class="header" href="#polynomialgcd">Polynomial.gcd</a></h4>
+<pre><code class="language-python">Polynomial.gcd(other: Polynomial) -&gt; Polynomial
+</code></pre>
+<p>计算与 <code>other</code> 的最大公因式。两个多项式必须在同一系数域上。</p>
+<p><strong>异常</strong>：<code>TypeError</code> — 系数域不匹配。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Polynomial([0, 1])         # x
+&gt;&gt;&gt; b = Polynomial([0, 0, 1])     # x^2
+&gt;&gt;&gt; a.gcd(b).coeffs()
+['0', '1']
+</code></pre>
+<hr />
+<h4 id="polynomialdiv_rem"><a class="header" href="#polynomialdiv_rem">Polynomial.div_rem</a></h4>
+<pre><code class="language-python">Polynomial.div_rem(other: Polynomial) -&gt; tuple[Polynomial, Polynomial] | None
+</code></pre>
+<p>带余除法，返回 <code>(商, 余式)</code>。<code>other</code> 为零时返回 <code>None</code>。</p>
+<p><strong>异常</strong>：<code>TypeError</code> — 系数域不匹配。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Polynomial([1, 2, 1])
+&gt;&gt;&gt; b = Polynomial([1, 1])
+&gt;&gt;&gt; q, r = a.div_rem(b)
+&gt;&gt;&gt; q.coeffs()
+['1', '1']
+&gt;&gt;&gt; r.is_zero()
+True
+</code></pre>
+<hr />
+<h4 id="polynomial-算术运算"><a class="header" href="#polynomial-算术运算">Polynomial 算术运算</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>语法</th><th>说明</th></tr></thead><tbody>
+<tr><td>加法</td><td><code>p + q</code></td><td>多项式加法</td></tr>
+<tr><td>减法</td><td><code>p - q</code></td><td>多项式减法</td></tr>
+<tr><td>乘法</td><td><code>p * q</code></td><td>多项式乘法</td></tr>
+<tr><td>取负</td><td><code>-p</code></td><td>系数取负</td></tr>
+<tr><td>相等</td><td><code>p == q</code></td><td>归一化系数比较</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="polynomialfactor-1"><a class="header" href="#polynomialfactor-1">PolynomialFactor</a></h3>
+<p>因式分解结果中的单个因子。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>factor</code></td><td><code>Polynomial</code></td><td>因子多项式（整数域上本原，有限域上首一）</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>int</code></td><td>重数</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="multivariatepolynomial"><a class="header" href="#multivariatepolynomial">MultivariatePolynomial</a></h3>
+<p>稀疏多元多项式（$\mathbb{Q}[x_1, \dots, x_n]$），使用字典序 (Lex)。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.MultivariatePolynomial(terms: dict, n_vars: int)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>terms</code></td><td><code>dict[tuple[int,...], int]</code></td><td>键为指数元组（长度为 <code>n_vars</code>），值为系数</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial
+&gt;&gt;&gt; # x² + y² - 1
+&gt;&gt;&gt; p = MultivariatePolynomial({(2, 0): 1, (0, 2): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; p.n_vars()
+2
+</code></pre>
+<hr />
+<h4 id="multivariatepolynomialn_vars"><a class="header" href="#multivariatepolynomialn_vars">MultivariatePolynomial.n_vars</a></h4>
+<pre><code class="language-python">MultivariatePolynomial.n_vars() -&gt; int
+</code></pre>
+<p>返回变量个数。</p>
+<hr />
+<h2 id="矩阵"><a class="header" href="#矩阵">矩阵</a></h2>
+<h3 id="matrix"><a class="header" href="#matrix">Matrix</a></h3>
+<p>域上的稠密矩阵，支持 ℤ、ℚ 和 GF(p)。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.Matrix(rows, domain=None)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>list[list]</code></td><td>行优先的二维列表</td></tr>
+<tr><td><code>domain</code></td><td><code>str</code> 或 <code>FiniteField</code> 或 <code>None</code></td><td>系数域：<code>"integer"</code>（默认）、<code>"rational"</code>、<code>FiniteField(p)</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>TypeError</code> — 元素类型不匹配所选域。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Matrix
+&gt;&gt;&gt; a = Matrix([[1, 2], [3, 4]])
+&gt;&gt;&gt; a.determinant()
+'-2'
+</code></pre>
+<hr />
+<h4 id="matrixnrows"><a class="header" href="#matrixnrows">Matrix.nrows</a></h4>
+<pre><code class="language-python">Matrix.nrows -&gt; int  # property
+</code></pre>
+<p>行数。</p>
+<hr />
+<h4 id="matrixncols"><a class="header" href="#matrixncols">Matrix.ncols</a></h4>
+<pre><code class="language-python">Matrix.ncols -&gt; int  # property
+</code></pre>
+<p>列数。</p>
+<hr />
+<h4 id="matrixshape"><a class="header" href="#matrixshape">Matrix.shape</a></h4>
+<pre><code class="language-python">Matrix.shape() -&gt; tuple[int, int]
+</code></pre>
+<p>返回 <code>(nrows, ncols)</code>。</p>
+<hr />
+<h4 id="matrixgetitem"><a class="header" href="#matrixgetitem">Matrix.<strong>getitem</strong></a></h4>
+<pre><code class="language-python">Matrix[i, j] -&gt; str
+</code></pre>
+<p>返回 <code>(i, j)</code> 位置的元素（字符串形式）。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 索引越界。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Matrix([[1, 2], [3, 4]])
+&gt;&gt;&gt; a[1, 0]
+'3'
+</code></pre>
+<hr />
+<h4 id="matrixrows"><a class="header" href="#matrixrows">Matrix.rows</a></h4>
+<pre><code class="language-python">Matrix.rows() -&gt; list[list[str]]
+</code></pre>
+<p>返回所有行的二维列表（字符串形式）。</p>
+<hr />
+<h4 id="matrixtranspose"><a class="header" href="#matrixtranspose">Matrix.transpose</a></h4>
+<pre><code class="language-python">Matrix.transpose() -&gt; Matrix
+</code></pre>
+<p>返回转置矩阵。</p>
+<hr />
+<h4 id="matrixtrace"><a class="header" href="#matrixtrace">Matrix.trace</a></h4>
+<pre><code class="language-python">Matrix.trace() -&gt; str
+</code></pre>
+<p>返回方阵的迹（对角线元素之和）。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 非方阵。</p>
+<hr />
+<h4 id="matrixrank"><a class="header" href="#matrixrank">Matrix.rank</a></h4>
+<pre><code class="language-python">Matrix.rank() -&gt; int
+</code></pre>
+<p>返回矩阵的秩。</p>
+<hr />
+<h4 id="matrixdeterminant"><a class="header" href="#matrixdeterminant">Matrix.determinant</a></h4>
+<pre><code class="language-python">Matrix.determinant() -&gt; str
+</code></pre>
+<p>返回方阵的行列式（Bareiss 无分数算法）。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 非方阵。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Matrix([[1, 2], [3, 4]])
+&gt;&gt;&gt; a.determinant()
+'-2'
+</code></pre>
+<hr />
+<h4 id="matrixinverse"><a class="header" href="#matrixinverse">Matrix.inverse</a></h4>
+<pre><code class="language-python">Matrix.inverse() -&gt; Matrix
+</code></pre>
+<p>返回逆矩阵。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 奇异矩阵或非方阵。</p>
+<hr />
+<h4 id="matrixsolve"><a class="header" href="#matrixsolve">Matrix.solve</a></h4>
+<pre><code class="language-python">Matrix.solve(rhs) -&gt; list[str]
+</code></pre>
+<p>求解线性方程组 <code>self · x = rhs</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rhs</code></td><td><code>list</code></td><td>右端向量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：解向量（字符串列表）。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 无解或不唯一。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = Matrix([[2, 0], [0, 3]])
+&gt;&gt;&gt; a.solve([4, 9])
+['2', '3']
+</code></pre>
+<hr />
+<h4 id="matrix-算术运算"><a class="header" href="#matrix-算术运算">Matrix 算术运算</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>语法</th><th>说明</th></tr></thead><tbody>
+<tr><td>矩阵乘法</td><td><code>a @ b</code></td><td><code>__matmul__</code></td></tr>
+<tr><td>加法</td><td><code>a + b</code></td><td>逐元素加法</td></tr>
+<tr><td>减法</td><td><code>a - b</code></td><td>逐元素减法</td></tr>
+<tr><td>相等</td><td><code>a == b</code></td><td>逐元素比较</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="系数域"><a class="header" href="#系数域">系数域</a></h2>
+<h3 id="integerdomain"><a class="header" href="#integerdomain">IntegerDomain</a></h3>
+<p>整数域 ℤ 的选择器类。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.IntegerDomain()
+</code></pre>
+<blockquote>
+<p><strong>注意</strong>：<code>Polynomial</code> 和 <code>Matrix</code> 的 <code>domain</code> 参数目前接受字符串（<code>"integer"</code> / <code>"rational"</code>）或 <code>FiniteField</code> 实例；<code>IntegerDomain()</code> / <code>RationalDomain()</code> 实例尚不能直接作为该参数传递。</p>
+</blockquote>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import IntegerDomain, Polynomial
+&gt;&gt;&gt; d = IntegerDomain()
+&gt;&gt;&gt; repr(d)
+'IntegerDomain()'
+&gt;&gt;&gt; p = Polynomial([1, 2, 1], domain="integer")
+&gt;&gt;&gt; p.coeffs()
+['1', '2', '1']
+</code></pre>
+<hr />
+<h3 id="rationaldomain"><a class="header" href="#rationaldomain">RationalDomain</a></h3>
+<p>有理数域 ℚ 的选择器。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.RationalDomain()
+</code></pre>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import RationalDomain, Polynomial
+&gt;&gt;&gt; d = RationalDomain()
+&gt;&gt;&gt; repr(d)
+'RationalDomain()'
+&gt;&gt;&gt; p = Polynomial([(1, 2), (3, 4)], domain="rational")
+&gt;&gt;&gt; p.coeffs()
+['1/2', '3/4']
+</code></pre>
+<hr />
+<h3 id="finitefield"><a class="header" href="#finitefield">FiniteField</a></h3>
+<p>有限域 GF(p)，$p$ 为素数。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.FiniteField(modulus: int)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>modulus</code></td><td><code>int</code></td><td>素数模数，$p \geq 2$</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>FiniteField</code> 实例。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — <code>modulus &lt; 2</code>。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>modulus</code></td><td><code>str</code></td><td>素数模数的十进制字符串</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import FiniteField, Polynomial
+&gt;&gt;&gt; gf5 = FiniteField(5)
+&gt;&gt;&gt; p = Polynomial([1, 2, 1], domain=gf5)
+&gt;&gt;&gt; print(repr(gf5))
+FiniteField(5)
+</code></pre>
+<hr />
+<h2 id="求解器"><a class="header" href="#求解器">求解器</a></h2>
+<h3 id="solve_linear_rational"><a class="header" href="#solve_linear_rational">solve_linear_rational</a></h3>
+<pre><code class="language-python">ocas.solve_linear_rational(a: list[list[int]], b: list[int]) -&gt; list[tuple[int, int]]
+</code></pre>
+<p>在 ℚ 上求解线性方程组 $A \mathbf{x} = \mathbf{b}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>list[list[int]]</code></td><td>系数矩阵（行优先，整数）</td></tr>
+<tr><td><code>b</code></td><td><code>list[int]</code></td><td>右端向量（整数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：解向量，每个分量为 <code>(分子, 分母)</code> 元组。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 无唯一解。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.solve_linear_rational([[2, 0], [0, 3]], [4, 9])
+[(2, 1), (3, 1)]
+</code></pre>
+<hr />
+<h3 id="solve_linear_integer"><a class="header" href="#solve_linear_integer">solve_linear_integer</a></h3>
+<pre><code class="language-python">ocas.solve_linear_integer(a: list[list[int]], b: list[int]) -&gt; list[int]
+</code></pre>
+<p>在 ℤ 上求解线性方程组 $A \mathbf{x} = \mathbf{b}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>list[list[int]]</code></td><td>系数矩阵（行优先，整数）</td></tr>
+<tr><td><code>b</code></td><td><code>list[int]</code></td><td>右端向量（整数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：整数解向量。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 无整数解。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.solve_linear_integer([[2, 0], [0, 3]], [4, 9])
+[2, 3]
+</code></pre>
+<hr />
+<h3 id="solve_diophantine"><a class="header" href="#solve_diophantine">solve_diophantine</a></h3>
+<pre><code class="language-python">ocas.solve_diophantine(a: int, b: int, c: int) -&gt; DiophantineSolution | None
+</code></pre>
+<p>求解线性丢番图方程 $ax + by = c$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>int</code></td><td>$x$ 的系数</td></tr>
+<tr><td><code>b</code></td><td><code>int</code></td><td>$y$ 的系数</td></tr>
+<tr><td><code>c</code></td><td><code>int</code></td><td>右端常数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>DiophantineSolution</code>（有解时）或 <code>None</code>（无整数解时）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; sol = ocas.solve_diophantine(3, 5, 1)
+&gt;&gt;&gt; sol.particular
+(2, -1)
+&gt;&gt;&gt; sol.general
+(5, -3)
+</code></pre>
+<hr />
+<h3 id="diophantinesolution"><a class="header" href="#diophantinesolution">DiophantineSolution</a></h3>
+<p>丢番图方程的解。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>particular</code></td><td><code>tuple[int, int]</code></td><td>特解 $(x_0, y_0)$</td></tr>
+<tr><td><code>general</code></td><td><code>tuple[int, int]</code></td><td>通解方向 $(t_x, t_y)$；通解为 $(x_0 + k \cdot t_x, ; y_0 + k \cdot t_y)$，$k \in \mathbb{Z}$</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="ode"><a class="header" href="#ode">ODE</a></h2>
+<h3 id="classify_ode"><a class="header" href="#classify_ode">classify_ode</a></h3>
+<pre><code class="language-python">ocas.classify_ode(equation: Expression, func: str, var: str) -&gt; list[str]
+</code></pre>
+<p>分类常微分方程，返回可用求解方法名列表。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Expression</code></td><td>ODE 表达式（等于零的形式），如 <code>Derivative(y(x), x) - y(x)</code></td></tr>
+<tr><td><code>func</code></td><td><code>str</code></td><td>未知函数名，如 <code>"y"</code></td></tr>
+<tr><td><code>var</code></td><td><code>str</code></td><td>自变量名，如 <code>"x"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：方法名列表，如 <code>["LinearFirst", "PowerSeries"]</code>。</p>
+<p><strong>支持的 ODE 类型</strong>：<code>Separable</code>、<code>LinearFirst</code>、<code>Bernoulli</code>、<code>Exact</code>、<code>Homogeneous</code>、<code>LinearConstantCoeff</code>、<code>CauchyEuler</code>、<code>ReductionOfOrder</code>、<code>PowerSeries</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; eq = ocas.Expression("Derivative(y(x), x) - y(x)")
+&gt;&gt;&gt; ocas.classify_ode(eq, "y", "x")
+['LinearFirst', 'PowerSeries']
+</code></pre>
+<hr />
+<h3 id="dsolve"><a class="header" href="#dsolve">dsolve</a></h3>
+<pre><code class="language-python">ocas.dsolve(equation: Expression, func: str, var: str, hint: str | None = None) -&gt; str
+</code></pre>
+<p>符号求解 ODE。</p>
+<p><strong>签名</strong>（含默认值）：<code>dsolve(equation, func, var, hint=None)</code></p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Expression</code></td><td>ODE 表达式（等于零的形式）</td></tr>
+<tr><td><code>func</code></td><td><code>str</code></td><td>未知函数名</td></tr>
+<tr><td><code>var</code></td><td><code>str</code></td><td>自变量名</td></tr>
+<tr><td><code>hint</code></td><td><code>str</code> 或 <code>None</code></td><td>指定求解方法（<code>classify_ode</code> 返回的名称之一）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：解的字符串表示（显式、隐式、级数或未求值形式）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; eq = ocas.Expression("Derivative(y(x), x) - y(x)")
+&gt;&gt;&gt; ocas.dsolve(eq, "y", "x")
+'y = C1*exp(x)'
+</code></pre>
+<hr />
+<h3 id="dsolve_ivp"><a class="header" href="#dsolve_ivp">dsolve_ivp</a></h3>
+<pre><code class="language-python">ocas.dsolve_ivp(equation: Expression, func: str, var: str, y0: str, y1: str | None = None) -&gt; str
+</code></pre>
+<p>通过 Laplace 变换求解常系数线性 ODE 的初值问题。</p>
+<p><strong>签名</strong>（含默认值）：<code>dsolve_ivp(equation, func, var, y0, y1=None)</code></p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Expression</code></td><td>ODE 表达式（等于零的形式）</td></tr>
+<tr><td><code>func</code></td><td><code>str</code></td><td>未知函数名</td></tr>
+<tr><td><code>var</code></td><td><code>str</code></td><td>自变量名</td></tr>
+<tr><td><code>y0</code></td><td><code>str</code></td><td>$y(0)$ 的值（字符串表达式，如 <code>"1"</code>）</td></tr>
+<tr><td><code>y1</code></td><td><code>str</code> 或 <code>None</code></td><td>$y'(0)$ 的值（二阶问题需要）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：不含自由常数的显式解字符串。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; eq = ocas.Expression("Derivative(y(x), x, 2) + y(x)")
+&gt;&gt;&gt; ocas.dsolve_ivp(eq, "y", "x", "0", "1")
+'y = sin(x)'
+</code></pre>
+<hr />
+<h2 id="数论"><a class="header" href="#数论">数论</a></h2>
+<h3 id="factorint"><a class="header" href="#factorint">factorint</a></h3>
+<pre><code class="language-python">ocas.factorint(n: int) -&gt; list[tuple[str, int]]
+</code></pre>
+<p>将 $|n|$ 分解为素因子。负输入的首项为 <code>("-1", 1)</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>待分解的整数（任意精度）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(素数, 指数)</code> 元组列表，按素数升序排列。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.factorint(60)
+[('2', 2), ('3', 1), ('5', 1)]
+&gt;&gt;&gt; ocas.factorint(-12)
+[('-1', 1), ('2', 2), ('3', 1)]
+</code></pre>
+<hr />
+<h3 id="isprime"><a class="header" href="#isprime">isprime</a></h3>
+<pre><code class="language-python">ocas.isprime(n: int) -&gt; bool
+</code></pre>
+<p>BPSW 概率素性测试。对 $n &lt; 2^{64}$ 为确定性判定；目前已知对任意大小无合数通过。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>待测整数（任意精度）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>True</code> 表示（可能是）素数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.isprime(97)
+True
+&gt;&gt;&gt; ocas.isprime(100)
+False
+</code></pre>
+<hr />
+<h3 id="isprime_u64"><a class="header" href="#isprime_u64">isprime_u64</a></h3>
+<pre><code class="language-python">ocas.isprime_u64(n: int) -&gt; bool
+</code></pre>
+<p>对 $n &lt; 2^{64}$ 的确定性素性判定（u64 快速路径）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>待测整数（必须在 u64 范围内）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>True</code> 表示素数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.isprime_u64(2**61 - 1)
+True
+</code></pre>
+<hr />
+<h3 id="nextprime"><a class="header" href="#nextprime">nextprime</a></h3>
+<pre><code class="language-python">ocas.nextprime(n: int) -&gt; int
+</code></pre>
+<p>返回严格大于 $n$ 的最小素数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>起始整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：下一个素数（任意精度）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.nextprime(10)
+11
+&gt;&gt;&gt; ocas.nextprime(11)
+13
+</code></pre>
+<hr />
+<h3 id="discrete_log"><a class="header" href="#discrete_log">discrete_log</a></h3>
+<pre><code class="language-python">ocas.discrete_log(p: int, base: int, target: int) -&gt; int
+</code></pre>
+<p>求解离散对数 $\text{base}^x \equiv \text{target} \pmod{p}$。对素数 $p$ 使用 Pohlig–Hellman 算法，否则使用 BSGS。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>p</code></td><td><code>int</code></td><td>模数</td></tr>
+<tr><td><code>base</code></td><td><code>int</code></td><td>底数</td></tr>
+<tr><td><code>target</code></td><td><code>int</code></td><td>目标值</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：离散对数 $x$。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 对数不存在。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.discrete_log(13, 2, 9)
+8
+&gt;&gt;&gt; pow(2, 8, 13)
+9
+</code></pre>
+<hr />
+<h3 id="crt"><a class="header" href="#crt">crt</a></h3>
+<pre><code class="language-python">ocas.crt(moduli: list[int], residues: list[int]) -&gt; tuple[int, int]
+</code></pre>
+<p>中国剩余定理：求解同余方程组 $x \equiv r_i \pmod{m_i}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>moduli</code></td><td><code>list[int]</code></td><td>模数列表（不要求互素）</td></tr>
+<tr><td><code>residues</code></td><td><code>list[int]</code></td><td>余数列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(r, m)</code> 表示 $x \equiv r \pmod{m}$。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 方程组不相容。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.crt([3, 5, 7], [2, 3, 2])
+(23, 105)
+</code></pre>
+<hr />
+<h3 id="jacobi_symbol"><a class="header" href="#jacobi_symbol">jacobi_symbol</a></h3>
+<pre><code class="language-python">ocas.jacobi_symbol(a: int, n: int) -&gt; int
+</code></pre>
+<p>计算 Jacobi 符号 $\left(\frac{a}{n}\right)$，其中 $n$ 为正奇数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>int</code></td><td>分子</td></tr>
+<tr><td><code>n</code></td><td><code>int</code></td><td>分母（正奇数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$-1$、$0$ 或 $1$。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — $n$ 非正奇数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.jacobi_symbol(2, 7)
+1
+&gt;&gt;&gt; ocas.jacobi_symbol(3, 7)
+-1
+</code></pre>
+<hr />
+<h3 id="totient"><a class="header" href="#totient">totient</a></h3>
+<pre><code class="language-python">ocas.totient(n: int) -&gt; int
+</code></pre>
+<p>Euler totient 函数 $\varphi(n)$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>正整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$\varphi(n)$（任意精度）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.totient(12)
+4
+</code></pre>
+<hr />
+<h3 id="mobius"><a class="header" href="#mobius">mobius</a></h3>
+<pre><code class="language-python">ocas.mobius(n: int) -&gt; int
+</code></pre>
+<p>Möbius 函数 $\mu(n)$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>正整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$-1$、$0$ 或 $1$。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.mobius(6)
+1
+&gt;&gt;&gt; ocas.mobius(4)
+0
+</code></pre>
+<hr />
+<h3 id="divisor_count"><a class="header" href="#divisor_count">divisor_count</a></h3>
+<pre><code class="language-python">ocas.divisor_count(n: int) -&gt; int
+</code></pre>
+<p>正因数个数 $\tau(n)$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>正整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：正因数个数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.divisor_count(12)
+6
+</code></pre>
+<hr />
+<h3 id="divisor_sigma"><a class="header" href="#divisor_sigma">divisor_sigma</a></h3>
+<pre><code class="language-python">ocas.divisor_sigma(n: int, k: int = 1) -&gt; int
+</code></pre>
+<p>因数的 $k$ 次幂之和 $\sigma_k(n) = \sum_{d \mid n} d^k$。</p>
+<p><strong>签名</strong>（含默认值）：<code>divisor_sigma(n, k=1)</code></p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>正整数</td></tr>
+<tr><td><code>k</code></td><td><code>int</code></td><td>幂次（默认 1，即因数之和 $\sigma_1$）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$\sigma_k(n)$。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.divisor_sigma(12)      # 1+2+3+4+6+12
+28
+&gt;&gt;&gt; ocas.divisor_sigma(12, 2)   # 1+4+9+16+36+144
+210
+</code></pre>
+<hr />
+<h3 id="liouville_lambda"><a class="header" href="#liouville_lambda">liouville_lambda</a></h3>
+<pre><code class="language-python">ocas.liouville_lambda(n: int) -&gt; int
+</code></pre>
+<p>Liouville 函数 $\lambda(n) = (-1)^{\Omega(n)}$，其中 $\Omega(n)$ 是 $n$ 的素因子个数（计重数）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>int</code></td><td>正整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$-1$ 或 $1$。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; ocas.liouville_lambda(12)  # Ω(12)=3
+-1
+&gt;&gt;&gt; ocas.liouville_lambda(9)   # Ω(9)=2
+1
+</code></pre>
+<hr />
+<h2 id="gröbner-基与理想"><a class="header" href="#gröbner-基与理想">Gröbner 基与理想</a></h2>
+<blockquote>
+<p><strong>注意</strong>：以下函数保留 <code>py_</code> 前缀（Rust 端未使用 <code>#[pyo3(name=...)]</code> 重命名）。在 Python 中的实际调用名为 <code>ocas.py_groebner_basis</code>、<code>ocas.py_ideal_contains</code> 等。</p>
+</blockquote>
+<h3 id="py_groebner_basis"><a class="header" href="#py_groebner_basis">py_groebner_basis</a></h3>
+<pre><code class="language-python">ocas.py_groebner_basis(generators, n_vars: int = 1, algorithm: str = "auto") -&gt; GroebnerBasis
+</code></pre>
+<p>计算多项式理想的 Gröbner 基。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>生成元列表（<code>MultivariatePolynomial</code> 或 <code>Polynomial</code> 对象）</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数（默认 1；若生成元为 <code>MultivariatePolynomial</code> 则自动检测）</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>算法选择：<code>"auto"</code>（默认）、<code>"f4"</code>、<code>"f5"</code>、<code>"buchberger"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis</code> 对象。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 算法名称无效。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_groebner_basis
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=2)   # x² - 1
+&gt;&gt;&gt; g = MultivariatePolynomial({(0, 2): 1, (0, 0): -1}, n_vars=2)   # y² - 1
+&gt;&gt;&gt; gb = py_groebner_basis([f, g], n_vars=2)
+&gt;&gt;&gt; len(gb)
+2
+</code></pre>
+<hr />
+<h3 id="py_ideal_contains"><a class="header" href="#py_ideal_contains">py_ideal_contains</a></h3>
+<pre><code class="language-python">ocas.py_ideal_contains(generators, f, n_vars: int = 1, algorithm: str = "auto") -&gt; bool
+</code></pre>
+<p>判断多项式 $f$ 是否属于由 <code>generators</code> 生成的理想。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>理想的生成元列表</td></tr>
+<tr><td><code>f</code></td><td><code>MultivariatePolynomial</code> 或 <code>Polynomial</code></td><td>待检测的多项式</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数（默认 1）</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>算法选择（默认 <code>"auto"</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>True</code> 表示 $f \in I$。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_ideal_contains
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; g = MultivariatePolynomial({(0, 2): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; x = MultivariatePolynomial({(1, 0): 1}, n_vars=2)
+&gt;&gt;&gt; py_ideal_contains([f, g], f, n_vars=2)
+True
+&gt;&gt;&gt; py_ideal_contains([f, g], x, n_vars=2)
+False
+</code></pre>
+<hr />
+<h3 id="py_solve_polynomial_system"><a class="header" href="#py_solve_polynomial_system">py_solve_polynomial_system</a></h3>
+<pre><code class="language-python">ocas.py_solve_polynomial_system(equations, n_vars: int = 1, algorithm: str = "auto") -&gt; PolynomialSystemSolution
+</code></pre>
+<p>求解多项式方程组。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equations</code></td><td><code>list</code></td><td>方程列表（每个方程为等于零的多项式）</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数（默认 1）</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>算法选择（默认 <code>"auto"</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>PolynomialSystemSolution</code> 对象。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_solve_polynomial_system
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 2): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; g = MultivariatePolynomial({(1, 0): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; sol = py_solve_polynomial_system([f, g], n_vars=2)
+&gt;&gt;&gt; sol.kind
+'zero_dimensional'
+&gt;&gt;&gt; for s in sol.solutions():
+...     print(s.values, s.multiplicity)
+[1.0, 0.0] 1
+</code></pre>
+<hr />
+<h3 id="py_hilbert_series"><a class="header" href="#py_hilbert_series">py_hilbert_series</a></h3>
+<pre><code class="language-python">ocas.py_hilbert_series(gb: GroebnerBasis) -&gt; HilbertSeries
+</code></pre>
+<p>计算 Gröbner 基对应的 Hilbert 级数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>GroebnerBasis</code></td><td>Gröbner 基</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>HilbertSeries</code> 对象。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_groebner_basis, py_hilbert_series
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=2)
+&gt;&gt;&gt; gb = py_groebner_basis([f], n_vars=2)
+&gt;&gt;&gt; hs = py_hilbert_series(gb)
+&gt;&gt;&gt; hs.dimension
+1
+</code></pre>
+<hr />
+<h3 id="py_ideal_radical"><a class="header" href="#py_ideal_radical">py_ideal_radical</a></h3>
+<pre><code class="language-python">ocas.py_ideal_radical(generators, n_vars: int = 1) -&gt; GroebnerBasis
+</code></pre>
+<p>计算理想的根式 $\sqrt{I}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>理想的生成元列表</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数（默认 1）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$\sqrt{I}$ 的 Gröbner 基。</p>
+<p><strong>算法</strong>：零维使用无平方分解；正维使用 Jacobian 饱和 $\sqrt{I} = I : h^\infty$。</p>
+<hr />
+<h3 id="py_primary_decomposition"><a class="header" href="#py_primary_decomposition">py_primary_decomposition</a></h3>
+<pre><code class="language-python">ocas.py_primary_decomposition(generators, n_vars: int = 1) -&gt; list[PrimaryComponent]
+</code></pre>
+<p>计算理想的准素分解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>理想的生成元列表</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数（默认 1）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>PrimaryComponent</code> 列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import MultivariatePolynomial, py_primary_decomposition
+&gt;&gt;&gt; f = MultivariatePolynomial({(2, 0): 1, (0, 0): -1}, n_vars=1)
+&gt;&gt;&gt; comps = py_primary_decomposition([f], n_vars=1)
+&gt;&gt;&gt; len(comps)
+2
+</code></pre>
+<hr />
+<h3 id="py_is_zero_dimensional"><a class="header" href="#py_is_zero_dimensional">py_is_zero_dimensional</a></h3>
+<pre><code class="language-python">ocas.py_is_zero_dimensional(gb: GroebnerBasis) -&gt; bool
+</code></pre>
+<p>判断 Gröbner 基对应的理想是否为零维的。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>GroebnerBasis</code></td><td>Gröbner 基</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>True</code> 表示零维。</p>
+<hr />
+<h3 id="py_eliminate"><a class="header" href="#py_eliminate">py_eliminate</a></h3>
+<pre><code class="language-python">ocas.py_eliminate(generators, elim_vars: int, n_vars: int = 1, algorithm: str = "auto") -&gt; GroebnerBasis
+</code></pre>
+<p>消元：计算消元理想 $I \cap k[x_{e+1}, \dots, x_n]$ 的 Gröbner 基。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>list</code></td><td>理想的生成元列表</td></tr>
+<tr><td><code>elim_vars</code></td><td><code>int</code></td><td>消除的变量数（从前向后）</td></tr>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>总变量个数（默认 1）</td></tr>
+<tr><td><code>algorithm</code></td><td><code>str</code></td><td>算法选择（默认 <code>"auto"</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：消元理想的 Gröbner 基。</p>
+<hr />
+<h3 id="multivariatepolynomialgröbner-辅助类"><a class="header" href="#multivariatepolynomialgröbner-辅助类">MultivariatePolynomial（Gröbner 辅助类）</a></h3>
+<p>已在多项式一节介绍。Gröbner 函数同时接受 <code>MultivariatePolynomial</code> 和 <code>Polynomial</code> 作为生成元；后者自动映射为单变量多元多项式。</p>
+<hr />
+<h3 id="groebnerbasis"><a class="header" href="#groebnerbasis">GroebnerBasis</a></h3>
+<p>Gröbner 基计算结果。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数</td></tr>
+</tbody></table>
+</div>
+<p><strong>方法</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>返回值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>__len__()</code></td><td><code>int</code></td><td>基中多项式个数</td></tr>
+<tr><td><code>is_groebner_basis()</code></td><td><code>bool</code></td><td>验证是否确实为 Gröbner 基</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="realsolution"><a class="header" href="#realsolution">RealSolution</a></h3>
+<p>多项式方程组的一个实数解。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>list[float]</code></td><td>解的坐标值</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>int</code></td><td>重数</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="polynomialsystemsolution"><a class="header" href="#polynomialsystemsolution">PolynomialSystemSolution</a></h3>
+<p>多项式方程组的求解结果。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>str</code></td><td><code>"zero_dimensional"</code>、<code>"positive_dimensional"</code> 或 <code>"empty"</code></td></tr>
+<tr><td><code>vector_space_dimension</code></td><td><code>int</code> 或 <code>None</code></td><td>向量空间维数（仅零维时有值）</td></tr>
+</tbody></table>
+</div>
+<p><strong>方法</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>返回值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>solutions()</code></td><td><code>list[RealSolution]</code></td><td>实数解列表（仅零维时非空）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="hilbertseries"><a class="header" href="#hilbertseries">HilbertSeries</a></h3>
+<p>Hilbert 级数。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>dimension</code></td><td><code>int</code></td><td>Krull 维数</td></tr>
+<tr><td><code>degree</code></td><td><code>int</code></td><td>重数（degree）</td></tr>
+<tr><td><code>numerator</code></td><td><code>list[int]</code></td><td>分子多项式系数</td></tr>
+</tbody></table>
+</div>
+<p><strong>方法</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>参数</th><th>返回值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>hilbert_function(d)</code></td><td><code>d: int</code></td><td><code>int</code></td><td>在次数 $d$ 处的 Hilbert 函数值</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="primarycomponent"><a class="header" href="#primarycomponent">PrimaryComponent</a></h3>
+<p>准素分解的一个分量。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>变量个数</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="代数数"><a class="header" href="#代数数">代数数</a></h2>
+<h3 id="algebraicextension"><a class="header" href="#algebraicextension">AlgebraicExtension</a></h3>
+<p>代数数域 $K = \mathbb{Q}(\alpha)$，由首一极小多项式定义。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.AlgebraicExtension(min_poly: list)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>min_poly</code></td><td><code>list[int]</code> 或 <code>list[tuple[int,int]]</code></td><td>极小多项式系数（升幂排列），末项（首项系数）必须为 1</td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>ValueError</code> — 系数列表过短、首项系数不为 1 或多项式不可约性验证失败。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import AlgebraicExtension
+&gt;&gt;&gt; # α² - 2（即 ℚ(√2)）
+&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; field.extension_degree()
+2
+</code></pre>
+<hr />
+<h4 id="algebraicextensionextension_degree"><a class="header" href="#algebraicextensionextension_degree">AlgebraicExtension.extension_degree</a></h4>
+<pre><code class="language-python">AlgebraicExtension.extension_degree() -&gt; int
+</code></pre>
+<p>返回扩张次数 $[K:\mathbb{Q}] = \deg(m)$。</p>
+<hr />
+<h4 id="algebraicextensionalpha"><a class="header" href="#algebraicextensionalpha">AlgebraicExtension.alpha</a></h4>
+<pre><code class="language-python">AlgebraicExtension.alpha() -&gt; AlgebraicElement
+</code></pre>
+<p>返回扩张的生成元 $\alpha$。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; a = field.alpha()
+&gt;&gt;&gt; a.coeffs()
+['0', '1']
+</code></pre>
+<hr />
+<h4 id="algebraicextensionfrom_base"><a class="header" href="#algebraicextensionfrom_base">AlgebraicExtension.from_base</a></h4>
+<pre><code class="language-python">AlgebraicExtension.from_base(c) -&gt; AlgebraicElement
+</code></pre>
+<p>将有理数 $c$ 嵌入为域中的常量元素。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>c</code></td><td><code>int</code> 或 <code>tuple[int, int]</code></td><td>有理数（整数或 <code>(分子, 分母)</code> 元组）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h4 id="algebraicextensionelement"><a class="header" href="#algebraicextensionelement">AlgebraicExtension.element</a></h4>
+<pre><code class="language-python">AlgebraicExtension.element(coeffs: list) -&gt; AlgebraicElement
+</code></pre>
+<p>从 $\alpha$-多项式系数（升幂）创建元素。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>coeffs</code></td><td><code>list[int]</code> 或 <code>list[tuple[int,int]]</code></td><td>有理系数列表（升幂）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; # 3 + 2α
+&gt;&gt;&gt; e = field.element([3, 2])
+&gt;&gt;&gt; e.coeffs()
+['3', '2']
+</code></pre>
+<hr />
+<h3 id="algebraicelement"><a class="header" href="#algebraicelement">AlgebraicElement</a></h3>
+<p>代数数域 $\mathbb{Q}(\alpha)$ 中的一个元素，存储为 $\alpha$ 的多项式。</p>
+<h4 id="algebraicelementcoeffs"><a class="header" href="#algebraicelementcoeffs">AlgebraicElement.coeffs</a></h4>
+<pre><code class="language-python">AlgebraicElement.coeffs() -&gt; list[str]
+</code></pre>
+<p>返回 $\alpha$-多项式系数（字符串列表，升幂）。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; e = field.element([1, 1])  # 1 + α = 1 + √2
+&gt;&gt;&gt; e.coeffs()
+['1', '1']
+</code></pre>
+<hr />
+<h3 id="algebraicpolynomial"><a class="header" href="#algebraicpolynomial">AlgebraicPolynomial</a></h3>
+<p>代数数域 $\mathbb{Q}(\alpha)$ 上的稠密一元多项式。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.AlgebraicPolynomial(field: AlgebraicExtension, coeffs: list)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>field</code></td><td><code>AlgebraicExtension</code></td><td>系数所在的代数数域</td></tr>
+<tr><td><code>coeffs</code></td><td><code>list</code></td><td>系数列表（升幂），每个元素为 <code>int</code>、<code>(int, int)</code> 元组或 <code>AlgebraicElement</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import AlgebraicExtension, AlgebraicPolynomial
+&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; # x² - 2 over ℚ(√2)
+&gt;&gt;&gt; p = AlgebraicPolynomial(field, [-2, 0, 1])
+&gt;&gt;&gt; p.degree()
+2
+</code></pre>
+<hr />
+<h4 id="algebraicpolynomialdegree"><a class="header" href="#algebraicpolynomialdegree">AlgebraicPolynomial.degree</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.degree() -&gt; int | None
+</code></pre>
+<p>返回次数。零多项式返回 <code>None</code>。</p>
+<hr />
+<h4 id="algebraicpolynomiallen"><a class="header" href="#algebraicpolynomiallen">AlgebraicPolynomial.len</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.len() -&gt; int
+</code></pre>
+<p>返回存储的系数个数。</p>
+<hr />
+<h4 id="algebraicpolynomialis_zero"><a class="header" href="#algebraicpolynomialis_zero">AlgebraicPolynomial.is_zero</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.is_zero() -&gt; bool
+</code></pre>
+<p>是否为零多项式。</p>
+<hr />
+<h4 id="algebraicpolynomialcoeffs"><a class="header" href="#algebraicpolynomialcoeffs">AlgebraicPolynomial.coeffs</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.coeffs() -&gt; list[list[str]]
+</code></pre>
+<p>返回系数列表。每个系数为一个有理数列表（字符串形式），表示 $\alpha$-多项式系数。</p>
+<hr />
+<h4 id="algebraicpolynomialfactor"><a class="header" href="#algebraicpolynomialfactor">AlgebraicPolynomial.factor</a></h4>
+<pre><code class="language-python">AlgebraicPolynomial.factor() -&gt; list[AlgebraicFactor]
+</code></pre>
+<p>在代数数域上进行因式分解（Trager 算法）。</p>
+<p><strong>返回值</strong>：<code>AlgebraicFactor</code> 列表，每个包含不可约因子和重数。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; field = AlgebraicExtension([-2, 0, 1])
+&gt;&gt;&gt; p = AlgebraicPolynomial(field, [-2, 0, 1])  # x² - 2 = (x-α)(x+α)
+&gt;&gt;&gt; facs = p.factor()
+&gt;&gt;&gt; len(facs)
+2
+&gt;&gt;&gt; [f.multiplicity for f in facs]
+[1, 1]
+</code></pre>
+<hr />
+<h3 id="algebraicfactor"><a class="header" href="#algebraicfactor">AlgebraicFactor</a></h3>
+<p>代数数域多项式因式分解中的一个因子。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>factor</code></td><td><code>AlgebraicPolynomial</code></td><td>不可约因子</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>int</code></td><td>重数</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="自动微分"><a class="header" href="#自动微分">自动微分</a></h2>
+<h3 id="dualshape"><a class="header" href="#dualshape">DualShape</a></h3>
+<p>一阶对偶数布局描述，声明追踪的微分变量个数。构建一次，多处共享。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python"># 不直接构造，使用静态方法
+shape = DualShape.first_order(n_vars)
+</code></pre>
+<hr />
+<h4 id="dualshapefirst_order静态方法"><a class="header" href="#dualshapefirst_order静态方法">DualShape.first_order（静态方法）</a></h4>
+<pre><code class="language-python">DualShape.first_order(n_vars: int) -&gt; DualShape
+</code></pre>
+<p>创建包含 <code>n_vars</code> 个微分变量的布局。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_vars</code></td><td><code>int</code></td><td>微分变量个数（$\geq 1$）</td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>ValueError</code> — <code>n_vars == 0</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DualShape
+&gt;&gt;&gt; shape = DualShape.first_order(3)
+&gt;&gt;&gt; shape.n_vars
+3
+&gt;&gt;&gt; shape.n_components
+4
+</code></pre>
+<hr />
+<h4 id="dualshapen_vars"><a class="header" href="#dualshapen_vars">DualShape.n_vars</a></h4>
+<pre><code class="language-python">DualShape.n_vars -&gt; int  # property
+</code></pre>
+<p>微分变量个数。</p>
+<hr />
+<h4 id="dualshapen_components"><a class="header" href="#dualshapen_components">DualShape.n_components</a></h4>
+<pre><code class="language-python">DualShape.n_components -&gt; int  # property
+</code></pre>
+<p>总分量数（值 + 导数槽位）。</p>
+<hr />
+<h3 id="hyperdual"><a class="header" href="#hyperdual">HyperDual</a></h3>
+<p>超对偶数：一个标量值加上对 <code>DualShape</code> 中各变量的偏导数。使用有理数精确计算。</p>
+<p><strong>限制</strong>：仅支持多项式/有理算术（<code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>、取负）。超越函数（sin/exp/log）未实现；整数幂请用重复乘法。</p>
+<hr />
+<h4 id="hyperdualvariable静态方法"><a class="header" href="#hyperdualvariable静态方法">HyperDual.variable（静态方法）</a></h4>
+<pre><code class="language-python">HyperDual.variable(shape: DualShape, i: int, value) -&gt; HyperDual
+</code></pre>
+<p>创建独立变量 $x_i = \text{value}$（对第 $i$ 个变量的导数为 1，其余为 0）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>DualShape</code></td><td>对偶数布局</td></tr>
+<tr><td><code>i</code></td><td><code>int</code></td><td>变量索引</td></tr>
+<tr><td><code>value</code></td><td><code>int</code> 或 <code>tuple[int, int]</code></td><td>变量值（整数或有理数元组）</td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>ValueError</code> — 索引越界。</p>
+<hr />
+<h4 id="hyperdualconstant静态方法"><a class="header" href="#hyperdualconstant静态方法">HyperDual.constant（静态方法）</a></h4>
+<pre><code class="language-python">HyperDual.constant(shape: DualShape, value) -&gt; HyperDual
+</code></pre>
+<p>创建常量（所有导数为零）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>DualShape</code></td><td>对偶数布局</td></tr>
+<tr><td><code>value</code></td><td><code>int</code> 或 <code>tuple[int, int]</code></td><td>常量值</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h4 id="hyperdualvalue"><a class="header" href="#hyperdualvalue">HyperDual.value</a></h4>
+<pre><code class="language-python">HyperDual.value() -&gt; str
+</code></pre>
+<p>返回标量值（字符串形式，如 <code>"5"</code> 或 <code>"3/7"</code>）。</p>
+<hr />
+<h4 id="hyperdualderiv"><a class="header" href="#hyperdualderiv">HyperDual.deriv</a></h4>
+<pre><code class="language-python">HyperDual.deriv(i: int) -&gt; str | None
+</code></pre>
+<p>返回对第 $i$ 个变量的偏导数。若 <code>i</code> 越界返回 <code>None</code>。</p>
+<hr />
+<h4 id="hyperdualn_vars"><a class="header" href="#hyperdualn_vars">HyperDual.n_vars</a></h4>
+<pre><code class="language-python">HyperDual.n_vars -&gt; int  # property
+</code></pre>
+<p>微分变量个数。</p>
+<hr />
+<h4 id="hyperdual-算术运算"><a class="header" href="#hyperdual-算术运算">HyperDual 算术运算</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>语法</th><th>说明</th></tr></thead><tbody>
+<tr><td>加法</td><td><code>a + b</code></td><td>逐分量加法</td></tr>
+<tr><td>减法</td><td><code>a - b</code></td><td>逐分量减法</td></tr>
+<tr><td>乘法</td><td><code>a * b</code></td><td>乘积法则</td></tr>
+<tr><td>除法</td><td><code>a / b</code></td><td>商法则</td></tr>
+<tr><td>取负</td><td><code>-a</code></td><td>逐分量取负</td></tr>
+</tbody></table>
+</div>
+<p>所有运算要求两个操作数共享同一 <code>DualShape</code>。不同形状会抛出 <code>ValueError</code>。</p>
+<p><strong>完整示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DualShape, HyperDual
+&gt;&gt;&gt; shape = DualShape.first_order(2)
+&gt;&gt;&gt; x = HyperDual.variable(shape, 0, 3)
+&gt;&gt;&gt; y = HyperDual.variable(shape, 1, 5)
+&gt;&gt;&gt; f = x * y
+&gt;&gt;&gt; f.value()
+'15'
+&gt;&gt;&gt; f.deriv(0)   # ∂f/∂x = y
+'5'
+&gt;&gt;&gt; f.deriv(1)   # ∂f/∂y = x
+'3'
+</code></pre>
+<hr />
+<h2 id="张量"><a class="header" href="#张量">张量</a></h2>
+<h3 id="tensor"><a class="header" href="#tensor">Tensor</a></h3>
+<p>命名张量对象，带指标槽位和可选对称性。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.Tensor(name: str, slots: list[tuple[str, str]], symmetry: str = "none")
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>str</code></td><td>张量名称</td></tr>
+<tr><td><code>slots</code></td><td><code>list[tuple[str, str]]</code></td><td>指标槽位列表，每项为 <code>(标签, 位置)</code>。位置取 <code>"upper"</code>（逆变）或 <code>"lower"</code>（协变）</td></tr>
+<tr><td><code>symmetry</code></td><td><code>str</code></td><td>对称性：<code>"none"</code>（默认）、<code>"symmetric"</code>、<code>"antisymmetric"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>ValueError</code> — 位置或对称性字符串无效。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Tensor
+&gt;&gt;&gt; t = Tensor("T", [("i", "upper"), ("j", "lower")])
+&gt;&gt;&gt; t.name
+'T'
+&gt;&gt;&gt; t.rank
+2
+</code></pre>
+<hr />
+<h4 id="tensorname"><a class="header" href="#tensorname">Tensor.name</a></h4>
+<pre><code class="language-python">Tensor.name -&gt; str  # property
+</code></pre>
+<p>张量名称。</p>
+<hr />
+<h4 id="tensorrank"><a class="header" href="#tensorrank">Tensor.rank</a></h4>
+<pre><code class="language-python">Tensor.rank -&gt; int  # property
+</code></pre>
+<p>张量秩（槽位数）。</p>
+<hr />
+<h4 id="tensorsymmetry"><a class="header" href="#tensorsymmetry">Tensor.symmetry</a></h4>
+<pre><code class="language-python">Tensor.symmetry -&gt; str  # property
+</code></pre>
+<p>对称性字符串（<code>"none"</code>、<code>"symmetric"</code>、<code>"antisymmetric"</code>）。</p>
+<hr />
+<h4 id="tensorslots"><a class="header" href="#tensorslots">Tensor.slots</a></h4>
+<pre><code class="language-python">Tensor.slots() -&gt; list[tuple[str, str]]
+</code></pre>
+<p>返回槽位列表，每项为 <code>(标签, 位置)</code>。</p>
+<hr />
+<h4 id="tensordummy_labels"><a class="header" href="#tensordummy_labels">Tensor.dummy_labels</a></h4>
+<pre><code class="language-python">Tensor.dummy_labels() -&gt; list[str]
+</code></pre>
+<p>返回当前哑指标（出现两次的指标）标签列表。</p>
+<hr />
+<h4 id="tensorto_string_atom"><a class="header" href="#tensorto_string_atom">Tensor.to_string_atom</a></h4>
+<pre><code class="language-python">Tensor.to_string_atom() -&gt; str
+</code></pre>
+<p>将张量渲染为表达式函数节点 <code>name(slot, slot, ...)</code> 的字符串形式。</p>
+<hr />
+<h3 id="contract_tensors"><a class="header" href="#contract_tensors">contract_tensors</a></h3>
+<pre><code class="language-python">ocas.contract_tensors(a: Tensor, b: Tensor) -&gt; tuple[str, list | str]
+</code></pre>
+<p>对两个张量进行缩并：对共享哑指标（相同标签、相反变异性）求和。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>Tensor</code></td><td>第一个张量</td></tr>
+<tr><td><code>b</code></td><td><code>Tensor</code></td><td>第二个张量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(kind, payload)</code> 元组：</p>
+<ul>
+<li><code>kind = "product"</code> 时，<code>payload</code> 为缩并后张量列表（自由指标拼接）</li>
+<li><code>kind = "scalar"</code> 时，<code>payload</code> 为缩并后标量表达式的字符串</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Tensor, contract_tensors
+&gt;&gt;&gt; t = Tensor("T", [("i", "upper"), ("j", "lower")])
+&gt;&gt;&gt; u = Tensor("U", [("j", "upper"), ("k", "lower")])
+&gt;&gt;&gt; kind, payload = contract_tensors(t, u)
+&gt;&gt;&gt; kind
+'product'
+</code></pre>
+<hr />
+<h3 id="tensor_symmetrise_sign"><a class="header" href="#tensor_symmetrise_sign">tensor_symmetrise_sign</a></h3>
+<pre><code class="language-python">ocas.tensor_symmetrise_sign(tensor: Tensor) -&gt; int
+</code></pre>
+<p>返回张量的对称化符号（$+1$ 或 $-1$）。<code>"none"</code> 和 <code>"symmetric"</code> 永远返回 $+1$；<code>"antisymmetric"</code> 返回槽位排列的奇偶性。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>tensor</code></td><td><code>Tensor</code></td><td>输入张量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$+1$ 或 $-1$。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Tensor, tensor_symmetrise_sign
+&gt;&gt;&gt; eps = Tensor("eps", [("a", "lower"), ("b", "lower")], symmetry="antisymmetric")
+&gt;&gt;&gt; tensor_symmetrise_sign(eps) in (1, -1)
+True
+</code></pre>
+<hr />
+<h3 id="canonicalize_tensors"><a class="header" href="#canonicalize_tensors">canonicalize_tensors</a></h3>
+<pre><code class="language-python">ocas.canonicalize_tensors(expr: str, specs: dict[str, str], index_groups: dict[str, int] | None = None) -&gt; str
+</code></pre>
+<p>使用图同构引擎对张量表达式进行规范化。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>expr</code></td><td><code>str</code></td><td>张量表达式字符串</td></tr>
+<tr><td><code>specs</code></td><td><code>dict[str, str]</code></td><td>张量名 → 对称性规格（<code>"none"</code>、<code>"symmetric"</code>、<code>"antisymmetric"</code>）</td></tr>
+<tr><td><code>index_groups</code></td><td><code>dict[str, int]</code> 或 <code>None</code></td><td>指标维度分组（可选）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：规范化后的表达式字符串。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 解析或规范化失败。</p>
+<hr />
+<h3 id="young_project"><a class="header" href="#young_project">young_project</a></h3>
+<pre><code class="language-python">ocas.young_project(expr: str, tableau: list[int]) -&gt; str
+</code></pre>
+<p>对张量表达式应用 Young 投影。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>expr</code></td><td><code>str</code></td><td>张量表达式字符串</td></tr>
+<tr><td><code>tableau</code></td><td><code>list[int]</code></td><td>Young 图各行长度，如 <code>[2, 1]</code> 表示 □□/□</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：投影后的表达式字符串。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; proj = ocas.young_project("f(a,b,c)", [1, 1, 1])  # □/□/□ 全反对称投影
+&gt;&gt;&gt; "f(a,b,c)" in proj
+True
+</code></pre>
+<hr />
+<h3 id="refresh_dummies"><a class="header" href="#refresh_dummies">refresh_dummies</a></h3>
+<pre><code class="language-python">ocas.refresh_dummies(expr: str, specs: dict[str, str]) -&gt; str
+</code></pre>
+<p>重命名（刷新）张量表达式中的哑指标。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>expr</code></td><td><code>str</code></td><td>张量表达式字符串</td></tr>
+<tr><td><code>specs</code></td><td><code>dict[str, str]</code></td><td>张量名 → 对称性规格</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：哑指标重命名后的表达式字符串。</p>
+<hr />
+<h2 id="求值"><a class="header" href="#求值">求值</a></h2>
+<h3 id="expressionevaluator"><a class="header" href="#expressionevaluator">ExpressionEvaluator</a></h3>
+<p>编译表达式以进行快速数值求值。编译一次，多次求值。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.ExpressionEvaluator(input: str, param_names: list[str])
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>input</code></td><td><code>str</code></td><td>表达式字符串</td></tr>
+<tr><td><code>param_names</code></td><td><code>list[str]</code></td><td>参数名列表（求值时的顺序）</td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>ValueError</code> — 解析或编译错误。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import ExpressionEvaluator
+&gt;&gt;&gt; ev = ExpressionEvaluator("x^2 + y", ["x", "y"])
+&gt;&gt;&gt; ev.evaluate([3.0, 1.0])
+[10.0]
+&gt;&gt;&gt; ev.evaluate([2.0, 0.0])
+[4.0]
+</code></pre>
+<hr />
+<h4 id="expressionevaluatorevaluate"><a class="header" href="#expressionevaluatorevaluate">ExpressionEvaluator.evaluate</a></h4>
+<pre><code class="language-python">ExpressionEvaluator.evaluate(values: list[float]) -&gt; list[float]
+</code></pre>
+<p>用给定参数值求值。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>list[float]</code></td><td>浮点数值列表，长度必须与参数个数匹配</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：结果浮点数列表。</p>
+<p><strong>异常</strong>：<code>ValueError</code> — 参数个数不匹配或求值错误。</p>
+<hr />
+<h4 id="expressionevaluatorn_params"><a class="header" href="#expressionevaluatorn_params">ExpressionEvaluator.n_params</a></h4>
+<pre><code class="language-python">ExpressionEvaluator.n_params -&gt; int  # property
+</code></pre>
+<p>参数个数。</p>
+<hr />
+<h2 id="数值积分"><a class="header" href="#数值积分">数值积分</a></h2>
+<h3 id="vegas"><a class="header" href="#vegas">Vegas</a></h3>
+<p>自适应蒙特卡洛积分器（Vegas 算法），支持多维积分。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.Vegas(n_dims: int, *, n_bins=None, n_samples=None, iterations=None, learning_rate=None, seed=None)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n_dims</code></td><td><code>int</code></td><td>积分维度</td></tr>
+<tr><td><code>n_bins</code></td><td><code>int</code> 或 <code>None</code></td><td>每维的 bin 数（默认 64）</td></tr>
+<tr><td><code>n_samples</code></td><td><code>int</code> 或 <code>None</code></td><td>每次迭代的采样数（默认 10000）</td></tr>
+<tr><td><code>iterations</code></td><td><code>int</code> 或 <code>None</code></td><td>迭代次数（默认 10）</td></tr>
+<tr><td><code>learning_rate</code></td><td><code>float</code> 或 <code>None</code></td><td>网格自适应学习率（默认 1.5）</td></tr>
+<tr><td><code>seed</code></td><td><code>int</code> 或 <code>None</code></td><td>RNG 种子（默认 <code>0x0C45</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import Vegas
+&gt;&gt;&gt; v = Vegas(2, n_samples=20000, iterations=8, seed=1)
+&gt;&gt;&gt; r = v.integrate(lambda xs: xs[0] * xs[1])
+&gt;&gt;&gt; abs(r.integral - 0.25) &lt; 0.01
+True
+</code></pre>
+<hr />
+<h4 id="vegasintegrate"><a class="header" href="#vegasintegrate">Vegas.integrate</a></h4>
+<pre><code class="language-python">Vegas.integrate(f: Callable[[list[float]], float]) -&gt; IntegrateResult
+</code></pre>
+<p>对可调用对象 $f$ 在单位超立方体 $[0, 1]^n$ 上积分。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>Callable</code></td><td>接受 <code>n_dims</code> 个 <code>[0, 1]</code> 内浮点数的列表，返回一个浮点数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>IntegrateResult</code>。</p>
+<hr />
+<h4 id="vegasresult"><a class="header" href="#vegasresult">Vegas.result</a></h4>
+<pre><code class="language-python">Vegas.result -&gt; IntegrateResult  # property
+</code></pre>
+<p>最新的累计估计值和误差。</p>
+<hr />
+<h4 id="vegasiterations"><a class="header" href="#vegasiterations">Vegas.iterations</a></h4>
+<pre><code class="language-python">Vegas.iterations -&gt; int  # property
+</code></pre>
+<p>已完成的迭代次数。</p>
+<hr />
+<h3 id="integrate_1d"><a class="header" href="#integrate_1d">integrate_1d</a></h3>
+<pre><code class="language-python">ocas.integrate_1d(f: Callable[[float], float], a: float, b: float, *, n_bins=None, n_samples=None, iterations=None, learning_rate=None, seed=None) -&gt; IntegrateResult
+</code></pre>
+<p>一维数值积分便捷函数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>Callable</code></td><td>一元浮点函数</td></tr>
+<tr><td><code>a</code></td><td><code>float</code></td><td>积分下限</td></tr>
+<tr><td><code>b</code></td><td><code>float</code></td><td>积分上限</td></tr>
+<tr><td><code>n_bins</code> 等</td><td>同 <code>Vegas</code></td><td>可选调参</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>IntegrateResult</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; import ocas
+&gt;&gt;&gt; r = ocas.integrate_1d(lambda x: x, 0.0, 1.0)
+&gt;&gt;&gt; abs(r.integral - 0.5) &lt; 0.01
+True
+</code></pre>
+<hr />
+<h3 id="integrateresult"><a class="header" href="#integrateresult">IntegrateResult</a></h3>
+<p>数值积分结果。</p>
+<p><strong>属性</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>属性</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>integral</code></td><td><code>float</code></td><td>积分估计值</td></tr>
+<tr><td><code>error</code></td><td><code>float</code></td><td>估计标准误差</td></tr>
+</tbody></table>
+</div>
+<p>支持索引访问：<code>result[0]</code> = <code>integral</code>，<code>result[1]</code> = <code>error</code>；支持解包：<code>integral, error = result</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; import ocas
+&gt;&gt;&gt; r = ocas.integrate_1d(lambda x: x**2, 0.0, 1.0, seed=42)
+&gt;&gt;&gt; r[0]       # integral
+0.333...
+&gt;&gt;&gt; r[1]       # error
+0.00...
+&gt;&gt;&gt; i, e = r   # unpacking
+</code></pre>
+<hr />
+<h2 id="双精度浮点"><a class="header" href="#双精度浮点">双精度浮点</a></h2>
+<h3 id="doublef64"><a class="header" href="#doublef64">DoubleF64</a></h3>
+<p>双精度浮点数运算（~31 位有效数字，~84 二进制位），使用 Dekker/Knuth "double-float" 算法。</p>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-python">ocas.DoubleF64(hi: float, lo: float = 0.0)
+</code></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>hi</code></td><td><code>float</code></td><td>主值</td></tr>
+<tr><td><code>lo</code></td><td><code>float</code></td><td>误差项（默认 0.0）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DoubleF64
+&gt;&gt;&gt; a = DoubleF64(1.0)
+&gt;&gt;&gt; b = DoubleF64(2.0)
+&gt;&gt;&gt; str(a + b)
+'3'
+</code></pre>
+<hr />
+<h4 id="doublef64to_f64"><a class="header" href="#doublef64to_f64">DoubleF64.to_f64</a></h4>
+<pre><code class="language-python">DoubleF64.to_f64() -&gt; float
+</code></pre>
+<p>转换为标准 <code>float</code>（丢失误差项精度）。</p>
+<hr />
+<h4 id="doublef64components"><a class="header" href="#doublef64components">DoubleF64.components</a></h4>
+<pre><code class="language-python">DoubleF64.components() -&gt; tuple[float, float]
+</code></pre>
+<p>返回 <code>(hi, lo)</code> 元组。</p>
+<hr />
+<h4 id="doublef64-算术运算"><a class="header" href="#doublef64-算术运算">DoubleF64 算术运算</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>语法</th><th>说明</th></tr></thead><tbody>
+<tr><td>加法</td><td><code>a + b</code></td><td>双精度加法</td></tr>
+<tr><td>减法</td><td><code>a - b</code></td><td>双精度减法</td></tr>
+<tr><td>乘法</td><td><code>a * b</code></td><td>双精度乘法</td></tr>
+<tr><td>除法</td><td><code>a / b</code></td><td>双精度除法</td></tr>
+<tr><td>取负</td><td><code>-a</code></td><td>逐分量取负</td></tr>
+<tr><td>绝对值</td><td><code>abs(a)</code></td><td>双精度绝对值</td></tr>
+<tr><td>幂</td><td><code>a ** n</code></td><td>整数幂（<code>n</code> 为 <code>int</code>）</td></tr>
+<tr><td>比较</td><td><code>==</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></td><td>全序比较</td></tr>
+</tbody></table>
+</div>
+<p><strong>异常</strong>：<code>ValueError</code> — 除以零（<code>__truediv__</code>）。</p>
+<hr />
+<h4 id="doublef64-超越函数"><a class="header" href="#doublef64-超越函数">DoubleF64 超越函数</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>说明</th><th>异常</th></tr></thead><tbody>
+<tr><td><code>sin()</code></td><td>正弦</td><td>—</td></tr>
+<tr><td><code>cos()</code></td><td>余弦</td><td>—</td></tr>
+<tr><td><code>tan()</code></td><td>正切</td><td>—</td></tr>
+<tr><td><code>exp()</code></td><td>自然指数 $e^x$</td><td>—</td></tr>
+<tr><td><code>ln()</code></td><td>自然对数</td><td><code>ValueError</code>：非正数</td></tr>
+<tr><td><code>sqrt()</code></td><td>平方根</td><td><code>ValueError</code>：负数</td></tr>
+</tbody></table>
+</div>
+<p><strong>完整示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; from ocas import DoubleF64
+&gt;&gt;&gt; DoubleF64(0.0).sin().to_f64()
+0.0
+&gt;&gt;&gt; DoubleF64(4.0).sqrt().components()
+(2.0, 0.0)
+</code></pre>
+<hr />
+<h2 id="函数速查表"><a class="header" href="#函数速查表">函数速查表</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>签名</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>solve_linear_rational</code></td><td><code>(a, b) -&gt; list[tuple]</code></td><td>ℚ 上求解 Ax=b</td></tr>
+<tr><td><code>solve_linear_integer</code></td><td><code>(a, b) -&gt; list[int]</code></td><td>ℤ 上求解 Ax=b</td></tr>
+<tr><td><code>solve_diophantine</code></td><td><code>(a, b, c) -&gt; DiophantineSolution | None</code></td><td>ax+by=c</td></tr>
+<tr><td><code>classify_ode</code></td><td><code>(equation, func, var) -&gt; list[str]</code></td><td>ODE 分类</td></tr>
+<tr><td><code>dsolve</code></td><td><code>(equation, func, var, hint=None) -&gt; str</code></td><td>符号求解 ODE</td></tr>
+<tr><td><code>dsolve_ivp</code></td><td><code>(equation, func, var, y0, y1=None) -&gt; str</code></td><td>Laplace IVP</td></tr>
+<tr><td><code>factorint</code></td><td><code>(n) -&gt; list[tuple]</code></td><td>整数素因子分解</td></tr>
+<tr><td><code>isprime</code></td><td><code>(n) -&gt; bool</code></td><td>BPSW 素性测试</td></tr>
+<tr><td><code>isprime_u64</code></td><td><code>(n) -&gt; bool</code></td><td>确定性素性（u64）</td></tr>
+<tr><td><code>nextprime</code></td><td><code>(n) -&gt; int</code></td><td>下一个素数</td></tr>
+<tr><td><code>discrete_log</code></td><td><code>(p, base, target) -&gt; int</code></td><td>离散对数</td></tr>
+<tr><td><code>crt</code></td><td><code>(moduli, residues) -&gt; tuple</code></td><td>中国剩余定理</td></tr>
+<tr><td><code>jacobi_symbol</code></td><td><code>(a, n) -&gt; int</code></td><td>Jacobi 符号</td></tr>
+<tr><td><code>totient</code></td><td><code>(n) -&gt; int</code></td><td>Euler totient</td></tr>
+<tr><td><code>mobius</code></td><td><code>(n) -&gt; int</code></td><td>Möbius 函数</td></tr>
+<tr><td><code>divisor_count</code></td><td><code>(n) -&gt; int</code></td><td>因数个数</td></tr>
+<tr><td><code>divisor_sigma</code></td><td><code>(n, k=1) -&gt; int</code></td><td>因数幂和</td></tr>
+<tr><td><code>liouville_lambda</code></td><td><code>(n) -&gt; int</code></td><td>Liouville 函数</td></tr>
+<tr><td><code>py_groebner_basis</code></td><td><code>(generators, n_vars=1, algorithm="auto")</code></td><td>Gröbner 基</td></tr>
+<tr><td><code>py_ideal_contains</code></td><td><code>(generators, f, n_vars=1, algorithm="auto")</code></td><td>理想成员判定</td></tr>
+<tr><td><code>py_solve_polynomial_system</code></td><td><code>(equations, n_vars=1, algorithm="auto")</code></td><td>多项式方程组求解</td></tr>
+<tr><td><code>py_hilbert_series</code></td><td><code>(gb) -&gt; HilbertSeries</code></td><td>Hilbert 级数</td></tr>
+<tr><td><code>py_ideal_radical</code></td><td><code>(generators, n_vars=1)</code></td><td>理想根式</td></tr>
+<tr><td><code>py_primary_decomposition</code></td><td><code>(generators, n_vars=1)</code></td><td>准素分解</td></tr>
+<tr><td><code>py_is_zero_dimensional</code></td><td><code>(gb) -&gt; bool</code></td><td>零维判定</td></tr>
+<tr><td><code>py_eliminate</code></td><td><code>(generators, elim_vars, n_vars=1, algorithm="auto")</code></td><td>消元</td></tr>
+<tr><td><code>contract_tensors</code></td><td><code>(a, b) -&gt; tuple</code></td><td>张量缩并</td></tr>
+<tr><td><code>tensor_symmetrise_sign</code></td><td><code>(tensor) -&gt; int</code></td><td>对称化符号</td></tr>
+<tr><td><code>canonicalize_tensors</code></td><td><code>(expr, specs, index_groups=None)</code></td><td>张量规范化</td></tr>
+<tr><td><code>young_project</code></td><td><code>(expr, tableau) -&gt; str</code></td><td>Young 投影</td></tr>
+<tr><td><code>refresh_dummies</code></td><td><code>(expr, specs) -&gt; str</code></td><td>哑指标刷新</td></tr>
+<tr><td><code>integrate_1d</code></td><td><code>(f, a, b, **opts) -&gt; IntegrateResult</code></td><td>一维数值积分</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="类速查表"><a class="header" href="#类速查表">类速查表</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>类</th><th>构造函数</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Expression</code></td><td><code>Expression(input)</code></td><td>符号表达式</td></tr>
+<tr><td><code>Polynomial</code></td><td><code>Polynomial(coeffs, domain=None)</code></td><td>一元多项式</td></tr>
+<tr><td><code>MultivariatePolynomial</code></td><td><code>MultivariatePolynomial(terms, n_vars)</code></td><td>多元多项式</td></tr>
+<tr><td><code>Matrix</code></td><td><code>Matrix(rows, domain=None)</code></td><td>域上矩阵</td></tr>
+<tr><td><code>IntegerDomain</code></td><td><code>IntegerDomain()</code></td><td>ℤ 选择器</td></tr>
+<tr><td><code>RationalDomain</code></td><td><code>RationalDomain()</code></td><td>ℚ 选择器</td></tr>
+<tr><td><code>FiniteField</code></td><td><code>FiniteField(modulus)</code></td><td>GF(p)</td></tr>
+<tr><td><code>AlgebraicExtension</code></td><td><code>AlgebraicExtension(min_poly)</code></td><td>代数数域</td></tr>
+<tr><td><code>AlgebraicElement</code></td><td>（由 <code>AlgebraicExtension</code> 创建）</td><td>域元素</td></tr>
+<tr><td><code>AlgebraicPolynomial</code></td><td><code>AlgebraicPolynomial(field, coeffs)</code></td><td>代数域上多项式</td></tr>
+<tr><td><code>DualShape</code></td><td><code>DualShape.first_order(n_vars)</code></td><td>对偶数布局</td></tr>
+<tr><td><code>HyperDual</code></td><td><code>HyperDual.variable(...)</code> / <code>.constant(...)</code></td><td>超对偶数</td></tr>
+<tr><td><code>Tensor</code></td><td><code>Tensor(name, slots, symmetry="none")</code></td><td>命名张量</td></tr>
+<tr><td><code>ExpressionEvaluator</code></td><td><code>ExpressionEvaluator(input, param_names)</code></td><td>数值求值器</td></tr>
+<tr><td><code>Vegas</code></td><td><code>Vegas(n_dims, **opts)</code></td><td>Monte Carlo 积分器</td></tr>
+<tr><td><code>IntegrateResult</code></td><td><code>IntegrateResult(integral, error)</code></td><td>积分结果</td></tr>
+<tr><td><code>DoubleF64</code></td><td><code>DoubleF64(hi, lo=0.0)</code></td><td>双精度浮点</td></tr>
+<tr><td><code>GroebnerBasis</code></td><td>（由函数返回）</td><td>Gröbner 基结果</td></tr>
+<tr><td><code>RealSolution</code></td><td>（由函数返回）</td><td>实数解</td></tr>
+<tr><td><code>PolynomialSystemSolution</code></td><td>（由函数返回）</td><td>方程组求解结果</td></tr>
+<tr><td><code>HilbertSeries</code></td><td>（由函数返回）</td><td>Hilbert 级数</td></tr>
+<tr><td><code>PrimaryComponent</code></td><td>（由函数返回）</td><td>准素分解分量</td></tr>
+<tr><td><code>DiophantineSolution</code></td><td>（由函数返回）</td><td>丢番图方程解</td></tr>
+<tr><td><code>PolynomialFactor</code></td><td>（由函数返回）</td><td>因式分解因子</td></tr>
+<tr><td><code>AlgebraicFactor</code></td><td>（由函数返回）</td><td>代数域因式分解因子</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-numeric-integration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/c.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-numeric-integration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/c.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
