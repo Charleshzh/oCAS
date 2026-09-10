@@ -307,6 +307,17 @@ fn main() {
     let mut failure_lines = String::new();
     let start = Instant::now();
 
+    // Optional subset filter: comma-separated corpus ids for fast
+    // per-mechanism verification runs (OCAS_1892_CASES="id1,id2,...").
+    let only: Option<std::collections::HashSet<String>> =
+        env::var("OCAS_1892_CASES").ok().map(|v| {
+            v.split(',')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+                .collect()
+        });
+
     for (row_idx, line) in corpus.lines().enumerate() {
         if row_idx % 200 == 0 {
             eprintln!("integrate_1892: {row_idx}/1892 cases");
@@ -315,6 +326,11 @@ fn main() {
             eprintln!("integrate_1892: malformed row {}", row_idx + 1);
             continue;
         };
+        if let Some(only) = &only
+            && !only.contains(id)
+        {
+            continue;
+        }
         // Each problem runs in a child process: a pathological case can
         // overflow the stack, loop forever, or panic without taking the
         // whole report down. The child prints one line and exits; the parent
