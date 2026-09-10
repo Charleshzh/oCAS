@@ -1124,6 +1124,92 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 ---
 
+### 0.27.1 — 积分广度机制攻坚（0.27.0 验收线续作）
+
+**目标**：沿 0.27.0 的 +30pp 验收线继续提升 1892 题覆盖率，以机制级升级
+（非规则堆量）解锁整族题型。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| Chebyshev 二项微分 + 分数幂有理化 | Rubi 二项微分族 | `integrate::binomial` |
+| 三角分母幂递推 / 线性分子分解 / 多项式×三角闭式 | Rubi 三角族 | `integrate::trig_reduction` |
+| exp/log 核代换（exp 核有理化、双曲 t=e^u、f(log x)/x） | Rubi 指数/对数族 | `integrate::exp_log` |
+| 一般二次根式引擎 + Euler III | SymPy `manualintegrate` | `integrate::sqrt_quadratic` |
+| 反三角/反双曲核导数幂与代换 | Rubi 反三角族 | `integrate::inverse_trig` |
+| 单三角核有理式归一化 + tan/sec 族剥项 | Rubi 三角核族 | `integrate::trig_kernel` |
+| 分母幂递推 + 双线性因子部分分式 | Rubi 有理族 | `integrate::quad_power` |
+
+**验收**：覆盖率 9.62% → 16.44%（+6.82pp，311/1892，129 新解、0 回归、
+0 崩溃、墙钟 −19%）；**未达 +30pp**。
+
+**风险**：机制路线兑现有界（剩余主干为椭圆族/高符号商式/复合壳层）。
+
+---
+
+### 0.27.2 — 悬挂消除、已验证覆盖率与椭圆积分基础
+
+**目标**：把残留超时变成确定性拒绝；在字符串覆盖率之外引入独立的数值验证
+口径（已验证覆盖率）；补齐失败转储指向的初等机制族；落地椭圆积分基础。
+0.27.x 自此作为连续系列推进，直到净增平台化或达 +30pp。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 阶段打点与归因（33 例超时逐题归因） | — | `integrate` 的 `OCAS_INTEGRATE_TRACE` |
+| 有界展开预通道（未展开发散积） | — | `integrate::expand_prepass`（`integral/mod.rs`） |
+| 悬挂阶段确定性预算 | 0.27.1 `MAX_COEFF_COST` 思路 | `symbolic_rational`/`trig_kernel`/`heuristic`/`rational`/`sqrt_quadratic` |
+| 错案修复：和式被当作单项式平方 | — | `integrate::symbolic_rational::rational_square_root` |
+| 数值验证 oracle（f64 + Carlson/自适应 Simpson + 5 点差分） | 模块内 eval_f64 核验惯例 | `ocas-tests/src/integral_eval.rs` |
+| 已验证覆盖率口径 | — | `ocas-tests/benches/integrate_1892.rs` 报告字段 |
+| 双曲闭式族 | `trig_reduction` 镜像 | `integrate::hyperbolic_reduction` |
+| 有理导数核代换（tan/cot/tanh/coth）+ 勾股恒等式重写 | Chebyshev 二项微分 | `integrate::kernel_subst` |
+| 三角相位归一（a+b·cos+c·sin） | Weierstrass/相位角 | `integrate::trig_reduction` 扩展 |
+| 逆函数复合消去 | — | `integrate::inverse_trig` 扩展 |
+| `exp(逆函数)` 代数化 | 指数-对数恒等式 | `integrate::exp_log` 扩展 |
+| 半幂前端 + Legendre 约化到 `EllipticF/E/Pi` | Byrd & Friedman；SymPy 约定 | `integrate::halfpower`、`integrate::elliptic` |
+| 保序函数头注册表 | — | `ocas_atom::normalize::preserves_argument_order` |
+| 错案回归护栏 | 0.27.1 C14/D7b 类 | `ocas-tests/tests/correctness/integral_verify.rs` |
+
+**性能指标**
+
+- 超时数 33 → ≤ 5；墙钟显著低于 572 s 基线
+- 已解题目零错案（`verify_mismatches` = 0）；已验证比例 ≥ 95%
+
+**验收**
+
+- [ ] 覆盖率与已验证比例双口径入档（BENCHMARK_RESULTS_CN.md §0.27.2）
+- [ ] 逐题 diff 0 回归；全量质量门（含全 feature 档）全绿
+- [ ] 椭圆积分输出全部通过数值求导核验；不可判定域诚实回退
+
+**风险**
+
+- 椭圆约化的定义域/分支处理为新难点 → 分步交付（先 `P(u)/y` 与四次根式，
+  再三次根式/`EllipticPi` 复特征值）
+- 多参函数头实参被 `normalize` 排序的语义陷阱 → 已加入保序注册表并测试
+- 并行开发接口漂移 → 单文件所有权 + 挂载点集中改动 + 每项集成后全量 diff
+
+---
+
+### 0.27.3 — 复合壳层、特殊函数广度与椭圆族覆盖
+
+**目标**：沿 0.27.2 失败转储留存的最大簇继续机制攻坚。
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 复合壳层拆分（mixed-other 簇） | — | `integrate` 因子级拆分 + 内层核识别 |
+| 特殊函数族扩展（`Ei(n,z)`/Eₙ、erf 幂与复合、`x^k·Si/Ci/Ei`、`erfc` 分母） | Rubi 特殊函数族；0.14 函数表 | `integrate::special` 扩展 |
+| 椭圆族广度（三角二次根式路由、三次根式、Π 复特征值） | Byrd & Friedman | `integrate::elliptic` 扩展 |
+
+**验收**：按 0.27.2 的同一验收表记录；连续两波净增 < 60 题则冻结 0.27 线转
+0.28.0。
+
+---
+
 ### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
 
 **目标**：对齐 msolve 0.10.1 实测（katsura 3–7 ms、cyclic-7 55 ms）（P1）；

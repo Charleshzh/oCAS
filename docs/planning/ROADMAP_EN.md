@@ -424,6 +424,86 @@ acceptance line, via mechanism-level upgrades (not rule volume).
   plus the SymPy cross-check suite — met
 - Quality gates (fmt / clippy -D warnings / workspace test / deny) — met
 
+### 0.27.2 — Hang Elimination, Verified Coverage and the Elliptic Foundation
+
+**Goal**: turn every remaining per-case hang into a deterministic decline,
+add an independent numerical-verification criterion alongside the string
+coverage metric, close the elementary mechanism families the failure dump
+points at, and lay the elliptic-integral foundation.
+
+**Deliverables** (all landed):
+
+- [x] Diagnostics: `OCAS_INTEGRATE_TRACE` stage tracing; all 33 baseline
+  timeouts attributed to pipeline stages (symbolic_rational 18, heuristic 4,
+  trig_kernel 3, inverse_trig 2, rational 2, trig_reduction 2,
+  sqrt_quadratic 1, untraced 1)
+- [x] Bounded-expansion pre-pass ahead of the symbolic-rational backend
+  (`expand_prepass` in `integral/mod.rs`) for unexpanded products whose
+  expansion is a small Laurent polynomial (restricted to purely algebraic
+  expansions so it cannot steal trig/hyperbolic cases from their mechanisms)
+- [x] Deterministic work budgets in the hanging stages (`symbolic_rational`,
+  `trig_kernel`, `heuristic`, `rational`, `sqrt_quadratic`)
+- [x] Wrong-answer fix: `symbolic_rational::rational_square_root` treated a
+  polynomial **sum** as a monomial square, splitting quadratic denominators at
+  bogus roots and emitting wrong logarithms (0.27.1 shipped wrong answers for
+  e.g. `1/(b*x^2+2*a*x-b)` and, through the `t = e^x` hyperbolic path,
+  `1/(a+b*sinh(x))`); five further wrong-answer classes were fixed
+  (`complete_square` monic assumption, Chebyshev case-3 branch sign, Risch
+  out-of-field residuals, rule-A4 sequence wildcard, resonant product-to-sum
+  zero denominators)
+- [x] Numerical-verification oracle (`ocas-tests/src/integral_eval.rs`) and
+  `verified_solved` / `unverified_solved` / `verify_indeterminate` reporting
+  in the 1892 harness, plus `OCAS_1892_VERIFY` / `OCAS_1892_BUCKET` switches
+- [x] Hyperbolic closed-form family (`hyperbolic_reduction.rs`)
+- [x] Rational-derivative kernel substitution (`kernel_subst.rs`)
+- [x] Trig phase-shift normalization (`trig_reduction.rs` extension; the
+  phase/ratio path is implemented but gated behind
+  `PHASE_RATIO_ENABLED = false` because its composed atom does not yet survive
+  `crate::diff`)
+- [x] Inverse-composition cancellation (`inverse_trig.rs` extension)
+- [x] `exp(inverse function)` algebraization (`exp_log.rs` extension)
+- [x] Half-power front-end (`halfpower.rs`) and elliptic reduction
+  (`elliptic.rs`): Legendre reduction to `EllipticF`/`EllipticE`
+  (`EllipticPi` is registered but has no producer yet), SymPy's `m = k²`
+  convention, argument order preserved by
+  `ocas_atom::normalize::preserves_argument_order`
+- [x] Wrong-answer regression guard in the correctness suite
+  (`tests/correctness/integral_verify.rs`)
+- [x] Extra: `ocas-parse` unary minus (`2-1`, `x-1`, `x^2-1` no longer
+  `PARSE_ERR`; breaking `lex` API change)
+
+**Success Criteria** (honest record):
+
+- Both metrics over the 1892-problem subset: **solved 349 (18.45%), verified
+  325/349 (93.1%)**; per-case diff: 44 newly solved, 6 deliberate declines
+  (all were 0.27.1 wrong answers), net +38
+- Zero wrong answers in the solved set: **`verify_mismatches` = 0 — met**
+- Timeouts 13 (target ≤ 5 — **not met**), crashes 0, wall clock 445.7 s
+  (−22% against the 572 s baseline)
+- Verified ratio 93.1% (target ≥ 95% — **not met**: of 24 inconclusive cases,
+  11 are domain-restricted, 10 carry the imaginary unit, 3 fail the step-size
+  self-consistency gate; all are "undecidable", none is a wrong answer)
+- Quality gates: fmt / both clippy tiers / deny green; workspace tests green
+  (the `ocas-c` rules-toggle probe now uses `csc(x)^5`, since kernel
+  substitution took over the old `tan(x)^4` probe)
+- Next wave (0.27.3): the 13 timeout families, composite-shell decomposition,
+  the special-function family, elliptic-family breadth
+
+### 0.27.3 — Composite Shells, Special-Function Breadth and Elliptic Family Coverage
+
+**Goal**: continue the mechanism push on the clusters the 0.27.2 failure dump
+leaves behind.
+
+**Deliverables**:
+
+- [ ] Composite-shell decomposition (mixed-other cluster): factor-level
+  `F(g(x))·w(x)` splitting with inner-kernel recognition, generalizing
+  `trig_linear_arg`
+- [ ] Special-function family extension: `Ei(n, z)`/Eₙ, powers and
+  compositions of `erf`, `x^k·Si/Ci/Ei` by parts, `exp(−b²x²)/erfc(bx)²`
+- [ ] Elliptic family breadth: full trig-quadratic-radical routing, cubic
+  radicands, `EllipticPi` with complex characteristics
+
 ### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
 
 **Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)

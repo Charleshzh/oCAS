@@ -9,6 +9,126 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.27.2] - 2026-09-11
+
+### Added / 新增
+
+- **独立数值验证口径（已验证覆盖率）**：`ocas-tests/src/integral_eval.rs` 新增积分结果
+  数值 oracle——f64 求值（全套三角/双曲/反函数 + `erf/erfc/erfi` 级数 + 通过自适应
+  Simpson 求定义积分的 `EllipticF/E/Pi`）+ 5 点中心差分（`h = 1e-4·max(1,|x|)`，
+  两档步长自洽性闸门）+ 三轮确定性参数（混合符号、全正小值、全正大值）。1892 题
+  harness 报告新增 `verified_solved` / `unverified_solved` / `verify_indeterminate` /
+  `verify_mismatches` 字段与 `OCAS_1892_VERIFY`、`OCAS_1892_BUCKET` 开关，
+  未通过验证的题目转储到 `data/integrate_1892_unverified.jsonl`。
+  **字符串覆盖率会高估真实能力**：0.27.2 起两个口径并列报告。
+  / **Independent numerical-verification criterion (verified coverage)**: a new oracle
+  (`ocas-tests/src/integral_eval.rs`) evaluates integrands and antiderivatives in f64
+  (full trig/hyperbolic/inverse table, `erf/erfc/erfi` series, `EllipticF/E/Pi` by
+  adaptive Simpson of the defining integrals), compares a 5-point central difference at
+  two step sizes (with a self-consistency gate) against the integrand, and tries three
+  deterministic parameter regimes. The 1892-problem harness reports
+  `verified_solved` / `unverified_solved` / `verify_indeterminate` / `verify_mismatches`
+  alongside the string metric, with `OCAS_1892_VERIFY` and `OCAS_1892_BUCKET` switches
+  and an `integrate_1892_unverified.jsonl` dump.
+- **阶段打点**：`OCAS_INTEGRATE_TRACE=1` 为积分链每个阶段打印
+  `[trace] enter/decline <阶段> :: <表达式>`，用于把悬挂与回退无猜测地归因到阶段。
+  / **Stage tracing**: `OCAS_INTEGRATE_TRACE=1` prints an enter/decline line per
+  pipeline stage.
+- **有界展开预通道**（`integral/mod.rs::expand_prepass`）：含两个以上非常数因子的
+  乘积若展开为**纯代数**的小型 Laurent 多项式，先分布再逐项积分，避免未展开形进入
+  符号有理后端挂死（`(A+B·x²)(b·x²+c·x⁴)/x⁶` 由不返回变为 8 ms 求解）。
+  / Bounded-distribution pre-pass for unexpanded purely algebraic products.
+- **双曲闭式族**（`integral/hyperbolic_reduction.rs`）：`∫du/(a+b·T(u))`，
+  `T ∈ {sinh, cosh}`，`u` 线性、系数在 `ℚ(symbols)`；推导用 `t = tanh(u/2)`，
+  判别式按核区分（`sinh` 用 `a²+b²`，`cosh` 用 `a²−b²`），输出 `log` 形并强制
+  数值自检。/ Hyperbolic closed-form family for the `sinh`/`cosh` linear denominators.
+- **有理导数核代换**（`integral/kernel_subst.rs`）：`T ∈ {tan, cot, tanh, coth}`
+  代换 `t = T(u)`（导数在 `T` 中有理），交予 `binomial`/`sqrt_quadratic`/`rational`
+  并对每个候选做导数闸门；含勾股恒等式重写。`(1+coth x)^(7/2)`、`(1−tanh²)^(3/2)`、
+  `√(tan x)`、`1/(2+3tan x)` 等由回退转为求解。
+  / Rational-derivative kernel substitution with a per-candidate derivative gate.
+- **三角相位归一**（`trig_reduction.rs`）与 **逆函数复合消去**（`inverse_trig.rs`）：
+  `atanh(tanh u)→u` 等精确恒等式、`acoth(tanh u)`/`atan(tan u)` 作为移位算子处理；
+  `atanh(tanh(a+bx))^k` 族（含 `/x^4`、`·√x`）与 `√(asin(ax))/√(c−a²cx²)` 等求解。
+  / Phase-shift normalization and inverse-composition cancellation.
+- **`exp(逆函数)` 代数化**（`exp_log.rs`）：`exp(k·atanh u) = (1+u)^(k/2)(1−u)^(−k/2)`
+  （及 `acoth`/`asinh`/`acosh`/`i·atan` 形式），12 个语料 id 由回退转为求解，且每个
+  输出必须通过机制内数值自检。
+  / `exp(inverse function)` algebraization with an in-mechanism numeric self-check.
+- **椭圆积分基础**（`integral/elliptic.rs` + `halfpower.rs`）：半幂前端把
+  `C·S(cos u)^(p/2)` 归一到 Legendre 正规形 `c(1−u²)(1−M u²)`，核心做 Hermite
+  精确部分 + Legendre 约化，输出 `EllipticF(φ, m)` / `EllipticE(φ, m)`
+  （SymPy `m = k²` 约定）；`1/√((1−x²)(1−k²x²))`、`1/√(1−x⁴)`、
+  `1/(a+b·cos x)^(3/2)` 等求解。`EllipticPi` 头已注册（含保序）但尚无生产者。
+  / Elliptic foundation: half-power front-end + Legendre reduction to `EllipticF/E`
+  (`EllipticPi` is registered but not yet emitted).
+- **函数头保序注册表**：`ocas_atom::normalize::preserves_argument_order` 取代硬编码
+  的 `Derivative`/`Integral` 判断，新增 `EllipticF`/`EllipticE`/`EllipticPi`/`Ei`
+  （多参头的实参顺序不再被排序抹平）。/ Order-preserving function-head registry.
+- **解析器一元负号**（`ocas-parse`）：整数字面量改为无符号，`-` 永远是独立词法单元；
+  `2-1`、`x-1`、`x^2-1`、`(x+1)-(x-1)`、`1/(x^2-1)^2` 等不再 `PARSE_ERR`。
+  **破坏性公开 API**：`lex("-7")` 由 `[Integer(-7)]` 变为 `[Minus, Integer(7)]`；
+  `-9223372036854775808`（`i64::MIN`）不再可词法化。
+  / Unary minus in the parser; unsigned integer literals (breaking `lex` change).
+
+### Fixed / 修复
+
+- **错案：符号有理后端的 `rational_square_root` 把多项式「和」当作单项式平方**
+  （`4a²+4b²` 被开成 `2a+2b`），导致二次分母在伪根处分拆并输出错误对数
+  （`1/(b·x²+2a·x−b)`，以及经 `t = e^x` 的 `1/(a+b·sinh(x))`）。现在候选平方必须
+  **精确**等于判别式才被采用。/ Fixed a wrong-answer class: `rational_square_root`
+  treated a polynomial sum as a monomial square.
+- **错案：`complete_square` 假定分母首一**（Hermite 递推会交回 `1−x²`），判别式
+  符号翻转，`∫dx/(x²−1)²` 错误返回 `atan(x)/2`；改为使用实际首项系数 `A`
+  （`Δ = B² − 4AC`，不做操作数缩放）。
+  / `complete_square` now uses the actual leading coefficient.
+- **错案：Chebyshev 第 3 类回代丢符号**（`binomial.rs`）：`(a+bx²)^(9/2)/x^12` 及同类
+  在 `x<0` 半轴给出**负的**原函数；回代改为 `(a+b·xⁿ)^(1/s)·x^(−n/s)`。
+  / Chebyshev case-3 back-substitution no longer drops the branch sign.
+- **错案：Risch 的 `integrate_kpoly_primitive` 把非域项留在顶层**（`risch.rs`）：
+  `∫log(1+x²)/(1+x²)` 返回 `atan(x)`；现在该层直接拒绝，相关题诚实回退。
+  / The Risch primitive layer now declines when a coefficient integral leaves the field.
+- **错案：规则表 A4 闭包的序列通配符吞掉 x 相关因子**（`rules.rs`）：
+  `x²(d+ex)³(a+b·log(c·xⁿ))` 曾把对数因子提到积分号外；现在被吸收因子必须为常数。
+  / Rule-A4 closures now require absorbed factors to be constant.
+- **错案：共振积化和差的零分母**（`rules.rs` + `trig_reduce.rs`）：同斜率三角乘积
+  （`(a·cos u+b·sin u)²`、`sin(u)cos(u)`、`cos(u)²·…`）曾输出 `1/(d + (−1)·d)`
+  这类**恒等于零的分母**（所有参数取值下为 ∞）。规则表新增非共振守卫与零分母
+  安全网；`trig_reduce` 的 `sub`/`add` 改用 `collect_terms` 折叠同类项，使等斜率
+  差角正确归零。/ Resonant product-to-sum no longer emits identically-zero
+  denominators.
+- **错案：`rational.rs` 的 `extended_gcd` 步数上界少 1**（自引入回归）与
+  `symbolic_rational` 的 `extended_gcd`/`square_free_factors` 上界过紧，导致 17 例
+  已解题目回退；已修正并回放核对。/ Step-bound fixes restore 17 previously solved
+  cases.
+- **悬挂治理**：33 例超时全部归因到阶段（`symbolic_rational` 18、`heuristic` 4、
+  `trig_kernel` 3、`inverse_trig` 2、`rational` 2、`trig_reduction` 2、`sqrt_quadratic` 1）；
+  在五个阶段加入确定性工作量预算与入口重置（无墙钟、无线程），超时降至 13，
+  0 崩溃，墙钟下降。/ All 33 baseline timeouts attributed; deterministic per-stage
+  budgets added.
+- 其他：`heuristic`/`symbolic_rational` 的「预算不泄漏」测试由 256 次降到个位数
+  重复（形状在 debug 下每次数秒），`exp_log` 重测试改用 32 MiB 线程栈，整套
+  `cargo test -p ocas-calc --lib integral::` 不再中止。
+  / Heavy repeated tests bounded so the module test binary completes.
+
+### Coverage / 覆盖率（诚实记录）
+
+- Rubi 1892 题子集：0.27.1 基线（solved 311、超时 33、墙钟 572.0 s）→
+  **0.27.2 终态 349 solved（18.45%）、已验证 325/349（93.1%）、mismatches 0、
+  超时 13、崩溃 0、墙钟 445.7 s（−22%）**；逐题 diff 新解 44、主动回退 6
+  （6 例全部是 0.27.1 的错案，见上「修复」段），净 +38。
+  **+30pp 验收线仍未达**（+2.0pp）；剩余主干为 13 例超时族、椭圆族高阶与
+  符号指数族，量化与逐题清单见 `docs/planning/BENCHMARK_RESULTS_CN.md` 0.27.2 段。
+- 本轮由数值 oracle 定位并修复的 0.27.1 错案类共 6 组（含 `rational_square_root`
+  和式误判、`complete_square` 首一假定、Chebyshev 回代丢符号、Risch 非域项、
+  规则 A4 序列通配符、共振积化和差零分母），「字符串已解」与「数值正确」的差距
+  从本版起可被量化：**mismatches = 0** 是本轮的验收线。
+  / Honest coverage record: see the 0.27.2 section of
+  `docs/planning/BENCHMARK_RESULTS_CN.md` for both the string and verified metrics,
+  the per-case diff and the remaining timeout families.
+
+---
+
 ## [0.27.1] - 2026-09-10
 
 ### Added / 新增
@@ -68,6 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   mixed-other +26、inverse-trig-hyper +8、hyperbolic +3、exp-log +0。
 
 ---
+
+## [0.27.0] - 2026-09-06
 
 ### Added / 新增
 

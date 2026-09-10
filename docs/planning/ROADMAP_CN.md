@@ -389,6 +389,66 @@
 - 全部新增机制经 eval_f64 数值求导抽样核验 + SymPy 对拍全绿 —— 达成
 - 质量门（fmt/clippy -D warnings/workspace test/deny）全绿 —— 达成
 
+### 0.27.2 — 悬挂消除、已验证覆盖率与椭圆积分基础
+
+**目标**：把每一例残留超时变成确定性拒绝；在字符串覆盖率之外增加独立的
+数值验证口径；补齐失败转储指向的初等机制族；落地椭圆积分基础。
+
+**交付物**（全部落地）：
+
+- [x] 诊断：`OCAS_INTEGRATE_TRACE` 阶段打点；33 例基线超时全部归因到阶段
+  （symbolic_rational 18、heuristic 4、trig_kernel 3、inverse_trig 2、
+  rational 2、trig_reduction 2、sqrt_quadratic 1、未打点 1）
+- [x] 符号有理后端前的有界展开预通道（`integral/mod.rs` 的 `expand_prepass`）：
+  展开为小型 Laurent 多项式的未展开发散积不再进入该后端（仅限纯代数展开，
+  避免抢走三角/双曲机制应有的题目）
+- [x] 悬挂阶段（`symbolic_rational`、`trig_kernel`、`heuristic`、`rational`、
+  `sqrt_quadratic`）的确定性工作量预算
+- [x] 错案修复：`symbolic_rational::rational_square_root` 把多项式**和**当作
+  单项式平方，用伪根拆分二次分母并输出错误对数（0.27.1 因此对
+  `1/(b*x^2+2*a*x-b)` 以及经 `t = e^x` 双曲路径的 `1/(a+b*sinh(x))`
+  给出错误答案）；另修 `complete_square` 首一假定、Chebyshev 回代丢符号、
+  Risch 非域项、规则 A4 序列通配符、共振积化和差零分母共六组错案
+- [x] 数值验证 oracle（`ocas-tests/src/integral_eval.rs`）与 1892 harness 的
+  `verified_solved` / `unverified_solved` / `verify_indeterminate` 口径，
+  以及 `OCAS_1892_VERIFY` / `OCAS_1892_BUCKET` 开关
+- [x] 双曲闭式族（`hyperbolic_reduction.rs`）
+- [x] 有理导数核代换（`kernel_subst.rs`）
+- [x] 三角相位归一（`trig_reduction.rs` 扩展；相位/比值路径已实现但以
+  `PHASE_RATIO_ENABLED = false` 门控，因组合原子尚未通过 `crate::diff`）
+- [x] 逆函数复合消去（`inverse_trig.rs` 扩展）
+- [x] `exp(逆函数)` 代数化（`exp_log.rs` 扩展）
+- [x] 半幂前端（`halfpower.rs`）与椭圆约化（`elliptic.rs`）：Legendre 约化到
+  `EllipticF`/`EllipticE`（`EllipticPi` 头已注册但尚无生产者），采用 SymPy 的
+  `m = k²` 约定，实参顺序由 `ocas_atom::normalize::preserves_argument_order` 保持
+- [x] 错案回归护栏（正确性套件 `tests/correctness/integral_verify.rs`）
+- [x] 额外落地：`ocas-parse` 一元负号（`2-1`/`x-1`/`x^2-1` 不再 `PARSE_ERR`，
+  破坏性 `lex` API 变更）
+
+**成功标准**（诚实记录）：
+
+- 1892 题双口径：**solved 349（18.45%）、verified 325/349（93.1%）**；
+  逐题 diff 新解 44、主动回退 6（全部是 0.27.1 的错案）、净 +38
+- 已解题目零错案：**`verify_mismatches` = 0 —— 达成**
+- 超时 13（目标 ≤5 **未达**）、崩溃 0、墙钟 445.7 s（较 572 s 基线 −22%）
+- 已验证比例 93.1%（目标 ≥95% **未达**：24 例 inconclusive 中 11 例定义域受限、
+  10 例含虚数单位、3 例步长自洽闸门判为不可判；均为「不可判」而非错案）
+- 质量门：fmt/clippy 两档/deny 全绿；workspace test 全绿（`ocas-c` 的
+  规则开关探针已按 kernel_subst 接手 `tan(x)^4` 的事实更新为 `csc(x)^5`）
+- 下一波（0.27.3）承接：13 例超时族、复合壳层拆分、特殊函数族、椭圆族广度
+
+### 0.27.3 — 复合壳层、特殊函数广度与椭圆族覆盖
+
+**目标**：沿 0.27.2 失败转储留存的最大簇继续机制攻坚。
+
+**交付物**：
+
+- [ ] 复合壳层拆分（mixed-other 簇）：因子级 `F(g(x))·w(x)` 拆分 +
+  内层可解核识别，泛化 `trig_linear_arg`
+- [ ] 特殊函数族扩展：`Ei(n, z)`/Eₙ、`erf` 的幂与复合、`x^k·Si/Ci/Ei`
+  分部积分、`exp(−b²x²)/erfc(bx)²`
+- [ ] 椭圆族广度：三角二次根式全量路由、三次根式、`EllipticPi` 复特征值
+
 ### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
 
 **目标**：对齐 msolve 0.10.1 实测（katsura 3–7 ms、cyclic-7 55 ms）（P1），

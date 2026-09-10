@@ -37,6 +37,11 @@ The table below lists the key features added in each oCAS release (0.1 → 0.24)
 | **0.22.0** | 2026-08-02 | McKay graph-isomorphism canonical labeling engine, tensor expression canonicalization, Young projectors, backtracking AC matching, multi-pattern replacement |
 | **0.23.0** | 2026-08-02 | Ideal operations (membership/sum/product/quotient/saturation/intersection), elimination orders, zero-dimensional solving, primary decomposition, Hilbert series, rational root theorem |
 | **0.24.0** | 2026-08-03 | Heuristic integration (LIATE integration by parts/trig substitution/Weierstrass), DoubleF64 double-precision floats (~31 significant digits) |
+| **0.25.0** | 2026-08-04 | Multi-modular Gröbner bases over ℚ (parallel lucky-prime F5, CRT + rational reconstruction, trace-free p-adic Hensel lift), parallel modular GCD, `Algorithm::MultiModular` with `Auto` routing |
+| **0.26.0** | 2026-08-04 | SWAR-packed monomial F5 fast path (u128), clone-free two-phase echelonization, grevlex benchmark variants; fixed the inverted degree direction in graded monomial orders (pre-existing wrong bases) |
+| **0.27.0** | 2026-09-06 | Symbolic-integration breadth: rule-table engine (families A–H), symbolic-constant rational backend, Weierstrass linear arguments, bounded expansion retry, trig product-to-sum; Rubi 1892-problem coverage 5.87% → 9.62% |
+| **0.27.1** | 2026-09-10 | Integration-breadth mechanism push: Chebyshev binomials, trig-denominator power reductions, exp-log kernel substitutions, general sqrt-quadratic engine + Euler III, inverse-trig kernels, single-trig-kernel rational forms; coverage 9.62% → 16.44%; two wrong-answer classes fixed |
+| **0.27.2** | 2026-09-11 | Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, `exp(inverse function)` algebraization, half-power front-end + elliptic Legendre reduction (`EllipticF/E`); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%) |
 
 ---
 

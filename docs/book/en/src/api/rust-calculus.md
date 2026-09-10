@@ -152,18 +152,44 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 │   (returns the fallback form)             │
 │   → try_risch_or_fallback, in order:      │
 ├───────────────────────────────────────────┤
-│ 1. rational function  (integrate_rational)│
-│ 2. Risch algorithm    (risch_integrate)   │
-│ 3. trig→exponential   (trig_to_exp +      │
-│    + Risch + realify)                     │
-│ 4. special functions  (special_integrate) │
-│ 5. heuristics         (heuristic_integrate)│
-│    parts (LIATE), trig substitution,      │
-│    Weierstrass, Euler substitution        │
-│ 6. unevaluated form   (fallback)          │
-│    Integral(expr, var)                    │
+│  1. rational function      (integrate_rational)      │
+│  2. quadratic/linear denom power recurrences         │
+│     (integrate_quad_power)                           │
+│  3. bounded-expansion pre-pass (expand_prepass, 0.27.2)│
+│  4. rational-derivative kernel substitution          │
+│     (integrate_kernel_subst, tan/cot/tanh/coth, 0.27.2)│
+│  5. hyperbolic closed-form family                    │
+│     (integrate_hyperbolic_reduction, 0.27.2)         │
+│  6. symbolic-constant rationals                      │
+│     (integrate_rational_symbolic, ℚ(symbols))        │
+│  7. Risch algorithm        (risch_integrate)         │
+│  8. trig→exponential + Risch + realify               │
+│  9. special functions      (special_integrate)       │
+│ 10. rule-table engine      (integrate_rules, A–H)    │
+│ 11. sqrt-quadratic engine  (integrate_sqrt_quadratic)│
+│ 12. Chebyshev binomials    (integrate_binomial)      │
+│ 13. exp/log kernels        (integrate_exp_log)       │
+│ 14. inverse-trig/hyperbolic (integrate_inverse_trig) │
+│ 15. trig product-to-sum    (trig_reduce_products)    │
+│ 16. trig-denominator power reductions                │
+│     (integrate_trig_reduction)                       │
+│ 17. single-trig-kernel rationals + tan/sec           │
+│     (integrate_trig_kernel)                          │
+│ 18. bounded-expansion retry (expand_bounded)         │
+│ 19. half-power front-end   (integrate_half_power, 0.27.2)│
+│ 20. elliptic reduction     (integrate_elliptic,      │
+│     EllipticF/E/Pi, 0.27.2)                          │
+│ 21. heuristics             (heuristic_integrate)     │
+│     parts (LIATE), trig substitution,                │
+│     Weierstrass, Euler substitution                  │
+│ 22. unevaluated form       (fallback)                │
+│     Integral(expr, var)                              │
 └───────────────────────────────────────────┘
 ```
+
+`OCAS_INTEGRATE_TRACE=1` prints `[trace] enter <stage> :: <expr>` / `[trace] decline <stage>`
+for every stage, which attributes a hanging or falling-back case to a stage without
+guesswork. `OCAS_INTEGRATE_RULES=0` disables only stage 10 (the rule table).
 
 **Phase 1 — node-type dispatch**:
 

@@ -25,14 +25,16 @@ The modules cover the full breadth of oCAS functionality:
 | `calculus` | 16 | Differentiation, Taylor, integration (SymPy-checked) |
 | `evaluation` | 6 | Numeric evaluation |
 | `finite_field` | 5 | Finite field arithmetic |
-| `groebner` | 18 | Gröbner basis computation |
+| `groebner` | 24 | Gröbner basis computation |
 | `integral_risch` | 15 | Risch symbolic integration |
+| `integral_rules` | 1 | 100-case rule-table sample cross-checked against SymPy |
+| `integral_verify` | 2 | Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and `√(p/q)` classes) |
 | `linear_solve` | 5 | Linear solvers |
 | `matrix` | 5 | Matrix operations |
 | `normalize` | 8 | Expression normalization |
 | `ntheory` | 11 | Number theory (cross-checked against SymPy `ntheory`) |
 | `ode` | 34 | ODE solving |
-| `parse` | 6 | Expression parsing and printing |
+| `parse` | 12 | Expression parsing and printing (incl. unary minus / bare subtraction) |
 | `partial_fraction` | 8 | Partial fraction decomposition |
 | `poly_arithmetic` | 6 | Dense/sparse polynomial arithmetic |
 | `poly_factor` | 12 | Square-free and full factorization |
@@ -42,15 +44,26 @@ The modules cover the full breadth of oCAS functionality:
 | `rewrite` | 8 | Rewriting and simplification |
 | `root_isolation` | 4 | Real root isolation |
 
+216 correctness tests in total (plus the crate-level unit tests in
+`ocas-calc`, `ocas-parse`, `ocas-atom`, `ocas-poly`, …).
+
 ---
 
 ## Ignored tests (known gaps)
 
-Some tests are marked `#[ignore]` (35 in total) to track known gaps — they
+Some tests are marked `#[ignore]` (34 in total) to track known gaps — they
 are expected to fail and are only run manually when reproducing or
 advancing the issue (`cargo test -p ocas-tests --test correctness
 -- --ignored`). The Wilkinson n=10 root-isolation gap is closed: the exact
 dyadic Sturm evaluation (0.27.x) finds all 10 roots.
+
+Since 0.27.2 the integration suite has a second, independent correctness
+criterion: `integral_verify` re-checks integration results with the numerical
+oracle in `ocas-tests/src/integral_eval.rs` (5-point central differences at
+sample points with deterministic dummy parameters), so an antiderivative that
+looks plausible but is wrong fails the suite. The same oracle drives the
+`verified_solved` / `verify_mismatches` fields of the Rubi 1892-problem
+coverage harness.
 
 ---
 

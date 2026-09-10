@@ -21,14 +21,16 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 | `calculus` | 16 | 微分、Taylor、积分（SymPy 对比） |
 | `evaluation` | 6 | 数值求值 |
 | `finite_field` | 5 | 有限域运算 |
-| `groebner` | 18 | Gröbner 基计算 |
+| `groebner` | 24 | Gröbner 基计算 |
 | `integral_risch` | 15 | Risch 符号积分 |
+| `integral_rules` | 1 | 规则表 100 例抽样（SymPy 对比） |
+| `integral_verify` | 2 | 数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 `√(p/q)` 两类） |
 | `linear_solve` | 5 | 线性求解器 |
 | `matrix` | 5 | 矩阵运算 |
 | `normalize` | 8 | 表达式规范化 |
 | `ntheory` | 11 | 数论（与 SymPy `ntheory` 交叉验证） |
 | `ode` | 34 | ODE 求解 |
-| `parse` | 6 | 表达式解析与输出 |
+| `parse` | 12 | 表达式解析与输出（含一元负号/省略空格减法） |
 | `partial_fraction` | 8 | 部分分式分解 |
 | `poly_arithmetic` | 6 | 稠密/稀疏多项式运算 |
 | `poly_factor` | 12 | 无平方与完全因式分解 |
@@ -38,14 +40,23 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 | `rewrite` | 8 | 重写与化简 |
 | `root_isolation` | 4 | 实根隔离 |
 
+正确性套件共 216 项测试（另有 `ocas-calc`、`ocas-parse`、`ocas-atom`、
+`ocas-poly` 等 crate 的单元测试）。
+
 ---
 
 ## 忽略的测试（已知差距）
 
-部分测试标记 `#[ignore]`（当前 35 项），用于记录已知差距——它们预期失败，
+部分测试标记 `#[ignore]`（当前 34 项），用于记录已知差距——它们预期失败，
 仅在需要复现/推进时手动运行（`cargo test -p ocas-tests --test correctness
 -- --ignored`）。Wilkinson n=10 实根隔离差距已闭合：精确二进分数 Sturm
 求值（0.27.x）找齐全部 10 个根。
+
+自 0.27.2 起，积分正确性套件增加了一条独立判据：`integral_verify` 用
+`ocas-tests/src/integral_eval.rs` 的数值 oracle（在确定性哑参数下的采样点上
+做 5 点中心差分）复核积分结果，因此「形式像但实际错误」的原函数会使套件失败。
+同一 oracle 也驱动 Rubi 1892 题覆盖率 harness 的 `verified_solved` /
+`verify_mismatches` 字段。
 
 ---
 

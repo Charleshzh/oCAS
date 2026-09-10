@@ -1249,6 +1249,101 @@ coverage substantially.
 
 ---
 
+### 0.27.1 — Integration-Breadth Mechanism Push (0.27.0 acceptance-line sequel)
+
+**Goal**: continue raising 1892-problem coverage along the 0.27.0 +30pp
+acceptance line via mechanism-level upgrades rather than rule volume.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Chebyshev binomial differentials + fractional-power rationalization | Rubi binomial family | `integrate::binomial` |
+| Trig-denominator power reductions / linear-numerator decomposition / polynomial×trig closed forms | Rubi trig family | `integrate::trig_reduction` |
+| exp/log kernel substitutions (exp-kernel rationalization, hyperbolic `t = e^u`, `f(log x)/x`) | Rubi exp/log family | `integrate::exp_log` |
+| General sqrt-quadratic engine + Euler III | SymPy `manualintegrate` | `integrate::sqrt_quadratic` |
+| Inverse-trig/hyperbolic kernel-derivative powers and substitutions | Rubi inverse-trig family | `integrate::inverse_trig` |
+| Single-trig-kernel rational normalization + tan/sec reductions | Rubi trig-kernel family | `integrate::trig_kernel` |
+| Denominator-power recurrences + two-linear-factor partial fractions | Rubi rational family | `integrate::quad_power` |
+
+**Acceptance**: coverage 9.62% → 16.44% (+6.82pp, 311/1892, 129 newly solved,
+0 regressions, 0 crashes, wall clock −19%); **the +30pp target was not met**.
+
+**Risks**: mechanism returns are bounded (the remaining bulk is elliptic
+families / high-symbol quotients / composite shells).
+
+---
+
+### 0.27.2 — Hang Elimination, Verified Coverage and the Elliptic Foundation
+
+**Goal**: turn remaining per-case hangs into deterministic declines; add an
+independent numerical-verification criterion (verified coverage) alongside the
+string metric; close the elementary mechanism families the failure dump points
+at; lay the elliptic-integral foundation. From here 0.27.x continues as a
+series until the net gain plateaus or the +30pp line is reached.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Stage tracing and attribution (all 33 timeouts attributed per case) | — | `OCAS_INTEGRATE_TRACE` in `integrate` |
+| Bounded-expansion pre-pass for unexpanded products | — | `integrate::expand_prepass` (`integral/mod.rs`) |
+| Deterministic work budgets in the hanging stages | 0.27.1 `MAX_COEFF_COST` approach | `symbolic_rational` / `trig_kernel` / `heuristic` / `rational` / `sqrt_quadratic` |
+| Wrong-answer fix: a polynomial sum treated as a monomial square | — | `integrate::symbolic_rational::rational_square_root` |
+| Numerical verification oracle (f64 + Carlson / adaptive Simpson + 5-point difference) | module-level `eval_f64` convention | `ocas-tests/src/integral_eval.rs` |
+| Verified-coverage reporting | — | `ocas-tests/benches/integrate_1892.rs` report fields |
+| Hyperbolic closed-form family | mirror of `trig_reduction` | `integrate::hyperbolic_reduction` |
+| Rational-derivative kernel substitution (tan/cot/tanh/coth) + Pythagorean rewrites | Chebyshev binomial differentials | `integrate::kernel_subst` |
+| Trig phase-shift normalization (`a + b·cos + c·sin`) | Weierstrass / phase angle | `integrate::trig_reduction` extension |
+| Inverse-composition cancellation | — | `integrate::inverse_trig` extension |
+| `exp(inverse function)` algebraization | exponential–logarithmic identities | `integrate::exp_log` extension |
+| Half-power front-end + Legendre reduction to `EllipticF/E/Pi` | Byrd & Friedman; SymPy convention | `integrate::halfpower`, `integrate::elliptic` |
+| Order-preserving function-head registry | — | `ocas_atom::normalize::preserves_argument_order` |
+| Wrong-answer regression guard | 0.27.1 C14/D7b class | `ocas-tests/tests/correctness/integral_verify.rs` |
+
+**Performance targets**
+
+- Timeouts 33 → ≤ 5; wall clock materially below the 572 s baseline
+- Zero wrong answers in the solved set (`verify_mismatches` = 0); verified
+  ratio ≥ 95%
+
+**Acceptance**
+
+- [ ] Coverage and verified ratio both recorded (BENCHMARK_RESULTS_CN.md §0.27.2)
+- [ ] Per-case diff shows 0 regressions; full quality gates (including the
+  all-feature tier) green
+- [ ] Every elliptic emission passes the numeric derivative oracle;
+  undecidable domains fall back honestly
+
+**Risks**
+
+- Elliptic reduction domains/branches are new territory → staged delivery
+  (`P(u)/y` and quartic radicands first, then cubics and complex `EllipticPi`)
+- The `normalize` argument-sorting trap for multi-argument heads → registry
+  entry plus tests
+- Interface drift under parallel development → single-file ownership,
+  centralised mount-point changes, full diff after each integration
+
+---
+
+### 0.27.3 — Composite Shells, Special-Function Breadth and Elliptic Family Coverage
+
+**Goal**: continue the mechanism push on the largest clusters the 0.27.2
+failure dump leaves behind.
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Composite-shell decomposition (mixed-other cluster) | — | factor-level splitting + inner-kernel recognition in `integrate` |
+| Special-function breadth (`Ei(n,z)`/Eₙ, erf powers and compositions, `x^k·Si/Ci/Ei`, `erfc` denominators) | Rubi special-function family; 0.14 function table | `integrate::special` extension |
+| Elliptic family breadth (trig-quadratic routing, cubic radicands, complex `EllipticPi`) | Byrd & Friedman | `integrate::elliptic` extension |
+
+**Acceptance**: recorded against the same table as 0.27.2; two consecutive
+waves adding < 60 solved problems freeze the 0.27 line and hand off to 0.28.0.
+
+---
+
 ### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
 
 **Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)
