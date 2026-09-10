@@ -306,18 +306,41 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │ 阶段二：以上分派失败（返回 fallback 形式）  │
 │ → try_risch_or_fallback，按顺序尝试：      │
 ├───────────────────────────────────────────┤
-│ 1. 有理函数积分   (integrate_rational)     │
-│ 2. Risch 算法     (risch_integrate)        │
-│ 3. 三角→指数重写  (trig_to_exp +           │
-│    + Risch + realify)                     │
-│ 4. 特殊函数       (special_integrate)      │
-│ 5. 启发式方法     (heuristic_integrate)    │
-│    分部积分 (LIATE)、三角替换、            │
-│    Weierstrass、Euler 替换                 │
-│ 6. 未求值形式     (fallback)               │
-│    Integral(expr, var)                    │
+│  1. 有理函数积分        (integrate_rational)          │
+│  2. 二次/线性分母幂递推 (integrate_quad_power)        │
+│  3. 有界展开预通道      (expand_prepass, 0.27.2)      │
+│  4. 有理导数核代换      (integrate_kernel_subst,      │
+│     tan/cot/tanh/coth, 0.27.2)                        │
+│  5. 双曲闭式族          (integrate_hyperbolic_reduction,│
+│     0.27.2)                                           │
+│  6. 符号常数有理后端    (integrate_rational_symbolic,  │
+│     ℚ(symbols))                                       │
+│  7. Risch 算法          (risch_integrate)             │
+│  8. 三角→指数 + Risch + realify                       │
+│  9. 特殊函数            (special_integrate)           │
+│ 10. 规则表引擎          (integrate_rules, A–H 族)     │
+│ 11. 二次根式引擎        (integrate_sqrt_quadratic)    │
+│ 12. Chebyshev 二项微分  (integrate_binomial)          │
+│ 13. exp/log 核代换      (integrate_exp_log)           │
+│ 14. 反三角/反双曲       (integrate_inverse_trig)      │
+│ 15. 三角积化和差        (trig_reduce_products)        │
+│ 16. 三角分母幂递推      (integrate_trig_reduction)    │
+│ 17. 单三角核有理式 + tan/sec                          │
+│     (integrate_trig_kernel)                           │
+│ 18. 有界展开重试        (expand_bounded)              │
+│ 19. 半幂前端            (integrate_half_power, 0.27.2)│
+│ 20. 椭圆约化            (integrate_elliptic,          │
+│     EllipticF/E/Pi, 0.27.2)                           │
+│ 21. 启发式方法          (heuristic_integrate)         │
+│     分部积分 (LIATE)、三角替换、Weierstrass、Euler 替换│
+│ 22. 未求值形式          (fallback)                    │
+│     Integral(expr, var)                               │
 └───────────────────────────────────────────┘
 </code></pre>
+<p><code>OCAS_INTEGRATE_TRACE=1</code> 会为每个阶段打印
+<code>[trace] enter &lt;阶段&gt; :: &lt;表达式&gt;</code> / <code>[trace] decline &lt;阶段&gt;</code>，
+用于把悬挂或回退的题目无猜测地归因到具体阶段。
+<code>OCAS_INTEGRATE_RULES=0</code> 仅关闭第 10 阶段（规则表）。</p>
 <p><strong>阶段一 — 节点类型分派</strong>：</p>
 <ul>
 <li><code>Num(_)</code>：常数的积分为线性函数 <code>c * x</code></li>

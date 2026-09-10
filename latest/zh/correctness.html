@@ -197,14 +197,16 @@
 <tr><td><code>calculus</code></td><td>16</td><td>微分、Taylor、积分（SymPy 对比）</td></tr>
 <tr><td><code>evaluation</code></td><td>6</td><td>数值求值</td></tr>
 <tr><td><code>finite_field</code></td><td>5</td><td>有限域运算</td></tr>
-<tr><td><code>groebner</code></td><td>18</td><td>Gröbner 基计算</td></tr>
+<tr><td><code>groebner</code></td><td>24</td><td>Gröbner 基计算</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch 符号积分</td></tr>
+<tr><td><code>integral_rules</code></td><td>1</td><td>规则表 100 例抽样（SymPy 对比）</td></tr>
+<tr><td><code>integral_verify</code></td><td>2</td><td>数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 <code>√(p/q)</code> 两类）</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>线性求解器</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>矩阵运算</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>表达式规范化</td></tr>
 <tr><td><code>ntheory</code></td><td>11</td><td>数论（与 SymPy <code>ntheory</code> 交叉验证）</td></tr>
 <tr><td><code>ode</code></td><td>34</td><td>ODE 求解</td></tr>
-<tr><td><code>parse</code></td><td>6</td><td>表达式解析与输出</td></tr>
+<tr><td><code>parse</code></td><td>12</td><td>表达式解析与输出（含一元负号/省略空格减法）</td></tr>
 <tr><td><code>partial_fraction</code></td><td>8</td><td>部分分式分解</td></tr>
 <tr><td><code>poly_arithmetic</code></td><td>6</td><td>稠密/稀疏多项式运算</td></tr>
 <tr><td><code>poly_factor</code></td><td>12</td><td>无平方与完全因式分解</td></tr>
@@ -215,11 +217,18 @@
 <tr><td><code>root_isolation</code></td><td>4</td><td>实根隔离</td></tr>
 </tbody></table>
 </div>
+<p>正确性套件共 216 项测试（另有 <code>ocas-calc</code>、<code>ocas-parse</code>、<code>ocas-atom</code>、
+<code>ocas-poly</code> 等 crate 的单元测试）。</p>
 <hr />
 <h2 id="忽略的测试已知差距"><a class="header" href="#忽略的测试已知差距">忽略的测试（已知差距）</a></h2>
-<p>部分测试标记 <code>#[ignore]</code>（当前 35 项），用于记录已知差距——它们预期失败，
+<p>部分测试标记 <code>#[ignore]</code>（当前 34 项），用于记录已知差距——它们预期失败，
 仅在需要复现/推进时手动运行（<code>cargo test -p ocas-tests --test correctness -- --ignored</code>）。Wilkinson n=10 实根隔离差距已闭合：精确二进分数 Sturm
 求值（0.27.x）找齐全部 10 个根。</p>
+<p>自 0.27.2 起，积分正确性套件增加了一条独立判据：<code>integral_verify</code> 用
+<code>ocas-tests/src/integral_eval.rs</code> 的数值 oracle（在确定性哑参数下的采样点上
+做 5 点中心差分）复核积分结果，因此「形式像但实际错误」的原函数会使套件失败。
+同一 oracle 也驱动 Rubi 1892 题覆盖率 harness 的 <code>verified_solved</code> /
+<code>verify_mismatches</code> 字段。</p>
 <hr />
 <h2 id="运行测试"><a class="header" href="#运行测试">运行测试</a></h2>
 <pre><code class="language-bash"># 运行全部正确性测试

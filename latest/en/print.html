@@ -210,6 +210,11 @@
 <tr><td><strong>0.22.0</strong></td><td>2026-08-02</td><td>McKay graph-isomorphism canonical labeling engine, tensor expression canonicalization, Young projectors, backtracking AC matching, multi-pattern replacement</td></tr>
 <tr><td><strong>0.23.0</strong></td><td>2026-08-02</td><td>Ideal operations (membership/sum/product/quotient/saturation/intersection), elimination orders, zero-dimensional solving, primary decomposition, Hilbert series, rational root theorem</td></tr>
 <tr><td><strong>0.24.0</strong></td><td>2026-08-03</td><td>Heuristic integration (LIATE integration by parts/trig substitution/Weierstrass), DoubleF64 double-precision floats (~31 significant digits)</td></tr>
+<tr><td><strong>0.25.0</strong></td><td>2026-08-04</td><td>Multi-modular Gröbner bases over ℚ (parallel lucky-prime F5, CRT + rational reconstruction, trace-free p-adic Hensel lift), parallel modular GCD, <code>Algorithm::MultiModular</code> with <code>Auto</code> routing</td></tr>
+<tr><td><strong>0.26.0</strong></td><td>2026-08-04</td><td>SWAR-packed monomial F5 fast path (u128), clone-free two-phase echelonization, grevlex benchmark variants; fixed the inverted degree direction in graded monomial orders (pre-existing wrong bases)</td></tr>
+<tr><td><strong>0.27.0</strong></td><td>2026-09-06</td><td>Symbolic-integration breadth: rule-table engine (families A–H), symbolic-constant rational backend, Weierstrass linear arguments, bounded expansion retry, trig product-to-sum; Rubi 1892-problem coverage 5.87% → 9.62%</td></tr>
+<tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>Integration-breadth mechanism push: Chebyshev binomials, trig-denominator power reductions, exp-log kernel substitutions, general sqrt-quadratic engine + Euler III, inverse-trig kernels, single-trig-kernel rational forms; coverage 9.62% → 16.44%; two wrong-answer classes fixed</td></tr>
+<tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, <code>exp(inverse function)</code> algebraization, half-power front-end + elliptic Legendre reduction (<code>EllipticF/E</code>); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%)</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -5317,18 +5322,43 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │   (returns the fallback form)             │
 │   → try_risch_or_fallback, in order:      │
 ├───────────────────────────────────────────┤
-│ 1. rational function  (integrate_rational)│
-│ 2. Risch algorithm    (risch_integrate)   │
-│ 3. trig→exponential   (trig_to_exp +      │
-│    + Risch + realify)                     │
-│ 4. special functions  (special_integrate) │
-│ 5. heuristics         (heuristic_integrate)│
-│    parts (LIATE), trig substitution,      │
-│    Weierstrass, Euler substitution        │
-│ 6. unevaluated form   (fallback)          │
-│    Integral(expr, var)                    │
+│  1. rational function      (integrate_rational)      │
+│  2. quadratic/linear denom power recurrences         │
+│     (integrate_quad_power)                           │
+│  3. bounded-expansion pre-pass (expand_prepass, 0.27.2)│
+│  4. rational-derivative kernel substitution          │
+│     (integrate_kernel_subst, tan/cot/tanh/coth, 0.27.2)│
+│  5. hyperbolic closed-form family                    │
+│     (integrate_hyperbolic_reduction, 0.27.2)         │
+│  6. symbolic-constant rationals                      │
+│     (integrate_rational_symbolic, ℚ(symbols))        │
+│  7. Risch algorithm        (risch_integrate)         │
+│  8. trig→exponential + Risch + realify               │
+│  9. special functions      (special_integrate)       │
+│ 10. rule-table engine      (integrate_rules, A–H)    │
+│ 11. sqrt-quadratic engine  (integrate_sqrt_quadratic)│
+│ 12. Chebyshev binomials    (integrate_binomial)      │
+│ 13. exp/log kernels        (integrate_exp_log)       │
+│ 14. inverse-trig/hyperbolic (integrate_inverse_trig) │
+│ 15. trig product-to-sum    (trig_reduce_products)    │
+│ 16. trig-denominator power reductions                │
+│     (integrate_trig_reduction)                       │
+│ 17. single-trig-kernel rationals + tan/sec           │
+│     (integrate_trig_kernel)                          │
+│ 18. bounded-expansion retry (expand_bounded)         │
+│ 19. half-power front-end   (integrate_half_power, 0.27.2)│
+│ 20. elliptic reduction     (integrate_elliptic,      │
+│     EllipticF/E/Pi, 0.27.2)                          │
+│ 21. heuristics             (heuristic_integrate)     │
+│     parts (LIATE), trig substitution,                │
+│     Weierstrass, Euler substitution                  │
+│ 22. unevaluated form       (fallback)                │
+│     Integral(expr, var)                              │
 └───────────────────────────────────────────┘
 </code></pre>
+<p><code>OCAS_INTEGRATE_TRACE=1</code> prints <code>[trace] enter &lt;stage&gt; :: &lt;expr&gt;</code> / <code>[trace] decline &lt;stage&gt;</code>
+for every stage, which attributes a hanging or falling-back case to a stage without
+guesswork. <code>OCAS_INTEGRATE_RULES=0</code> disables only stage 10 (the rule table).</p>
 <p><strong>Phase 1 — node-type dispatch</strong>:</p>
 <ul>
 <li><code>Num(_)</code>: the integral of a constant is the linear function <code>c * x</code></li>
@@ -24749,14 +24779,16 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <tr><td><code>calculus</code></td><td>16</td><td>Differentiation, Taylor, integration (SymPy-checked)</td></tr>
 <tr><td><code>evaluation</code></td><td>6</td><td>Numeric evaluation</td></tr>
 <tr><td><code>finite_field</code></td><td>5</td><td>Finite field arithmetic</td></tr>
-<tr><td><code>groebner</code></td><td>18</td><td>Gröbner basis computation</td></tr>
+<tr><td><code>groebner</code></td><td>24</td><td>Gröbner basis computation</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch symbolic integration</td></tr>
+<tr><td><code>integral_rules</code></td><td>1</td><td>100-case rule-table sample cross-checked against SymPy</td></tr>
+<tr><td><code>integral_verify</code></td><td>2</td><td>Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and <code>√(p/q)</code> classes)</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>Linear solvers</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>Matrix operations</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>Expression normalization</td></tr>
 <tr><td><code>ntheory</code></td><td>11</td><td>Number theory (cross-checked against SymPy <code>ntheory</code>)</td></tr>
 <tr><td><code>ode</code></td><td>34</td><td>ODE solving</td></tr>
-<tr><td><code>parse</code></td><td>6</td><td>Expression parsing and printing</td></tr>
+<tr><td><code>parse</code></td><td>12</td><td>Expression parsing and printing (incl. unary minus / bare subtraction)</td></tr>
 <tr><td><code>partial_fraction</code></td><td>8</td><td>Partial fraction decomposition</td></tr>
 <tr><td><code>poly_arithmetic</code></td><td>6</td><td>Dense/sparse polynomial arithmetic</td></tr>
 <tr><td><code>poly_factor</code></td><td>12</td><td>Square-free and full factorization</td></tr>
@@ -24767,12 +24799,21 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <tr><td><code>root_isolation</code></td><td>4</td><td>Real root isolation</td></tr>
 </tbody></table>
 </div>
+<p>216 correctness tests in total (plus the crate-level unit tests in
+<code>ocas-calc</code>, <code>ocas-parse</code>, <code>ocas-atom</code>, <code>ocas-poly</code>, …).</p>
 <hr />
 <h2 id="ignored-tests-known-gaps"><a class="header" href="#ignored-tests-known-gaps">Ignored tests (known gaps)</a></h2>
-<p>Some tests are marked <code>#[ignore]</code> (35 in total) to track known gaps — they
+<p>Some tests are marked <code>#[ignore]</code> (34 in total) to track known gaps — they
 are expected to fail and are only run manually when reproducing or
 advancing the issue (<code>cargo test -p ocas-tests --test correctness -- --ignored</code>). The Wilkinson n=10 root-isolation gap is closed: the exact
 dyadic Sturm evaluation (0.27.x) finds all 10 roots.</p>
+<p>Since 0.27.2 the integration suite has a second, independent correctness
+criterion: <code>integral_verify</code> re-checks integration results with the numerical
+oracle in <code>ocas-tests/src/integral_eval.rs</code> (5-point central differences at
+sample points with deterministic dummy parameters), so an antiderivative that
+looks plausible but is wrong fails the suite. The same oracle drives the
+<code>verified_solved</code> / <code>verify_mismatches</code> fields of the Rubi 1892-problem
+coverage harness.</p>
 <hr />
 <h2 id="running-the-tests"><a class="header" href="#running-the-tests">Running the tests</a></h2>
 <pre><code class="language-bash"># Run all correctness tests

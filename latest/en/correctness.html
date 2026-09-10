@@ -201,14 +201,16 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <tr><td><code>calculus</code></td><td>16</td><td>Differentiation, Taylor, integration (SymPy-checked)</td></tr>
 <tr><td><code>evaluation</code></td><td>6</td><td>Numeric evaluation</td></tr>
 <tr><td><code>finite_field</code></td><td>5</td><td>Finite field arithmetic</td></tr>
-<tr><td><code>groebner</code></td><td>18</td><td>Gröbner basis computation</td></tr>
+<tr><td><code>groebner</code></td><td>24</td><td>Gröbner basis computation</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch symbolic integration</td></tr>
+<tr><td><code>integral_rules</code></td><td>1</td><td>100-case rule-table sample cross-checked against SymPy</td></tr>
+<tr><td><code>integral_verify</code></td><td>2</td><td>Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and <code>√(p/q)</code> classes)</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>Linear solvers</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>Matrix operations</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>Expression normalization</td></tr>
 <tr><td><code>ntheory</code></td><td>11</td><td>Number theory (cross-checked against SymPy <code>ntheory</code>)</td></tr>
 <tr><td><code>ode</code></td><td>34</td><td>ODE solving</td></tr>
-<tr><td><code>parse</code></td><td>6</td><td>Expression parsing and printing</td></tr>
+<tr><td><code>parse</code></td><td>12</td><td>Expression parsing and printing (incl. unary minus / bare subtraction)</td></tr>
 <tr><td><code>partial_fraction</code></td><td>8</td><td>Partial fraction decomposition</td></tr>
 <tr><td><code>poly_arithmetic</code></td><td>6</td><td>Dense/sparse polynomial arithmetic</td></tr>
 <tr><td><code>poly_factor</code></td><td>12</td><td>Square-free and full factorization</td></tr>
@@ -219,12 +221,21 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <tr><td><code>root_isolation</code></td><td>4</td><td>Real root isolation</td></tr>
 </tbody></table>
 </div>
+<p>216 correctness tests in total (plus the crate-level unit tests in
+<code>ocas-calc</code>, <code>ocas-parse</code>, <code>ocas-atom</code>, <code>ocas-poly</code>, …).</p>
 <hr />
 <h2 id="ignored-tests-known-gaps"><a class="header" href="#ignored-tests-known-gaps">Ignored tests (known gaps)</a></h2>
-<p>Some tests are marked <code>#[ignore]</code> (35 in total) to track known gaps — they
+<p>Some tests are marked <code>#[ignore]</code> (34 in total) to track known gaps — they
 are expected to fail and are only run manually when reproducing or
 advancing the issue (<code>cargo test -p ocas-tests --test correctness -- --ignored</code>). The Wilkinson n=10 root-isolation gap is closed: the exact
 dyadic Sturm evaluation (0.27.x) finds all 10 roots.</p>
+<p>Since 0.27.2 the integration suite has a second, independent correctness
+criterion: <code>integral_verify</code> re-checks integration results with the numerical
+oracle in <code>ocas-tests/src/integral_eval.rs</code> (5-point central differences at
+sample points with deterministic dummy parameters), so an antiderivative that
+looks plausible but is wrong fails the suite. The same oracle drives the
+<code>verified_solved</code> / <code>verify_mismatches</code> fields of the Rubi 1892-problem
+coverage harness.</p>
 <hr />
 <h2 id="running-the-tests"><a class="header" href="#running-the-tests">Running the tests</a></h2>
 <pre><code class="language-bash"># Run all correctness tests

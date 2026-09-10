@@ -210,6 +210,11 @@
 <tr><td><strong>0.22.0</strong></td><td>2026-08-02</td><td>McKay 图同构规范标号引擎、张量表达式规范化、Young 投影子、回溯 AC 匹配、多模式替换</td></tr>
 <tr><td><strong>0.23.0</strong></td><td>2026-08-02</td><td>理想运算（成员/和/积/商/饱和/交集）、消元序、零维求解、准素分解、Hilbert 级数、有理根定理</td></tr>
 <tr><td><strong>0.24.0</strong></td><td>2026-08-03</td><td>启发式积分（LIATE 分部积分/三角换元/Weierstrass）、DoubleF64 双精度浮点（~31 位有效数字）</td></tr>
+<tr><td><strong>0.25.0</strong></td><td>2026-08-04</td><td>ℚ 上多素数 Gröbner 基（并行幸运素数 F5、CRT + 有理重构、无迹 p-adic Hensel 提升）、模 GCD 并行化、<code>Algorithm::MultiModular</code> 与 <code>Auto</code> 路由</td></tr>
+<tr><td><strong>0.26.0</strong></td><td>2026-08-04</td><td>u128 SWAR 打包单项式 F5 快通道、免克隆两阶段 echelon、grevlex 基准变体；修复分次单项式序的度方向反置（预存在错误基）</td></tr>
+<tr><td><strong>0.27.0</strong></td><td>2026-09-06</td><td>符号积分广度：规则表引擎（A–H 族）、符号常数有理后端、Weierstrass 线性变元、有界展开重试、三角积化和差；Rubi 1892 题覆盖率 5.87% → 9.62%</td></tr>
+<tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>积分广度机制攻坚：Chebyshev 二项微分、三角分母幂递推、exp-log 核代换、一般二次根式引擎 + Euler III、反三角核、单三角核有理式；覆盖率 9.62% → 16.44%；修复两组错案</td></tr>
+<tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>已验证覆盖率口径（独立数值 oracle：5 点中心差分 + 椭圆定义积分）、阶段打点与 33 例悬挂归因、确定性阶段预算、有界展开预通道、双曲闭式族、有理导数核代换、三角相位归一、逆函数复合消去、<code>exp(逆函数)</code> 代数化、半幂前端 + 椭圆 Legendre 约化（<code>EllipticF/E</code>）；修复六组错案（已验证覆盖率 93.1%、mismatches 0、超时 33 → 13、墙钟 −22%）</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -5304,18 +5309,41 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │ 阶段二：以上分派失败（返回 fallback 形式）  │
 │ → try_risch_or_fallback，按顺序尝试：      │
 ├───────────────────────────────────────────┤
-│ 1. 有理函数积分   (integrate_rational)     │
-│ 2. Risch 算法     (risch_integrate)        │
-│ 3. 三角→指数重写  (trig_to_exp +           │
-│    + Risch + realify)                     │
-│ 4. 特殊函数       (special_integrate)      │
-│ 5. 启发式方法     (heuristic_integrate)    │
-│    分部积分 (LIATE)、三角替换、            │
-│    Weierstrass、Euler 替换                 │
-│ 6. 未求值形式     (fallback)               │
-│    Integral(expr, var)                    │
+│  1. 有理函数积分        (integrate_rational)          │
+│  2. 二次/线性分母幂递推 (integrate_quad_power)        │
+│  3. 有界展开预通道      (expand_prepass, 0.27.2)      │
+│  4. 有理导数核代换      (integrate_kernel_subst,      │
+│     tan/cot/tanh/coth, 0.27.2)                        │
+│  5. 双曲闭式族          (integrate_hyperbolic_reduction,│
+│     0.27.2)                                           │
+│  6. 符号常数有理后端    (integrate_rational_symbolic,  │
+│     ℚ(symbols))                                       │
+│  7. Risch 算法          (risch_integrate)             │
+│  8. 三角→指数 + Risch + realify                       │
+│  9. 特殊函数            (special_integrate)           │
+│ 10. 规则表引擎          (integrate_rules, A–H 族)     │
+│ 11. 二次根式引擎        (integrate_sqrt_quadratic)    │
+│ 12. Chebyshev 二项微分  (integrate_binomial)          │
+│ 13. exp/log 核代换      (integrate_exp_log)           │
+│ 14. 反三角/反双曲       (integrate_inverse_trig)      │
+│ 15. 三角积化和差        (trig_reduce_products)        │
+│ 16. 三角分母幂递推      (integrate_trig_reduction)    │
+│ 17. 单三角核有理式 + tan/sec                          │
+│     (integrate_trig_kernel)                           │
+│ 18. 有界展开重试        (expand_bounded)              │
+│ 19. 半幂前端            (integrate_half_power, 0.27.2)│
+│ 20. 椭圆约化            (integrate_elliptic,          │
+│     EllipticF/E/Pi, 0.27.2)                           │
+│ 21. 启发式方法          (heuristic_integrate)         │
+│     分部积分 (LIATE)、三角替换、Weierstrass、Euler 替换│
+│ 22. 未求值形式          (fallback)                    │
+│     Integral(expr, var)                               │
 └───────────────────────────────────────────┘
 </code></pre>
+<p><code>OCAS_INTEGRATE_TRACE=1</code> 会为每个阶段打印
+<code>[trace] enter &lt;阶段&gt; :: &lt;表达式&gt;</code> / <code>[trace] decline &lt;阶段&gt;</code>，
+用于把悬挂或回退的题目无猜测地归因到具体阶段。
+<code>OCAS_INTEGRATE_RULES=0</code> 仅关闭第 10 阶段（规则表）。</p>
 <p><strong>阶段一 — 节点类型分派</strong>：</p>
 <ul>
 <li><code>Num(_)</code>：常数的积分为线性函数 <code>c * x</code></li>
@@ -24667,14 +24695,16 @@ SageMath、Symbolica 进行对比。详见<a href="./correctness.html">正确性
 <tr><td><code>calculus</code></td><td>16</td><td>微分、Taylor、积分（SymPy 对比）</td></tr>
 <tr><td><code>evaluation</code></td><td>6</td><td>数值求值</td></tr>
 <tr><td><code>finite_field</code></td><td>5</td><td>有限域运算</td></tr>
-<tr><td><code>groebner</code></td><td>18</td><td>Gröbner 基计算</td></tr>
+<tr><td><code>groebner</code></td><td>24</td><td>Gröbner 基计算</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch 符号积分</td></tr>
+<tr><td><code>integral_rules</code></td><td>1</td><td>规则表 100 例抽样（SymPy 对比）</td></tr>
+<tr><td><code>integral_verify</code></td><td>2</td><td>数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 <code>√(p/q)</code> 两类）</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>线性求解器</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>矩阵运算</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>表达式规范化</td></tr>
 <tr><td><code>ntheory</code></td><td>11</td><td>数论（与 SymPy <code>ntheory</code> 交叉验证）</td></tr>
 <tr><td><code>ode</code></td><td>34</td><td>ODE 求解</td></tr>
-<tr><td><code>parse</code></td><td>6</td><td>表达式解析与输出</td></tr>
+<tr><td><code>parse</code></td><td>12</td><td>表达式解析与输出（含一元负号/省略空格减法）</td></tr>
 <tr><td><code>partial_fraction</code></td><td>8</td><td>部分分式分解</td></tr>
 <tr><td><code>poly_arithmetic</code></td><td>6</td><td>稠密/稀疏多项式运算</td></tr>
 <tr><td><code>poly_factor</code></td><td>12</td><td>无平方与完全因式分解</td></tr>
@@ -24685,11 +24715,18 @@ SageMath、Symbolica 进行对比。详见<a href="./correctness.html">正确性
 <tr><td><code>root_isolation</code></td><td>4</td><td>实根隔离</td></tr>
 </tbody></table>
 </div>
+<p>正确性套件共 216 项测试（另有 <code>ocas-calc</code>、<code>ocas-parse</code>、<code>ocas-atom</code>、
+<code>ocas-poly</code> 等 crate 的单元测试）。</p>
 <hr />
 <h2 id="忽略的测试已知差距"><a class="header" href="#忽略的测试已知差距">忽略的测试（已知差距）</a></h2>
-<p>部分测试标记 <code>#[ignore]</code>（当前 35 项），用于记录已知差距——它们预期失败，
+<p>部分测试标记 <code>#[ignore]</code>（当前 34 项），用于记录已知差距——它们预期失败，
 仅在需要复现/推进时手动运行（<code>cargo test -p ocas-tests --test correctness -- --ignored</code>）。Wilkinson n=10 实根隔离差距已闭合：精确二进分数 Sturm
 求值（0.27.x）找齐全部 10 个根。</p>
+<p>自 0.27.2 起，积分正确性套件增加了一条独立判据：<code>integral_verify</code> 用
+<code>ocas-tests/src/integral_eval.rs</code> 的数值 oracle（在确定性哑参数下的采样点上
+做 5 点中心差分）复核积分结果，因此「形式像但实际错误」的原函数会使套件失败。
+同一 oracle 也驱动 Rubi 1892 题覆盖率 harness 的 <code>verified_solved</code> /
+<code>verify_mismatches</code> 字段。</p>
 <hr />
 <h2 id="运行测试"><a class="header" href="#运行测试">运行测试</a></h2>
 <pre><code class="language-bash"># 运行全部正确性测试
