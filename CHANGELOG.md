@@ -9,7 +9,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.27.0] - 2026-09-06
+## [0.27.1] - 2026-09-10
+
+### Added / 新增
+
+- **六个符号积分机制模块**（`ocas-calc/src/integral/`），全部预算守卫 + 幂等重入 +
+  数值求导核验 / **Six new integration mechanism modules**, all budget-guarded,
+  idempotent, and verified by numeric differentiation:
+  - `binomial.rs`：Chebyshev 二项微分三可积情形 + 分数幂有理化代换
+    （`x^(3/2)·(A+Bx)/(a+bx)^3`、`1/((1+x)^(1/4)+√(1+x))` 等）。
+  - `trig_reduction.rs`：`1/(a+b·T(u))^n` 分母幂递推（T1）、线性分子分解（T2）、
+    `x^m·T(ax+b)` 闭式（T3，避开分部循环）。
+  - `exp_log.rs`：exp 核有理化 `R(e^{ax})`、双曲有理式 `t=e^u` 代换、
+    `f(log x)/x` 代换、log 幂展开与 `log(x)^k/x` 闭式。
+  - `sqrt_quadratic.rs`：一般二次根式引擎——`√(a+bx+cx²)` 直接形/倒数形/线性
+    分母形 + Euler III 代换（Euler I/II 之外的第三种）。
+  - `inverse_trig.rs`：反三角/反双曲核导数幂规则（M1）、`t=asinh/acosh` 代换
+    （M2）、线性变元裸形（M3）。
+  - `trig_kernel.rs`：单三角核有理式归一化（sec/csc/tan/cot→sin/cos + Laurent
+    分子 + 移位展开 + 2D peel）+ `tan^m·sec^n`/`cot^m·csc^n` 经典剥项。
+- `quad_power.rs`（Phase 2）：`P(x)/(d+ex)^n` 线性分母幂 y-位移展开、
+  `P(x)/(a+bx+cx²)^n` 二次分母幂递推（`I_n`/`J(m,n)` 闭式）、双线性因子
+  部分分式（Heaviside 求导公式 + 等次边界常数商）。
+- 基础设施：`rules_ext.rs` 规则扩展挂载点、`integrate_1892` harness 子集过滤
+  （`OCAS_1892_CASES`）、桶级失败 diff 工具
+  （`ocas-tests/scripts/diff_1892_failures.py`）。
+
+### Fixed / 修复
+
+- **错案：C14/D7b 十条线性变元幂递推模板残项系数多除一次斜率**（0.27.0 引入；
+  残项 `Integral(g,x)` 对 x 积分，系数应为 `(n−1)/n` 而非 `(n−1)/(n·a)`）——
+  裸 x 形态（a=1）掩盖该错；新增 `linear_arg_power_reductions_numeric`
+  数值回归测试（9 形态）。
+- **错案：`rational.rs` 的 `sqrt_positive_rational` 丢 1/q**（√(p/q)=√(pq)/q），
+  导致 `1/(3x²+4x+3)` 类静默返回错误答案；回归测试已加。
+- `normalize`：幂套幂折叠 `(u^r)^n → u^(r·n)`（整数 n）+ 精确数值幂折叠
+  （`0^n→0`、`1^_→1`、`b^e` 精确整数幂）。
+- `heuristic`：四技术浅层 `is_fallback` 检查改深度 `contains_integral`——
+  分部积分不再吞含嵌套残项的 Add 结果提前返回。
+- 链路排序：`expand_bounded` 前移到 heuristic 之前（分部积分在三因子乘积上
+  耗尽 256 链预算导致展开重入即死，csc 积式实锤案例）。
+- `derivative.rs`：补全 cot/csc/反三角/双曲全套导数（此前缺 12 个函数，
+  产生未求值 `Derivative` 节点）。
+- `symbolic_rational`：系数规模预算（`MAX_COEFF_COST`，fpoly_gcd/extended_gcd/
+  hermite 三循环）+ 多符号商式入口闸门（5+ 符号且合并次数 >8 快速拒绝）——
+  语料超时 49→33、总墙钟 −19%。
+- harness：`--case` 子进程模式说明修正；语料失败转储口径不变。
+
+### Coverage / 覆盖率（诚实记录）
+
+- Rubi 1892 题子集：0.27.0 终态 9.62%（182/1892）→ **0.27.1 终态 16.44%
+  （311/1892），+6.82pp，129 新解、0 回归（逐题 diff 核验）、超时 49→33、
+  0 崩溃、墙钟 703.8s→572s（−19%）**；仍**未达 +30pp 验收线**（缺口在
+  power-binomial 的椭圆/高符号商式与 mixed-other 复合壳，量化见
+  `docs/planning/BENCHMARK_RESULTS_CN.md` 0.27.1 段）。注：0.27.0 的 182
+  solved 中含本次修复的 C14/D7b 错案，0.27.1 数字更诚实。
+- 桶 delta（对基线）：trig +28、radical +36、power-binomial +28、
+  mixed-other +26、inverse-trig-hyper +8、hyperbolic +3、exp-log +0。
+
+---
 
 ### Added / 新增
 

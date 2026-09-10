@@ -1,5 +1,36 @@
 # oCAS 基准测试结果（全量复测 @ 2026-08-06）
 
+## 0.27.1 符号积分广度（Rubi 1892 题子集，2026-09-10）
+
+> 本轮按 0.27.1 计划执行：六个机制模块（binomial/trig_reduction/exp_log/
+> sqrt_quadratic/inverse_trig/trig_kernel）+ quad_power（分母幂递推/双线
+> 性部分分式）+ 两组错案修复（C14/D7b 线性变元递推残项系数多除斜率；
+> rational.rs √(p/q) 丢 1/q）+ 结构性修复（heuristic 深度残项检查、
+> expand_bounded 前移到 heuristic 前、normalize 幂套幂与精确数值幂折叠、
+> 导数表补全 12 函数、symbolic_rational 系数预算与多符号入口闸门）。
+> 机制实现由子智能体按失败桶分工完成（1A–1E），1F 起主线直写。
+
+| 口径 | solved | fallback | coverage | 超时 | 崩溃 | 总墙钟 |
+|---|---|---|---|---|---|---|
+| 0.27.0 终态基线（2026-09-09 复测确认） | 182 | 1710 | 9.62% | 49 | 0 | 703.8 s |
+| **0.27.1 终态（2026-09-10）** | **311** | **1581** | **16.44%** | **33** | **0** | **572.0 s** |
+
+- 净增量：**+129 题，+6.82pp**；逐题 diff（`diff_1892_failures.py`）确认
+  **0 回归**。桶 delta：trig +28、radical +36、power-binomial +28、
+  mixed-other +26、inverse-trig-hyper +8、hyperbolic +3、exp-log +0。
+- 仍未达 +30pp 验收线。机制路线兑现有界：剩余失败的主干是
+  power-binomial 的椭圆族（`1/(a+b·sec)^(5/2)` 类，需椭圆积分函数）与
+  高符号商式（系数域爆炸超出门控的经济路径）、mixed-other 的复合壳层
+  （可解核 × 外层包裹的归一化拆分尚未机制化）、exp-log 的同构壳层。
+- 诚实性说明：0.27.0 的 182 solved 中含 C14/D7b 递推错案（线性变元幂
+  的残项系数多除斜率，字符串级 solved 断言不可见）；0.27.1 修复后，
+  覆盖数字不再含该类错案。全部新增机制的正确性以 eval_f64 数值求导
+  抽样核验（各模块测试内），SymPy 100 例抽样对拍
+  （`correctness::integral_rules`）保持全绿。
+- 超时治理：symbolic_rational 系数规模预算（`MAX_COEFF_COST`）与
+  5+ 符号商式入口闸门将多起语料磨算转为快速拒绝；墙钟 −19% 且
+  0 崩溃（`MAX_CHAIN_ENTRIES=256` 全局预算 + 各机制局部预算）。
+
 ## 0.27.0 符号积分广度（Rubi 1892 题子集，(c) 阶段 2026-09-06）
 
 > (c) 阶段新增：有界分配展开重试（`expand_bounded`，项数 ≤ 64）+ 三角

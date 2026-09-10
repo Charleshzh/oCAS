@@ -363,6 +363,32 @@
 - 规则路径与 SymPy `manualintegrate`/`integrate` 抽样交叉验证一致 —— 达成
 - `cargo test --workspace` 通过 —— 达成
 
+### 0.27.1 — 积分广度机制攻坚（0.27.0 验收线续作）
+
+**目标**：沿 0.27.0 的 +30pp 验收线继续提升 1892 题覆盖率，以机制级
+升级（非规则堆量）解锁整族题型。
+
+**交付物**（全部落地）：
+
+- [x] Chebyshev 二项微分 + 分数幂有理化（`binomial.rs`）
+- [x] 三角分母幂递推 / 线性分子分解 / 多项式×三角闭式（`trig_reduction.rs`）
+- [x] exp/log 核代换（exp 核有理化、双曲 t=e^u、f(log x)/x）（`exp_log.rs`）
+- [x] 一般二次根式引擎 + Euler III（`sqrt_quadratic.rs`）
+- [x] 反三角/反双曲核导数幂与代换（`inverse_trig.rs`）
+- [x] 单三角核有理式归一化 + tan/sec 族剥项（`trig_kernel.rs`）
+- [x] 分母幂递推 + 双线性因子部分分式（`quad_power.rs`）
+- [x] 错案修复：C14/D7b 线性变元递推残项系数、rational.rs √(p/q) 丢 1/q
+- [x] 稳定性：symbolic_rational 系数预算与多符号闸门（超时 49→33、
+  墙钟 −19%）、heuristic 深度残项检查、expand 前移防预算饥饿
+
+**成功标准**（诚实记录）：
+
+- 1892 题子集 +30pp —— **未达成**：9.62% → 16.44%（+6.82pp，311/1892，
+  129 新解、0 回归、0 崩溃；量化缺口：椭圆族/高符号商式/复合壳层，
+  见 BENCHMARK_RESULTS_CN.md 0.27.1 段）
+- 全部新增机制经 eval_f64 数值求导抽样核验 + SymPy 对拍全绿 —— 达成
+- 质量门（fmt/clippy -D warnings/workspace test/deny）全绿 —— 达成
+
 ### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
 
 **目标**：对齐 msolve 0.10.1 实测（katsura 3–7 ms、cyclic-7 55 ms）（P1），

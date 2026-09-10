@@ -388,6 +388,42 @@ coverage substantially.
 - Rule path agrees with SymPy `manualintegrate`/`integrate` on sampled cases — met
 - `cargo test --workspace` passes — met
 
+### 0.27.1 — Integration-Breadth Mechanism Push (0.27.0 acceptance-line sequel)
+
+**Goal**: continue raising 1892-problem coverage along the 0.27.0 +30pp
+acceptance line, via mechanism-level upgrades (not rule volume).
+
+**Deliverables** (all landed):
+
+- [x] Chebyshev binomial differentials + fractional-power rationalization
+  (`binomial.rs`)
+- [x] Trig-denominator power reductions / linear-numerator decomposition /
+  polynomial×trig closed forms (`trig_reduction.rs`)
+- [x] exp/log kernel substitutions (exp-kernel rationalization, hyperbolic
+  t=e^u, f(log x)/x) (`exp_log.rs`)
+- [x] General sqrt-quadratic engine + Euler III (`sqrt_quadratic.rs`)
+- [x] Inverse-trig/hyperbolic kernel-derivative powers and substitutions
+  (`inverse_trig.rs`)
+- [x] Single-trig-kernel rational normalization + tan/sec-family reductions
+  (`trig_kernel.rs`)
+- [x] Denominator-power recurrences + two-linear-factor partial fractions
+  (`quad_power.rs`)
+- [x] Wrong-answer fixes: C14/D7b linear-argument reduction residual
+  coefficients; rational.rs √(p/q) dropping 1/q
+- [x] Stability: symbolic-rational coefficient budgets + many-symbol entry
+  gate (timeouts 49→33, wall clock −19%), deep-residue checks in the
+  heuristic stage, expansion moved before it to stop budget starvation
+
+**Success Criteria** (honest record):
+
+- 1892-problem subset +30pp — **NOT met**: 9.62% → 16.44% (+6.82pp,
+  311/1892, 129 newly solved, zero regressions, zero crashes; the
+  quantified gap — elliptic families / high-symbol-count quotients /
+  composite shells — is recorded in BENCHMARK_RESULTS_CN.md §0.27.1)
+- Every new mechanism verified by eval_f64 numeric differentiation sampling
+  plus the SymPy cross-check suite — met
+- Quality gates (fmt / clippy -D warnings / workspace test / deny) — met
+
 ### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
 
 **Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)
