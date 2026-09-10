@@ -302,7 +302,7 @@ fn fpoly_gcd(a: &FPoly, b: &FPoly) -> Option<FPoly> {
     let mut steps = 0usize;
     while !r.is_zero() {
         steps += 1;
-        if steps > 512 {
+        if steps > 512 || fpoly_cost(&old_r) + fpoly_cost(&r) > MAX_COEFF_COST {
             return None;
         }
         let (_, rem) = old_r.div_rem(&r)?;
@@ -318,6 +318,20 @@ fn fpoly_gcd(a: &FPoly, b: &FPoly) -> Option<FPoly> {
     g.trim();
     Some(g)
 }
+
+/// Total coefficient size of an `FPoly` (numerator + denominator term
+/// counts over the symbol field) — the cost driver of field-Euclidean
+/// steps. The budget turns multivariate-coefficient blow-ups (5+ symbol
+/// corpus shapes) from hangs into fast declines.
+fn fpoly_cost(p: &FPoly) -> usize {
+    p.terms
+        .iter()
+        .map(|(_, c)| c.numerator.n_terms() + c.denominator.n_terms())
+        .sum()
+}
+
+/// Coefficient-size budget for the field-Euclidean loops (0.27.1).
+const MAX_COEFF_COST: usize = 20_000;
 
 impl FPoly {
     fn scale(&self, c: &GeneratorField) -> Self {
@@ -386,6 +400,9 @@ fn hermite_reduce(num: &FPoly, den: &FPoly) -> Option<HermiteParts> {
     let mut a = num.clone();
     let mut d = den.clone();
     loop {
+        if fpoly_cost(&a) + fpoly_cost(&d) > MAX_COEFF_COST {
+            return None;
+        }
         let factors = square_free_factors(&d)?;
         let Some((f, m)) = factors.iter().find(|(_, m)| *m >= 2).cloned() else {
             break;
@@ -439,6 +456,9 @@ fn extended_gcd(a: &FPoly, b: &FPoly) -> Option<(FPoly, FPoly)> {
     let mut old_t = fpoly_zero(a.n_vars());
     let mut t = fpoly_one(a.n_vars());
     while !r.is_zero() {
+        if fpoly_cost(&old_r) + fpoly_cost(&r) + fpoly_cost(&s) + fpoly_cost(&t) > MAX_COEFF_COST {
+            return None;
+        }
         let (q, rem) = old_r.div_rem(&r)?;
         old_r = r;
         r = rem;
@@ -818,7 +838,17 @@ pub(crate) fn integrate_rational_symbolic<'a>(
     let rf = atom_to_rational(expr, &gens)?;
     let mut num = FPoly::from_sparse(&rf.numerator);
     let mut den = FPoly::from_sparse(&rf.denominator);
-    if den.degree()? > 6 {
+    // Many-symbol entry gate (0.27.1): with 5+ coefficient generators the
+    // field-Euclidean steps blow up inside a SINGLE div_rem (the inter-step
+    // MAX_COEFF_COST budget never gets a chance to fire). Pure polynomials
+    // (den.degree() == 0) skip Euclidean work entirely and stay admissible
+    // at any symbol count; the gate only fires on genuine quotients whose
+    // combined degree is large.
+    let den_deg = den.degree()?;
+    if den_deg > 6 {
+        return None;
+    }
+    if den_deg > 0 && symbols.len() >= 5 && num.degree().unwrap_or(0) + den_deg > 8 {
         return None;
     }
     // Cancel the common polynomial factor of num/den (the Weierstrass

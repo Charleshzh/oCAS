@@ -13,15 +13,23 @@
 // the lint fires anyway (clippy#12276 acknowledges the backend dependence).
 #![allow(clippy::missing_const_for_thread_local)]
 
+pub(crate) mod binomial;
+pub(crate) mod exp_log;
 pub(crate) mod heuristic;
+pub(crate) mod inverse_trig;
+pub(crate) mod quad_power;
 pub mod rational;
 pub(crate) mod rde;
 pub(crate) mod risch;
 pub(crate) mod rules;
+pub(crate) mod rules_ext;
 pub(crate) mod special;
+pub(crate) mod sqrt_quadratic;
 pub(crate) mod symbolic_rational;
 pub(crate) mod trig;
+pub(crate) mod trig_kernel;
 pub(crate) mod trig_reduce;
+pub(crate) mod trig_reduction;
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
@@ -281,6 +289,13 @@ fn try_risch_or_fallback<'a>(
     // Symbolic-constant rationals (coefficients in ℚ(symbols)): the ℚ
     // backend declines these; the symbolic backend also powers the
     // trig-rational class through Weierstrass t-rationals.
+    // Quadratic/linear denominator power reductions (0.27.1 Phase 2):
+    // closed-form recurrences for `P(x)/q^n` — these shapes stall the
+    // symbolic rational backend's multivariate coefficient gcd, so the
+    // recurrence must preempt it.
+    if let Some(r) = quad_power::integrate_quad_power(ctx, expr, var) {
+        return r;
+    }
     if let Some(r) = symbolic_rational::integrate_rational_symbolic(ctx, expr, var) {
         return r;
     }
@@ -321,6 +336,31 @@ fn try_risch_or_fallback<'a>(
             return r;
         }
     }
+    // General quadratic-radical engine (0.27.1): direct forms for
+    // √(a+b·x+c·x²) composites, reciprocal forms, Euler III. Runs BEFORE
+    // binomial's Chebyshev cases: both accept `q^±1/2`-style radicands,
+    // and this engine's asin/log direct forms are the canonical answers
+    // (Chebyshev's t-form back-substitution produces uglier atan shapes).
+    if let Some(r) = sqrt_quadratic::integrate_sqrt_quadratic(ctx, expr, var) {
+        return r;
+    }
+    // Chebyshev binomial differentials and fractional-power
+    // rationalization: substitute to a rational t-form, reintegrate,
+    // back-substitute. Declines (None) unless an exact integrability
+    // condition holds.
+    if let Some(r) = binomial::integrate_binomial(ctx, expr, var) {
+        return r;
+    }
+    // exp/log-kernel substitutions (0.27.1): rational-in-e^(ax) and
+    // hyperbolic-rational forms, f(log x)/x, log-power gaps of rule B6.
+    if let Some(r) = exp_log::integrate_exp_log(ctx, expr, var) {
+        return r;
+    }
+    // Inverse-trig/hyperbolic mechanisms (0.27.1): kernel-derivative power
+    // rule, inv-hyp substitution to hyperbolic t-forms, bare linear args.
+    if let Some(r) = inverse_trig::integrate_inverse_trig(ctx, expr, var) {
+        return r;
+    }
     // Trig product-to-sum reduction: products of sin/cos at linear
     // arguments become a sum of single trig terms, then distribute and
     // integrate termwise. Runs before the heuristic stage: the reduction
@@ -334,21 +374,35 @@ fn try_risch_or_fallback<'a>(
             return r;
         }
     }
-    // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
-    if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var, parts_depth) {
+    // Trig-denominator power reductions, linear-numerator decomposition and
+    // polynomial×trig closed forms (0.27.1). Intercepts `1/(a+b·T(u))^n`
+    // before Weierstrass blows the t-rational up, and `x^m·T(ax+b)` shapes
+    // that parts cannot finish within budget.
+    if let Some(r) = trig_reduction::integrate_trig_reduction(ctx, expr, var) {
         return r;
     }
-    // Last-resort retry: distribute products over sums and integrate
-    // termwise. Only fires when every direct method declined the
-    // expression; the expansion is budgeted and idempotent, so the
-    // re-entered chain cannot loop back here on the same shape. Like terms
-    // are folded first so factors like `x*x` reach the integrator as `x^2`.
+    // Single-trig-kernel rational forms and tan/sec-family reductions
+    // (0.27.1): after trig_reduction so plain `1/(a+b·T)^n` stays there.
+    if let Some(r) = trig_kernel::integrate_trig_kernel(ctx, expr, var) {
+        return r;
+    }
+    // Bounded distributive expansion: distribute products over sums and
+    // integrate termwise. Runs BEFORE the heuristic stage: parts recursion
+    // on multi-factor products can consume the whole chain budget, which
+    // would starve this retry's per-term re-entries. The expansion is
+    // budgeted and idempotent, so the re-entered chain cannot loop back
+    // here on the same shape. Like terms are folded first so factors like
+    // `x*x` reach the integrator as `x^2`.
     if let Some(expanded) = crate::expand::expand_bounded(ctx, expr) {
         let folded = crate::ode::util::collect_terms(ctx, expanded);
         let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
         if !is_fallback(&r) {
             return r;
         }
+    }
+    // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
+    if let Some(r) = heuristic::heuristic_integrate(ctx, expr, var, parts_depth) {
+        return r;
     }
     fallback(ctx, expr, var)
 }
@@ -425,6 +479,152 @@ pub(crate) fn is_fallback<'a>(atom: &Atom<'a>) -> bool {
     matches!(atom.node(), AtomNode::Fun(name, _) if name.as_str() == "Integral")
 }
 
+/// Deep residue check: any `Integral(...)` node anywhere in the tree
+/// (unlike `is_fallback`, which only inspects the head).
+pub(crate) fn contains_integral<'a>(atom: Atom<'a>) -> bool {
+    match atom.node() {
+        AtomNode::Fun(name, args) => {
+            name.as_str() == "Integral" || args.iter().any(|a| contains_integral(*a))
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) => args.iter().any(|a| contains_integral(*a)),
+        AtomNode::Pow(b, e) => contains_integral(*b) || contains_integral(*e),
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+    }
+}
+
+// =========================================================================
+// Shared substitution-mechanism plumbing (0.27.1: binomial / exp_log / …)
+// =========================================================================
+
+pub(crate) fn gcd_i64(a: i64, b: i64) -> i64 {
+    let (mut a, mut b) = (a.unsigned_abs(), b.unsigned_abs());
+    while b != 0 {
+        let t = a % b;
+        a = b;
+        b = t;
+    }
+    i64::try_from(a).unwrap_or(i64::MAX)
+}
+
+pub(crate) fn lcm_i64(a: i64, b: i64) -> Option<i64> {
+    let g = gcd_i64(a, b);
+    (a / g).checked_mul(b)
+}
+
+/// Total node count of the expression tree (saturating).
+pub(crate) fn node_count(expr: Atom<'_>) -> usize {
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => 1,
+        AtomNode::Pow(b, e) => node_count(*b)
+            .saturating_add(node_count(*e))
+            .saturating_add(1),
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => args
+            .iter()
+            .fold(1usize, |acc, a| acc.saturating_add(node_count(*a))),
+    }
+}
+
+/// True when `sym` occurs as a `Var` anywhere in `expr`.
+pub(crate) fn contains_symbol(expr: Atom<'_>, sym: Symbol) -> bool {
+    match expr.node() {
+        AtomNode::Var(v) => *v == sym,
+        AtomNode::Num(_) => false,
+        AtomNode::Pow(b, e) => contains_symbol(*b, sym) || contains_symbol(*e, sym),
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            args.iter().any(|a| contains_symbol(*a, sym))
+        }
+    }
+}
+
+/// Pick a substitution variable that does not collide with `var` or with
+/// any symbol already present in `expr`.
+pub(crate) fn pick_subst_symbol(expr: Atom<'_>, var: Symbol) -> Option<Symbol> {
+    for name in ["t", "u"] {
+        let s = Symbol::new(name);
+        if s != var && !contains_symbol(expr, s) {
+            return Some(s);
+        }
+    }
+    None
+}
+
+/// Substitute every `Var(sym)` occurrence in `expr` with `replacement`.
+pub(crate) fn replace_symbol<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    sym: Symbol,
+    replacement: Atom<'a>,
+) -> Atom<'a> {
+    match expr.node() {
+        AtomNode::Var(v) => {
+            if *v == sym {
+                replacement
+            } else {
+                expr
+            }
+        }
+        AtomNode::Num(_) => expr,
+        AtomNode::Add(args) => {
+            let rebuilt: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| replace_symbol(ctx, *a, sym, replacement))
+                .collect();
+            ctx.add(&rebuilt)
+        }
+        AtomNode::Mul(args) => {
+            let rebuilt: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| replace_symbol(ctx, *a, sym, replacement))
+                .collect();
+            ctx.mul(&rebuilt)
+        }
+        AtomNode::Pow(b, e) => {
+            let nb = replace_symbol(ctx, *b, sym, replacement);
+            let ne = replace_symbol(ctx, *e, sym, replacement);
+            ctx.pow(nb, ne)
+        }
+        AtomNode::Fun(name, args) => {
+            let rebuilt: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| replace_symbol(ctx, *a, sym, replacement))
+                .collect();
+            ctx.fun(name.as_str(), &rebuilt)
+        }
+    }
+}
+
+/// `base^e` for integer `e`, folding the degenerate exponents.
+pub(crate) fn int_pow<'a>(ctx: &'a AtomArena<'a>, base: Atom<'a>, e: i64) -> Atom<'a> {
+    match e {
+        0 => ctx.num(1),
+        1 => base,
+        _ => ctx.pow(base, ctx.num(e)),
+    }
+}
+
+/// `a^(−1)`, folded for numeric `a`.
+pub(crate) fn inv<'a>(ctx: &'a AtomArena<'a>, a: Atom<'a>) -> Atom<'a> {
+    match a.node() {
+        AtomNode::Num(1) => ctx.num(1),
+        AtomNode::Num(n) => rat_atom(ctx, 1, *n),
+        _ => ctx.pow(a, ctx.num(-1)),
+    }
+}
+
+/// Build the atom `p/q` (reduced, `q > 0`).
+pub(crate) fn rat_atom<'a>(ctx: &'a AtomArena<'a>, p: i64, q: i64) -> Atom<'a> {
+    if p == 0 {
+        return ctx.num(0);
+    }
+    let (p, q) = if q < 0 { (-p, -q) } else { (p, q) };
+    let g = gcd_i64(p, q);
+    let (p, q) = (p / g, q / g);
+    if q == 1 {
+        return ctx.num(p);
+    }
+    ctx.mul(&[ctx.num(p), ctx.pow(ctx.num(q), ctx.num(-1))])
+}
+
 fn integrate_power<'a>(
     ctx: &'a AtomArena<'a>,
     base: Atom<'a>,
@@ -499,8 +699,16 @@ fn integrate_power<'a>(
 /// Parse an exponent atom as a fraction p/q (small integers).
 ///
 /// Accepts `p * q^-1`, `p * (q^-1)` with integer p, q (q > 0), as produced by
-/// rational arithmetic in the ODE solvers.
+/// rational arithmetic in the ODE solvers, and the normalized bare
+/// reciprocal `q^-1` (= 1/q).
 fn fraction_exponent<'a>(exp: Atom<'a>) -> Option<(i64, i64)> {
+    if let AtomNode::Pow(b, e) = exp.node()
+        && let (AtomNode::Num(bb), AtomNode::Num(ee)) = (b.node(), e.node())
+        && *ee == -1
+        && *bb > 0
+    {
+        return Some((1, *bb));
+    }
     if let AtomNode::Mul(args) = exp.node() {
         let mut num: Option<i64> = None;
         let mut den: Option<i64> = None;
@@ -640,6 +848,26 @@ mod tests {
     use ocas_core::arena::Arena;
 
     use super::*;
+
+    #[test]
+    fn csc_product_expansion_not_starved_by_parts() {
+        // Regression (0.27.1): the parts heuristic consumed the whole
+        // chain-entry budget on this three-factor product, so the expansion
+        // retry's per-term re-entries tripped the budget and fell back.
+        // The expansion must run before the heuristic stage.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(
+            &ctx,
+            "csc(c + d*x)^3*(a - a*csc(c + d*x))*(A - A*csc(c + d*x))",
+        )
+        .unwrap();
+        let r = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(
+            !r.to_string().contains("Integral("),
+            "csc product left a residue: {r}"
+        );
+    }
 
     #[test]
     fn integrate_power() {
