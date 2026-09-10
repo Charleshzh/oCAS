@@ -93,8 +93,13 @@ def test_integrate_basic():
 
 
 def test_integrate_rules_toggle():
-    # tan(x)^4 is a baseline fallback that the rule table solves.
-    e = ocas.Expression("tan(x)^4")
+    # csc(x)^5 is solved by the rule table and by nothing else: the
+    # kernel-substitution / trig mechanisms decline csc (its derivative needs a
+    # second radical), so the flag stays observable. The old probe `tan(x)^4`
+    # is now owned by the rational-derivative kernel substitution, which is
+    # independent of this option (see the matching C test in
+    # ocas-c/tests/c_api.rs).
+    e = ocas.Expression("csc(x)^5")
     with_rules = str(e.integrate("x"))
     assert "Integral" not in with_rules, with_rules
     without_rules = str(e.integrate("x", rules=False))
@@ -141,9 +146,9 @@ def test_substitute_numeric():
     e = ocas.Expression("x^2")
     two = ocas.Expression("2")
     result = e.substitute("x", two)
-    # The default rule set does not evaluate numeric powers, so 2^2 is left
-    # as-is; the important thing is that x was replaced.
-    assert str(result) == "2^2"
+    # Since 0.27.1 `normalize` folds exact numeric powers, so 2^2 comes back as
+    # 4; the point of this test is that x was replaced and the value is right.
+    assert str(result) == "4"
 
 
 # ---------------------------------------------------------------------------
