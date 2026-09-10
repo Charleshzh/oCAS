@@ -2,6 +2,21 @@
 //!
 //! The lexer recognises a minimal CAS language: integers, identifiers,
 //! arithmetic operators `+ - * / ^`, parentheses, and commas.
+//!
+//! Integer literals are **unsigned**: a leading `-` is always [`Token::Minus`]
+//! and never part of the number. The token stream for `-7` is therefore
+//! `Minus, Integer(7)`, and `2-1` lexes as `Integer(2), Minus, Integer(1)`
+//! rather than two adjacent operands.
+//!
+//! # Public API change
+//!
+//! [`lex`] is public, and its output for a sign-prefixed integer changed:
+//! `-7` used to produce `[Integer(-7), Eof]` and now produces
+//! `[Minus, Integer(7), Eof]`. Sign handling lives in the parser, which is the
+//! only place where `-` can be given a consistent meaning (binary subtraction,
+//! unary negation, and the sign of a literal all share one token).
+//! One practical consequence: `-9223372036854775808` (`i64::MIN`) no longer
+//! lexes, because its magnitude does not fit in a positive `i64`.
 
 use logos::Logos;
 
@@ -10,8 +25,10 @@ use logos::Logos;
 #[logos(skip r"[ \t\n\r]+")]
 #[logos(error = LexError)]
 pub enum Token<'a> {
-    /// An integer literal, e.g. `42` or `-7`.
-    #[regex(r"-?[0-9]+", |lex| lex.slice().parse::<i64>())]
+    /// An unsigned integer literal, e.g. `42`.
+    ///
+    /// A leading `-` is [`Token::Minus`], not part of the literal.
+    #[regex(r"[0-9]+", |lex| lex.slice().parse::<i64>())]
     Integer(i64),
 
     /// An identifier (variable or function name), e.g. `x` or `sin`.
@@ -98,8 +115,53 @@ mod tests {
 
     #[test]
     fn lex_negative_integer() {
+        // `-` is never part of the literal: the sign is its own token, so a
+        // parser can decide between binary subtraction and unary negation.
         let tokens = lex("-7").unwrap();
-        assert_eq!(tokens, vec![Token::Integer(-7), Token::Eof]);
+        assert_eq!(tokens, vec![Token::Minus, Token::Integer(7), Token::Eof]);
+    }
+
+    #[test]
+    fn lex_subtraction_without_spaces() {
+        let tokens = lex("2-1").unwrap();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Integer(2),
+                Token::Minus,
+                Token::Integer(1),
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn lex_subtraction_from_variable_without_spaces() {
+        let tokens = lex("x-1").unwrap();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Ident("x"),
+                Token::Minus,
+                Token::Integer(1),
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn lex_negative_exponent() {
+        let tokens = lex("x^-1").unwrap();
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Ident("x"),
+                Token::Caret,
+                Token::Minus,
+                Token::Integer(1),
+                Token::Eof
+            ]
+        );
     }
 
     #[test]

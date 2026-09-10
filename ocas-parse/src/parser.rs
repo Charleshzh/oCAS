@@ -71,6 +71,11 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
         self.tokens.get(self.pos).copied()
     }
 
+    /// Look ahead by `offset` tokens without consuming anything.
+    fn peek(&self, offset: usize) -> Option<Token<'_>> {
+        self.tokens.get(self.pos + offset).copied()
+    }
+
     fn advance(&mut self) -> Token<'_> {
         let token = self.tokens[self.pos];
         self.pos += 1;
@@ -110,19 +115,19 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
         Ok(left)
     }
 
-    // term -> factor ((*|/) factor)*
+    // term -> unary ((*|/) unary)*
     fn term(&mut self) -> Result<Atom<'a>, ParseError> {
-        let mut left = self.factor()?;
+        let mut left = self.unary()?;
         while let Some(token) = self.current() {
             match token {
                 Token::Star => {
                     self.advance();
-                    let right = self.factor()?;
+                    let right = self.unary()?;
                     left = self.ctx.mul(&[left, right]);
                 }
                 Token::Slash => {
                     self.advance();
-                    let right = self.factor()?;
+                    let right = self.unary()?;
                     let neg_one = self.ctx.num(-1);
                     let inv_right = self.ctx.pow(right, neg_one);
                     left = self.ctx.mul(&[left, inv_right]);
@@ -133,22 +138,58 @@ impl<'a, 'tokens> Parser<'a, 'tokens> {
         Ok(left)
     }
 
-    // factor -> primary (^ factor)? with a leading minus binding looser
-    // than exponentiation: -x^2 = -(x^2).
-    fn factor(&mut self) -> Result<Atom<'a>, ParseError> {
+    // unary -> '-' unary | power
+    //
+    // Unary minus sits between the multiplicative and power levels, so `^`
+    // stays tighter than negation and `-x^2` means `-(x^2)`.
+    //
+    // The one exception is `-` immediately followed by an integer literal:
+    // that pair is fused into a negative literal by `signed_primary`. The
+    // printer writes negative numbers without parentheses, so `Pow(Num(-2), 3)`
+    // prints as `-2^3`; the parser must read it back the same way to remain the
+    // inverse of the printer (see `parse_print_is_deterministic`).
+    fn unary(&mut self) -> Result<Atom<'a>, ParseError> {
+        if self.current() == Some(Token::Minus) && matches!(self.peek(1), Some(Token::Integer(_))) {
+            // The whole signed literal (including any exponent) is owned by
+            // the power level.
+            return self.power();
+        }
         if self.current() == Some(Token::Minus) {
             self.advance();
-            let operand = self.factor()?;
+            let operand = self.unary()?;
             return Ok(self.ctx.mul(&[self.ctx.num(-1), operand]));
         }
-        let base = self.primary()?;
+        self.power()
+    }
+
+    // power -> signed_primary ('^' unary)?
+    //
+    // `^` is right-associative and its exponent is parsed at the unary level,
+    // so `x^-1`, `2^-1`, and `2^3^2` all work.
+    fn power(&mut self) -> Result<Atom<'a>, ParseError> {
+        let base = self.signed_primary()?;
         if self.current() == Some(Token::Caret) {
             self.advance();
-            let exp = self.factor()?;
+            let exp = self.unary()?;
             Ok(self.ctx.pow(base, exp))
         } else {
             Ok(base)
         }
+    }
+
+    // signed_primary -> '-' integer | primary
+    //
+    // Folds a literal sign into the number, restoring the tree the old
+    // sign-carrying lexer produced for `-7` (`Num(-7)`, not `Mul(-1, Num(7))`).
+    fn signed_primary(&mut self) -> Result<Atom<'a>, ParseError> {
+        if self.current() == Some(Token::Minus)
+            && let Some(Token::Integer(n)) = self.peek(1)
+        {
+            self.advance();
+            self.advance();
+            return Ok(self.ctx.num(-n));
+        }
+        self.primary()
     }
 
     // primary -> number | ident | ident ( arg_list ) | ( expr )
@@ -318,5 +359,80 @@ mod tests {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
         assert!(parse(&ctx, "x +").is_err());
+    }
+
+    #[test]
+    fn parse_subtraction_without_spaces() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        assert_eq!(parse(&ctx, "2-1").unwrap().to_string(), "2 + (-1*1)");
+        assert_eq!(parse(&ctx, "x-1").unwrap().to_string(), "x + (-1*1)");
+        assert_eq!(parse(&ctx, "x^2-1").unwrap().to_string(), "(x^2) + (-1*1)");
+        assert_eq!(parse(&ctx, "a1-b2").unwrap().to_string(), "a1 + (-1*b2)");
+        assert_eq!(
+            parse(&ctx, "(x+1)-(x-1)").unwrap().to_string(),
+            "(x + 1) + (-1*(x + (-1*1)))"
+        );
+    }
+
+    #[test]
+    fn parse_unary_minus_literal() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // A sign in front of an integer literal is folded into the literal, so
+        // it keeps the tree the old sign-carrying lexer produced.
+        assert_eq!(parse(&ctx, "-7").unwrap().to_string(), "-7");
+        assert_eq!(parse(&ctx, "- 2").unwrap().to_string(), "-2");
+    }
+
+    #[test]
+    fn parse_unary_minus_expression() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        assert_eq!(parse(&ctx, "-x").unwrap().to_string(), "-1*x");
+        assert_eq!(parse(&ctx, "-(x+1)").unwrap().to_string(), "-1*(x + 1)");
+        assert_eq!(parse(&ctx, "sin(-x)").unwrap().to_string(), "sin(-1*x)");
+        assert_eq!(parse(&ctx, "f(-1, x)").unwrap().to_string(), "f(-1, x)");
+    }
+
+    #[test]
+    fn parse_unary_minus_binds_looser_than_power() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // `^` binds tighter than negation, so `-x^2` is `-(x^2)`.
+        assert_eq!(parse(&ctx, "-x^2").unwrap().to_string(), "-1*(x^2)");
+        // `^` stays right-associative.
+        assert_eq!(parse(&ctx, "2^3^2").unwrap().to_string(), "2^(3^2)");
+    }
+
+    #[test]
+    fn parse_signed_literal_power_base() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // The printer writes a negative numeric base without parentheses, so
+        // `-2^2` must read back as `Pow(Num(-2), 2)` to keep printing lossless.
+        assert_eq!(parse(&ctx, "-2^2").unwrap().to_string(), "-2^2");
+        assert_eq!(parse(&ctx, "(-2)^2").unwrap().to_string(), "-2^2");
+        assert_eq!(parse(&ctx, "-37^2").unwrap().to_string(), "-37^2");
+    }
+
+    #[test]
+    fn parse_negative_exponent() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        assert_eq!(parse(&ctx, "x^-1").unwrap().to_string(), "x^-1");
+        assert_eq!(parse(&ctx, "x^(-1)").unwrap().to_string(), "x^-1");
+        assert_eq!(parse(&ctx, "2^-1").unwrap().to_string(), "2^-1");
+        assert_eq!(parse(&ctx, "x^-37").unwrap().to_string(), "x^-37");
+    }
+
+    #[test]
+    fn parse_negative_factor_after_operator() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        assert_eq!(parse(&ctx, "x*-2").unwrap().to_string(), "x*-2");
+        assert_eq!(parse(&ctx, "2*-1").unwrap().to_string(), "2*-1");
+        // Double negation: the binary `-` is followed by a unary `-`.
+        assert_eq!(parse(&ctx, "x--1").unwrap().to_string(), "x + (-1*-1)");
     }
 }
