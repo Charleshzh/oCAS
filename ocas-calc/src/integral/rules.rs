@@ -35,6 +35,7 @@ pub(crate) type Pred = for<'a> fn(&Bindings<'a>, Symbol) -> bool;
 /// - [`RuleSpec::Template`]: pattern/template strings (`Rule::from_template`).
 /// - [`RuleSpec::Closure`]: hand-written replacement builder for shapes
 ///   templates cannot express (binomial expansion, odd-power peeling, ...).
+#[derive(Clone, Copy)]
 pub(crate) enum RuleSpec {
     Template {
         pat: &'static str,
@@ -285,11 +286,12 @@ fn isqrt(n: i64) -> Option<i64> {
 /// Predicate helpers over match bindings (free-parameter constraints).
 ///
 /// Bound atoms are read by name; `var` is the integration variable.
-mod pred {
+/// `pub(crate)` so `rules_ext_*` family modules can reuse the helpers.
+pub(crate) mod pred {
     use super::*;
 
     /// The atom bound to `name`, if it was bound as a single atom.
-    pub(super) fn bound<'a>(bindings: &Bindings<'a>, name: &str) -> Option<Atom<'a>> {
+    pub(crate) fn bound<'a>(bindings: &Bindings<'a>, name: &str) -> Option<Atom<'a>> {
         match bindings.get(Symbol::new(name))? {
             MatchValue::Single(a) => Some(*a),
             MatchValue::Sequence(_) => None,
@@ -297,7 +299,7 @@ mod pred {
     }
 
     /// `free_q`: the atom does not contain `var`.
-    pub(super) fn free_q(bindings: &Bindings<'_>, var: Symbol) -> bool {
+    pub(crate) fn free_q(bindings: &Bindings<'_>, var: Symbol) -> bool {
         ["a", "b", "c", "d", "m", "n", "p"]
             .iter()
             .all(|n| match bound(bindings, n) {
@@ -307,7 +309,7 @@ mod pred {
     }
 
     /// The integer value bound to `name` (only valid for integer bindings).
-    pub(super) fn int_val(bindings: &Bindings<'_>, name: &str) -> Option<i64> {
+    pub(crate) fn int_val(bindings: &Bindings<'_>, name: &str) -> Option<i64> {
         match bound(bindings, name) {
             Some(a) => match a.node() {
                 AtomNode::Num(n) => Some(*n),
@@ -318,37 +320,37 @@ mod pred {
     }
 
     /// `pos_int_q`: integer literal ≥ 0.
-    pub(super) fn pos_int_q(bindings: &Bindings<'_>, name: &str) -> bool {
+    pub(crate) fn pos_int_q(bindings: &Bindings<'_>, name: &str) -> bool {
         int_val(bindings, name).is_some_and(|n| n >= 0)
     }
 
     /// Integer literal ≥ 2.
-    pub(super) fn int_ge_2(bindings: &Bindings<'_>, name: &str) -> bool {
+    pub(crate) fn int_ge_2(bindings: &Bindings<'_>, name: &str) -> bool {
         int_val(bindings, name).is_some_and(|n| n >= 2)
     }
 
     /// Integer literal ≠ -1; symbolic (non-integer) values pass.
-    pub(super) fn not_minus_one(bindings: &Bindings<'_>, name: &str) -> bool {
+    pub(crate) fn not_minus_one(bindings: &Bindings<'_>, name: &str) -> bool {
         int_val(bindings, name).is_none_or(|n| n != -1)
     }
 
     /// The atom is not the literal 0.
-    pub(super) fn nonzero(bindings: &Bindings<'_>, name: &str) -> bool {
+    pub(crate) fn nonzero(bindings: &Bindings<'_>, name: &str) -> bool {
         !matches!(bound(bindings, name), Some(a) if matches!(a.node(), AtomNode::Num(0)))
     }
 
     /// `n` is an integer in `[lo, hi]`.
-    pub(super) fn int_in_range(bindings: &Bindings<'_>, name: &str, lo: i64, hi: i64) -> bool {
+    pub(crate) fn int_in_range(bindings: &Bindings<'_>, name: &str, lo: i64, hi: i64) -> bool {
         int_val(bindings, name).is_some_and(|n| (lo..=hi).contains(&n))
     }
 
     /// `n` is a non-negative odd integer ≤ 9.
-    pub(super) fn odd_le_9(bindings: &Bindings<'_>, name: &str) -> bool {
+    pub(crate) fn odd_le_9(bindings: &Bindings<'_>, name: &str) -> bool {
         int_val(bindings, name).is_some_and(|n| (1..=9).contains(&n) && n % 2 == 1)
     }
 
     /// Product-to-sum guard: not both `a` and `b` bound to the same literal.
-    pub(super) fn a_neq_b(bindings: &Bindings<'_>, _var: Symbol) -> bool {
+    pub(crate) fn a_neq_b(bindings: &Bindings<'_>, _var: Symbol) -> bool {
         match (int_val(bindings, "a"), int_val(bindings, "b")) {
             (Some(na), Some(nb)) => na != nb,
             _ => true,
@@ -549,35 +551,37 @@ fn rule_specs() -> &'static [RuleSpec] {
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a")),
         },
         // C14: linear-argument power reductions. ∫ sin(u)^n dx with
-        // u = a·x+b is the du-formula divided by a per level.
+        // u = a·x+b: the boundary term carries 1/(n·a), but the residual
+        // integral is over dx — its coefficient is (n−1)/n WITHOUT 1/a
+        // (0.27.1 fix: the extra a^-1 double-counted the slope).
         RuleSpec::Template {
             pat: "sin(a_*x+b_)^n_",
-            tmpl: "(-1)*sin(a_*x+b_)^(n_ - 1)*cos(a_*x+b_)*(n_*a_)^-1 + (n_ - 1)*(n_*a_)^-1*Integral(sin(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "(-1)*sin(a_*x+b_)^(n_ - 1)*cos(a_*x+b_)*(n_*a_)^-1 + (n_ - 1)*(n_)^-1*Integral(sin(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "cos(a_*x+b_)^n_",
-            tmpl: "cos(a_*x+b_)^(n_ - 1)*sin(a_*x+b_)*(n_*a_)^-1 + (n_ - 1)*(n_*a_)^-1*Integral(cos(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "cos(a_*x+b_)^(n_ - 1)*sin(a_*x+b_)*(n_*a_)^-1 + (n_ - 1)*(n_)^-1*Integral(cos(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "tan(a_*x+b_)^n_",
-            tmpl: "tan(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + (-1)*a_^-1*Integral(tan(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "tan(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + (-1)*Integral(tan(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "cot(a_*x+b_)^n_",
-            tmpl: "(-1)*cot(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + (-1)*a_^-1*Integral(cot(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "(-1)*cot(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + (-1)*Integral(cot(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "sec(a_*x+b_)^n_",
-            tmpl: "sec(a_*x+b_)^(n_ - 2)*tan(a_*x+b_)*((n_ - 1)*a_)^-1 + (n_ - 2)*((n_ - 1)*a_)^-1*Integral(sec(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "sec(a_*x+b_)^(n_ - 2)*tan(a_*x+b_)*((n_ - 1)*a_)^-1 + (n_ - 2)*(n_ - 1)^-1*Integral(sec(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "csc(a_*x+b_)^n_",
-            tmpl: "(-1)*csc(a_*x+b_)^(n_ - 2)*cot(a_*x+b_)*((n_ - 1)*a_)^-1 + (n_ - 2)*((n_ - 1)*a_)^-1*Integral(csc(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "(-1)*csc(a_*x+b_)^(n_ - 2)*cot(a_*x+b_)*((n_ - 1)*a_)^-1 + (n_ - 2)*(n_ - 1)^-1*Integral(csc(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         // C15: two-linear-argument product-to-sum (the dominant corpus
@@ -773,25 +777,26 @@ fn rule_specs() -> &'static [RuleSpec] {
             tmpl: "log(tanh(x*2^-1))",
             cond: Some(free_q),
         },
-        // D7b: linear-argument hyperbolic power reductions.
+        // D7b: linear-argument hyperbolic power reductions — same residual
+        // coefficient convention as C14 (no 1/a on the residual integral).
         RuleSpec::Template {
             pat: "sinh(a_*x+b_)^n_",
-            tmpl: "sinh(a_*x+b_)^(n_ - 1)*cosh(a_*x+b_)*(n_*a_)^-1 + (-1)*(n_ - 1)*(n_*a_)^-1*Integral(sinh(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "sinh(a_*x+b_)^(n_ - 1)*cosh(a_*x+b_)*(n_*a_)^-1 + (-1)*(n_ - 1)*(n_)^-1*Integral(sinh(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "cosh(a_*x+b_)^n_",
-            tmpl: "cosh(a_*x+b_)^(n_ - 1)*sinh(a_*x+b_)*(n_*a_)^-1 + (n_ - 1)*(n_*a_)^-1*Integral(cosh(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "cosh(a_*x+b_)^(n_ - 1)*sinh(a_*x+b_)*(n_*a_)^-1 + (n_ - 1)*(n_)^-1*Integral(cosh(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "tanh(a_*x+b_)^n_",
-            tmpl: "(-1)*tanh(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + a_^-1*Integral(tanh(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "(-1)*tanh(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + Integral(tanh(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         RuleSpec::Template {
             pat: "coth(a_*x+b_)^n_",
-            tmpl: "(-1)*coth(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + a_^-1*Integral(coth(a_*x+b_)^(n_ - 2), x)",
+            tmpl: "(-1)*coth(a_*x+b_)^(n_ - 1)*((n_ - 1)*a_)^-1 + Integral(coth(a_*x+b_)^(n_ - 2), x)",
             cond: Some(|b, var| free_q(b, var) && nonzero(b, "a") && int_ge_2(b, "n")),
         },
         // D8: sinh(a*x+b) → cosh(a*x+b)/a (and mirrors).
@@ -1254,8 +1259,12 @@ pub(crate) fn build_rule_table<'a>(
     }
     let mut rules: Vec<Rule<'a>> = Vec::new();
     let mut closures: Vec<ClosureRule<'a>> = Vec::new();
-    for spec in rule_specs() {
-        let baked_pat = bake_var(spec_pat(spec), var_name);
+    for spec in rule_specs()
+        .iter()
+        .copied()
+        .chain(crate::integral::rules_ext::specs())
+    {
+        let baked_pat = bake_var(spec_pat(&spec), var_name);
         let parsed = ocas_parse::parse(ctx, &baked_pat).ok()?;
         let pattern = Pattern::from_atom(&crate::pattern_alloc::VecAlloc, parsed);
         // Variable-name collision guard: a free-parameter wildcard whose
@@ -1285,8 +1294,8 @@ pub(crate) fn build_rule_table<'a>(
                 closures.push(ClosureRule {
                     head,
                     pattern,
-                    cond: *cond,
-                    f: *f,
+                    cond,
+                    f,
                 });
             }
         }
@@ -1620,5 +1629,71 @@ mod tests {
             crate::IntegrateOptions { rules: false },
         );
         assert!(r.to_string().contains("Integral("));
+    }
+
+    /// f64 evaluation for numeric antiderivative checks (linear-arg power
+    /// reductions were string-verified but numerically wrong in 0.27.0).
+    fn eval_num(atom: Atom<'_>, x: f64) -> f64 {
+        match atom.node() {
+            AtomNode::Num(n) => *n as f64,
+            AtomNode::Var(_) => x,
+            AtomNode::Add(args) => args.iter().map(|a| eval_num(*a, x)).sum(),
+            AtomNode::Mul(args) => args.iter().map(|a| eval_num(*a, x)).product(),
+            AtomNode::Pow(b, e) => eval_num(*b, x).powf(eval_num(*e, x)),
+            AtomNode::Fun(name, args) => {
+                let v = eval_num(args[0], x);
+                match name.as_str() {
+                    "sin" => v.sin(),
+                    "cos" => v.cos(),
+                    "tan" => v.tan(),
+                    "sec" => v.cos().recip(),
+                    "csc" => v.sin().recip(),
+                    "cot" => v.tan().recip(),
+                    "sinh" => v.sinh(),
+                    "cosh" => v.cosh(),
+                    "tanh" => v.tanh(),
+                    "sech" => v.cosh().recip(),
+                    "csch" => v.sinh().recip(),
+                    "coth" => v.tanh().recip(),
+                    "log" => v.ln(),
+                    "sqrt" => v.sqrt(),
+                    other => panic!("eval_num: unsupported {other}"),
+                }
+            }
+        }
+    }
+
+    /// Numeric-diff check that diff(integrate(input)) == input.
+    fn assert_numeric_antiderivative(input: &str, samples: &[f64]) {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, input).unwrap();
+        let r = crate::integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!r.to_string().contains("Integral("), "residue: {r}");
+        let d = crate::diff(&ctx, r, Symbol::new("x"));
+        for &xv in samples {
+            let lhs = eval_num(d, xv);
+            let rhs = eval_num(expr, xv);
+            let tol = 1e-6 * rhs.abs().max(1.0);
+            assert!(
+                (lhs - rhs).abs() < tol,
+                "{input} at x={xv}: diff={lhs} integrand={rhs}"
+            );
+        }
+    }
+
+    #[test]
+    fn linear_arg_power_reductions_numeric() {
+        // 0.27.0 bug: the C14/D7b linear-argument reductions divided the
+        // residual Integral coefficient by the slope a second time.
+        assert_numeric_antiderivative("sin(2*x+1)^3", &[0.2, 0.6, 1.1]);
+        assert_numeric_antiderivative("cos(3*x+1)^4", &[0.2, 0.5, 0.9]);
+        assert_numeric_antiderivative("tan(2*x+1)^3", &[0.3, 0.5, 0.7]);
+        assert_numeric_antiderivative("sec(2*x+1)^4", &[0.2, 0.4, 0.6]);
+        assert_numeric_antiderivative("csc(3*x+1)^3", &[0.4, 0.7, 1.0]);
+        assert_numeric_antiderivative("cot(2*x+1)^3", &[0.3, 0.6, 0.9]);
+        assert_numeric_antiderivative("sinh(2*x+1)^3", &[0.2, 0.5, 0.8]);
+        assert_numeric_antiderivative("cosh(3*x+1)^4", &[0.1, 0.3, 0.5]);
+        assert_numeric_antiderivative("tanh(2*x+1)^3", &[0.2, 0.6, 1.0]);
     }
 }

@@ -478,9 +478,11 @@ fn sqrt_positive_rational<'a>(ctx: &'a AtomArena<'a>, r: &Rational) -> Option<Sq
         Some(Sqrt::Rat(Rational::new(m, q)))
     } else {
         let n = i64::try_from(n).ok()?;
-        Some(Sqrt::Rad(
+        // √(p/q) = √(p·q)/q — the 1/q factor is part of the value.
+        Some(Sqrt::Rad(ctx.mul(&[
             ctx.pow(ctx.num(n), ctx.pow(ctx.num(2), ctx.num(-1))),
-        ))
+            ctx.pow(ctx.num(q), ctx.num(-1)),
+        ])))
     }
 }
 
@@ -632,6 +634,25 @@ mod tests {
         let x = ctx.var("x");
         let result = integrate_str(&ctx, ctx.pow(x, ctx.num(-1)));
         assert_eq!(result.to_string(), "log(x)");
+    }
+
+    #[test]
+    fn atan_branch_sqrt_rational_keeps_denominator() {
+        // Regression: √(p/q) must be √(p·q)/q — a dropped 1/q made
+        // ∫ dx/(3x²+4x+3) return a wrong coefficient/argument silently.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let integrand = ctx.pow(
+            ctx.add(&[
+                ctx.mul(&[ctx.num(3), ctx.pow(x, ctx.num(2))]),
+                ctx.mul(&[ctx.num(4), x]),
+                ctx.num(3),
+            ]),
+            ctx.num(-1),
+        );
+        let result = integrate_str(&ctx, integrand);
+        assert_numeric_antiderivative(result, integrand);
     }
 
     #[test]

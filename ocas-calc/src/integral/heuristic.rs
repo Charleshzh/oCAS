@@ -11,7 +11,7 @@
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 
 use crate::derivative::diff;
-use crate::integral::{integrate_raw, is_constant, is_fallback};
+use crate::integral::{contains_integral, integrate_raw, is_constant, is_fallback};
 
 /// Maximum recursion depth for integration by parts.
 const PARTS_MAX_DEPTH: usize = 2;
@@ -38,26 +38,26 @@ pub(crate) fn heuristic_integrate<'a>(
 ) -> Option<Atom<'a>> {
     // 1. Integration by parts
     if let Some(r) = try_parts(ctx, expr, var, parts_depth) {
-        if !is_fallback(&r) {
+        if !contains_integral(r) {
             return Some(r);
         }
     }
     // 2. Trigonometric substitution
     let ts = try_trig_substitution(ctx, expr, var);
     if let Some(r) = ts {
-        if !is_fallback(&r) {
+        if !contains_integral(r) {
             return Some(r);
         }
     }
     // 3. Weierstrass substitution
     if let Some(r) = try_weierstrass(ctx, expr, var) {
-        if !is_fallback(&r) {
+        if !contains_integral(r) {
             return Some(r);
         }
     }
     // 4. Euler substitution
     if let Some(r) = try_euler_substitution(ctx, expr, var) {
-        if !is_fallback(&r) {
+        if !contains_integral(r) {
             return Some(r);
         }
     }
@@ -163,7 +163,7 @@ fn try_parts<'a>(
 
     // Compute V = ∫ v' dx (recursive, at higher depth)
     let v = integrate_raw(ctx, v_prime, var, parts_depth + 2, true, 0, parts_depth + 1);
-    if is_fallback(&v) {
+    if contains_integral(v) {
         return None;
     }
 
@@ -191,7 +191,7 @@ fn try_parts<'a>(
     let u_times_v = ctx.mul(&[u, v]);
 
     // Combine with constant factors
-    let core_result = if is_fallback(&integral_u_prime_v) {
+    let core_result = if contains_integral(integral_u_prime_v) {
         // If inner integral failed, try anyway with the parts formula
         // but only if the result is simpler
         return None;

@@ -93,6 +93,43 @@ pub fn normalize<'a>(ctx: &AtomArena<'a>, atom: Atom<'a>) -> Atom<'a> {
         AtomNode::Pow(base, exp) => {
             let base = normalize(ctx, *base);
             let exp = normalize(ctx, *exp);
+            // Exact numeric folds: `u^0 → 1`, `u^1 → u`, `0^n → 0` (n > 0),
+            // `1^_ → 1`, `(-1)^-1 → -1`, and exact integer powers `b^e`.
+            if let AtomNode::Num(e) = exp.node() {
+                if *e == 0 {
+                    return ctx.num(1);
+                }
+                if *e == 1 {
+                    return base;
+                }
+                if let AtomNode::Num(b) = base.node() {
+                    if *b == 0 {
+                        if *e > 0 {
+                            return ctx.num(0);
+                        }
+                    } else if *b == 1 {
+                        return ctx.num(1);
+                    } else if *e > 0 {
+                        if let Ok(e32) = u32::try_from(*e)
+                            && let Some(v) = b.checked_pow(e32)
+                        {
+                            return ctx.num(v);
+                        }
+                    } else if *e == -1 && *b == -1 {
+                        return ctx.num(-1);
+                    }
+                }
+            }
+            // Fold (u^r)^n → u^(r·n) when the outer exponent n is an
+            // integer (r rational or atom): sound formal power-of-a-power
+            // folding; non-integer outer exponents stay unfolded
+            // ((x²)^(1/2) ≠ x).
+            if let AtomNode::Num(n) = exp.node()
+                && let AtomNode::Pow(inner_base, inner_exp) = base.node()
+            {
+                let merged = normalize(ctx, ctx.mul(&[*inner_exp, ctx.num(*n)]));
+                return ctx.pow(*inner_base, merged);
+            }
             ctx.pow(base, exp)
         }
     }

@@ -131,7 +131,44 @@ fn diff_function<'a>(
         "sqrt" => ctx.pow(ctx.mul(&[ctx.num(2), ctx.fun("sqrt", &[u])]), ctx.num(-1)),
         "tan" => ctx.pow(ctx.fun("sec", &[u]), ctx.num(2)),
         "sec" => ctx.mul(&[ctx.fun("sec", &[u]), ctx.fun("tan", &[u])]),
+        "cot" => ctx.mul(&[ctx.num(-1), ctx.pow(ctx.fun("csc", &[u]), ctx.num(2))]),
+        "csc" => ctx.mul(&[ctx.num(-1), ctx.fun("csc", &[u]), ctx.fun("cot", &[u])]),
+        "asin" => ctx.pow(
+            ctx.fun(
+                "sqrt",
+                &[ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(u, ctx.num(2))])])],
+            ),
+            ctx.num(-1),
+        ),
+        "acos" => ctx.mul(&[
+            ctx.num(-1),
+            ctx.pow(
+                ctx.fun(
+                    "sqrt",
+                    &[ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(u, ctx.num(2))])])],
+                ),
+                ctx.num(-1),
+            ),
+        ]),
         "atan" => ctx.pow(ctx.add(&[ctx.num(1), ctx.pow(u, ctx.num(2))]), ctx.num(-1)),
+        "atanh" => ctx.pow(
+            ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(u, ctx.num(2))])]),
+            ctx.num(-1),
+        ),
+        "sinh" => ctx.fun("cosh", &[u]),
+        "cosh" => ctx.fun("sinh", &[u]),
+        "tanh" => ctx.pow(ctx.fun("sech", &[u]), ctx.num(2)),
+        "coth" => ctx.mul(&[ctx.num(-1), ctx.pow(ctx.fun("csch", &[u]), ctx.num(2))]),
+        "sech" => ctx.mul(&[ctx.num(-1), ctx.fun("sech", &[u]), ctx.fun("tanh", &[u])]),
+        "csch" => ctx.mul(&[ctx.num(-1), ctx.fun("csch", &[u]), ctx.fun("coth", &[u])]),
+        "asinh" => ctx.pow(
+            ctx.fun("sqrt", &[ctx.add(&[ctx.pow(u, ctx.num(2)), ctx.num(1)])]),
+            ctx.num(-1),
+        ),
+        "acosh" => ctx.pow(
+            ctx.fun("sqrt", &[ctx.add(&[ctx.pow(u, ctx.num(2)), ctx.num(-1)])]),
+            ctx.num(-1),
+        ),
         _ => {
             // Unknown function: return an unevaluated Derivative form.
             return ctx.fun(
