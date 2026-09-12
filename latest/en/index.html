@@ -185,7 +185,7 @@
 <p>oCAS uses a layered crate architecture: 13 workspace members from the low-level arena allocator up to the top-level language bindings, with dependencies strictly pointing downward. All coefficient domains (arbitrary-precision integers/rationals, finite fields, real balls, complex numbers, double-precision floats) are abstracted behind a unified <code>Domain</code> trait, and the polynomial algebra, Gröbner basis, symbolic calculus, and ODE solving modules share the same expression infrastructure.</p>
 <hr />
 <h2 id="version-feature-matrix"><a class="header" href="#version-feature-matrix">Version Feature Matrix</a></h2>
-<p>The table below lists the key features added in each oCAS release (0.1 → 0.24):</p>
+<p>The table below lists the key features added in each oCAS release (0.1 → 0.27):</p>
 <div class="table-wrapper"><table><thead><tr><th>Version</th><th>Date</th><th>Key additions</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>Workspace setup, arena allocator, unified error types, minimal C ABI example, cross-platform CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>Expression tree <code>Atom</code> (hash consing), parser based on <code>logos</code>/<code>chumsky</code>, normalizer</td></tr>
@@ -217,6 +217,7 @@
 <tr><td><strong>0.27.0</strong></td><td>2026-09-06</td><td>Symbolic-integration breadth: rule-table engine (families A–H), symbolic-constant rational backend, Weierstrass linear arguments, bounded expansion retry, trig product-to-sum; Rubi 1892-problem coverage 5.87% → 9.62%</td></tr>
 <tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>Integration-breadth mechanism push: Chebyshev binomials, trig-denominator power reductions, exp-log kernel substitutions, general sqrt-quadratic engine + Euler III, inverse-trig kernels, single-trig-kernel rational forms; coverage 9.62% → 16.44%; two wrong-answer classes fixed</td></tr>
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, <code>exp(inverse function)</code> algebraization, half-power front-end + elliptic Legendre reduction (<code>EllipticF/E</code>); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%)</td></tr>
+<tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27-line close-out: special-function derivative table + oracle heads (<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel), special-function reduction families (polynomial × <code>F</code>, <code>Ei(n,·)</code>, <code>F/xᵐ</code>, <code>F²</code>), exact linear-square fold <code>p²+2pq+q² → (p+q)²</code>, affine-argument half-power front-end with the sheet factor on both branches; Rubi coverage 18.45% → 19.56% (+21 solved, 0 regressed, mismatches 0, timeouts 13 → 12)</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -310,7 +311,7 @@ dashed edges are optional dependencies):</p>
 <li><strong>Number theory</strong> — BPSW primality testing, integer factorization (trial division/Pollard rho/p−1/p+1/ECM), discrete logarithms (BSGS + Pohlig–Hellman), Euler φ / Möbius / divisor functions.</li>
 <li><strong>Rewriting and simplification</strong> — AC backtracking pattern matching, wildcards (<code>x__</code>/<code>x___</code>), fixpoint simplification, fuel-limited simplification, optional egg e-graph equality saturation.</li>
 <li><strong>Three-language bindings</strong> — Rust prelude API, Python (PyO3, 25 classes + 32 functions), C/C++ (cbindgen, 91 exports + RAII wrappers).</li>
-<li><strong>Correctness framework</strong> — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1174 <code>#[test]</code>/<code>#[tokio::test]</code> annotations as of 0.24.0).</li>
+<li><strong>Correctness framework</strong> — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1516 <code>#[test]</code>/<code>#[tokio::test]</code> annotations as of 0.27.3).</li>
 <li><strong>Optional numeric backends</strong> — GMP/MPFR/FLINT behind feature flags, with GPL backends isolated in <code>ocas-gpl</code>.</li>
 </ul>
 <hr />
@@ -334,7 +335,7 @@ dashed edges are optional dependencies):</p>
 </div>
 <hr />
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.24.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
+<p>oCAS is currently at version <strong>0.27.3</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>.</p>
 
                     </main>

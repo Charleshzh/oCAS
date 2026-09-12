@@ -314,6 +314,8 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │  2. quadratic/linear denom power recurrences         │
 │     (integrate_quad_power)                           │
 │  3. bounded-expansion pre-pass (expand_prepass, 0.27.2)│
+│  3b. exact linear-square fold (fold_linear_squares,   │
+│      p²+2pq+q² → (p+q)², affine base, 0.27.3)         │
 │  4. rational-derivative kernel substitution          │
 │     (integrate_kernel_subst, tan/cot/tanh/coth, 0.27.2)│
 │  5. hyperbolic closed-form family                    │
@@ -347,6 +349,15 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 <p><code>OCAS_INTEGRATE_TRACE=1</code> prints <code>[trace] enter &lt;stage&gt; :: &lt;expr&gt;</code> / <code>[trace] decline &lt;stage&gt;</code>
 for every stage, which attributes a hanging or falling-back case to a stage without
 guesswork. <code>OCAS_INTEGRATE_RULES=0</code> disables only stage 10 (the rule table).</p>
+<p>Stages 3 and 3b are <em>passes</em>, not traced stages: they rewrite the integrand at the pipeline entry
+before any mechanism sees it. The linear-square fold exists because the corpus writes a linear form
+squared as an expanded trinomial (<code>a² + 2abx + b²x²</code>), which the symbolic-rational backend grinds
+on — <code>rubi-00854</code> was a 10 s per-case timeout before the fold and solves in 0.01 s after it. The
+fold is gated two ways so it cannot misfire: the reconstructed base must be <strong>affine in the
+integration variable</strong> (so it never re-forms the trigonometric squares the product-to-sum stage
+needs expanded), and the rewrite is accepted only when re-expanding the candidate reproduces the
+input sum (exactly, or after <code>normalize</code>). It is never applied under a non-integer power, where
+<code>((p+q)²)^{1/2} = |p+q| ≠ p+q</code>.</p>
 <p><strong>Phase 1 — node-type dispatch</strong>:</p>
 <ul>
 <li><code>Num(_)</code>: the integral of a constant is the linear function <code>c * x</code></li>
@@ -891,14 +902,31 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <li><code>ei_family</code>: matches forms $e^{cx} / x$</li>
 <li><code>trig_integral_family</code>: matches $\sin(x)/x$, $\cos(x)/x$, $\sinh(x)/x$, $\cosh(x)/x$ (the argument must be exactly $x$)</li>
 <li><code>fresnel_family</code>: matches $\sin(cx^2)$, $\cos(cx^2)$</li>
+<li><code>reduction_families</code> (0.27.3): the <em>reduction</em> families that turn a polynomial (or a monomial
+denominator power) times a special head into a closed form, using only identities checked in the
+module's own tests:
+<ul>
+<li>polynomial $\times F(a + b x)$ for <code>erf</code>, <code>erfc</code>, <code>erfi</code>, <code>Si</code>, <code>Ci</code>, <code>Shi</code>, <code>Chi</code>, <code>Ei</code>
+(substitute $u = a + bx$, expand, then integrate by parts with an elementary residual);</li>
+<li>polynomial $\times \text{Ei}(n, a + bx)$ (integer order $n$), via the inverse recurrence
+$E_n = (e^{-u} - n E_{n+1})/u$;</li>
+<li>$F(bx)/x^m$ for $m \ge 2$ and $F = \text{Ei}$ or $\text{Ei}(n, \cdot)$, descending to
+$\text{Ei}(\pm u)$ plus elementary terms;</li>
+<li>polynomial $\times F(a + bx)^2$ for the six square-capable heads, via parts plus the Gaussian
+moment recursion (<code>erf</code>/<code>erfi</code>) or the coupled $F \cdot \cos/\sin$ recursion
+(<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>).</li>
 </ul>
+</li>
+</ul>
+<p>Every reduction chain carries a hard step budget (<code>MAX_SPECIAL_STEPS = 16</code>, <code>MAX_SPECIAL_DEG = 8</code>)
+and declines rather than guessing; no family ever emits an <code>Integral(...)</code> residue.</p>
 <p><strong>Returns</strong>:</p>
 <ul>
 <li><code>Some(Atom)</code> — matched successfully; returns the antiderivative containing special functions</li>
 <li><code>None</code> — no known pattern matches; the caller returns <code>Integral(expr, var)</code></li>
 </ul>
 <p><strong>Design notes</strong>:</p>
-<p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>.</p>
+<p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>. The numerical verification oracle (<code>ocas-tests/src/integral_eval.rs</code>) implements every one of these heads, so solved results in this family are checked by differentiating the emitted form rather than by the absence of a residue.</p>
 <p><strong>See also</strong>: <a href="#risch-algorithm">Risch algorithm</a>, <a href="#integrate">integrate</a></p>
 <hr />
 <h2 id="helper-functions"><a class="header" href="#helper-functions">Helper functions</a></h2>

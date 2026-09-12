@@ -200,7 +200,7 @@
 <tr><td><code>groebner</code></td><td>24</td><td>Gröbner 基计算</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch 符号积分</td></tr>
 <tr><td><code>integral_rules</code></td><td>1</td><td>规则表 100 例抽样（SymPy 对比）</td></tr>
-<tr><td><code>integral_verify</code></td><td>2</td><td>数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 <code>√(p/q)</code> 两类）</td></tr>
+<tr><td><code>integral_verify</code></td><td>3</td><td>数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 <code>√(p/q)</code> 两类，以及 0.27.3 的精确平方折叠/特殊函数族/半幂仿射变元机制）</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>线性求解器</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>矩阵运算</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>表达式规范化</td></tr>
@@ -217,7 +217,7 @@
 <tr><td><code>root_isolation</code></td><td>4</td><td>实根隔离</td></tr>
 </tbody></table>
 </div>
-<p>正确性套件共 216 项测试（另有 <code>ocas-calc</code>、<code>ocas-parse</code>、<code>ocas-atom</code>、
+<p>正确性套件共 217 项测试（另有 <code>ocas-calc</code>、<code>ocas-parse</code>、<code>ocas-atom</code>、
 <code>ocas-poly</code> 等 crate 的单元测试）。</p>
 <hr />
 <h2 id="忽略的测试已知差距"><a class="header" href="#忽略的测试已知差距">忽略的测试（已知差距）</a></h2>

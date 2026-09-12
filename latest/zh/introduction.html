@@ -185,7 +185,7 @@
 <p>oCAS 采用分层 crate 架构，从底层 arena 分配器到顶层语言绑定共 13 个 workspace 成员，依赖方向严格向下。所有系数域（任意精度整数/有理数、有限域、实数球、复数、双精度浮点）通过统一的 <code>Domain</code> trait 抽象，多项式代数、Gröbner 基、符号微积分、ODE 求解等模块共享同一表达式基础设施。</p>
 <hr />
 <h2 id="版本特性对照表"><a class="header" href="#版本特性对照表">版本特性对照表</a></h2>
-<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.24）：</p>
+<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.27）：</p>
 <div class="table-wrapper"><table><thead><tr><th>版本</th><th>日期</th><th>关键新增</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>工作空间搭建、Arena 分配器、统一错误类型、C ABI 最小示例、跨平台 CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>表达式树 <code>Atom</code>（hash consing）、基于 <code>logos</code>/<code>chumsky</code> 的解析器、规范化器</td></tr>
@@ -217,6 +217,7 @@
 <tr><td><strong>0.27.0</strong></td><td>2026-09-06</td><td>符号积分广度：规则表引擎（A–H 族）、符号常数有理后端、Weierstrass 线性变元、有界展开重试、三角积化和差；Rubi 1892 题覆盖率 5.87% → 9.62%</td></tr>
 <tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>积分广度机制攻坚：Chebyshev 二项微分、三角分母幂递推、exp-log 核代换、一般二次根式引擎 + Euler III、反三角核、单三角核有理式；覆盖率 9.62% → 16.44%；修复两组错案</td></tr>
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>已验证覆盖率口径（独立数值 oracle：5 点中心差分 + 椭圆定义积分）、阶段打点与 33 例悬挂归因、确定性阶段预算、有界展开预通道、双曲闭式族、有理导数核代换、三角相位归一、逆函数复合消去、<code>exp(逆函数)</code> 代数化、半幂前端 + 椭圆 Legendre 约化（<code>EllipticF/E</code>）；修复六组错案（已验证覆盖率 93.1%、mismatches 0、超时 33 → 13、墙钟 −22%）</td></tr>
+<tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27 线收尾：特殊函数导数表 + oracle 扩头（<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel）、特殊函数归约族（多项式 × <code>F</code>、<code>Ei(n,·)</code>、<code>F/xᵐ</code>、<code>F²</code>）、精确线性平方折叠 <code>p²+2pq+q² → (p+q)²</code>、半幂前端仿射变元与两支片层因子；Rubi 覆盖率 18.45% → 19.56%（新解 21、回归 0、mismatches 0、超时 13 → 12）</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -309,7 +310,7 @@
 <li><strong>数论</strong> —— BPSW 素性判定、整数分解（试除/Pollard rho/p−1/p+1/ECM）、离散对数（BSGS + Pohlig–Hellman）、Euler φ / Möbius / 除数函数。</li>
 <li><strong>重写与化简</strong> —— AC 回溯模式匹配、通配符（<code>x__</code>/<code>x___</code>）、不动点化简、fuel 受限化简、可选 egg e-graph 等式饱和。</li>
 <li><strong>三语言绑定</strong> —— Rust prelude API、Python（PyO3，25 类 + 32 函数）、C/C++（cbindgen，91 个导出 + RAII 包装）。</li>
-<li><strong>正确性框架</strong> —— 与 SymPy、SageMath、Symbolica 跨多个数学模块的交叉验证（1174 个 <code>#[test]</code>/<code>#[tokio::test]</code> 标注，截至 0.24.0）。</li>
+<li><strong>正确性框架</strong> —— 与 SymPy、SageMath、Symbolica 跨多个数学模块的交叉验证（1516 个 <code>#[test]</code>/<code>#[tokio::test]</code> 标注，截至 0.27.3）。</li>
 <li><strong>可选数值后端</strong> —— GMP/MPFR/FLINT 隐藏在 feature flag 后，GPL 后端隔离在 <code>ocas-gpl</code>。</li>
 </ul>
 <hr />
@@ -333,7 +334,7 @@
 </div>
 <hr />
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.24.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.27.3</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 
                     </main>

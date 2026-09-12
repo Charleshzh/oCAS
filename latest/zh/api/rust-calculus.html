@@ -309,6 +309,8 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │  1. 有理函数积分        (integrate_rational)          │
 │  2. 二次/线性分母幂递推 (integrate_quad_power)        │
 │  3. 有界展开预通道      (expand_prepass, 0.27.2)      │
+│  3b. 精确线性平方折叠   (fold_linear_squares,         │
+│      p²+2pq+q² → (p+q)²，仿射基，0.27.3)              │
 │  4. 有理导数核代换      (integrate_kernel_subst,      │
 │     tan/cot/tanh/coth, 0.27.2)                        │
 │  5. 双曲闭式族          (integrate_hyperbolic_reduction,│
@@ -341,6 +343,12 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 <code>[trace] enter &lt;阶段&gt; :: &lt;表达式&gt;</code> / <code>[trace] decline &lt;阶段&gt;</code>，
 用于把悬挂或回退的题目无猜测地归因到具体阶段。
 <code>OCAS_INTEGRATE_RULES=0</code> 仅关闭第 10 阶段（规则表）。</p>
+<p>第 3 与 3b 是<strong>前置改写</strong>而非可打点阶段：它们在管线入口重写被积函数，早于任何机制。
+线性平方折叠的动机是题库把「线性式平方」写成展开的三项式（<code>a² + 2abx + b²x²</code>），
+符号有理后端会在其上磨算——<code>rubi-00854</code> 在折叠前是 10 s 单题超时，折叠后 0.01 s 求解。
+折叠有双重闸门：重构出的底必须<strong>对积分变量仿射</strong>（因此不会把积化和差阶段需要的三角平方
+重新合成），且只有当重新展开候选平方能精确复现原和（或经 <code>normalize</code> 后相同）时才接受。
+它绝不在非整数幂之下生效——那里 <code>((p+q)²)^{1/2} = |p+q| ≠ p+q</code>。</p>
 <p><strong>阶段一 — 节点类型分派</strong>：</p>
 <ul>
 <li><code>Num(_)</code>：常数的积分为线性函数 <code>c * x</code></li>
@@ -884,14 +892,30 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <li><code>ei_family</code>：匹配 $e^{cx} / x$ 形式</li>
 <li><code>trig_integral_family</code>：匹配 $\sin(x)/x$、$\cos(x)/x$、$\sinh(x)/x$、$\cosh(x)/x$（自变量必须恰为 $x$）</li>
 <li><code>fresnel_family</code>：匹配 $\sin(cx^2)$、$\cos(cx^2)$</li>
+<li><code>reduction_families</code>（0.27.3）：把「多项式（或单项分母幂）× 特殊函数头」化为闭式的<strong>归约族</strong>，
+只使用本模块测试中逐条验证过的恒等式：
+<ul>
+<li>多项式 $\times F(a + b x)$，$F$ 取 <code>erf</code>、<code>erfc</code>、<code>erfi</code>、<code>Si</code>、<code>Ci</code>、<code>Shi</code>、<code>Chi</code>、<code>Ei</code>
+（代换 $u = a + bx$、展开、再分部，残项为初等函数）；</li>
+<li>多项式 $\times \text{Ei}(n, a + bx)$（整数阶 $n$），用反向递推 $E_n = (e^{-u} - n E_{n+1})/u$；</li>
+<li>$F(bx)/x^m$（$m \ge 2$，$F = \text{Ei}$ 或 $\text{Ei}(n, \cdot)$），递降终止于
+$\text{Ei}(\pm u)$ 加初等项；</li>
+<li>多项式 $\times F(a + bx)^2$（六个可平方的头），分部 + 高斯矩递推（<code>erf</code>/<code>erfi</code>）或
+$F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>）。</li>
 </ul>
+</li>
+</ul>
+<p>每条归约链都带硬步数预算（<code>MAX_SPECIAL_STEPS = 16</code>、<code>MAX_SPECIAL_DEG = 8</code>），无法匹配时诚实拒绝，
+任何族都不会留下 <code>Integral(...)</code> 残项。</p>
 <p><strong>返回值</strong>：</p>
 <ul>
 <li><code>Some(Atom)</code> — 匹配成功，返回含特殊函数的反导数</li>
 <li><code>None</code> — 不匹配任何已知模式，调用者以 <code>Integral(expr, var)</code> 形式返回</li>
 </ul>
 <p><strong>设计说明</strong>：</p>
-<p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。</p>
+<p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。数值验证 oracle
+（<code>ocas-tests/src/integral_eval.rs</code>）已实现上述全部函数头，因此本族的「已解」结果是用
+「对发射形式求导」判定的，而不是靠「结果里没有 <code>Integral(</code>」这一字符串判据。</p>
 <p><strong>参见</strong>：<a href="#risch-%E7%AE%97%E6%B3%95">Risch 算法</a>、<a href="#integrate">integrate</a></p>
 <hr />
 <h2 id="辅助函数"><a class="header" href="#辅助函数">辅助函数</a></h2>

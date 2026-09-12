@@ -183,7 +183,7 @@
 <p>oCAS uses a layered crate architecture: 13 workspace members from the low-level arena allocator up to the top-level language bindings, with dependencies strictly pointing downward. All coefficient domains (arbitrary-precision integers/rationals, finite fields, real balls, complex numbers, double-precision floats) are abstracted behind a unified <code>Domain</code> trait, and the polynomial algebra, Gröbner basis, symbolic calculus, and ODE solving modules share the same expression infrastructure.</p>
 <hr />
 <h2 id="version-feature-matrix"><a class="header" href="#version-feature-matrix">Version Feature Matrix</a></h2>
-<p>The table below lists the key features added in each oCAS release (0.1 → 0.24):</p>
+<p>The table below lists the key features added in each oCAS release (0.1 → 0.27):</p>
 <div class="table-wrapper"><table><thead><tr><th>Version</th><th>Date</th><th>Key additions</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>Workspace setup, arena allocator, unified error types, minimal C ABI example, cross-platform CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>Expression tree <code>Atom</code> (hash consing), parser based on <code>logos</code>/<code>chumsky</code>, normalizer</td></tr>
@@ -215,6 +215,7 @@
 <tr><td><strong>0.27.0</strong></td><td>2026-09-06</td><td>Symbolic-integration breadth: rule-table engine (families A–H), symbolic-constant rational backend, Weierstrass linear arguments, bounded expansion retry, trig product-to-sum; Rubi 1892-problem coverage 5.87% → 9.62%</td></tr>
 <tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>Integration-breadth mechanism push: Chebyshev binomials, trig-denominator power reductions, exp-log kernel substitutions, general sqrt-quadratic engine + Euler III, inverse-trig kernels, single-trig-kernel rational forms; coverage 9.62% → 16.44%; two wrong-answer classes fixed</td></tr>
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, <code>exp(inverse function)</code> algebraization, half-power front-end + elliptic Legendre reduction (<code>EllipticF/E</code>); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%)</td></tr>
+<tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27-line close-out: special-function derivative table + oracle heads (<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel), special-function reduction families (polynomial × <code>F</code>, <code>Ei(n,·)</code>, <code>F/xᵐ</code>, <code>F²</code>), exact linear-square fold <code>p²+2pq+q² → (p+q)²</code>, affine-argument half-power front-end with the sheet factor on both branches; Rubi coverage 18.45% → 19.56% (+21 solved, 0 regressed, mismatches 0, timeouts 13 → 12)</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -308,7 +309,7 @@ dashed edges are optional dependencies):</p>
 <li><strong>Number theory</strong> — BPSW primality testing, integer factorization (trial division/Pollard rho/p−1/p+1/ECM), discrete logarithms (BSGS + Pohlig–Hellman), Euler φ / Möbius / divisor functions.</li>
 <li><strong>Rewriting and simplification</strong> — AC backtracking pattern matching, wildcards (<code>x__</code>/<code>x___</code>), fixpoint simplification, fuel-limited simplification, optional egg e-graph equality saturation.</li>
 <li><strong>Three-language bindings</strong> — Rust prelude API, Python (PyO3, 25 classes + 32 functions), C/C++ (cbindgen, 91 exports + RAII wrappers).</li>
-<li><strong>Correctness framework</strong> — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1174 <code>#[test]</code>/<code>#[tokio::test]</code> annotations as of 0.24.0).</li>
+<li><strong>Correctness framework</strong> — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1516 <code>#[test]</code>/<code>#[tokio::test]</code> annotations as of 0.27.3).</li>
 <li><strong>Optional numeric backends</strong> — GMP/MPFR/FLINT behind feature flags, with GPL backends isolated in <code>ocas-gpl</code>.</li>
 </ul>
 <hr />
@@ -332,7 +333,7 @@ dashed edges are optional dependencies):</p>
 </div>
 <hr />
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.24.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
+<p>oCAS is currently at version <strong>0.27.3</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <p>This chapter gets you up and running with oCAS in about 5 minutes. oCAS 0.24 supports three language interfaces: <strong>Rust</strong>, <strong>Python</strong>, and <strong>C/C++</strong>.</p>
@@ -5326,6 +5327,8 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │  2. quadratic/linear denom power recurrences         │
 │     (integrate_quad_power)                           │
 │  3. bounded-expansion pre-pass (expand_prepass, 0.27.2)│
+│  3b. exact linear-square fold (fold_linear_squares,   │
+│      p²+2pq+q² → (p+q)², affine base, 0.27.3)         │
 │  4. rational-derivative kernel substitution          │
 │     (integrate_kernel_subst, tan/cot/tanh/coth, 0.27.2)│
 │  5. hyperbolic closed-form family                    │
@@ -5359,6 +5362,15 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 <p><code>OCAS_INTEGRATE_TRACE=1</code> prints <code>[trace] enter &lt;stage&gt; :: &lt;expr&gt;</code> / <code>[trace] decline &lt;stage&gt;</code>
 for every stage, which attributes a hanging or falling-back case to a stage without
 guesswork. <code>OCAS_INTEGRATE_RULES=0</code> disables only stage 10 (the rule table).</p>
+<p>Stages 3 and 3b are <em>passes</em>, not traced stages: they rewrite the integrand at the pipeline entry
+before any mechanism sees it. The linear-square fold exists because the corpus writes a linear form
+squared as an expanded trinomial (<code>a² + 2abx + b²x²</code>), which the symbolic-rational backend grinds
+on — <code>rubi-00854</code> was a 10 s per-case timeout before the fold and solves in 0.01 s after it. The
+fold is gated two ways so it cannot misfire: the reconstructed base must be <strong>affine in the
+integration variable</strong> (so it never re-forms the trigonometric squares the product-to-sum stage
+needs expanded), and the rewrite is accepted only when re-expanding the candidate reproduces the
+input sum (exactly, or after <code>normalize</code>). It is never applied under a non-integer power, where
+<code>((p+q)²)^{1/2} = |p+q| ≠ p+q</code>.</p>
 <p><strong>Phase 1 — node-type dispatch</strong>:</p>
 <ul>
 <li><code>Num(_)</code>: the integral of a constant is the linear function <code>c * x</code></li>
@@ -5903,14 +5915,31 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <li><code>ei_family</code>: matches forms $e^{cx} / x$</li>
 <li><code>trig_integral_family</code>: matches $\sin(x)/x$, $\cos(x)/x$, $\sinh(x)/x$, $\cosh(x)/x$ (the argument must be exactly $x$)</li>
 <li><code>fresnel_family</code>: matches $\sin(cx^2)$, $\cos(cx^2)$</li>
+<li><code>reduction_families</code> (0.27.3): the <em>reduction</em> families that turn a polynomial (or a monomial
+denominator power) times a special head into a closed form, using only identities checked in the
+module's own tests:
+<ul>
+<li>polynomial $\times F(a + b x)$ for <code>erf</code>, <code>erfc</code>, <code>erfi</code>, <code>Si</code>, <code>Ci</code>, <code>Shi</code>, <code>Chi</code>, <code>Ei</code>
+(substitute $u = a + bx$, expand, then integrate by parts with an elementary residual);</li>
+<li>polynomial $\times \text{Ei}(n, a + bx)$ (integer order $n$), via the inverse recurrence
+$E_n = (e^{-u} - n E_{n+1})/u$;</li>
+<li>$F(bx)/x^m$ for $m \ge 2$ and $F = \text{Ei}$ or $\text{Ei}(n, \cdot)$, descending to
+$\text{Ei}(\pm u)$ plus elementary terms;</li>
+<li>polynomial $\times F(a + bx)^2$ for the six square-capable heads, via parts plus the Gaussian
+moment recursion (<code>erf</code>/<code>erfi</code>) or the coupled $F \cdot \cos/\sin$ recursion
+(<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>).</li>
 </ul>
+</li>
+</ul>
+<p>Every reduction chain carries a hard step budget (<code>MAX_SPECIAL_STEPS = 16</code>, <code>MAX_SPECIAL_DEG = 8</code>)
+and declines rather than guessing; no family ever emits an <code>Integral(...)</code> residue.</p>
 <p><strong>Returns</strong>:</p>
 <ul>
 <li><code>Some(Atom)</code> — matched successfully; returns the antiderivative containing special functions</li>
 <li><code>None</code> — no known pattern matches; the caller returns <code>Integral(expr, var)</code></li>
 </ul>
 <p><strong>Design notes</strong>:</p>
-<p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>.</p>
+<p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>. The numerical verification oracle (<code>ocas-tests/src/integral_eval.rs</code>) implements every one of these heads, so solved results in this family are checked by differentiating the emitted form rather than by the absence of a residue.</p>
 <p><strong>See also</strong>: <a href="api/rust-calculus.html#risch-algorithm">Risch algorithm</a>, <a href="api/rust-calculus.html#integrate">integrate</a></p>
 <hr />
 <h2 id="helper-functions-1"><a class="header" href="#helper-functions-1">Helper functions</a></h2>
@@ -24782,7 +24811,7 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <tr><td><code>groebner</code></td><td>24</td><td>Gröbner basis computation</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch symbolic integration</td></tr>
 <tr><td><code>integral_rules</code></td><td>1</td><td>100-case rule-table sample cross-checked against SymPy</td></tr>
-<tr><td><code>integral_verify</code></td><td>2</td><td>Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and <code>√(p/q)</code> classes)</td></tr>
+<tr><td><code>integral_verify</code></td><td>3</td><td>Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and <code>√(p/q)</code> classes, plus the 0.27.3 fold/special-function/half-power mechanisms)</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>Linear solvers</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>Matrix operations</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>Expression normalization</td></tr>
@@ -24799,7 +24828,7 @@ them are marked <code>#[ignore]</code> to track known gaps). Each test:</p>
 <tr><td><code>root_isolation</code></td><td>4</td><td>Real root isolation</td></tr>
 </tbody></table>
 </div>
-<p>216 correctness tests in total (plus the crate-level unit tests in
+<p>217 correctness tests in total (plus the crate-level unit tests in
 <code>ocas-calc</code>, <code>ocas-parse</code>, <code>ocas-atom</code>, <code>ocas-poly</code>, …).</p>
 <hr />
 <h2 id="ignored-tests-known-gaps"><a class="header" href="#ignored-tests-known-gaps">Ignored tests (known gaps)</a></h2>

@@ -183,7 +183,7 @@
 <p>oCAS 采用分层 crate 架构，从底层 arena 分配器到顶层语言绑定共 13 个 workspace 成员，依赖方向严格向下。所有系数域（任意精度整数/有理数、有限域、实数球、复数、双精度浮点）通过统一的 <code>Domain</code> trait 抽象，多项式代数、Gröbner 基、符号微积分、ODE 求解等模块共享同一表达式基础设施。</p>
 <hr />
 <h2 id="版本特性对照表"><a class="header" href="#版本特性对照表">版本特性对照表</a></h2>
-<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.24）：</p>
+<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.27）：</p>
 <div class="table-wrapper"><table><thead><tr><th>版本</th><th>日期</th><th>关键新增</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>工作空间搭建、Arena 分配器、统一错误类型、C ABI 最小示例、跨平台 CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>表达式树 <code>Atom</code>（hash consing）、基于 <code>logos</code>/<code>chumsky</code> 的解析器、规范化器</td></tr>
@@ -215,6 +215,7 @@
 <tr><td><strong>0.27.0</strong></td><td>2026-09-06</td><td>符号积分广度：规则表引擎（A–H 族）、符号常数有理后端、Weierstrass 线性变元、有界展开重试、三角积化和差；Rubi 1892 题覆盖率 5.87% → 9.62%</td></tr>
 <tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>积分广度机制攻坚：Chebyshev 二项微分、三角分母幂递推、exp-log 核代换、一般二次根式引擎 + Euler III、反三角核、单三角核有理式；覆盖率 9.62% → 16.44%；修复两组错案</td></tr>
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>已验证覆盖率口径（独立数值 oracle：5 点中心差分 + 椭圆定义积分）、阶段打点与 33 例悬挂归因、确定性阶段预算、有界展开预通道、双曲闭式族、有理导数核代换、三角相位归一、逆函数复合消去、<code>exp(逆函数)</code> 代数化、半幂前端 + 椭圆 Legendre 约化（<code>EllipticF/E</code>）；修复六组错案（已验证覆盖率 93.1%、mismatches 0、超时 33 → 13、墙钟 −22%）</td></tr>
+<tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27 线收尾：特殊函数导数表 + oracle 扩头（<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel）、特殊函数归约族（多项式 × <code>F</code>、<code>Ei(n,·)</code>、<code>F/xᵐ</code>、<code>F²</code>）、精确线性平方折叠 <code>p²+2pq+q² → (p+q)²</code>、半幂前端仿射变元与两支片层因子；Rubi 覆盖率 18.45% → 19.56%（新解 21、回归 0、mismatches 0、超时 13 → 12）</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -307,7 +308,7 @@
 <li><strong>数论</strong> —— BPSW 素性判定、整数分解（试除/Pollard rho/p−1/p+1/ECM）、离散对数（BSGS + Pohlig–Hellman）、Euler φ / Möbius / 除数函数。</li>
 <li><strong>重写与化简</strong> —— AC 回溯模式匹配、通配符（<code>x__</code>/<code>x___</code>）、不动点化简、fuel 受限化简、可选 egg e-graph 等式饱和。</li>
 <li><strong>三语言绑定</strong> —— Rust prelude API、Python（PyO3，25 类 + 32 函数）、C/C++（cbindgen，91 个导出 + RAII 包装）。</li>
-<li><strong>正确性框架</strong> —— 与 SymPy、SageMath、Symbolica 跨多个数学模块的交叉验证（1174 个 <code>#[test]</code>/<code>#[tokio::test]</code> 标注，截至 0.24.0）。</li>
+<li><strong>正确性框架</strong> —— 与 SymPy、SageMath、Symbolica 跨多个数学模块的交叉验证（1516 个 <code>#[test]</code>/<code>#[tokio::test]</code> 标注，截至 0.27.3）。</li>
 <li><strong>可选数值后端</strong> —— GMP/MPFR/FLINT 隐藏在 feature flag 后，GPL 后端隔离在 <code>ocas-gpl</code>。</li>
 </ul>
 <hr />
@@ -331,7 +332,7 @@
 </div>
 <hr />
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.24.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.27.3</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
 <p>本章帮助你在 5 分钟内完成 oCAS 的安装与首次运行。oCAS 0.24 支持 <strong>Rust</strong>、<strong>Python</strong> 和 <strong>C/C++</strong> 三种语言接口。</p>
@@ -5312,6 +5313,8 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 │  1. 有理函数积分        (integrate_rational)          │
 │  2. 二次/线性分母幂递推 (integrate_quad_power)        │
 │  3. 有界展开预通道      (expand_prepass, 0.27.2)      │
+│  3b. 精确线性平方折叠   (fold_linear_squares,         │
+│      p²+2pq+q² → (p+q)²，仿射基，0.27.3)              │
 │  4. 有理导数核代换      (integrate_kernel_subst,      │
 │     tan/cot/tanh/coth, 0.27.2)                        │
 │  5. 双曲闭式族          (integrate_hyperbolic_reduction,│
@@ -5344,6 +5347,12 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 <code>[trace] enter &lt;阶段&gt; :: &lt;表达式&gt;</code> / <code>[trace] decline &lt;阶段&gt;</code>，
 用于把悬挂或回退的题目无猜测地归因到具体阶段。
 <code>OCAS_INTEGRATE_RULES=0</code> 仅关闭第 10 阶段（规则表）。</p>
+<p>第 3 与 3b 是<strong>前置改写</strong>而非可打点阶段：它们在管线入口重写被积函数，早于任何机制。
+线性平方折叠的动机是题库把「线性式平方」写成展开的三项式（<code>a² + 2abx + b²x²</code>），
+符号有理后端会在其上磨算——<code>rubi-00854</code> 在折叠前是 10 s 单题超时，折叠后 0.01 s 求解。
+折叠有双重闸门：重构出的底必须<strong>对积分变量仿射</strong>（因此不会把积化和差阶段需要的三角平方
+重新合成），且只有当重新展开候选平方能精确复现原和（或经 <code>normalize</code> 后相同）时才接受。
+它绝不在非整数幂之下生效——那里 <code>((p+q)²)^{1/2} = |p+q| ≠ p+q</code>。</p>
 <p><strong>阶段一 — 节点类型分派</strong>：</p>
 <ul>
 <li><code>Num(_)</code>：常数的积分为线性函数 <code>c * x</code></li>
@@ -5887,14 +5896,30 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <li><code>ei_family</code>：匹配 $e^{cx} / x$ 形式</li>
 <li><code>trig_integral_family</code>：匹配 $\sin(x)/x$、$\cos(x)/x$、$\sinh(x)/x$、$\cosh(x)/x$（自变量必须恰为 $x$）</li>
 <li><code>fresnel_family</code>：匹配 $\sin(cx^2)$、$\cos(cx^2)$</li>
+<li><code>reduction_families</code>（0.27.3）：把「多项式（或单项分母幂）× 特殊函数头」化为闭式的<strong>归约族</strong>，
+只使用本模块测试中逐条验证过的恒等式：
+<ul>
+<li>多项式 $\times F(a + b x)$，$F$ 取 <code>erf</code>、<code>erfc</code>、<code>erfi</code>、<code>Si</code>、<code>Ci</code>、<code>Shi</code>、<code>Chi</code>、<code>Ei</code>
+（代换 $u = a + bx$、展开、再分部，残项为初等函数）；</li>
+<li>多项式 $\times \text{Ei}(n, a + bx)$（整数阶 $n$），用反向递推 $E_n = (e^{-u} - n E_{n+1})/u$；</li>
+<li>$F(bx)/x^m$（$m \ge 2$，$F = \text{Ei}$ 或 $\text{Ei}(n, \cdot)$），递降终止于
+$\text{Ei}(\pm u)$ 加初等项；</li>
+<li>多项式 $\times F(a + bx)^2$（六个可平方的头），分部 + 高斯矩递推（<code>erf</code>/<code>erfi</code>）或
+$F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>）。</li>
 </ul>
+</li>
+</ul>
+<p>每条归约链都带硬步数预算（<code>MAX_SPECIAL_STEPS = 16</code>、<code>MAX_SPECIAL_DEG = 8</code>），无法匹配时诚实拒绝，
+任何族都不会留下 <code>Integral(...)</code> 残项。</p>
 <p><strong>返回值</strong>：</p>
 <ul>
 <li><code>Some(Atom)</code> — 匹配成功，返回含特殊函数的反导数</li>
 <li><code>None</code> — 不匹配任何已知模式，调用者以 <code>Integral(expr, var)</code> 形式返回</li>
 </ul>
 <p><strong>设计说明</strong>：</p>
-<p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。</p>
+<p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。数值验证 oracle
+（<code>ocas-tests/src/integral_eval.rs</code>）已实现上述全部函数头，因此本族的「已解」结果是用
+「对发射形式求导」判定的，而不是靠「结果里没有 <code>Integral(</code>」这一字符串判据。</p>
 <p><strong>参见</strong>：<a href="api/rust-calculus.html#risch-%E7%AE%97%E6%B3%95">Risch 算法</a>、<a href="api/rust-calculus.html#integrate">integrate</a></p>
 <hr />
 <h2 id="辅助函数-1"><a class="header" href="#辅助函数-1">辅助函数</a></h2>
@@ -24698,7 +24723,7 @@ SageMath、Symbolica 进行对比。详见<a href="./correctness.html">正确性
 <tr><td><code>groebner</code></td><td>24</td><td>Gröbner 基计算</td></tr>
 <tr><td><code>integral_risch</code></td><td>15</td><td>Risch 符号积分</td></tr>
 <tr><td><code>integral_rules</code></td><td>1</td><td>规则表 100 例抽样（SymPy 对比）</td></tr>
-<tr><td><code>integral_verify</code></td><td>2</td><td>数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 <code>√(p/q)</code> 两类）</td></tr>
+<tr><td><code>integral_verify</code></td><td>3</td><td>数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 <code>√(p/q)</code> 两类，以及 0.27.3 的精确平方折叠/特殊函数族/半幂仿射变元机制）</td></tr>
 <tr><td><code>linear_solve</code></td><td>5</td><td>线性求解器</td></tr>
 <tr><td><code>matrix</code></td><td>5</td><td>矩阵运算</td></tr>
 <tr><td><code>normalize</code></td><td>8</td><td>表达式规范化</td></tr>
@@ -24715,7 +24740,7 @@ SageMath、Symbolica 进行对比。详见<a href="./correctness.html">正确性
 <tr><td><code>root_isolation</code></td><td>4</td><td>实根隔离</td></tr>
 </tbody></table>
 </div>
-<p>正确性套件共 216 项测试（另有 <code>ocas-calc</code>、<code>ocas-parse</code>、<code>ocas-atom</code>、
+<p>正确性套件共 217 项测试（另有 <code>ocas-calc</code>、<code>ocas-parse</code>、<code>ocas-atom</code>、
 <code>ocas-poly</code> 等 crate 的单元测试）。</p>
 <hr />
 <h2 id="忽略的测试已知差距"><a class="header" href="#忽略的测试已知差距">忽略的测试（已知差距）</a></h2>
