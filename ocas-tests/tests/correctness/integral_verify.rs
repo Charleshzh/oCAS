@@ -133,3 +133,55 @@ fn mechanism_sample_has_no_wrong_answers() {
         wrong.join("\n")
     );
 }
+
+/// The 0.27.3 mechanisms must not introduce wrong answers. Each entry is a
+/// shape a new mechanism claims:
+///
+/// - the exact algebraic fold `p² + 2·p·q + q² → (p+q)²` for an affine base
+///   (`rubi-00854` ground truth: the unfolded trinomial is a corpus hang),
+/// - the special-function families (`erf`, `Ci`, `Chi`, `Shi`, `Ei`,
+///   `Ei(n, z)`, `erfi`),
+/// - the affine-argument half-power front-end (`cos(c + d·x)`, previously a
+///   documented gap).
+///
+/// Declining a case is fine (the corpus harness counts it as a fallback); what
+/// this test forbids is a *wrong* closed form. `Indeterminate` is reported by
+/// the harness but not treated as failure here, so the assertion is
+/// deliberately limited to `Mismatch`.
+///
+/// The log-of-a-linear-fraction shapes (`rubi-01014`, `rubi-01672`) are
+/// deliberately *not* sampled: they are the two 0.27.2 per-case timeouts, and
+/// integrating them costs minutes even in debug — a guard should not carry a
+/// known hang.
+#[test]
+fn wave_0273_mechanisms_have_no_wrong_answers() {
+    let sample = [
+        // perfect-square trinomial with an affine base
+        "1/(a^2 + 2*a*b*x + b^2*x^2)",
+        "(a + b*x)/((d + e*x)^4*(a^2 + 2*a*b*x + b^2*x^2))",
+        "(a + b*x)/(a^2 + 2*a*b*x + b^2*x^2)^2",
+        // special-function families
+        "x^4*erf(b*x)",
+        "Ci(b*x)",
+        "x*Chi(b*x)",
+        "x^3*Shi(a + b*x)",
+        "Ei(b*x)/x^4",
+        "Ei(1, a + b*x)",
+        "erfi(b*x)^2",
+        // affine-argument half powers
+        "1/cos(a + b*x)^(1/2)",
+        "1/(b*cos(c + d*x))^(7/2)",
+    ];
+    let mut wrong = Vec::new();
+    for input in sample {
+        let (text, verdict) = integrate_and_verify(input);
+        if let Verify::Mismatch { detail, .. } = verdict {
+            wrong.push(format!("{input} -> {text}\n    {detail}"));
+        }
+    }
+    assert!(
+        wrong.is_empty(),
+        "wrong antiderivatives in 0.27.3 mechanisms:\n{}",
+        wrong.join("\n")
+    );
+}
