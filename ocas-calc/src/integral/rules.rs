@@ -1542,12 +1542,16 @@ pub(crate) fn integrate_rules<'a>(
     let expr = fold_trivial_powers(ctx, expr);
     let applied = rules.apply(ctx, expr, var)?;
     let applied = fold_trivial_powers(ctx, applied);
-    Some(resolve_integrals(ctx, applied, var, rule_depth))
+    Some(resolve_residuals(ctx, applied, var, rule_depth))
 }
 
 /// Replace every `Integral(g, v)` with `v == var` by `integrate_raw(g, ...)`
 /// at fresh structural depth and `rule_depth + 1` reduction budget.
-fn resolve_integrals<'a>(
+///
+/// Shared with the special-function reductions (`special.rs`, 0.27.3): both
+/// construct residual `Integral` terms that must be resolved by re-entering
+/// the pipeline under the same depth budget.
+pub(crate) fn resolve_residuals<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
@@ -1568,7 +1572,7 @@ fn resolve_integrals<'a>(
                 // The substitution result may itself carry nested
                 // `Integral(.., var)` nodes (e.g. a heuristic partial
                 // result); resolve those too.
-                return resolve_integrals(ctx, resolved, var, rule_depth);
+                return resolve_residuals(ctx, resolved, var, rule_depth);
             }
             // A different integration variable: keep the residual.
             expr
@@ -1576,7 +1580,7 @@ fn resolve_integrals<'a>(
         AtomNode::Fun(name, args) => {
             let rebuilt: Vec<Atom<'a>> = args
                 .iter()
-                .map(|a| resolve_integrals(ctx, *a, var, rule_depth))
+                .map(|a| resolve_residuals(ctx, *a, var, rule_depth))
                 .collect();
             // Rebuild through the arena so hash-consing reuses the node when
             // nothing changed.
@@ -1586,7 +1590,7 @@ fn resolve_integrals<'a>(
         AtomNode::Add(args) => {
             let rebuilt: Vec<Atom<'a>> = args
                 .iter()
-                .map(|a| resolve_integrals(ctx, *a, var, rule_depth))
+                .map(|a| resolve_residuals(ctx, *a, var, rule_depth))
                 .collect();
             let rebuilt = ctx.add(&rebuilt);
             if rebuilt == expr { expr } else { rebuilt }
@@ -1594,14 +1598,14 @@ fn resolve_integrals<'a>(
         AtomNode::Mul(args) => {
             let rebuilt: Vec<Atom<'a>> = args
                 .iter()
-                .map(|a| resolve_integrals(ctx, *a, var, rule_depth))
+                .map(|a| resolve_residuals(ctx, *a, var, rule_depth))
                 .collect();
             let rebuilt = ctx.mul(&rebuilt);
             if rebuilt == expr { expr } else { rebuilt }
         }
         AtomNode::Pow(base, exp) => {
-            let b = resolve_integrals(ctx, *base, var, rule_depth);
-            let e = resolve_integrals(ctx, *exp, var, rule_depth);
+            let b = resolve_residuals(ctx, *base, var, rule_depth);
+            let e = resolve_residuals(ctx, *exp, var, rule_depth);
             let rebuilt = ctx.pow(b, e);
             if rebuilt == expr { expr } else { rebuilt }
         }
@@ -1812,18 +1816,57 @@ mod tests {
     ///
     /// `free_q` cannot catch this: it reads bindings through `pred::bound`,
     /// which returns `None` for a sequence binding. The closure now requires
-    /// every absorbed factor to be `is_constant`, so the rule declines and the
-    /// pipeline reports an honest residue.
+    /// every absorbed factor to be `is_constant`, so A4 itself declines.
     ///
-    /// If a future stage learns this shape, replace the residue expectation
-    /// with a numerical derivative check — never with the pulled-out form.
+    /// 0.27.3 update: the shape is now *solved*, by the log-of-a-linear-form
+    /// reduction (`log_fraction`) after the product is distributed — each
+    /// `x^k·log(c·xⁿ)` term is integrated by parts, which is a correct
+    /// antiderivative rather than the pulled-out form. The 0.27.2 note on this
+    /// test asked for exactly this replacement: once a stage learns the shape,
+    /// check the derivative numerically instead of expecting a residue. The
+    /// check below is what forbids the pulled-out form from ever coming back
+    /// (it is numerically wrong), whether the case solves or declines.
     #[test]
     fn a4_declines_when_the_coefficient_sequence_depends_on_the_variable() {
-        let r = int_str("x^2*(d + e*x)^3*(a + b*log(c*x^n))", "x");
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let input = "x^2*(d + e*x)^3*(a + b*log(c*x^n))";
+        let integrand = ocas_parse::parse(&ctx, input).unwrap();
+        let result = crate::integrate(&ctx, integrand, Symbol::new("x"));
+        let text = result.to_string();
+        if text.contains("Integral(") {
+            // An honest residue is still an acceptable outcome.
+            return;
+        }
+        // Solved: whatever was emitted must differentiate back to the
+        // integrand at concrete parameter values. The 0.27.2 wrong answer
+        // (log pulled out in front of the whole integral) fails here.
+        let derivative = crate::derivative::diff(&ctx, result, Symbol::new("x"));
         assert!(
-            r.contains("Integral("),
-            "A4 must not pull an `x`-dependent factor out of the integral: {r}"
+            !derivative.to_string().contains("Derivative("),
+            "antiderivative contains a head the derivative table does not know: {text}"
         );
+        let base: Vec<(Symbol, f64)> = [
+            ("a", 1.3),
+            ("b", 0.7),
+            ("c", 1.1),
+            ("d", 0.9),
+            ("e", 1.4),
+            ("n", 1.6),
+        ]
+        .iter()
+        .map(|(s, v)| (Symbol::new(s), *v))
+        .collect();
+        for xv in [0.4, 0.8, 1.3, 1.9] {
+            let mut env = base.clone();
+            env.push((Symbol::new("x"), xv));
+            let lhs = eval_env(derivative, &env).expect("derivative evaluates");
+            let rhs = eval_env(integrand, &env).expect("integrand evaluates");
+            assert!(
+                (lhs - rhs).abs() < 1e-6 * rhs.abs().max(1.0),
+                "at x={xv}: d/dx = {lhs}, integrand = {rhs}\n  {text}"
+            );
+        }
         // The rule's own shapes still work (the sequence is genuinely
         // constant there, and `2*x^3*(a+b*x)^2` keeps A4's `c___` non-empty).
         assert_solved("x^2*(a+b*x)^3");

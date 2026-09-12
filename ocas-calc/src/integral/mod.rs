@@ -185,6 +185,211 @@ fn expand_prepass<'a>(
     out
 }
 
+/// Read-only, allocation-free pre-check for [`fold_linear_squares`]: does
+/// `expr` contain a three-term sum at all? Only such a sum can be a squared
+/// linear form, so this lets the common case skip the rewriting walk entirely.
+/// Short-circuits on the first match.
+fn contains_three_term_sum(expr: Atom<'_>) -> bool {
+    match expr.node() {
+        AtomNode::Add(args) => args.len() == 3 || args.iter().any(|a| contains_three_term_sum(*a)),
+        AtomNode::Mul(args) => args.iter().any(|a| contains_three_term_sum(*a)),
+        AtomNode::Pow(b, e) => contains_three_term_sum(*b) || contains_three_term_sum(*e),
+        AtomNode::Fun(_, args) => args.iter().any(|a| contains_three_term_sum(*a)),
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+    }
+}
+
+/// Exact structural square root of `term`, when it is *syntactically* a square:
+/// `u²`, a product of such squares, or a non-negative perfect-square integer.
+///
+/// This is only a candidate generator for [`try_fold_linear_square`]; the
+/// rewrite is accepted by exact re-expansion, never by this test, so an
+/// imperfect recogniser can only miss a fold, not produce a wrong one.
+fn structural_sqrt<'a>(ctx: &'a AtomArena<'a>, term: Atom<'a>) -> Option<Atom<'a>> {
+    match term.node() {
+        AtomNode::Pow(b, e) if matches!(e.node(), AtomNode::Num(2)) => Some(*b),
+        AtomNode::Num(n) if *n >= 0 => {
+            let r = (*n as f64).sqrt() as i64;
+            if r * r == *n { Some(ctx.num(r)) } else { None }
+        }
+        AtomNode::Mul(factors) => {
+            let mut roots = Vec::with_capacity(factors.len());
+            for f in factors.iter() {
+                roots.push(structural_sqrt(ctx, *f)?);
+            }
+            Some(ctx.mul(&roots))
+        }
+        _ => None,
+    }
+}
+
+/// Fold `p² + 2·p·q + q²` into `(p + q)²` throughout `expr`.
+///
+/// This is an exact algebraic identity, and the fold is only accepted when
+/// expanding the candidate square reproduces the original sum term for term
+/// (see [`try_fold_linear_square`]), so a false positive is impossible.
+///
+/// It exists because the corpus writes a *linear form squared* as an expanded
+/// trinomial — `a² + 2·a·b·x + b²·x²` — which the symbolic-rational backend and
+/// the radical engines grind on (measured: `rubi-00854` never returns) while
+/// the folded form is an ordinary partial-fraction or polynomial problem.
+///
+/// `fold_here` is `false` for the base of a non-integer power (including the
+/// `sqrt` head, which is a `Fun` rather than a `Pow`): `(T)^{k/2}` with
+/// `T = (p+q)²` is the same function as the original radicand, but the radical
+/// and elliptic engines match on the *expanded* quadratic, and
+/// `((p+q)²)^{1/2} = |p+q| ≠ p+q` — folding there would either lose those
+/// engines or introduce a branch error. Integer powers are folded, where
+/// `((p+q)²)^n = (p+q)^{2n}` is exact.
+///
+/// The fold also requires `p + q` to be **affine in the integration variable**
+/// (see [`try_fold_linear_square`]); that is what keeps it from re-forming the
+/// trigonometric squares the product-to-sum stage needs expanded.
+fn fold_linear_squares<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    fold_here: bool,
+) -> Atom<'a> {
+    let rebuilt = match expr.node() {
+        AtomNode::Add(args) => {
+            let args: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| fold_linear_squares(ctx, *a, var, true))
+                .collect();
+            ctx.add(&args)
+        }
+        AtomNode::Mul(args) => {
+            let args: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| fold_linear_squares(ctx, *a, var, true))
+                .collect();
+            ctx.mul(&args)
+        }
+        AtomNode::Pow(b, e) => {
+            let integer_power = matches!(e.node(), AtomNode::Num(_));
+            let b = fold_linear_squares(ctx, *b, var, integer_power);
+            let e = fold_linear_squares(ctx, *e, var, true);
+            ctx.pow(b, e)
+        }
+        AtomNode::Fun(name, args) => {
+            // `sqrt(u)` is a `Fun` head, not a `Pow`, but it is still a
+            // non-integer power: an argument that is a perfect-square
+            // trinomial must not be folded under it (`|p+q| ≠ p+q`).
+            let fold_args = name.as_str() != "sqrt";
+            let args: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| fold_linear_squares(ctx, *a, var, fold_args))
+                .collect();
+            ctx.fun(name.as_str(), &args)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
+    };
+    if fold_here && let AtomNode::Add(args) = rebuilt.node() {
+        return try_fold_linear_square(ctx, args, var).unwrap_or(rebuilt);
+    }
+    rebuilt
+}
+
+/// `p² + 2·p·q + q² → (p+q)²`, confirmed by exact re-expansion.
+///
+/// Each pair of terms with a structural square root is tried; the candidate is
+/// accepted only when `expand((p+q)²)` reproduces the input sum exactly, so the
+/// rewrite can never change the value of the expression. Both sides go through
+/// [`crate::ode::util::collect_terms`] first: the corpus writes the cross term
+/// as `((2·a)·b)·x`, which is the same monomial as `2·a·b·x` but not the same
+/// atom, and the comparison must be about the mathematics, not the spelling.
+///
+/// `p + q` must additionally be **affine in `var`**. Without that restriction
+/// the fold also re-forms trigonometric squares — `a²cos²u + 2ab·cos u·sin u +
+/// b²sin²u → (a·cos u + b·sin u)²` — undoing the expansion the product-to-sum
+/// stage (`trig_reduce`) needs to see, which turned `∫(a·cos u + b·sin u)² dx`
+/// (corpus `rubi-00334`) from a solved case into a per-case timeout. The
+/// module's purpose is the expanded *linear* square the corpus writes, so the
+/// affine test both fixes that regression and states the intent.
+fn try_fold_linear_square<'a>(
+    ctx: &'a AtomArena<'a>,
+    terms: &[Atom<'a>],
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    // The parser builds left-nested sums (`(a² + 2abx) + b²x²`) and only
+    // `normalize` flattens them; flatten here so the fold also works on
+    // expressions the pipeline assembled itself.
+    let mut flat: Vec<Atom<'a>> = Vec::with_capacity(terms.len());
+    flatten_add(terms, &mut flat);
+    let terms: &[Atom<'a>] = &flat;
+    if terms.len() != 3 {
+        return None;
+    }
+    let original = ctx.add(terms);
+    if node_count(original) > 64 {
+        return None;
+    }
+    let roots: Vec<Option<Atom<'a>>> = terms.iter().map(|t| structural_sqrt(ctx, *t)).collect();
+    if roots.iter().filter(|r| r.is_some()).count() < 2 {
+        return None;
+    }
+    // `rhs` (and the expand-and-collect fallback below) are only needed when
+    // the cheap normalized comparison fails; computing `rhs` lazily keeps the
+    // common "three-term sum that is not a square" case cheap, which matters
+    // because this runs on every pipeline entry.
+    let mut rhs: Option<Atom<'a>> = None;
+    for (i, pi) in roots.iter().enumerate() {
+        for (j, qj) in roots.iter().enumerate() {
+            if i == j {
+                continue;
+            }
+            let (Some(p), Some(q)) = (pi, qj) else {
+                continue;
+            };
+            let base = ctx.add(&[*p, *q]);
+            // Only an affine base: see the doc comment.
+            let (slope, _intercept) = linear_form(ctx, base, var)?;
+            if matches!(slope.node(), AtomNode::Num(0)) {
+                continue;
+            }
+            let candidate = ctx.pow(base, ctx.num(2));
+            // Fast, sound acceptance: the two square terms plus a third term
+            // that is already `2·p·q` after `normalize` is a complete proof of
+            // the identity. `normalize` flattens products, so the corpus's
+            // `((2·a)·b)·x` matches `2·a·(b·x)` here.
+            let k = 3 - i - j;
+            let cross = normalize(ctx, ctx.mul(&[ctx.num(2), *p, *q]));
+            if normalize(ctx, terms[k]) == cross {
+                return Some(candidate);
+            }
+            // Fallback for spellings `normalize` does not canonicalise: prove
+            // the identity by exact re-expansion.
+            let rhs = match rhs {
+                Some(r) => r,
+                None => {
+                    let r = crate::ode::util::collect_terms(ctx, original);
+                    rhs = Some(r);
+                    r
+                }
+            };
+            let Some(expanded) = crate::expand::expand_bounded(ctx, candidate) else {
+                continue;
+            };
+            let lhs = crate::ode::util::collect_terms(ctx, expanded);
+            if lhs == rhs {
+                return Some(candidate);
+            }
+        }
+    }
+    None
+}
+
+/// Flatten a possibly nested sum into its top-level terms.
+fn flatten_add<'a>(terms: &[Atom<'a>], out: &mut Vec<Atom<'a>>) {
+    for t in terms {
+        match t.node() {
+            AtomNode::Add(inner) => flatten_add(inner, out),
+            _ => out.push(*t),
+        }
+    }
+}
+
 /// Options controlling the integration pipeline.
 ///
 /// `rules` enables the rule-table engine (default `true`); set it to `false`
@@ -194,7 +399,6 @@ pub struct IntegrateOptions {
     /// Enable the rule-table integration engine (default: enabled).
     pub rules: bool,
 }
-
 impl Default for IntegrateOptions {
     fn default() -> Self {
         Self { rules: true }
@@ -315,6 +519,17 @@ pub(crate) fn integrate_raw<'a>(
     if depth > MAX_DEPTH {
         return fallback(ctx, expr, var);
     }
+
+    // Exact algebraic fold: `p² + 2·p·q + q² → (p+q)²` (0.27.3), for a base
+    // affine in `var`. Applied at the pipeline entry so every downstream stage
+    // — and every re-entered residual — sees the factored shape. Idempotent:
+    // the folded form has no matching three-term sum, so a nested call is a
+    // no-op.
+    let expr = if contains_three_term_sum(expr) {
+        fold_linear_squares(ctx, expr, var, true)
+    } else {
+        expr
+    };
 
     match expr.node() {
         AtomNode::Num(_) => {
@@ -509,6 +724,7 @@ fn try_risch_or_fallback<'a>(
     }) {
         return r;
     }
+
     // Inverse-trig/hyperbolic mechanisms (0.27.1): kernel-derivative power
     // rule, inv-hyp substitution to hyperbolic t-forms, bare linear args.
     if let Some(r) = traced_stage("inverse_trig", expr, || {
@@ -1238,5 +1454,71 @@ mod tests {
         let expr = ctx.mul(&[ctx.fun("exp", &[x]), ctx.pow(x, ctx.num(-1))]);
         let result = integrate(&ctx, expr, Symbol::new("x"));
         assert_eq!(result.to_string(), "Ei(x)");
+    }
+
+    #[test]
+    fn expanded_linear_square_is_folded_into_a_power() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "1/(a^2 + 2*a*b*x + b^2*x^2)").unwrap();
+        let folded = fold_linear_squares(&ctx, expr, Symbol::new("x"), true);
+        assert!(
+            folded.to_string().contains("(a + (b*x))^2"),
+            "the trinomial should become a squared linear form: {folded}"
+        );
+        // The rewrite is accepted by exact re-expansion inside
+        // `try_fold_linear_square`; confirm that canonicalisation agrees with
+        // the parsed trinomial, which is what makes the acceptance test work.
+        let lhs = crate::ode::util::collect_terms(
+            &ctx,
+            ctx.pow(
+                ctx.add(&[ctx.var("a"), ctx.mul(&[ctx.var("b"), ctx.var("x")])]),
+                ctx.num(2),
+            ),
+        );
+        let rhs = crate::ode::util::collect_terms(
+            &ctx,
+            ocas_parse::parse(&ctx, "a^2 + 2*a*b*x + b^2*x^2").unwrap(),
+        );
+        assert_eq!(lhs, rhs);
+    }
+
+    #[test]
+    fn perfect_square_corpus_hang_is_solved() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // `rubi-00854`: the expanded trinomial leaves the symbolic-rational
+        // backend grinding (a baseline 10 s timeout in 0.27.2); the exact fold
+        // reduces it to a two-linear-factor partial fraction.
+        let expr =
+            ocas_parse::parse(&ctx, "(a + b*x)/((d + e*x)^4*(a^2 + 2*a*b*x + b^2*x^2))").unwrap();
+        let r = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!contains_integral(r), "not solved: {r}");
+    }
+
+    #[test]
+    fn linear_square_fold_keeps_radicands_and_non_squares() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // A non-integer power over the trinomial is left alone: the radical and
+        // elliptic engines match the expanded quadratic, and
+        // `((a+b*x)^2)^(1/2) = |a+b*x|` is not `a+b*x`.
+        for src in [
+            "sqrt(a^2 + 2*a*b*x + b^2*x^2)",
+            "(a^2 + 2*a*b*x + b^2*x^2)^(1/2)",
+        ] {
+            let radicand = ocas_parse::parse(&ctx, src).unwrap();
+            assert_eq!(
+                fold_linear_squares(&ctx, radicand, Symbol::new("x"), true),
+                radicand,
+                "{src}"
+            );
+        }
+        // A three-term sum that is not a perfect square is untouched.
+        let not_square = ocas_parse::parse(&ctx, "a^2 + 2*a*b*x + c*x^2").unwrap();
+        assert_eq!(
+            fold_linear_squares(&ctx, not_square, Symbol::new("x"), true),
+            not_square
+        );
     }
 }
