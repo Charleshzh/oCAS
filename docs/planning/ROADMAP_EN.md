@@ -254,7 +254,7 @@ per-version plan) and [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (gap snapshot).
 > MultiModular Gröbner + parallel modular GCD, 0.26 packed monomial F5 fast
 > channel; cyclic-6 ℤ₁₃ grevlex measured 55.04 ms. 0.26.0 shipped a different
 > scope than originally planned here — the matrix engine / Smith normal form
-> were deferred to 0.30.0 in Phase 5.)**
+> were deferred to 0.35.0 in Phase 5.)**
 
 ### 0.24.0 — Symbolic Integration Breadth + DoubleFloat
 
@@ -301,7 +301,7 @@ to < 0.5 s.
   - Fewer primes needed for CRT reconstruction
 - [x] Large-coefficient polynomial GCD acceleration
   - Brown modular GCD further accelerated by multi-modular arithmetic
-- [ ] Benchmarks: cyclic-6/7, katsura-6/7 vs msolve (katsura deferred to 0.28.0)
+- [ ] Benchmarks: cyclic-6/7, katsura-6/7 vs msolve (katsura deferred to 0.33.0)
 
 **Success Criteria**:
 
@@ -314,7 +314,7 @@ to < 0.5 s.
 **Goal**: push the F5 main loop into a u128 SWAR fast channel, closing in on
 msolve performance; add grevlex benchmark variants. (The originally planned
 domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
-0.26.0 — deferred to 0.30.0.)
+0.26.0 — deferred to 0.35.0.)
 
 **Deliverables**:
 
@@ -324,10 +324,10 @@ domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
 - [x] Echelon i32 / clone-free two-phase rework
 - [x] grevlex benchmark variants (measurement baseline beyond Lex)
 - [x] Fixed pre-existing Graded-order degree-direction inversion bug
-- [ ] Domain-aware matrix engine (`DomainMatrix` analogue) → 0.30.0
-- [ ] Smith/Hermite normal forms → 0.30.0
-- [ ] Matrix performance benchmarks → 0.30.0
-- [ ] Pre-1.0 freeze preparation (API audit / migration guide / cross-platform CI) → 0.30.0
+- [ ] Domain-aware matrix engine (`DomainMatrix` analogue) → 0.35.0
+- [ ] Smith/Hermite normal forms → 0.35.0
+- [ ] Matrix performance benchmarks → 0.35.0
+- [ ] Pre-1.0 freeze preparation (API audit / migration guide / cross-platform CI) → 0.35.0
 
 **Success Criteria** (measured 2026-08-06):
 
@@ -337,7 +337,7 @@ domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
 
 ---
 
-## Phase 5: Competitive Gap Closure (0.27–0.30)
+## Phase 5: Competitive Gap Closure and Mechanism Push (0.27–0.35)
 
 > **Goal**: close the remaining P0–P3 gaps before freezing 1.0.0, per the
 > 2026-08-06 priority re-ranking (GAP_ANALYSIS_EN.md §5): P0 symbolic
@@ -348,6 +348,25 @@ domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
 > heuristic integration / DoubleF64, MultiModular Gröbner, and the packed F5
 > fast channel (cyclic-6 grevlex 55.04 ms); this phase closes the rest, then
 > 1.0.0 freezes.
+>
+> **2026-09-12 re-plan (after the 0.27.3 close-out)**: the 0.27.x failure
+> attribution (BENCHMARK_RESULTS_CN.md §"0.27.3 follow-up") and the
+> general-mechanism feasibility assessment
+> (GENERAL_MECHANISM_FEASIBILITY_EN.md) **redefined the nature of P0**.
+> 0.27.0's original acceptance line ("Rubi-grade rule set + 30 pp on the 1892")
+> was a **rule-enumeration** metric, whereas the marginal return of six waves of
+> mechanism work fell from +6.82 pp to +1.11 pp, and only 0.7% of the remaining
+> 1522 unsolved cases share a shape skeleton with a solved one. Therefore:
+>
+> - **0.28.0–0.32.0 become the mechanism push**: first fix the two measured
+>   architectural defects and establish the "symbolic certificate + three-valued
+>   outcome" correctness discipline, then complete the transcendental Risch, the
+>   algebraic extensions, the non-elementary layer and complexity, following
+>   Bronstein's ladder;
+> - **the former 0.28.0 / 0.29.0 / 0.30.0 slide in order to
+>   0.33.0 / 0.34.0 / 0.35.0** (Gröbner performance at scale, LLVM JIT, matrix
+>   engine + platform close-out + 1.0 freeze preparation);
+> - 1.0.0 slides to Month 69.
 
 ### 0.27.0 — Symbolic Integration Breadth (Rubi-Grade Rule Set)
 
@@ -491,20 +510,194 @@ points at, and lay the elliptic-integral foundation.
 
 ### 0.27.3 — Composite Shells, Special-Function Breadth and Elliptic Family Coverage
 
-**Goal**: continue the mechanism push on the clusters the 0.27.2 failure dump
+**Goal**: continue the mechanism push on the largest clusters the 0.27.2 failure dump
 leaves behind.
+
+**Deliverables** (each line records what was actually measured):
+
+- [x] Prerequisite: special-function derivative table (`derivative.rs`) and oracle heads
+  (`Ei`/`Ei(n,z)`/`Si`/`Ci`/`Shi`/`Chi`/`fresnels`/`fresnelc`). Every algorithm was
+  cross-checked against `mpmath` at 40 digits before being written down; an unimplemented
+  partial (the order slot of `Ei(n,z)`) declines to an unevaluated `Derivative` instead of
+  silently dropping a term
+- [x] Special-function families (`integral/special.rs`): four reduction families —
+  polynomial × `F(a+bx)`, polynomial × `Ei(n,a+bx)`, `F(bx)/x^m` descent, polynomial ×
+  `F(a+bx)²`; step budgets `MAX_SPECIAL_STEPS=16`, `MAX_SPECIAL_DEG=8`; every residual is
+  closed-form, so no family ever emits `Integral(...)`. **special bucket: 15 of 19 solved
+  (all numerically verified), 4 honestly declined** (two are `Unintegrable` in Rubi itself,
+  two are Fresnel denominator chains deliberately not implemented)
+- [x] Half-power affine arguments (`halfpower.rs`): accepts `cos(c + d·x)`, emits the sheet
+  factor on both branches (`cos(u/2)·(1−sin²(u/2))^(−1/2)`), and folds same-base
+  `S^a·(√S)^b` into a single half power first. **4 newly solved**
+  (`rubi-00377/00445/01598/00291`; all four read `indeterminate` at the corpus oracle only
+  because their parameter is pinned at `m=2`, outside its `|m| ≤ 0.9` window — the module's
+  own independent numeric oracle verifies them at 1e-9)
+- [x] Exact linear-square fold (`integral/mod.rs`): `p²+2pq+q² → (p+q)²`, accepted only when
+  the base is **affine in the integration variable** and re-expansion reproduces the input
+  sum; never applied under a non-integer power (`((p+q)²)^{1/2} = |p+q| ≠ p+q`). **2 newly
+  solved**, and `rubi-00854` goes from a 10 s per-case timeout to a 0.01 s solve
+- [ ] Composite-shell decomposition (mixed-other cluster): **partly delivered, partly
+  withdrawn**. The concrete implementation of factor-level `F(g(x))·w(x)` splitting — a
+  log-of-a-linear-fraction reduction (`C·(A+B·log Q)·(F+Gx)^p` by parts) — exposed a real
+  wrong answer once integrated (its residual was returned unwrapped), and its residual was
+  not reliably integrable at an acceptable wall-clock cost; per the "keep only what adds no
+  regressions and no wall-clock cost" rule it was **withdrawn wholesale**
+  (`log_fraction.rs` deleted). The attempt did locate and harden the A4 regression guard
+  (from "must leave a residue" to "if solved, check the derivative numerically" — neither
+  outcome lets a wrong answer through). The `trig_linear_arg` direction of this item is
+  delivered by the affine-argument work above
+- [ ] Elliptic-family breadth: full trig-quadratic routing, cubic radicands, complex
+  `EllipticPi` — **not achieved, recorded honestly**. 0.27.3 delivered only the affine
+  argument layer; 136 of the 140-case affine-cos half-power cluster still decline, with a
+  quantified root cause: they need **products/quotients of two different radical bases**, a
+  rational prefactor in `cos u`, `|p| > 5`, or positive powers ≥ 3 — i.e. a multi-radical
+  rational-prefactor reduction engine (a new engine, not this wave). Cubic radicands and
+  complex `EllipticPi` were not touched
+
+**Success criteria** (honest record):
+
+- 1892-problem dual metric: **solved 370 (19.56%), verified 343/370 (92.7%),
+  mismatches 0**; per-case diff **21 newly solved, 0 regressed** (bucket deltas:
+  special +15, trig +3, power-binomial +2, mixed-other +1)
+- Zero wrong answers in the solved set: **`verify_mismatches` = 0 — met** (this is the
+  wave's hard red line, and the direct reason `log_fraction` was withdrawn)
+- Timeouts 13 → **12** (target ≤ 5 — **not met**), crashes 0 (**met**), wall clock 461.2 s
+  (target < 445.7 s — **not met**, +3.5%: the new reduction families' scan in the `special`
+  stage and the exact fold's entry traversal are the main sources)
+- Verified ratio 92.7% (target ≥ 95% — **not met**: all 27 inconclusive cases are
+  "undecidable" rather than wrong, and 4 of the new ones come from the corpus oracle's
+  `|m| ≤ 0.9` window)
+- Quality gates: fmt / both clippy tiers / deny / workspace test all green
+  (`ocas-calc` 416 passed)
+- **0.27-line freeze determination**: by the literal `EVOLUTION_PLAN` rule ("two consecutive
+  waves adding < 60 solved problems freeze the 0.27 line"), 0.27.2 (+38) and 0.27.3 (+21)
+  are **two consecutive waves each below 60** → **the 0.27 line is frozen; 0.28.0 is the
+  next active line.** Under that determination 0.27.3 is the last release of the 0.27 series
+- Next wave (0.28.0): the mechanism push (correctness foundation → transcendental Risch →
+  algebraic extensions → non-elementary layer → complexity), absorbing the 12 timeout cases,
+  the 136-case multi-radical half-power cluster, elliptic-family breadth and the two measured
+  defects (residue resolution, cycle detection) that this wave quantified; the former 0.28.0
+  (Gröbner) slides to 0.33.0 (see the Phase-5 note and
+  GENERAL_MECHANISM_FEASIBILITY_EN.md)
+
+### 0.28.0 — Integration-Mechanism Correctness Foundation (defects + certificates + regular towers)
+
+**Goal**: fix the two architectural defects the 0.27.3 investigation located, upgrade
+"correct" from sampled evidence to **symbolic certificates**, and relax the general Risch
+engine's most expensive entry condition (dependent generators being rejected).
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3, §5, §6 P0.)
 
 **Deliverables**:
 
-- [ ] Composite-shell decomposition (mixed-other cluster): factor-level
-  `F(g(x))·w(x)` splitting with inner-kernel recognition, generalizing
-  `trig_linear_arg`
-- [ ] Special-function family extension: `Ei(n, z)`/Eₙ, powers and
-  compositions of `erf`, `x^k·Si/Ci/Ei` by parts, `exp(−b²x²)/erfc(bx)²`
-- [ ] Elliptic family breadth: full trig-quadratic-radical routing, cubic
-  radicands, `EllipticPi` with complex characteristics
+- [ ] **Residue resolution** (defect): the `Integral(...)` residues produced by
+  `rational::integral_fallback` and by `symbolic_rational`'s high-degree branch are resolved
+  at the **chain tail with a deterministic budget** (prototype measured net +4: +5 solved /
+  −1 regressed / +3 timeouts — see BENCHMARK_RESULTS_CN.md §"0.27.3 follow-up" §3.1)
+- [ ] **Expression-level cycle detection** (defect) replacing/narrowing the global
+  `MAX_CHAIN_ENTRIES` total cap (`rubi-00008` measured 306 stage entries / 18 cycles)
+- [ ] **Symbolic certificates**: every output must pass `normalize(D(F) − f) == 0` inside the
+  differential field; the numerical oracle is demoted to a probe/regression tool
+- [ ] **Three-valued `Outcome`**: `Found { value, certificate }` /
+  `ProvedNonElementary { witness }` / `Unknown`; `Unknown` honestly returns `Integral(...)`
+- [ ] **Regular towers**: merge algebraically dependent generators (`log x`/`log 2x`,
+  `exp x`/`exp(x+1)`, the `exp(±u)` pairs produced by hyperbolic rewriting); return `Unknown`
+  when the dependency is undecidable
+- [ ] Metric: the harness gains `certified_rate = certificates passed / solved`, gated at
+  exactly 1.0 in CI
 
-### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
+**Success Criteria**:
+
+- Symbolic certificates are exactly 0 for **100%** of the 1892 solved set; `certified_rate = 1.0`
+- New solves in the hyperbolic family (baseline: 111 unsolved cases contain hyperbolic heads)
+- `verify_mismatches` stays 0; per-case diff **0 regressions**; the timeout count does not rise
+
+### 0.29.0 — Completing the Transcendental Risch
+
+**Goal**: widen `integral/rde.rs` from "polynomial solutions only" to the complete fragment,
+and add the structure theorem for the logarithmic part.
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.4, §6 P1.)
+
+**Deliverables**:
+
+- [ ] RDE **rational solutions** (denominator bounds + `D`-rational solutions, the full
+  Bronstein ch. 6)
+- [ ] **Coupled differential systems** (`D y + A y = b`)
+- [ ] The general **structure theorem for the logarithmic part** (no longer only the
+  logarithmic-derivative identity)
+- [ ] Generality testing: proptest generates random elements **from the tower** → integrate →
+  check the symbolic certificate
+
+**Success Criteria**:
+
+- Clear improvement in the `exp-log` bucket (baseline 79/83 unsolved); the certificate gate holds
+- 100% certificate pass rate on the random tower-element family; 0 regressions on the 1892
+
+### 0.30.0 — Algebraic Extensions and Inverse-Function Substitution
+
+**Goal**: wire in the algebraic integration chain (reusing the existing Trager assets) and
+cover the inverse-function families.
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.2, §3.5, §6 P2.)
+
+**Deliverables**:
+
+- [ ] Algebraic generators entering the tower (`√x` and general radicals; `tower/build.rs`
+  currently rejects them outright)
+- [ ] **Integral basis** (Trager) + **algebraic Hermite reduction** + algebraic residues
+  (Bronstein ch. 7–8)
+- [ ] Multi-radical-base reduction (an estimated 222 cases with ≥2 distinct radical bases)
+- [ ] Inverse-function substitution engine: polynomial weight × `(a+b·f(ax+b))^k`
+  (the `inverse-trig-hyper` bucket, baseline 138/146 unsolved)
+- [ ] Reuse `ocas-poly`'s Trager factorisation + resultants + algebraic-field GCD
+
+**Success Criteria**:
+
+- The `1/(1+x⁴)`, `1/(1−3x²+x⁴)` and irreducible sextic/octic denominator families solve
+- Clear improvement in the radical bucket (baseline 356/407 unsolved); the certificate gate holds
+
+### 0.31.0 — The Non-Elementary Layer
+
+**Goal**: cover what is **completely unreachable** today: antiderivatives that need
+dilogarithms or Meijer G (baseline: 122 cases whose reference answer contains `polylog`,
+8.0% of the unsolved set).
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.6, §6 P3.)
+
+**Deliverables**:
+
+- [ ] `polylog`/`Li₂` function heads + numerical oracle evaluators (add the head and its
+  numeric verification **before** the reduction — the pattern 0.27.3 already proved out for
+  `Ei`/`Si`/`Ci`/`Shi`/`Chi`/Fresnel)
+- [ ] Li₂ reduction (logarithmic-rational integration)
+- [ ] Meijer G / Slater expansion (or the holonomic/D-finite route) as the general
+  non-elementary mechanism
+- [ ] `ProvedNonElementary` becomes available for the first time (an engineered subset of
+  Singer's structure theorems)
+
+**Success Criteria**:
+
+- The reachable part of the 122 `polylog` cases unlocks; the rest of the `exp-log` bucket improves
+- The new function heads verify numerically in the oracle; the certificate gate holds
+
+### 0.32.0 — Complexity and Performance (treating complexity as an algorithmic problem)
+
+**Goal**: solve coefficient blow-up under symbolic coefficients with **algorithms** instead of
+more wall-clock budgets (baseline: 9 of the 12 timeouts sit in `symbolic_rational`).
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.7, §6 P4.)
+
+**Deliverables**:
+
+- [ ] Modular arithmetic under symbolic coefficients (reusing the 0.25 MultiModular ℚ pipeline)
+- [ ] Parallel Risch
+- [ ] Lazy series / degree-bound pruning replacing "add budget" mitigation
+- [ ] Stage-level treatment of the 12 remaining timeouts (`symbolic_rational` 9, `binomial` 1,
+  `rational` 1, `trig_kernel` 1 — see `timeout_attribution_0273.csv`)
+
+**Success Criteria**:
+
+- Wall clock no worse than the 0.28.0 baseline (0.27.3: 461.2 s); the timeout count falls
+- High-level/many-symbol instances no longer fall back through coefficient blow-up; the
+  certificate gate holds
+
+### 0.33.0 — Gröbner Performance at Scale (katsura + cyclic-7) (formerly 0.28.0)
 
 **Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)
 (P1): katsura-6 < 1 s, cyclic-7 grevlex within one order of magnitude.
@@ -527,7 +720,7 @@ leaves behind.
 - Multi-modular path agrees with the single-prime path on 100 random cases;
   `is_groebner_basis` verified
 
-### 0.29.0 — Code Generation Extension (LLVM/inkwell JIT)
+### 0.34.0 — Code Generation Extension (LLVM/inkwell JIT) (formerly 0.29.0)
 
 **Goal**: land a second JIT backend — LLVM (via `inkwell`, already a workspace
 dependency) — narrowing the code-generation gap vs Symbolica SymJIT (P1).
@@ -549,7 +742,7 @@ dependency) — narrowing the code-generation gap vs Symbolica SymJIT (P1).
 - LLVM builds green on Linux/macOS/Windows CI
 - Output identical to the Cranelift path (1000 random expressions)
 
-### 0.30.0 — Matrix Engine + Platform Close-Out + 1.0 Freeze Preparation
+### 0.35.0 — Matrix Engine + Platform Close-Out + 1.0 Freeze Preparation (formerly 0.30.0)
 
 **Goal**: close the P2/P3 gaps and finish pre-1.0 freeze preparation:
 domain-aware matrix engine (DomainMatrix analogue) + Smith/Hermite normal
@@ -595,7 +788,7 @@ forms, Windows FLINT, quadratic sieve, tensor handling inside nested functions.
 
 ### 1.0.0 — Stable Release
 
-**Target**: after 0.30.0
+**Target**: after 0.35.0
 
 **Deliverables**:
 
@@ -644,8 +837,8 @@ After 1.0, development will focus on:
 - GPU acceleration + code export (CUDA / HIP / Vulkan compute, CUDA/WASM)
 - Domain-specific toolkits (physics, robotics, machine learning)
 
-> The LLVM/Inkwell JIT backend moved to 0.29.0, and the quadratic-sieve integer
-> factorisation moved to 0.30.0 (both pre-1.0).
+> The LLVM/Inkwell JIT backend moved to 0.34.0, and the quadratic-sieve integer
+> factorisation moved to 0.35.0 (both pre-1.0).
 
 ---
 
@@ -690,10 +883,15 @@ After 1.0, development will focus on:
 | 0.25.0 | Beta | Month 47 | Gröbner performance at scale (multi-modular vs msolve, cyclic-6 < 0.5 s) (P1) ✅ |
 | 0.26.0 | Beta | Month 49 | Packed-monomial F5 fast channel + grevlex benchmarks (cyclic-6 grevlex 55.04 ms measured) ✅ |
 | 0.27.0 | Beta | Month 51 | Symbolic integration breadth (Rubi-grade rule set + 1892-problem coverage benchmark) (P0) |
-| 0.28.0 | Beta | Month 53 | Gröbner performance at scale (katsura-6 < 1 s, cyclic-7 within 10× of msolve) (P1) |
-| 0.29.0 | Beta | Month 55 | Code generation extension (LLVM/inkwell JIT backend) (P1) |
-| 0.30.0 | Beta | Month 57 | Matrix engine (DomainMatrix analogue + Smith/Hermite) + Windows FLINT + quadratic sieve + 1.0 freeze preparation (P2/P3) |
-| 1.0.0 | Stable | Month 59 | Stable release (frozen after Phase B++++ competitive gap closure: P0 integration breadth met + P1 Gröbner aligned with msolve + LLVM JIT landed + performance ahead of SymPy) |
+| 0.28.0 | Beta | Month 53 | Integration-mechanism correctness foundation (residue resolution + expression-level cycle detection + symbolic certificates + three-valued outcome + regular towers) |
+| 0.29.0 | Beta | Month 55 | Completing the transcendental Risch (rational RDE solutions + coupled systems + log-part structure theorem) |
+| 0.30.0 | Beta | Month 57 | Algebraic extensions and inverse-function substitution (integral basis + algebraic Hermite + residues + multi-radical bases + inverse-function engine) |
+| 0.31.0 | Beta | Month 59 | Non-elementary layer (`polylog`/`Li₂` heads + Li₂/Meijer G reductions + `ProvedNonElementary`) |
+| 0.32.0 | Beta | Month 61 | Complexity and performance (modular algorithms + parallel Risch + lazy series) |
+| 0.33.0 | Beta | Month 63 | Gröbner performance at scale (katsura-6 < 1 s, cyclic-7 within 10× of msolve) (P1; formerly 0.28.0) |
+| 0.34.0 | Beta | Month 65 | Code generation extension (LLVM/inkwell JIT backend) (P1; formerly 0.29.0) |
+| 0.35.0 | Beta | Month 67 | Matrix engine (DomainMatrix analogue + Smith/Hermite) + Windows FLINT + quadratic sieve + 1.0 freeze preparation (P2/P3; formerly 0.30.0) |
+| 1.0.0 | Stable | Month 69 | Stable release (frozen after Phase B++++ competitive gap closure: P0 integration-mechanism correctness and generality met + P1 Gröbner aligned with msolve + LLVM JIT landed + performance ahead of SymPy) |
 
 ---
 

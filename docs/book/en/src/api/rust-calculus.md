@@ -156,6 +156,8 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 │  2. quadratic/linear denom power recurrences         │
 │     (integrate_quad_power)                           │
 │  3. bounded-expansion pre-pass (expand_prepass, 0.27.2)│
+│  3b. exact linear-square fold (fold_linear_squares,   │
+│      p²+2pq+q² → (p+q)², affine base, 0.27.3)         │
 │  4. rational-derivative kernel substitution          │
 │     (integrate_kernel_subst, tan/cot/tanh/coth, 0.27.2)│
 │  5. hyperbolic closed-form family                    │
@@ -190,6 +192,16 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 `OCAS_INTEGRATE_TRACE=1` prints `[trace] enter <stage> :: <expr>` / `[trace] decline <stage>`
 for every stage, which attributes a hanging or falling-back case to a stage without
 guesswork. `OCAS_INTEGRATE_RULES=0` disables only stage 10 (the rule table).
+
+Stages 3 and 3b are *passes*, not traced stages: they rewrite the integrand at the pipeline entry
+before any mechanism sees it. The linear-square fold exists because the corpus writes a linear form
+squared as an expanded trinomial (`a² + 2abx + b²x²`), which the symbolic-rational backend grinds
+on — `rubi-00854` was a 10 s per-case timeout before the fold and solves in 0.01 s after it. The
+fold is gated two ways so it cannot misfire: the reconstructed base must be **affine in the
+integration variable** (so it never re-forms the trigonometric squares the product-to-sum stage
+needs expanded), and the rewrite is accepted only when re-expanding the candidate reproduces the
+input sum (exactly, or after `normalize`). It is never applied under a non-integer power, where
+`((p+q)²)^{1/2} = |p+q| ≠ p+q`.
 
 **Phase 1 — node-type dispatch**:
 
@@ -832,6 +844,21 @@ When the Risch algorithm proves that the integral has no elementary antiderivati
 - `ei_family`: matches forms $e^{cx} / x$
 - `trig_integral_family`: matches $\sin(x)/x$, $\cos(x)/x$, $\sinh(x)/x$, $\cosh(x)/x$ (the argument must be exactly $x$)
 - `fresnel_family`: matches $\sin(cx^2)$, $\cos(cx^2)$
+- `reduction_families` (0.27.3): the *reduction* families that turn a polynomial (or a monomial
+  denominator power) times a special head into a closed form, using only identities checked in the
+  module's own tests:
+  - polynomial $\times F(a + b x)$ for `erf`, `erfc`, `erfi`, `Si`, `Ci`, `Shi`, `Chi`, `Ei`
+    (substitute $u = a + bx$, expand, then integrate by parts with an elementary residual);
+  - polynomial $\times \text{Ei}(n, a + bx)$ (integer order $n$), via the inverse recurrence
+    $E_n = (e^{-u} - n E_{n+1})/u$;
+  - $F(bx)/x^m$ for $m \ge 2$ and $F = \text{Ei}$ or $\text{Ei}(n, \cdot)$, descending to
+    $\text{Ei}(\pm u)$ plus elementary terms;
+  - polynomial $\times F(a + bx)^2$ for the six square-capable heads, via parts plus the Gaussian
+    moment recursion (`erf`/`erfi`) or the coupled $F \cdot \cos/\sin$ recursion
+    (`Si`/`Ci`/`Shi`/`Chi`).
+
+Every reduction chain carries a hard step budget (`MAX_SPECIAL_STEPS = 16`, `MAX_SPECIAL_DEG = 8`)
+and declines rather than guessing; no family ever emits an `Integral(...)` residue.
 
 **Returns**:
 - `Some(Atom)` — matched successfully; returns the antiderivative containing special functions
@@ -839,7 +866,7 @@ When the Risch algorithm proves that the integral has no elementary antiderivati
 
 **Design notes**:
 
-The special function definitions are consistent with SymPy, and the results can be cross-validated with `sympy.integrate`.
+The special function definitions are consistent with SymPy, and the results can be cross-validated with `sympy.integrate`. The numerical verification oracle (`ocas-tests/src/integral_eval.rs`) implements every one of these heads, so solved results in this family are checked by differentiating the emitted form rather than by the absence of a residue.
 
 **See also**: [Risch algorithm](#risch-algorithm), [integrate](#integrate)
 

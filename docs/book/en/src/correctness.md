@@ -28,7 +28,7 @@ The modules cover the full breadth of oCAS functionality:
 | `groebner` | 24 | Gröbner basis computation |
 | `integral_risch` | 15 | Risch symbolic integration |
 | `integral_rules` | 1 | 100-case rule-table sample cross-checked against SymPy |
-| `integral_verify` | 2 | Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and `√(p/q)` classes) |
+| `integral_verify` | 3 | Numerical wrong-answer guard (independent oracle; the 0.27.1 C14/D7b and `√(p/q)` classes, plus the 0.27.3 fold/special-function/half-power mechanisms) |
 | `linear_solve` | 5 | Linear solvers |
 | `matrix` | 5 | Matrix operations |
 | `normalize` | 8 | Expression normalization |
@@ -44,7 +44,7 @@ The modules cover the full breadth of oCAS functionality:
 | `rewrite` | 8 | Rewriting and simplification |
 | `root_isolation` | 4 | Real root isolation |
 
-216 correctness tests in total (plus the crate-level unit tests in
+217 correctness tests in total (plus the crate-level unit tests in
 `ocas-calc`, `ocas-parse`, `ocas-atom`, `ocas-poly`, …).
 
 ---

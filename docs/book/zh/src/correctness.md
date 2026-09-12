@@ -24,7 +24,7 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 | `groebner` | 24 | Gröbner 基计算 |
 | `integral_risch` | 15 | Risch 符号积分 |
 | `integral_rules` | 1 | 规则表 100 例抽样（SymPy 对比） |
-| `integral_verify` | 2 | 数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 `√(p/q)` 两类） |
+| `integral_verify` | 3 | 数值错案护栏（独立 oracle；0.27.1 的 C14/D7b 与 `√(p/q)` 两类，以及 0.27.3 的精确平方折叠/特殊函数族/半幂仿射变元机制） |
 | `linear_solve` | 5 | 线性求解器 |
 | `matrix` | 5 | 矩阵运算 |
 | `normalize` | 8 | 表达式规范化 |
@@ -40,7 +40,7 @@ oCAS 包含自动化正确性交叉验证框架，将结果与三个参考系统
 | `rewrite` | 8 | 重写与化简 |
 | `root_isolation` | 4 | 实根隔离 |
 
-正确性套件共 216 项测试（另有 `ocas-calc`、`ocas-parse`、`ocas-atom`、
+正确性套件共 217 项测试（另有 `ocas-calc`、`ocas-parse`、`ocas-atom`、
 `ocas-poly` 等 crate 的单元测试）。
 
 ---

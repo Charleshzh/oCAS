@@ -258,7 +258,7 @@ oCAS/Symbolica/SymPy 基准、cyclic-6 grevlex 55 ms 达成 <0.5 s 里程碑）�
 
 | 优先级 | 缺口 | 现状 | 目标 | 理由 |
 |---|---|---|---|---|
-| **P0** | 符号积分广度（Rubi 规则集成或等效） | Risch + 启发式四技术 + 0.27 规则表引擎（A–H 族）+ 符号常数有理后端 + 展开重试 + 三角积化和差 + 0.27.1 七机制模块 + 0.27.2 双曲闭式族/有理导数核代换/相位归一/逆函数复合消去/`exp(逆函数)` 代数化/半幂前端+椭圆 Legendre 约化；1892 题 **349 solved（18.45%）、已验证 325/349（93.1%）、mismatches 0、超时 13、墙钟 −22%**（详见 BENCHMARK_RESULTS_CN.md 0.27.2 段） | 对标 symbolica-integrate 1892 题 | Symbolica 2.2 Rubi 7000+ 规则（72,944 题库）仍是最大功能缺口；剩余主干为超时族（双曲有理式高次幂、`Q(sin)^n` 分母、根式）、椭圆族高阶与符号指数族。**字符串覆盖率会高估真实能力**：0.27.2 起并列报告已验证比例，并修复了 0.27.1 遗留的 6 组错案（`rational_square_root` 和式误判、`complete_square` 首一假定、Chebyshev 回代丢符号、Risch 非域项、规则 A4 序列通配符、共振积化和差零分母） |
+| **P0** | 符号积分广度（Rubi 规则集成或等效） | Risch + 启发式四技术 + 0.27 规则表引擎（A–H 族）+ 符号常数有理后端 + 展开重试 + 三角积化和差 + 0.27.1 七机制模块 + 0.27.2 双曲闭式族/有理导数核代换/相位归一/逆函数复合消去/`exp(逆函数)` 代数化/半幂前端+椭圆 Legendre 约化 + 0.27.3 特殊函数导数表与 oracle 扩头/四个特殊函数归约族/精确线性平方折叠/半幂仿射变元+片层因子；1892 题 **370 solved（19.56%）、已验证 343/370（92.7%）、mismatches 0、超时 12、墙钟 461.2 s**（详见 BENCHMARK_RESULTS_CN.md 0.27.3 段） | 对标 symbolica-integrate 1892 题 | Symbolica 2.2 Rubi 7000+ 规则（72,944 题库）仍是最大功能缺口；剩余主干为超时族（双曲有理式高次幂、`Q(sin)^n` 分母、根式）、椭圆族高阶与符号指数族。**字符串覆盖率会高估真实能力**：0.27.2 起并列报告已验证比例，并修复了 0.27.1 遗留的 6 组错案（`rational_square_root` 和式误判、`complete_square` 首一假定、Chebyshev 回代丢符号、Risch 非域项、规则 A4 序列通配符、共振积化和差零分母） |
 | **P1** | Gröbner 大规模性能（katsura 系 + cyclic-7） | katsura-6/7 未完成（单轮 >30 min）；cyclic-7 Lex >2 h 未完成；cyclic-7 grevlex 3.829 s vs msolve 55 ms（~70×） | katsura-6 < 1 s；cyclic-7 可完成 | msolve 0.10.1 实测 katsura 3–7 ms、cyclic-7 55 ms；打包管线 + 多模策略向 katsura/cyclic-7 扩展 |
 | **P1** | 代码生成扩展（LLVM JIT + CUDA/WASM 导出） | 仅 Cranelift JIT | 至少 LLVM JIT | Symbolica SymJIT/CUDA/WASM 形成代差 |
 | **P2** | 矩阵/线性代数增强 | Bareiss 行列式/逆 | DomainMatrix 类似引擎 + Smith 标准形 | SymPy 1.14 DomainMatrix 10000× 加速后差距扩大 |
@@ -383,6 +383,50 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
   AxiomSyntaxTestFiles.zip，SHA-256 已固定）仅作为覆盖率基准输入，不入库、
   不随 oCAS 分发。
 
+#### 0.27.3 复评（2026-09-12）：覆盖率 ≠ 通用性，以及算法移植优先级
+
+1. **新增一条独立的许可阻断证据**：crates.io 的 `symbolica-integrate` 页面明确写着
+   *"It depends on Symbolica, which is distributed under separate licensing terms"*。
+   即 MIT 只覆盖“移植代码”，**运行时依赖的是 source-available 商业许可的 Symbolica
+   本体**。这与 oCAS「默认构建不引入专有或源码可用代码」（CLAUDE.md）以及
+   「LGPL 全栈、可商业闭源嵌入」的生态位直接冲突。注意：这里的问题**不是 copyleft**，
+   所以**放进 `ocas-gpl` 隔离也解决不了**——它需要的是商业授权，而不是许可兼容。
+2. **技术可行性已被他人证明**：Rubi 官方说明其 6700+ 规则「可编译成单一深度嵌套
+   if-then-else」，正是为了移植到没有高级模式匹配的宿主；Symbolica 的 Rust 移植
+   **通过全部 72,944 题**，1892 子集 **111.24 s**（oCAS 0.27.3 为 461.2 s，慢约 4.1×）。
+   所以「用 Rust 重写 Rubi 规则能拿高分」在技术上成立——**因为该题库本来就是 Rubi
+   的出题集**。
+3. **但那买的是覆盖率，不是通用性**：Rubi 是**枚举式**方案（6700+ 手写特例 + 决策树），
+   它在自有题库上的近乎满分是构造性的。移植的代价是：采纳 Rubi 的整套特殊函数词汇
+   （`polylog`/`productlog`/`gamma`…）与「最优原函数」约定、维护**顺序敏感**的
+   6700+ 条决策树、承担上游漂移。**它不会让求解方法更通用**；恰恰相反，机制路线才更
+   通用，只是在「规则形状题库」上上限更低。若目标是通用解法，应当移植**算法**。
+4. **算法移植优先级（按 0.27.3 调研实测的结构性天花板排序，见
+   [BENCHMARK_RESULTS_CN.md](BENCHMARK_RESULTS_CN.md) §「0.27.3 后续调研」）**：
+   可选宽松许可算法源：FriCAS（Modified BSD）、SymPy（BSD-3）、Reduce（BSD）、
+   SymEngine（MIT）、FLINT/Arb（LGPL/MIT），以及公开论文（算法本身不受版权保护）。
+   | 优先级 | 算法 | 解锁对象 |
+   |---|---|---|
+   | 1 | 残项解析（链尾 + 确定性预算）——**缺陷修复，非新引擎** | 实测净 +4（+5 新解 / −1 回归 / +3 超时，原型已回退） |
+   | 2 | 表达式级循环检测替换全局链条目上限（`MAX_CHAIN_ENTRIES`） | 12 例超时的 9 例、墙钟 |
+   | 3 | 代数扩张留数（Lazard–Rioboo–Trager） | 不可约二次以上分母整族（`1/(1+x⁴)`、`1/(1−3x²+x⁴)`…） |
+   | 4 | 多根式基归约 | 估算 222 题量级（含 140 例仿射 `cos` 半幂簇的 136 例） |
+   | 5 | 对数积分/dilog 归约 + `polylog`/`Li₂` 头 | 122 题（8.0%）在今天的库上不可达 |
+   | 6 | 反函数代换引擎（多项式权 × `(a+b·f(ax+b))^k`） | `inverse-trig-hyper` 桶 138/146 未解 |
+   | 7 | 放宽/改造 `symbolic_rational` 的 5 符号入口闸门与工作量预算 | 169 题参数 ≥6 |
+5. **架构约束（无论走哪条路都要守）**：任何规则层都必须**排在所有机制之后**——否则会
+   抢占通用机制，oCAS 会变成「维护负担很重的 Rubi 克隆」并失去 LGPL 纯自研叙事；其输出
+   必须通过同一套数值 oracle（0.27.2 起已具备），并遵守 `preserves_argument_order`
+   之类的语义护栏（多参函数头实参顺序、分支/定义域约定）。
+6. **结论（维持 0.27.0 判定，补充优先级）**：
+   - **不集成** `symbolica-integrate`（许可依赖 + 依赖重量 + 表达式模型三重阻断）。
+   - 继续把 Symbolica/Rubi 作为**离树测量对拍**：`ocas-tests/scripts/symbolica_runner`
+     刻意依赖仓库外的本地检出（`../../../../symbolica`），不在 workspace 内、不随
+     oCAS 分发，这个边界要保持。
+   - 覆盖率仍是瓶颈时，**先做第 4 点的算法移植**；之后若要再评估「参考 Rubi 决策树结构、
+     重写规则表述」的子集移植，启动前必须完成独立法律审查，并以 1892 harness 逐波度量
+     （现行验收表：solved / verified / mismatches / 超时 / 崩溃 / 墙钟）。
+
 ---
 
 ## 8. 战略建议
@@ -392,10 +436,10 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 | 建议 | 版本 | 交付物 | 理由 |
 |---|---|---|---|
 | 积分广度扩展 | 0.27.0 | Risch + 启发式扩展 + Rubi 级规则集（1892 题覆盖率 ≥30 个百分点提升） | Symbolica 2.2 杀手特性；覆盖面差距是最大功能缺口 |
-| Gröbner katsura/cyclic-7 扩展 | 0.28.0 | katsura-6 < 1 s；cyclic-7 grevlex < 10× msolve | msolve 实测 3–55 ms；打包 F5 已验证 cyclic-6 收敛 |
-| LLVM JIT 代码生成 | 0.29.0 | LLVM/inkwell JIT 后端（Cranelift 默认，LLVM 可选） | Symbolica SymJIT 代差；Cranelift 已到性能天花板 |
-| 矩阵增强 | 0.30.0 | DomainMatrix 类似引擎 + Smith/Hermite 标准形 | SymPy 1.14 差距扩大 |
-| Windows FLINT + 二次筛 + 张量嵌套 | 0.30.0 | flint3-sys Windows 构建；QS 大整数分解；嵌套函数内张量处理 | 平台覆盖完整性 + SymPy qs_factor |
+| Gröbner katsura/cyclic-7 扩展 | 0.33.0 | katsura-6 < 1 s；cyclic-7 grevlex < 10× msolve | msolve 实测 3–55 ms；打包 F5 已验证 cyclic-6 收敛 |
+| LLVM JIT 代码生成 | 0.34.0 | LLVM/inkwell JIT 后端（Cranelift 默认，LLVM 可选） | Symbolica SymJIT 代差；Cranelift 已到性能天花板 |
+| 矩阵增强 | 0.35.0 | DomainMatrix 类似引擎 + Smith/Hermite 标准形 | SymPy 1.14 差距扩大 |
+| Windows FLINT + 二次筛 + 张量嵌套 | 0.35.0 | flint3-sys Windows 构建；QS 大整数分解；嵌套函数内张量处理 | 平台覆盖完整性 + SymPy qs_factor |
 
 > 已兑现（0.24–0.26）：DoubleFloat（→DoubleF64）、Gröbner cyclic-6 < 0.5 s
 > （grevlex 55 ms）、MultiModular ℚ 管线、启发式积分四技术。
@@ -408,8 +452,8 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 | CUDA/WASM 代码导出 | P1 | Symbolica 已支持；GPU/浏览器场景需求 |
 | PDE 求解器 | P2 | 用户期望高；Poisson/热传导/波动 |
 
-> 原 Post-1.0 建议中已移入 1.0 前：LLVM/inkwell JIT（→0.29.0）、二次筛分解
-> 与 Windows FLINT（→0.30.0）。
+> 原 Post-1.0 建议中已移入 1.0 前：LLVM/inkwell JIT（→0.34.0）、二次筛分解
+> 与 Windows FLINT（→0.35.0）。
 
 ### 8.3 定位建议
 
@@ -461,3 +505,4 @@ Language（Mathematica）。Rubi 本身是开源的（CC BY-NC-SA 3.0），但�
 | 0.27.0 | 2026-09-06 | **符号积分广度交付 + 稳定性修复。** 规则表引擎（A–H 族）+ 符号常数有理后端 + Weierstrass 线性变元（(a)(b) 阶段）+ 有界展开重试 + 三角积化和差/降幂（(c) 阶段）；1892 题覆盖率 5.87% → 9.62%（+3.75pp，**未达 +30pp**；根因量化见 BENCHMARK_RESULTS_CN.md 0.27.0 段）。修复：稠密 GCD 朴素伪余式 → subresultant PRS（Weierstrass 挂死根因）；积分链全局条目预算 256（parts↔Weierstrass 循环栈溢出根因）；实根隔离精确二进分数求值（Wilkinson n=10 8/10 → 10/10，§3 实根隔离行 🟡→🟢，§5 已知缺口移除）。版本提升 0.27.0。 |
 | 0.27.1 | 2026-09-10 | **积分广度机制攻坚 + 两组错案修复。** 六个机制模块（Chebyshev 二项微分/三角分母幂递推/exp-log 核代换/二次根式引擎+Euler III/反三角核导数/单三角核有理式）+ 分母幂递推与双线性部分分式；1892 题 9.62% → 16.44%（+6.82pp，129 新解、0 回归逐题 diff、超时 49→33、0 崩溃、墙钟 −19%；**仍未达 +30pp**，缺口量化见 BENCHMARK_RESULTS_CN.md 0.27.1 段）。修复两组错案：C14/D7b 线性变元幂递推残项系数多除斜率（0.27.0 引入）；rational.rs √(p/q) 丢 1/q。修复 normalize 幂套幂/精确数值幂折叠、heuristic 深度残项检查、expand 前移防预算饥饿、导数表补全 12 函数、symbolic_rational 系数预算与多符号闸门。版本提升 0.27.1。 |
 | 0.27.2 | 2026-09-10 | **悬挂消除 + 已验证覆盖率口径 + 初等机制闭环 + 椭圆积分基础。** 阶段打点（`OCAS_INTEGRATE_TRACE`）把 33 例超时全部归因（symbolic_rational 18、heuristic 4、trig_kernel 3、inverse_trig 2、rational 2、trig_reduction 2、sqrt_quadratic 1、未打点 1）→ 有界展开预通道 + 各阶段确定性预算；新增独立数值验证 oracle（`ocas-tests/src/integral_eval.rs`：f64 求值 + erf/erfi 级数 + 自适应 Simpson 的椭圆定义积分 + 5 点差分）与 harness 的 `verified_solved`/`verify_mismatches` 口径；**修复 0.27.1 遗留错案**：`rational_square_root` 把多项式**和**（如 `4a²+4b²`）当作单项式平方，导致二次分母在伪根处分拆并输出错误对数（`1/(b*x^2+2*a*x-b)`，以及经 `t=e^x` 的 `1/(a+b*sinh(x))`）。机制：双曲闭式族、有理导数核代换、三角相位归一、逆函数复合消去、`exp(逆函数)` 代数化、半幂前端 + 椭圆 Legendre 约化（`EllipticF/E/Pi`，SymPy `m=k²` 约定）；`normalize` 新增保序函数头注册表（`preserves_argument_order`）。版本提升 0.27.2。 |
+| 0.27.3 | 2026-09-12 | **0.27 线收尾：特殊函数广度 + 精确平方折叠 + 半幂仿射变元；0.27 线冻结。** 特殊函数导数表（`erf/erfc/erfi/Ei/Si/Ci/Shi/Chi/fresnels/fresnelc` + `Ei(n,z)`/椭圆头的逐实参偏导，未实现偏导 → 未求值 `Derivative`）与 oracle 扩头（全部先与 `mpmath` 40 位对拍；`E₁` 小参数用级数、大参数用渐近级数，椭圆改用固定 2000 面板复合 Simpson，debug 测试由 376 s 降到 2.6 s）；`special.rs` 四个归约族（多项式 × `F(a+bx)`、多项式 × `Ei(n,a+bx)`、`F(bx)/x^m` 递降、多项式 × `F(a+bx)²`，预算 `MAX_SPECIAL_STEPS=16`/`MAX_SPECIAL_DEG=8`）；精确线性平方折叠 `p²+2pq+q² → (p+q)²`（**仅当底对积分变量仿射**、重展开验证，修掉 `rubi-00854` 的 10 s 超时）；半幂前端接受 `cos(c+d·x)` 并在两支发射片层因子。**1892 题：solved 349 → 370（19.56%）、verified 343/370（92.7%）、mismatches 0、逐题新解 21 / 回归 0、超时 13 → 12、崩溃 0、墙钟 445.7 → 461.2 s**。诚实记录：solved 差 1 未达 ≥371、已验证比例未达 ≥95%、超时未达 ≤5、墙钟未达目标；线性分式对数归约（`log_fraction.rs`）因暴露真错案 + 残项积分不可靠 + 墙钟代价而**整体撤回**；椭圆族广度未达成（140 例仿射半幂簇仍 136 例拒绝，根因量化为「双根式基积/商」）。**冻结判定：0.27.2（+38）与 0.27.3（+21）连续两波各自净增 < 60 → 冻结 0.27 线，下一活动线 0.28.0。** 版本提升 0.27.3。 |

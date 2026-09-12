@@ -151,6 +151,8 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 │  1. 有理函数积分        (integrate_rational)          │
 │  2. 二次/线性分母幂递推 (integrate_quad_power)        │
 │  3. 有界展开预通道      (expand_prepass, 0.27.2)      │
+│  3b. 精确线性平方折叠   (fold_linear_squares,         │
+│      p²+2pq+q² → (p+q)²，仿射基，0.27.3)              │
 │  4. 有理导数核代换      (integrate_kernel_subst,      │
 │     tan/cot/tanh/coth, 0.27.2)                        │
 │  5. 双曲闭式族          (integrate_hyperbolic_reduction,│
@@ -184,6 +186,13 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 `[trace] enter <阶段> :: <表达式>` / `[trace] decline <阶段>`，
 用于把悬挂或回退的题目无猜测地归因到具体阶段。
 `OCAS_INTEGRATE_RULES=0` 仅关闭第 10 阶段（规则表）。
+
+第 3 与 3b 是**前置改写**而非可打点阶段：它们在管线入口重写被积函数，早于任何机制。
+线性平方折叠的动机是题库把「线性式平方」写成展开的三项式（`a² + 2abx + b²x²`），
+符号有理后端会在其上磨算——`rubi-00854` 在折叠前是 10 s 单题超时，折叠后 0.01 s 求解。
+折叠有双重闸门：重构出的底必须**对积分变量仿射**（因此不会把积化和差阶段需要的三角平方
+重新合成），且只有当重新展开候选平方能精确复现原和（或经 `normalize` 后相同）时才接受。
+它绝不在非整数幂之下生效——那里 `((p+q)²)^{1/2} = |p+q| ≠ p+q`。
 
 **阶段一 — 节点类型分派**：
 
@@ -825,6 +834,18 @@ $$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-
 - `ei_family`：匹配 $e^{cx} / x$ 形式
 - `trig_integral_family`：匹配 $\sin(x)/x$、$\cos(x)/x$、$\sinh(x)/x$、$\cosh(x)/x$（自变量必须恰为 $x$）
 - `fresnel_family`：匹配 $\sin(cx^2)$、$\cos(cx^2)$
+- `reduction_families`（0.27.3）：把「多项式（或单项分母幂）× 特殊函数头」化为闭式的**归约族**，
+  只使用本模块测试中逐条验证过的恒等式：
+  - 多项式 $\times F(a + b x)$，$F$ 取 `erf`、`erfc`、`erfi`、`Si`、`Ci`、`Shi`、`Chi`、`Ei`
+    （代换 $u = a + bx$、展开、再分部，残项为初等函数）；
+  - 多项式 $\times \text{Ei}(n, a + bx)$（整数阶 $n$），用反向递推 $E_n = (e^{-u} - n E_{n+1})/u$；
+  - $F(bx)/x^m$（$m \ge 2$，$F = \text{Ei}$ 或 $\text{Ei}(n, \cdot)$），递降终止于
+    $\text{Ei}(\pm u)$ 加初等项；
+  - 多项式 $\times F(a + bx)^2$（六个可平方的头），分部 + 高斯矩递推（`erf`/`erfi`）或
+    $F \cdot \cos/\sin$ 耦合递推（`Si`/`Ci`/`Shi`/`Chi`）。
+
+每条归约链都带硬步数预算（`MAX_SPECIAL_STEPS = 16`、`MAX_SPECIAL_DEG = 8`），无法匹配时诚实拒绝，
+任何族都不会留下 `Integral(...)` 残项。
 
 **返回值**：
 - `Some(Atom)` — 匹配成功，返回含特殊函数的反导数
@@ -832,7 +853,9 @@ $$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-
 
 **设计说明**：
 
-特殊函数定义与 SymPy 一致，结果可通过 `sympy.integrate` 交叉验证。
+特殊函数定义与 SymPy 一致，结果可通过 `sympy.integrate` 交叉验证。数值验证 oracle
+（`ocas-tests/src/integral_eval.rs`）已实现上述全部函数头，因此本族的「已解」结果是用
+「对发射形式求导」判定的，而不是靠「结果里没有 `Integral(`」这一字符串判据。
 
 **参见**：[Risch 算法](#risch-算法)、[integrate](#integrate)
 

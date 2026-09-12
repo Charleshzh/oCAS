@@ -266,13 +266,13 @@ items are re-ranked below (2026-08-06).
 | 14 | PDE solvers (Post-1.0) | 🟢 high user demand; Poisson/heat/wave |
 | 15 | ~~DoubleFloat~~ (completed 0.24) | ✅ done — **DoubleF64** (Dekker/Knuth double-float, ~31 decimal digits, transcendentals, `EvaluationDomain`, Python/C bindings); former P2 gap closed |
 | 16 | ~~Gröbner cyclic-6 < 0.5 s~~ (completed 0.26) | ✅ done — packed-monomial F5 + echelon rework; cyclic-6 ℤ₁₃ grevlex **55.04 ms** (2026-08-06 criterion median); ratio vs measured msolve 4 ms = 13.8× tracked separately |
-| 17 | **Gröbner scale: katsura-6/7 + cyclic-7** (open, P1) | ⚠️ katsura-6/7 unfinished (single round >30 min, pre-existing); cyclic-7 Lex >2 h; cyclic-7 grevlex 3.829 s vs measured msolve 55 ms (~70×); target katsura-6 < 1 s, cyclic-7 tractable — extend packed pipeline + multi-modular strategy; **scheduled 0.28.0** |
-| 18 | **Symbolic-integration breadth** (open, P0) | ⚠️ Symbolica Rubi port (7000+ rules, 72,944-problem corpus) vs oCAS Risch + the 0.27 rule-table engine + symbolic-constant rational backend + the 0.27.1 mechanism modules + 0.27.2's hyperbolic closed forms, rational-derivative kernel substitution, phase-shift normalization, inverse-composition cancellation, `exp(inverse function)` algebraization, half-power front-end and elliptic Legendre reduction; 1892-problem **solved 349 (18.45%), verified 325/349 (93.1%), mismatches 0, timeouts 13, wall clock −22%** (see BENCHMARK_RESULTS_CN.md §0.27.2); **the breadth gap stays open** — the remaining bulk is the timeout families (high-order hyperbolic rationals, `Q(sin)^n` denominators, radicals), the elliptic family and symbolic exponents. String coverage overstates real capability, so the verified ratio is reported alongside it, and six 0.27.1 wrong-answer classes were fixed (`rational_square_root` sum-as-monomial, `complete_square` monic assumption, Chebyshev case-3 branch sign, Risch out-of-field residuals, rule-A4 sequence wildcard, resonant product-to-sum zero denominators) |
-| 19 | **Code generation targets** (open, P1) | ⚠️ LLVM JIT + CUDA/WASM export vs Symbolica SymJIT/CUDA/WASM/C++/ASM; **LLVM/inkwell JIT scheduled 0.29.0**, CUDA/WASM export stays post-1.0 |
-| 20 | **Matrix / linear algebra** (open, P2) | ⚠️ SymPy 1.14 DomainMatrix 10000× rref speedup + Smith normal form vs oCAS Bareiss; **scheduled 0.30.0** |
-| 21 | **Windows FLINT support** (open, P2) | ⚠️ `flint` feature Linux/WSL only; target 3-platform; **scheduled 0.30.0** |
-| 22 | **Tensor nested-function handling** (open, P3) | 🟡 nested-function tensors vs Symbolica Graphica engine maturity; **scheduled 0.30.0** |
-| 23 | **Quadratic sieve factorization** (open, P3) | 🟡 ECM 30-digit in 1.1 s vs SymPy `qs_factor` on large composites; **scheduled 0.30.0** |
+| 17 | **Gröbner scale: katsura-6/7 + cyclic-7** (open, P1) | ⚠️ katsura-6/7 unfinished (single round >30 min, pre-existing); cyclic-7 Lex >2 h; cyclic-7 grevlex 3.829 s vs measured msolve 55 ms (~70×); target katsura-6 < 1 s, cyclic-7 tractable — extend packed pipeline + multi-modular strategy; **scheduled 0.33.0** |
+| 18 | **Symbolic-integration breadth** (open, P0) | ⚠️ Symbolica Rubi port (7000+ rules, 72,944-problem corpus) vs oCAS Risch + the 0.27 rule-table engine + symbolic-constant rational backend + the 0.27.1 mechanism modules + 0.27.2's hyperbolic closed forms, rational-derivative kernel substitution, phase-shift normalization, inverse-composition cancellation, `exp(inverse function)` algebraization, half-power front-end and elliptic Legendre reduction; 0.27.3's special-function derivative table and oracle heads, four special-function reduction families, exact linear-square fold and affine half-power arguments; 1892-problem **solved 370 (19.56%), verified 343/370 (92.7%), mismatches 0, timeouts 12, wall clock 461.2 s** (see BENCHMARK_RESULTS_CN.md §0.27.3); **the breadth gap stays open** — the remaining bulk is the timeout families (high-order hyperbolic rationals, `Q(sin)^n` denominators, radicals), the elliptic family and symbolic exponents. String coverage overstates real capability, so the verified ratio is reported alongside it, and six 0.27.1 wrong-answer classes were fixed (`rational_square_root` sum-as-monomial, `complete_square` monic assumption, Chebyshev case-3 branch sign, Risch out-of-field residuals, rule-A4 sequence wildcard, resonant product-to-sum zero denominators) |
+| 19 | **Code generation targets** (open, P1) | ⚠️ LLVM JIT + CUDA/WASM export vs Symbolica SymJIT/CUDA/WASM/C++/ASM; **LLVM/inkwell JIT scheduled 0.34.0**, CUDA/WASM export stays post-1.0 |
+| 20 | **Matrix / linear algebra** (open, P2) | ⚠️ SymPy 1.14 DomainMatrix 10000× rref speedup + Smith normal form vs oCAS Bareiss; **scheduled 0.35.0** |
+| 21 | **Windows FLINT support** (open, P2) | ⚠️ `flint` feature Linux/WSL only; target 3-platform; **scheduled 0.35.0** |
+| 22 | **Tensor nested-function handling** (open, P3) | 🟡 nested-function tensors vs Symbolica Graphica engine maturity; **scheduled 0.35.0** |
+| 23 | **Quadratic sieve factorization** (open, P3) | 🟡 ECM 30-digit in 1.1 s vs SymPy `qs_factor` on large composites; **scheduled 0.35.0** |
 
 ---
 
@@ -389,6 +389,67 @@ approach (option C):
   serve only as coverage-benchmark input, are not committed, and are not
   distributed with oCAS.
 
+#### 0.27.3 re-evaluation (2026-09-12): coverage ≠ generality, and algorithm-port priorities
+
+1. **A new, independent licensing blocker**: the crates.io page for
+   `symbolica-integrate` states plainly that *"It depends on Symbolica, which is
+   distributed under separate licensing terms"*. The MIT licence covers the ported
+   code only; the **runtime dependency is the source-available, commercially
+   licensed Symbolica core**. That conflicts directly with oCAS's rule that the
+   default build contains no proprietary or source-available code (CLAUDE.md) and
+   with its "LGPL throughout, commercially embeddable" position. Note this is
+   **not** a copyleft problem, so isolating it in `ocas-gpl` does not help — it
+   would need a commercial licence, not licence compatibility.
+2. **Technical feasibility has already been demonstrated by others**: Rubi's own
+   documentation says its 6700+ rules "could be compiled into a single, deeply
+   nested if-then-else control construct" precisely so the system can be ported to
+   hosts without sophisticated pattern matching. Symbolica's Rust port **passes the
+   complete 72,944-problem corpus**, and does the 1892 subset in **111.24 s**
+   (oCAS 0.27.3: 461.2 s, ~4.1× slower). So "rewrite Rubi's rules in Rust and score
+   highly" is true — **because that corpus is Rubi's own exam**.
+3. **But that buys coverage, not generality**: Rubi is an *enumerative* approach
+   (6700+ hand-written special cases in a decision tree); its near-perfect score on
+   its own suite is by construction. Porting it means adopting Rubi's entire
+   special-function vocabulary (`polylog`/`productlog`/`gamma`, …) and its
+   "optimal antiderivative" conventions, maintaining an **order-sensitive**
+   6700-rule decision tree, and absorbing upstream drift. It does **not** make the
+   solving method more general — quite the opposite: the mechanism route is more
+   general per line, it just has a lower ceiling on a rule-shaped corpus. If the
+   goal is generality, port **algorithms**, not rules.
+4. **Algorithm-port priorities** (ordered by the structural ceilings measured in
+   the 0.27.3 investigation, see
+   [BENCHMARK_RESULTS_CN.md](BENCHMARK_RESULTS_CN.md) §"0.27.3 follow-up"):
+   permissively licensed sources include FriCAS (Modified BSD), SymPy (BSD-3),
+   Reduce (BSD), SymEngine (MIT), FLINT/Arb (LGPL/MIT), plus published papers
+   (algorithms themselves are not copyrightable).
+   | Priority | Algorithm | What it unlocks |
+   |---|---|---|
+   | 1 | Residue resolution (chain tail + deterministic budget) — **a defect fix, not a new engine** | measured net +4 (+5 solved / −1 regressed / +3 timeouts; prototype reverted) |
+   | 2 | Expression-level cycle detection to replace the global chain-entry cap (`MAX_CHAIN_ENTRIES`) | 9 of the 12 timeouts, plus wall clock |
+   | 3 | Residues in algebraic extensions (Lazard–Rioboo–Trager) | the whole family of denominators irreducible over ℚ (`1/(1+x⁴)`, `1/(1−3x²+x⁴)`, …) |
+   | 4 | Multi-radical-base reduction | an estimated 222 cases (including 136 of the 140-case affine `cos` half-power cluster) |
+   | 5 | Logarithmic/dilogarithmic integration + `polylog`/`Li₂` heads | 122 cases (8.0%) unreachable on today's library |
+   | 6 | Inverse-function substitution engine (polynomial weight × `(a+b·f(ax+b))^k`) | the `inverse-trig-hyper` bucket, 138/146 unsolved |
+   | 7 | Widen/rework `symbolic_rational`'s 5-symbol entry gate and work budgets | 169 cases with ≥6 parameters |
+5. **Architectural constraint (whichever route)**: any rule layer must run **after
+   all mechanisms** — otherwise it preempts the general mechanisms and oCAS becomes
+   "a Rubi clone with the maintenance burden" while losing the LGPL, self-developed
+   story. Its output must pass the same numerical oracle (in place since 0.27.2) and
+   respect semantic guardrails such as `preserves_argument_order` (multi-argument
+   head ordering, branch/domain conventions).
+6. **Conclusion (the 0.27.0 determination stands, with priorities added)**:
+   - **Do not integrate** `symbolica-integrate` (licensing dependency + dependency
+     weight + expression-model mismatch).
+   - Keep Symbolica/Rubi as an **out-of-tree measurement oracle**:
+     `ocas-tests/scripts/symbolica_runner` deliberately depends on a local checkout
+     outside the repository (`../../../../symbolica`), is not a workspace member and
+     is not distributed with oCAS. That boundary must be preserved.
+   - If coverage remains the bottleneck, do the **algorithm ports in item 4 first**;
+     only afterwards consider a subset port that "references Rubi's decision-tree
+     structure and rewrites the rule expressions", and only after an independent
+     legal review, measuring wave by wave on the 1892 harness (current acceptance
+     table: solved / verified / mismatches / timeouts / crashes / wall clock).
+
 ---
 
 ## 8. Strategic Recommendations
@@ -398,10 +459,10 @@ approach (option C):
 | Recommendation | Version | Deliverables | Rationale |
 |---|---|---|---|
 | Integration-breadth expansion | 0.27.0 | Risch + heuristic expansion + Rubi-grade rule set (1892-problem coverage +30 pp) | Symbolica 2.2 killer feature; the largest functional gap |
-| Gröbner katsura/cyclic-7 expansion | 0.28.0 | katsura-6 < 1 s; cyclic-7 grevlex < 10× msolve | measured msolve 3–55 ms; packed F5 already converged cyclic-6 |
-| LLVM JIT code generation | 0.29.0 | LLVM/inkwell JIT backend (Cranelift default, LLVM optional) | Symbolica SymJIT generation gap; Cranelift at its performance ceiling |
-| Matrix enhancement | 0.30.0 | DomainMatrix analogue + Smith/Hermite normal forms | SymPy 1.14 gap widening |
-| Windows FLINT + quadratic sieve + tensor nesting | 0.30.0 | flint3-sys Windows build; QS large-integer factorisation; nested-function tensor handling | platform completeness + SymPy `qs_factor` |
+| Gröbner katsura/cyclic-7 expansion | 0.33.0 | katsura-6 < 1 s; cyclic-7 grevlex < 10× msolve | measured msolve 3–55 ms; packed F5 already converged cyclic-6 |
+| LLVM JIT code generation | 0.34.0 | LLVM/inkwell JIT backend (Cranelift default, LLVM optional) | Symbolica SymJIT generation gap; Cranelift at its performance ceiling |
+| Matrix enhancement | 0.35.0 | DomainMatrix analogue + Smith/Hermite normal forms | SymPy 1.14 gap widening |
+| Windows FLINT + quadratic sieve + tensor nesting | 0.35.0 | flint3-sys Windows build; QS large-integer factorisation; nested-function tensor handling | platform completeness + SymPy `qs_factor` |
 
 > Already delivered (0.24–0.26): DoubleFloat (→DoubleF64), Gröbner cyclic-6
 > < 0.5 s (grevlex 55 ms), MultiModular ℚ pipeline, four heuristic integration
@@ -415,8 +476,8 @@ approach (option C):
 | CUDA/WASM code export | P1 | Symbolica supports it; GPU/browser scenarios |
 | PDE solvers | P2 | high user demand; Poisson/heat/wave |
 
-> Moved from Post-1.0 into pre-1.0: LLVM/inkwell JIT (→0.29.0), quadratic-sieve
-> factorisation and Windows FLINT (→0.30.0).
+> Moved from Post-1.0 into pre-1.0: LLVM/inkwell JIT (→0.34.0), quadratic-sieve
+> factorisation and Windows FLINT (→0.35.0).
 
 ### 8.3 Positioning
 
@@ -469,3 +530,4 @@ Record every refresh here (version, date, evaluator, deltas).
 | 0.27.0 | 2026-09-06 | **Symbolic-integration breadth delivered + stability fixes.** Rule-table engine (families A–H) + symbolic-constant rational backend + Weierstrass linear arguments (phases (a)/(b)) + bounded expansion retry + trig product-to-sum/power reduction (phase (c)); 1892-problem coverage 5.87% → 9.62% (+3.75pp; **the +30pp target was not met** — root causes quantified in BENCHMARK_RESULTS_CN.md §0.27.0). Fixes: naive pseudo-remainder dense GCD → subresultant PRS (root cause of the Weierstrass hang class); global chain-entry budget 256 for the integration pipeline (root cause of the parts ↔ Weierstrass ping-pong stack overflow); exact dyadic Sturm evaluation for real-root isolation (Wilkinson n=10 8/10 → 10/10; §3 real-root-isolation row 🟡→🟢, known gap removed from §5). Version bumped to 0.27.0. |
 | 0.27.1 | 2026-09-10 | **Integration-breadth mechanism push + two wrong-answer fixes.** Six mechanism modules (Chebyshev binomial differentials / trig-denominator power reductions / exp-log kernel substitutions / general sqrt-quadratic engine + Euler III / inverse-trig kernel powers / single-trig-kernel rational forms) plus denominator-power recurrences and two-linear-factor partial fractions; 1892-problem coverage 9.62% → 16.44% (+6.82pp, 129 newly solved, zero regressions by per-case diff, timeouts 49→33, zero crashes, wall clock −19%; **+30pp still not met** — remaining bulk quantified in BENCHMARK_RESULTS_CN.md §0.27.1). Wrong-answer fixes: the C14/D7b linear-argument power reductions divided the residual coefficient by the slope twice (introduced in 0.27.0); rational.rs dropped 1/q from √(p/q). Also: normalize power-of-power and exact numeric power folding, deep-residue checks in the heuristic stage, expansion moved before the heuristic stage to stop budget starvation, the derivative table completed (12 functions), symbolic-rational coefficient budgets + many-symbol entry gate. Version bumped to 0.27.1. |
 | 0.27.2 | 2026-09-10 | **Hang elimination + verified-coverage criterion + elementary mechanism closure + elliptic foundation.** Stage tracing (`OCAS_INTEGRATE_TRACE`) attributed all 33 timeouts (symbolic_rational 18, heuristic 4, trig_kernel 3, inverse_trig 2, rational 2, trig_reduction 2, sqrt_quadratic 1, untraced 1) → bounded-expansion pre-pass plus deterministic per-stage budgets. New independent numerical verification oracle (`ocas-tests/src/integral_eval.rs`: f64 evaluation, erf/erfi series, adaptive-Simpson evaluation of the defining elliptic integrals, 5-point central differences) and harness fields `verified_solved` / `verify_mismatches`. **Fixed a 0.27.1 wrong-answer class**: `rational_square_root` treated a polynomial **sum** (e.g. `4a²+4b²`) as a monomial square, splitting quadratic denominators at bogus roots and emitting wrong logarithms (`1/(b*x^2+2*a*x-b)`, and via `t = e^x` the shape `1/(a+b*sinh(x))`). Mechanisms: hyperbolic closed forms, rational-derivative kernel substitution, trig phase-shift normalization, inverse-composition cancellation, `exp(inverse function)` algebraization, half-power front-end + elliptic Legendre reduction (`EllipticF/E/Pi`, SymPy `m = k²` convention); `normalize` gained an order-preserving head registry (`preserves_argument_order`). Version bumped to 0.27.2. |
+| 0.27.3 | 2026-09-12 | **0.27-line close-out: special-function breadth + exact square fold + half-power affine arguments; the 0.27 line is frozen.** Special-function derivative table (`erf/erfc/erfi/Ei/Si/Ci/Shi/Chi/fresnels/fresnelc` plus per-argument partials for `Ei(n,z)` and the elliptic heads; an unimplemented partial declines to an unevaluated `Derivative`) and oracle heads (all algorithms cross-checked against `mpmath` at 40 digits; `E₁` uses a convergent series for small arguments and a smallest-term-truncated asymptotic series for large ones, the elliptic defining integral switched to a fixed 2000-panel composite Simpson, taking the debug test from 376 s to 2.6 s). `special.rs` gained four budgeted reduction families (polynomial × `F(a+bx)`, polynomial × `Ei(n,a+bx)`, `F(bx)/x^m` descent, polynomial × `F(a+bx)²` with `MAX_SPECIAL_STEPS=16`/`MAX_SPECIAL_DEG=8`). Exact linear-square fold `p²+2pq+q² → (p+q)²` **only for a base affine in the integration variable**, accepted by exact re-expansion (fixes `rubi-00854`'s 10 s timeout). The half-power front-end accepts `cos(c+d·x)` and emits the sheet factor on both branches. **1892-problem: solved 349 → 370 (19.56%), verified 343/370 (92.7%), mismatches 0, per-case diff 21 newly solved / 0 regressed, timeouts 13 → 12, crashes 0, wall clock 445.7 → 461.2 s.** Honest record: solved short by 1 of ≥371, verified ratio below ≥95%, timeouts above ≤5, wall clock above target; the log-of-a-linear-fraction reduction (`log_fraction.rs`) was **withdrawn** after it exposed a real wrong answer and its residual proved unreliable and costly; elliptic-family breadth was not achieved (136 of the 140-case affine half-power cluster still decline, root cause quantified as "products/quotients of two radical bases"). **Freeze determination: 0.27.2 (+38) and 0.27.3 (+21) are two consecutive waves each below 60 net → the 0.27 line is frozen and 0.28.0 is next.** Version bumped to 0.27.3. |

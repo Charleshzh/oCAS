@@ -1068,7 +1068,7 @@ Refresh this plan:
 > MultiModular Gröbner + parallel modular GCD, 0.26 packed-monomial F5 fast
 > channel (cyclic-6 ℤ₁₃ grevlex 55.04 ms measured). 0.26.0 shipped a different
 > scope than originally planned — the matrix engine / Smith normal forms were
-> deferred to 0.30.0 in Phase B++++.**
+> deferred to 0.35.0 in Phase B++++.**
 
 ### 0.24.0 — Symbolic Integration Breadth + DoubleFloat
 
@@ -1138,7 +1138,7 @@ to < 0.5 s.
 - [x] cyclic-7 ℤ₁₃ tractable and `is_groebner_basis` verified (0.26 grevlex
   single round 5.755 s, 209 basis elements)
 - [x] Multi-modular path agrees with the single-prime F5 path (100 random cases)
-- [ ] katsura-6/7 benchmarks run and recorded (deferred to 0.28.0)
+- [ ] katsura-6/7 benchmarks run and recorded (deferred to 0.33.0)
 
 **Risks**
 
@@ -1153,7 +1153,7 @@ to < 0.5 s.
 **Goal**: push the F5 main loop into a u128 SWAR fast channel, closing in on
 msolve performance; add grevlex benchmark variants. (The originally planned
 domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
-0.26.0 — deferred to 0.30.0.)
+0.26.0 — deferred to 0.35.0.)
 
 **Functionality**
 
@@ -1176,9 +1176,9 @@ domain-aware matrix engine + Smith/Hermite normal forms were not shipped in
   cross-checks)
 - [x] cyclic-6/7 grevlex benchmarks run and recorded
 - [x] Graded-order degree-direction fix regression-tested
-- [ ] Domain-aware matrix engine + Smith/Hermite normal forms (→ 0.30.0)
-- [ ] Matrix performance benchmarks (→ 0.30.0)
-- [ ] Pre-1.0 freeze preparation: API audit / migration guide / cross-platform CI (→ 0.30.0)
+- [ ] Domain-aware matrix engine + Smith/Hermite normal forms (→ 0.35.0)
+- [ ] Matrix performance benchmarks (→ 0.35.0)
+- [ ] Pre-1.0 freeze preparation: API audit / migration guide / cross-platform CI (→ 0.35.0)
 
 **Risks**
 
@@ -1331,20 +1331,234 @@ series until the net gain plateaus or the +30pp line is reached.
 **Goal**: continue the mechanism push on the largest clusters the 0.27.2
 failure dump leaves behind.
 
+**Functionality** (✅ delivered / ⚠️ partial / ❌ not achieved)
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Special-function family extension (`Ei(n,z)`/Eₙ, erf powers and compositions, `x^k·Si/Ci/Ei`) ✅ | Rubi special-function family; 0.14 function table | `integrate::special` extension (four reduction families) |
+| Special-function derivative table + oracle heads ✅ | `mpmath`/SymPy cross-check at 40 digits | `derivative.rs`, `ocas-tests/src/integral_eval.rs` |
+| Half-power affine arguments (`cos(c+d·x)`) + sheet factor on both branches ✅ | 0.27.2 half-power front-end | `integrate::halfpower` extension |
+| Exact linear-square fold `p²+2pq+q²` (affine base, re-expansion checked) ✅ | — | `integrate::fold_linear_squares` (pipeline entry) |
+| Composite-shell decomposition (mixed-other cluster) ⚠️ withdrawn | — | the log-of-a-linear-fraction reduction was implemented and then **deleted** (see below) |
+| Elliptic-family breadth (trig-quadratic routing, cubic radicands, complex Π) ❌ | Byrd & Friedman | untouched; 136 of the 140-case cluster still decline, root cause quantified |
+
+**Acceptance** (recorded against the same table as 0.27.2):
+
+| Metric | 0.27.2 | 0.27.3 | Verdict |
+|---|---|---|---|
+| solved | 349 (18.45%) | **370 (19.56%)** | target ≥371 **not met** (short by 1) |
+| per-case diff | — | **21 newly solved, 0 regressed** | met |
+| verified / solved | 325/349 (93.1%) | **343/370 (92.7%)** | target ≥95% **not met** |
+| `verify_mismatches` | 0 | **0** | **met (hard red line)** |
+| timeouts | 13 | **12** | target ≤5 **not met** |
+| crashes | 0 | **0** | met |
+| wall clock | 445.7 s | 461.2 s | target <445.7 s **not met** (+3.5%) |
+
+Bucket deltas (newly solved): special +15, trig +3, power-binomial +2, mixed-other +1.
+Withdrawal record: the log-of-a-linear-fraction reduction (`log_fraction.rs`) exposed a real
+wrong answer once integrated (its residual was returned unwrapped), its residual was not
+reliably integrable, and it cost wall clock — so it was withdrawn wholesale under the
+"keep only what adds no regressions and no wall-clock cost" rule. The attempt did upgrade the
+A4 regression guard from "must leave a residue" to "if solved, verify the derivative".
+
+**Freeze determination**: 0.27.2 (+38) and 0.27.3 (+21) are **two consecutive waves each
+below 60 net**, so by this document's literal rule **the 0.27 line is frozen and 0.28.0 is
+the next active line**; 0.27.3 is the last release of the 0.27 series.
+
+**Risks (backfilled with what actually happened)**
+
+- Elliptic domain/branch handling is the new hard part → happened: only the affine-argument
+  layer shipped; branch handling stays inside 0.27.2's documented `A > 0` caveat and was not
+  widened
+- Multi-argument heads being reordered by `normalize` → covered by the order-preserving
+  registry plus tests, and `derivative.rs` now declines an unimplemented partial to an
+  unevaluated `Derivative`
+- Parallel development interface drift → this wave ran two subagents in parallel
+  (special / halfpower) with single-file ownership, the main line owning `mod.rs` and the
+  metrics; one concurrent regression (trigonometric squares being folded back) was caught by
+  the interim full-corpus per-case diff and fixed
+
+---
+
+### 0.28.0 — Integration-Mechanism Correctness Foundation (defects + certificates + regular towers)
+
+> **Inserted 2026-09-12**: the 0.27.3 failure attribution redefined the nature of P0 as
+> "the correctness and generality of the mechanisms", so 0.28–0.32 do the mechanism push
+> first; the former 0.28.0/0.29.0/0.30.0 slide in order to 0.33.0/0.34.0/0.35.0. Basis:
+> [GENERAL_MECHANISM_FEASIBILITY_EN.md](GENERAL_MECHANISM_FEASIBILITY_EN.md) §3, §5, §6 P0.
+
+**Goal**: fix the two measured architectural defects; upgrade "correct" from sampled evidence
+to **symbolic certificates**; relax the general Risch engine's most expensive entry condition
+(dependent generators being rejected).
+
 **Functionality**
 
 | Item | Reference | oCAS landing spot |
 |---|---|---|
-| Composite-shell decomposition (mixed-other cluster) | — | factor-level splitting + inner-kernel recognition in `integrate` |
-| Special-function breadth (`Ei(n,z)`/Eₙ, erf powers and compositions, `x^k·Si/Ci/Ei`, `erfc` denominators) | Rubi special-function family; 0.14 function table | `integrate::special` extension |
-| Elliptic family breadth (trig-quadratic routing, cubic radicands, complex `EllipticPi`) | Byrd & Friedman | `integrate::elliptic` extension |
+| Residue resolution (chain tail + deterministic budget) | measured net +4: +5 solved/−1 regressed/+3 timeouts (BENCHMARK_RESULTS_CN §0.27.3 follow-up §3.1) | the `rational`/`symbolic_rational` call sites in `integral/mod.rs` + `rules::resolve_residuals` |
+| Expression-level cycle detection (replacing the global chain-entry cap) | `rubi-00008` measured 306 stage entries / 18 cycles | `MAX_CHAIN_ENTRIES` / `try_risch_or_fallback` in `integral/mod.rs` |
+| Symbolic certificate `D(F) − f ≡ 0` in the differential field | field normalisation, Bronstein ch. 1–2 | `ocas-calc::tower::elem` + a new certificate layer |
+| Three-valued `Outcome` (`Found`/`ProvedNonElementary`/`Unknown`) | decision-procedure semantics | `integral/mod.rs` exits + bindings |
+| Regular towers: merge algebraically dependent generators | Trager regularisation | `ocas-calc::tower::build` (currently rejects) |
+| `certified_rate` metric | — | `ocas-tests/benches/integrate_1892.rs` + CI gate |
 
-**Acceptance**: recorded against the same table as 0.27.2; two consecutive
-waves adding < 60 solved problems freeze the 0.27 line and hand off to 0.28.0.
+**Performance targets**
+
+- Certificate pass rate **100%** on the 1892 solved set; `certified_rate = 1.0`
+- New solves in the hyperbolic family (baseline: 111 unsolved contain hyperbolic heads)
+- Timeout count does not rise; wall clock no worse than 461.2 s (the 0.27.3 terminal state)
+
+**Acceptance**
+
+- [ ] Symbolic certificates exactly 0 for 100% of the solved set
+- [ ] `certified_rate = 1.0` wired into the CI gate
+- [ ] New hyperbolic solves recorded; per-case diff **0 regressions**
+- [ ] `verify_mismatches` stays 0
+
+**Risks**
+
+- Residue resolution without a budget introduces new timeouts (the prototype added +3) → chain
+  tail + deterministic budget is mandatory
+- Algebraic-dependency testing is undecidable in general → return `Unknown`, never guess
 
 ---
 
-### 0.28.0 — Gröbner Performance at Scale (katsura + cyclic-7)
+### 0.29.0 — Completing the Transcendental Risch
+
+**Goal**: widen `integral/rde.rs` from "polynomial solutions only" to the complete fragment,
+and add the structure theorem for the logarithmic part.
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.4, §6 P1.)
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| RDE rational solutions (denominator bounds + `D`-rational solutions) | Bronstein ch. 6, full version | `integral/rde.rs` |
+| Coupled differential systems `D y + A y = b` | Bronstein ch. 6 | `integral/rde.rs` extension |
+| General structure theorem for the logarithmic part | Bronstein ch. 3–5 | `integral/risch.rs` (currently only the log-derivative identity) |
+| Property tests generating random tower elements + symbolic certificates | — | `ocas-calc` proptests + the certificate layer |
+
+**Performance targets**
+
+- Clear improvement in the `exp-log` bucket (baseline 79/83 unsolved)
+- 100% certificate pass rate on the random tower-element family
+
+**Acceptance**
+
+- [ ] `exp-log` bucket improvement quantified and recorded
+- [ ] 100% certificates on the random tower-element family
+- [ ] 0 regressions on the 1892; the certificate gate holds
+
+**Risks**
+
+- Denominator-bound derivations are error-prone → constrain with certificates + proptest
+- Taller towers add complexity pressure → coordinate with 0.32.0's modular work
+
+---
+
+### 0.30.0 — Algebraic Extensions and Inverse-Function Substitution
+
+**Goal**: wire in the algebraic integration chain (reusing the existing Trager assets) and
+cover the inverse-function families.
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.2, §3.5, §6 P2.)
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Algebraic generators entering the tower (`√x` and general radicals) | Bronstein ch. 7 | `ocas-calc::tower::build` (currently rejects non-integer powers) |
+| Integral basis + algebraic Hermite reduction + algebraic residues | Bronstein ch. 7–8; Trager | `integral/risch.rs` + `ocas-poly` Trager |
+| Multi-radical-base reduction | 0.27.3 investigation (est. 222 cases with ≥2 bases) | a new reduction above `integral/sqrt_quadratic.rs` / `halfpower.rs` |
+| Inverse-function substitution engine (polynomial weight × `(a+b·f(ax+b))^k`) | the idea behind Rubi 4.x–5.x | `integral/inverse_trig.rs` extension |
+| Reuse Trager factorisation + resultants + algebraic-field GCD | the 0.17.0 assets | `ocas-poly::factor::algebraic` |
+
+**Performance targets**
+
+- The `1/(1+x⁴)`, `1/(1−3x²+x⁴)` and irreducible sextic/octic denominator families solve
+- Clear improvement in the radical bucket (baseline 356/407 unsolved)
+
+**Acceptance**
+
+- [ ] Irreducible-denominator families solve, recorded per case
+- [ ] `inverse-trig-hyper` bucket (baseline 138/146 unsolved) improvement quantified
+- [ ] The certificate gate holds; 0 regressions on the 1892
+
+**Risks**
+
+- Residues over algebraic extensions plus branch handling are new hard ground → deliver in
+  steps (quartic/quadratic radicals first, then the general case)
+- May hit undecidable points → `Unknown` as the backstop
+
+---
+
+### 0.31.0 — The Non-Elementary Layer
+
+**Goal**: cover what is **completely unreachable** today: antiderivatives needing dilogarithms
+or Meijer G (baseline: 122 cases whose reference answer contains `polylog`, 8.0% of the unsolved).
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.6, §6 P3.)
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| `polylog`/`Li₂` heads + oracle evaluators | the 0.27.3 pattern for `Ei`/`Si`/`Ci` | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
+| Li₂ reduction (logarithmic-rational integration) | Lewin's formulas; Raab/Baddoura | `integral/special.rs` or a new module |
+| Meijer G / Slater expansion (or the holonomic route) | SymPy `meijerg` | a new `ocas-calc::integral` module |
+| `ProvedNonElementary` available for the first time | Singer's structure theorems (engineered subset) | the third `Outcome` value |
+
+**Performance targets**
+
+- The reachable part of the 122 `polylog` cases unlocks
+- 100% numerical verification of the new heads in the oracle
+
+**Acceptance**
+
+- [ ] `polylog`/`Li₂` heads + numerical verification land
+- [ ] Reachable and still-declined case counts recorded separately
+- [ ] The certificate gate holds; `verify_mismatches` stays 0
+
+**Risks**
+
+- Meijer G needs a Mellin table and Slater expansion — substantial → Li₂ first, Meijer second
+- Branch/domain semantics are more intricate → formal certificates and real-valued semantics
+  annotated separately
+
+---
+
+### 0.32.0 — Complexity and Performance (complexity as an algorithmic problem)
+
+**Goal**: solve coefficient blow-up under symbolic coefficients with **algorithms** rather than
+more wall-clock budgets (baseline: 9 of the 12 timeouts sit in `symbolic_rational`).
+(Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.7, §6 P4.)
+
+**Functionality**
+
+| Item | Reference | oCAS landing spot |
+|---|---|---|
+| Modular arithmetic under symbolic coefficients | the 0.25 MultiModular ℚ pipeline | `ocas-poly` modular pipeline + `symbolic_rational` |
+| Parallel Risch | Bronstein ch. 9 / Risch–Norman | `integral/risch.rs` |
+| Lazy series + degree-bound pruning (replacing "add budget") | — | `symbolic_rational.rs` / `rational.rs` |
+| Stage-level treatment of the 12 remaining timeouts | `timeout_attribution_0273.csv` | the stages named there |
+
+**Performance targets**
+
+- Wall clock no worse than the 0.28.0 baseline; the timeout count falls
+- High-level/many-symbol instances no longer fall back through coefficient blow-up
+
+**Acceptance**
+
+- [ ] Wall clock and timeout counts recorded on both metrics
+- [ ] The modular path agrees with the single-prime path on 100 random cases
+- [ ] The certificate gate holds; 0 regressions
+
+**Risks**
+
+- The modular/symbolic-tower interface is intricate → get the base field `ℚ(x)` right first
+- Parallelism introduces nondeterminism → every result must match the serial path case by case
+
+---
+
+### 0.33.0 — Gröbner Performance at Scale (katsura + cyclic-7) (formerly 0.28.0)
 
 **Goal**: align with measured msolve 0.10.1 (katsura 3–7 ms, cyclic-7 55 ms)
 (P1): katsura-6 < 1 s, cyclic-7 grevlex within one order of magnitude.
@@ -1380,7 +1594,7 @@ waves adding < 60 solved problems freeze the 0.27 line and hand off to 0.28.0.
 
 ---
 
-### 0.29.0 — Code Generation Extension (LLVM/inkwell JIT)
+### 0.34.0 — Code Generation Extension (LLVM/inkwell JIT) (formerly 0.29.0)
 
 **Goal**: land a second JIT backend — LLVM (via `inkwell`, already a workspace
 dependency) — narrowing the code-generation gap vs Symbolica SymJIT (P1).
@@ -1416,7 +1630,7 @@ dependency) — narrowing the code-generation gap vs Symbolica SymJIT (P1).
 
 ---
 
-### 0.30.0 — Matrix Engine + Platform Close-Out + 1.0 Freeze Preparation
+### 0.35.0 — Matrix Engine + Platform Close-Out + 1.0 Freeze Preparation (formerly 0.30.0)
 
 **Goal**: close the P2/P3 gaps and finish pre-1.0 freeze preparation:
 domain-aware matrix engine (DomainMatrix analogue) + Smith/Hermite normal

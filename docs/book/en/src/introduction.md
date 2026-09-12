@@ -8,7 +8,7 @@ oCAS uses a layered crate architecture: 13 workspace members from the low-level 
 
 ## Version Feature Matrix
 
-The table below lists the key features added in each oCAS release (0.1 → 0.24):
+The table below lists the key features added in each oCAS release (0.1 → 0.27):
 
 | Version | Date | Key additions |
 |---|---|---|
@@ -42,6 +42,7 @@ The table below lists the key features added in each oCAS release (0.1 → 0.24)
 | **0.27.0** | 2026-09-06 | Symbolic-integration breadth: rule-table engine (families A–H), symbolic-constant rational backend, Weierstrass linear arguments, bounded expansion retry, trig product-to-sum; Rubi 1892-problem coverage 5.87% → 9.62% |
 | **0.27.1** | 2026-09-10 | Integration-breadth mechanism push: Chebyshev binomials, trig-denominator power reductions, exp-log kernel substitutions, general sqrt-quadratic engine + Euler III, inverse-trig kernels, single-trig-kernel rational forms; coverage 9.62% → 16.44%; two wrong-answer classes fixed |
 | **0.27.2** | 2026-09-11 | Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, `exp(inverse function)` algebraization, half-power front-end + elliptic Legendre reduction (`EllipticF/E`); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%) |
+| **0.27.3** | 2026-09-12 | 0.27-line close-out: special-function derivative table + oracle heads (`Ei`/`Ei(n,z)`/`Si`/`Ci`/`Shi`/`Chi`/Fresnel), special-function reduction families (polynomial × `F`, `Ei(n,·)`, `F/xᵐ`, `F²`), exact linear-square fold `p²+2pq+q² → (p+q)²`, affine-argument half-power front-end with the sheet factor on both branches; Rubi coverage 18.45% → 19.56% (+21 solved, 0 regressed, mismatches 0, timeouts 13 → 12) |
 
 ---
 
@@ -141,7 +142,7 @@ graph TD
 - **Number theory** — BPSW primality testing, integer factorization (trial division/Pollard rho/p−1/p+1/ECM), discrete logarithms (BSGS + Pohlig–Hellman), Euler φ / Möbius / divisor functions.
 - **Rewriting and simplification** — AC backtracking pattern matching, wildcards (`x__`/`x___`), fixpoint simplification, fuel-limited simplification, optional egg e-graph equality saturation.
 - **Three-language bindings** — Rust prelude API, Python (PyO3, 25 classes + 32 functions), C/C++ (cbindgen, 91 exports + RAII wrappers).
-- **Correctness framework** — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1174 `#[test]`/`#[tokio::test]` annotations as of 0.24.0).
+- **Correctness framework** — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1516 `#[test]`/`#[tokio::test]` annotations as of 0.27.3).
 - **Optional numeric backends** — GMP/MPFR/FLINT behind feature flags, with GPL backends isolated in `ocas-gpl`.
 
 ---
@@ -169,5 +170,5 @@ graph TD
 
 ## Project Status
 
-oCAS is currently at version **0.24.0**. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
+oCAS is currently at version **0.27.3**. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
 [roadmap](https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md).

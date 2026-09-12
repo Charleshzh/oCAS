@@ -9,6 +9,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.27.3] - 2026-09-12
+
+### Added / 新增
+
+- **特殊函数导数表**（`ocas-calc/src/derivative.rs`）：`erf`/`erfc`/`erfi`/`Ei`/`Si`/`Ci`/
+  `Shi`/`Chi`/`fresnels`/`fresnelc` 与 **多参函数头的逐实参偏导**（`Ei(n, z)` = `Eₙ(z)`，
+  ∂/∂z = −Eₙ₋₁；`EllipticF/E/Pi` 的 ∂/∂φ）。**未实现偏导槽位一旦真的依赖求导变量，整体回退为
+  未求值 `Derivative(...)`，绝不静默丢项**。这是公开行为变更（`diff` 对上述头不再返回
+  `Derivative`）。/ Special-function derivative table plus per-argument partials for the
+  multi-argument heads, with an explicit "unimplemented partial ⇒ unevaluated `Derivative`"
+  rule (a breaking-behaviour change for `diff`).
+- **数值验证 oracle 扩头**（`ocas-tests/src/integral_eval.rs`）：新增 `Ei`、`Ei(n, z)`
+  （含初等负阶）、`Si`/`Ci`/`Shi`/`Chi`、`fresnels`/`fresnelc`。每条算法先与 `mpmath`
+  40 位对拍再落码：`E₁` 小参数用收敛级数、大参数用最小项截断的渐近级数；`Si`/`Ci` 在
+  `x = 20` 处切换到辅助渐近级数；Fresnel 用自推导并数值核验的辅助级数；椭圆定义积分改用
+  固定 2000 面板复合 Simpson。/ Oracle heads for the whole special-function family, each
+  algorithm cross-checked against `mpmath` at 40 digits before being written down.
+- **特殊函数归约族**（`ocas-calc/src/integral/special.rs`）：四个族，全部带硬步数预算
+  （`MAX_SPECIAL_STEPS = 16`、`MAX_SPECIAL_DEG = 8`），残项一律闭式、不留
+  `Integral(...)`：多项式 × `F(a+b·x)`、多项式 × `Ei(n, a+b·x)`（反向递推）、
+  `F(b·x)/xᵐ` 递降（`m ≥ 2`）、多项式 × `F(a+b·x)²`（高斯矩递推 / 耦合
+  `F·cos/sin` 递推）。**special 桶 19 题中 15 题求解且 15 题全部通过数值验证**，4 题诚实拒绝
+  （两题 Rubi 自身 `Unintegrable`，两题 Fresnel 分母链刻意不实现）。/ Four budgeted
+  special-function reduction families; 15 of the 19 special-bucket cases now solve and all
+  15 verify numerically, 4 decline honestly.
+- **精确线性平方折叠**（`integral/mod.rs::fold_linear_squares`）：
+  `p² + 2·p·q + q² → (p+q)²`，在管线入口作为前置改写。双重闸门：底必须**对积分变量仿射**，
+  且重写必须通过「重新展开候选平方精确复现原和」（或经 `normalize` 后的快速通道）；绝不在
+  非整数幂之下生效（`((p+q)²)^{1/2} = |p+q| ≠ p+q`）。`rubi-00854`
+  由 10 s 单题超时变为 **0.01 s** 求解。/ Exact linear-square fold with an affine-base gate
+  and exact re-expansion acceptance.
+- **半幂前端仿射变元**（`integral/halfpower.rs`）：接受 `cos(c + d·x)`，并在两支都发射片层
+  因子（`cos(u/2)·(1 − sin²(u/2))^(−1/2)`），使仿射变元下的形式对任意区间都能求导回被积
+  函数；同基的 `Sᵃ·(√S)ᵇ` 先折叠为单一半幂。新解 4 例
+  （`rubi-00377`/`00445`/`01598`/`00291`）。/ Affine-argument half-power front-end with the
+  sheet factor on both branches; 4 newly solved cases.
+
+### Fixed / 修复
+
+- **`diff` 的多参头语义**：`Ei(n, z)`、`EllipticF/E/Pi` 此前只按 `args[0]` 求导并返回
+  未求值 `Derivative`；现在按实参位置分别求偏导，参数槽（阶数/模数/特征值）若真的依赖求导
+  变量则诚实拒绝。/ Multi-argument heads are now differentiated per argument, declining
+  honestly when a parameter slot really depends on the variable.
+- **折叠的片面性（自引入、运行中捕获）**：早期版本会把
+  `a²cos²u + 2ab·cos u·sin u + b²sin²u` 折回 `(a·cos u + b·sin u)²`，撤掉积化和差阶段需要的
+  展开形，使 `rubi-00334` 由「已解」变为 10 s 超时；`+3 → 0` 的回归由 interim 全量逐题 diff
+  捕获，加入「仿射底」闸门后修复。/ The fold is restricted to affine bases, fixing a
+  concurrent regression that turned `rubi-00334` into a timeout.
+- **A4 回归护栏升级**（`integral/rules.rs`）：原测试要求 `x^2*(d+e*x)^3*(a+b*log(c*x^n))`
+  必须留残项；该形现在（经分发后逐项分部）可正确求解，故按测试自身文档的指引改为
+  **数值求导核验**：若求解则必须在具体参数下满足 `d/dx F = f`，两种结局都不放过错案。
+  / The A4 guard now verifies the derivative numerically instead of demanding a residue.
+- **debug 测试墙钟**：oracle 的 `E₁` 由自适应 Simpson（1e-16 容差）改为级数 + 渐近级数，
+  椭圆定义积分由自适应改为固定 2000 面板；`integral_verify` 的 0.27.3 护栏从 376 s 降到
+  2.6 s，`ocas-calc` 全量 lib 测试 165 s。/ Debug test wall clock restored.
+
+### Withdrawn / 撤回
+
+- **线性分式对数归约**（`integral/log_fraction.rs`，`C·(A + B·log Q)·(F + G·x)^p` 分部）：
+  实现后在 interim 全量运行中被数值 oracle 判为**真错案**——残项是裸乘积而非
+  `Integral(...)` 原子，`resolve_residuals` 原样返回，结果「无残项但错误」。修正包装后其
+  残项仍无法被有理后端可靠积分，且 debug 代价 163 s；按「只保留无回归且无墙钟代价的代码」
+  原则整体撤回，文件已删除。该尝试的教训已写入 `BENCHMARK_RESULTS_CN.md` 0.27.3 段。
+  / The log-of-a-linear-fraction reduction was withdrawn: it produced a wrong answer via an
+  unwrapped residual and its residual was not reliably integrable at an acceptable cost.
+
+### Coverage / 覆盖率（诚实记录）
+
+- Rubi 1892 题子集：0.27.2 基线（solved 349、已验证 325/349、mismatches 0、超时 13、
+  崩溃 0、墙钟 445.7 s）→ **0.27.3 终态 370 solved（19.56%）、已验证 343/370（92.7%）、
+  mismatches 0、超时 12、崩溃 0、墙钟 461.2 s**；逐题 diff **新解 21、回归 0**
+  （桶 delta：special +15、trig +3、power-binomial +2、mixed-other +1）。
+  量化与逐题清单见 `docs/planning/BENCHMARK_RESULTS_CN.md` 0.27.3 段。
+- **四项验收线未达，如实记录**：solved 目标 ≥371（差 1）、已验证比例目标 ≥95%（92.7%）、
+  超时目标 ≤5（12）、墙钟目标 <445.7 s（461.2 s，+3.5%）。
+- **0.27 线冻结判定**：0.27.2（+38）与 0.27.3（+21）连续两波各自净增 < 60 题，
+  按 `EVOLUTION_PLAN` 的字面规则**冻结 0.27 线，下一活动线为 0.28.0**；
+  0.27.3 为 0.27 系列最后一版。椭圆族广度（三次根式、`EllipticPi` 复特征值、
+  多根式有理前因子）未达成并已量化根因（140 例仿射半幂簇仍 136 例拒绝）。
+  / Honest coverage record with four unmet acceptance lines and the 0.27-line freeze
+  determination.
+
+---
+
 ## [0.27.2] - 2026-09-11
 
 ### Added / 新增

@@ -959,7 +959,7 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 > 详见 [ROADMAP_CN.md](ROADMAP_CN.md) §4。**本阶段已完成**：0.24 启发式积分
 > 四技术 + DoubleF64、0.25 MultiModular Gröbner + 并行模 GCD、0.26 打包
 > 单项式 F5 快通道（cyclic-6 grevlex 55.04 ms 实测）。0.26.0 实际交付与
-> 原计划不同——矩阵引擎/Smith 标准形顺延至 0.30.0。
+> 原计划不同——矩阵引擎/Smith 标准形顺延至 0.35.0（2026-09-12 前的编号为 0.30.0）。
 
 ### 0.24.0 — 符号积分广度 + DoubleFloat
 
@@ -1024,7 +1024,7 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 - [x] cyclic-6 ℤ₁₃ criterion 基准 < 0.5 s（0.26 grevlex 实测 52.07 ms）
 - [x] cyclic-7 ℤ₁₃ 可解并验证 `is_groebner_basis`（0.26 grevlex 单轮 5.755 s，209 基元素）
 - [x] multi-modular 路径与单素数 F5 路径结果一致（随机 100 例）
-- [ ] katsura-6/7 基准运行并记录（推迟到 0.28.0）
+- [ ] katsura-6/7 基准运行并记录（推迟到 0.33.0）
 
 **风险**
 
@@ -1037,7 +1037,7 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 **目标**：将 F5 主循环压入 u128 SWAR 快通道，进一步对齐 msolve 性能；
 补充 grevlex 基准变体。（原计划的域感知矩阵引擎 + Smith/Hermite 标准形
-未在 0.26.0 交付，顺延至 0.30.0。）
+未在 0.26.0 交付，顺延至 0.35.0。）
 
 **功能**
 
@@ -1059,9 +1059,9 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 - [x] 打包快通道与通用路径结果一致（随机基准交叉验证）
 - [x] cyclic-6/7 grevlex 基准运行并记录
 - [x] Graded 序度方向修复回归测试通过
-- [ ] 域感知矩阵引擎 + Smith/Hermite 标准形（→ 0.30.0）
-- [ ] 矩阵性能基准（→ 0.30.0）
-- [ ] 1.0 冻结前准备：API 审计/迁移指南/跨平台 CI（→ 0.30.0）
+- [ ] 域感知矩阵引擎 + Smith/Hermite 标准形（→ 0.35.0）
+- [ ] 矩阵性能基准（→ 0.35.0）
+- [ ] 1.0 冻结前准备：API 审计/迁移指南/跨平台 CI（→ 0.35.0）
 
 **风险**
 
@@ -1197,20 +1197,222 @@ GCD 性能缺口（大整数系数无模 GCD）并补齐核心数论工具。
 
 **目标**：沿 0.27.2 失败转储留存的最大簇继续机制攻坚。
 
+**功能**（✅ 已交付 / ⚠️ 部分 / ❌ 未达成）
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 特殊函数族扩展（`Ei(n,z)`/Eₙ、erf 幂与复合、`x^k·Si/Ci/Ei`）✅ | Rubi 特殊函数族；0.14 函数表 | `integrate::special` 扩展（四个归约族） |
+| 特殊函数导数表 + 数值 oracle 扩头 ✅ | SymPy/`mpmath` 40 位对拍 | `derivative.rs`、`ocas-tests/src/integral_eval.rs` |
+| 半幂前端仿射变元（`cos(c+d·x)`）+ 两支片层因子 ✅ | 0.27.2 半幂前端 | `integrate::halfpower` 扩展 |
+| 精确线性平方折叠 `p²+2pq+q²`（仿射底，重展开验证）✅ | — | `integrate::fold_linear_squares`（管线入口前置） |
+| 复合壳层拆分（mixed-other 簇）⚠️ 撤回 | — | 线性分式对数归约曾实现后**删除**（见下） |
+| 椭圆族广度（三角二次根式路由、三次根式、Π 复特征值）❌ | Byrd & Friedman | 未动；140 例簇仍 136 例拒绝，根因已量化 |
+
+**验收**（按 0.27.2 的同一验收表记录）：
+
+| 口径 | 0.27.2 | 0.27.3 | 判定 |
+|---|---|---|---|
+| solved | 349（18.45%） | **370（19.56%）** | 目标 ≥371 **未达**（差 1） |
+| 逐题 diff | — | **新解 21、回归 0** | 达成 |
+| verified / solved | 325/349（93.1%） | **343/370（92.7%）** | 目标 ≥95% **未达** |
+| `verify_mismatches` | 0 | **0** | **达成（硬性红线）** |
+| 超时 | 13 | **12** | 目标 ≤5 **未达** |
+| 崩溃 | 0 | **0** | 达成 |
+| 墙钟 | 445.7 s | 461.2 s | 目标 <445.7 s **未达**（+3.5%） |
+
+桶 delta（新解）：special +15、trig +3、power-binomial +2、mixed-other +1。
+撤回记录：线性分式对数归约（`log_fraction.rs`）集成后暴露真错案（残项未包 `Integral(...)`
+即返回）且残项积分不可靠、墙钟代价高，按「只保留无回归且无墙钟代价」原则整体撤回；
+该尝试把 A4 回归护栏从「必须留残项」升级为「若求解则数值求导核验」。
+
+**冻结判定**：0.27.2（+38）与 0.27.3（+21）**连续两波各自净增均 < 60**，
+按本文档字面规则 **冻结 0.27 线，下一活动线为 0.28.0**；0.27.3 为 0.27 系列最后一版。
+
+**风险（实际发生情况回填）**
+
+- 椭圆约化的定义域/分支处理为新难点 → 已发生：只交付仿射变元层；分支问题由
+  0.27.2 的 `A > 0` 说明覆盖，本波未扩大范围
+- 多参函数头实参被 `normalize` 排序的语义陷阱 → 已覆盖（保序注册表 + 测试），
+  并且 `derivative.rs` 对未实现偏导改为未求值 `Derivative`
+- 并行开发接口漂移 → 本波由 2 个子智能体并行（special / halfpower），单文件所有权 +
+  主线负责 `mod.rs` 与口径；一处并发回归（三角平方被折叠回原形）在 interim 全量运行中
+  被逐题 diff 捕获并修复
+
+---
+
+### 0.28.0 — 积分机制正确性地基（缺陷修复 + 证书化 + 正则塔）
+
+> **2026-09-12 插入**：0.27.3 的失败归因调研把 P0 的性质重新定义为「机制的正确性与
+> 通用性」，故 0.28–0.32 先做机制攻坚；原 0.28.0/0.29.0/0.30.0 依序顺延为
+> 0.33.0/0.34.0/0.35.0。依据见
+> [GENERAL_MECHANISM_FEASIBILITY_CN.md](GENERAL_MECHANISM_FEASIBILITY_CN.md) §3、§5、§6 P0。
+
+**目标**：修掉两个实测的架构性缺陷；把「正确」从抽样验证升级为**符号证书**；放开
+通用 Risch 引擎最贵的入口限制（依赖生成元被拒）。
+
 **功能**
 
 | 条目 | 参考 | oCAS 落地位置 |
 |---|---|---|
-| 复合壳层拆分（mixed-other 簇） | — | `integrate` 因子级拆分 + 内层核识别 |
-| 特殊函数族扩展（`Ei(n,z)`/Eₙ、erf 幂与复合、`x^k·Si/Ci/Ei`、`erfc` 分母） | Rubi 特殊函数族；0.14 函数表 | `integrate::special` 扩展 |
-| 椭圆族广度（三角二次根式路由、三次根式、Π 复特征值） | Byrd & Friedman | `integrate::elliptic` 扩展 |
+| 残项解析（链尾 + 确定性预算） | 实测净 +4：+5 新解/−1 回归/+3 新超时（BENCHMARK_RESULTS_CN §0.27.3 后续调研 §3.1） | `integral/mod.rs` 的 `rational`/`symbolic_rational` 调用点 + `rules::resolve_residuals` |
+| 表达式级循环检测（替代全局链条目总量上限） | `rubi-00008` 实测 306 次阶段进入 / 18 轮 | `integral/mod.rs` 的 `MAX_CHAIN_ENTRIES` / `try_risch_or_fallback` |
+| 符号证书 `D(F) − f ≡ 0`（微分域内） | Bronstein ch. 1–2 的域规范化 | `ocas-calc::tower::elem` + 新增证书层 |
+| 三值 `Outcome`（`Found`/`ProvedNonElementary`/`Unknown`） | 判定过程语义 | `integral/mod.rs` 出口 + 绑定层 |
+| 正则塔：合并代数相关生成元 | Trager 正则化 | `ocas-calc::tower::build`（当前直接拒绝） |
+| `certified_rate` 指标 | — | `ocas-tests/benches/integrate_1892.rs` + CI 门禁 |
 
-**验收**：按 0.27.2 的同一验收表记录；连续两波净增 < 60 题则冻结 0.27 线转
-0.28.0。
+**性能指标**
+
+- 1892 已解集合证书通过率 **100%**；`certified_rate = 1.0`
+- 双曲族新增解（基线：111 例未解含双曲函数）
+- 超时数不上升；墙钟不超过 461.2 s（0.27.3 终态）
+
+**验收**
+
+- [ ] 已解集合的符号证书 100% 为 0
+- [ ] `certified_rate = 1.0` 进入 CI 门禁
+- [ ] 双曲族新增可解数记录；逐题 diff **0 回归**
+- [ ] `verify_mismatches` 保持 0
+
+**风险**
+
+- 残项解析若不做预算会引入新超时（原型实测 +3）→ 必须链尾 + 确定性预算
+- 代数相关性判定一般不可判定 → 必须返回 `Unknown`，不得猜测
 
 ---
 
-### 0.28.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）
+### 0.29.0 — 超越 Risch 补全
+
+**目标**：把 `integral/rde.rs` 从「仅多项式解」扩到完整片段，并补对数部分的结构定理。
+（依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3.4、§6 P1）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| RDE 有理解（分母界 + `D`-有理解） | Bronstein ch. 6 完整版 | `integral/rde.rs` |
+| 耦合微分系统 `D y + A y = b` | Bronstein ch. 6 | `integral/rde.rs` 扩展 |
+| 对数部分一般结构定理 | Bronstein ch. 3–5 | `integral/risch.rs`（现仅对数导数恒等式） |
+| 从塔随机生成元素的属性测试 + 符号证书 | — | `ocas-calc` proptests + 证书层 |
+
+**性能指标**
+
+- `exp-log` 桶（基线 79/83 未解）显著改善
+- 随机塔元素族证书通过率 100%
+
+**验收**
+
+- [ ] `exp-log` 桶改善量化入档
+- [ ] 随机塔元素族证书 100%
+- [ ] 1892 逐题 diff 0 回归；证书门保持
+
+**风险**
+
+- 有理解的分母界推导易错 → 以证书 + proptest 双门约束
+- 塔层数上升带来复杂度压力 → 与 0.32.0 的模算法协同
+
+---
+
+### 0.30.0 — 代数扩张与反函数代换
+
+**目标**：接上代数积分链（复用已有 Trager 资产），并覆盖反函数族。
+（依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3.2、§3.5、§6 P2）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 代数生成元进入塔（`√x` 与一般根式） | Bronstein ch. 7 | `ocas-calc::tower::build`（当前拒绝非整数幂） |
+| 积分基 + 代数 Hermite 约化 + 代数留数 | Bronstein ch. 7–8；Trager | `integral/risch.rs` + `ocas-poly` Trager |
+| 多根式基归约 | 0.27.3 调研（估算 222 例含 ≥2 个基） | `integral/sqrt_quadratic.rs` / `halfpower.rs` 之上的新归约 |
+| 反函数代换引擎（多项式权 × `(a+b·f(ax+b))^k`） | Rubi 4.x–5.x 的思路 | `integral/inverse_trig.rs` 扩展 |
+| 复用 Trager 因式分解 + 结式 + 代数数域 GCD | 0.17.0 资产 | `ocas-poly::factor::algebraic` |
+
+**性能指标**
+
+- `1/(1+x⁴)`、`1/(1−3x²+x⁴)`、不可约六次/八次分母族可解
+- radical 桶（基线 356/407 未解）显著改善
+
+**验收**
+
+- [ ] 不可约分母族可解并逐题记录
+- [ ] `inverse-trig-hyper` 桶（基线 138/146 未解）改善量化
+- [ ] 证书门保持；1892 逐题 diff 0 回归
+
+**风险**
+
+- 代数扩张上的留数计算与分支处理是新难点 → 分步交付（先四次/二次根式，再一般）
+- 可能触及不可判定点 → `Unknown` 兜底
+
+---
+
+### 0.31.0 — 非初等层
+
+**目标**：补上今天**完全不可达**的一类：需要二重对数/Meijer G 的原函数
+（基线：122 例参考答案含 `polylog`，占未解 8.0%）。
+（依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3.6、§6 P3）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| `polylog`/`Li₂` 函数头 + oracle 数值核验 | 0.27.3 对 `Ei`/`Si`/`Ci` 的落地模式 | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
+| Li₂ 归约（对数-有理积分） | Lewin 公式；Raab/Baddoura | `integral/special.rs` 或新模块 |
+| Meijer G / Slater 展开（或 holonomic 路线） | SymPy `meijerg` | `ocas-calc::integral` 新模块 |
+| `ProvedNonElementary` 首次可用 | Singer 结构定理（工程化子集） | `Outcome` 第三值 |
+
+**性能指标**
+
+- 122 例 `polylog` 题可及部分解锁
+- 新增函数头在 oracle 中数值核验通过率 100%
+
+**验收**
+
+- [ ] `polylog`/`Li₂` 头 + 数值核验落地
+- [ ] 可及题数与被拒题数分别入档
+- [ ] 证书门保持；`verify_mismatches` 保持 0
+
+**风险**
+
+- Meijer G 的 Mellin 表与 Slater 展开工作量大 → 先 Li₂ 后 Meijer
+- 分支/定义域语义更复杂 → 形式证书与实值语义分别标注
+
+---
+
+### 0.32.0 — 复杂度与性能（把复杂度当算法问题）
+
+**目标**：符号系数下的系数爆炸用**算法**解决，而不是继续加墙钟预算
+（基线：12 例超时中 9 例挂 `symbolic_rational`）。
+（依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3.7、§6 P4）
+
+**功能**
+
+| 条目 | 参考 | oCAS 落地位置 |
+|---|---|---|
+| 符号系数下的模算法 | 0.25 MultiModular ℚ 管线 | `ocas-poly` 模管线 + `symbolic_rational` |
+| 并行 Risch | Bronstein ch. 9 / Risch–Norman | `integral/risch.rs` |
+| 惰性级数 + 度界剪枝（替代「加预算」） | — | `symbolic_rational.rs` / `rational.rs` |
+| 12 例残存超时的阶段级处理 | `timeout_attribution_0273.csv` | 对应阶段 |
+
+**性能指标**
+
+- 墙钟不高于 0.28.0 基线；超时数下降
+- 高层数/多符号实例不再系数爆炸式回退
+
+**验收**
+
+- [ ] 墙钟与超时双口径入档
+- [ ] 模路径与单素数路径随机 100 例一致
+- [ ] 证书门保持；0 回归
+
+**风险**
+
+- 模算法与符号塔的接口复杂 → 先在基层 `ℚ(x)` 打通再上塔
+- 并行化引入不确定性 → 结果需与串行路径逐例一致
+
+---
+
+### 0.33.0 — Gröbner 大规模性能（katsura 系 + cyclic-7）（原 0.28.0 顺延）
 
 **目标**：对齐 msolve 0.10.1 实测（katsura 3–7 ms、cyclic-7 55 ms）（P1）；
 katsura-6 < 1 s、cyclic-7 grevlex 进入同数量级。
@@ -1245,7 +1447,7 @@ katsura-6 < 1 s、cyclic-7 grevlex 进入同数量级。
 
 ---
 
-### 0.29.0 — 代码生成扩展（LLVM/inkwell JIT）
+### 0.34.0 — 代码生成扩展（LLVM/inkwell JIT）（原 0.29.0 顺延）
 
 **目标**：落地第二个 JIT 后端——LLVM（经 `inkwell`，已在 workspace 依赖），
 缩小与 Symbolica SymJIT 的代码生成差距（P1）。
@@ -1280,7 +1482,7 @@ katsura-6 < 1 s、cyclic-7 grevlex 进入同数量级。
 
 ---
 
-### 0.30.0 — 矩阵引擎 + 平台收尾 + 1.0 冻结准备
+### 0.35.0 — 矩阵引擎 + 平台收尾 + 1.0 冻结准备（原 0.30.0 顺延）
 
 **目标**：收尾 P2/P3 差距并完成 1.0 冻结前准备：域感知矩阵引擎
 （DomainMatrix 类似物）+ Smith/Hermite 标准形、Windows FLINT、二次筛、
