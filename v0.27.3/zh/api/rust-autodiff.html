@@ -1,0 +1,617 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>自动微分 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html" class="active"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-autodiff.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="自动微分"><a class="header" href="#自动微分">自动微分</a></h1>
+<p>oCAS 通过超对偶数（hyper-dual numbers）实现前向模式自动微分。一个 <code>HyperDual&lt;T&gt;</code> 携带一个标量值和一组导数分量，分量布局由共享的 <code>DualShape</code>（通过 <code>Arc</code> 共享）预先计算，并在算术运算中使用预构建的乘法表。</p>
+<blockquote>
+<p><strong>源文件</strong>：<code>ocas-domain/src/dual.rs</code></p>
+</blockquote>
+<h2 id="dualcoeff-trait"><a class="header" href="#dualcoeff-trait">DualCoeff trait</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait DualCoeff:
+    Clone
+    + PartialEq
+    + std::ops::Add&lt;Output = Self&gt;
+    + std::ops::Sub&lt;Output = Self&gt;
+    + std::ops::Mul&lt;Output = Self&gt;
+    + std::ops::Div&lt;Output = Self&gt;
+    + std::ops::Neg&lt;Output = Self&gt;
+    + std::ops::AddAssign
+    + std::ops::MulAssign
+{
+    fn zero() -&gt; Self;
+    fn one() -&gt; Self;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：定义超对偶数所需的系数类型约束。要求完整的四则运算（含乘法逆元）以及加法/乘法单位元。</p>
+<p><strong>参数</strong>：无（trait bound）。</p>
+<p><strong>内置实现</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Rational</code></td><td>任意精度有理数，<code>zero()</code> = <code>0/1</code>，<code>one()</code> = <code>1/1</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>限制</strong>：当前仅 <code>Rational</code> 实现了 <code>DualCoeff</code>。不支持 <code>f64</code> 或其他浮点类型作为系数。</p>
+<h2 id="dualshape"><a class="header" href="#dualshape">DualShape</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct DualShape { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：描述超对偶数的分量布局。每个分量由一个多指标（multi-index）标识——长度为变量数的非负整数向量，记录各变量的微分阶数。布局必须满足<strong>祖先封闭性</strong>：若多指标 $\mathbf{m}$ 存在，则所有分量逐项不大于 $\mathbf{m}$ 的多指标也必须存在。</p>
+<p>分量 0 始终是全零多指标（标量值分量）。</p>
+<h3 id="dualshapenew"><a class="header" href="#dualshapenew">DualShape::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(components: Vec&lt;Vec&lt;usize&gt;&gt;) -&gt; Option&lt;Self&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从祖先封闭的多指标列表构建布局。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>components</code></td><td><code>Vec&lt;Vec&lt;usize&gt;&gt;</code></td><td>多指标列表，每个 <code>Vec&lt;usize&gt;</code> 长度相同（不足部分自动补零）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Some(DualShape)</code> 若布局合法，否则 <code>None</code>。</p>
+<p><strong>错误条件</strong>：</p>
+<ul>
+<li>列表为空 → <code>None</code></li>
+<li>不含全零多指标 → <code>None</code></li>
+<li>不满足祖先封闭性 → <code>None</code></li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::DualShape;
+
+// 一阶二变量：值 + ∂/∂x₀ + ∂/∂x₁
+let shape = DualShape::new(vec![
+    vec![0, 0],
+    vec![1, 0],
+    vec![0, 1],
+]).unwrap();
+assert_eq!(shape.n_components(), 3);
+assert_eq!(shape.n_vars(), 2);
+
+// 非法：缺少 [1]（不祖先封闭）
+assert!(DualShape::new(vec![vec![0], vec![2]]).is_none());
+<span class="boring">}</span></code></pre></pre>
+<h3 id="dualshapen_vars"><a class="header" href="#dualshapen_vars">DualShape::n_vars</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn n_vars(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回微分变量数（多指标的长度）。</p>
+<p><strong>返回值</strong>：<code>usize</code></p>
+<h3 id="dualshapen_components"><a class="header" href="#dualshapen_components">DualShape::n_components</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn n_components(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回分量总数（含标量值分量）。</p>
+<p><strong>返回值</strong>：<code>usize</code></p>
+<h3 id="dualshapecomponents"><a class="header" href="#dualshapecomponents">DualShape::components</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn components(&amp;self) -&gt; &amp;[Vec&lt;usize&gt;]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回分量多指标切片。索引 0 为标量值分量。</p>
+<p><strong>返回值</strong>：<code>&amp;[Vec&lt;usize&gt;]</code></p>
+<h3 id="dualshapeindex_of"><a class="header" href="#dualshapeindex_of">DualShape::index_of</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn index_of(&amp;self, multi_index: &amp;[usize]) -&gt; Option&lt;usize&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：查找给定多指标的分量索引。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>multi_index</code></td><td><code>&amp;[usize]</code></td><td>待查找的多指标</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Some(index)</code> 若存在，否则 <code>None</code>。</p>
+<h3 id="dualshapemult_table"><a class="header" href="#dualshapemult_table">DualShape::mult_table</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn mult_table(&amp;self) -&gt; &amp;[(usize, usize, usize)]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回乘法表（用于调试/测试）。每个三元组 <code>(a, b, c)</code> 表示分量 <code>a</code> 与分量 <code>b</code> 的乘积贡献到分量 <code>c</code>。不包含标量分量（索引 0）参与的对。</p>
+<p><strong>返回值</strong>：<code>&amp;[(usize, usize, usize)]</code></p>
+<h2 id="new_first_order"><a class="header" href="#new_first_order">new_first_order</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new_first_order&lt;T: DualCoeff&gt;(nvars: usize) -&gt; Arc&lt;DualShape&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：构建一阶形状，追踪每个变量的偏导数 $\frac{\partial}{\partial x_i}$。不追踪高阶或混合偏导。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>nvars</code></td><td><code>usize</code></td><td>微分变量数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Arc&lt;DualShape&gt;</code> — 包含 $n+1$ 个分量：值分量 $[0,\dots,0]$ 加每个变量的 $[0,\dots,\underset{i}{1},\dots,0]$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::new_first_order;
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(3);
+assert_eq!(shape.n_components(), 4); // 值 + 3 个偏导
+assert_eq!(shape.n_vars(), 3);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="hyperdualt"><a class="header" href="#hyperdualt">HyperDual&lt;T&gt;</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct HyperDual&lt;T: DualCoeff&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：超对偶数类型，携带标量值和按 <code>DualShape</code> 布局的导数分量。所有算术运算自动传播导数。</p>
+<p><strong>类型约束</strong>：<code>T: DualCoeff</code></p>
+<h3 id="hyperdualvariable"><a class="header" href="#hyperdualvariable">HyperDual::variable</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn variable(shape: &amp;Arc&lt;DualShape&gt;, i: usize, c: T) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：构造第 $i$ 个独立变量，取值为 $c$。导数分量 $[0,\dots,\underset{i}{1},\dots,0]$ 设为 1，其余为 0。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>&amp;Arc&lt;DualShape&gt;</code></td><td>分量布局</td></tr>
+<tr><td><code>i</code></td><td><code>usize</code></td><td>变量编号（0-indexed），须 &lt; <code>n_vars()</code>（越界时静默忽略，不 panic）</td></tr>
+<tr><td><code>c</code></td><td><code>T</code></td><td>该变量在求值点的值</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>HyperDual&lt;T&gt;</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(2);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+assert_eq!(x.value(), &amp;Rational::new(3, 1));
+assert_eq!(x.deriv(0), Some(&amp;Rational::new(1, 1)));
+assert_eq!(x.deriv(1), Some(&amp;Rational::new(0, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="hyperdualconstant"><a class="header" href="#hyperdualconstant">HyperDual::constant</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn constant(shape: &amp;Arc&lt;DualShape&gt;, c: T) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：构造常量——值为 $c$，所有导数分量为零。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>&amp;Arc&lt;DualShape&gt;</code></td><td>分量布局</td></tr>
+<tr><td><code>c</code></td><td><code>T</code></td><td>常量值</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>HyperDual&lt;T&gt;</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(1);
+let c = HyperDual::constant(&amp;shape, Rational::new(7, 1));
+assert_eq!(c.value(), &amp;Rational::new(7, 1));
+assert_eq!(c.deriv(0), Some(&amp;Rational::new(0, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="hyperdualvalue"><a class="header" href="#hyperdualvalue">HyperDual::value</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn value(&amp;self) -&gt; &amp;T
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回标量值分量（分量 0）的引用。</p>
+<p><strong>返回值</strong>：<code>&amp;T</code></p>
+<h3 id="hyperdualderiv"><a class="header" href="#hyperdualderiv">HyperDual::deriv</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn deriv(&amp;self, i: usize) -&gt; Option&lt;&amp;T&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回对变量 $i$ 的一阶偏导数 $\frac{\partial f}{\partial x_i}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>i</code></td><td><code>usize</code></td><td>变量编号（0-indexed）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Some(&amp;T)</code> 若一阶分量 $[0,\dots,\underset{i}{1},\dots,0]$ 存在于形状中（对 <code>new_first_order</code> 形状等价于 $i &lt; n_vars$），否则 <code>None</code>。</p>
+<h3 id="hyperdualvalues"><a class="header" href="#hyperdualvalues">HyperDual::values</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn values(&amp;self) -&gt; &amp;[T]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回所有分量的切片，按形状顺序排列。</p>
+<p><strong>返回值</strong>：<code>&amp;[T]</code></p>
+<h3 id="hyperdualshape"><a class="header" href="#hyperdualshape">HyperDual::shape</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn shape(&amp;self) -&gt; &amp;Arc&lt;DualShape&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回共享的形状引用。</p>
+<p><strong>返回值</strong>：<code>&amp;Arc&lt;DualShape&gt;</code></p>
+<h3 id="hyperdualfrom_values"><a class="header" href="#hyperdualfrom_values">HyperDual::from_values</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_values(shape: Arc&lt;DualShape&gt;, values: Vec&lt;T&gt;) -&gt; Option&lt;Self&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从完整的分量向量构造。长度必须匹配形状的分量数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>Arc&lt;DualShape&gt;</code></td><td>分量布局</td></tr>
+<tr><td><code>values</code></td><td><code>Vec&lt;T&gt;</code></td><td>分量值，长度须为 <code>shape.n_components()</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Some(HyperDual&lt;T&gt;)</code> 若长度匹配，否则 <code>None</code>。</p>
+<h3 id="hyperdualzero--hyperdualone"><a class="header" href="#hyperdualzero--hyperdualone">HyperDual::zero / HyperDual::one</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn zero(shape: &amp;Arc&lt;DualShape&gt;) -&gt; Self
+pub fn one(shape: &amp;Arc&lt;DualShape&gt;) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：构造加法单位元（所有分量为零）和乘法单位元（值为 1，导数分量为零）。</p>
+<h3 id="hyperdualinv"><a class="header" href="#hyperdualinv">HyperDual::inv</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn inv(&amp;self) -&gt; Option&lt;Self&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：乘法逆元 $\frac{1}{f}$，通过几何级数 $\frac{1}{v+\varepsilon} = \frac{1}{v}\sum_{k \geq 0}\left(-\frac{\varepsilon}{v}\right)^k$ 截断计算。</p>
+<p><strong>返回值</strong>：<code>Some(1/self)</code> 若值分量非零，否则 <code>None</code>（除以零）。</p>
+<h2 id="算术运算"><a class="header" href="#算术运算">算术运算</a></h2>
+<p><code>HyperDual&lt;T&gt;</code> 实现了以下标准 trait，所有运算自动传播导数：</p>
+<div class="table-wrapper"><table><thead><tr><th>Trait</th><th>运算</th><th>导数规则</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td><code>a + b</code></td><td>$\frac{\partial}{\partial x_i}(a+b) = a'_i + b'_i$</td></tr>
+<tr><td><code>Sub</code></td><td><code>a - b</code></td><td>$\frac{\partial}{\partial x_i}(a-b) = a'_i - b'_i$</td></tr>
+<tr><td><code>Neg</code></td><td><code>-a</code></td><td>$\frac{\partial}{\partial x_i}(-a) = -a'_i$</td></tr>
+<tr><td><code>Mul</code></td><td><code>a * b</code></td><td>$\frac{\partial}{\partial x_i}(ab) = a'b + ab'$（通过乘法表处理高阶项）</td></tr>
+<tr><td><code>Div</code></td><td><code>a / b</code></td><td>等价于 <code>a * b.inv()</code>，要求 <code>b</code> 的值分量非零</td></tr>
+</tbody></table>
+</div>
+<p><strong>约束</strong>：<code>Add</code>、<code>Sub</code>、<code>Mul</code>、<code>Div</code> 要求两个操作数共享同一 <code>DualShape</code>。debug 模式下校验分量数是否一致，不一致时 panic。</p>
+<p><strong>除零</strong>：<code>Div</code> 调用 <code>inv()</code>，若除数的值分量为零则 panic。</p>
+<h2 id="完整示例"><a class="header" href="#完整示例">完整示例</a></h2>
+<h3 id="示例-1二元函数偏导数"><a class="header" href="#示例-1二元函数偏导数">示例 1：二元函数偏导数</a></h3>
+<p>计算 $f(x, y) = x \cdot y$ 在 $(3, 5)$ 处的值和偏导：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(2);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+let y = HyperDual::variable(&amp;shape, 1, Rational::new(5, 1));
+
+let f = x * y;
+
+assert_eq!(f.value(), &amp;Rational::new(15, 1));     // f(3,5) = 15
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(5, 1))); // ∂f/∂x = y = 5
+assert_eq!(f.deriv(1), Some(&amp;Rational::new(3, 1))); // ∂f/∂y = x = 3
+<span class="boring">}</span></code></pre></pre>
+<h3 id="示例-2幂函数导数"><a class="header" href="#示例-2幂函数导数">示例 2：幂函数导数</a></h3>
+<p>计算 $f(x) = x^3$ 在 $x=3$ 处的导数 $\frac{d}{dx}x^3 = 3x^2 = 27$：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(1);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+
+// x^3 = x * x * x
+let x2 = x.clone() * x.clone();
+let x3 = x2 * x;
+
+assert_eq!(x3.value(), &amp;Rational::new(27, 1));
+assert_eq!(x3.deriv(0), Some(&amp;Rational::new(27, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="示例-3商的导数"><a class="header" href="#示例-3商的导数">示例 3：商的导数</a></h3>
+<p>计算 $f(x,y) = \frac{x}{y}$ 在 $(6, 3)$ 处：$\frac{\partial f}{\partial x} = \frac{1}{y} = \frac{1}{3}$，$\frac{\partial f}{\partial y} = -\frac{x}{y^2} = -\frac{2}{3}$。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(2);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(6, 1));
+let y = HyperDual::variable(&amp;shape, 1, Rational::new(3, 1));
+
+let f = x / y;
+
+assert_eq!(f.value(), &amp;Rational::new(2, 1));
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(1, 3)));
+assert_eq!(f.deriv(1), Some(&amp;Rational::new(-2, 3)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="示例-4三变量乘积"><a class="header" href="#示例-4三变量乘积">示例 4：三变量乘积</a></h3>
+<p>计算 $f(x,y,z) = xyz$ 在 $(2, 3, 5)$ 处：$\frac{\partial f}{\partial x} = yz = 15$，$\frac{\partial f}{\partial y} = xz = 10$，$\frac{\partial f}{\partial z} = xy = 6$。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(3);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(2, 1));
+let y = HyperDual::variable(&amp;shape, 1, Rational::new(3, 1));
+let z = HyperDual::variable(&amp;shape, 2, Rational::new(5, 1));
+
+let f = x * y * z;
+
+assert_eq!(f.value(), &amp;Rational::new(30, 1));
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(15, 1)));
+assert_eq!(f.deriv(1), Some(&amp;Rational::new(10, 1)));
+assert_eq!(f.deriv(2), Some(&amp;Rational::new(6, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="示例-5二阶导数"><a class="header" href="#示例-5二阶导数">示例 5：二阶导数</a></h3>
+<p>使用自定义形状追踪二阶导数。对于 $f(x) = x^2$，有 $f''(x) = 2$。注意：多指标为 $[2]$ 的分量存储的是 $\varepsilon^2$ 的系数，即 $f''(x)/2!$，而非 $f''(x)$ 本身。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{DualShape, HyperDual};
+use ocas_domain::Rational;
+
+// 形状：[0]（值）、[1]（一阶）、[2]（二阶）
+let shape = std::sync::Arc::new(
+    DualShape::new(vec![vec![0], vec![1], vec![2]]).unwrap()
+);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+
+// f = x * x
+let f = x.clone() * x;
+
+assert_eq!(f.value(), &amp;Rational::new(9, 1));     // 3^2 = 9
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(6, 1))); // 2x = 6
+// 分量 [2] 存储 ε² 的系数 = f''(3)/2! = 2/2 = 1
+assert_eq!(f.values()[2], Rational::new(1, 1));  // f''(3)/2! = 1
+<span class="boring">}</span></code></pre></pre>
+<h2 id="实现细节"><a class="header" href="#实现细节">实现细节</a></h2>
+<h3 id="乘法表"><a class="header" href="#乘法表">乘法表</a></h3>
+<p><code>DualShape</code> 预计算一个乘法表：对于每对非标量分量 $(a, b)$，若其多指标之和也存在于布局中，记录三元组 $(a, b, c)$。乘法运算时，分量 $k$ 的结果为：</p>
+<p>$$\text{result}[k] = a[k] \cdot b[0] + a[0] \cdot b[k] + \sum_{(i,j,k) \in \text{table}} a[i] \cdot b[j]$$</p>
+<p>超出布局的高阶项被截断（truncation）。</p>
+<h3 id="逆元的几何级数"><a class="header" href="#逆元的几何级数">逆元的几何级数</a></h3>
+<p><code>inv()</code> 通过几何级数 $\frac{1}{v+\varepsilon} = \frac{1}{v}\sum_{p=0}^{\infty}\left(-\frac{\varepsilon}{v}\right)^p$ 计算，迭代直到高阶项为零（自动截断至形状精度）。</p>
+<h3 id="共享形状"><a class="header" href="#共享形状">共享形状</a></h3>
+<p>所有参与同一表达式计算的 <code>HyperDual</code> 必须共享同一 <code>Arc&lt;DualShape&gt;</code>。形状通过 <code>Arc</code> 克隆成本极低。</p>
+<h2 id="限制"><a class="header" href="#限制">限制</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>限制</th><th>说明</th></tr></thead><tbody>
+<tr><td><strong>仅支持有理系数</strong></td><td>当前 <code>DualCoeff</code> 仅对 <code>Rational</code> 实现，不支持 <code>f64</code> 或其他浮点类型</td></tr>
+<tr><td><strong>无超越函数</strong></td><td><code>sin</code>、<code>cos</code>、<code>exp</code>、<code>ln</code> 等超越函数未实现——它们需要实系数 trait</td></tr>
+<tr><td><strong>除零 panic</strong></td><td><code>Div</code> 调用 <code>inv()</code>，值分量为零时 panic</td></tr>
+<tr><td><strong>形状不匹配 panic</strong></td><td><code>Add</code>/<code>Sub</code>/<code>Mul</code>/<code>Div</code> 要求操作数共享同一形状（debug 模式下校验分量数），不一致时 panic</td></tr>
+<tr><td><strong>高阶导数需手动布局</strong></td><td>默认的 <code>new_first_order</code> 仅追踪一阶偏导；二阶及以上需通过 <code>DualShape::new</code> 手动构建布局</td></tr>
+</tbody></table>
+</div>
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./rust-domains.html">系数域</a> — <code>Rational</code> 及其他域类型</li>
+<li><a href="./rust-evaluation.html">求值与 JIT</a> — 数值求值（浮点）</li>
+<li><a href="./rust-calculus.html">微积分</a> — 符号微分 <code>diff</code>、积分 <code>integrate</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-evaluation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-tensors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-evaluation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-tensors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Foundations: Linear Algebra - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html" class="active"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/linear-algebra.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="foundations-linear-algebra"><a class="header" href="#foundations-linear-algebra">Foundations: Linear Algebra</a></h1>
+<p>This chapter presents the mathematical foundations of matrix operations in oCAS. The <code>Matrix</code> type in oCAS works over a <code>EuclideanDomain</code> — not just floats or rationals, but any algebraic structure supporting Euclidean division. This means we need an elimination algorithm that <strong>does not introduce fractions</strong>.</p>
+<hr />
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before reading this chapter, you should be familiar with:</p>
+<ul>
+<li>Basic notions of rings and fields (see <a href="./finite-fields.html">Finite Fields and Modular Arithmetic</a>)</li>
+<li>Euclidean domains: algebraic structures supporting <code>add</code>, <code>mul</code>, <code>sub</code>, <code>neg</code>, <code>div</code> (division with remainder), <code>gcd</code>, and <code>rem</code></li>
+<li>Basic intuition for vector spaces: vector addition and scalar multiplication</li>
+</ul>
+<p>No systematic linear algebra training is required — this chapter builds everything from scratch.</p>
+<hr />
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="matrices"><a class="header" href="#matrices">Matrices</a></h3>
+<p>An $m \times n$ <strong>matrix</strong> is a rectangular array of elements arranged in $m$ rows and $n$ columns:</p>
+<p>$$
+A = \begin{pmatrix}
+a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1n} \
+a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2n} \
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \
+a_{m1} &amp; a_{m2} &amp; \cdots &amp; a_{mn}
+\end{pmatrix}
+$$</p>
+<p>The element $a_{ij}$ sits in row $i$ and column $j$. In oCAS, elements are stored in a row-major one-dimensional array: <code>data[i * ncols + j]</code> corresponds to $a_{i+1,,j+1}$ (zero-indexed).</p>
+<h3 id="matrix-operations"><a class="header" href="#matrix-operations">Matrix Operations</a></h3>
+<p><strong>Addition</strong>: two matrices of the same shape are added elementwise:</p>
+<p>$$
+(A + B)<em>{ij} = a</em>{ij} + b_{ij}
+$$</p>
+<p><strong>Scalar multiplication</strong>:</p>
+<p>$$
+(cA)<em>{ij} = c \cdot a</em>{ij}
+$$</p>
+<p><strong>Matrix multiplication</strong>: the product $C = AB$ of an $m \times n$ matrix $A$ and an $n \times p$ matrix $B$ is the $m \times p$ matrix:</p>
+<p>$$
+c_{ij} = \sum_{k=1}^{n} a_{ik} \cdot b_{kj}
+$$</p>
+<p>Multiplication requires the number of columns of $A$ to equal the number of rows of $B$. Note that matrix multiplication is generally <strong>not commutative</strong> ($AB \neq BA$), but it is <strong>associative</strong> ($(AB)C = A(BC)$).</p>
+<p><strong>Transpose</strong>: swapping rows and columns:</p>
+<p>$$
+(A^\top)<em>{ij} = a</em>{ji}
+$$</p>
+<p>Properties: $(AB)^\top = B^\top A^\top$, $(A^\top)^\top = A$.</p>
+<p><strong>Trace</strong>: the sum of the diagonal elements of a square matrix:</p>
+<p>$$
+\operatorname{tr}(A) = \sum_{i=1}^{n} a_{ii}
+$$</p>
+<p>Property: $\operatorname{tr}(AB) = \operatorname{tr}(BA)$ (whenever the product is defined).</p>
+<h3 id="determinants"><a class="header" href="#determinants">Determinants</a></h3>
+<p>The <strong>determinant</strong> is a scalar value attached to a square matrix, one of the most central concepts in linear algebra. For an $n \times n$ matrix $A$, the determinant $\det(A)$ has the following equivalent definitions:</p>
+<p><strong>Recursive definition (Laplace expansion)</strong>: expanding along row $i$:</p>
+<p>$$
+\det(A) = \sum_{j=1}^{n} (-1)^{i+j} , a_{ij} , M_{ij}
+$$</p>
+<p>where $M_{ij}$ is the determinant of the $(n-1)\times(n-1)$ submatrix obtained by deleting row $i$ and column $j$ (the <strong>minor</strong>). For a $1\times 1$ matrix, $\det(a_{11}) = a_{11}$.</p>
+<p><strong>Geometric definition</strong>: $|\det(A)|$ is the "oriented volume" of the parallelepiped spanned by the column vectors of the matrix. $\det(A) &gt; 0$ means orientation is preserved; $\det(A) &lt; 0$ means orientation is flipped.</p>
+<h4 id="key-properties-of-determinants"><a class="header" href="#key-properties-of-determinants">Key Properties of Determinants</a></h4>
+<ol>
+<li><strong>Multiplicativity</strong>: $\det(AB) = \det(A) \cdot \det(B)$</li>
+<li><strong>Transpose invariance</strong>: $\det(A^\top) = \det(A)$</li>
+<li><strong>Row swap changes sign</strong>: swapping two rows changes the sign of the determinant</li>
+<li><strong>Row scaling</strong>: multiplying a row by $c$ multiplies the determinant by $c$</li>
+<li><strong>Row addition invariance</strong>: adding a multiple of one row to another leaves the determinant unchanged</li>
+<li><strong>Singularity test</strong>: $\det(A) = 0$ if and only if $A$ is not invertible (singular)</li>
+<li><strong>Upper/lower triangular matrices</strong>: $\det(A) = \prod_{i=1}^{n} a_{ii}$ (the product of the diagonal elements)</li>
+</ol>
+<p>These properties directly suggest computing determinants by <strong>elimination</strong>: transform the matrix into triangular form by row operations, and the determinant is the product of the diagonal elements (times a sign factor from row swaps).</p>
+<hr />
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="the-problem-fraction-explosion-over-domains"><a class="header" href="#the-problem-fraction-explosion-over-domains">The Problem: Fraction Explosion over Domains</a></h3>
+<p>Classical Gaussian elimination works well over the rationals — we can divide freely. But <code>Matrix&lt;D: EuclideanDomain&gt;</code> in oCAS is required to work over <strong>arbitrary</strong> Euclidean domains, including:</p>
+<ul>
+<li><strong>The integer ring $\mathbb{Z}$</strong>: $3 \div 2$ is meaningless (no integer quotient)</li>
+<li><strong>Polynomial rings $\mathbb{F}[x]$</strong>: $x^2 \div (x+1)$ is not a polynomial</li>
+<li><strong>Finite fields $\mathbb{F}_p$</strong>: division is possible, but every division incurs a modular inverse, and intermediate results may overflow</li>
+</ul>
+<p>Even over the rationals, classical elimination produces ever-growing denominators. For example, for the integer matrix:</p>
+<p>$$
+A = \begin{pmatrix} 2 &amp; 3 \ 5 &amp; 7 \end{pmatrix}
+$$</p>
+<p>classical elimination needs to compute $7 - \frac{5 \cdot 3}{2} = 7 - \frac{15}{2} = -\frac{1}{2}$ — a fraction appears. For an $n \times n$ matrix, the numerators and denominators of the fractions can grow to magnitude $O(n!)$.</p>
+<h3 id="bareisss-fraction-free-determinant-algorithm"><a class="header" href="#bareisss-fraction-free-determinant-algorithm">Bareiss's Fraction-Free Determinant Algorithm</a></h3>
+<p><strong>Bareiss's algorithm</strong> (1968) is built on the key insight that during elimination over the integers (or a more general Euclidean domain), all intermediate values can be kept integral by dividing by the previous pivot.</p>
+<h4 id="algorithm-description"><a class="header" href="#algorithm-description">Algorithm Description</a></h4>
+<p>For an $n \times n$ matrix $A$, Bareiss's algorithm produces an upper triangular matrix whose last diagonal element $a_{nn}^{(n-1)}$ is $\det(A)$ (possibly multiplied by $-1$ to compensate for row swaps).</p>
+<p>Initialization: set $a_{ij}^{(0)} = a_{ij}$ and $p_0 = 1$.</p>
+<p>For $k = 0, 1, \ldots, n-2$:</p>
+<ol>
+<li>
+<p><strong>Pivot selection</strong>: if $a_{kk}^{(k)} = 0$, find $i &gt; k$ with $a_{ik}^{(k)} \neq 0$, and swap row $k$ with row $i$ (record the sign flip). If none exists, $\det(A) = 0$.</p>
+</li>
+<li>
+<p><strong>Elimination</strong>: for $i = k+1, \ldots, n-1$ and $j = k+1, \ldots, n-1$:</p>
+</li>
+</ol>
+<p>$$
+a_{ij}^{(k+1)} = \frac{a_{ij}^{(k)} \cdot a_{kk}^{(k)} - a_{ik}^{(k)} \cdot a_{kj}^{(k)}}{p_k}
+$$</p>
+<ol start="3">
+<li><strong>Update the divisor</strong>: $p_{k+1} = a_{kk}^{(k)}$</li>
+</ol>
+<p>Finally:</p>
+<p>$$
+\det(A) = \begin{cases}
+a_{nn}^{(n-1)} &amp; \text{if no row swap or an even number of swaps} \
+-a_{nn}^{(n-1)} &amp; \text{if an odd number of row swaps}
+\end{cases}
+$$</p>
+<h4 id="why-the-division-is-exact"><a class="header" href="#why-the-division-is-exact">Why the Division Is Exact</a></h4>
+<p><strong>Theorem</strong> (Bareiss 1968): in the formula above, $p_k$ divides the numerator $a_{ij}^{(k)} \cdot a_{kk}^{(k)} - a_{ik}^{(k)} \cdot a_{kj}^{(k)}$ exactly.</p>
+<p>Intuitively, this follows from Sylvester's determinant identity. The step-$(k+1)$ update of the elimination matrix is equivalent to computing the determinant of a $(k+2) \times (k+2)$ submatrix, and the Schur complement formula guarantees that dividing by the previous pivot still yields an integer.</p>
+<h4 id="complexity-and-numerical-behavior"><a class="header" href="#complexity-and-numerical-behavior">Complexity and Numerical Behavior</a></h4>
+<ul>
+<li><strong>Time complexity</strong>: $O(n^3)$ domain operations — the same as classical Gaussian elimination</li>
+<li><strong>Size of intermediate values</strong>: for integer matrices, the intermediate values $a_{ij}^{(k)}$ grow to $O(n \log n)$ digits — far better than the magnitude-$O(n!)$ growth of classical elimination</li>
+<li><strong>No rounding errors</strong>: over the integers and polynomials, all operations are exact, with no floating-point approximation</li>
+</ul>
+<h3 id="gaussian-elimination-and-row-echelon-form"><a class="header" href="#gaussian-elimination-and-row-echelon-form">Gaussian Elimination and Row Echelon Form</a></h3>
+<p>Gaussian elimination transforms a matrix into <strong>row echelon form</strong> (REF):</p>
+<p>$$
+\begin{pmatrix}
+\boxed{a_{11}} &amp; a_{12} &amp; a_{13} &amp; a_{14} \
+0 &amp; \boxed{a_{22}} &amp; a_{23} &amp; a_{24} \
+0 &amp; 0 &amp; 0 &amp; \boxed{a_{34}} \
+0 &amp; 0 &amp; 0 &amp; 0
+\end{pmatrix}
+$$</p>
+<p>The boxed elements are the <strong>pivots</strong>. Row echelon form satisfies:</p>
+<ol>
+<li>All nonzero rows are above all zero rows</li>
+<li>The column of each pivot is all zeros below it</li>
+<li>Each pivot lies strictly to the right of the pivots in the rows above it</li>
+</ol>
+<p>Continuing the elimination yields the <strong>reduced row echelon form</strong> (RREF) — every pivot is $1$ and all remaining elements in pivot columns are $0$.</p>
+<h4 id="pivot-selection"><a class="header" href="#pivot-selection">Pivot Selection</a></h4>
+<p>A Euclidean domain need not have a notion of "absolute value" (for instance $\mathbb{F}[x]$), so oCAS's elimination does not use the <strong>partial pivoting</strong> of numerical linear algebra. Both <code>row_echelon</code> and <code>determinant</code> select the <strong>first nonzero element</strong> in the current column as the pivot; if the column is entirely zero, it is skipped (no row swap). Intermediate value growth is controlled by <strong>content stripping</strong> (see below) — after elimination, the GCD of the pivot row is immediately factored out and the whole row is divided by it.</p>
+<h3 id="fraction-free-back-substitution"><a class="header" href="#fraction-free-back-substitution">Fraction-Free Back-Substitution</a></h3>
+<p>After elimination, <strong>back-substitution</strong> is needed to solve linear systems. oCAS's back-substitution is also fraction-free: starting from the last row and working upward, GCD scaling is used to avoid introducing fractions.</p>
+<p>For row $i$ in row echelon form (pivot in column $j$) and row $k &lt; i$ (with a nonzero element $a_{kj}$ in column $j$):</p>
+<p>$$
+g = \gcd(a_{ij}, a_{kj}), \quad s_p = \frac{a_{kj}}{g}, \quad s_r = \frac{a_{ij}}{g}
+$$</p>
+<p>Update row $k$: for every $l &gt; j$:</p>
+<p>$$
+a_{kl} \leftarrow s_r \cdot a_{kl} - s_p \cdot a_{il}
+$$</p>
+<p>$$
+a_{kj} \leftarrow 0
+$$</p>
+<p>This is fully consistent with the fraction-free nature of Bareiss elimination.</p>
+<h3 id="content-stripping"><a class="header" href="#content-stripping">Content Stripping</a></h3>
+<p>During elimination, the coefficients of a row may share a common factor. At each step after processing a pivot, oCAS performs <strong>content stripping</strong>: it computes the GCD of the pivot row from the pivot column to the last column, then divides the entire row by that GCD.</p>
+<p>$$
+g = \gcd(a_{ij}, a_{i,j+1}, \ldots, a_{i,n-1})
+$$</p>
+<p>$$
+a_{il} \leftarrow \frac{a_{il}}{g}, \quad l = j, j+1, \ldots, n-1
+$$</p>
+<p>This optimization is especially critical for polynomial rings — otherwise the degrees of the intermediate polynomials would grow exponentially.</p>
+<h3 id="the-inverse-of-a-matrix"><a class="header" href="#the-inverse-of-a-matrix">The Inverse of a Matrix</a></h3>
+<p>The <strong>inverse</strong> $A^{-1}$ of a square matrix $A$ satisfies:</p>
+<p>$$
+AA^{-1} = A^{-1}A = I
+$$</p>
+<p>where $I$ is the identity matrix. The inverse exists if and only if $\det(A) \neq 0$ ($A$ is nonsingular).</p>
+<p>Computation method: transform $[A \mid I]$ by row operations into $[I \mid A^{-1}]$. In oCAS, <code>inverse()</code> obtains the $j$-th column of $A^{-1}$ by solving $Ax_j = e_j$ for each column $e_j$ of the identity matrix.</p>
+<hr />
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<h3 id="the-matrixd-euclideandomain-structure"><a class="header" href="#the-matrixd-euclideandomain-structure">The <code>Matrix&lt;D: EuclideanDomain&gt;</code> Structure</a></h3>
+<p>The oCAS matrix is <strong>generic</strong> — it accepts any <code>EuclideanDomain</code> as the coefficient domain:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{EuclideanDomain, IntegerDomain, Integer};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::new(2, 2, vec![
+    Integer::from(2), Integer::from(3),
+    Integer::from(5), Integer::from(7),
+], d);
+<span class="boring">}</span></code></pre></pre>
+<p>Internally it is stored as a row-major <code>Vec&lt;D::Element&gt;</code> together with the number of rows, the number of columns, and the coefficient domain value (<code>domain: D</code> is stored by value, not by reference). This way all arithmetic operations go through the domain's trait methods (<code>add</code>, <code>mul</code>, <code>sub</code>, <code>div</code>, <code>gcd</code>) and never depend on the concrete type.</p>
+<h3 id="why-bareiss-and-not-laplace-expansion"><a class="header" href="#why-bareiss-and-not-laplace-expansion">Why Bareiss and Not Laplace Expansion</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Time complexity</th><th>Space complexity</th><th>Fraction explosion</th><th>Domain compatibility</th></tr></thead><tbody>
+<tr><td>Laplace expansion</td><td>$O(n!)$</td><td>$O(n^2)$ (recursion depth $O(n)$)</td><td>None</td><td>Any commutative ring (infeasible in practice)</td></tr>
+<tr><td>Classical Gaussian elimination</td><td>$O(n^3)$</td><td>$O(n^2)$</td><td>Severe</td><td>Fields only</td></tr>
+<tr><td><strong>Bareiss</strong></td><td>$O(n^3)$</td><td>$O(n^2)$</td><td><strong>None</strong></td><td><strong>Euclidean domains</strong></td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>The $O(n!)$ complexity of <strong>Laplace expansion</strong> makes it completely unusable for $n &gt; 10$</li>
+<li><strong>Classical elimination</strong> requires fraction arithmetic and does not work over $\mathbb{Z}$ or $\mathbb{F}[x]$</li>
+<li><strong>Bareiss's algorithm</strong> combines the best of both: $O(n^3)$ efficiency + fraction-free + support for arbitrary Euclidean domains</li>
+</ul>
+<p>This is the fundamental reason oCAS chooses Bareiss — it is a <strong>general-purpose symbolic computation system</strong>, whose matrix elements may be integers, polynomials, finite-field elements, or even algebraic number field elements.</p>
+<h3 id="row-echelon-form-row_echelon"><a class="header" href="#row-echelon-form-row_echelon">Row Echelon Form: <code>row_echelon</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// fraction-free Gaussian elimination, returns the rank
+pub fn row_echelon(&amp;mut self, max_col: usize) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><code>row_echelon</code> performs fraction-free elimination on the first <code>max_col</code> columns and returns the rank of the matrix. Algorithm steps:</p>
+<ol>
+<li>For each column $j$, select the first nonzero element in the current column as the pivot (skip the column if it is entirely zero)</li>
+<li><strong>Content stripping</strong>: compute the GCD of the pivot row and divide the whole row by it</li>
+<li><strong>Elimination</strong>: for each row below the pivot, eliminate column $j$ by GCD-scaled subtraction ($a_{ij}$ is the pivot and $a_{kj}$ the entry being eliminated; $s_r$ and $s_p$ must be computed before zeroing):</li>
+</ol>
+<p>$$
+g = \gcd(a_{ij}, a_{kj}), \quad s_r = \frac{a_{ij}}{g}, \quad s_p = \frac{a_{kj}}{g}
+$$</p>
+<p>$$
+a_{kj} \leftarrow 0, \qquad a_{kl} \leftarrow s_r \cdot a_{kl} - s_p \cdot a_{il} \quad (l &gt; j)
+$$</p>
+<p>This guarantees that all intermediate values stay inside the domain, with no fractions produced.</p>
+<h3 id="determinant-determinant"><a class="header" href="#determinant-determinant">Determinant: <code>determinant</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+let a = Matrix::from_rows(vec![
+    vec![Integer::from(1), Integer::from(2)],
+    vec![Integer::from(3), Integer::from(4)],
+], d);
+assert_eq!(a.determinant().unwrap(), Integer::from(-2));
+<span class="boring">}</span></code></pre></pre>
+<p><code>determinant</code> implements Bareiss's algorithm directly:</p>
+<ol>
+<li>Initialization: copy the data into a working array, $p_0 = 1$, sign flag $\epsilon = 1$</li>
+<li>For $k = 0, \ldots, n-2$:
+<ul>
+<li>If the pivot is zero, find a nonzero row below it and swap (flip $\epsilon$)</li>
+<li>Update: $a_{ij}^{(k+1)} = (a_{ij}^{(k)} \cdot a_{kk}^{(k)} - a_{ik}^{(k)} \cdot a_{kj}^{(k)}) / p_k$</li>
+<li>Update the divisor: $p_{k+1} = a_{kk}^{(k)}$</li>
+</ul>
+</li>
+<li>Return $\epsilon \cdot a_{n-1,n-1}^{(n-1)}$</li>
+</ol>
+<p>Special cases: $n = 0$ returns $1$ (the determinant of the empty matrix), and $n = 1$ returns the single element directly.</p>
+<h3 id="solving-linear-systems-solve"><a class="header" href="#solving-linear-systems-solve">Solving Linear Systems: <code>solve</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = Matrix::from_rows(vec![
+    vec![Integer::from(1), Integer::from(1)],
+    vec![Integer::from(1), Integer::from(-1)],
+], d);
+let b = vec![Integer::from(3), Integer::from(-1)];
+let x = a.solve(&amp;b).unwrap();
+assert_eq!(x, vec![Integer::from(1), Integer::from(2)]);
+<span class="boring">}</span></code></pre></pre>
+<p>The complete flow of <code>solve</code>:</p>
+<ol>
+<li><strong>Augmentation</strong>: append $b$ to form $[A \mid b]$</li>
+<li><strong>Elimination</strong>: <code>row_echelon(nvars)</code> to reach row echelon form</li>
+<li><strong>Consistency check</strong>: if there is a nonzero $b$ component after the pivot rows, the system is inconsistent and <code>MatrixError::Inconsistent</code> is returned</li>
+<li><strong>Back-substitution</strong>: fraction-free <code>back_substitution(nvars)</code></li>
+<li><strong>Rank check</strong>: if the rank $&lt; n$, the system is underdetermined and <code>MatrixError::Underdetermined</code> is returned</li>
+<li><strong>Final division</strong>: divide each solution component by its corresponding pivot</li>
+</ol>
+<h4 id="error-types"><a class="header" href="#error-types">Error Types</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Error</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>ShapeMismatch</code></td><td>$A$ is not square, or the length of $b$ is not equal to the number of rows</td></tr>
+<tr><td><code>RightHandSideIsNotVector</code></td><td>$b$ is not a column vector</td></tr>
+<tr><td><code>Inconsistent</code></td><td>The system has no solution (rank of the augmented matrix &gt; rank of the coefficient matrix)</td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td>The system has infinitely many solutions (rank &lt; number of unknowns)</td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td>The solution is not in the domain (an integer matrix may produce rational solutions)</td></tr>
+</tbody></table>
+</div>
+<h3 id="rank-and-inverse"><a class="header" href="#rank-and-inverse">Rank and Inverse</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// rank: the number of pivots in row echelon form
+let rank = a.rank();
+
+// inverse: solve Ax_j = e_j column by column
+let inv = a.inverse()?;
+<span class="boring">}</span></code></pre></pre>
+<p><code>rank</code> clones the matrix, calls <code>row_echelon</code>, and returns the number of pivots.</p>
+<p><code>inverse</code> solves a linear system for each column of the identity matrix to obtain the columns of the inverse. This requires the matrix to be nonsingular and the solutions to lie in the domain — for example, the inverse of an integer matrix is generally not in $\mathbb{Z}$ unless $\det(A) = \pm 1$ (a unimodular matrix):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// unimodular matrix: det = 1, the integer inverse exists
+let a = Matrix::from_rows(vec![
+    vec![Integer::from(1), Integer::from(2)],
+    vec![Integer::from(0), Integer::from(1)],
+], d);
+let inv = a.inverse().unwrap();
+assert_eq!(inv[(0, 0)], Integer::from(1));
+assert_eq!(inv[(0, 1)], Integer::from(-2));
+assert_eq!(inv[(1, 0)], Integer::from(0));
+assert_eq!(inv[(1, 1)], Integer::from(1));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matrix-multiplication-and-transpose"><a class="header" href="#matrix-multiplication-and-transpose">Matrix Multiplication and Transpose</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// multiplication: C = A · B
+let c = a.matmul(&amp;b)?;
+
+// transpose
+let at = a.transpose();
+
+// trace (sum of the diagonal elements of a square matrix)
+let tr = a.trace()?;
+<span class="boring">}</span></code></pre></pre>
+<p><code>matmul</code> uses the standard triple-loop $O(n^3)$ algorithm; all operations go through the domain's trait methods. <code>transpose</code> is implemented by rearranging the data. <code>trace</code> sums the diagonal elements of a square matrix.</p>
+<h3 id="complete-example-solving-an-integer-linear-system"><a class="header" href="#complete-example-solving-an-integer-linear-system">Complete Example: Solving an Integer Linear System</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::matrix::Matrix;
+
+let d = IntegerDomain;
+
+// System of equations:
+//   2x + 3y = 8
+//   5x + 7y = 19
+let a = Matrix::from_rows(vec![
+    vec![Integer::from(2), Integer::from(3)],
+    vec![Integer::from(5), Integer::from(7)],
+], d);
+let b = vec![Integer::from(8), Integer::from(19)];
+
+let x = a.solve(&amp;b).unwrap();
+// x = [1, 2]
+assert_eq!(x[0], Integer::from(1));
+assert_eq!(x[1], Integer::from(2));
+
+// Verify: Ax = b
+let x_matrix = Matrix::new(2, 1, x, d);
+let result = a.matmul(&amp;x_matrix).unwrap();
+assert_eq!(result[(0, 0)], Integer::from(8));
+assert_eq!(result[(1, 0)], Integer::from(19));
+
+// determinant: 2·7 - 3·5 = -1
+assert_eq!(a.determinant().unwrap(), Integer::from(-1));
+<span class="boring">}</span></code></pre></pre>
+<p>All intermediate values during the elimination remain integers — Bareiss's algorithm guarantees this.</p>
+<hr />
+<h2 id="advanced-topics"><a class="header" href="#advanced-topics">Advanced Topics</a></h2>
+<h3 id="generalizations-of-bareisss-algorithm"><a class="header" href="#generalizations-of-bareisss-algorithm">Generalizations of Bareiss's Algorithm</a></h3>
+<p>Bareiss's algorithm can be generalized to compute <strong>determinants of submatrices</strong> (all $k \times k$ minors), which is useful for computing Smith normal forms and Hermite normal forms.</p>
+<p>For polynomial matrices, Bareiss effectively controls coefficient growth through GCD scaling, making determinant computation of polynomial matrices feasible in practice.</p>
+<h3 id="relation-to-lu-decomposition"><a class="header" href="#relation-to-lu-decomposition">Relation to LU Decomposition</a></h3>
+<p>Bareiss's algorithm can be viewed as a <strong>fraction-free variant of LU decomposition</strong>. Classical LU decomposition factors the matrix as $A = LU$, where $L$ is lower triangular and $U$ is upper triangular. Bareiss produces a similar decomposition, but all intermediate values stay within the domain.</p>
+<p>$\det(A) = \det(L) \cdot \det(U) = \prod_{i} l_{ii} \cdot \prod_{i} u_{ii}$.</p>
+<h3 id="matrices-in-symbolic-computation"><a class="header" href="#matrices-in-symbolic-computation">Matrices in Symbolic Computation</a></h3>
+<p>In symbolic computation, matrix elements may be <strong>polynomials</strong> or <strong>rational functions</strong>. In this setting the GCD scaling of Bareiss's algorithm is especially critical — it keeps the degree growth of polynomial coefficients at $O(n)$ instead of exponential.</p>
+<p>The F4 algorithm of oCAS's Gröbner basis machinery makes heavy internal use of matrix row echelonization — reducing the elimination problem for multivariate polynomials to a matrix problem over the coefficient domain, then processing it efficiently with Bareiss or its $\mathbb{Z}_p$ fast path (lazy modular arithmetic).</p>
+<hr />
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li>
+<p><strong>Axler, S.</strong> <em>Linear Algebra Done Right</em>, 3rd ed. Springer, 2015.
+Chapters 4–6: determinants, eigenvalues, and inner product spaces.</p>
+</li>
+<li>
+<p><strong>Bareiss, E. H.</strong> "Sylvester's Identity and Multistep
+Integer-Preserving Gaussian Elimination." <em>Mathematics of Computation</em>,
+22(103):565–578, 1968.
+The original paper on Bareiss's algorithm.</p>
+</li>
+<li>
+<p><strong>Cox, D., Little, J., O'Shea, D.</strong> <em>Ideals, Varieties, and Algorithms</em>,
+4th ed. Springer, 2015.
+Linear algebra in polynomial matrices and Gröbner bases.</p>
+</li>
+<li>
+<p><strong>Geddes, K. O., Czapor, S. R., Labahn, G.</strong> <em>Algorithms for Computer
+Algebra</em>. Kluwer, 1992.
+Chapter 5: symbolic elimination algorithms on matrices.</p>
+</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/finite-fields.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/poly-gcd-factoring.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/finite-fields.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/poly-gcd-factoring.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

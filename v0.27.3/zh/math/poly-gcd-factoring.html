@@ -1,0 +1,763 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>进阶：多项式 GCD 与因式分解 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html" class="active"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/poly-gcd-factoring.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="进阶多项式-gcd-与因式分解"><a class="header" href="#进阶多项式-gcd-与因式分解">进阶：多项式 GCD 与因式分解</a></h1>
+<p>本章系统讲解多项式最大公因式（GCD）计算和因式分解的核心算法。这些算法是计算机代数系统的基础构件——Gröbner 基计算、有理函数化简、ODE 求解中的部分分式分解都依赖于它们。我们从经典的 Euclidean 算法出发，逐步引入模方法、Hensel 提升和多元扩展，最终覆盖有限域和代数数域上的因式分解。</p>
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<p>阅读本章前，建议先学习：</p>
+<ul>
+<li><a href="./polynomial-algebra.html">基础：多项式代数</a> — 多项式环、次数、单项式序</li>
+<li><a href="./finite-fields.html">基础：有限域与模算术</a> — $\mathbb{F}_p$ 构造、模逆、CRT</li>
+<li><a href="./linear-algebra.html">基础：线性代数</a> — 矩阵运算、行列式</li>
+</ul>
+<h3 id="euclidean-算法回顾"><a class="header" href="#euclidean-算法回顾">Euclidean 算法回顾</a></h3>
+<p>设 $\mathbb{F}$ 为域，$f, g \in \mathbb{F}[x]$，$g \ne 0$。Euclidean 算法通过反复带余除法计算 GCD：</p>
+<p>$$f = q_1 g + r_1, \quad g = q_2 r_1 + r_2, \quad r_1 = q_3 r_2 + r_3, \quad \ldots, \quad r_{k-2} = q_k r_{k-1} + r_k$$</p>
+<p>最后一个非零余式 $r_k$ 就是 $\gcd(f, g)$（精确到常数倍）。</p>
+<p>在 $\mathbb{Z}[x]$ 中，系数不再是域元素，带余除法可能不可行。我们需要<strong>伪除法</strong>（pseudo-division）：</p>
+<p>$$\text{lc}(g)^{d+1} \cdot f = q \cdot g + r, \quad d = \deg(f) - \deg(g)$$</p>
+<p>其中 $\text{lc}(g)$ 是 $g$ 的首项系数。这保证了商和余式都在 $\mathbb{Z}[x]$ 中，但代价是余式的系数可能膨胀。</p>
+<h3 id="伪余式序列prs"><a class="header" href="#伪余式序列prs">伪余式序列（PRS）</a></h3>
+<p>直接对 $\mathbb{Z}[x]$ 使用伪除法的 Euclidean 算法会导致<strong>系数膨胀</strong>：在度约 16 以上时，中间结果的系数可能达到数百位。为控制膨胀，文献中提出了多种<strong>伪余式序列</strong>（Pseudo-Remainder Sequences）：</p>
+<ul>
+<li><strong>原始 PRS</strong>（primitive PRS）：每步取伪余式的<strong>本原部分</strong>（除以系数的内容），使中间余式互素、避免不必要的系数膨胀</li>
+<li><strong>子结式 PRS</strong>（Subresultant PRS）：通过精心选择的缩放因子，使中间系数的大小恰好等于子结式行列式的理论界，避免了原始 PRS 的过度膨胀</li>
+</ul>
+<p>在 oCAS 中，<code>DenseUnivariatePolynomial::gcd</code> 使用带伪余式的 Euclidean 算法（<code>ocas-poly/src/gcd.rs</code>），返回本原 GCD。伪余式在度数较高时（实践中约 $\deg &gt; 16$）系数急剧膨胀，此时应改用 <code>gcd_modular_z</code>（Brown 模 GCD，<code>ocas-poly/src/gcd/modular.rs</code>）；目前两者由调用方显式选择，没有自动的度数调度。</p>
+<h3 id="结式resultant"><a class="header" href="#结式resultant">结式（Resultant）</a></h3>
+<p>两个多项式 $f, g \in \mathbb{F}[x]$ 的<strong>结式</strong> $\text{Res}(f, g)$ 是一个标量，满足：</p>
+<p>$$\text{Res}(f, g) = 0 \iff \gcd(f, g) \ne 1$$</p>
+<p>结式可以通过 Sylvester 矩阵的行列式计算，也可以通过 PRS 高效计算（Brown 的 PRS 算法）。在 oCAS 中，<code>resultant()</code> 方法使用 Brown PRS 算法实现。</p>
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="gcd-的定义"><a class="header" href="#gcd-的定义">GCD 的定义</a></h3>
+<p>设 $D$ 为唯一分解整环（UFD），$f, g \in D[x]$。$f$ 和 $g$ 的<strong>最大公因式</strong> $\gcd(f, g)$ 是满足以下条件的首一多项式 $d$：</p>
+<ol>
+<li>$d \mid f$ 且 $d \mid g$（公因式）</li>
+<li>对任意公因式 $c$，有 $c \mid d$（最大性）</li>
+</ol>
+<p>在 $\mathbb{F}[x]$（$\mathbb{F}$ 为域）中，GCD 总是首一的（乘以首项系数的逆）。在 $\mathbb{Z}[x]$ 中，GCD 通常取为<strong>本原的</strong>（primitive），即系数的 GCD 为 1。</p>
+<h3 id="内容与本原化"><a class="header" href="#内容与本原化">内容与本原化</a></h3>
+<p>多项式 $f = \sum a_i x^i \in \mathbb{Z}[x]$ 的<strong>内容</strong>（content）定义为系数的 GCD：</p>
+<p>$$\text{cont}(f) = \gcd(a_0, a_1, \ldots, a_n)$$</p>
+<p><strong>本原部分</strong>（primitive part）定义为：</p>
+<p>$$\text{pp}(f) = f / \text{cont}(f)$$</p>
+<p><strong>Gauss 引理</strong>：两个本原多项式的乘积仍是本原的。由此可得：</p>
+<p>$$\gcd(f, g) = \gcd(\text{cont}(f),, \text{cont}(g)) \cdot \gcd(\text{pp}(f),, \text{pp}(g))$$</p>
+<p>这允许我们将内容（整数 GCD）和本原部分（多项式 GCD）分开计算。</p>
+<p>在 oCAS 中：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::DenseUnivariatePolynomial;
+use ocas_domain::IntegerDomain;
+
+let f = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    vec![Integer::from(6), Integer::from(4), Integer::from(2)],
+);
+assert_eq!(f.content(), Integer::from(2));       // cont(f) = gcd(6,4,2) = 2
+assert_eq!(f.primitive_part().coeffs(),           // pp(f) = 3 + 2x + x²
+    &amp;[Integer::from(3), Integer::from(2), Integer::from(1)]);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="无平方分解square-free-factorization"><a class="header" href="#无平方分解square-free-factorization">无平方分解（Square-free Factorization）</a></h3>
+<h4 id="动机"><a class="header" href="#动机">动机</a></h4>
+<p>完全因式分解的第一步是将多项式分解为无平方因子的幂之积：</p>
+<p>$$f = c \cdot g_1^1 \cdot g_2^2 \cdot g_3^3 \cdots$$</p>
+<p>其中 $g_i$ 互素且无平方因子（$\gcd(g_i, g_i') = 1$）。这大幅简化了后续的不可约分解——每个 $g_i$ 只需分解一次。</p>
+<h4 id="yun-算法"><a class="header" href="#yun-算法">Yun 算法</a></h4>
+<p>对于特征 0 的域（如 $\mathbb{Q}$ 或 $\mathbb{Z}$），Yun 算法基于以下观察：若 $f = g_1 g_2^2 g_3^3 \cdots$，则</p>
+<p>$$\gcd(f, f') = g_2 g_3^2 g_4^3 \cdots$$</p>
+<p><strong>算法步骤</strong>：</p>
+<pre><code>输入：f ∈ ℤ[x]（已本原化）
+输出：[(g₁, 1), (g₂, 2), …] 使得 f = ∏ gₖᵏ
+
+1. f ← pp(f),  f' ← derivative(f)
+2. g ← gcd(f, f')
+3. w ← f / g
+4. k ← 1
+5. while w ≠ 1:
+6.     h ← gcd(w, g)
+7.     z ← w / h          // z = gₖ（重数为 k 的无平方因子）
+8.     if z ≠ 1: 输出 (z, k)
+9.     g ← g / h
+10.    w ← h
+11.    k ← k + 1
+</code></pre>
+<p><strong>关键性质</strong>：每步迭代的 GCD 计算精确消去了更高重数的因子，使得 $z = w/h$ 恰好包含重数 $k$ 的因子。</p>
+<p><strong>复杂度</strong>：$O(n^2)$ 次系数运算（$n = \deg f$），瓶颈在于 GCD 计算。</p>
+<h4 id="有限域上的特殊情况"><a class="header" href="#有限域上的特殊情况">有限域上的特殊情况</a></h4>
+<p>在 $\mathbb{F}_p[x]$ 中，当 $p \mid \deg f$ 时，形式导数 $f'$ 可能为零（例如 $f(x) = x^p - 1$ 在 $\mathbb{F}_p$ 上有 $f' = 0$）。此时 $f$ 是某个多项式的 $p$ 次幂：$f(x) = g(x^p) = g(x)^p$。Musser/Bernardin 算法检测此情况，取 $p$ 次根后递归，再将重数乘以 $p$。</p>
+<p>在 oCAS 中，<code>DenseUnivariatePolynomial::square_free_factorization()</code> 实现了 Yun 算法（<code>ocas-poly/src/factor/mod.rs</code>），<code>square_free_factorization_ff()</code> 实现了有限域版本（<code>ocas-poly/src/factor/finite_field.rs</code>）。</p>
+<h3 id="模-gcdbrown-1971"><a class="header" href="#模-gcdbrown-1971">模 GCD（Brown 1971）</a></h3>
+<h4 id="问题"><a class="header" href="#问题">问题</a></h4>
+<p>直接在 $\mathbb{Z}[x]$ 上用伪除法计算 GCD 会导致系数指数级膨胀。Brown 的模算法将问题"投影"到多个 $\mathbb{F}_p[x]$ 上，利用域上的高效 GCD，再用 CRT 重建。</p>
+<h4 id="算法核心思想"><a class="header" href="#算法核心思想">算法核心思想</a></h4>
+<p>设 $a, b \in \mathbb{Z}[x]$，令 $g = \gcd(a, b)$（本原）。关键观察：</p>
+<p>$$\text{lc}(g) \mid \gcd(\text{lc}(a), \text{lc}(b)) \equiv \gamma$$</p>
+<p>因此 $\gamma^{-1} \cdot \text{lc}(g) \mid 1$，即模 $p$ 的 monic GCD 乘以 $\gamma$ 后给出 $\mathbb{Z}[x]$ 上 GCD 的一个缩放版本。</p>
+<h4 id="算法步骤"><a class="header" href="#算法步骤">算法步骤</a></h4>
+<pre><code>输入：a, b ∈ ℤ[x]（非零）
+输出：gcd(a, b) ∈ ℤ[x]（本原）
+
+1. a_p ← pp(a),  b_p ← pp(b)
+2. γ ← gcd(lc(a_p), lc(b_p))    // GCD 首项系数的倍数
+3. images ← [],  best_deg ← ∞
+4. for p in primes_from(2³⁰):    // 从大于 2³⁰ 的素数开始
+5.     if p | γ: continue
+6.     field ← FiniteField(p)
+7.     g_p ← monic(gcd(a_p mod p, b_p mod p))
+8.     g_scaled ← g_p · (γ mod p) · (lc(g_p)⁻¹ mod p)
+9.     
+10.    if deg(g_scaled) &gt; best_deg: continue    // 不幸素数，丢弃
+11.    if deg(g_scaled) &lt; best_deg:             // 发现更小的 GCD
+12.        best_deg ← deg(g_scaled)
+13.        images ← [(p, g_scaled)]
+14.    else: images.append((p, g_scaled))
+15.    
+16.    // CRT 重建 + 试除验证
+17.    candidate ← primitive_part(CRT_reconstruct(images))
+18.    if candidate divides a_p AND candidate divides b_p:
+19.        return candidate
+20.    
+21. if 已尝试的素数个数 &gt; MAX_PRIMES: break
+22.
+23. return fallback_pseudo_remainder_gcd(a, b)  // 极端回退
+</code></pre>
+<h4 id="关键细节"><a class="header" href="#关键细节">关键细节</a></h4>
+<p><strong>素数选择</strong>：素数从 $&gt; 2^{30}$ 开始。每个素数在 CRT 重建中贡献约 30 比特的精度，因此系数位长为 $L$ 的多项式通常只需约 $L/30$ 个素数即可重建（实践中一般不超过几十个）。</p>
+<p><strong>Landau-$\gamma$ 缩放</strong>：monic 模 GCD $g_p$ 需要乘以 $\gamma = \gcd(\text{lc}(a), \text{lc}(b))$ 才能与 $\mathbb{Z}[x]$ 上的 GCD 对齐。具体地，$\text{lc}(g_p)^{-1} \cdot \gamma \bmod p$ 是缩放因子。</p>
+<p><strong>CRT 对称代表</strong>：重建时使用对称剩余 $(-p/2, p/2]$ 而非 $[0, p)$，使系数绝对值最小化。</p>
+<p><strong>不幸素数检测</strong>：若某素数 $p$ 上的模 GCD 次数高于当前最优值，该素数是"不幸的"（$p$ 整除真 GCD 的某个系数的分母），直接丢弃。若次数更低，说明之前的素数都是不幸的，清空重来。</p>
+<p><strong>试除验证</strong>：CRT 重建的候选 $c$ 必须满足 $c \mid a_p$ 且 $c \mid b_p$（精确除法），否则继续收集更多素数。</p>
+<p><strong>安全回退</strong>：尝试最多 10000 个素数后（实践中极少超过数十个），回退到伪余式 GCD 保证终止。</p>
+<p>在 oCAS 中，<code>gcd_modular_z()</code> 实现在 <code>ocas-poly/src/gcd/modular.rs</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::gcd::modular::gcd_modular_z;
+
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![i(-1), i(0), i(1)]); // x² - 1
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![i(1), i(2), i(1)]);  // x² + 2x + 1
+let g = gcd_modular_z(&amp;a, &amp;b);
+assert_eq!(g.coeffs(), &amp;[i(1), i(1)]);  // x + 1
+<span class="boring">}</span></code></pre></pre>
+<h3 id="多元-gcdbrown-求值插值"><a class="header" href="#多元-gcdbrown-求值插值">多元 GCD（Brown 求值—插值）</a></h3>
+<h4 id="问题-1"><a class="header" href="#问题-1">问题</a></h4>
+<p>给定 $f, g \in \mathbb{Z}[x_1, \ldots, x_n]$，计算 $\gcd(f, g)$。多元 GCD 的挑战在于：(1) 多元多项式没有规范的"带余除法"；(2) 系数结构更复杂。</p>
+<h4 id="brown-求值插值策略二元情形"><a class="header" href="#brown-求值插值策略二元情形">Brown 求值—插值策略（二元情形）</a></h4>
+<p>设 $f, g \in \mathbb{Z}[x, y]$，视为主变量 $x$ 的多项式，系数在 $\mathbb{Z}[y]$ 中。</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li><strong>求值</strong>：选 $\alpha \in \mathbb{Z}$，计算 $f(x, \alpha)$ 和 $g(x, \alpha)$（一元多项式）</li>
+<li><strong>一元 GCD</strong>：$d_\alpha(x) = \gcd(f(x, \alpha), g(x, \alpha))$</li>
+<li><strong>验证</strong>：检查 $d_\alpha(x)$ 的次数是否等于真 GCD 的次数（对多个 $\alpha$ 取最小一致次数）</li>
+<li><strong>Lagrange 插值</strong>：对足够多的 $\alpha_1, \ldots, \alpha_k$ 计算 $d_{\alpha_i}(x)$，将每个 $x$ 系数视为 $y$ 的多项式，通过 Lagrange 插值恢复 $d(x, y)$</li>
+</ol>
+<p><strong>关键条件</strong>：$\alpha$ 必须是"幸运的"——即 $\gcd(f(x, \alpha), g(x, \alpha))$ 的次数等于真 GCD 的次数。若 $\alpha$ 不幸（例如使首项系数消失），需重试。</p>
+<h4 id="多元情形的递归"><a class="header" href="#多元情形的递归">多元情形的递归</a></h4>
+<p>$n$ 变量的 GCD 递归地减少一个变量：</p>
+<ol>
+<li>选 $x_n$ 的求值点 $\alpha$，计算 $f|<em>{x_n = \alpha}$ 和 $g|</em>{x_n = \alpha}$</li>
+<li>递归计算 $(n-1)$ 变量的 GCD</li>
+<li>插值恢复 $x_n$ 的依赖</li>
+</ol>
+<h4 id="mathbbz-到-mathbbq-的嵌入"><a class="header" href="#mathbbz-到-mathbbq-的嵌入">$\mathbb{Z}$ 到 $\mathbb{Q}$ 的嵌入</a></h4>
+<p>在 $\mathbb{Z}[x_1, \ldots, x_n]$ 上计算 GCD 时，内容的处理至关重要：</p>
+<ol>
+<li>先提取关于主变量 $x_0$ 的<strong>内容</strong>（content in $x_0$），即所有 $x_0^k$ 系数的 GCD</li>
+<li>对本原部分进行多元 GCD</li>
+<li>最终 GCD = $\gcd(\text{cont}_x(f), \text{cont}_x(g)) \cdot \gcd(\text{pp}_x(f), \text{pp}_x(g))$</li>
+</ol>
+<h3 id="hensel-提升"><a class="header" href="#hensel-提升">Hensel 提升</a></h3>
+<h4 id="核心思想"><a class="header" href="#核心思想">核心思想</a></h4>
+<p>Hensel 提升是将模 $p$ 的因式分解"提升"到模 $p^k$（或 $\mathbb{Z}$）的关键技术。设 $f \in \mathbb{Z}[x]$ 是首一多项式，且</p>
+<p>$$f \equiv g_0 \cdot h_0 \pmod{p}, \quad \gcd(g_0, h_0) = 1 \pmod{p}$$</p>
+<p>目标是找到 $g, h \in \mathbb{Z}[x]$ 使得 $f = g \cdot h$，且 $g \equiv g_0 \pmod{p}$，$h \equiv h_0 \pmod{p}$。</p>
+<h4 id="线性-hensel-提升两因子情形"><a class="header" href="#线性-hensel-提升两因子情形">线性 Hensel 提升（两因子情形）</a></h4>
+<p>设 $s, t$ 是 $\mathbb{F}_p[x]$ 上的 Bézout 系数：$s \cdot g_0 + t \cdot h_0 = 1 \pmod{p}$。</p>
+<p><strong>迭代步骤</strong>（从 $m = p$ 到 $m &gt; B$）：</p>
+<pre><code>1. e ← f - g·h                    // 误差
+2. if e = 0: return (g, h)        // 精确分解
+3. ē ← (e / m) mod p              // 误差的"导数"
+4. Δg ← (t · ē) mod g₀           // g 的修正（deg &lt; deg g₀）
+5. Δh ← (ē - Δg · h₀) / g₀      // h 的修正（精确除法）
+6. g ← g + Δg · m
+7. h ← h + Δh · m
+8. m ← m · p
+</code></pre>
+<p>每步迭代将精度从 $\bmod m$ 提升到 $\bmod m \cdot p$。</p>
+<h4 id="mignotte-界"><a class="header" href="#mignotte-界">Mignotte 界</a></h4>
+<p>提升到何时停止？我们需要一个因子系数大小的上界。<strong>Landau–Mignotte 界</strong>给出：</p>
+<p>$$|g|_\infty \le 2^n |f|_2$$</p>
+<p>其中 $n = \deg f$，$|f|_2 = \sqrt{\sum a_i^2}$ 是 2-范数。因此只需提升到 $p^k &gt; 2 \cdot 2^n |f|_2$。</p>
+<h4 id="多因子-hensel-提升"><a class="header" href="#多因子-hensel-提升">多因子 Hensel 提升</a></h4>
+<p>对于 $r &gt; 2$ 个因子，采用<strong>逐因子剥离</strong>策略：</p>
+<pre><code>输入：f, [g₁, g₂, …, gᵣ] mod p
+输出：[G₁, G₂, …, Gᵣ] 使得 f = ∏ Gᵢ
+
+1. 对 i = 1, …, r-1:
+2.     h₀ ← g_{i+1} · g_{i+2} · … · gᵣ  (剩余因子之积)
+3.     (Gᵢ, H) ← hensel_lift_pair(f_current, gᵢ, h₀, p, bound)
+4.     f_current ← H
+5. Gᵣ ← f_current
+</code></pre>
+<p>每步都是两因子的 Hensel 提升。</p>
+<h4 id="zassenhaus-因子重组"><a class="header" href="#zassenhaus-因子重组">Zassenhaus 因子重组</a></h4>
+<p>Hensel 提升给出 $r$ 个模 $p^k$ 的因子 $\tilde{g}_1, \ldots, \tilde{g}_r$。$\mathbb{Z}[x]$ 上的真因子是这些 $\tilde{g}_i$ 的某个子集的乘积（模 $p^k$ 约化到对称范围 $(-p^k/2, p^k/2]$）。</p>
+<p><strong>重组策略</strong>：</p>
+<pre><code>1. remaining ← [g̃₁, …, g̃ᵣ]
+2. result ← []
+3. for size = 1, 2, …, r:
+4.     for each subset S ⊂ remaining of size |S|:
+5.         candidate ← primitive_part(lc(rest) · ∏_{i∈S} g̃ᵢ)
+6.         reduce candidate to symmetric range mod p^k
+7.         if candidate divides f:
+8.             result.append(candidate)
+9.             remaining ← remaining \ S
+10.            rest ← f / (∏ result)
+11.            break  // 从 size=1 重新开始
+12. return result
+</code></pre>
+<p><strong>关键优化</strong>：乘以当前余因子的首项系数后再取本原部分，这是 Zassenhaus 的经典技巧——真因子 $h$ 满足 $\text{lc}(\text{rest}) \cdot \prod S = c \cdot h$。</p>
+<p><strong>复杂度</strong>：最坏情况 $2^r$ 个子集（$r$ 为 mod-$p$ 因子数），但实践中因子数通常很少。</p>
+<p>在 oCAS 中，Hensel 提升和 Zassenhaus 重组实现在 <code>ocas-poly/src/factor/hensel.rs</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 完整的 ℤ[x] 因式分解管线：
+// 1. 无平方分解
+// 2. 对每个无平方分量：
+//    a. 选素数 p（不整除首项系数，且 f mod p 无平方）
+//    b. 在 𝔽_p 上因式分解（Cantor-Zassenhaus）
+//    c. Hensel 提升到 ℤ
+//    d. Zassenhaus 重组
+// 入口函数：DenseUnivariatePolynomial::factor()
+<span class="boring">}</span></code></pre></pre>
+<h3 id="berlekamp-算法"><a class="header" href="#berlekamp-算法">Berlekamp 算法</a></h3>
+<h4 id="适用场景"><a class="header" href="#适用场景">适用场景</a></h4>
+<p>在小素数 $p$ 的有限域 $\mathbb{F}_p$ 上分解无平方多项式。当 $p$ 较小时（$p \le 1000$），矩阵方法比 Cantor–Zassenhaus 的随机算法更高效。</p>
+<h4 id="理论基础"><a class="header" href="#理论基础">理论基础</a></h4>
+<p>设 $f \in \mathbb{F}_p[x]$ 是无平方的 $n$ 次多项式。定义 <strong>Frobenius 矩阵</strong> $Q \in \mathbb{F}_p^{n \times n}$：</p>
+<p>$$Q_{ij} = [x^j] \text{ 的系数在 } x^{ip} \bmod f \text{ 中}$$</p>
+<p>即 $Q$ 的第 $i$ 行是 $x^{ip} \bmod f$ 的系数向量。</p>
+<p><strong>关键定理</strong>：$v \in \mathbb{F}_p^n$ 满足 $Q^T v = v$（即 $v$ 是 $Q^T - I$ 的零空间向量）当且仅当对应的多项式 $v(x) = \sum v_i x^i$ 满足</p>
+<p>$$v(x)^p \equiv v(x) \pmod{f}$$</p>
+<p>这意味着 $v(x)$ 在 $\mathbb{F}_p$ 中取值，且</p>
+<p>$$f \mid \prod_{a \in \mathbb{F}_p} (v(x) - a)$$</p>
+<p>因此 $\gcd(f, v(x) - a)$ 对某个 $a \in \mathbb{F}_p$ 给出 $f$ 的非平凡因子。</p>
+<h4 id="算法步骤-1"><a class="header" href="#算法步骤-1">算法步骤</a></h4>
+<pre><code>输入：monic square-free f ∈ 𝔽_p[x]，deg f = n
+输出：f 的不可约因子列表
+
+1. 构造 Frobenius 矩阵 Q
+2. 计算 Q^T - I 的零空间基 {v₁, v₂, …, vᵣ}
+3. factors ← [f]
+4. for each vⱼ (r ≥ 1):
+5.     new_factors ← []
+6.     for each factor g in factors:
+7.         if deg(g) ≤ 1:
+8.             new_factors.append(g); continue
+9.         for a = 0, 1, …, p-1:
+10.            d ← gcd(g, vⱼ - a)
+11.            if 0 &lt; deg(d) &lt; deg(g):
+12.                new_factors.append(d)
+13.                g ← g / d
+14.        new_factors.append(g)
+15.    factors ← new_factors
+16. return factors
+</code></pre>
+<p><strong>零空间维数</strong>：若 $f$ 有 $r$ 个不可约因子，则零空间维数为 $r$。因此只需 $r - 1$ 个非平凡零空间向量即可完全分裂。</p>
+<p><strong>复杂度</strong>：$O(n^3)$（矩阵消元）+ $O(r \cdot n^2 \cdot p)$（GCD 分裂）。当 $p$ 很大时，$a$-循环的代价过高，应改用 Cantor–Zassenhaus。</p>
+<p>在 oCAS 中，<code>berlekamp()</code> 实现在 <code>ocas-poly/src/factor/finite_field.rs</code>。当 $p \le 1000$ 时自动使用。</p>
+<h3 id="cantorzassenhaus-算法"><a class="header" href="#cantorzassenhaus-算法">Cantor–Zassenhaus 算法</a></h3>
+<h4 id="适用场景-1"><a class="header" href="#适用场景-1">适用场景</a></h4>
+<p>大素数 $p$ 的有限域 $\mathbb{F}_p$ 上的无平方多项式分解。分为两个阶段：<strong>不同次分解</strong>（DDF）和<strong>等次分解</strong>（EDF）。</p>
+<h4 id="不同次分解ddf"><a class="header" href="#不同次分解ddf">不同次分解（DDF）</a></h4>
+<p><strong>目标</strong>：将 $f$ 分解为 $f = g_1 \cdot g_2 \cdots g_s$，其中 $g_d$ 的每个不可约因子的次数恰好为 $d$。</p>
+<p><strong>理论基础</strong>：$\mathbb{F}_{p^d}$ 的元素恰好是 $x^{p^d} - x = 0$ 的根。因此 $f$ 的次数为 $d$ 的不可约因子恰好整除</p>
+<p>$$\gcd(f,, x^{p^d} - x)$$</p>
+<p>但不整除之前的 $x^{p^{d'}} - x$（$d' &lt; d$）。</p>
+<p><strong>算法</strong>：</p>
+<pre><code>输入：monic square-free f ∈ 𝔽_p[x]
+输出：[(g₁, 1), (g₂, 2), …] 其中 gₖ 的因子次数为 k
+
+1. current ← f,  h ← x,  degree ← 1
+2. while deg(current) ≥ 2·degree:
+3.     h ← h^p mod current           // Frobenius 迭代：h = x^(p^degree)
+4.     g ← gcd(current, h - x)
+5.     if deg(g) &gt; 0:
+6.         输出 (monic(g), degree)
+7.         current ← current / g
+8.         h ← h mod current
+9.     degree ← degree + 1
+10. if deg(current) &gt; 0:
+11.     输出 (monic(current), deg(current))
+</code></pre>
+<p><strong>Frobenius 迭代的优化</strong>：不需要直接计算 $x^{p^d}$（指数巨大），而是逐步迭代 $h \leftarrow h^p \bmod f$，每次使用快速幂取模。</p>
+<p><strong>复杂度</strong>：$O(n^2 \log p)$（每步 Frobenius 迭代），总共 $O(n^3 \log p)$。</p>
+<h4 id="等次分解edf"><a class="header" href="#等次分解edf">等次分解（EDF）</a></h4>
+<p><strong>目标</strong>：将 $f = g_1 g_2 \cdots g_r$（每个 $g_i$ 不可约且次数为 $d$）完全分裂。</p>
+<p><strong>奇特征情形</strong>（$p &gt; 2$）：</p>
+<p>利用 $\mathbb{F}_{p^d}$ 中恰好一半元素是平方剩余的事实。对随机多项式 $a$，计算</p>
+<p>$$b = a^{(p^d - 1)/2} \bmod f$$</p>
+<p>则 $b$ 在每个不可约因子 $g_i$ 上的取值要么是 $1$（$a$ 是该因子域中的平方剩余），要么是 $-1$（非剩余）。因此</p>
+<p>$$\gcd(f,, b - 1) = \prod_{i:, a \text{ 是 } g_i \text{ 中的平方剩余}} g_i$$</p>
+<p>给出 $f$ 的非平凡分裂（除非所有 $g_i$ 的取值一致，概率为 $2^{1-r}$）。</p>
+<p><strong>特征 2 情形</strong>（$p = 2$）：</p>
+<p>$b - 1$ 的技巧不适用（$1 = -1$）。改用<strong>迹映射</strong>（trace map）：</p>
+<p>$$T(a) = a + a^2 + a^{2^2} + \cdots + a^{2^{d-1}} \bmod f$$</p>
+<p>$T(a)$ 在每个 $\mathbb{F}_{2^d}$ 上取值为 $\mathbb{F}_2$ 中的元素（迹的性质），且对随机 $a$ 的取值在不同因子上独立。因此 $\gcd(f, T(a))$ 给出非平凡分裂。</p>
+<pre><code>输入：f（DDF 输出的 d-次因子之积）
+输出：f 的不可约因子列表
+
+1. factors ← [f]
+2. while 存在 deg &gt; d 的因子:
+3.     for each factor g with deg(g) &gt; d:
+4.         选取随机多项式 a（deg &lt; deg(g)）
+5.         if p = 2:
+6.             b ← T(a) = Σᵢ₌₀^{d-1} a^{2^i} mod g
+7.         else:
+8.             b ← a^{(p^d-1)/2} mod g
+9.         d₁ ← gcd(g, b - 1)   // 或 gcd(g, b) for char 2
+10.        if 0 &lt; deg(d₁) &lt; deg(g):
+11.            replace g by d₁ and g/d₁ in factors
+12. return factors
+</code></pre>
+<p>在 oCAS 中，<code>cantor_zassenhaus()</code> 实现在 <code>ocas-poly/src/factor/finite_field.rs</code>，顶层入口 <code>factor_over_finite_field()</code> 根据 $p$ 的大小自动选择 Berlekamp（$p \le 1000$）或 Cantor–Zassenhaus。</p>
+<h3 id="wang-eez-多元因式分解"><a class="header" href="#wang-eez-多元因式分解">Wang EEZ 多元因式分解</a></h3>
+<h4 id="问题-2"><a class="header" href="#问题-2">问题</a></h4>
+<p>给定 $f \in \mathbb{Z}[x_1, \ldots, x_n]$（或 $\mathbb{F}_p[x_1, \ldots, x_n]$），分解为不可约因子。</p>
+<h4 id="策略概述"><a class="header" href="#策略概述">策略概述</a></h4>
+<p>Wang（1978）的 EEZ（Evaluation, Exact division, Zassenhaus）算法将一元 Hensel 提升推广到多元：</p>
+<ol>
+<li><strong>求值</strong>：在辅助变量上选求值点，得到一元像 $f(x_1, \alpha_2, \ldots, \alpha_n)$</li>
+<li><strong>一元分解</strong>：在 $\mathbb{Z}$（或 $\mathbb{F}_p$）上分解一元像</li>
+<li><strong>逐变量 Hensel 提升</strong>：一个变量一个变量地提升回多元分解</li>
+<li><strong>Zassenhaus 重组</strong>：组合提升后的因子</li>
+</ol>
+<h4 id="wang-首项系数预处理"><a class="header" href="#wang-首项系数预处理">Wang 首项系数预处理</a></h4>
+<p>多元因式分解的难点之一是非常数首项系数。设 $f$ 的主变量 $x_0$ 的首项系数为 $\ell(x_1, \ldots, x_n)$。若 $\ell$ 不是常数，每个因子 $f_i$ 的首项系数 $\ell_i$ 也不一定是常数，且 $\prod \ell_i = \ell$。</p>
+<p><strong>Wang 的贪心分配</strong>：</p>
+<ol>
+<li>将 $\ell$ 分解为不可约因子的幂之积：$\ell = \prod g_j^{e_j}$</li>
+<li>在求值点 $\alpha = (\alpha_2, \ldots, \alpha_n)$ 处，$\ell$ 的像分解为一元因子的像</li>
+<li>将 $\ell$ 的非平凡因子 $g_j$ 分配给对应的 $f_i$，使得 $g_j(\alpha) = \text{lc}(u_i)$（$u_i$ 是一元像因子）</li>
+<li>通过逐对互素条件（$\alpha_j = |g_j(\alpha)| &gt; 1$）确保分配的一致性</li>
+</ol>
+<h4 id="逐变量-hensel-提升"><a class="header" href="#逐变量-hensel-提升">逐变量 Hensel 提升</a></h4>
+<p>设 $f$ 有 $n$ 个变量，一元像因子为 $u_1, \ldots, u_r$。</p>
+<p><strong>提升变量 $x_k$</strong>（$k = 1, 2, \ldots, n-1$，按变量序号逐个提升）：</p>
+<ol>
+<li>对当前因子 $F_i^{(k-1)}$（在变量 $x_1, \ldots, x_{k-1}$ 中），求值 $x_k = \alpha_k$ 得到 $u_i$</li>
+<li>计算 Bézout 系数 $b_i$ 使得 $\sum b_i \prod_{j \ne i} u_j = 1$</li>
+<li>对 $t = 1, 2, \ldots$ 逐次求解<strong>多元 Diophantine 方程</strong>：</li>
+</ol>
+<p>$$\sum_i \sigma_i \cdot \prod_{j \ne i} F_j = e_t$$</p>
+<p>其中 $e_t$ 是当前误差 $f - \prod F_i$ 的 Taylor 展开第 $t$ 项</p>
+<ol start="4">
+<li>修正 $F_i \leftarrow F_i + \sigma_i \cdot (x_k - \alpha_k)^t$</li>
+</ol>
+<h4 id="多元-diophantine-方程求解器"><a class="header" href="#多元-diophantine-方程求解器">多元 Diophantine 方程求解器</a></h4>
+<p>提升变量 $x_k$ 时需要求解的方程形式为：</p>
+<p>$$\sum_{i=1}^{r} \sigma_i \cdot \prod_{j \ne i} u_j = e \pmod{(x_k - \alpha_k)^t}$$</p>
+<p>其中 $\deg_{x_0}(\sigma_i) &lt; \deg_{x_0}(u_i)$。这是一个线性方程组（关于 $\sigma_i$ 的系数），可以通过以下方式递归求解：</p>
+<ul>
+<li>当 $k = 1$（单变量）：扩展 Euclid 算法</li>
+<li>当 $k &gt; 1$：递归到 $k-1$ 个变量，在 $\alpha_k$ 处求值，求解更小的系统，再插值</li>
+</ul>
+<h4 id="p-adic-系数-hensel-提升"><a class="header" href="#p-adic-系数-hensel-提升">p-adic 系数 Hensel 提升</a></h4>
+<p>对于 $\mathbb{Z}[x_1, \ldots, x_n]$ 上的非常数首项系数情形，Wang EEZ 之后还需要<strong>p-adic 系数提升</strong>：</p>
+<ol>
+<li>将多元因子的系数模 $p$ 得到 $\mathbb{F}_p$ 上的骨架</li>
+<li>迭代求解 mod-$p$ Diophantine 方程，逐步将系数从 $\bmod p$ 提升到 $\bmod p^k$</li>
+<li>直到误差为零或 $p^k$ 超过系数界（Gelfond 界）</li>
+</ol>
+<p><strong>Gelfond 系数界</strong>：</p>
+<p>$$B = \left(\sqrt{\prod_v (d_v + 1) \cdot 2^{2 \sum d_v - n}} + 1\right) \cdot |f|_\infty \cdot |\text{lc}(f)|$$</p>
+<p>其中 $d_v$ 是变量 $v$ 的次数，$n$ 是变量数。</p>
+<h4 id="稀疏-diophantine-求解"><a class="header" href="#稀疏-diophantine-求解">稀疏 Diophantine 求解</a></h4>
+<p>当 Diophantine 修正项具有稀疏结构时，可以避免密集递归求解。oCAS 实现了<strong>骨架插值</strong>（skeleton interpolation）策略：</p>
+<ol>
+<li>从误差 $e$ 的项中提取骨架（skeleton）——修正项的可能指数模式</li>
+<li>在多个随机基点上求值，得到单变量 Diophantine 方程</li>
+<li>通过 Vandermonde 系统插值系数</li>
+<li>验证插值结果</li>
+</ol>
+<p>这在因子具有许多变量但每个变量的度很低时特别有效。</p>
+<p>在 oCAS 中，通用 EEZ 算法实现在 <code>ocas-poly/src/factor/eez.rs</code>，二元特化版本在 <code>ocas-poly/src/factor/multivariate.rs</code>（目前要求主变量首项系数为常数）：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// ℤ 上的 n 元因式分解入口（eez.rs）：
+pub fn multivariate_factor_z(f: &amp;ZmPoly) -&gt; Vec&lt;(ZmPoly, usize)&gt;
+
+// 𝔽_p 上的 n 元因式分解入口（eez.rs）：
+pub fn multivariate_factor_fp(f: &amp;FpMPoly) -&gt; Vec&lt;(FpMPoly, usize)&gt;
+
+// 二元特化入口（multivariate.rs）：
+pub fn bivariate_factor_z(f: &amp;ZMPoly, x_var: usize, y_var: usize) -&gt; Vec&lt;(ZMPoly, usize)&gt;
+pub fn bivariate_factor_fp(f: &amp;FpMPoly, x_var: usize, y_var: usize) -&gt; Vec&lt;(FpMPoly, usize)&gt;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="trager-代数数域因式分解"><a class="header" href="#trager-代数数域因式分解">Trager 代数数域因式分解</a></h3>
+<h4 id="问题-3"><a class="header" href="#问题-3">问题</a></h4>
+<p>给定 $f \in K[x]$，其中 $K = \mathbb{Q}(\alpha)$ 是代数数域（$\alpha$ 是极小多项式 $m(\alpha) = 0$ 的根），分解 $f$ 为 $K[x]$ 中的不可约因子。</p>
+<h4 id="范数下降"><a class="header" href="#范数下降">范数下降</a></h4>
+<p>Trager 算法的核心思想是通过<strong>范数</strong>将问题从 $K[x]$ 降到 $\mathbb{Q}[x]$：</p>
+<p>$$N(f) = \text{Res}_\alpha(m(\alpha),, f(x, \alpha))$$</p>
+<p>范数 $N(f) \in \mathbb{Q}[x]$ 的次数为 $\deg_x(f) \cdot [K:\mathbb{Q}]$，且若 $f$ 在 $K[x]$ 中可约，则 $N(f)$ 在 $\mathbb{Q}[x]$ 中可约。</p>
+<h4 id="求值插值计算范数"><a class="header" href="#求值插值计算范数">求值—插值计算范数</a></h4>
+<p>直接构造 Sylvester 矩阵计算结式代价高昂。oCAS 使用<strong>求值—插值</strong>：</p>
+<ol>
+<li>在 $\deg_x(f) \cdot [K:\mathbb{Q}] + 1$ 个有理点 $x_j$ 处计算标量结式 $\text{Res}_\alpha(m, f(x_j, \alpha))$</li>
+<li>每个标量结式是 $\mathbb{Q}(\alpha)$ 中元素的范数，通过在 $[K:\mathbb{Q}]$ 个点处求值 $m$ 并取乘积得到</li>
+<li>通过 Newton 差商插值恢复 $N(f) \in \mathbb{Q}[x]$</li>
+</ol>
+<h4 id="trager-平移"><a class="header" href="#trager-平移">Trager 平移</a></h4>
+<p>若 $N(f)$ 有重因子，$f$ 的因子信息会丢失。<strong>Trager 平移</strong>通过替换 $x \mapsto x - s\alpha$（$s \ge 0$）使范数无平方：</p>
+<p>$$N(f(x - s\alpha)) \text{ 无平方}$$</p>
+<p>这样的 $s$ 总是存在的（坏的 $s$ 只有有限多个），实践中 $s = 0$ 或很小的值即可。</p>
+<h4 id="分解步骤"><a class="header" href="#分解步骤">分解步骤</a></h4>
+<pre><code>输入：f ∈ K[x]（无平方）
+输出：f 在 K[x] 中的不可约因子
+
+1. for s = 0, 1, 2, …:
+2.     g ← f(x - s·α)
+3.     N ← Res_α(m, g(x, α))  via 求值-插值
+4.     if N 无平方: break
+5. 
+6. N₁, …, Nₖ ← factor_over_Q(N)   // ℚ 上因式分解
+7. for each Nᵢ:
+8.     N̂ᵢ ← embed_Q_to_K(Nᵢ)
+9.     hᵢ ← gcd_K(g, N̂ᵢ)          // K 上的 GCD
+10.    output ← compose_linear(hᵢ, +s·α)   // 逆平移
+11. return [monic(output₁), …]
+</code></pre>
+<h4 id="代数数域上的模-gcd"><a class="header" href="#代数数域上的模-gcd">代数数域上的模 GCD</a></h4>
+<p>步骤 9 中的 $K[x]$ GCD 通过模方法高效计算（<code>gcd_anf</code>）：</p>
+<ol>
+<li>选素数 $p$ 使得 $m$ 在 $\mathbb{F}_p$ 上不可约（确保 $\mathbb{F}_p[\alpha]/(m) \cong \text{GF}(p^d)$）</li>
+<li>将 $a, b \in K[x]$ 映射到 $\text{GF}(p^d)[x]$</li>
+<li>计算 $\text{GF}(p^d)[x]$ 上的 monic GCD</li>
+<li>CRT 合并 + 有理重构 + 试除验证</li>
+</ol>
+<p>不幸素数（模 GCD 次数偏大）被丢弃，最多尝试 1000 个素数后回退到密集 Euclid GCD。</p>
+<p>在 oCAS 中，Trager 算法实现在 <code>ocas-poly/src/factor/algebraic.rs</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// K = ℚ(α) 上的因式分解入口：
+impl DenseUnivariatePolynomial&lt;AlgebraicNumberField&gt; {
+    pub fn factor(&amp;self) -&gt; Factors&lt;AlgebraicNumberField&gt;
+}
+
+// 示例：x² - 2 在 ℚ(√2) 上分解为 (x - √2)(x + √2)
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+let f = DenseUnivariatePolynomial::from_coeffs(field.clone(), vec![
+    field.from_base(Rational::new(-2, 1)),
+    field.zero(),
+    field.one(),
+]);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);  // (x - √2) 和 (x + √2)
+<span class="boring">}</span></code></pre></pre>
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<h3 id="文件映射"><a class="header" href="#文件映射">文件映射</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>源文件</th><th>算法</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ocas-poly/src/dense.rs</code></td><td>Euclidean GCD、Karatsuba 乘法</td><td>一元多项式的核心数据结构</td></tr>
+<tr><td><code>ocas-poly/src/gcd/modular.rs</code></td><td>Brown 模 GCD</td><td>$\mathbb{Z}[x]$ 上的高效 GCD</td></tr>
+<tr><td><code>ocas-poly/src/factor/mod.rs</code></td><td>顶层入口、Yun 无平方分解</td><td><code>factor()</code> 和 <code>square_free_factorization()</code></td></tr>
+<tr><td><code>ocas-poly/src/factor/finite_field.rs</code></td><td>Berlekamp、Cantor–Zassenhaus（DDF + EDF）</td><td>$\mathbb{F}_p[x]$ 因式分解</td></tr>
+<tr><td><code>ocas-poly/src/factor/hensel.rs</code></td><td>Hensel 提升、Zassenhaus 重组、Mignotte 界</td><td>$\mathbb{Z}[x]$ 因式分解管线</td></tr>
+<tr><td><code>ocas-poly/src/factor/multivariate.rs</code></td><td>二元因式分解（Wang EEZ 特化；主变量首项系数需为常数）</td><td>$\mathbb{Z}[x,y]$ 和 $\mathbb{F}_p[x,y]$</td></tr>
+<tr><td><code>ocas-poly/src/factor/eez.rs</code></td><td>通用多元 EEZ Hensel 提升</td><td>$\mathbb{Z}[x_1,\ldots,x_n]$ 和 $\mathbb{F}_p[x_1,\ldots,x_n]$</td></tr>
+<tr><td><code>ocas-poly/src/factor/algebraic.rs</code></td><td>Trager 算法（代数数域因式分解）</td><td>$\mathbb{Q}(\alpha)[x]$</td></tr>
+<tr><td><code>ocas-poly/src/multivariate_gcd.rs</code></td><td>多元 GCD（求值—插值）</td><td>辅助多元因式分解</td></tr>
+</tbody></table>
+</div>
+<h3 id="算法选择策略"><a class="header" href="#算法选择策略">算法选择策略</a></h3>
+<p>oCAS 根据输入自动选择最优算法：</p>
+<pre><code>factor(f ∈ ℤ[x]):
+  1. 无平方分解（Yun 算法）
+  2. 对每个无平方分量 g:
+     a. if deg(g) ≤ 1: 直接返回
+     b. 选素数 p（不整除 lc(g)，g mod p 无平方）
+     c. 在 𝔽_p 上分解（Cantor–Zassenhaus；通用的 factor_over_finite_field 入口则在 p ≤ 1000 时自动改用 Berlekamp）
+     d. if mod-p 因子数 = 1: g 不可约，返回
+     e. Hensel 提升（Mignotte 界决定精度）
+     f. Zassenhaus 因子重组
+     g. 非首一情况：首项系数变换 a^{d-1}·f(x/a)
+
+factor(f ∈ 𝔽_p[x]):
+  1. 提取首项系数
+  2. 无平方分解（Musser/Bernardin，处理特征 p）
+  3. 对每个无平方分量：Berlekamp（小 p）或 Cantor-Zassenhaus
+
+factor(f ∈ ℚ(α)[x]):
+  1. Yun 无平方（使用模 GCD gcd_anf）
+  2. 对每个分量：Trager 范数 + ℚ 分解 + K-GCD 恢复
+
+factor(f ∈ ℤ[x₁,…,xₙ]):
+  1. 提取内容（主变量 x₀）
+  2. 无平方分解
+  3. Wang 首项系数预处理
+  4. 选求值点，一元分解
+  5. EEZ 逐变量 Hensel 提升
+  6. p-adic 系数提升（非常数首项系数时）
+  7. Zassenhaus 重组
+</code></pre>
+<h3 id="性能特征"><a class="header" href="#性能特征">性能特征</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>算法</th><th>时间复杂度</th><th>空间复杂度</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>Euclidean GCD（PRS）</td><td>$O(n^2)$</td><td>$O(n)$</td><td>低度（$\lesssim 16$）</td></tr>
+<tr><td>Brown 模 GCD</td><td>$O(n^2 \cdot k)$</td><td>$O(n \cdot k)$</td><td>高度 $\mathbb{Z}[x]$，$k$ = 素数个数</td></tr>
+<tr><td>Hensel 提升</td><td>$O(n^2 \cdot \log B)$</td><td>$O(n \cdot r)$</td><td>$r$ 因子，$B$ = Mignotte 界</td></tr>
+<tr><td>Zassenhaus 重组</td><td>$O(2^r \cdot n)$</td><td>$O(n \cdot r)$</td><td>$r$ 个 mod-$p$ 因子</td></tr>
+<tr><td>Berlekamp</td><td>$O(n^3 + r \cdot n^2 p)$</td><td>$O(n^2)$</td><td>小 $p$</td></tr>
+<tr><td>Cantor–Zassenhaus</td><td>$O(n^3 \log p)$</td><td>$O(n)$</td><td>大 $p$</td></tr>
+<tr><td>Wang EEZ</td><td>指数（变量数）</td><td>多元多项式</td><td>多元分解</td></tr>
+<tr><td>Trager</td><td>$O(n^3 [K:\mathbb{Q}]^2)$</td><td>$O(n \cdot [K:\mathbb{Q}])$</td><td>代数数域</td></tr>
+</tbody></table>
+</div>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><strong>[Gathen–Gerhard]</strong> J. von zur Gathen and J. Gerhard, <em>Modern Computer Algebra</em>, 3rd ed., Cambridge University Press, 2013. Chapters 14–15 (factoring), 18 (GCD).</li>
+<li><strong>[Brown]</strong> W. S. Brown, "On Euclid's Algorithm and the Computation of Polynomial Greatest Common Divisors," <em>J. ACM</em>, 18(4):478–504, 1971.</li>
+<li><strong>[Zassenhaus]</strong> H. Zassenhaus, "On Hensel Factorization I," <em>J. Number Theory</em>, 1(3):291–311, 1969.</li>
+<li><strong>[Wang]</strong> P. S. Wang, "An Improved Multivariate Polynomial Factoring Algorithm," <em>Math. Comp.</em>, 32(144):1215–1231, 1978.</li>
+<li><strong>[Berlekamp]</strong> E. R. Berlekamp, "Factoring Polynomials over Large Finite Fields," <em>Math. Comp.</em>, 24(111):713–735, 1970.</li>
+<li><strong>[Cantor–Zassenhaus]</strong> D. G. Cantor and H. Zassenhaus, "A New Algorithm for Factoring Polynomials over Finite Fields," <em>Math. Comp.</em>, 36(154):587–592, 1981.</li>
+<li><strong>[Trager]</strong> B. M. Trager, "Algebraic Factoring and Rational Function Integration," <em>Proc. SYMSAC '76</em>, pp. 219–226, 1976.</li>
+<li><strong>[Mignotte]</strong> M. Mignotte, <em>Mathematics for Computer Algebra</em>, Springer, 1992.</li>
+<li><strong>[Geddes–Czapor–Labahn]</strong> K. O. Geddes, S. R. Czapor, and G. Labahn, <em>Algorithms for Computer Algebra</em>, Kluwer, 1992. Chapters 6 (multivariate factoring), 7 (GCD).</li>
+<li><strong>[Knuth]</strong> D. E. Knuth, <em>The Art of Computer Programming</em>, Vol. 2, §4.6.2, Addison-Wesley, 1997.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/linear-algebra.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/groebner-theory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/linear-algebra.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/groebner-theory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,1303 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Gröbner 基与理想 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html" class="active"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-groebner.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="gröbner-基与理想"><a class="header" href="#gröbner-基与理想">Gröbner 基与理想</a></h1>
+<p>本章记录 oCAS 中 Gröbner 基计算和理想运算的完整 Rust API。所有算法通过统一入口 [<code>groebner_basis</code>] 访问，理想运算在 <code>ocas_poly::ideal</code> 模块中。</p>
+<h2 id="目录"><a class="header" href="#目录">目录</a></h2>
+<ul>
+<li><a href="#algorithm"><code>Algorithm</code></a> — 算法选择枚举</li>
+<li><a href="#groebnerbasis"><code>GroebnerBasis</code></a> — Gröbner 基结构体</li>
+<li><a href="#groebner_basis"><code>groebner_basis</code></a> — 统一入口函数</li>
+<li><a href="#buchberger"><code>buchberger</code></a> — Buchberger 算法</li>
+<li><a href="#f4f4"><code>f4::f4</code></a> — F4 矩阵算法</li>
+<li><a href="#f5f5"><code>f5::f5</code></a> — F5 签名算法</li>
+<li><a href="#fglm"><code>fglm</code></a> — FGLM 换序算法</li>
+<li><a href="#hilbertseries"><code>HilbertSeries</code></a> — Hilbert 级数</li>
+<li><a href="#hilbert_series"><code>hilbert_series</code></a> — 计算 Hilbert 级数</li>
+<li><a href="#eliminate"><code>eliminate</code></a> — 消元</li>
+<li><a href="#%E7%90%86%E6%83%B3%E8%BF%90%E7%AE%97">理想运算</a> — <code>ideal_contains</code>、<code>ideal_sum</code>、<code>ideal_product</code> 等</li>
+<li><a href="#primarycomponent"><code>PrimaryComponent</code></a> — 准素分量</li>
+<li><a href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a> — 多项式系统求解结果</li>
+</ul>
+<hr />
+<h2 id="algorithm"><a class="header" href="#algorithm"><code>Algorithm</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Algorithm {
+    Auto,
+    F4,
+    F5,
+    Buchberger,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：Gröbner 基计算的算法选择器，传递给 [<code>groebner_basis</code>] 统一入口。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Auto</code>（默认）</td><td>根据理想大小和结构自动选择算法。当前路由到 F4，后续将根据 cyclic-n 基准测试调整 F5 的切换阈值。</td></tr>
+<tr><td><code>F4</code></td><td>强制使用 F4 矩阵算法（Faugère 1999）。批量处理 S-多项式归约为稀疏矩阵行操作，对较大理想显著快于 Buchberger。</td></tr>
+<tr><td><code>F5</code></td><td>强制使用 F5 签名算法（Faugère 2002）。通过 syzygy 判据在矩阵构造前拒绝零归约器，对困难理想（如 cyclic-n）可实现数量级加速。</td></tr>
+<tr><td><code>Buchberger</code></td><td>强制使用经典 Buchberger S-多项式迭代算法，适合小型理想。</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, groebner_basis, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<hr />
+<h2 id="groebnerbasis"><a class="header" href="#groebnerbasis"><code>GroebnerBasis</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GroebnerBasis&lt;D: Domain, O: MonomialOrder&gt; {
+    pub basis: Vec&lt;SparseMultivariatePolynomial&lt;D, O&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：多项式理想的 Gröbner 基。<code>basis</code> 字段存储基的多项式列表。通过 <code>buchberger</code>、<code>f4::f4</code>、<code>f5::f5</code> 或 <code>groebner_basis</code> 构造，所有入口函数均返回<strong>既约 Gröbner 基</strong>（minimized + auto-reduced）。</p>
+<p><strong>类型参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>约束</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>D</code></td><td><code>Domain</code></td><td>系数域（如 <code>RationalDomain</code>、<code>FiniteField</code>）</td></tr>
+<tr><td><code>O</code></td><td><code>MonomialOrder</code></td><td>单项式序（如 <code>Lex</code>、<code>Grevlex</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>basis</code></td><td><code>Vec&lt;SparseMultivariatePolynomial&lt;D, O&gt;&gt;</code></td><td>基的多项式列表</td></tr>
+</tbody></table>
+</div>
+<h3 id="groebnerbasisbuchberger"><a class="header" href="#groebnerbasisbuchberger"><code>GroebnerBasis::buchberger</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn buchberger(ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;]) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：使用 Buchberger 算法从生成元计算 Gröbner 基。内部过滤零多项式，应用 Buchberger 第一判据（首项互素时跳过 S-多项式），最大迭代 10000 次。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>理想的生成元列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, O&gt;</code> — 未最小化/未自归约的原始基。</p>
+<p><strong>注意</strong>：要求系数域支持精确除法（即为域）。除法失败时会 panic。便捷函数 <a href="#buchberger"><code>buchberger</code></a>（自由函数）会额外调用 <code>minimize().auto_reduce()</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = GroebnerBasis::buchberger(&amp;[f1, f2]);
+assert!(gb.basis.len() &gt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#buchberger"><code>buchberger</code></a>（便捷自由函数）、<a href="#f4f4"><code>f4::f4</code></a>、<a href="#f5f5"><code>f5::f5</code></a></p>
+<h3 id="minimize"><a class="header" href="#minimize"><code>minimize</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn minimize(mut self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：最小化基——移除首项单项式可被其他元素首项整除的多项式。</p>
+<p><strong>返回值</strong>：<code>Self</code> — 最小化后的基（消费 self）。</p>
+<p><strong>参见</strong>：<a href="#auto_reduce"><code>auto_reduce</code></a></p>
+<h3 id="auto_reduce"><a class="header" href="#auto_reduce"><code>auto_reduce</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn auto_reduce(mut self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：自归约基——将每个元素对其他元素归约并使其为首一多项式。按首项单项式升序处理，确保标准既约 Gröbner 基性质：任何基元素的单项式不被其他基元素的首项整除。</p>
+<p><strong>返回值</strong>：<code>Self</code> — 既约基（消费 self）。</p>
+<p><strong>参见</strong>：<a href="#minimize"><code>minimize</code></a></p>
+<h3 id="is_groebner_basis"><a class="header" href="#is_groebner_basis"><code>is_groebner_basis</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_groebner_basis(&amp;self) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：验证此基确实是 Gröbner 基——检查所有 S-多项式是否归约为零。</p>
+<p><strong>返回值</strong>：<code>bool</code> — <code>true</code> 表示是合法的 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::Auto);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<h3 id="reorder"><a class="header" href="#reorder"><code>reorder</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn reorder&lt;O2: MonomialOrder&gt;(&amp;self) -&gt; GroebnerBasis&lt;D, O2&gt;
+where
+    D: 'static,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：改变 Gröbner 基的单项式序。将多项式重新解释为目标序并重新运行 F4。这是简单换序路径；对零维理想，使用 <a href="#fglm"><code>fglm</code></a> 获得更快的 $O(n \cdot D^3)$ 转换。</p>
+<p><strong>类型参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>O2</code></td><td>目标单项式序</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, O2&gt;</code> — 目标序下的 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::{Grevlex, Lex};
+use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial, f4};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb_lex = f4::f4(&amp;[f1, f2]);
+let gb_grevlex = gb_lex.reorder::&lt;Grevlex&gt;();
+assert!(gb_grevlex.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#fglm"><code>fglm</code></a>（零维理想更快的换序方法）</p>
+<hr />
+<h2 id="groebner_basis"><a class="header" href="#groebner_basis"><code>groebner_basis</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn groebner_basis&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+    algo: Algorithm,
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：Gröbner 基计算的统一入口。根据 <code>algo</code> 参数选择算法（<code>Auto</code>/<code>F4</code>/<code>F5</code>/<code>Buchberger</code>）。零多项式在内部由各后端过滤。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>理想的生成元列表</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>算法选择</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, O&gt;</code> — 既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, groebner_basis, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::Auto);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#algorithm"><code>Algorithm</code></a>、<a href="#groebnerbasis"><code>GroebnerBasis</code></a></p>
+<hr />
+<h2 id="buchberger"><a class="header" href="#buchberger"><code>buchberger</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn buchberger&lt;D: Domain, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：便捷函数——计算 Gröbner 基并执行最小化和自归约（等价于 <code>GroebnerBasis::buchberger(ideal).minimize().auto_reduce()</code>）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>理想的生成元列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, O&gt;</code> — 既约 Gröbner 基。</p>
+<p><strong>参见</strong>：<a href="#groebnerbasisbuchberger"><code>GroebnerBasis::buchberger</code></a>、<a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<hr />
+<h2 id="f4f4"><a class="header" href="#f4f4"><code>f4::f4</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn f4&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：使用 F4 矩阵算法计算 Gröbner 基（Faugère 1999）。将顺序 S-多项式归替换为批量稀疏矩阵行操作（Gaussian 消元）。对 <code>FiniteField</code> 系数域自动使用原生 ℤ_p 快速路径（<code>FpPoly</code> i64 模算术），避免 BigInt 开销。</p>
+<p><strong>内部优化</strong>：</p>
+<ul>
+<li><strong>Gebauer–Moeller 对筛选</strong>：chain criterion + update criterion，严格整除守卫</li>
+<li><strong><code>SimpCache</code></strong>：缓存多项式乘单项式的结果，避免重复计算</li>
+<li><strong><code>DivisorIndex</code></strong>：基于支持位掩码的 O(1)-ish 归约器查找（变量索引 ≤ 63 时位掩码精确，&gt;63 时退化为正确性保守的过滤）</li>
+<li><strong>双指针稀疏行减法</strong> <code>sub_scaled_fp</code>：O(nnz) 复杂度</li>
+<li><strong>原生 ℤ_p 快速路径</strong>：<code>FpPoly</code> 使用 i64 模算术，仅在读取输入和输出结果时进行 BigInt 转换</li>
+</ul>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>理想的生成元列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, O&gt;</code> — 既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::groebner::f4::f4;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = f4(&amp;[f1, f2]);
+assert!(!gb.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#algorithm"><code>Algorithm::F4</code></a>、<a href="#f5f5"><code>f5::f5</code></a></p>
+<hr />
+<h2 id="f5f5"><a class="header" href="#f5f5"><code>f5::f5</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn f5&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：使用 F5 签名算法计算 Gröbner 基（Faugère 2002）。为每个多项式附加签名（<code>module_pos</code>, <code>monomial</code>），通过 syzygy 判据在矩阵构造前拒绝零归约器，对困难理想（如 cyclic-n）可实现数量级加速。</p>
+<p><strong>算法要点</strong>：</p>
+<ul>
+<li><strong>签名</strong>：<code>(module_pos, monomial)</code> 记录多项式的历史——<code>module_pos</code> 是输入生成元的索引，<code>monomial</code> 是应用的单项式倍数。签名按 <strong>pot</strong>（position-over-term）序比较：先比较 module position（小者优先），再按单项式序 <code>O</code> 比较。</li>
+<li><strong>Syzygy 跟踪</strong>：矩阵行归约为零时，其签名为 syzygy。未来签名是已知 syzygy 的单项式倍数的行将被立即跳过（F5 syzygy 判据）。</li>
+<li><strong>增量处理</strong>：逐个处理生成元，每个新生成元触发一轮矩阵构造和归约。</li>
+</ul>
+<p>当前实现提供通用域 F5 核心。对 <code>FiniteField</code> 系数域自动使用原生 ℤ_p 快速路径。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, O&gt;]</code></td><td>理想的生成元列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, O&gt;</code> — 既约 Gröbner 基（与 F4 输出完全相同）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::groebner::f5::f5;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb = f5(&amp;[f1, f2]);
+assert!(gb.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#algorithm"><code>Algorithm::F5</code></a>、<a href="#f4f4"><code>f4::f4</code></a></p>
+<hr />
+<h2 id="fglm"><a class="header" href="#fglm"><code>fglm</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn fglm&lt;D: Domain, O2: MonomialOrder&gt;(
+    gb: &amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;,
+) -&gt; Option&lt;GroebnerBasis&lt;D, O2&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：FGLM 换序算法（Faugère–Gianni–Lazard–Mora 1993）。将<strong>零维</strong>理想的 Gröbner 基从一种单项式序转换为另一种，复杂度 $O(n \cdot D^3)$（$D$ 为 $R/I$ 的向量空间维数），对大型零维理想远快于重新运行 F4。</p>
+<p><strong>算法步骤</strong>：</p>
+<ol>
+<li>计算阶梯（staircase）——不被任何首项单项式整除的单项式集合</li>
+<li>按目标序遍历阶梯单项式</li>
+<li>对每个单项式计算当前基下的正规形</li>
+<li>若正规形与已见向量线性相关，从系数关系构造新基元素</li>
+<li>否则将其添加到已见向量集合</li>
+</ol>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>&amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;</code></td><td>输入 Gröbner 基（必须是既约的）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;GroebnerBasis&lt;D, O2&gt;&gt;</code> — <code>Some(gb)</code> 为转换后的基，<code>None</code> 表示理想非零维（阶梯无限）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::{Grevlex, Lex};
+use ocas_poly::{GroebnerBasis, SparseMultivariatePolynomial, f4};
+use ocas_poly::groebner::fglm::fglm;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let gb_lex = f4::f4(&amp;[f1, f2]);
+let gb_grevlex = fglm::&lt;_, Grevlex&gt;(&amp;gb_lex).expect("zero-dimensional");
+assert!(gb_grevlex.is_groebner_basis());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#reorder"><code>GroebnerBasis::reorder</code></a>（简单换序，适用于任意维数）、<a href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h2 id="hilbertseries"><a class="header" href="#hilbertseries"><code>HilbertSeries</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct HilbertSeries {
+    pub numerator: Vec&lt;i64&gt;,
+    pub denominator_power: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：商环 $R/I$ 的 Hilbert 级数，表示为有理函数 $H(t) = N(t) / (1-t)^n$。分子 $N(t)$ 存储为系数向量（<code>numerator[i]</code> 为 $t^i$ 的系数），分母为 $(1-t)^n$（$n$ 为变量数）。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>numerator</code></td><td><code>Vec&lt;i64&gt;</code></td><td>分子 $N(t)$ 的系数（从常数项起）</td></tr>
+<tr><td><code>denominator_power</code></td><td><code>usize</code></td><td>$(1-t)$ 的幂次（= 变量数 $n$）</td></tr>
+</tbody></table>
+</div>
+<h3 id="hilbert_function"><a class="header" href="#hilbert_function"><code>hilbert_function</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_function(&amp;self, degree: usize) -&gt; i64
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算度数 $d$ 处的 Hilbert 函数值 $\dim_k (R/I)_d$。使用公式 $H(d) = [t^d] N(t) / (1-t)^n$，其中 $(1-t)^{-n}$ 中 $t^k$ 的系数为 $\binom{n+k-1}{k}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>degree</code></td><td><code>usize</code></td><td>度数 $d$</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>i64</code> — $\dim_k (R/I)_d$ 的值。</p>
+<h3 id="dimension"><a class="header" href="#dimension"><code>dimension</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn dimension(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算 $R/I$ 的 Krull 维数。通过检查分子在 $t=1$ 处的零点阶数（逐次求导直到在 $t=1$ 处非零）得到。</p>
+<p><strong>返回值</strong>：<code>usize</code> — Krull 维数。零维理想返回 0。</p>
+<h3 id="degree"><a class="header" href="#degree"><code>degree</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn degree(&amp;self) -&gt; i64
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算射影簇的次数。对良构 Hilbert 级数，等于分子在除去维数因子后在 $t=1$ 处的值。</p>
+<p><strong>返回值</strong>：<code>i64</code> — 射影簇的次数。</p>
+<h3 id="hilbert_polynomial"><a class="header" href="#hilbert_polynomial"><code>hilbert_polynomial</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_polynomial(&amp;self) -&gt; Vec&lt;f64&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算 Hilbert 多项式 $P(d)$ 的系数（$H(d) = P(d)$ 当 $d \gg 0$ 时），使用 Lagrange 插值。返回升幂排列的系数（<code>result[i]</code> 为 $d^i$ 的系数），多项式次数为 <code>self.dimension()</code>。</p>
+<p><strong>返回值</strong>：<code>Vec&lt;f64&gt;</code> — Hilbert 多项式系数（升幂排列）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::groebner::hilbert::hilbert_series;
+
+let d = RationalDomain;
+// 理想 (x² - 1, y² - 1)：LM 理想 (x², y²)，分子 N(t) = 1 - 2t² + t⁴
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+let hs = hilbert_series(&amp;gb);
+assert_eq!(hs.dimension(), 0); // 零维：4 个解
+assert_eq!(hs.degree(), 4); // 次数 = 解的个数
+println!("维数: {}, 次数: {}", hs.dimension(), hs.degree());
+for d in 0..10 {
+    println!("H({}) = {}", d, hs.hilbert_function(d));
+}
+let hp = hs.hilbert_polynomial();
+println!("Hilbert 多项式系数: {:?}", hp);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#hilbert_series"><code>hilbert_series</code></a></p>
+<hr />
+<h2 id="hilbert_series"><a class="header" href="#hilbert_series"><code>hilbert_series</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_series(
+    gb: &amp;GroebnerBasis&lt;RationalDomain, Lex&gt;,
+) -&gt; HilbertSeries
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从 Gröbner 基计算 $R/I$ 的 Hilbert 级数。使用 Macaulay 定理：$R/I$ 的 Hilbert 级数等于 $R/\text{LM}(I)$（首项理想）的 Hilbert 级数。通过容斥原理计算单项式理想 $\langle m_1, \dots, m_s \rangle$ 的 Hilbert 分子：$N(t) = \sum_k (-1)^k \sum_{|S|=k} t^{\deg \text{lcm}(S)}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>&amp;GroebnerBasis&lt;RationalDomain, Lex&gt;</code></td><td>有理数域上 Lex 序的 Gröbner 基</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>HilbertSeries</code> — 商环的 Hilbert 级数。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::groebner::hilbert::hilbert_series;
+
+let d = RationalDomain;
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+let hs = hilbert_series(&amp;gb);
+assert!(hs.dimension() &lt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#hilbertseries"><code>HilbertSeries</code></a>、<a href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h2 id="eliminate"><a class="header" href="#eliminate"><code>eliminate</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn eliminate&lt;D: Domain + 'static&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    elim_vars: usize,
+    algo: Algorithm,
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从理想中消元。返回 $I \cap k[x_{\text{elim_vars}}, \dots, x_{n-1}]$ 的 Gröbner 基，即不包含前 <code>elim_vars</code> 个变量的多项式。使用 Lex 序——在 Lex 序下，理想的既约 Gröbner 基自动包含消元理想的生成元。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ideal</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想的生成元（必须为 Lex 序）</td></tr>
+<tr><td><code>elim_vars</code></td><td><code>usize</code></td><td>要消去的变量数（消去 $x_0, \dots, x_{\text{elim_vars}-1}$）</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner 基算法选择</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, Lex&gt;</code> — 消元理想的 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{SparseMultivariatePolynomial, eliminate, Algorithm};
+
+let d = RationalDomain;
+// 理想: x + y + z, x*y + x*z 于 k[x,y,z]; 消去 x
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 0, 0], Rational::new(1, 1)),
+    (vec![0, 1, 0], Rational::new(1, 1)),
+    (vec![0, 0, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 3, vec![
+    (vec![1, 1, 0], Rational::new(1, 1)),
+    (vec![1, 0, 1], Rational::new(1, 1)),
+]);
+let elim = eliminate(&amp;[f1, f2], 1, Algorithm::Auto);
+// 结果应在 k[y,z] 中
+for p in &amp;elim.basis {
+    assert!(p.degree_in(0) == 0, "消去的变量 x 不应出现");
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#groebner_basis"><code>groebner_basis</code></a>、<a href="#ideal_quotient"><code>ideal_quotient</code></a></p>
+<hr />
+<h2 id="理想运算"><a class="header" href="#理想运算">理想运算</a></h2>
+<p>所有理想运算位于 <code>ocas_poly::ideal</code> 模块，使用 <code>Lex</code> 序以保持与消元计算的一致性。</p>
+<h3 id="ideal_contains"><a class="header" href="#ideal_contains"><code>ideal_contains</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_contains&lt;D: Domain + 'static&gt;(
+    generators: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    f: &amp;SparseMultivariatePolynomial&lt;D, Lex&gt;,
+    algo: Algorithm,
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：测试 $f$ 是否属于生成元张成的理想。计算理想的 Gröbner 基并对 $f$ 归约，$f \in I$ 当且仅当余式为零。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想的生成元</td></tr>
+<tr><td><code>f</code></td><td><code>&amp;SparseMultivariatePolynomial&lt;D, Lex&gt;</code></td><td>待测试的多项式</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner 基算法选择</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code> — <code>true</code> 表示 $f \in I$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_contains;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+assert!(ideal_contains(&amp;[x.clone(), y.clone()], &amp;x, Algorithm::Auto));
+assert!(!ideal_contains(&amp;[y], &amp;x, Algorithm::Auto));  // x ∉ ⟨y⟩
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#groebner_basis"><code>groebner_basis</code></a></p>
+<hr />
+<h3 id="ideal_sum"><a class="header" href="#ideal_sum"><code>ideal_sum</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_sum&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：两个理想的和 $I + J = \langle f_1, \dots, f_m, g_1, \dots, g_n \rangle$。合并生成元并计算 Gröbner 基。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators_a</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $I$ 的生成元</td></tr>
+<tr><td><code>generators_b</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $J$ 的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, Lex&gt;</code> — $I + J$ 的既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_sum;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let gb = ideal_sum(&amp;[x], &amp;[y]);
+// ⟨x⟩ + ⟨y⟩ = ⟨x, y⟩
+assert!(gb.basis.len() &gt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#ideal_intersection"><code>ideal_intersection</code></a></p>
+<hr />
+<h3 id="ideal_product"><a class="header" href="#ideal_product"><code>ideal_product</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_product&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：两个理想的积 $I \cdot J = \langle f_i \cdot g_j \rangle$。计算所有 $f_i g_j$ 的乘积并求 Gröbner 基。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators_a</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $I$ 的生成元</td></tr>
+<tr><td><code>generators_b</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $J$ 的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, Lex&gt;</code> — $I \cdot J$ 的既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_product;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let gb = ideal_product(&amp;[x], &amp;[y]);
+// ⟨x⟩ · ⟨y⟩ = ⟨xy⟩
+assert_eq!(gb.basis.len(), 1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#ideal_quotient"><code>ideal_quotient</code></a></p>
+<hr />
+<h3 id="ideal_quotient"><a class="header" href="#ideal_quotient"><code>ideal_quotient</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_quotient&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：理想的商 $I : J = {f : f \cdot g \in I, \forall g \in J}$。对 $J$ 的每个生成元 $g$ 使用 Rabinowitsch 技巧：在扩展环 $k[x_1, \dots, x_n, w]$ 中计算 $\text{GB}(I \cup {1 - w \cdot g})$ 并消去 $w$，然后对结果求交集。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators_i</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $I$ 的生成元</td></tr>
+<tr><td><code>generators_j</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $J$ 的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, Lex&gt;</code> — $I : J$ 的既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_quotient;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// ⟨x², xy⟩ : ⟨x⟩ = ⟨x⟩
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let g = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let gb = ideal_quotient(&amp;[f1, f2], &amp;[g]);
+assert!(!gb.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#ideal_saturate"><code>ideal_saturate</code></a>、<a href="#ideal_contains"><code>ideal_contains</code></a></p>
+<hr />
+<h3 id="ideal_saturate"><a class="header" href="#ideal_saturate"><code>ideal_saturate</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_saturate&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：理想的饱和 $I : J^\infty = \bigcup_k (I : J^k)$。迭代计算 $I : J$、$(I : J) : J$ 等，直到稳定。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators_i</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $I$ 的生成元</td></tr>
+<tr><td><code>generators_j</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $J$ 的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, Lex&gt;</code> — $I : J^\infty$ 的既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_saturate;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// ⟨x²y, xy²⟩ : ⟨x⟩^∞ = ⟨y⟩
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 1], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 2], Rational::new(1, 1)),
+]);
+let g = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let gb = ideal_saturate(&amp;[f1, f2], &amp;[g]);
+assert!(!gb.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#ideal_quotient"><code>ideal_quotient</code></a></p>
+<hr />
+<h3 id="ideal_intersection"><a class="header" href="#ideal_intersection"><code>ideal_intersection</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_intersection&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：两个理想的交 $I \cap J$。使用辅助变量 $t$：$I \cap J = \langle t \cdot f_i, (1-t) \cdot g_j \rangle \cap k[x_1, \dots, x_n]$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators_a</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $I$ 的生成元</td></tr>
+<tr><td><code>generators_b</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;]</code></td><td>理想 $J$ 的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;D, Lex&gt;</code> — $I \cap J$ 的既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_intersection;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+let x = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+]);
+let y = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+]);
+let gb = ideal_intersection(&amp;[x], &amp;[y]);
+// ⟨x⟩ ∩ ⟨y⟩ = ⟨xy⟩
+assert_eq!(gb.basis.len(), 1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#ideal_sum"><code>ideal_sum</code></a>、<a href="#eliminate"><code>eliminate</code></a></p>
+<hr />
+<h3 id="ideal_radical"><a class="header" href="#ideal_radical"><code>ideal_radical</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_radical(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; GroebnerBasis&lt;RationalDomain, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算理想的根式 $\sqrt{I}$。</p>
+<ul>
+<li><strong>零维理想</strong>：通过 Lex GB 中一元多项式的无平方分解计算（$\sqrt{I}$ 的生成元由各变量的无平方一元多项式和非单变量基元素组成）。</li>
+<li><strong>正维理想</strong>：使用 Jacobian 饱和方法（简化 Kemper 算法）：$\sqrt{I} = I : h^\infty$。当前实现以启发式选取 $h$——取总次数最小的非平凡偏导数（并非精确 GCD）。若所有偏导数均为常数或零（Jacobian 平凡），保守返回原 GB。</li>
+</ul>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>理想的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>GroebnerBasis&lt;RationalDomain, Lex&gt;</code> — $\sqrt{I}$ 的既约 Gröbner 基。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::ideal_radical;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// √(x², xy) = (x)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let rad = ideal_radical(&amp;[f1, f2]);
+assert!(!rad.basis.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#primary_decomposition"><code>primary_decomposition</code></a></p>
+<hr />
+<h3 id="is_zero_dimensional"><a class="header" href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_zero_dimensional(gb: &amp;GroebnerBasis&lt;RationalDomain, Lex&gt;) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：检查理想是否为零维。理想零维当且仅当对每个变量 $x_i$，GB 中某个首项单项式是纯幂 $x_i^N$（等价于阶梯/标准单项式集合有限）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>gb</code></td><td><code>&amp;GroebnerBasis&lt;RationalDomain, Lex&gt;</code></td><td>有理数域上 Lex 序的 Gröbner 基</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code> — <code>true</code> 表示零维。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, GroebnerBasis, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::ideal::is_zero_dimensional;
+
+let d = RationalDomain;
+// x² - 1, y - x → 零维
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![0, 1], Rational::new(1, 1)),
+    (vec![1, 0], Rational::new(-1, 1)),
+]);
+let gb = groebner_basis(&amp;[f1, f2], Algorithm::F4);
+assert!(is_zero_dimensional(&amp;gb));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve_polynomial_system"><code>solve_polynomial_system</code></a>、<a href="#fglm"><code>fglm</code></a></p>
+<hr />
+<h3 id="solve_polynomial_system"><a class="header" href="#solve_polynomial_system"><code>solve_polynomial_system</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn solve_polynomial_system(
+    equations: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+    algo: Algorithm,
+) -&gt; PolynomialSystemSolution
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：求解零维多项式系统。将 GB 转换为 Lex 序，提取各变量的一元多项式，通过回代求解。返回 <code>PolynomialSystemSolution</code> 枚举，区分零维（有限解）、正维（无穷解集）和空集（$\langle 1 \rangle$）。</p>
+<p><strong>求解过程</strong>：</p>
+<ol>
+<li>计算 Gröbner 基</li>
+<li>检查是否为 $\langle 1 \rangle$（空集）</li>
+<li>检查是否零维</li>
+<li>转换为 Lex 序的三角形分解</li>
+<li>从最后一个变量开始回代：对每个变量求一元多项式的实根（Sturm 定理隔离 + 精化至 $10^{-14}$），递归代入已知值</li>
+</ol>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equations</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>方程组（多项式 = 0）</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner 基算法选择</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>PolynomialSystemSolution</code> — 求解结果。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial, groebner_basis};
+use ocas_poly::ideal::{solve_polynomial_system, PolynomialSystemSolution};
+
+let d = RationalDomain;
+// x² + y² - 1, x - y → 解在 (±1/√2, ±1/√2)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+    (vec![0, 2], Rational::new(1, 1)),
+    (vec![0, 0], Rational::new(-1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),
+    (vec![0, 1], Rational::new(-1, 1)),
+]);
+let sol = solve_polynomial_system(&amp;[f1, f2], Algorithm::Auto);
+match sol {
+    PolynomialSystemSolution::ZeroDimensional(z) =&gt; {
+        assert_eq!(z.solutions.len(), 2);
+    }
+    _ =&gt; panic!("expected zero-dimensional"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a>、<a href="#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h3 id="primary_decomposition"><a class="header" href="#primary_decomposition"><code>primary_decomposition</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn primary_decomposition(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; Vec&lt;PrimaryComponent&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：计算理想的准素分解。</p>
+<ul>
+<li><strong>零维理想</strong>：对 Lex GB 中第一个变量的一元多项式进行因式分解，通过饱和分离准素分量（对每个因子 $f_i$，计算 $I : (\prod_{j \neq i} f_j)^\infty$）。</li>
+<li><strong>正维理想</strong>：保守返回单一准素分量（原 GB 自身作为 primary 和 prime）。</li>
+</ul>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>理想的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;PrimaryComponent&gt;</code> — 准素分量列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::ideal::primary_decomposition;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let d = RationalDomain;
+// (x², xy) 为正维理想 → 保守返回单一分量
+// （理想论分解为 (x², xy) = (x) ∩ (x², y)）
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 1], Rational::new(1, 1)),
+]);
+let decomp = primary_decomposition(&amp;[f1, f2]);
+assert!(decomp.len() &gt;= 1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#primarycomponent"><code>PrimaryComponent</code></a>、<a href="#ideal_radical"><code>ideal_radical</code></a></p>
+<hr />
+<h3 id="is_prime_ideal"><a class="header" href="#is_prime_ideal"><code>is_prime_ideal</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_prime_ideal(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：测试理想是否为素理想。</p>
+<ul>
+<li><strong>零维理想</strong>：检查 Lex GB 中的一元多项式是否不可约（对次数 ≤ 3 的多项式，使用有理根定理检测）。</li>
+<li><strong>正维理想</strong>：保守返回 <code>false</code>（完整实现需要检查簇的不可约性，尚未实现）。</li>
+</ul>
+<p><strong>注意</strong>：这是一个保守近似——永远不会返回假阳性（非素理想报告为素），只可能返回假阴性（素理想报告为非素）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>理想的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code> — <code>true</code> 表示（已确认的）素理想。</p>
+<p><strong>参见</strong>：<a href="#is_primary_ideal"><code>is_primary_ideal</code></a>、<a href="#primary_decomposition"><code>primary_decomposition</code></a></p>
+<hr />
+<h3 id="is_primary_ideal"><a class="header" href="#is_primary_ideal"><code>is_primary_ideal</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_primary_ideal(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：测试理想是否为准素理想。准素理想恰有一个伴随素理想，即 <code>primary_decomposition</code> 返回的分量数 ≤ 1。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>generators</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>理想的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code> — <code>true</code> 表示准素理想。</p>
+<p><strong>参见</strong>：<a href="#primary_decomposition"><code>primary_decomposition</code></a>、<a href="#is_prime_ideal"><code>is_prime_ideal</code></a></p>
+<hr />
+<h2 id="primarycomponent"><a class="header" href="#primarycomponent"><code>PrimaryComponent</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct PrimaryComponent {
+    pub primary: Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;,
+    pub prime: Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：理想的准素分量——一个准素理想及其伴随素理想（即准素理想的根式）。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>primary</code></td><td><code>Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;</code></td><td>准素理想的生成元</td></tr>
+<tr><td><code>prime</code></td><td><code>Vec&lt;SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;&gt;</code></td><td>伴随素理想（根式）的生成元</td></tr>
+</tbody></table>
+</div>
+<p><strong>参见</strong>：<a href="#primary_decomposition"><code>primary_decomposition</code></a></p>
+<hr />
+<h2 id="polynomialsystemsolution"><a class="header" href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub enum PolynomialSystemSolution {
+    ZeroDimensional(ZeroDimSolutions),
+    PositiveDimensional(GroebnerBasis&lt;RationalDomain, Lex&gt;),
+    Empty,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：多项式系统求解的结果，按解集类型区分。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ZeroDimensional(ZeroDimSolutions)</code></td><td>有限个实解（零维理想）</td></tr>
+<tr><td><code>PositiveDimensional(GroebnerBasis&lt;RationalDomain, Lex&gt;)</code></td><td>无穷解集（正维理想），返回 Lex 序的 Gröbner 基</td></tr>
+<tr><td><code>Empty</code></td><td>无解（理想为 $\langle 1 \rangle$）</td></tr>
+</tbody></table>
+</div>
+<p><strong>参见</strong>：<a href="#solve_polynomial_system"><code>solve_polynomial_system</code></a></p>
+<h3 id="zerodimsolutions"><a class="header" href="#zerodimsolutions"><code>ZeroDimSolutions</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct ZeroDimSolutions {
+    pub solutions: Vec&lt;RealSolution&gt;,
+    pub vector_space_dimension: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>solutions</code></td><td><code>Vec&lt;RealSolution&gt;</code></td><td>找到的实解列表</td></tr>
+<tr><td><code>vector_space_dimension</code></td><td><code>usize</code></td><td>商环 $k[x_1,\dots,x_n]/I$ 的向量空间维数（$\mathbb{C}$ 上解的总数，计重数）</td></tr>
+</tbody></table>
+</div>
+<h3 id="realsolution"><a class="header" href="#realsolution"><code>RealSolution</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct RealSolution {
+    pub values: Vec&lt;f64&gt;,
+    pub multiplicity: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>Vec&lt;f64&gt;</code></td><td>各变量的值（每个变量一个）</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>usize</code></td><td>解的代数重数</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="模块路径速查"><a class="header" href="#模块路径速查">模块路径速查</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>函数/类型</th><th>完整路径</th></tr></thead><tbody>
+<tr><td><code>Algorithm</code></td><td><code>ocas_poly::Algorithm</code></td></tr>
+<tr><td><code>GroebnerBasis</code></td><td><code>ocas_poly::GroebnerBasis</code></td></tr>
+<tr><td><code>groebner_basis</code></td><td><code>ocas_poly::groebner_basis</code></td></tr>
+<tr><td><code>buchberger</code></td><td><code>ocas_poly::buchberger</code></td></tr>
+<tr><td><code>eliminate</code></td><td><code>ocas_poly::eliminate</code></td></tr>
+<tr><td><code>f4::f4</code></td><td><code>ocas_poly::groebner::f4::f4</code></td></tr>
+<tr><td><code>f5::f5</code></td><td><code>ocas_poly::groebner::f5::f5</code></td></tr>
+<tr><td><code>fglm</code></td><td><code>ocas_poly::groebner::fglm::fglm</code></td></tr>
+<tr><td><code>HilbertSeries</code></td><td><code>ocas_poly::groebner::hilbert::HilbertSeries</code></td></tr>
+<tr><td><code>hilbert_series</code></td><td><code>ocas_poly::groebner::hilbert::hilbert_series</code></td></tr>
+<tr><td><code>ideal_contains</code></td><td><code>ocas_poly::ideal::ideal_contains</code></td></tr>
+<tr><td><code>ideal_sum</code></td><td><code>ocas_poly::ideal::ideal_sum</code></td></tr>
+<tr><td><code>ideal_product</code></td><td><code>ocas_poly::ideal::ideal_product</code></td></tr>
+<tr><td><code>ideal_quotient</code></td><td><code>ocas_poly::ideal::ideal_quotient</code></td></tr>
+<tr><td><code>ideal_saturate</code></td><td><code>ocas_poly::ideal::ideal_saturate</code></td></tr>
+<tr><td><code>ideal_intersection</code></td><td><code>ocas_poly::ideal::ideal_intersection</code></td></tr>
+<tr><td><code>ideal_radical</code></td><td><code>ocas_poly::ideal::ideal_radical</code></td></tr>
+<tr><td><code>primary_decomposition</code></td><td><code>ocas_poly::ideal::primary_decomposition</code></td></tr>
+<tr><td><code>is_zero_dimensional</code></td><td><code>ocas_poly::ideal::is_zero_dimensional</code></td></tr>
+<tr><td><code>solve_polynomial_system</code></td><td><code>ocas_poly::ideal::solve_polynomial_system</code></td></tr>
+<tr><td><code>is_prime_ideal</code></td><td><code>ocas_poly::ideal::is_prime_ideal</code></td></tr>
+<tr><td><code>is_primary_ideal</code></td><td><code>ocas_poly::ideal::is_primary_ideal</code></td></tr>
+<tr><td><code>PrimaryComponent</code></td><td><code>ocas_poly::ideal::PrimaryComponent</code></td></tr>
+<tr><td><code>PolynomialSystemSolution</code></td><td><code>ocas_poly::ideal::PolynomialSystemSolution</code></td></tr>
+<tr><td><code>ZeroDimSolutions</code></td><td><code>ocas_poly::ideal::ZeroDimSolutions</code></td></tr>
+<tr><td><code>RealSolution</code></td><td><code>ocas_poly::ideal::RealSolution</code></td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-ntheory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-factoring.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-ntheory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-factoring.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
