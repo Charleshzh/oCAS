@@ -67,6 +67,11 @@ Given an integrand $f$ (an elementary function expression), the first step of th
    - $\log(c \cdot u)$ and $\log(u)$ (with $c$ a rational constant) → algebraically dependent ($\log(c \cdot u) = \log(u) + \log(c)$)
    - $\exp(u + c)$ and $\exp(u)$ (with $c$ a rational constant) → algebraically dependent ($\exp(u + c) = e^c \cdot \exp(u)$)
    - otherwise reject (conservative strategy: rather reject a true dependence than merge incorrectly)
+   - **Since 0.28.0 these are merged by exact field identities instead of being rejected**
+     (`tower/merge.rs`): `exp(u + c) = e^c·exp(u)`, `exp(−u) = exp(u)⁻¹`, `log(cu) = log(u) + log(c)`,
+     `log(u^k) = k·log(u)`, `log(exp(u)) = u`, `exp(log(u)) = u`, registering constant generators
+     (`log(2)`, `exp(1)`, `D t = 0`) when needed. The tower returns the **rewritten** integrand, and
+     relations that cannot be decided are still declined honestly.
 4. **Reject non-integral powers**: if $f$ contains non-integral powers such as $\sqrt{x}$ (i.e. algebraic functions), reject (return `None`).
 5. **Compute derivatives**: for each generator $t_i$, compute $Dt_i$ (with respect to $D = d/dx$):
    - $t_i = \log(u)$: $Dt_i = Du / u$ (compute $Du$ recursively)
@@ -500,7 +505,7 @@ The current implementation of the Risch algorithm has the following limitations:
 | Only polynomial solutions of the RDE | Rational solutions need denominator-bound analysis | Return `None`; the caller tries other layers |
 | At tower levels the logarithmic part only uses the logarithmic-derivative identity $a_1 = c \cdot Dd_1$ | The full logarithmic part needs tower-level Rothstein–Trager / trace-function techniques | Return the unevaluated form (the base field $\mathbb{Q}(x)$ still gets the full treatment) |
 | Algebraic functions ($\sqrt{x}$, etc.) not supported | Needs algebraic-function field extensions | Common patterns are covered by the heuristic trigonometric substitution |
-| Conservative rejection of algebraically dependent generators | Detecting relations like $\log(2x)$ vs. $\log(x)$ | Return `None` |
+| Conservative rejection of algebraically dependent generators (exact **merging** since 0.28.0) | Detecting relations like $\log(2x)$ vs. $\log(x)$ | Return `None` |
 | Hyperexponential RDEs containing $I$ | The RDE solver works only over $\mathbb{Q}[x]$ | Trigonometric integrands are returned in unevaluated form |
 
 When all layers fail, `Integral(expr, var)` is returned — this is an **intentional answer**, meaning "this integral has no closed form in the current implementation", not a program error.

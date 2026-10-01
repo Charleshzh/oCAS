@@ -150,6 +150,8 @@ graph TD
 |---|---|---|
 | `diff` | fn | Symbolic differentiation |
 | `integrate` | fn | Symbolic integration (layered pipeline) |
+| `integrate_outcome` | fn | Certified integration: three-valued outcome + symbolic certificate (0.28.0) |
+| `integrate_outcome_with_options` | fn | Certified integration with options (0.28.0) |
 | `integrate_heuristic` | fn | Heuristic integration (without Risch) |
 | `integrate_with_fuel` | fn | Integration with a fuel limit |
 | `taylor` | fn | Taylor expansion |

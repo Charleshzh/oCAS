@@ -106,6 +106,27 @@ def test_integrate_rules_toggle():
     assert "Integral" in without_rules, without_rules
 
 
+def test_integrate_outcome_reports_kind_and_certificate():
+    # ∫ 2x dx = x² is certified.
+    e = ocas.Expression("2*x")
+    outcome = e.integrate_outcome("x")
+    assert outcome["kind"] == "found", outcome
+    assert "Integral" not in outcome["value"], outcome
+    assert outcome["certificate"] in {"structural", "field", "radical"}, outcome
+    assert outcome["uncertified"] is None
+
+    # ∫ exp(x³) dx has no closed form: honest UNKNOWN with a residue.
+    hard = ocas.Expression("exp(x^3)")
+    verdict = hard.integrate_outcome("x")
+    assert verdict["kind"] == "unknown", verdict
+    assert "Integral" in verdict["value"], verdict
+
+    # The legacy entry point still returns the pipeline candidate; for this
+    # input that is the same honest residue.
+    legacy = str(hard.integrate("x"))
+    assert "Integral" in legacy, legacy
+
+
 def test_taylor_exp():
     e = ocas.Expression("exp(x)")
     series = e.taylor("x", ocas.Expression("0"), 3)

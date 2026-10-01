@@ -587,29 +587,65 @@ leaves behind.
 engine's most expensive entry condition (dependent generators being rejected).
 (Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3, §5, §6 P0.)
 
-**Deliverables**:
+**Deliverables** (measured results recorded per item):
 
-- [ ] **Residue resolution** (defect): the `Integral(...)` residues produced by
-  `rational::integral_fallback` and by `symbolic_rational`'s high-degree branch are resolved
-  at the **chain tail with a deterministic budget** (prototype measured net +4: +5 solved /
-  −1 regressed / +3 timeouts — see BENCHMARK_RESULTS_CN.md §"0.27.3 follow-up" §3.1)
-- [ ] **Expression-level cycle detection** (defect) replacing/narrowing the global
-  `MAX_CHAIN_ENTRIES` total cap (`rubi-00008` measured 306 stage entries / 18 cycles)
-- [ ] **Symbolic certificates**: every output must pass `normalize(D(F) − f) == 0` inside the
-  differential field; the numerical oracle is demoted to a probe/regression tool
-- [ ] **Three-valued `Outcome`**: `Found { value, certificate }` /
-  `ProvedNonElementary { witness }` / `Unknown`; `Unknown` honestly returns `Integral(...)`
-- [ ] **Regular towers**: merge algebraically dependent generators (`log x`/`log 2x`,
-  `exp x`/`exp(x+1)`, the `exp(±u)` pairs produced by hyperbolic rewriting); return `Unknown`
-  when the dependency is undecidable
-- [ ] Metric: the harness gains `certified_rate = certificates passed / solved`, gated at
-  exactly 1.0 in CI
+- [x] **Symbolic certificate engine** (`ocas-calc/src/integral/certify.rs`): structural /
+  elementary-field layers (trig→exp rewriting, `I² = −1` reduction, dependent-atom merging,
+  constant-power generators) plus the radical-layer interface; every layer is **sound**
+  (free generators can only produce false negatives) with deterministic budgets
+  (nodes 20 000 / generators 16 / expansion 4 096 / field work 400)
+- [x] **Three-valued `Outcome`** (`integral/outcome.rs`): `Found { value, certificate }` /
+  `ProvedNonElementary { witness }` (no producer in 0.28.0) / `Unknown { residue, uncertified }`,
+  with `integrate_outcome`, its `_with_options` companion and `integrate_diagnostic`; the legacy
+  `integrate` entry points are unchanged (rustdoc warning only), so there is zero behaviour
+  regression
+- [x] **Expression-level cycle detection** (`integral/chain.rs`): the entry key is
+  (expression address, `rule_depth`, `parts_depth`) — a repeat with a *smaller* budget is the
+  pipeline's legitimate recursive descent and is allowed, only an equal-budget repeat is a cycle.
+  The absolute backstop stays at 256 (a 1024 experiment took `rubi-00260` from ~7 s to 30 s);
+  residue resolution charges a **separate** 128-entry budget
+- [~] **Residue resolution** (defect): budgeted, gated on "rational shape + ≤2 symbols + ≤64
+  nodes", applied at the **top level**. Net **+1** (`rubi-00638`), short of the +4..+8 goal.
+  Measured trade-off: inline resolution (inside the substitution scope) wins 6 cases
+  (`rubi-00179/00627/01798`, …) but makes the substitution mechanisms commit to a path that ends
+  in an outer residue, turning `rubi-01646` from solved to fallback; the zero-regression gate
+  chose the top-level design. The root cause (substitution mechanisms do not verify their
+  back-substituted answer) is recorded as follow-up work
+- [x] **Regular towers** (`ocas-calc/src/tower/merge.rs`): six exact `exp`/`log` relations merged,
+  constant generators added, `Tower::expr` carries the rewritten integrand; undecidable
+  dependencies are still declined
+- [x] **Hyperbolic→exponential front-end** (`integral/trig.rs`): implemented and unit-tested, but
+  measured at +1 corpus solve for +75% wall clock and +6 timeouts, so it ships behind
+  `HYPERBOLIC_EXP_ENABLED = false` (reserved for the budgeted-Risch performance wave)
+- [x] **In-tower verification of Risch results** (`integral/risch.rs`): `D(F) − f` must be zero in
+  the tower field. This guard caught and contained a **latent wrong answer** (the exp-level
+  rational part mis-scales negative powers; `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`), whose fix is
+  recorded as follow-up work
+- [x] Metrics: the harness reports `certified_solved` / `certified_rate` / `cert_methods` /
+  `cert_declines` / `cert_false_positive` and dumps `data/cert_failures_028.jsonl` for triage
+- [x] CI certificate guards: `ocas-tests/tests/correctness/integral_certify.rs` (historical wrong
+  answers must be rejected, a certificate must never contradict the numeric oracle, structural
+  certificates must be exact)
+- [x] Bindings: Python `Expression.integrate_outcome` and C `ocas_expr_integrate_outcome`
+  (plus the `ocas_OCAS_INTEGRATION_*` codes; `ocas-c/include/ocas.h` regenerated and committed)
 
-**Success Criteria**:
+**Success Criteria** (honest record):
 
-- Symbolic certificates are exactly 0 for **100%** of the 1892 solved set; `certified_rate = 1.0`
-- New solves in the hyperbolic family (baseline: 111 unsolved cases contain hyperbolic heads)
-- `verify_mismatches` stays 0; per-case diff **0 regressions**; the timeout count does not rise
+- 1892-problem subset: **solved 371 (19.61%), verified 343/371 (92.5%), mismatches 0, timeouts 12,
+  crashes 0, wall clock 433.7 s (−6.0% versus 0.27.3's 461.2 s)**; per-case diff **+1 newly
+  solved, 0 regressed**
+- Symbolic certificates at 0 for **100%** of the solved set: **not met** —
+  `certified_rate = 107/371 = 28.8%`, with the declines classified as budget 174 / nonzero 87 /
+  notinfield 3. `budget` is a deliberate cost gate (without it the rate was 39.6%, but a single
+  certificate on a Weierstrass shape cost 15 s and pushed four borderline cases past the 10 s
+  budget). Certificate **false positives: 0**
+- New solves in the hyperbolic family: **0, not met** (the front-end is implemented but disabled
+  for its wall-clock cost)
+- `verify_mismatches = 0` **met**; per-case **0 regressions** **met**; the timeout count does not
+  rise **met** (12)
+- Next wave (0.29.0): rational RDE solutions and the logarithmic structure theorem, plus the three
+  follow-ups this wave opened (back-substitution verification in the substitution mechanisms, the
+  exp-level rational-part bug, and wider certificate coverage against the `budget` gate)
 
 ### 0.29.0 — Completing the Transcendental Risch
 
@@ -883,7 +919,7 @@ After 1.0, development will focus on:
 | 0.25.0 | Beta | Month 47 | Gröbner performance at scale (multi-modular vs msolve, cyclic-6 < 0.5 s) (P1) ✅ |
 | 0.26.0 | Beta | Month 49 | Packed-monomial F5 fast channel + grevlex benchmarks (cyclic-6 grevlex 55.04 ms measured) ✅ |
 | 0.27.0 | Beta | Month 51 | Symbolic integration breadth (Rubi-grade rule set + 1892-problem coverage benchmark) (P0) |
-| 0.28.0 | Beta | Month 53 | Integration-mechanism correctness foundation (residue resolution + expression-level cycle detection + symbolic certificates + three-valued outcome + regular towers) |
+| 0.28.0 | Beta | Month 53 | Integration-mechanism correctness foundation **shipped** (symbolic certificates + three-valued outcome + expression-level cycle detection + regular towers + residue resolution; 1892: 371 solved, mismatches 0, timeouts flat at 12, wall clock −6.0%, 0 regressions; `certified_rate = 28.8%` short of the target, recorded honestly) |
 | 0.29.0 | Beta | Month 55 | Completing the transcendental Risch (rational RDE solutions + coupled systems + log-part structure theorem) |
 | 0.30.0 | Beta | Month 57 | Algebraic extensions and inverse-function substitution (integral basis + algebraic Hermite + residues + multi-radical bases + inverse-function engine) |
 | 0.31.0 | Beta | Month 59 | Non-elementary layer (`polylog`/`Li₂` heads + Li₂/Meijer G reductions + `ProvedNonElementary`) |

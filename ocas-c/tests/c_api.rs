@@ -4,25 +4,26 @@
 //! `#[no_mangle] extern "C"` functions exactly as a C caller would.
 
 use ocas_c::{
-    OCAS_OK, OcasAlgebraicFactorArray, OcasPolyFactorArray, OcasTensorContraction,
-    OcasVegasOptions, ocas_algebraic_factor_array_free, ocas_algebraic_field_create,
-    ocas_algebraic_field_degree, ocas_algebraic_field_free, ocas_algebraic_poly_create,
-    ocas_algebraic_poly_degree, ocas_algebraic_poly_factor, ocas_algebraic_poly_free,
-    ocas_algebraic_poly_to_string, ocas_dual_add, ocas_dual_constant, ocas_dual_deriv,
-    ocas_dual_div, ocas_dual_mul, ocas_dual_neg, ocas_dual_shape_free,
+    OCAS_INTEGRATION_FOUND, OCAS_INTEGRATION_UNKNOWN, OCAS_OK, OcasAlgebraicFactorArray,
+    OcasPolyFactorArray, OcasTensorContraction, OcasVegasOptions, ocas_algebraic_factor_array_free,
+    ocas_algebraic_field_create, ocas_algebraic_field_degree, ocas_algebraic_field_free,
+    ocas_algebraic_poly_create, ocas_algebraic_poly_degree, ocas_algebraic_poly_factor,
+    ocas_algebraic_poly_free, ocas_algebraic_poly_to_string, ocas_dual_add, ocas_dual_constant,
+    ocas_dual_deriv, ocas_dual_div, ocas_dual_mul, ocas_dual_neg, ocas_dual_shape_free,
     ocas_dual_shape_n_components, ocas_dual_shape_n_vars, ocas_dual_shape_new, ocas_dual_value,
     ocas_dual_variable, ocas_error_clear, ocas_error_last_message, ocas_expr_clone, ocas_expr_diff,
     ocas_expr_free, ocas_expr_integrate, ocas_expr_integrate_heuristic,
-    ocas_expr_integrate_with_options, ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify,
-    ocas_expr_substitute, ocas_expr_taylor, ocas_expr_to_string, ocas_hyperdual_free,
-    ocas_integrate_1d, ocas_ntheory_crt, ocas_ntheory_discrete_log, ocas_ntheory_divisor_count,
-    ocas_ntheory_divisor_sigma, ocas_ntheory_factorint, ocas_ntheory_isprime, ocas_ntheory_jacobi,
-    ocas_ntheory_liouville, ocas_ntheory_mobius, ocas_ntheory_nextprime, ocas_ntheory_totient,
-    ocas_ode_classify, ocas_ode_dsolve, ocas_ode_dsolve_ivp, ocas_poly_factor_array_free,
-    ocas_poly_fp_clone, ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor,
-    ocas_poly_fp_free, ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create,
-    ocas_poly_z_degree, ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string,
-    ocas_string_free, ocas_tensor_canonicalize, ocas_tensor_contract, ocas_tensor_contraction_free,
+    ocas_expr_integrate_outcome, ocas_expr_integrate_with_options, ocas_expr_normalize,
+    ocas_expr_parse, ocas_expr_simplify, ocas_expr_substitute, ocas_expr_taylor,
+    ocas_expr_to_string, ocas_hyperdual_free, ocas_integrate_1d, ocas_ntheory_crt,
+    ocas_ntheory_discrete_log, ocas_ntheory_divisor_count, ocas_ntheory_divisor_sigma,
+    ocas_ntheory_factorint, ocas_ntheory_isprime, ocas_ntheory_jacobi, ocas_ntheory_liouville,
+    ocas_ntheory_mobius, ocas_ntheory_nextprime, ocas_ntheory_totient, ocas_ode_classify,
+    ocas_ode_dsolve, ocas_ode_dsolve_ivp, ocas_poly_factor_array_free, ocas_poly_fp_clone,
+    ocas_poly_fp_create, ocas_poly_fp_degree, ocas_poly_fp_factor, ocas_poly_fp_free,
+    ocas_poly_fp_to_string, ocas_poly_z_clone, ocas_poly_z_create, ocas_poly_z_degree,
+    ocas_poly_z_factor, ocas_poly_z_free, ocas_poly_z_to_string, ocas_string_free,
+    ocas_tensor_canonicalize, ocas_tensor_contract, ocas_tensor_contraction_free,
     ocas_tensor_create, ocas_tensor_free, ocas_tensor_name, ocas_tensor_rank,
     ocas_tensor_refresh_dummies, ocas_tensor_symmetrise_sign, ocas_tensor_symmetry,
     ocas_tensor_to_string, ocas_vegas_create, ocas_vegas_free, ocas_vegas_integrate,
@@ -129,6 +130,44 @@ fn integrate_with_options_toggles_rules() {
         ocas_expr_free(without_rules);
         ocas_expr_free(heuristic);
         ocas_expr_free(expr);
+    }
+}
+
+#[test]
+fn integrate_outcome_reports_found_and_unknown() {
+    // ∫ 2x dx = x²: certified.
+    let expr = parse("2*x");
+    let var = CString::new("x").unwrap();
+    let mut err = 0;
+    let mut outcome = -1;
+    let found = unsafe { ocas_expr_integrate_outcome(expr, var.as_ptr(), &mut outcome, &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(outcome, OCAS_INTEGRATION_FOUND);
+    assert!(!found.is_null());
+    let s = to_string(found);
+    assert!(s.contains("(x^2)"), "got: {s}");
+    assert!(
+        !s.contains("Integral("),
+        "certified answer has a residue: {s}"
+    );
+
+    // ∫ exp(x³) dx has no closed form: the honest answer is `UNKNOWN` with
+    // the unevaluated form.
+    let hard = parse("exp(x^3)");
+    let mut err = 0;
+    let mut outcome = -1;
+    let unknown =
+        unsafe { ocas_expr_integrate_outcome(hard, var.as_ptr(), &mut outcome, &mut err) };
+    assert_eq!(err, OCAS_OK);
+    assert_eq!(outcome, OCAS_INTEGRATION_UNKNOWN);
+    assert!(!unknown.is_null());
+    assert!(to_string(unknown).contains("Integral("));
+
+    unsafe {
+        ocas_expr_free(found);
+        ocas_expr_free(unknown);
+        ocas_expr_free(expr);
+        ocas_expr_free(hard);
     }
 }
 

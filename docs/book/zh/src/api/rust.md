@@ -150,6 +150,8 @@ graph TD
 |---|---|---|
 | `diff` | fn | 符号微分 |
 | `integrate` | fn | 符号积分（分层管线） |
+| `integrate_outcome` | fn | 认证积分：三值输出 + 符号证书（0.28.0） |
+| `integrate_outcome_with_options` | fn | 带选项的认证积分（0.28.0） |
 | `integrate_heuristic` | fn | 启发式积分（不含 Risch） |
 | `integrate_with_fuel` | fn | 带燃料限制的积分 |
 | `taylor` | fn | Taylor 展开 |

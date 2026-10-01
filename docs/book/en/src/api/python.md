@@ -135,7 +135,7 @@ Symbolically integrates the expression with respect to the variable `var`. Uses 
 |---|---|---|
 | `var` | `str` | The integration variable |
 
-**Returns**: the resulting expression. If no closed form can be found, returns the unevaluated `Integral(expr, var)` form.
+**Returns**: the resulting expression. If no closed form can be found, returns the unevaluated `Integral(expr, var)` form. The result is **not certified**; use `integrate_outcome` when a machine-checkable certificate is required.
 
 **Example**:
 
@@ -143,6 +143,42 @@ Symbolically integrates the expression with respect to the variable `var`. Uses 
 >>> e = ocas.Expression("x^2")
 >>> print(e.integrate("x"))
 (3^-1)*(x^3)
+```
+
+---
+
+#### Expression.integrate_outcome
+
+```python
+Expression.integrate_outcome(var: str, rules: bool = True) -> dict
+```
+
+Certified integration (new in 0.28.0): the result is three-valued. `found` always carries a machine-checkable symbolic certificate (`D(F) − f ≡ 0`), while `unknown` honestly returns the unevaluated form. A result the exact checker falsifies is never returned as `found`.
+
+**Parameters**:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `var` | `str` | The integration variable |
+| `rules` | `bool` | Whether the rule-table engine is enabled (default `True`) |
+
+**Returns**: a dict with the keys:
+
+| Key | Description |
+|---|---|
+| `kind` | `"found"` / `"proved_nonelementary"` / `"unknown"` |
+| `value` | The antiderivative, or the unevaluated `Integral(expr, var)` form when `unknown` |
+| `certificate` | The certificate layer (`"structural"` / `"field"` / `"radical"`), `None` when uncertified |
+| `uncertified` | The pipeline's **uncertified** candidate (diagnostics only — explicitly not an answer), `None` when absent |
+
+**Example**:
+
+```python
+>>> e = ocas.Expression("2*x")
+>>> e.integrate_outcome("x")["kind"]
+'found'
+>>> ocas.Expression("exp(x^3)").integrate_outcome("x")["kind"]
+'unknown'
 ```
 
 ---

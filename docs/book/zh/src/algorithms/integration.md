@@ -173,3 +173,46 @@ fuel 仅约束化简后的传递。
 - C：`ocas_expr_integrate(...)`
 
 找不到闭式时两者都返回未求值形式 `Integral(...)`，与 Rust API 一致。
+两者都**不认证**结果；需要可机检证书时用 `Expression.integrate_outcome`
+（Python）或 `ocas_expr_integrate_outcome`（C）。
+
+---
+
+## 0.28.0：证书、循环检测与残项解析
+
+### 符号证书与三值输出
+
+`integrate_outcome`（Rust/Python/C 均已暴露）返回三值之一：
+
+| 取值 | 含义 |
+|---|---|
+| `Found { value, certificate }` | 原函数 + **可机检的符号证书**（精确检查器中 `D(F) − f ≡ 0`） |
+| `ProvedNonElementary { witness }` | 已证明非初等（0.28.0 无生产者，为后续非初等层预留） |
+| `Unknown { residue, uncertified }` | 诚实未知：`residue` 是未求值 `Integral(f, x)`；`uncertified` 是管线候选（**不是答案**，仅供诊断） |
+
+证书引擎（`ocas-calc/src/integral/certify.rs`）分层判定：结构零（`normalize` + 同类项收集）、
+初等域零（三角→指数、`I² = −1` 约化、依赖 `exp`/`log` 原子合并后嵌入有理函数域）、根式域
+（接口预留）。各层都是**可靠的**：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
+正确。域运算有确定性预算，超预算即诚实拒绝。
+
+`ocas-calc/src/integral/risch.rs` 还会在**塔自身的域**里校验每个 Risch 结果，因此引擎不会发射
+被精确检查器证伪的答案——0.28.0 正是靠这条护栏抓到并兜住一个潜伏错案（指数层有理部分对负幂次
+系数的错误缩放）。
+
+### 表达式级循环检测与残项解析
+
+链入口（`integral/chain.rs`）按「表达式地址 + `rule_depth` + `parts_depth`」判环：**预算递减的
+同形状重入**是流水线合法的递归下降，必须放行；只有预算相同的重复才是真循环。绝对条目兜底保持
+0.27.3 的 256，残项解析的嵌套重入走独立预算，不与主链争用。
+
+若干阶段会返回**部分结果**（分式分解已完成、剩下的 `Integral(...)` 本身可解）。顶层入口在链条
+结束后会做一次预算化的残项解析：只处理「有理形状、≤2 个符号、≤64 节点」的残项，并且只在残项数
+**严格减少**时接受解析结果。纯回退 `Integral(f, x)` 永远不解析（否则会重跑整条链，并在
+`rules = false` 时违反调用方意图）。
+
+### 依赖生成元合并（正则塔）
+
+`ocas-calc/src/tower/merge.rs` 用精确域恒等式合并代数相关生成元：`exp(u)`/`exp(u+c)`、
+`exp(u)`/`exp(−u)`、`log(u)`/`log(cu)`、`log(u)`/`log(u^k)`、`log(exp(u))`、`exp(log(u))`，
+必要时登记常量生成元（`log(2)`、`exp(1)`，`D t = 0`）。塔现在返回**重写后的**被积表达式，
+`risch` 在其中工作；判定不了的关系仍然诚实拒绝。

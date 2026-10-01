@@ -514,27 +514,48 @@
 升级为**符号证书**，并放开通用 Risch 引擎最贵的入口限制（依赖生成元被拒）。
 （依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3、§5、§6 P0）
 
-**交付物**：
+**交付物**（实测结果逐条记录）：
 
-- [ ] **残项解析**（缺陷）：`rational::integral_fallback` 与 `symbolic_rational`
-  高阶因子分支产生的 `Integral(...)` 残项，改为**链尾 + 确定性预算**的解析
-  （原型实测净 +4：+5 新解 / −1 回归 / +3 新超时，
-  见 BENCHMARK_RESULTS_CN.md §「0.27.3 后续调研」§3.1）
-- [ ] **循环检测改为表达式级**（缺陷），替换/收窄 `MAX_CHAIN_ENTRIES`
-  全局总量上限（`rubi-00008` 实测 306 次阶段进入 / 18 轮循环）
-- [ ] **符号证书**：每个输出必须通过微分域内的 `normalize(D(F) − f) == 0`；
-  数值 oracle 降级为探测/回归工具
-- [ ] **三值 Outcome**：`Found { value, certificate }` /
-  `ProvedNonElementary { witness }` / `Unknown`；`Unknown` 诚实返回 `Integral(...)`
-- [ ] **正则塔**：合并代数相关生成元（`log x`/`log 2x`、`exp x`/`exp(x+1)`、
-  双曲重写产生的 `exp(±u)`），相关但不可判定时返回 `Unknown`
-- [ ] 指标：harness 新增 `certified_rate = 证书通过 / 已解`，CI 门禁要求恒为 1.0
+- [x] **符号证书引擎**（`ocas-calc/src/integral/certify.rs`）：结构层 / 初等域层（三角→指数、
+  `I² = −1` 约化、依赖原子合并、常量幂生成元）+ 根式层接口；全部**可靠**（自由生成元只会
+  产生假阴性），确定性预算（节点 20 000 / 生成元 16 / 展开 4 096 / 域工作 400）
+- [x] **三值 Outcome**（`integral/outcome.rs`）：`Found { value, certificate }` /
+  `ProvedNonElementary { witness }`（0.28.0 无生产者）/ `Unknown { residue, uncertified }`；
+  新增 `integrate_outcome` / `integrate_with_options` 配套入口与 `integrate_diagnostic`；
+  现有 `integrate` 等入口行为不变（仅加 rustdoc 警示），零行为回归
+- [x] **循环检测改为表达式级**（`integral/chain.rs`）：入口键 =（表达式地址, `rule_depth`,
+  `parts_depth`）——同形状但预算递减的重入是合法递归下降，放行；绝对兜底保持 256
+  （实测 1024 会把 `rubi-00260` 从 ~7 s 拉到 30 s）；残项解析走**独立**条目预算 128
+- [~] **残项解析**（缺陷）：预算化、按「有理形状 + ≤2 符号 + ≤64 节点」闸门、**顶层**解析。
+  **净 +1（`rubi-00638`）**，未达「链尾 +4..+8」目标；实测取舍：链内解析可拿回 6 题
+  （`rubi-00179/00627/01798` 等）但让替换机制承诺错误路径、`rubi-01646` 由已解变回退，
+  按 0 回归硬线取顶层方案。根因（替换机制未校验回代后的最终结果）已记录为后续工作
+- [x] **正则塔**（`ocas-calc/src/tower/merge.rs`）：`exp`/`log` 六类关系合并 + 常量生成元 +
+  `Tower::expr` 重写被积表达式；判定不了仍拒绝
+- [x] **双曲→指数前端**（`integral/trig.rs`）：实现 + 单元测试，但实测只 +1 题而墙钟 +75%、
+  超时 +6，故 `HYPERBOLIC_EXP_ENABLED = false`（留给 Risch 预算化波次）
+- [x] **Risch 结果塔内精确校验**（`integral/risch.rs`）：`D(F) − f` 在塔域内必须为 0；
+  该护栏抓到并兜住一个**潜伏错案**（指数层有理部分负幂次系数缩放错误，
+  `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`），修 bug 列为后续
+- [x] 指标：harness 新增 `certified_solved` / `certified_rate` / `cert_methods` /
+  `cert_declines` / `cert_false_positive` 与 `data/cert_failures_028.jsonl` 分诊转储
+- [x] CI 证书护栏：`ocas-tests/tests/correctness/integral_certify.rs`（历史错案必须被拒、
+  证书不得与数值 oracle 冲突、结构证书必须精确）
+- [x] 绑定：Python `Expression.integrate_outcome` 与 C `ocas_expr_integrate_outcome`
+  （+ `ocas_OCAS_INTEGRATION_*` 常量，`ocas-c/include/ocas.h` 已重新生成并提交）
 
-**成功标准**：
+**成功标准**（诚实记录）：
 
-- 1892 已解集合的符号证书 **100% 为 0**；`certified_rate = 1.0`
-- 双曲族新增解（基线：111 例未解含双曲函数）
-- `verify_mismatches` 保持 0；逐题 diff **0 回归**；超时数不上升
+- 1892 题：**solved 371（19.61%）、verified 343/371（92.5%）、mismatches 0、超时 12、
+  崩溃 0、墙钟 433.7 s（较 0.27.3 的 461.2 s **−6.0%**）**；逐题 diff **新解 1、回归 0**
+- 已解集合符号证书 **100% 为 0 未达**：`certified_rate = 107/371 = 28.8%`；归因桶
+  `budget` 174 / `nonzero` 87 / `notinfield` 3。`budget` 是刻意的成本闸门（无闸门时 39.6%，
+  但单例证书在 Weierstrass 形状上要 15 s 并把 4 个边缘用例推过 10 s 预算）；
+  证书**假阳性 0**（数值 oracle 判 mismatch 而证书通过次数为 0）
+- 双曲族新增解 **0 未达**（前端已实现但因墙钟代价默认关闭）
+- `verify_mismatches = 0` **达成**；逐题 diff **0 回归** **达成**；超时数不上升 **达成**（12）
+- 下一波（0.29.0）承接：RDE 有理解与对数部分结构定理；本波新立的三个后续项
+  （替换机制的回代校验、指数层有理部分 bug、证书 `budget` 闸门的覆盖面提升）
 
 ### 0.29.0 — 超越 Risch 补全
 
@@ -774,7 +795,7 @@ katsura-6 < 1 s、cyclic-7 grevlex 进入同数量级。
 | 0.25.0 | Beta | 第 47 月 | Gröbner 大规模性能（multi-modular 对标 msolve，cyclic-6 < 0.5 s）（P1）✅ |
 | 0.26.0 | Beta | 第 49 月 | 打包单项式 F5 快通道 + grevlex 基准（cyclic-6 grevlex 55.04 ms 实测）✅ |
 | 0.27.0 | Beta | 第 51 月 | 符号积分广度（Rubi 级规则集 + 1892 题覆盖率基准）（P0） |
-| 0.28.0 | Beta | 第 53 月 | 积分机制正确性地基（残项解析 + 表达式级循环检测 + 符号证书 + 三值输出 + 正则塔） |
+| 0.28.0 | Beta | 第 53 月 | 积分机制正确性地基**已交付**（符号证书 + 三值输出 + 表达式级循环检测 + 正则塔 + 残项解析；1892：371 solved、mismatches 0、超时 12 持平、墙钟 −6.0%、0 回归；`certified_rate = 28.8%` 未达目标，如实记录） |
 | 0.29.0 | Beta | 第 55 月 | 超越 Risch 补全（RDE 有理解 + 耦合系统 + 对数部分结构定理） |
 | 0.30.0 | Beta | 第 57 月 | 代数扩张与反函数代换（积分基 + 代数 Hermite + 留数 + 多根式基 + 反函数代换引擎） |
 | 0.31.0 | Beta | 第 59 月 | 非初等层（`polylog`/`Li₂` 头 + Li₂/Meijer G 归约 + `ProvedNonElementary`） |

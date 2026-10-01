@@ -198,4 +198,55 @@ The same pipeline backs the Python and C APIs:
 - C: `ocas_expr_integrate(...)`
 
 Both return the unevaluated `Integral(...)` form when no closed form is
-found, exactly like the Rust API.
+found, exactly like the Rust API. Neither **certifies** its result; use
+`Expression.integrate_outcome` (Python) or `ocas_expr_integrate_outcome` (C)
+when a machine-checkable certificate is required.
+
+---
+
+## 0.28.0: certificates, cycle detection and residue resolution
+
+### Symbolic certificates and the three-valued outcome
+
+`integrate_outcome` (exposed to Rust, Python and C) returns one of three values:
+
+| Value | Meaning |
+|---|---|
+| `Found { value, certificate }` | An antiderivative **with a machine-checkable certificate** (`D(F) − f ≡ 0` in the exact checker) |
+| `ProvedNonElementary { witness }` | Proved non-elementary (no producer in 0.28.0; reserved for the non-elementary layer) |
+| `Unknown { residue, uncertified }` | Honest "I do not know": `residue` is the unevaluated `Integral(f, x)`; `uncertified` is the pipeline's candidate (**not an answer**, diagnostics only) |
+
+The certificate engine (`ocas-calc/src/integral/certify.rs`) tries three layers: structural zero
+(`normalize` plus like-term collection), elementary-field zero (trig→exp rewriting, `I² = −1`
+reduction, dependent `exp`/`log` atoms merged before embedding into a rational function field), and
+a reserved radical layer. Every layer is **sound**: treating atoms as independent generators can
+only miss an identity (a false negative), never certify a wrong answer. The field arithmetic runs
+under deterministic budgets and declines honestly when they are exhausted.
+
+`ocas-calc/src/integral/risch.rs` additionally verifies every Risch result **inside the tower's own
+field**, so the engine cannot emit an answer the exact checker falsifies — that guard is how
+0.28.0 caught and contained a latent wrong answer (the exp-level rational part mis-scaled negative
+powers).
+
+### Expression-level cycle detection and residue resolution
+
+A chain entry (`integral/chain.rs`) is identified by the expression address **plus** `rule_depth`
+and `parts_depth`: a repeat of the same shape with a *smaller* budget is the pipeline's legitimate
+recursive descent and must be allowed; only an equal-budget repeat is a true cycle. The absolute
+entry backstop stays at 0.27.3's 256, and residue-resolution re-entries charge a separate budget so
+they cannot starve the primary chain.
+
+Several stages return a **partial** result (the partial fraction is done and the leftover
+`Integral(...)` is itself solvable). After the chain is finished the top-level entry resolves those
+residues: only "rational shape, ≤2 symbols, ≤64 nodes" residues are retried, and a resolution is
+accepted only when the residue count **strictly decreases**. A plain `Integral(f, x)` fallback is
+never resolved (that would re-run the whole chain, and with `rules = false` would defeat the
+caller's intent).
+
+### Dependent-generator merging (regular towers)
+
+`ocas-calc/src/tower/merge.rs` merges algebraically dependent generators through exact field
+identities: `exp(u)`/`exp(u+c)`, `exp(u)`/`exp(−u)`, `log(u)`/`log(cu)`, `log(u)`/`log(u^k)`,
+`log(exp(u))` and `exp(log(u))`, registering constant generators (`log(2)`, `exp(1)`, `D t = 0`)
+when needed. The tower now carries the **rewritten** integrand, which is what `risch` converts;
+undecidable dependencies are still declined honestly.

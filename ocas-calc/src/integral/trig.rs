@@ -134,8 +134,114 @@ fn trig_exp_form<'a>(ctx: &'a AtomArena<'a>, name: &str, u: Atom<'a>) -> Atom<'a
     }
 }
 
-/// Try to rewrite a complex Risch result back into real form.
+/// True when every hyperbolic argument in `expr` is a linear form of `var`
+/// with numeric coefficients (mirrors [`trig_args_numeric`]).
+pub(crate) fn hyperbolic_args_numeric<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> bool {
+    match expr.node() {
+        AtomNode::Fun(name, args) if args.len() == 1 => {
+            let n = name.as_str();
+            if matches!(n, "sinh" | "cosh" | "tanh" | "coth" | "sech" | "csch") {
+                if let Some((a, _b)) = crate::integral::linear_form(ctx, args[0], var) {
+                    return matches!(a.node(), AtomNode::Num(_));
+                }
+                return false;
+            }
+            true
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            args.iter().all(|a| hyperbolic_args_numeric(ctx, *a, var))
+        }
+        AtomNode::Pow(base, exp) => {
+            hyperbolic_args_numeric(ctx, *base, var) && hyperbolic_args_numeric(ctx, *exp, var)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => true,
+    }
+}
+
+/// Rewrite hyperbolic functions into real exponentials.
 ///
+/// Unlike the trigonometric rewrite there is no imaginary unit: the point
+/// here is to hand a hyperbolic integrand to Risch in the shape
+/// `(exp(u) − exp(−u))/2`. That shape deliberately keeps `exp(u)` and
+/// `exp(−u)` as **two** function atoms, which is exactly the pair the
+/// 0.28.0 regular-tower merge ([`crate::tower::merge`]) reduces
+/// (`exp(−u) → exp(u)⁻¹`). Writing `exp(u)⁻¹` here directly would hide the
+/// merge path and any bug in it.
+///
+/// Returns `None` when `expr` contains no hyperbolic function.
+pub(crate) fn hyperbolic_to_exp<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> Option<Atom<'a>> {
+    let mut found = false;
+    let out = rewrite_hyperbolic(ctx, expr, &mut found);
+    found.then_some(out)
+}
+
+fn rewrite_hyperbolic<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, found: &mut bool) -> Atom<'a> {
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
+        AtomNode::Add(args) | AtomNode::Mul(args) => {
+            let new: Vec<Atom> = args
+                .iter()
+                .map(|a| rewrite_hyperbolic(ctx, *a, found))
+                .collect();
+            if matches!(expr.node(), AtomNode::Add(_)) {
+                ctx.add(&new)
+            } else {
+                ctx.mul(&new)
+            }
+        }
+        AtomNode::Pow(b, e) => {
+            let nb = rewrite_hyperbolic(ctx, *b, found);
+            let ne = rewrite_hyperbolic(ctx, *e, found);
+            ctx.pow(nb, ne)
+        }
+        AtomNode::Fun(name, args) => {
+            let new_args: Vec<Atom> = args
+                .iter()
+                .map(|a| rewrite_hyperbolic(ctx, *a, found))
+                .collect();
+            let n = name.as_str();
+            if args.len() == 1 && matches!(n, "sinh" | "cosh" | "tanh" | "coth" | "sech" | "csch") {
+                *found = true;
+                hyperbolic_exp_form(ctx, n, new_args[0])
+            } else {
+                ctx.fun(n, &new_args)
+            }
+        }
+    }
+}
+
+/// The exponential form of a hyperbolic function, with `t = exp(u)` and
+/// `t⁻¹ = exp(−u)` kept as two atoms.
+fn hyperbolic_exp_form<'a>(ctx: &'a AtomArena<'a>, name: &str, u: Atom<'a>) -> Atom<'a> {
+    let two = ctx.num(2);
+    let t = ctx.fun("exp", &[u]);
+    let neg_u = ctx.mul(&[ctx.num(-1), u]);
+    let ti = ctx.fun("exp", &[neg_u]);
+    let minus_ti = ctx.mul(&[ctx.num(-1), ti]);
+    let sum = ctx.add(&[t, ti]);
+    let diff = ctx.add(&[t, minus_ti]);
+    match name {
+        // sinh(u) = (t − t⁻¹)/2
+        "sinh" => ctx.mul(&[diff, ctx.pow(two, ctx.num(-1))]),
+        // cosh(u) = (t + t⁻¹)/2
+        "cosh" => ctx.mul(&[sum, ctx.pow(two, ctx.num(-1))]),
+        // tanh(u) = (t − t⁻¹)/(t + t⁻¹)
+        "tanh" => ctx.mul(&[diff, ctx.pow(sum, ctx.num(-1))]),
+        // coth(u) = (t + t⁻¹)/(t − t⁻¹)
+        "coth" => ctx.mul(&[sum, ctx.pow(diff, ctx.num(-1))]),
+        // sech(u) = 2/(t + t⁻¹)
+        "sech" => ctx.mul(&[two, ctx.pow(sum, ctx.num(-1))]),
+        // csch(u) = 2/(t − t⁻¹)
+        "csch" => ctx.mul(&[two, ctx.pow(diff, ctx.num(-1))]),
+        _ => unreachable!("hyperbolic_exp_form: unsupported {name}"),
+    }
+}
+
+/// Try to rewrite a complex Risch result back into real form.///
 /// Handles the common patterns produced by trigonometric integrals:
 ///
 /// - products/quotients of `exp(±I·u)` that combine back into `sin`/`cos`

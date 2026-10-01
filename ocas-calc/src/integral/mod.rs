@@ -14,6 +14,8 @@
 #![allow(clippy::missing_const_for_thread_local)]
 
 pub(crate) mod binomial;
+pub mod certify;
+pub(crate) mod chain;
 pub(crate) mod elliptic;
 pub(crate) mod exp_log;
 pub(crate) mod halfpower;
@@ -21,9 +23,11 @@ pub(crate) mod heuristic;
 pub(crate) mod hyperbolic_reduction;
 pub(crate) mod inverse_trig;
 pub(crate) mod kernel_subst;
+pub mod outcome;
 pub(crate) mod quad_power;
 pub mod rational;
 pub(crate) mod rde;
+pub(crate) mod residual;
 pub(crate) mod risch;
 pub(crate) mod rules;
 pub(crate) mod rules_ext;
@@ -48,39 +52,22 @@ use crate::rules::calculus_rules;
 /// on patterns such as nested linear substitutions if the table is misapplied.
 const MAX_DEPTH: usize = 8;
 
-/// Maximum number of `try_risch_or_fallback` chain entries per top-level
-/// `integrate` call. The per-stage budgets (structural depth, rule depth,
-/// parts depth) reset at substitution boundaries (Weierstrass, rule
-/// residuals, expansion retries), so a cyclic interaction between stages
-/// — observed in the wild: parts ↔ Weierstrass ping-pong on t-forms
-/// carrying `atan(_t)` factors — can otherwise loop until the stack
-/// overflows. Legitimate integrations use far fewer entries (typically
-/// < 50), so tripping the budget degrades to the unevaluated form.
-const MAX_CHAIN_ENTRIES: u32 = 256;
-
-thread_local! {
-    static CHAIN_ENTRIES: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
-}
-
-/// Reset the chain-entry budget; called by every public entry point.
+/// Reset the per-top-level-call bookkeeping: the expression-level cycle
+/// stack / absolute entry backstop ([`chain`]) and the residue-resolution
+/// budget ([`residual`]).
+///
+/// See `chain.rs` for why cycle detection moved from a global entry cap to
+/// an ancestor stack in 0.28.0.
 fn reset_chain_budget() {
-    CHAIN_ENTRIES.with(|c| c.set(0));
-}
-
-/// Consume one chain entry; returns true when the budget is exhausted.
-fn chain_budget_exhausted() -> bool {
-    CHAIN_ENTRIES.with(|c| {
-        let v = c.get().saturating_add(1);
-        c.set(v);
-        v > MAX_CHAIN_ENTRIES
-    })
+    chain::reset();
+    residual::reset();
 }
 
 /// Whether stage tracing is enabled (`OCAS_INTEGRATE_TRACE=1`).
 ///
 /// Diagnostic only: a hang leaves the last `enter <stage>` line on stderr,
 /// which attributes the case to a pipeline stage without guesswork.
-fn trace_enabled() -> bool {
+pub(crate) fn trace_enabled() -> bool {
     thread_local! {
         static TRACE: bool = std::env::var_os("OCAS_INTEGRATE_TRACE")
             .is_some_and(|v| v != "0");
@@ -417,11 +404,42 @@ pub fn integrate_with_options<'a>(
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
     reset_chain_budget();
     let raw = integrate_raw(ctx, normalized, var, 0, options.rules, 0, 0);
+    let raw = resolve_partial_residues(ctx, raw, options.rules);
     // Combine default algebraic simplification with calculus-specific rules,
     // then normalize to a canonical form (removing *1, +0, sorting, etc.).
     let after_default = simplify(ctx, raw, &default_rules, 20);
     let after_calc = simplify(ctx, after_default, &calc_rules, 10);
     normalize(ctx, after_calc)
+}
+
+/// Resolve the residues of a **partial** pipeline result once, at the top
+/// level (0.28.0 A).
+///
+/// Only results that came from a stage partial are resolved: the plain
+/// fallback `Integral(f, var)` is the pipeline's "nothing worked" answer, and
+/// resolving it would re-run the whole chain — with `rules = false` that
+/// would even let the rule table solve cases the caller disabled it for.
+fn resolve_partial_residues<'a>(
+    ctx: &'a AtomArena<'a>,
+    raw: Atom<'a>,
+    rules_enabled: bool,
+) -> Atom<'a> {
+    if !chain::partial_seen() {
+        return raw;
+    }
+    let resolved = residual::resolve(
+        ctx,
+        raw,
+        rules_enabled,
+        0,
+        0,
+        residual::MAX_RESIDUAL_STEPS,
+        residual::MAX_RESIDUAL_NODES,
+    );
+    if trace_enabled() && resolved != raw {
+        eprintln!("[trace] residue-resolve :: {resolved}");
+    }
+    resolved
 }
 
 /// Integrate `expr` with respect to `var`.
@@ -484,6 +502,7 @@ pub fn integrate_with_fuel<'a>(
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
     reset_chain_budget();
     let raw = integrate_raw(ctx, normalized, var, 0, true, 0, 0);
+    let raw = resolve_partial_residues(ctx, raw, true);
     let after_default = simplify_with_fuel(ctx, raw, &default_rules, 20, fuel)?;
     let after_calc = simplify_with_fuel(ctx, after_default, &calc_rules, 10, fuel)?;
     Ok(normalize(ctx, after_calc))
@@ -498,6 +517,7 @@ pub fn integrate_heuristic<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symb
     let normalized = normalize(ctx, expr);
     reset_chain_budget();
     if let Some(r) = heuristic::heuristic_integrate(ctx, normalized, var, 0) {
+        let r = resolve_partial_residues(ctx, r, true);
         let calc_rules = calculus_rules(ctx, &crate::pattern_alloc::VecAlloc);
         let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
         let after_default = simplify(ctx, r, &default_rules, 20);
@@ -597,8 +617,26 @@ pub(crate) fn integrate_raw<'a>(
     }
 }
 
+/// Whether the hyperbolic→exponential Risch front-end is part of the chain.
+///
+/// **Measured trade-off (0.28.0)**: the rewrite plus the regular-tower merge
+/// is correct and solves the family's minimal cases (`sinh(a+bx)^3·tanh(a+bx)`
+/// is the one corpus gain), but handing the exponential form to Risch costs
+/// seconds per case on symbolic coefficients: the corpus wall clock went
+/// from 507 s to 806 s and the timeout count from 12 to 18, for **+1** net
+/// solve on top of the residue-resolution gains. Per the wave's "no wall
+/// clock for capability" rule the front-end is kept off the chain until
+/// Risch itself is budgeted (the planned performance wave); the rewrite and
+/// the merge are exercised by their unit tests and stay available for it.
+const HYPERBOLIC_EXP_ENABLED: bool = false;
+
 /// Try the rational-function integrator, then the Risch algorithm, then the
 /// rule table, before giving up with the unevaluated `Integral` form.
+///
+/// 0.28.0: entry is guarded by the expression-level cycle test
+/// ([`chain::enter`]), and every stage result is routed through
+/// [`accept_stage`], which remembers the first residue-carrying *partial*
+/// result while letting later stages keep trying for a complete answer.
 fn try_risch_or_fallback<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
@@ -607,15 +645,35 @@ fn try_risch_or_fallback<'a>(
     rule_depth: usize,
     parts_depth: usize,
 ) -> Atom<'a> {
-    // Backstop against cyclic stage interactions (see MAX_CHAIN_ENTRIES).
-    if chain_budget_exhausted() {
-        return fallback(ctx, expr, var);
+    // Expression-level cycle test. An ancestor that is structurally the same
+    // expression is a true cycle; the absolute backstop stays only as
+    // defence against structurally-growing loops.
+    let _guard = match chain::enter(expr, rule_depth, parts_depth) {
+        chain::Enter::Ok(guard) => guard,
+        chain::Enter::Cycle => {
+            if trace_enabled() {
+                eprintln!("[trace] cycle  :: {expr}");
+            }
+            return fallback(ctx, expr, var);
+        }
+        chain::Enter::Exhausted => {
+            if trace_enabled() {
+                eprintln!("[trace] chain-budget ({}) :: {expr}", chain::entries());
+            }
+            return fallback(ctx, expr, var);
+        }
+    };
+
+    /// Run one optional stage under the tracer and accept its result.
+    macro_rules! stage {
+        ($name:literal, $call:expr) => {
+            if let Some(r) = traced_stage($name, expr, $call) {
+                return accept_stage($name, r, var);
+            }
+        };
     }
-    if let Some(r) = traced_stage("rational", expr, || {
-        rational::integrate_rational(ctx, expr, var)
-    }) {
-        return r;
-    }
+
+    stage!("rational", || rational::integrate_rational(ctx, expr, var));
     // Symbolic-constant rationals (coefficients in ℚ(symbols)): the ℚ
     // backend declines these; the symbolic backend also powers the
     // trig-rational class through Weierstrass t-rationals.
@@ -623,11 +681,9 @@ fn try_risch_or_fallback<'a>(
     // closed-form recurrences for `P(x)/q^n` — these shapes stall the
     // symbolic rational backend's multivariate coefficient gcd, so the
     // recurrence must preempt it.
-    if let Some(r) = traced_stage("quad_power", expr, || {
-        quad_power::integrate_quad_power(ctx, expr, var)
-    }) {
-        return r;
-    }
+    stage!("quad_power", || quad_power::integrate_quad_power(
+        ctx, expr, var
+    ));
     // Closed-form kernel families (0.27.2): they must preempt
     // `symbolic_rational`/`risch`, whose field-Euclidean steps grind
     // unboundedly on these shapes with symbolic coefficients (verified:
@@ -639,26 +695,18 @@ fn try_risch_or_fallback<'a>(
     // backend at all (0.27.2 A1).
     if let Some(r) = expand_prepass(ctx, expr, var, rules_enabled, rule_depth, parts_depth) {
         trace_enter("expand_prepass", expr);
-        return r;
+        return accept_stage("expand_prepass", r, var);
     }
-    if let Some(r) = traced_stage("kernel_subst", expr, || {
-        kernel_subst::integrate_kernel_subst(ctx, expr, var)
-    }) {
-        return r;
-    }
-    if let Some(r) = traced_stage("hyperbolic_reduction", expr, || {
+    stage!("kernel_subst", || kernel_subst::integrate_kernel_subst(
+        ctx, expr, var
+    ));
+    stage!("hyperbolic_reduction", || {
         hyperbolic_reduction::integrate_hyperbolic_reduction(ctx, expr, var)
-    }) {
-        return r;
-    }
-    if let Some(r) = traced_stage("symbolic_rational", expr, || {
+    });
+    stage!("symbolic_rational", || {
         symbolic_rational::integrate_rational_symbolic(ctx, expr, var)
-    }) {
-        return r;
-    }
-    if let Some(r) = traced_stage("risch", expr, || risch::risch_integrate(ctx, expr, var)) {
-        return r;
-    }
+    });
+    stage!("risch", || risch::risch_integrate(ctx, expr, var));
     // Trigonometric integrands: rewrite into complex exponentials, run
     // Risch, then try to bring the answer back to real form. The tower
     // grinds on symbolic linear arguments (`cos(c + d*x)`), so this stage
@@ -669,14 +717,40 @@ fn try_risch_or_fallback<'a>(
             risch::risch_integrate(ctx, exp_form, var)
         })
     {
-        return trig::realify(ctx, complex_ans);
+        let real = trig::realify(ctx, complex_ans);
+        // Only a *complete* answer may short-circuit the chain here: the
+        // exponential rewrite is a last-resort route, and a partial result
+        // from it must not stop the later stages that own the original shape
+        // (measured: `sin(x)/(-2 + cos(x) + cos(x)²)` regressed from solved
+        // to fallback once this stage unlocked and returned a residue).
+        if !residual::contains_residue(real) {
+            return accept_stage("risch(trig-exp)", real, var);
+        }
     }
     // Non-elementary integrals with special-function closed forms
     // (erf, Ei, Si, Ci, Fresnel, …).
-    if let Some(r) = traced_stage("special", expr, || {
-        special::special_integrate(ctx, expr, ctx.var(var.as_str()))
-    }) {
-        return r;
+    stage!("special", || special::special_integrate(
+        ctx,
+        expr,
+        ctx.var(var.as_str())
+    ));
+    // Hyperbolic integrands: rewrite sinh/cosh/tanh/… into *real*
+    // exponentials (keeping `exp(u)` and `exp(−u)` as separate atoms) and
+    // hand the result to Risch. This is the general-engine counterpart of
+    // the `hyperbolic_reduction` patches: the 0.28.0 regular tower merges
+    // the dependent exponential pair, which is what made this family
+    // unreachable before. Runs after `special` so the closed forms keep
+    // their priority, and only for numeric linear arguments (the tower
+    // grinds on symbolic ones).
+    if HYPERBOLIC_EXP_ENABLED
+        && trig::hyperbolic_args_numeric(ctx, expr, var)
+        && let Some(exp_form) = trig::hyperbolic_to_exp(ctx, expr)
+        && let Some(ans) = traced_stage("risch(hyperbolic-exp)", expr, || {
+            risch::risch_integrate(ctx, exp_form, var)
+        })
+        && !residual::contains_residue(ans)
+    {
+        return accept_stage("risch(hyperbolic-exp)", ans, var);
     }
     // Rule-table engine: standard-calculus breadth rules with residual
     // `Integral(g, x)` reduction formulas. The table is only built when the
@@ -696,42 +770,30 @@ fn try_risch_or_fallback<'a>(
             rules::integrate_rules(ctx, &table, expr, var, rule_depth)
         })
     {
-        return r;
+        return accept_stage("rules", r, var);
     }
     // General quadratic-radical engine (0.27.1): direct forms for
     // √(a+b·x+c·x²) composites, reciprocal forms, Euler III. Runs BEFORE
     // binomial's Chebyshev cases: both accept `q^±1/2`-style radicands,
     // and this engine's asin/log direct forms are the canonical answers
     // (Chebyshev's t-form back-substitution produces uglier atan shapes).
-    if let Some(r) = traced_stage("sqrt_quadratic", expr, || {
+    stage!("sqrt_quadratic", || {
         sqrt_quadratic::integrate_sqrt_quadratic(ctx, expr, var)
-    }) {
-        return r;
-    }
+    });
     // Chebyshev binomial differentials and fractional-power
     // rationalization: substitute to a rational t-form, reintegrate,
     // back-substitute. Declines (None) unless an exact integrability
     // condition holds.
-    if let Some(r) = traced_stage("binomial", expr, || {
-        binomial::integrate_binomial(ctx, expr, var)
-    }) {
-        return r;
-    }
+    stage!("binomial", || binomial::integrate_binomial(ctx, expr, var));
     // exp/log-kernel substitutions (0.27.1): rational-in-e^(ax) and
     // hyperbolic-rational forms, f(log x)/x, log-power gaps of rule B6.
-    if let Some(r) = traced_stage("exp_log", expr, || {
-        exp_log::integrate_exp_log(ctx, expr, var)
-    }) {
-        return r;
-    }
+    stage!("exp_log", || exp_log::integrate_exp_log(ctx, expr, var));
 
     // Inverse-trig/hyperbolic mechanisms (0.27.1): kernel-derivative power
     // rule, inv-hyp substitution to hyperbolic t-forms, bare linear args.
-    if let Some(r) = traced_stage("inverse_trig", expr, || {
-        inverse_trig::integrate_inverse_trig(ctx, expr, var)
-    }) {
-        return r;
-    }
+    stage!("inverse_trig", || inverse_trig::integrate_inverse_trig(
+        ctx, expr, var
+    ));
     // Trig product-to-sum reduction: products of sin/cos at linear
     // arguments become a sum of single trig terms, then distribute and
     // integrate termwise. Runs before the heuristic stage: the reduction
@@ -743,25 +805,21 @@ fn try_risch_or_fallback<'a>(
         let folded = crate::ode::util::collect_terms(ctx, candidate);
         let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
         if !is_fallback(&r) {
-            return r;
+            return accept_stage("trig_reduce", r, var);
         }
     }
     // Trig-denominator power reductions, linear-numerator decomposition and
     // polynomial×trig closed forms (0.27.1). Intercepts `1/(a+b·T(u))^n`
     // before Weierstrass blows the t-rational up, and `x^m·T(ax+b)` shapes
     // that parts cannot finish within budget.
-    if let Some(r) = traced_stage("trig_reduction", expr, || {
+    stage!("trig_reduction", || {
         trig_reduction::integrate_trig_reduction(ctx, expr, var)
-    }) {
-        return r;
-    }
+    });
     // Single-trig-kernel rational forms and tan/sec-family reductions
     // (0.27.1): after trig_reduction so plain `1/(a+b·T)^n` stays there.
-    if let Some(r) = traced_stage("trig_kernel", expr, || {
-        trig_kernel::integrate_trig_kernel(ctx, expr, var)
-    }) {
-        return r;
-    }
+    stage!("trig_kernel", || trig_kernel::integrate_trig_kernel(
+        ctx, expr, var
+    ));
     // Bounded distributive expansion: distribute products over sums and
     // integrate termwise. Runs BEFORE the heuristic stage: parts recursion
     // on multi-factor products can consume the whole chain budget, which
@@ -774,30 +832,54 @@ fn try_risch_or_fallback<'a>(
         let folded = crate::ode::util::collect_terms(ctx, expanded);
         let r = integrate_raw(ctx, folded, var, 0, rules_enabled, rule_depth, parts_depth);
         if !is_fallback(&r) {
-            return r;
+            return accept_stage("expand_retry", r, var);
         }
     }
     // Half-power front-end then elliptic reduction (0.27.2 D): placed after
     // the bounded-expansion retry so the elementary engines and the expanded
     // single-term shapes keep first claim, and before the heuristic stage so
     // Weierstrass cannot route these radicals into the t-rational backend.
-    if let Some(r) = traced_stage("halfpower", expr, || {
-        halfpower::integrate_half_power(ctx, expr, var)
-    }) {
-        return r;
-    }
-    if let Some(r) = traced_stage("elliptic", expr, || {
-        elliptic::integrate_elliptic(ctx, expr, var)
-    }) {
-        return r;
-    }
+    stage!("halfpower", || halfpower::integrate_half_power(
+        ctx, expr, var
+    ));
+    stage!("elliptic", || elliptic::integrate_elliptic(ctx, expr, var));
     // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
-    if let Some(r) = traced_stage("heuristic", expr, || {
-        heuristic::heuristic_integrate(ctx, expr, var, parts_depth)
-    }) {
-        return r;
-    }
+    stage!("heuristic", || heuristic::heuristic_integrate(
+        ctx,
+        expr,
+        var,
+        parts_depth
+    ));
+
     fallback(ctx, expr, var)
+}
+
+/// Accept one stage result.
+///
+/// A residue-free result finishes the chain. A result that still carries
+/// `Integral(·, v)` residues is a **partial** decomposition (0.27.3's
+/// semantics): the chain finishes with it unchanged, and the top-level entry
+/// point resolves its residues once, after the chain is done.
+///
+/// Resolving *inside* the chain was measured to change the caller's mind:
+/// the substitution mechanisms (Weierstrass, Euler, inv-hyp) decide whether
+/// to commit to a substitution by looking at whether the inner result still
+/// has residues. Turning that inner residue into a complete answer makes
+/// them commit to a path that ends in an outer residue, and the later stages
+/// that used to solve the case never run — `rubi-01646` regressed from
+/// solved to fallback that way, while 6 residue-only cases gained. The
+/// wave's zero-regression gate keeps the top-level design; making the
+/// substitution mechanisms verify their *back-substituted* answer is the
+/// follow-up that would unlock the other 6.
+fn accept_stage<'a>(stage: &str, result: Atom<'a>, _var: Symbol) -> Atom<'a> {
+    if !residual::contains_residue(result) {
+        return result;
+    }
+    chain::note_partial();
+    if trace_enabled() {
+        eprintln!("[trace] partial  {stage} :: {result}");
+    }
+    result
 }
 
 pub(crate) fn fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {

@@ -15,6 +15,7 @@ use std::ptr;
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, Symbol};
 use ocas_calc::IntegrateOptions;
+use ocas_calc::integral::outcome::{Outcome, integrate_outcome_with_options};
 use ocas_calc::{diff, integrate, integrate_heuristic, integrate_with_options, substitute, taylor};
 use ocas_core::arena::Arena;
 use ocas_parse::parse;
@@ -190,6 +191,34 @@ impl ExprBox {
             Ok(a) => Ok(op(ctx, a, var_sym)),
             Err(e) => Err(e.to_string()),
         })
+    }
+
+    /// Apply the certified integration entry point, returning the
+    /// three-valued outcome alongside the expression.
+    ///
+    /// The outcome borrows the same leaked arena as the returned expression,
+    /// so it stays valid for as long as the caller keeps the box alive.
+    fn apply_integrate_outcome(
+        &self,
+        var: &str,
+        rules: bool,
+    ) -> Result<(Box<Self>, Outcome<'static>), String> {
+        let var_sym = Symbol::new(var);
+        let src = self.atom.to_string();
+        let (arena_ptr, ctx_ptr) = leak_arena_and_ctx();
+        let mut guard = ArenaGuard::new(arena_ptr, ctx_ptr);
+        let ctx = unsafe { static_ctx(ctx_ptr) };
+        let parsed = parse(ctx, &src).map_err(|e| e.to_string())?;
+        let outcome =
+            integrate_outcome_with_options(ctx, parsed, var_sym, IntegrateOptions { rules });
+        let normalized = normalize(ctx, outcome.value());
+        guard.disarm();
+        let boxed = Box::new(ExprBox {
+            arena_ptr,
+            ctx_ptr,
+            atom: normalized,
+        });
+        Ok((boxed, outcome))
     }
 
     /// Integrate with respect to `var`, with the rule-table engine toggled
@@ -581,6 +610,89 @@ pub unsafe extern "C" fn ocas_expr_integrate_with_options(
         }),
         err_out,
     )
+}
+
+/// Outcome codes for [`ocas_expr_integrate_outcome`].
+///
+/// `PROVED_NONELEMENTARY` has no producer in 0.28.0: the variant exists so
+/// the C API is stable when the non-elementary layer lands.
+pub const OCAS_INTEGRATION_FOUND: c_int = 0;
+/// See [`OCAS_INTEGRATION_FOUND`].
+pub const OCAS_INTEGRATION_PROVED_NONELEMENTARY: c_int = 1;
+/// See [`OCAS_INTEGRATION_FOUND`].
+pub const OCAS_INTEGRATION_UNKNOWN: c_int = 2;
+
+/// Integrate `handle` with respect to `var`, returning the **certified**
+/// outcome.
+///
+/// On success the returned handle is the certified antiderivative when
+/// `*outcome_out == OCAS_INTEGRATION_FOUND`, and the unevaluated
+/// `Integral(expr, var)` form otherwise. `outcome_out` documents the
+/// verdict: a `FOUND` result always carries an exact symbolic certificate
+/// (`D(F) − f ≡ 0`), while `UNKNOWN` is the honest "no closed form proved"
+/// answer. Results that the exact checker falsifies are never returned as
+/// `FOUND`.
+///
+/// Returns a new expression handle (caller owns it) or `NULL` on failure.
+///
+/// # Safety
+///
+/// `handle` must be a valid non-null expression handle, `var` a valid
+/// null-terminated C string. `outcome_out` may be `NULL` when the caller
+/// does not need the verdict.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ocas_expr_integrate_outcome(
+    handle: *const OcasExpr,
+    var: *const c_char,
+    outcome_out: *mut c_int,
+    err_out: *mut c_int,
+) -> *mut OcasExpr {
+    crate::error::clear();
+    let Some(expr) = as_expr(handle) else {
+        if !err_out.is_null() {
+            unsafe { *err_out = OCAS_ERROR_NULL_POINTER };
+        }
+        return ptr::null_mut();
+    };
+    let Some(var_str) = cstr_to_str(var, "var") else {
+        crate::error::write_last_code(err_out);
+        return ptr::null_mut();
+    };
+    let var_owned = var_str.to_string();
+    let expr_ref = std::panic::AssertUnwindSafe(expr);
+    let result = std::panic::catch_unwind(move || {
+        let expr: &ExprBox = *expr_ref;
+        expr.apply_integrate_outcome(&var_owned, true)
+    });
+    let (boxed, outcome) = match result {
+        Ok(Ok(pair)) => pair,
+        Ok(Err(msg)) => {
+            set(OCAS_ERROR_RUNTIME, &msg);
+            if !err_out.is_null() {
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
+            }
+            return ptr::null_mut();
+        }
+        Err(_) => {
+            set(OCAS_ERROR_RUNTIME, "panic during operation");
+            if !err_out.is_null() {
+                unsafe { *err_out = OCAS_ERROR_RUNTIME };
+            }
+            return ptr::null_mut();
+        }
+    };
+    if !outcome_out.is_null() {
+        let code = match outcome {
+            Outcome::Found { .. } => OCAS_INTEGRATION_FOUND,
+            Outcome::ProvedNonElementary { .. } => OCAS_INTEGRATION_PROVED_NONELEMENTARY,
+            Outcome::Unknown { .. } => OCAS_INTEGRATION_UNKNOWN,
+        };
+        unsafe { *outcome_out = code };
+    }
+    if !err_out.is_null() {
+        unsafe { *err_out = crate::error::OCAS_OK };
+    }
+    Box::into_raw(boxed).cast::<OcasExpr>()
 }
 
 /// Compute the Taylor series of `handle` around `point` up to `order`.

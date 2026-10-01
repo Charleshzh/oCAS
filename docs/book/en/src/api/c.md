@@ -307,7 +307,7 @@ ocas_expr_free(e);
 OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
 ```
 
-**Description**: Integrates the expression with respect to the variable `var`. If no symbolic solution is found, returns the unevaluated form `Integral(expr, var)`.
+**Description**: Integrates the expression with respect to the variable `var`. If no symbolic solution is found, returns the unevaluated form `Integral(expr, var)`. The result is **not certified**; use `ocas_expr_integrate_outcome` when a machine-checkable certificate is required.
 
 **Parameters**: Same as `ocas_expr_diff`.
 
@@ -322,6 +322,45 @@ printf("∫ = %s\n", s);  // Output: 3*(3^-1)*(x^3)
 ocas_string_free(s);
 ocas_expr_free(ie);
 ocas_expr_free(e);
+```
+
+---
+
+### `ocas_expr_integrate_outcome`
+
+**Signature**:
+```c
+OcasExpr *ocas_expr_integrate_outcome(const OcasExpr *handle, const char *var,
+                                      int *outcome_out, int *err_out);
+```
+
+**Description**: Certified integration (new in 0.28.0). `*outcome_out` is one of
+`ocas_OCAS_INTEGRATION_FOUND`, `ocas_OCAS_INTEGRATION_PROVED_NONELEMENTARY` or
+`ocas_OCAS_INTEGRATION_UNKNOWN`. A `FOUND` result always carries a machine-checkable
+symbolic certificate (`D(F) − f ≡ 0`); `UNKNOWN` honestly returns the unevaluated
+`Integral(expr, var)` form; a result the exact checker falsifies is never returned as
+`FOUND`. `PROVED_NONELEMENTARY` has **no producer** in 0.28.0 (reserved for the
+non-elementary layer).
+
+**Parameters**:
+
+| Parameter | Description |
+|---|---|
+| `handle` | The integrand expression |
+| `var` | The integration variable name |
+| `outcome_out` | Output for the three-valued verdict; may be `NULL` |
+| `err_out` | Error code output |
+
+**Return value**: A new expression handle (caller owns it) or `NULL`.
+
+**Example**:
+```c
+int outcome = -1;
+OcasExpr *ie = ocas_expr_integrate_outcome(e, "x", &outcome, NULL);
+if (outcome == ocas_OCAS_INTEGRATION_FOUND) {
+    /* ie carries a certificate: D(ie) == integrand */
+}
+ocas_expr_free(ie);
 ```
 
 ---

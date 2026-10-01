@@ -307,7 +307,7 @@ ocas_expr_free(e);
 OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
 ```
 
-**功能**：对表达式关于变量 `var` 积分。若无法解析求解，返回未求值形式 `Integral(expr, var)`。
+**功能**：对表达式关于变量 `var` 积分。若无法解析求解，返回未求值形式 `Integral(expr, var)`。**结果未经认证**；需要可机检证书时用 `ocas_expr_integrate_outcome`。
 
 **参数**：同 `ocas_expr_diff`。
 
@@ -322,6 +322,43 @@ printf("∫ = %s\n", s);  // 输出：3*(3^-1)*(x^3)
 ocas_string_free(s);
 ocas_expr_free(ie);
 ocas_expr_free(e);
+```
+
+---
+
+### `ocas_expr_integrate_outcome`
+
+**签名**：
+```c
+OcasExpr *ocas_expr_integrate_outcome(const OcasExpr *handle, const char *var,
+                                      int *outcome_out, int *err_out);
+```
+
+**功能**：认证积分（0.28.0 新增）。`*outcome_out` 取 `ocas_OCAS_INTEGRATION_FOUND`、
+`ocas_OCAS_INTEGRATION_PROVED_NONELEMENTARY`、`ocas_OCAS_INTEGRATION_UNKNOWN` 之一。
+`FOUND` 的返回值一定带**可机检的符号证书**（`D(F) − f ≡ 0`）；`UNKNOWN` 诚实返回未求值
+`Integral(expr, var)`；被精确检查器证伪的结果永远不会以 `FOUND` 返回。
+`PROVED_NONELEMENTARY` 在 0.28.0 **无生产者**（变体为后续非初等层预留）。
+
+**参数**：
+
+| 参数 | 说明 |
+|---|---|
+| `handle` | 被积表达式 |
+| `var` | 积分变量名 |
+| `outcome_out` | 输出三值判定；可为 `NULL` |
+| `err_out` | 错误码输出 |
+
+**返回值**：新表达式句柄（调用者负责释放）或 `NULL`。
+
+**示例**：
+```c
+int outcome = -1;
+OcasExpr *ie = ocas_expr_integrate_outcome(e, "x", &outcome, NULL);
+if (outcome == ocas_OCAS_INTEGRATION_FOUND) {
+    /* ie 的原函数带证书：D(ie) == 被积函数 */
+}
+ocas_expr_free(ie);
 ```
 
 ---

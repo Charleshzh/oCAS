@@ -174,6 +174,19 @@ cycle detection) ship together with 0.28.0.
 | Phase | Version | Deliverable | Gate (existing harness + the new metric) |
 |---|---|---|---|
 | **P0** | **0.28.0** | Defect fixes (residue resolution + expression-level cycle detection) + symbolic certificates + three-valued `Outcome` + dependent-generator merging | certificates exactly 0 for 100% of the 1892 solved set; `certified_rate = 1.0`; new solves in the hyperbolic family (measured baseline: 111 unsolved); the timeout count does not rise |
+
+**P0 measured (0.28.0, 2026-09-13)**: the certificate engine, the three-valued `Outcome`, regular-tower
+merging, expression-level cycle detection, in-tower verification of Risch results, the CI certificate
+guards and the Python/C bindings all shipped. The gates, judged per item: `certified_rate =
+107/371 = 28.8%` (target 1.0, **not met**; declines budget 174 / nonzero 87 / notinfield 3; zero
+certificate false positives); residue resolution net **+1** (target +4..+8, **not met**; the
+top-level vs inline trade-off and its root cause are in BENCHMARK_RESULTS_CN §0.28.0); hyperbolic
+family **+0** (**not met**; the front-end measured +1 solve for +75% wall clock and +6 timeouts and
+therefore ships disabled). **Met**: the timeout count does not rise (12), per-case 0 regressions,
+`verify_mismatches = 0`, wall clock 461.2 → 433.7 s (−6.0%). The wave also caught and contained a
+latent wrong answer (exp-level rational-part coefficient scaling) and opened three follow-up items:
+"substitution mechanisms do not verify their back-substituted answer", the certificate `budget`
+gate, and that solver bug. P1 (0.29.0) proceeds as planned.
 | **P1** | **0.29.0** | Complete the transcendental Risch (rational RDE solutions + coupled systems + log-part structure theorem) | clear improvement in the `exp-log` bucket; **0 regressions**; certificate gate holds |
 | **P2** | **0.30.0** | Algebraic extensions (regular tower + integral basis + algebraic Hermite + residues) + multi-radical bases + inverse-function substitution engine | the `1/(1+x⁴)` / `1/(1−3x²+x⁴)` families solve; the radical and `inverse-trig-hyper` buckets improve; certificate gate holds |
 | **P3** | **0.31.0** | Non-elementary layer (`polylog`/`Li₂` heads + oracle + Li₂/Meijer reductions + `ProvedNonElementary`) | the reachable part of the 122 `polylog` cases; the rest of `exp-log`; certificate gate holds |

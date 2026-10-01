@@ -9,6 +9,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.28.0] - 2026-09-13
+
+**积分机制正确性地基 / Integration-mechanism correctness foundation**
+
+### Added / 新增
+
+- **符号证书引擎**（`ocas-calc/src/integral/certify.rs`）：把「正确」从抽样数值验证升级为可机检的**符号证书** `D(F) − f ≡ 0`。三层判定：结构零（`normalize` + `collect_terms`）、初等域零（三角经 `trig_to_exp` 重写为指数、`I² = −1` 约化、依赖原子合并后嵌入以 `x`、函数原子、常量与常数幂为生成元的有理函数域）、根式域（预留，0.30 落地）。所有层都是**可靠的**：把原子当作独立生成元只会产生假阴性，绝不会把错误答案判成正确。确定性预算：`MAX_CERT_NODES = 20 000`、`MAX_CERT_GENS = 16`、`MAX_CERT_EXPANSION = 4 096`、`MAX_CERT_FIELD_WORK = 400`（展开规模 × 生成元数，抑制 Weierstrass 形状上实测 15 s 的域运算）。
+  / A machine-checkable **symbolic certificate** (`certify.rs`) replaces sampled numerical verification: the difference `D(F) − f` must reduce to zero. Three layers (structural, elementary field with `I² = −1` reduction and dependent-atom merging, radical field reserved) plus deterministic budgets. Every layer is sound — treating atoms as independent generators can only produce false negatives.
+
+- **三值输出 API**（`integral/outcome.rs`）：`Outcome::{Found { value, certificate }, ProvedNonElementary { witness }, Unknown { residue, uncertified }}`，配套 `integrate_outcome` / `integrate_outcome_with_options`；`Unknown` 诚实返回 `Integral(f, x)`，并把**未认证候选**单独放在 `uncertified` 字段（明确标注「不是答案」）。`ProvedNonElementary` 变体已定义但 0.28.0 无生产者（首个生产者在非初等层波次）。`integrate` / `integrate_with_options` / `integrate_heuristic` / `integrate_with_fuel` 行为不变，仅增加 rustdoc 警示，因此零行为回归。
+  / Three-valued `Outcome` API with the emission discipline: `Found` carries a certificate, `Unknown` returns the unevaluated form and exposes the uncertified candidate separately. The legacy entry points are unchanged (documented as uncertified).
+
+- **正则塔（依赖生成元合并）**（`ocas-calc/src/tower/merge.rs`）：`exp(u)`/`exp(u+c)`、`exp(u)`/`exp(−u)`、`log(u)`/`log(cu)`、`log(u)`/`log(u^k)`、`log(exp(u))`、`exp(log(u))` 六类关系用**精确域恒等式**重写为已有生成元的组合，必要时登记常量生成元（`log(2)`、`exp(1)`，`D t = 0`）；塔现在返回重写后的被积表达式（`Tower::expr`），`risch` 转换的是它而不是原始输入。判定不了的关系仍然诚实拒绝。
+  / Regular tower: dependent `exp`/`log` generators are **merged** by exact field identities (constant generators included), and the tower carries the rewritten integrand. Undecidable dependencies are still declined.
+
+- **双曲→指数前端**（`integral/trig.rs`，`hyperbolic_to_exp` / `hyperbolic_args_numeric`）：`sinh/cosh/tanh/coth/sech/csch` 重写为**实**指数（刻意保留 `exp(u)` 与 `exp(−u)` 两个不同原子，以真实走通上面的合并路径）。**该阶段默认关闭**（`HYPERBOLIC_EXP_ENABLED = false`）：实测只带来 +1 题（`rubi-00543`），却把全量墙钟从 507 s 推到 806 s、超时 12 → 18，按「不为能力付墙钟」原则留给 Risch 预算化的性能波次。
+  / Hyperbolic→exponential front-end, implemented but **off by default**: measured +1 corpus solve for +75% wall clock and +6 timeouts.
+
+- **表达式级循环检测 + 独立残项预算**（`integral/chain.rs`）：链入口按**（表达式地址, `rule_depth`, `parts_depth`）**判环——同形状但预算递减的重入是流水线合法的递归下降（0.27.3 就是靠它终止的），必须放行；预算相同的重复才是真循环。绝对兜底保持 0.27.3 的 256（曾试过 1024，实测把 `rubi-00260` 从 ~7 s 拉到 30 s、全量墙钟 507 → 806 s）；残项解析的嵌套链条目走**独立预算** `MAX_RESIDUAL_ENTRIES = 128`，不再与主链争用。
+  / Expression-level cycle detection with budget-aware entry keys, the absolute backstop kept at 256, and a separate entry budget for residue-resolution re-entries.
+
+- **Risch 结果的塔内精确校验**（`integral/risch.rs`）：每个 Risch 结果都要在**塔自身的域**里验证 `D(F) − f = 0`（生成元由构造保证独立，因此非零就是真错案）；校验不通过则诚实回退。这条护栏立即抓到一个**潜伏错案**：指数层有理部分对负幂次系数的错误缩放，最小复现 `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`（`t⁻²` 系数 2 倍、`t⁻⁴` 系数 4/3 倍）。该 bug 与 0.28.0 的改动无关，只是被双曲前端首次从题库触达；修 bug 需要重做该层 Hermite 约化，已立为后续工作。
+  / Every Risch result is verified **inside the tower field**; this guard immediately exposed a latent exp-level rational-part bug (minimal repro `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`), now converted into an honest fallback instead of a wrong answer.
+
+- **CI 证书护栏**（`ocas-tests/tests/correctness/integral_certify.rs`）：手写 0.27.1/0.27.2 历史错案原函数必须全部被证书拒绝；跨机制清单上「数值 oracle 判 mismatch ⇒ 证书不得通过」；结构证书必须精确。
+  / CI certificate guards: historical wrong antiderivatives must be rejected, and a certified result must never contradict the numeric oracle.
+
+### Changed / 变更
+
+- **1892 harness 新增证书口径**：子进程协议扩展为 6 字段，report 增加 `certified_solved` / `certified_rate` / `cert_uncertified` / `cert_failed` / `cert_false_positive` / `cert_methods` / `cert_declines`，并转储 `data/cert_failures_028.jsonl` 供分诊。证书成本经确定性预算约束后，全量墙钟反而**低于** 0.27.3。
+  / The 1892 harness reports certificate coverage, method histogram and decline reasons; with deterministic budgets the certificate costs less than the wall clock it saves.
+
+### Fixed / 修复
+
+- **`risch` 不再发射可被精确检查证伪的答案**（见上）。0.28.0 期间该类错案被逐题 diff 捕获 5 例（`rubi-01255`、`rubi-01843` 及三个探针形状），全部转为诚实回退。
+  / `risch` no longer emits answers the exact checker can falsify (5 cases caught and converted to honest fallbacks).
+
+### Coverage / 覆盖率（诚实记录）
+
+- Rubi 1892 题子集：0.27.3 基线（solved 370、已验证 343/370、mismatches 0、超时 12、墙钟 461.2 s）→ **0.28.0 终态 solved 371（19.61%）、已验证 343/371（92.5%）、mismatches 0、超时 12、崩溃 0、墙钟 433.7 s（−6.0%）**；逐题 diff **新解 1（`rubi-00638`）、回归 0**。
+  / Honest coverage record: 371 solved (19.61%), 343/371 verified, 0 mismatches, 12 timeouts, 433.7 s wall clock (−6.0%), +1 newly solved and 0 regressed.
+- **证书覆盖率未达验收线**：`certified_rate = 107/371 = 28.8%`（目标 1.0），下降原因分类为 `budget` 174 / `nonzero` 87 / `notinfield` 3。`budget` 占大头是刻意的成本闸门（196 例中多数是符号系数或生成元较多的大表达式）；`nonzero` 仍是「自由生成元正规形非零」的分诊提示，不是错案证明。
+  / `certified_rate = 28.8%`, short of the 1.0 acceptance line; declines are classified as budget 174 / nonzero 87 / notinfield 3.
+- **残项解析净增未达验收线**：终态设计只在**顶层**解析（+1 题）。**实测取舍**：把解析放到链内（在替换变量的作用域里）能拿回 6 题（`rubi-00179/00627/01798` 等），但会让 Weierstrass 一类替换机制看到「内层已解」而承诺一条以外层残项收尾的路径，`rubi-01646` 由已解变为回退；按「逐题 diff 0 回归」硬线取顶层方案。根因（替换机制没有校验回代后的最终结果）已记录，是拿回这 6 题的后续工作。
+  / Residue resolution ships top-level only (+1 solve). The measured trade-off (inline resolution gains 6 but regresses `rubi-01646`) and its root cause are recorded.
+- **双曲族新增解未达验收线**（目标 ≥10，实际 0）：前端已实现且有单元测试，因墙钟代价被默认关闭。
+  / The hyperbolic family gained no corpus solves: the front-end is implemented and unit-tested but disabled for its measured wall-clock cost.
+- **证书假阳性 0**：数值 oracle 判 mismatch 而证书通过的次数为 0（本波曾出现 5 例由塔内校验兜住的真错案，证书本身没有放过任何一例）。
+  / Zero certificate false positives.
+
+---
+
 ## [0.27.3] - 2026-09-12
 
 ### Added / 新增

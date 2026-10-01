@@ -6,6 +6,7 @@
 
 use ocas_atom::{Atom, AtomArena, Symbol, normalize::normalize};
 use ocas_calc::IntegrateOptions;
+use ocas_calc::integral::outcome::{Outcome, integrate_outcome_with_options};
 use ocas_calc::{diff, integrate_heuristic, integrate_with_options, substitute, taylor};
 use ocas_core::arena::Arena;
 use ocas_parse::parse;
@@ -268,6 +269,10 @@ impl Expression {
     ///
     /// `rules` toggles the rule-table engine (default on); pass
     /// ``rules=False`` to use the pre-0.27 chain for comparison.
+    ///
+    /// The result is **not certified**; use
+    /// :meth:`integrate_outcome` when a machine-checkable certificate is
+    /// required.
     #[pyo3(signature = (var, rules = true))]
     fn integrate(&self, var: &str, rules: bool) -> PyResult<Expression> {
         let src = self.inner.atom.to_string();
@@ -282,6 +287,49 @@ impl Expression {
             Err(e) => Err(e.to_string()),
         })
         .map(|inner| Expression { inner })
+    }
+
+    /// Integrate with respect to `var`, returning the three-valued outcome.
+    ///
+    /// The returned dict has the keys:
+    ///
+    /// - ``kind``: ``"found"``, ``"proved_nonelementary"`` or ``"unknown"``;
+    /// - ``value``: the antiderivative, or the unevaluated
+    ///   ``Integral(expr, var)`` form when ``kind == "unknown"``;
+    /// - ``certificate``: the certificate method (``"structural"``,
+    ///   ``"field"``, ``"radical"``) when the result is certified, else
+    ///   ``None``;
+    /// - ``uncertified``: the pipeline's candidate when it produced one that
+    ///   the exact checker could not certify, else ``None``. **Not an
+    ///   answer** — use it for diagnostics only.
+    ///
+    /// ``rules`` toggles the rule-table engine (default on).
+    #[pyo3(signature = (var, rules = true))]
+    fn integrate_outcome(&self, py: Python<'_>, var: &str, rules: bool) -> PyResult<Py<PyAny>> {
+        let src = self.inner.atom.to_string();
+        let var_sym = Symbol::new(var);
+        let ctx = self.inner.ctx();
+        let parsed = parse(ctx, &src).map_err(|e| PyValueError::new_err(e.to_string()))?;
+        let verdict =
+            integrate_outcome_with_options(ctx, parsed, var_sym, IntegrateOptions { rules });
+        let dict = pyo3::types::PyDict::new(py);
+        let (kind, value, certificate, uncertified) = match verdict {
+            Outcome::Found { value, certificate } => {
+                ("found", value, Some(certificate.method.as_str()), None)
+            }
+            Outcome::ProvedNonElementary { witness } => {
+                ("proved_nonelementary", witness.residue, None, None)
+            }
+            Outcome::Unknown {
+                residue,
+                uncertified,
+            } => ("unknown", residue, None, uncertified),
+        };
+        dict.set_item("kind", kind)?;
+        dict.set_item("value", value.to_string())?;
+        dict.set_item("certificate", certificate)?;
+        dict.set_item("uncertified", uncertified.map(|a| a.to_string()))?;
+        Ok(dict.into())
     }
 
     /// Integrate using heuristic techniques (integration by parts,

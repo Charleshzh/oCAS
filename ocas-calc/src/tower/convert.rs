@@ -55,18 +55,25 @@ pub fn atom_to_rational<'a>(atom: Atom<'a>, gens: &[Atom<'a>]) -> Option<Generat
 ///
 /// Used by the tower construction, where generator arguments are
 /// converted before the full set of generators is known.
+///
+/// Every atom in `gens` is treated as an independent variable *before*
+/// the structural cases below, whatever its shape: the certificate engine
+/// (see [`crate::integral::certify`]) lists atoms such as `x^(1/2)` or a
+/// non-integer power of a constant as generators. For the Risch tower the
+/// two checks coincide (its generators are `Var`/`Fun` atoms), so no
+/// existing caller changes behaviour.
 pub(crate) fn atom_to_rational_extended<'a>(
     atom: Atom<'a>,
     gens: &[Atom<'a>],
     n_vars: usize,
 ) -> Option<GeneratorField> {
     debug_assert!(n_vars >= gens.len());
+    if let Some(idx) = gens.iter().position(|g| *g == atom) {
+        return Some(variable(idx, n_vars));
+    }
     match atom.node() {
         AtomNode::Num(n) => Some(constant(*n, n_vars)),
-        AtomNode::Var(_) | AtomNode::Fun(..) => {
-            let idx = gens.iter().position(|g| *g == atom)?;
-            Some(variable(idx, n_vars))
-        }
+        AtomNode::Var(_) | AtomNode::Fun(..) => None,
         AtomNode::Add(args) => {
             let mut acc = GeneratorField::zero(&RationalDomain, n_vars);
             for a in args.iter() {

@@ -114,6 +114,10 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 
 **Description**: computes the symbolic integral of `expr` with respect to `var`. Uses a layered integration pipeline that tries different algorithms layer by layer.
 
+> **0.28.0**: the returned result is **not certified** (it may be a pipeline candidate). Use
+> [`integrate_outcome`](#integrate_outcome) when you need an antiderivative *with* a
+> machine-checkable symbolic certificate.
+
 **Parameters**:
 
 | Parameter | Type | Description |
@@ -274,6 +278,55 @@ let result = integrate(&ctx, expr, Symbol::new("x"));
 ```
 
 **See also**: [integrate_heuristic](#integrate_heuristic), [integrate_with_fuel](#integrate_with_fuel), [rational function integration](#rational-function-integration), [Risch algorithm](#risch-algorithm)
+
+---
+
+## `integrate_outcome`
+
+**Signature** (new in 0.28.0):
+
+```rust
+pub fn integrate_outcome<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Outcome<'a>
+pub fn integrate_outcome_with_options<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    options: IntegrateOptions,
+) -> Outcome<'a>
+```
+
+**Description**: certified integration. Returns the three-valued [`Outcome`]:
+
+| Value | Meaning |
+|---|---|
+| `Found { value, certificate }` | An antiderivative with a machine-checkable symbolic certificate (`D(F) − f ≡ 0` in the exact checker) |
+| `ProvedNonElementary { witness }` | Proved non-elementary; **no producer** in 0.28.0 (the variant is reserved for the non-elementary layer) |
+| `Unknown { residue, uncertified }` | Honest "I do not know": `residue` is `Integral(f, var)`; `uncertified` is the pipeline's candidate, **not an answer**, diagnostics only |
+
+A result the exact checker falsifies is never returned as `Found` (and every Risch result is
+additionally verified inside the tower's own field).
+
+**Example**:
+
+```rust
+use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+let x = ctx.var("x");
+let two_x = ctx.mul(&[ctx.num(2), x]);
+let outcome = integrate_outcome(&ctx, two_x, Symbol::new("x"));
+assert!(outcome.is_found());
+println!("{}", outcome.value());          // (2^-1)*(x^2)
+println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
+```
+
+**See also**: [integrate](#integrate), [`Certificate`], [`CertDecline`]
 
 ---
 

@@ -74,10 +74,11 @@ pub use error::{
     OCAS_ERROR_OUT_OF_MEMORY, OCAS_ERROR_PARSE, OCAS_ERROR_RUNTIME, OCAS_OK,
 };
 pub use expression::{
+    OCAS_INTEGRATION_FOUND, OCAS_INTEGRATION_PROVED_NONELEMENTARY, OCAS_INTEGRATION_UNKNOWN,
     OcasExpr, ocas_expr_clone, ocas_expr_diff, ocas_expr_free, ocas_expr_integrate,
-    ocas_expr_integrate_heuristic, ocas_expr_integrate_with_options, ocas_expr_normalize,
-    ocas_expr_parse, ocas_expr_simplify, ocas_expr_substitute, ocas_expr_taylor,
-    ocas_expr_to_string, ocas_string_free,
+    ocas_expr_integrate_heuristic, ocas_expr_integrate_outcome, ocas_expr_integrate_with_options,
+    ocas_expr_normalize, ocas_expr_parse, ocas_expr_simplify, ocas_expr_substitute,
+    ocas_expr_taylor, ocas_expr_to_string, ocas_string_free,
 };
 pub use ntheory::{
     ocas_ntheory_crt, ocas_ntheory_discrete_log, ocas_ntheory_divisor_count,

@@ -21,6 +21,7 @@
 
 use ocas::prelude::*;
 use ocas_atom::{Atom, AtomArena, AtomNode};
+use ocas_calc::integral::certify::CertDecline;
 use ocas_core::arena::Arena;
 use ocas_tests::integral_eval;
 use std::collections::BTreeMap;
@@ -35,6 +36,9 @@ const REPORT_PATH: &str = "data/integrate_1892_report.json";
 const FAILURES_PATH: &str = "data/integrate_1892_failures.jsonl";
 /// Solved cases whose numerical verification did not succeed (JSONL).
 const UNVERIFIED_PATH: &str = "data/integrate_1892_unverified.jsonl";
+/// Solved cases the symbolic certificate could not certify (JSONL): the
+/// 0.28.0 triage input for missing prover layers.
+const CERT_FAILURES_PATH: &str = "data/cert_failures_028.jsonl";
 
 /// Bucket names from the 0.27.0 plan (S1).
 const BUCKETS: [&str; 9] = [
@@ -163,11 +167,21 @@ fn parse_row(line: &str) -> Option<(&str, &str, &str)> {
     Some((id, integrand, var))
 }
 
+/// Symbolic-certificate verdict of one solved case.
+#[derive(Clone, Copy, Debug)]
+struct CertVerdict {
+    /// `certified`, `uncertified` (prover gap) or `failed` (nonzero difference).
+    name: &'static str,
+    /// Certificate layer, or `none` when no certificate was produced.
+    method: &'static str,
+}
+
 /// Outcome of a single corpus problem.
 enum CaseOutcome {
     /// Antiderivative found; no `Integral(...)` residue. Carries the printed
-    /// result so the parent can verify it numerically.
-    Solved(&'static str, String),
+    /// result so the parent can verify it numerically, plus the symbolic
+    /// certificate verdict.
+    Solved(&'static str, String, CertVerdict),
     /// `Integral(...)` residue (or abandoned at the budget / crashed).
     Fallback(&'static str),
     /// The integrand did not parse.
@@ -213,28 +227,55 @@ fn run_case_in_child(integrand: &str, var: &str, rules: bool, budget_ms: u64) ->
     }
 }
 
-/// Parse the single output line of a case child (`OK\t<bucket>\t<result>`
-/// or `PARSE_ERR`).
+/// Parse the single output line of a case child
+/// (`OK\t<bucket>\t<result>\t<cert>\t<method>\t<tail>` or `PARSE_ERR`).
 fn parse_child_line(line: &str) -> CaseOutcome {
     if line == "PARSE_ERR" {
         return CaseOutcome::ParseErr;
     }
-    let mut fields = line.splitn(3, '\t');
-    match (fields.next(), fields.next(), fields.next()) {
-        (Some("OK"), Some(b), Some(result)) => {
-            let bucket = BUCKETS
-                .iter()
-                .copied()
-                .find(|known| *known == b)
-                .unwrap_or("mixed-other");
-            if result.contains("Integral(") {
-                CaseOutcome::Fallback(bucket)
-            } else {
-                CaseOutcome::Solved(bucket, result.to_string())
-            }
-        }
-        _ => CaseOutcome::Crashed,
+    let mut fields = line.splitn(6, '\t');
+    let (tag, bucket_name, result) = match (fields.next(), fields.next(), fields.next()) {
+        (Some(tag), Some(bucket), Some(result)) => (tag, bucket, result),
+        _ => return CaseOutcome::Crashed,
+    };
+    if tag != "OK" {
+        return CaseOutcome::Crashed;
     }
+    let bucket = BUCKETS
+        .iter()
+        .copied()
+        .find(|known| *known == bucket_name)
+        .unwrap_or("mixed-other");
+    if result.contains("Integral(") {
+        return CaseOutcome::Fallback(bucket);
+    }
+    let cert = match fields.next() {
+        Some("certified") => CertVerdict {
+            name: "certified",
+            method: match fields.next() {
+                Some("structural") => "structural",
+                Some("field") => "field",
+                Some("radical") => "radical",
+                _ => "none",
+            },
+        },
+        Some("failed") => CertVerdict {
+            name: "failed",
+            method: match fields.next() {
+                Some("nonzero") => "nonzero",
+                _ => "none",
+            },
+        },
+        _ => CertVerdict {
+            name: "uncertified",
+            method: match fields.next() {
+                Some("notinfield") => "notinfield",
+                Some("budget") => "budget",
+                _ => "none",
+            },
+        },
+    };
+    CaseOutcome::Solved(bucket, result.to_string(), cert)
 }
 
 /// Bucket an integrand in the parent process; used to label timed-out and
@@ -282,13 +323,37 @@ fn main() {
             }
         };
         let var_sym = Symbol::new(&var);
+        let timing = env::var_os("OCAS_CASE_TIMING").is_some();
+        let t0 = Instant::now();
         let result = if rules {
             integrate(&ctx, expr, var_sym)
         } else {
             integrate_with_options(&ctx, expr, var_sym, IntegrateOptions { rules: false })
         };
+        if timing {
+            eprintln!("[timing] integrate {:?}", t0.elapsed());
+        }
+        // 0.28.0: every solved case also carries a symbolic-certificate
+        // verdict. The certificate is computed on the *normalized* integrand,
+        // the same form the pipeline integrated.
+        let result_text = result.to_string();
+        let (cert_name, cert_method) = if result_text.contains("Integral(") {
+            ("uncertified", "none")
+        } else {
+            let t1 = Instant::now();
+            let normalized = ocas_atom::normalize::normalize(&ctx, expr);
+            let verdict = ocas_calc::integral::certify::certify(&ctx, normalized, result, var_sym);
+            if timing {
+                eprintln!("[timing] certify {:?}", t1.elapsed());
+            }
+            match verdict {
+                Ok(c) => ("certified", c.method.as_str()),
+                Err(CertDecline::NonZero) => ("failed", "nonzero"),
+                Err(reason) => ("uncertified", reason.as_str()),
+            }
+        };
         let b = bucket(expr);
-        println!("OK\t{b}\t{result}");
+        println!("OK\t{b}\t{result_text}\t{cert_name}\t{cert_method}\t0");
         return;
     }
 
@@ -327,6 +392,14 @@ fn main() {
     let mut verify_indeterminate = 0usize;
     let mut mismatches = 0usize;
     let mut verify_worst = 0.0f64;
+    // 0.28.0 symbolic-certificate counters.
+    let mut certified_solved = 0usize;
+    let mut cert_uncertified = 0usize;
+    let mut cert_failed = 0usize;
+    let mut cert_methods: BTreeMap<&'static str, usize> = BTreeMap::new();
+    let mut cert_declines: BTreeMap<&'static str, usize> = BTreeMap::new();
+    let mut cert_false_positive = 0usize;
+    let mut cert_lines = String::new();
     let mut counts: BTreeMap<&'static str, (usize, usize)> =
         BUCKETS.iter().map(|b| (*b, (0, 0))).collect();
     let mut failure_lines = String::new();
@@ -383,9 +456,38 @@ fn main() {
         let outcome = run_case_in_child(integrand, var, rules_enabled, case_timeout_ms);
         let case_ms = case_start.elapsed().as_millis();
         let (outcome_name, case_bucket) = match outcome {
-            CaseOutcome::Solved(b, ref result) => {
+            CaseOutcome::Solved(b, ref result, cert) => {
                 solved += 1;
                 counts.get_mut(b).unwrap().0 += 1;
+                match cert.name {
+                    "certified" => {
+                        certified_solved += 1;
+                        *cert_methods.entry(cert.method).or_insert(0) += 1;
+                    }
+                    "failed" => {
+                        cert_failed += 1;
+                        *cert_declines.entry(cert.method).or_insert(0) += 1;
+                        cert_lines.push_str(&format!(
+                            "{{\"id\": \"{}\", \"bucket\": \"{b}\", \"class\": \"nonzero-difference\", \
+                             \"integrand\": \"{}\", \"result\": \"{}\"}}\n",
+                            json_escape(id),
+                            json_escape(integrand),
+                            json_escape(result),
+                        ));
+                    }
+                    _ => {
+                        cert_uncertified += 1;
+                        *cert_declines.entry(cert.method).or_insert(0) += 1;
+                        cert_lines.push_str(&format!(
+                            "{{\"id\": \"{}\", \"bucket\": \"{b}\", \"class\": \"uncertified:{}\", \
+                             \"integrand\": \"{}\", \"result\": \"{}\"}}\n",
+                            json_escape(id),
+                            cert.method,
+                            json_escape(integrand),
+                            json_escape(result),
+                        ));
+                    }
+                }
                 if verify_enabled {
                     match verify_case(integrand, var, result) {
                         VerifyClass::Verified(info) => {
@@ -395,6 +497,12 @@ fn main() {
                         VerifyClass::Mismatch(info) => {
                             unverified_solved += 1;
                             mismatches += 1;
+                            if cert.name == "certified" {
+                                // A certificate that passes where the numeric
+                                // oracle disagrees is a certificate false
+                                // positive: the wave's hard red line.
+                                cert_false_positive += 1;
+                            }
                             verified_lines.push_str(&format!(
                                 "{{\"id\": \"{}\", \"bucket\": \"{b}\", \"class\": \"mismatch\", \
                                  \"detail\": \"{}\", \"integrand\": \"{}\", \"result\": \"{}\"}}\n",
@@ -486,6 +594,16 @@ fn main() {
     println!("  crashed:     {crashed}");
     println!("  parse errs:  {parse_errors}");
     println!("  coverage:    {coverage:.2}% ({solved}/{total})");
+    let certified_rate = if solved > 0 {
+        certified_solved as f64 / solved as f64
+    } else {
+        0.0
+    };
+    println!(
+        "  certified:   {certified_solved} / {solved} solved ({:.1}%) \
+         [uncertified {cert_uncertified}, failed {cert_failed}, false positives {cert_false_positive}]",
+        100.0 * certified_rate
+    );
     if verify_enabled {
         println!(
             "  verified:    {verified_solved} / {solved} solved \
@@ -512,6 +630,17 @@ fn main() {
         })
         .collect::<Vec<_>>()
         .join(", ");
+    let cert_methods_obj = cert_methods
+        .iter()
+        .map(|(k, v)| format!("\"{k}\": {v}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let cert_declines_obj = cert_declines
+        .iter()
+        .map(|(k, v)| format!("\"{k}\": {v}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    println!("  cert declines: {cert_declines_obj}");
     let report = format!(
         "{{\n  \"seed\": {},\n  \"n\": {total},\n  \"requested\": {},\n  \"source_url\": {},\n  \
          \"source_sha256\": {},\n  \"digest_matched\": {},\n  \"timestamp\": \"{}\",\n  \
@@ -521,6 +650,11 @@ fn main() {
          \"unverified_solved\": {unverified_solved},\n  \
          \"verify_indeterminate\": {verify_indeterminate},\n  \
          \"verify_mismatches\": {mismatches},\n  \"verify_worst_rel\": {verify_worst},\n  \
+         \"certified_solved\": {certified_solved},\n  \"certified_rate\": {certified_rate},\n  \
+         \"cert_uncertified\": {cert_uncertified},\n  \"cert_failed\": {cert_failed},\n  \
+         \"cert_false_positive\": {cert_false_positive},\n  \
+         \"cert_methods\": {{{cert_methods_obj}}},\n  \
+         \"cert_declines\": {{{cert_declines_obj}}},\n  \
          \"buckets\": {{{buckets_obj}}}\n}}",
         meta.get("seed"),
         meta.get("requested"),
@@ -532,6 +666,12 @@ fn main() {
     let report_path = manifest_dir.join(REPORT_PATH);
     fs::write(&report_path, report).expect("write report json");
     println!("  report:      {}", report_path.display());
+
+    if !cert_lines.is_empty() {
+        let cert_path = manifest_dir.join(CERT_FAILURES_PATH);
+        fs::write(&cert_path, &cert_lines).expect("write certificate triage jsonl");
+        println!("  cert triage: {}", cert_path.display());
+    }
 
     let failures_path = manifest_dir.join(FAILURES_PATH);
     fs::write(&failures_path, failure_lines).expect("write failures jsonl");

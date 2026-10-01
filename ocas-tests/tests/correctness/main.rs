@@ -215,6 +215,7 @@ mod calculus;
 mod evaluation;
 mod finite_field;
 mod groebner;
+mod integral_certify;
 mod integral_risch;
 mod integral_rules;
 mod integral_verify;

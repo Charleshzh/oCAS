@@ -135,7 +135,7 @@ Expression.integrate(var: str) -> Expression
 |---|---|---|
 | `var` | `str` | 积分变量名 |
 
-**返回值**：积分结果表达式。若无法求出闭式解，返回未求值的 `Integral(expr, var)` 形式。
+**返回值**：积分结果表达式。若无法求出闭式解，返回未求值的 `Integral(expr, var)` 形式。**结果未经认证**；需要可机检的证书时用 `integrate_outcome`。
 
 **示例**：
 
@@ -143,6 +143,42 @@ Expression.integrate(var: str) -> Expression
 >>> e = ocas.Expression("x^2")
 >>> print(e.integrate("x"))
 (3^-1)*(x^3)
+```
+
+---
+
+#### Expression.integrate_outcome
+
+```python
+Expression.integrate_outcome(var: str, rules: bool = True) -> dict
+```
+
+认证积分（0.28.0 新增）：结果分三值，`found` 一定带**可机检的符号证书**（`D(F) − f ≡ 0`），`unknown` 诚实返回未求值形式。经精确检查器证伪的结果永远不会以 `found` 返回。
+
+**参数**：
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `var` | `str` | 积分变量名 |
+| `rules` | `bool` | 是否启用规则表引擎（默认 `True`） |
+
+**返回值**：字典，键为：
+
+| 键 | 说明 |
+|---|---|
+| `kind` | `"found"` / `"proved_nonelementary"` / `"unknown"` |
+| `value` | 原函数；`unknown` 时为未求值 `Integral(expr, var)` |
+| `certificate` | 证书层（`"structural"` / `"field"` / `"radical"`），未认证为 `None` |
+| `uncertified` | 管线算出的**未认证**候选（仅诊断用，明确不是答案），没有则为 `None` |
+
+**示例**：
+
+```python
+>>> e = ocas.Expression("2*x")
+>>> e.integrate_outcome("x")["kind"]
+'found'
+>>> ocas.Expression("exp(x^3)").integrate_outcome("x")["kind"]
+'unknown'
 ```
 
 ---

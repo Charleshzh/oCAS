@@ -8,3 +8,4 @@
 pub(crate) mod build;
 pub mod convert;
 pub(crate) mod elem;
+pub(crate) mod merge;

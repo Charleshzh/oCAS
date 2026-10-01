@@ -78,7 +78,9 @@ pub(crate) fn risch_integrate<'a>(
     let _guard = RischDepthGuard;
     let tower = build_tower(ctx, expr, var)?;
     let level = tower.gens.len();
-    let rf = atom_to_rational_extended(expr, &tower.gen_atoms(), tower.n_vars())?;
+    // The tower may have merged dependent generators and rewritten the
+    // integrand over them; the field element must come from that form.
+    let rf = atom_to_rational_extended(tower.expr, &tower.gen_atoms(), tower.n_vars())?;
     let f = KRat::new(
         KPoly::from_sparse(&rf.numerator, level),
         KPoly::from_sparse(&rf.denominator, level),
@@ -89,7 +91,44 @@ pub(crate) fn risch_integrate<'a>(
     let default_rules = default_rules(ctx, &crate::pattern_alloc::VecAlloc);
     let after_default = simplify(ctx, raw, &default_rules, 20);
     let after_calc = simplify(ctx, after_default, &calc_rules, 10);
-    Some(normalize(ctx, after_calc))
+    let answer = normalize(ctx, after_calc);
+    // 0.28.0: never emit a result the exact checker can falsify.
+    //
+    // The check is done **inside the tower's own field**: the generators are
+    // independent by construction (the dependency merge in `tower::build`
+    // makes sure of it), so `D(F) − f` converting to a nonzero field element
+    // is a real wrong answer, not a prover gap. Measured: the exp-level
+    // rational part mis-scales negative powers, and
+    // `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx` came out wrong by a factor of 2 and
+    // 4/3 on its `t⁻²`/`t⁻⁴` terms — a latent solver bug that the hyperbolic
+    // front-end made reachable from the corpus. Declining keeps the engine's
+    // hard invariant ("no uncertified answer") while the solver bug is fixed
+    // separately. When the difference cannot even be converted (no such
+    // shape is known for a tower result), the answer is accepted as before.
+    let verified = tower_difference_is_zero(ctx, answer, tower.expr, var, &tower);
+    if verified == Some(false) {
+        return None;
+    }
+    Some(answer)
+}
+
+/// Whether `D(answer) − integrand` is exactly zero in the tower field.
+///
+/// `None` when the difference is not a rational function of the tower
+/// generators (the caller then accepts the answer, as before).
+fn tower_difference_is_zero<'a>(
+    ctx: &'a AtomArena<'a>,
+    answer: Atom<'a>,
+    integrand: Atom<'a>,
+    var: Symbol,
+    tower: &Tower<'a>,
+) -> Option<bool> {
+    let derived = crate::derivative::diff(ctx, answer, var);
+    let minus_one = ctx.num(-1);
+    let difference = ctx.add(&[derived, ctx.mul(&[minus_one, integrand])]);
+    let gens = tower.gen_atoms();
+    let element = atom_to_rational_extended(difference, &gens, tower.n_vars())?;
+    Some(element.numerator.n_terms() == 0)
 }
 
 // ------------------------------------------------------------------

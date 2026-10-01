@@ -2,23 +2,27 @@
 //!
 //! [`build_tower`] inspects an integrand and builds the differential field
 //! tower `ℚ(x, t₁, …, tₙ)` in which it lives, where each `tᵢ` is a
-//! logarithm or exponential over the field below. It also computes the
-//! derivative of each generator, which the Risch algorithm needs.
+//! logarithm, an exponential, or a constant over the field below. It also
+//! computes the derivative of each generator, which the Risch algorithm
+//! needs, and returns the integrand rewritten over the merged generators.
 //!
 //! Limitations (the caller falls back to other integrators):
 //!
 //! - only `log` / `exp` function applications are admitted (trigonometric
 //!   integrands are rewritten into exponentials before this entry point);
 //! - algebraic functions such as `√x` (non-integer exponents) are
-//!   rejected;
-//! - algebraically dependent generators (e.g. `log(x)` and `log(2x)`, or
-//!   `exp(x)` and `exp(x+1)`) are rejected rather than merged.
+//!   rejected.
+//!
+//! Algebraically dependent generators (`log(x)` with `log(2x)`, `exp(x)`
+//! with `exp(x+1)`, `exp(u)` with `exp(−u)`) are **merged** rather than
+//! rejected since 0.28.0 — see [`super::merge`].
 
 use ocas_atom::walk::collect_funs;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
 
 use super::convert::atom_to_rational_extended;
 use super::elem::{KElem, KPoly};
+use super::merge;
 
 /// Kind of a tower generator.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -45,6 +49,8 @@ pub(crate) struct GenInfo<'a> {
 pub(crate) struct Tower<'a> {
     /// Integration variable atom.
     pub x: Atom<'a>,
+    /// The integrand rewritten over the merged generators.
+    pub expr: Atom<'a>,
     /// Generators from bottom to top; `gens[i]` ↔ variable index `i + 1`.
     pub gens: Vec<GenInfo<'a>>,
 }
@@ -90,54 +96,85 @@ pub(crate) fn tower_diff_kpoly(p: &KPoly, gens: &[GenInfo], dt_top: &KElem) -> K
 /// Build the extension tower for `expr` over the integration variable
 /// `var`, or `None` when the expression is not elementary-admissible (see
 /// module docs).
+///
+/// 0.28.0: algebraically dependent generators are **merged** rather than
+/// rejected (see [`super::merge`]); the tower carries the rewritten
+/// integrand in [`Tower::expr`], which is the form the caller must convert
+/// into the field.
 pub(crate) fn build_tower<'a>(
-    _ctx: &'a AtomArena<'a>,
+    ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Tower<'a>> {
-    let x = _ctx.var(var.as_str());
+    let x = ctx.var(var.as_str());
     if !only_integer_powers(expr) {
         return None;
     }
 
-    // Pass 1: collect and validate generators (innermost first).
+    // Pass 1: collect and merge generators (innermost first).
     let mut gens: Vec<GenInfo<'a>> = Vec::new();
-    // The imaginary unit, when present, becomes a constant generator.
+    // Expressions carrying the imaginary unit (the trigonometric rewrite's
+    // exponential form) are still rejected: the constant generator `I` is
+    // accepted by this pass but its tower then unlocks the trig-exp Risch
+    // path, which returns `exp(I·…)` partial results for shapes the
+    // trigonometric mechanisms solve in real form (measured 0.28.0: the
+    // `rules`/`trig_kernel` real-form regression suites fail once it is
+    // enabled). Enabling it needs a realification pass of its own and is
+    // recorded as a follow-up, not part of this wave.
     if contains_var(expr, "I") {
-        gens.push(GenInfo {
-            kind: GenKind::Constant,
-            atom: _ctx.var("I"),
-            arg: _ctx.var("I"),
-            dt: KElem::zero(0),
-        });
+        return None;
     }
-    for (name, app) in collect_funs(expr) {
-        let kind = match name.as_str() {
-            "log" => GenKind::Log,
-            "exp" => GenKind::Exp,
-            _ => return None,
-        };
-        let args = app.children();
-        if args.len() != 1 {
-            return None;
-        }
-        let arg = args[0];
-        if is_rational_constant(arg) {
-            // log/exp of a constant should be a plain number; not a tower.
-            return None;
-        }
-        for g in &gens {
-            if algebraically_dependent(kind, arg, g) {
+    let mut current = expr;
+    loop {
+        let mut rewritten = false;
+        for (name, app) in collect_funs(current) {
+            // Already a generator, including the constant atoms a previous
+            // merge introduced.
+            if gens.iter().any(|g| g.atom == app) {
+                continue;
+            }
+            let kind = match name.as_str() {
+                "log" => GenKind::Log,
+                "exp" => GenKind::Exp,
+                _ => return None,
+            };
+            let args = app.children();
+            if args.len() != 1 {
                 return None;
             }
+            let arg = args[0];
+            if let Some(merge) = merge::merge_candidate(ctx, kind, arg, app, &gens, var) {
+                if let Some(constant) = merge.constant
+                    && !gens.iter().any(|g| g.atom == constant)
+                {
+                    gens.push(GenInfo {
+                        kind: GenKind::Constant,
+                        atom: constant,
+                        arg: constant,
+                        dt: KElem::zero(0),
+                    });
+                }
+                current = merge::substitute_atom(ctx, current, app, merge.replacement);
+                rewritten = true;
+                // The rewrite may have introduced new function atoms;
+                // rescan from the top.
+                break;
+            }
+            // `log`/`exp` of a numeric constant should be a plain number.
+            if is_rational_constant(arg) {
+                return None;
+            }
+            gens.push(GenInfo {
+                kind,
+                atom: app,
+                arg,
+                // Filled in during pass 2; placeholder is never read before then.
+                dt: KElem::zero(0),
+            });
         }
-        gens.push(GenInfo {
-            kind,
-            atom: app,
-            arg,
-            // Filled in during pass 2; placeholder is never read before then.
-            dt: KElem::zero(0),
-        });
+        if !rewritten {
+            break;
+        }
     }
 
     // Pass 2: derivatives with the final variable count.
@@ -145,6 +182,13 @@ pub(crate) fn build_tower<'a>(
     for i in 0..gens.len() {
         let (done, rest) = gens.split_at_mut(i);
         let g = &mut rest[0];
+        if g.kind == GenKind::Constant {
+            // Constant generators (`I`, `log(2)`, `exp(1)`, …) are
+            // `D t = 0` without any argument conversion: their argument may
+            // not even live in the field below.
+            g.dt = KElem::zero(n);
+            continue;
+        }
         let mut prefix_atoms = Vec::with_capacity(i + 1);
         prefix_atoms.push(x);
         prefix_atoms.extend(done.iter().map(|d| d.atom));
@@ -158,7 +202,11 @@ pub(crate) fn build_tower<'a>(
         };
     }
 
-    Some(Tower { x, gens })
+    Some(Tower {
+        x,
+        expr: current,
+        gens,
+    })
 }
 
 /// Whether `atom` is a rational constant (contains no variables at all).
@@ -187,124 +235,6 @@ fn only_integer_powers(atom: Atom) -> bool {
         return ok && only_integer_powers(base) && only_integer_powers(exp);
     }
     atom.children().iter().all(|c| only_integer_powers(*c))
-}
-
-/// Conservative algebraic-dependence check between a candidate generator
-/// `(kind, arg)` and an existing one.
-fn algebraically_dependent(kind: GenKind, arg: Atom, existing: &GenInfo) -> bool {
-    // log(exp(v)) or exp(log(v)) collapse to v.
-    if arg == existing.atom {
-        return true;
-    }
-    let u = arg;
-    let v = existing.arg;
-    match (kind, existing.kind) {
-        (GenKind::Log, GenKind::Log) => {
-            // log(u) ∓ log(v) constant  ⟺  u/v or u·v constant.
-            let ratio = is_rational_constant_div(u, v);
-            let product = is_rational_constant_mul(u, v);
-            // u = v^k or v = u^k for small integer k (e.g. log(x^2)).
-            let powers = [2, 3, -2, -3]
-                .iter()
-                .any(|&k| pow_int_eq(u, v, k) || pow_int_eq(v, u, k));
-            ratio || product || powers
-        }
-        (GenKind::Exp, GenKind::Exp) => {
-            // exp(u)/exp(v) constant  ⟺  u - v constant.
-            // exp(u)·exp(v) constant  ⟺  u + v constant (reciprocal pair).
-            is_rational_constant_sub(u, v) || is_rational_constant_sum(u, v)
-        }
-        _ => false,
-    }
-}
-
-/// Whether `u + v` is a rational constant, i.e. `u = -v + c`.
-fn is_rational_constant_sum(u: Atom, v: Atom) -> bool {
-    // Direct negation: u == -v (encoded as Mul with a -1 factor).
-    if let AtomNode::Mul(factors) = u.node()
-        && factors.len() == 2
-        && matches!(factors[0].node(), AtomNode::Num(-1))
-        && factors[1] == v
-    {
-        return true;
-    }
-    if let AtomNode::Mul(factors) = v.node()
-        && factors.len() == 2
-        && matches!(factors[0].node(), AtomNode::Num(-1))
-        && factors[1] == u
-    {
-        return true;
-    }
-    // u = -v + c via Add shape: u = (-v) + c or v = (-u) + c.
-    match u.node() {
-        AtomNode::Add(args) if args.len() == 2 => {
-            let neg_v = matches!(args[0].node(), AtomNode::Mul(f)
-                if f.len() == 2 && matches!(f[0].node(), AtomNode::Num(-1)) && f[1] == v);
-            if (neg_v && is_rational_constant(args[1]))
-                || (args[0] == v && is_rational_constant(args[1]))
-            {
-                return true;
-            }
-        }
-        _ => {}
-    }
-    false
-}
-
-// The dependence helpers below work on raw atoms; constant detection uses
-// the rational converter with zero generators.
-
-fn is_rational_constant_div(u: Atom, v: Atom) -> bool {
-    // u/v — build via raw node inspection instead of an arena: walk both.
-    // We cannot construct new atoms here (no ctx), so compare structurally:
-    // u/v constant ⇔ u = c·v for a rational c — check via Mul shape.
-    structurally_proportional(u, v)
-}
-
-fn is_rational_constant_mul(u: Atom, v: Atom) -> bool {
-    // u·v constant ⇔ u = c/v — only cheap to detect when v = 1/w and
-    // u = c·w; covered by structural proportionality on inverses.
-    matches!(v.node(), AtomNode::Pow(b, e) if matches!(e.node(), AtomNode::Num(-1)) && structurally_proportional(u, *b))
-}
-
-fn is_rational_constant_sub(u: Atom, v: Atom) -> bool {
-    // u - v constant ⇔ u = v + c. Detect via Add shape: (v + c) or (c + v).
-    match u.node() {
-        AtomNode::Add(args) if args.len() == 2 => {
-            (args[0] == v && is_rational_constant(args[1]))
-                || (args[1] == v && is_rational_constant(args[0]))
-        }
-        _ => false,
-    }
-}
-
-/// Whether `u == v^k` structurally for integer `k` (hash-consed equality).
-fn pow_int_eq(u: Atom, v: Atom, k: i64) -> bool {
-    matches!(u.node(), AtomNode::Pow(b, e) if *b == v && matches!(e.node(), AtomNode::Num(n) if *n == k))
-}
-
-/// Whether `u = c·v` for a rational constant `c` (allowing an extra
-/// constant factor on either side).
-fn structurally_proportional(u: Atom, v: Atom) -> bool {
-    if u == v {
-        return true;
-    }
-    strip_const_factor(u) == Some(v) || strip_const_factor(v) == Some(u)
-}
-
-/// If `atom` is `c·w` with `c` a rational constant, return `w`.
-fn strip_const_factor(atom: Atom) -> Option<Atom> {
-    if let AtomNode::Mul(args) = atom.node()
-        && args.len() == 2
-    {
-        if is_rational_constant(args[0]) {
-            return Some(args[1]);
-        }
-        if is_rational_constant(args[1]) {
-            return Some(args[0]);
-        }
-    }
-    None
 }
 
 #[cfg(test)]
@@ -353,16 +283,24 @@ mod tests {
     }
 
     #[test]
-    fn tower_rejects_dependent_logs() {
+    fn tower_merges_dependent_logs() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
-        // log(x) + log(2x): algebraically dependent.
+        // log(x) + log(2x): dependent. 0.28.0 merges log(2x) into
+        // log(x) + log(2), with `log(2)` a new constant generator.
         let expr = ctx.add(&[
             ctx.fun("log", &[x]),
             ctx.fun("log", &[ctx.mul(&[ctx.num(2), x])]),
         ]);
-        assert!(build_tower(&ctx, expr, sym("x")).is_none());
+        let tower = build_tower(&ctx, expr, sym("x")).expect("tower");
+        assert_eq!(tower.gens.len(), 2);
+        assert_eq!(tower.gens[0].kind, GenKind::Log);
+        assert_eq!(tower.gens[1].kind, GenKind::Constant);
+        assert_eq!(tower.gens[1].atom.to_string(), "log(2)");
+        assert!(tower.gens[1].dt.is_zero());
+        // The integrand is rewritten over the merged generators.
+        assert_eq!(tower.expr.to_string(), "(log(x)) + ((log(x)) + (log(2)))");
     }
 
     #[test]
@@ -380,16 +318,36 @@ mod tests {
     }
 
     #[test]
-    fn tower_rejects_dependent_exps() {
+    fn tower_merges_reciprocal_exponentials() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
-        // exp(x)·exp(x+1): dependent (ratio e).
+        // exp(x)·exp(−x) = 1: the hyperbolic rewrites produce this pair.
+        let expr = ctx.mul(&[
+            ctx.fun("exp", &[x]),
+            ctx.fun("exp", &[ctx.mul(&[ctx.num(-1), x])]),
+        ]);
+        let tower = build_tower(&ctx, expr, sym("x")).expect("tower");
+        assert_eq!(tower.gens.len(), 1);
+        assert_eq!(tower.gens[0].kind, GenKind::Exp);
+        assert_eq!(tower.expr.to_string(), "(exp(x))*((exp(x))^-1)");
+    }
+
+    #[test]
+    fn tower_merges_shifted_exponentials() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // exp(x)·exp(x+1): dependent (ratio e). 0.28.0 merges the shifted
+        // generator with `exp(1)` as a constant generator.
         let expr = ctx.mul(&[
             ctx.fun("exp", &[x]),
             ctx.fun("exp", &[ctx.add(&[x, ctx.num(1)])]),
         ]);
-        assert!(build_tower(&ctx, expr, sym("x")).is_none());
+        let tower = build_tower(&ctx, expr, sym("x")).expect("tower");
+        assert_eq!(tower.gens.len(), 2);
+        assert_eq!(tower.gens[1].kind, GenKind::Constant);
+        assert_eq!(tower.gens[1].atom.to_string(), "exp(1)");
     }
 
     #[test]
@@ -409,6 +367,20 @@ mod tests {
         let ctx = AtomArena::new(&arena);
         let x = ctx.var("x");
         let expr = ctx.add(&[ctx.fun("log", &[ctx.num(3)]), x]);
+        assert!(build_tower(&ctx, expr, sym("x")).is_none());
+    }
+
+    #[test]
+    fn tower_rejects_the_imaginary_unit_for_now() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // exp(I·x) — the trigonometric rewrite's exponential form. The
+        // constant generator `I` is deliberately still rejected (0.27.3
+        // behaviour): unlocking it also unlocks the trig-exp Risch path,
+        // whose `exp(I·…)` answers regress the real-form suites. The merge
+        // machinery below is covered by the exponential/log tests instead.
+        let expr = ctx.fun("exp", &[ctx.mul(&[ctx.var("I"), x])]);
         assert!(build_tower(&ctx, expr, sym("x")).is_none());
     }
 

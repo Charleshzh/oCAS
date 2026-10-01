@@ -104,6 +104,54 @@ let result = diff(&ctx, f, Symbol::new("x"));
 
 ---
 
+## `integrate_outcome`
+
+**签名**（0.28.0 新增）：
+
+```rust
+pub fn integrate_outcome<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Outcome<'a>
+pub fn integrate_outcome_with_options<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+    options: IntegrateOptions,
+) -> Outcome<'a>
+```
+
+**功能**：认证积分。返回三值 [`Outcome`]：
+
+| 取值 | 说明 |
+|---|---|
+| `Found { value, certificate }` | 原函数 + 可机检的符号证书（精确检查器中 `D(F) − f ≡ 0`） |
+| `ProvedNonElementary { witness }` | 已证明非初等；0.28.0 **无生产者**（变体为后续非初等层预留） |
+| `Unknown { residue, uncertified }` | 诚实未知：`residue` 是 `Integral(f, var)`；`uncertified` 是管线候选，**不是答案**，仅供诊断 |
+
+被精确检查器证伪的结果永远不会以 `Found` 返回（Risch 结果还会在塔自身的域内二次校验）。
+
+**示例**：
+
+```rust
+use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&arena);
+let x = ctx.var("x");
+let two_x = ctx.mul(&[ctx.num(2), x]);
+let outcome = integrate_outcome(&ctx, two_x, Symbol::new("x"));
+assert!(outcome.is_found());
+println!("{}", outcome.value());          // (2^-1)*(x^2)
+println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
+```
+
+**参见**：[integrate](#integrate)、[`Certificate`]、[`CertDecline`]
+
+---
+
 ## `integrate`
 
 **签名**：
@@ -113,6 +161,9 @@ pub fn integrate<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Ato
 ```
 
 **功能**：对 `expr` 关于 `var` 求符号积分。使用分层积分管线，逐层尝试不同算法。
+
+> **0.28.0**：返回的结果**未经认证**（可能是管线候选）。需要「原函数 + 可机检符号证书」时用
+> [`integrate_outcome`](#integrate_outcome)。
 
 **参数**：
 

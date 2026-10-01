@@ -1365,6 +1365,15 @@ A4 regression guard from "must leave a residue" to "if solved, verify the deriva
 below 60 net**, so by this document's literal rule **the 0.27 line is frozen and 0.28.0 is
 the next active line**; 0.27.3 is the last release of the 0.27 series.
 
+**0.28.0 measured (2026-09-13)**: the P0 planned here shipped as ROADMAP §0.28.0 and was
+re-measured on the full 1892-problem corpus: solved 370 → **371**, verified 343/371,
+`verify_mismatches = 0`, timeouts 12 (flat), crashes 0, wall clock 461.2 → **433.7 s (−6.0%)**,
+per-case diff **+1 newly solved (`rubi-00638`) / 0 regressed**. Four acceptance lines were missed
+and are recorded honestly: `certified_rate = 28.8%` (target 1.0), residue resolution net +1
+(target +4), hyperbolic family +0 (the front-end is disabled for its wall-clock cost), and the
+certificate coverage capped by the `budget` gate. The wave also caught and contained a latent
+wrong answer (exp-level rational-part coefficient scaling) and opened three follow-up items.
+
 **Risks (backfilled with what actually happened)**
 
 - Elliptic domain/branch handling is the new hard part → happened: only the affine-argument

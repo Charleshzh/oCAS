@@ -26,6 +26,9 @@ mod rules;
 
 pub use derivative::diff;
 pub use integral::IntegrateOptions;
+pub use integral::outcome::{
+    NonElementaryWitness, Outcome, integrate_outcome, integrate_outcome_with_options,
+};
 pub use integral::{integrate, integrate_heuristic, integrate_with_fuel, integrate_with_options};
 pub use partial_fraction::apart;
 pub use series::{substitute, taylor};
