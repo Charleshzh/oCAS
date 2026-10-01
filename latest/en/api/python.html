@@ -266,11 +266,37 @@ True
 <tr><td><code>var</code></td><td><code>str</code></td><td>The integration variable</td></tr>
 </tbody></table>
 </div>
-<p><strong>Returns</strong>: the resulting expression. If no closed form can be found, returns the unevaluated <code>Integral(expr, var)</code> form.</p>
+<p><strong>Returns</strong>: the resulting expression. If no closed form can be found, returns the unevaluated <code>Integral(expr, var)</code> form. The result is <strong>not certified</strong>; use <code>integrate_outcome</code> when a machine-checkable certificate is required.</p>
 <p><strong>Example</strong>:</p>
 <pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2")
 &gt;&gt;&gt; print(e.integrate("x"))
 (3^-1)*(x^3)
+</code></pre>
+<hr />
+<h4 id="expressionintegrate_outcome"><a class="header" href="#expressionintegrate_outcome">Expression.integrate_outcome</a></h4>
+<pre><code class="language-python">Expression.integrate_outcome(var: str, rules: bool = True) -&gt; dict
+</code></pre>
+<p>Certified integration (new in 0.28.0): the result is three-valued. <code>found</code> always carries a machine-checkable symbolic certificate (<code>D(F) − f ≡ 0</code>), while <code>unknown</code> honestly returns the unevaluated form. A result the exact checker falsifies is never returned as <code>found</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The integration variable</td></tr>
+<tr><td><code>rules</code></td><td><code>bool</code></td><td>Whether the rule-table engine is enabled (default <code>True</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a dict with the keys:</p>
+<div class="table-wrapper"><table><thead><tr><th>Key</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>"found"</code> / <code>"proved_nonelementary"</code> / <code>"unknown"</code></td></tr>
+<tr><td><code>value</code></td><td>The antiderivative, or the unevaluated <code>Integral(expr, var)</code> form when <code>unknown</code></td></tr>
+<tr><td><code>certificate</code></td><td>The certificate layer (<code>"structural"</code> / <code>"field"</code> / <code>"radical"</code>), <code>None</code> when uncertified</td></tr>
+<tr><td><code>uncertified</code></td><td>The pipeline's <strong>uncertified</strong> candidate (diagnostics only — explicitly not an answer), <code>None</code> when absent</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("2*x")
+&gt;&gt;&gt; e.integrate_outcome("x")["kind"]
+'found'
+&gt;&gt;&gt; ocas.Expression("exp(x^3)").integrate_outcome("x")["kind"]
+'unknown'
 </code></pre>
 <hr />
 <h4 id="expressionintegrate_heuristic"><a class="header" href="#expressionintegrate_heuristic">Expression.integrate_heuristic</a></h4>

@@ -277,6 +277,11 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 </span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
 <span class="boring">}</span></code></pre></pre>
 <p><strong>Description</strong>: computes the symbolic integral of <code>expr</code> with respect to <code>var</code>. Uses a layered integration pipeline that tries different algorithms layer by layer.</p>
+<blockquote>
+<p><strong>0.28.0</strong>: the returned result is <strong>not certified</strong> (it may be a pipeline candidate). Use
+<a href="#integrate_outcome"><code>integrate_outcome</code></a> when you need an antiderivative <em>with</em> a
+machine-checkable symbolic certificate.</p>
+</blockquote>
 <p><strong>Parameters</strong>:</p>
 <div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
@@ -434,6 +439,48 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 // result is Integral(my_func(x), x)
 <span class="boring">}</span></code></pre></pre>
 <p><strong>See also</strong>: <a href="#integrate_heuristic">integrate_heuristic</a>, <a href="#integrate_with_fuel">integrate_with_fuel</a>, <a href="#rational-function-integration">rational function integration</a>, <a href="#risch-algorithm">Risch algorithm</a></p>
+<hr />
+<h2 id="integrate_outcome"><a class="header" href="#integrate_outcome"><code>integrate_outcome</code></a></h2>
+<p><strong>Signature</strong> (new in 0.28.0):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_outcome&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+) -&gt; Outcome&lt;'a&gt;
+pub fn integrate_outcome_with_options&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    options: IntegrateOptions,
+) -&gt; Outcome&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: certified integration. Returns the three-valued [<code>Outcome</code>]:</p>
+<div class="table-wrapper"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>An antiderivative with a machine-checkable symbolic certificate (<code>D(F) − f ≡ 0</code> in the exact checker)</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>Proved non-elementary; <strong>no producer</strong> in 0.28.0 (the variant is reserved for the non-elementary layer)</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>Honest "I do not know": <code>residue</code> is <code>Integral(f, var)</code>; <code>uncertified</code> is the pipeline's candidate, <strong>not an answer</strong>, diagnostics only</td></tr>
+</tbody></table>
+</div>
+<p>A result the exact checker falsifies is never returned as <code>Found</code> (and every Risch result is
+additionally verified inside the tower's own field).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let two_x = ctx.mul(&amp;[ctx.num(2), x]);
+let outcome = integrate_outcome(&amp;ctx, two_x, Symbol::new("x"));
+assert!(outcome.is_found());
+println!("{}", outcome.value());          // (2^-1)*(x^2)
+println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#integrate">integrate</a>, [<code>Certificate</code>], [<code>CertDecline</code>]</p>
 <hr />
 <h2 id="integrate_heuristic"><a class="header" href="#integrate_heuristic"><code>integrate_heuristic</code></a></h2>
 <p><strong>Signature</strong>:</p>

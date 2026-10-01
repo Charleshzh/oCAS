@@ -216,6 +216,7 @@
 <tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>积分广度机制攻坚：Chebyshev 二项微分、三角分母幂递推、exp-log 核代换、一般二次根式引擎 + Euler III、反三角核、单三角核有理式；覆盖率 9.62% → 16.44%；修复两组错案</td></tr>
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>已验证覆盖率口径（独立数值 oracle：5 点中心差分 + 椭圆定义积分）、阶段打点与 33 例悬挂归因、确定性阶段预算、有界展开预通道、双曲闭式族、有理导数核代换、三角相位归一、逆函数复合消去、<code>exp(逆函数)</code> 代数化、半幂前端 + 椭圆 Legendre 约化（<code>EllipticF/E</code>）；修复六组错案（已验证覆盖率 93.1%、mismatches 0、超时 33 → 13、墙钟 −22%）</td></tr>
 <tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27 线收尾：特殊函数导数表 + oracle 扩头（<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel）、特殊函数归约族（多项式 × <code>F</code>、<code>Ei(n,·)</code>、<code>F/xᵐ</code>、<code>F²</code>）、精确线性平方折叠 <code>p²+2pq+q² → (p+q)²</code>、半幂前端仿射变元与两支片层因子；Rubi 覆盖率 18.45% → 19.56%（新解 21、回归 0、mismatches 0、超时 13 → 12）</td></tr>
+<tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>积分机制正确性地基：符号证书引擎（结构/初等域 + <code>I² = −1</code> 约化 + 依赖原子合并，确定性预算）、三值 <code>Outcome</code> 与 <code>integrate_outcome</code>（Python/C 同步暴露）、表达式级循环检测（预算感知入口键 + 独立残项预算）、正则塔依赖生成元合并、Risch 结果塔内精确校验（抓到并兜住一个潜伏错案）、双曲前端因墙钟代价默认关闭；Rubi 覆盖率 19.56% → 19.61%（371 solved，+1 新解 0 回归），mismatches 0，超时 12 持平，墙钟 −6.0%；<code>certified_rate = 28.8%</code>（目标 1.0 未达，如实记录）</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -308,7 +309,7 @@
 <li><strong>数论</strong> —— BPSW 素性判定、整数分解（试除/Pollard rho/p−1/p+1/ECM）、离散对数（BSGS + Pohlig–Hellman）、Euler φ / Möbius / 除数函数。</li>
 <li><strong>重写与化简</strong> —— AC 回溯模式匹配、通配符（<code>x__</code>/<code>x___</code>）、不动点化简、fuel 受限化简、可选 egg e-graph 等式饱和。</li>
 <li><strong>三语言绑定</strong> —— Rust prelude API、Python（PyO3，25 类 + 32 函数）、C/C++（cbindgen，91 个导出 + RAII 包装）。</li>
-<li><strong>正确性框架</strong> —— 与 SymPy、SageMath、Symbolica 跨多个数学模块的交叉验证（1516 个 <code>#[test]</code>/<code>#[tokio::test]</code> 标注，截至 0.27.3）。</li>
+<li><strong>正确性框架</strong> —— 与 SymPy、SageMath、Symbolica 跨多个数学模块的交叉验证（1550 个 <code>#[test]</code>/<code>#[tokio::test]</code> 标注，截至 0.28.0）。</li>
 <li><strong>可选数值后端</strong> —— GMP/MPFR/FLINT 隐藏在 feature flag 后，GPL 后端隔离在 <code>ocas-gpl</code>。</li>
 </ul>
 <hr />
@@ -332,7 +333,7 @@
 </div>
 <hr />
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.27.3</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.28.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
 <p>本章帮助你在 5 分钟内完成 oCAS 的安装与首次运行。oCAS 0.24 支持 <strong>Rust</strong>、<strong>Python</strong> 和 <strong>C/C++</strong> 三种语言接口。</p>
@@ -910,6 +911,8 @@ maturin develop --release -m ocas-py/Cargo.toml
 <div class="table-wrapper"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody>
 <tr><td><code>diff</code></td><td>fn</td><td>符号微分</td></tr>
 <tr><td><code>integrate</code></td><td>fn</td><td>符号积分（分层管线）</td></tr>
+<tr><td><code>integrate_outcome</code></td><td>fn</td><td>认证积分：三值输出 + 符号证书（0.28.0）</td></tr>
+<tr><td><code>integrate_outcome_with_options</code></td><td>fn</td><td>带选项的认证积分（0.28.0）</td></tr>
 <tr><td><code>integrate_heuristic</code></td><td>fn</td><td>启发式积分（不含 Risch）</td></tr>
 <tr><td><code>integrate_with_fuel</code></td><td>fn</td><td>带燃料限制的积分</td></tr>
 <tr><td><code>taylor</code></td><td>fn</td><td>Taylor 展开</td></tr>
@@ -5274,6 +5277,47 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
 <p><strong>参见</strong>：<a href="api/rust-calculus.html#taylor">taylor</a>、<a href="api/rust-calculus.html#integrate">integrate</a></p>
 <hr />
+<h2 id="integrate_outcome"><a class="header" href="#integrate_outcome"><code>integrate_outcome</code></a></h2>
+<p><strong>签名</strong>（0.28.0 新增）：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_outcome&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+) -&gt; Outcome&lt;'a&gt;
+pub fn integrate_outcome_with_options&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    options: IntegrateOptions,
+) -&gt; Outcome&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：认证积分。返回三值 [<code>Outcome</code>]：</p>
+<div class="table-wrapper"><table><thead><tr><th>取值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>原函数 + 可机检的符号证书（精确检查器中 <code>D(F) − f ≡ 0</code>）</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>已证明非初等；0.28.0 <strong>无生产者</strong>（变体为后续非初等层预留）</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>诚实未知：<code>residue</code> 是 <code>Integral(f, var)</code>；<code>uncertified</code> 是管线候选，<strong>不是答案</strong>，仅供诊断</td></tr>
+</tbody></table>
+</div>
+<p>被精确检查器证伪的结果永远不会以 <code>Found</code> 返回（Risch 结果还会在塔自身的域内二次校验）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let two_x = ctx.mul(&amp;[ctx.num(2), x]);
+let outcome = integrate_outcome(&amp;ctx, two_x, Symbol::new("x"));
+assert!(outcome.is_found());
+println!("{}", outcome.value());          // (2^-1)*(x^2)
+println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="api/rust-calculus.html#integrate">integrate</a>、[<code>Certificate</code>]、[<code>CertDecline</code>]</p>
+<hr />
 <h2 id="integrate"><a class="header" href="#integrate"><code>integrate</code></a></h2>
 <p><strong>签名</strong>：</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -5281,6 +5325,10 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 </span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
 <span class="boring">}</span></code></pre></pre>
 <p><strong>功能</strong>：对 <code>expr</code> 关于 <code>var</code> 求符号积分。使用分层积分管线，逐层尝试不同算法。</p>
+<blockquote>
+<p><strong>0.28.0</strong>：返回的结果<strong>未经认证</strong>（可能是管线候选）。需要「原函数 + 可机检符号证书」时用
+<a href="api/rust-calculus.html#integrate_outcome"><code>integrate_outcome</code></a>。</p>
+</blockquote>
 <p><strong>参数</strong>：</p>
 <div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
 <tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
@@ -13324,11 +13372,37 @@ True
 <tr><td><code>var</code></td><td><code>str</code></td><td>积分变量名</td></tr>
 </tbody></table>
 </div>
-<p><strong>返回值</strong>：积分结果表达式。若无法求出闭式解，返回未求值的 <code>Integral(expr, var)</code> 形式。</p>
+<p><strong>返回值</strong>：积分结果表达式。若无法求出闭式解，返回未求值的 <code>Integral(expr, var)</code> 形式。<strong>结果未经认证</strong>；需要可机检的证书时用 <code>integrate_outcome</code>。</p>
 <p><strong>示例</strong>：</p>
 <pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2")
 &gt;&gt;&gt; print(e.integrate("x"))
 (3^-1)*(x^3)
+</code></pre>
+<hr />
+<h4 id="expressionintegrate_outcome"><a class="header" href="#expressionintegrate_outcome">Expression.integrate_outcome</a></h4>
+<pre><code class="language-python">Expression.integrate_outcome(var: str, rules: bool = True) -&gt; dict
+</code></pre>
+<p>认证积分（0.28.0 新增）：结果分三值，<code>found</code> 一定带<strong>可机检的符号证书</strong>（<code>D(F) − f ≡ 0</code>），<code>unknown</code> 诚实返回未求值形式。经精确检查器证伪的结果永远不会以 <code>found</code> 返回。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>积分变量名</td></tr>
+<tr><td><code>rules</code></td><td><code>bool</code></td><td>是否启用规则表引擎（默认 <code>True</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：字典，键为：</p>
+<div class="table-wrapper"><table><thead><tr><th>键</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>"found"</code> / <code>"proved_nonelementary"</code> / <code>"unknown"</code></td></tr>
+<tr><td><code>value</code></td><td>原函数；<code>unknown</code> 时为未求值 <code>Integral(expr, var)</code></td></tr>
+<tr><td><code>certificate</code></td><td>证书层（<code>"structural"</code> / <code>"field"</code> / <code>"radical"</code>），未认证为 <code>None</code></td></tr>
+<tr><td><code>uncertified</code></td><td>管线算出的<strong>未认证</strong>候选（仅诊断用，明确不是答案），没有则为 <code>None</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("2*x")
+&gt;&gt;&gt; e.integrate_outcome("x")["kind"]
+'found'
+&gt;&gt;&gt; ocas.Expression("exp(x^3)").integrate_outcome("x")["kind"]
+'unknown'
 </code></pre>
 <hr />
 <h4 id="expressionintegrate_heuristic"><a class="header" href="#expressionintegrate_heuristic">Expression.integrate_heuristic</a></h4>
@@ -15142,7 +15216,7 @@ ocas_expr_free(e);
 <p><strong>签名</strong>：</p>
 <pre><code class="language-c">OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
 </code></pre>
-<p><strong>功能</strong>：对表达式关于变量 <code>var</code> 积分。若无法解析求解，返回未求值形式 <code>Integral(expr, var)</code>。</p>
+<p><strong>功能</strong>：对表达式关于变量 <code>var</code> 积分。若无法解析求解，返回未求值形式 <code>Integral(expr, var)</code>。<strong>结果未经认证</strong>；需要可机检证书时用 <code>ocas_expr_integrate_outcome</code>。</p>
 <p><strong>参数</strong>：同 <code>ocas_expr_diff</code>。</p>
 <p><strong>返回值</strong>：积分表达式句柄或 <code>NULL</code>。</p>
 <p><strong>示例</strong>：</p>
@@ -15153,6 +15227,34 @@ printf("∫ = %s\n", s);  // 输出：3*(3^-1)*(x^3)
 ocas_string_free(s);
 ocas_expr_free(ie);
 ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_integrate_outcome"><a class="header" href="#ocas_expr_integrate_outcome"><code>ocas_expr_integrate_outcome</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_integrate_outcome(const OcasExpr *handle, const char *var,
+                                      int *outcome_out, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：认证积分（0.28.0 新增）。<code>*outcome_out</code> 取 <code>ocas_OCAS_INTEGRATION_FOUND</code>、
+<code>ocas_OCAS_INTEGRATION_PROVED_NONELEMENTARY</code>、<code>ocas_OCAS_INTEGRATION_UNKNOWN</code> 之一。
+<code>FOUND</code> 的返回值一定带<strong>可机检的符号证书</strong>（<code>D(F) − f ≡ 0</code>）；<code>UNKNOWN</code> 诚实返回未求值
+<code>Integral(expr, var)</code>；被精确检查器证伪的结果永远不会以 <code>FOUND</code> 返回。
+<code>PROVED_NONELEMENTARY</code> 在 0.28.0 <strong>无生产者</strong>（变体为后续非初等层预留）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td>被积表达式</td></tr>
+<tr><td><code>var</code></td><td>积分变量名</td></tr>
+<tr><td><code>outcome_out</code></td><td>输出三值判定；可为 <code>NULL</code></td></tr>
+<tr><td><code>err_out</code></td><td>错误码输出</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：新表达式句柄（调用者负责释放）或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">int outcome = -1;
+OcasExpr *ie = ocas_expr_integrate_outcome(e, "x", &amp;outcome, NULL);
+if (outcome == ocas_OCAS_INTEGRATION_FOUND) {
+    /* ie 的原函数带证书：D(ie) == 被积函数 */
+}
+ocas_expr_free(ie);
 </code></pre>
 <hr />
 <h3 id="ocas_expr_integrate_heuristic"><a class="header" href="#ocas_expr_integrate_heuristic"><code>ocas_expr_integrate_heuristic</code></a></h3>
@@ -19946,7 +20048,7 @@ dsolve_system(ctx, equations, funcs, var)
 <ul>
 <li>$\log(c \cdot u)$ 与 $\log(u)$（$c$ 为有理常数）→ 代数相关（$\log(c \cdot u) = \log(u) + \log(c)$）</li>
 <li>$\exp(u + c)$ 与 $\exp(u)$（$c$ 为有理常数）→ 代数相关（$\exp(u + c) = e^c \cdot \exp(u)$）</li>
-<li>否则拒绝（保守策略：宁可拒绝错误相关，也不错误合并）</li>
+<li><strong>0.28.0 起：不再拒绝，而是用精确域恒等式合并</strong>（<code>tower/merge.rs</code>）：<code>exp(u+c) = e^c·exp(u)</code>、<code>exp(-u) = exp(u)^{-1}</code>、<code>log(cu) = log(u) + log(c)</code>、<code>log(u^k) = k·log(u)</code>、<code>log(exp(u)) = u</code>、<code>exp(log(u)) = u</code>，必要时登记常量生成元（<code>log(2)</code>、<code>exp(1)</code>，<code>D t = 0</code>）；塔返回<strong>重写后的</strong>被积表达式，判定不了的关系仍然诚实拒绝</li>
 </ul>
 </li>
 <li><strong>拒绝非整数幂</strong>：若 $f$ 含有 $\sqrt{x}$ 等非整数幂（即代数函数），拒绝（返回 <code>None</code>）。</li>
@@ -20282,7 +20384,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <tr><td>只求 RDE 的多项式解</td><td>有理函数解需要分母界分析</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
 <tr><td>塔层上的对数部分只用对数导数恒等式 $a_1 = c \cdot Dd_1$</td><td>完整的对数部分需要塔层上的 Rothstein–Trager / 迹函数判定</td><td>返回未求值形式（基域 $\mathbb{Q}(x)$ 上仍使用完整处理）</td></tr>
 <tr><td>代数函数（$\sqrt{x}$ 等）不支持</td><td>需要代数函数域扩展</td><td>由启发式三角替换覆盖常见模式</td></tr>
-<tr><td>代数相关生成元保守拒绝</td><td>$\log(2x)$ 与 $\log(x)$ 的关系检测</td><td>返回 <code>None</code></td></tr>
+<tr><td>代数相关生成元保守拒绝（0.28.0 起改为精确合并）</td><td>$\log(2x)$ 与 $\log(x)$ 的关系检测</td><td>返回 <code>None</code></td></tr>
 <tr><td>含 $I$ 的超指数 RDE</td><td>RDE 求解器仅在 $\mathbb{Q}[x]$ 上工作</td><td>三角被积函数返回未求值形式</td></tr>
 </tbody></table>
 </div>
@@ -22935,7 +23037,39 @@ fuel 仅约束化简后的传递。</p>
 <li>Python：<code>Expression.integrate(var)</code></li>
 <li>C：<code>ocas_expr_integrate(...)</code></li>
 </ul>
-<p>找不到闭式时两者都返回未求值形式 <code>Integral(...)</code>，与 Rust API 一致。</p>
+<p>找不到闭式时两者都返回未求值形式 <code>Integral(...)</code>，与 Rust API 一致。
+两者都<strong>不认证</strong>结果；需要可机检证书时用 <code>Expression.integrate_outcome</code>
+（Python）或 <code>ocas_expr_integrate_outcome</code>（C）。</p>
+<hr />
+<h2 id="0280证书循环检测与残项解析"><a class="header" href="#0280证书循环检测与残项解析">0.28.0：证书、循环检测与残项解析</a></h2>
+<h3 id="符号证书与三值输出"><a class="header" href="#符号证书与三值输出">符号证书与三值输出</a></h3>
+<p><code>integrate_outcome</code>（Rust/Python/C 均已暴露）返回三值之一：</p>
+<div class="table-wrapper"><table><thead><tr><th>取值</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>原函数 + <strong>可机检的符号证书</strong>（精确检查器中 <code>D(F) − f ≡ 0</code>）</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>已证明非初等（0.28.0 无生产者，为后续非初等层预留）</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>诚实未知：<code>residue</code> 是未求值 <code>Integral(f, x)</code>；<code>uncertified</code> 是管线候选（<strong>不是答案</strong>，仅供诊断）</td></tr>
+</tbody></table>
+</div>
+<p>证书引擎（<code>ocas-calc/src/integral/certify.rs</code>）分层判定：结构零（<code>normalize</code> + 同类项收集）、
+初等域零（三角→指数、<code>I² = −1</code> 约化、依赖 <code>exp</code>/<code>log</code> 原子合并后嵌入有理函数域）、根式域
+（接口预留）。各层都是<strong>可靠的</strong>：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
+正确。域运算有确定性预算，超预算即诚实拒绝。</p>
+<p><code>ocas-calc/src/integral/risch.rs</code> 还会在<strong>塔自身的域</strong>里校验每个 Risch 结果，因此引擎不会发射
+被精确检查器证伪的答案——0.28.0 正是靠这条护栏抓到并兜住一个潜伏错案（指数层有理部分对负幂次
+系数的错误缩放）。</p>
+<h3 id="表达式级循环检测与残项解析"><a class="header" href="#表达式级循环检测与残项解析">表达式级循环检测与残项解析</a></h3>
+<p>链入口（<code>integral/chain.rs</code>）按「表达式地址 + <code>rule_depth</code> + <code>parts_depth</code>」判环：<strong>预算递减的
+同形状重入</strong>是流水线合法的递归下降，必须放行；只有预算相同的重复才是真循环。绝对条目兜底保持
+0.27.3 的 256，残项解析的嵌套重入走独立预算，不与主链争用。</p>
+<p>若干阶段会返回<strong>部分结果</strong>（分式分解已完成、剩下的 <code>Integral(...)</code> 本身可解）。顶层入口在链条
+结束后会做一次预算化的残项解析：只处理「有理形状、≤2 个符号、≤64 节点」的残项，并且只在残项数
+<strong>严格减少</strong>时接受解析结果。纯回退 <code>Integral(f, x)</code> 永远不解析（否则会重跑整条链，并在
+<code>rules = false</code> 时违反调用方意图）。</p>
+<h3 id="依赖生成元合并正则塔"><a class="header" href="#依赖生成元合并正则塔">依赖生成元合并（正则塔）</a></h3>
+<p><code>ocas-calc/src/tower/merge.rs</code> 用精确域恒等式合并代数相关生成元：<code>exp(u)</code>/<code>exp(u+c)</code>、
+<code>exp(u)</code>/<code>exp(−u)</code>、<code>log(u)</code>/<code>log(cu)</code>、<code>log(u)</code>/<code>log(u^k)</code>、<code>log(exp(u))</code>、<code>exp(log(u))</code>，
+必要时登记常量生成元（<code>log(2)</code>、<code>exp(1)</code>，<code>D t = 0</code>）。塔现在返回<strong>重写后的</strong>被积表达式，
+<code>risch</code> 在其中工作；判定不了的关系仍然诚实拒绝。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="有理函数结式与部分分式"><a class="header" href="#有理函数结式与部分分式">有理函数、结式与部分分式</a></h1>
 <p>oCAS 提供完整的有理函数运算、结式计算和部分分式分解栈，支持任何欧几里得域。
 这些功能在 0.12.0 版本中添加，弥补了与 Symbolica 的 <code>rational_polynomial.rs</code>、

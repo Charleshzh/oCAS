@@ -402,7 +402,7 @@ ocas_expr_free(e);
 <p><strong>签名</strong>：</p>
 <pre><code class="language-c">OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
 </code></pre>
-<p><strong>功能</strong>：对表达式关于变量 <code>var</code> 积分。若无法解析求解，返回未求值形式 <code>Integral(expr, var)</code>。</p>
+<p><strong>功能</strong>：对表达式关于变量 <code>var</code> 积分。若无法解析求解，返回未求值形式 <code>Integral(expr, var)</code>。<strong>结果未经认证</strong>；需要可机检证书时用 <code>ocas_expr_integrate_outcome</code>。</p>
 <p><strong>参数</strong>：同 <code>ocas_expr_diff</code>。</p>
 <p><strong>返回值</strong>：积分表达式句柄或 <code>NULL</code>。</p>
 <p><strong>示例</strong>：</p>
@@ -413,6 +413,34 @@ printf("∫ = %s\n", s);  // 输出：3*(3^-1)*(x^3)
 ocas_string_free(s);
 ocas_expr_free(ie);
 ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_integrate_outcome"><a class="header" href="#ocas_expr_integrate_outcome"><code>ocas_expr_integrate_outcome</code></a></h3>
+<p><strong>签名</strong>：</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_integrate_outcome(const OcasExpr *handle, const char *var,
+                                      int *outcome_out, int *err_out);
+</code></pre>
+<p><strong>功能</strong>：认证积分（0.28.0 新增）。<code>*outcome_out</code> 取 <code>ocas_OCAS_INTEGRATION_FOUND</code>、
+<code>ocas_OCAS_INTEGRATION_PROVED_NONELEMENTARY</code>、<code>ocas_OCAS_INTEGRATION_UNKNOWN</code> 之一。
+<code>FOUND</code> 的返回值一定带<strong>可机检的符号证书</strong>（<code>D(F) − f ≡ 0</code>）；<code>UNKNOWN</code> 诚实返回未求值
+<code>Integral(expr, var)</code>；被精确检查器证伪的结果永远不会以 <code>FOUND</code> 返回。
+<code>PROVED_NONELEMENTARY</code> 在 0.28.0 <strong>无生产者</strong>（变体为后续非初等层预留）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td>被积表达式</td></tr>
+<tr><td><code>var</code></td><td>积分变量名</td></tr>
+<tr><td><code>outcome_out</code></td><td>输出三值判定；可为 <code>NULL</code></td></tr>
+<tr><td><code>err_out</code></td><td>错误码输出</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：新表达式句柄（调用者负责释放）或 <code>NULL</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-c">int outcome = -1;
+OcasExpr *ie = ocas_expr_integrate_outcome(e, "x", &amp;outcome, NULL);
+if (outcome == ocas_OCAS_INTEGRATION_FOUND) {
+    /* ie 的原函数带证书：D(ie) == 被积函数 */
+}
+ocas_expr_free(ie);
 </code></pre>
 <hr />
 <h3 id="ocas_expr_integrate_heuristic"><a class="header" href="#ocas_expr_integrate_heuristic"><code>ocas_expr_integrate_heuristic</code></a></h3>

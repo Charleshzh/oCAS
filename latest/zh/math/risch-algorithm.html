@@ -231,7 +231,7 @@
 <ul>
 <li>$\log(c \cdot u)$ 与 $\log(u)$（$c$ 为有理常数）→ 代数相关（$\log(c \cdot u) = \log(u) + \log(c)$）</li>
 <li>$\exp(u + c)$ 与 $\exp(u)$（$c$ 为有理常数）→ 代数相关（$\exp(u + c) = e^c \cdot \exp(u)$）</li>
-<li>否则拒绝（保守策略：宁可拒绝错误相关，也不错误合并）</li>
+<li><strong>0.28.0 起：不再拒绝，而是用精确域恒等式合并</strong>（<code>tower/merge.rs</code>）：<code>exp(u+c) = e^c·exp(u)</code>、<code>exp(-u) = exp(u)^{-1}</code>、<code>log(cu) = log(u) + log(c)</code>、<code>log(u^k) = k·log(u)</code>、<code>log(exp(u)) = u</code>、<code>exp(log(u)) = u</code>，必要时登记常量生成元（<code>log(2)</code>、<code>exp(1)</code>，<code>D t = 0</code>）；塔返回<strong>重写后的</strong>被积表达式，判定不了的关系仍然诚实拒绝</li>
 </ul>
 </li>
 <li><strong>拒绝非整数幂</strong>：若 $f$ 含有 $\sqrt{x}$ 等非整数幂（即代数函数），拒绝（返回 <code>None</code>）。</li>
@@ -567,7 +567,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <tr><td>只求 RDE 的多项式解</td><td>有理函数解需要分母界分析</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
 <tr><td>塔层上的对数部分只用对数导数恒等式 $a_1 = c \cdot Dd_1$</td><td>完整的对数部分需要塔层上的 Rothstein–Trager / 迹函数判定</td><td>返回未求值形式（基域 $\mathbb{Q}(x)$ 上仍使用完整处理）</td></tr>
 <tr><td>代数函数（$\sqrt{x}$ 等）不支持</td><td>需要代数函数域扩展</td><td>由启发式三角替换覆盖常见模式</td></tr>
-<tr><td>代数相关生成元保守拒绝</td><td>$\log(2x)$ 与 $\log(x)$ 的关系检测</td><td>返回 <code>None</code></td></tr>
+<tr><td>代数相关生成元保守拒绝（0.28.0 起改为精确合并）</td><td>$\log(2x)$ 与 $\log(x)$ 的关系检测</td><td>返回 <code>None</code></td></tr>
 <tr><td>含 $I$ 的超指数 RDE</td><td>RDE 求解器仅在 $\mathbb{Q}[x]$ 上工作</td><td>三角被积函数返回未求值形式</td></tr>
 </tbody></table>
 </div>

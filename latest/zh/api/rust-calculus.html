@@ -270,6 +270,47 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
 <p><strong>参见</strong>：<a href="#taylor">taylor</a>、<a href="#integrate">integrate</a></p>
 <hr />
+<h2 id="integrate_outcome"><a class="header" href="#integrate_outcome"><code>integrate_outcome</code></a></h2>
+<p><strong>签名</strong>（0.28.0 新增）：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_outcome&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+) -&gt; Outcome&lt;'a&gt;
+pub fn integrate_outcome_with_options&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    options: IntegrateOptions,
+) -&gt; Outcome&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：认证积分。返回三值 [<code>Outcome</code>]：</p>
+<div class="table-wrapper"><table><thead><tr><th>取值</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>原函数 + 可机检的符号证书（精确检查器中 <code>D(F) − f ≡ 0</code>）</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>已证明非初等；0.28.0 <strong>无生产者</strong>（变体为后续非初等层预留）</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>诚实未知：<code>residue</code> 是 <code>Integral(f, var)</code>；<code>uncertified</code> 是管线候选，<strong>不是答案</strong>，仅供诊断</td></tr>
+</tbody></table>
+</div>
+<p>被精确检查器证伪的结果永远不会以 <code>Found</code> 返回（Risch 结果还会在塔自身的域内二次校验）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let two_x = ctx.mul(&amp;[ctx.num(2), x]);
+let outcome = integrate_outcome(&amp;ctx, two_x, Symbol::new("x"));
+assert!(outcome.is_found());
+println!("{}", outcome.value());          // (2^-1)*(x^2)
+println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#integrate">integrate</a>、[<code>Certificate</code>]、[<code>CertDecline</code>]</p>
+<hr />
 <h2 id="integrate"><a class="header" href="#integrate"><code>integrate</code></a></h2>
 <p><strong>签名</strong>：</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -277,6 +318,10 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 </span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
 <span class="boring">}</span></code></pre></pre>
 <p><strong>功能</strong>：对 <code>expr</code> 关于 <code>var</code> 求符号积分。使用分层积分管线，逐层尝试不同算法。</p>
+<blockquote>
+<p><strong>0.28.0</strong>：返回的结果<strong>未经认证</strong>（可能是管线候选）。需要「原函数 + 可机检符号证书」时用
+<a href="#integrate_outcome"><code>integrate_outcome</code></a>。</p>
+</blockquote>
 <p><strong>参数</strong>：</p>
 <div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
 <tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>

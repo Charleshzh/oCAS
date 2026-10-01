@@ -232,6 +232,11 @@
 <li>$\log(c \cdot u)$ and $\log(u)$ (with $c$ a rational constant) → algebraically dependent ($\log(c \cdot u) = \log(u) + \log(c)$)</li>
 <li>$\exp(u + c)$ and $\exp(u)$ (with $c$ a rational constant) → algebraically dependent ($\exp(u + c) = e^c \cdot \exp(u)$)</li>
 <li>otherwise reject (conservative strategy: rather reject a true dependence than merge incorrectly)</li>
+<li><strong>Since 0.28.0 these are merged by exact field identities instead of being rejected</strong>
+(<code>tower/merge.rs</code>): <code>exp(u + c) = e^c·exp(u)</code>, <code>exp(−u) = exp(u)⁻¹</code>, <code>log(cu) = log(u) + log(c)</code>,
+<code>log(u^k) = k·log(u)</code>, <code>log(exp(u)) = u</code>, <code>exp(log(u)) = u</code>, registering constant generators
+(<code>log(2)</code>, <code>exp(1)</code>, <code>D t = 0</code>) when needed. The tower returns the <strong>rewritten</strong> integrand, and
+relations that cannot be decided are still declined honestly.</li>
 </ul>
 </li>
 <li><strong>Reject non-integral powers</strong>: if $f$ contains non-integral powers such as $\sqrt{x}$ (i.e. algebraic functions), reject (return <code>None</code>).</li>
@@ -567,7 +572,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <tr><td>Only polynomial solutions of the RDE</td><td>Rational solutions need denominator-bound analysis</td><td>Return <code>None</code>; the caller tries other layers</td></tr>
 <tr><td>At tower levels the logarithmic part only uses the logarithmic-derivative identity $a_1 = c \cdot Dd_1$</td><td>The full logarithmic part needs tower-level Rothstein–Trager / trace-function techniques</td><td>Return the unevaluated form (the base field $\mathbb{Q}(x)$ still gets the full treatment)</td></tr>
 <tr><td>Algebraic functions ($\sqrt{x}$, etc.) not supported</td><td>Needs algebraic-function field extensions</td><td>Common patterns are covered by the heuristic trigonometric substitution</td></tr>
-<tr><td>Conservative rejection of algebraically dependent generators</td><td>Detecting relations like $\log(2x)$ vs. $\log(x)$</td><td>Return <code>None</code></td></tr>
+<tr><td>Conservative rejection of algebraically dependent generators (exact <strong>merging</strong> since 0.28.0)</td><td>Detecting relations like $\log(2x)$ vs. $\log(x)$</td><td>Return <code>None</code></td></tr>
 <tr><td>Hyperexponential RDEs containing $I$</td><td>The RDE solver works only over $\mathbb{Q}[x]$</td><td>Trigonometric integrands are returned in unevaluated form</td></tr>
 </tbody></table>
 </div>

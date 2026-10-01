@@ -266,11 +266,37 @@ True
 <tr><td><code>var</code></td><td><code>str</code></td><td>积分变量名</td></tr>
 </tbody></table>
 </div>
-<p><strong>返回值</strong>：积分结果表达式。若无法求出闭式解，返回未求值的 <code>Integral(expr, var)</code> 形式。</p>
+<p><strong>返回值</strong>：积分结果表达式。若无法求出闭式解，返回未求值的 <code>Integral(expr, var)</code> 形式。<strong>结果未经认证</strong>；需要可机检的证书时用 <code>integrate_outcome</code>。</p>
 <p><strong>示例</strong>：</p>
 <pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2")
 &gt;&gt;&gt; print(e.integrate("x"))
 (3^-1)*(x^3)
+</code></pre>
+<hr />
+<h4 id="expressionintegrate_outcome"><a class="header" href="#expressionintegrate_outcome">Expression.integrate_outcome</a></h4>
+<pre><code class="language-python">Expression.integrate_outcome(var: str, rules: bool = True) -&gt; dict
+</code></pre>
+<p>认证积分（0.28.0 新增）：结果分三值，<code>found</code> 一定带<strong>可机检的符号证书</strong>（<code>D(F) − f ≡ 0</code>），<code>unknown</code> 诚实返回未求值形式。经精确检查器证伪的结果永远不会以 <code>found</code> 返回。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>积分变量名</td></tr>
+<tr><td><code>rules</code></td><td><code>bool</code></td><td>是否启用规则表引擎（默认 <code>True</code>）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：字典，键为：</p>
+<div class="table-wrapper"><table><thead><tr><th>键</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>"found"</code> / <code>"proved_nonelementary"</code> / <code>"unknown"</code></td></tr>
+<tr><td><code>value</code></td><td>原函数；<code>unknown</code> 时为未求值 <code>Integral(expr, var)</code></td></tr>
+<tr><td><code>certificate</code></td><td>证书层（<code>"structural"</code> / <code>"field"</code> / <code>"radical"</code>），未认证为 <code>None</code></td></tr>
+<tr><td><code>uncertified</code></td><td>管线算出的<strong>未认证</strong>候选（仅诊断用，明确不是答案），没有则为 <code>None</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("2*x")
+&gt;&gt;&gt; e.integrate_outcome("x")["kind"]
+'found'
+&gt;&gt;&gt; ocas.Expression("exp(x^3)").integrate_outcome("x")["kind"]
+'unknown'
 </code></pre>
 <hr />
 <h4 id="expressionintegrate_heuristic"><a class="header" href="#expressionintegrate_heuristic">Expression.integrate_heuristic</a></h4>

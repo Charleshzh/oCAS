@@ -402,7 +402,7 @@ ocas_expr_free(e);
 <p><strong>Signature</strong>:</p>
 <pre><code class="language-c">OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
 </code></pre>
-<p><strong>Description</strong>: Integrates the expression with respect to the variable <code>var</code>. If no symbolic solution is found, returns the unevaluated form <code>Integral(expr, var)</code>.</p>
+<p><strong>Description</strong>: Integrates the expression with respect to the variable <code>var</code>. If no symbolic solution is found, returns the unevaluated form <code>Integral(expr, var)</code>. The result is <strong>not certified</strong>; use <code>ocas_expr_integrate_outcome</code> when a machine-checkable certificate is required.</p>
 <p><strong>Parameters</strong>: Same as <code>ocas_expr_diff</code>.</p>
 <p><strong>Return value</strong>: The integral expression handle or <code>NULL</code>.</p>
 <p><strong>Example</strong>:</p>
@@ -413,6 +413,36 @@ printf("∫ = %s\n", s);  // Output: 3*(3^-1)*(x^3)
 ocas_string_free(s);
 ocas_expr_free(ie);
 ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_integrate_outcome"><a class="header" href="#ocas_expr_integrate_outcome"><code>ocas_expr_integrate_outcome</code></a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_integrate_outcome(const OcasExpr *handle, const char *var,
+                                      int *outcome_out, int *err_out);
+</code></pre>
+<p><strong>Description</strong>: Certified integration (new in 0.28.0). <code>*outcome_out</code> is one of
+<code>ocas_OCAS_INTEGRATION_FOUND</code>, <code>ocas_OCAS_INTEGRATION_PROVED_NONELEMENTARY</code> or
+<code>ocas_OCAS_INTEGRATION_UNKNOWN</code>. A <code>FOUND</code> result always carries a machine-checkable
+symbolic certificate (<code>D(F) − f ≡ 0</code>); <code>UNKNOWN</code> honestly returns the unevaluated
+<code>Integral(expr, var)</code> form; a result the exact checker falsifies is never returned as
+<code>FOUND</code>. <code>PROVED_NONELEMENTARY</code> has <strong>no producer</strong> in 0.28.0 (reserved for the
+non-elementary layer).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td>The integrand expression</td></tr>
+<tr><td><code>var</code></td><td>The integration variable name</td></tr>
+<tr><td><code>outcome_out</code></td><td>Output for the three-valued verdict; may be <code>NULL</code></td></tr>
+<tr><td><code>err_out</code></td><td>Error code output</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: A new expression handle (caller owns it) or <code>NULL</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-c">int outcome = -1;
+OcasExpr *ie = ocas_expr_integrate_outcome(e, "x", &amp;outcome, NULL);
+if (outcome == ocas_OCAS_INTEGRATION_FOUND) {
+    /* ie carries a certificate: D(ie) == integrand */
+}
+ocas_expr_free(ie);
 </code></pre>
 <hr />
 <h3 id="ocas_expr_integrate_heuristic"><a class="header" href="#ocas_expr_integrate_heuristic"><code>ocas_expr_integrate_heuristic</code></a></h3>

@@ -329,7 +329,39 @@ fuel 仅约束化简后的传递。</p>
 <li>Python：<code>Expression.integrate(var)</code></li>
 <li>C：<code>ocas_expr_integrate(...)</code></li>
 </ul>
-<p>找不到闭式时两者都返回未求值形式 <code>Integral(...)</code>，与 Rust API 一致。</p>
+<p>找不到闭式时两者都返回未求值形式 <code>Integral(...)</code>，与 Rust API 一致。
+两者都<strong>不认证</strong>结果；需要可机检证书时用 <code>Expression.integrate_outcome</code>
+（Python）或 <code>ocas_expr_integrate_outcome</code>（C）。</p>
+<hr />
+<h2 id="0280证书循环检测与残项解析"><a class="header" href="#0280证书循环检测与残项解析">0.28.0：证书、循环检测与残项解析</a></h2>
+<h3 id="符号证书与三值输出"><a class="header" href="#符号证书与三值输出">符号证书与三值输出</a></h3>
+<p><code>integrate_outcome</code>（Rust/Python/C 均已暴露）返回三值之一：</p>
+<div class="table-wrapper"><table><thead><tr><th>取值</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>原函数 + <strong>可机检的符号证书</strong>（精确检查器中 <code>D(F) − f ≡ 0</code>）</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>已证明非初等（0.28.0 无生产者，为后续非初等层预留）</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>诚实未知：<code>residue</code> 是未求值 <code>Integral(f, x)</code>；<code>uncertified</code> 是管线候选（<strong>不是答案</strong>，仅供诊断）</td></tr>
+</tbody></table>
+</div>
+<p>证书引擎（<code>ocas-calc/src/integral/certify.rs</code>）分层判定：结构零（<code>normalize</code> + 同类项收集）、
+初等域零（三角→指数、<code>I² = −1</code> 约化、依赖 <code>exp</code>/<code>log</code> 原子合并后嵌入有理函数域）、根式域
+（接口预留）。各层都是<strong>可靠的</strong>：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
+正确。域运算有确定性预算，超预算即诚实拒绝。</p>
+<p><code>ocas-calc/src/integral/risch.rs</code> 还会在<strong>塔自身的域</strong>里校验每个 Risch 结果，因此引擎不会发射
+被精确检查器证伪的答案——0.28.0 正是靠这条护栏抓到并兜住一个潜伏错案（指数层有理部分对负幂次
+系数的错误缩放）。</p>
+<h3 id="表达式级循环检测与残项解析"><a class="header" href="#表达式级循环检测与残项解析">表达式级循环检测与残项解析</a></h3>
+<p>链入口（<code>integral/chain.rs</code>）按「表达式地址 + <code>rule_depth</code> + <code>parts_depth</code>」判环：<strong>预算递减的
+同形状重入</strong>是流水线合法的递归下降，必须放行；只有预算相同的重复才是真循环。绝对条目兜底保持
+0.27.3 的 256，残项解析的嵌套重入走独立预算，不与主链争用。</p>
+<p>若干阶段会返回<strong>部分结果</strong>（分式分解已完成、剩下的 <code>Integral(...)</code> 本身可解）。顶层入口在链条
+结束后会做一次预算化的残项解析：只处理「有理形状、≤2 个符号、≤64 节点」的残项，并且只在残项数
+<strong>严格减少</strong>时接受解析结果。纯回退 <code>Integral(f, x)</code> 永远不解析（否则会重跑整条链，并在
+<code>rules = false</code> 时违反调用方意图）。</p>
+<h3 id="依赖生成元合并正则塔"><a class="header" href="#依赖生成元合并正则塔">依赖生成元合并（正则塔）</a></h3>
+<p><code>ocas-calc/src/tower/merge.rs</code> 用精确域恒等式合并代数相关生成元：<code>exp(u)</code>/<code>exp(u+c)</code>、
+<code>exp(u)</code>/<code>exp(−u)</code>、<code>log(u)</code>/<code>log(cu)</code>、<code>log(u)</code>/<code>log(u^k)</code>、<code>log(exp(u))</code>、<code>exp(log(u))</code>，
+必要时登记常量生成元（<code>log(2)</code>、<code>exp(1)</code>，<code>D t = 0</code>）。塔现在返回<strong>重写后的</strong>被积表达式，
+<code>risch</code> 在其中工作；判定不了的关系仍然诚实拒绝。</p>
 
                     </main>
 

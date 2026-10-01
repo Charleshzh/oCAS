@@ -216,6 +216,7 @@
 <tr><td><strong>0.27.1</strong></td><td>2026-09-10</td><td>Integration-breadth mechanism push: Chebyshev binomials, trig-denominator power reductions, exp-log kernel substitutions, general sqrt-quadratic engine + Euler III, inverse-trig kernels, single-trig-kernel rational forms; coverage 9.62% → 16.44%; two wrong-answer classes fixed</td></tr>
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, <code>exp(inverse function)</code> algebraization, half-power front-end + elliptic Legendre reduction (<code>EllipticF/E</code>); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%)</td></tr>
 <tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27-line close-out: special-function derivative table + oracle heads (<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel), special-function reduction families (polynomial × <code>F</code>, <code>Ei(n,·)</code>, <code>F/xᵐ</code>, <code>F²</code>), exact linear-square fold <code>p²+2pq+q² → (p+q)²</code>, affine-argument half-power front-end with the sheet factor on both branches; Rubi coverage 18.45% → 19.56% (+21 solved, 0 regressed, mismatches 0, timeouts 13 → 12)</td></tr>
+<tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>Integration-mechanism correctness foundation: symbolic certificate engine (structural/elementary-field layers with <code>I² = −1</code> reduction and dependent-atom merging, deterministic budgets), three-valued <code>Outcome</code> and <code>integrate_outcome</code> (exposed to Python/C), expression-level cycle detection (budget-aware entry keys plus a separate residue budget), regular-tower dependency merging, in-tower exact verification of Risch results (caught and contained a latent wrong answer), and a hyperbolic front-end disabled for its wall-clock cost; Rubi coverage 19.56% → 19.61% (371 solved, +1 newly solved / 0 regressed), mismatches 0, timeouts flat at 12, wall clock −6.0%; <code>certified_rate = 28.8%</code> (target 1.0 not met, recorded honestly)</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -309,7 +310,7 @@ dashed edges are optional dependencies):</p>
 <li><strong>Number theory</strong> — BPSW primality testing, integer factorization (trial division/Pollard rho/p−1/p+1/ECM), discrete logarithms (BSGS + Pohlig–Hellman), Euler φ / Möbius / divisor functions.</li>
 <li><strong>Rewriting and simplification</strong> — AC backtracking pattern matching, wildcards (<code>x__</code>/<code>x___</code>), fixpoint simplification, fuel-limited simplification, optional egg e-graph equality saturation.</li>
 <li><strong>Three-language bindings</strong> — Rust prelude API, Python (PyO3, 25 classes + 32 functions), C/C++ (cbindgen, 91 exports + RAII wrappers).</li>
-<li><strong>Correctness framework</strong> — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1516 <code>#[test]</code>/<code>#[tokio::test]</code> annotations as of 0.27.3).</li>
+<li><strong>Correctness framework</strong> — cross-validation against SymPy, SageMath, and Symbolica across multiple mathematical modules (1550 <code>#[test]</code>/<code>#[tokio::test]</code> annotations as of 0.28.0).</li>
 <li><strong>Optional numeric backends</strong> — GMP/MPFR/FLINT behind feature flags, with GPL backends isolated in <code>ocas-gpl</code>.</li>
 </ul>
 <hr />
@@ -333,7 +334,7 @@ dashed edges are optional dependencies):</p>
 </div>
 <hr />
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.27.3</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
+<p>oCAS is currently at version <strong>0.28.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <p>This chapter gets you up and running with oCAS in about 5 minutes. oCAS 0.24 supports three language interfaces: <strong>Rust</strong>, <strong>Python</strong>, and <strong>C/C++</strong>.</p>
@@ -919,6 +920,8 @@ in the repository for the full design document.</p>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Kind</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>diff</code></td><td>fn</td><td>Symbolic differentiation</td></tr>
 <tr><td><code>integrate</code></td><td>fn</td><td>Symbolic integration (layered pipeline)</td></tr>
+<tr><td><code>integrate_outcome</code></td><td>fn</td><td>Certified integration: three-valued outcome + symbolic certificate (0.28.0)</td></tr>
+<tr><td><code>integrate_outcome_with_options</code></td><td>fn</td><td>Certified integration with options (0.28.0)</td></tr>
 <tr><td><code>integrate_heuristic</code></td><td>fn</td><td>Heuristic integration (without Risch)</td></tr>
 <tr><td><code>integrate_with_fuel</code></td><td>fn</td><td>Integration with a fuel limit</td></tr>
 <tr><td><code>taylor</code></td><td>fn</td><td>Taylor expansion</td></tr>
@@ -5290,6 +5293,11 @@ let result = diff(&amp;ctx, f, Symbol::new("x"));
 </span>pub fn integrate&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, expr: Atom&lt;'a&gt;, var: Symbol) -&gt; Atom&lt;'a&gt;
 <span class="boring">}</span></code></pre></pre>
 <p><strong>Description</strong>: computes the symbolic integral of <code>expr</code> with respect to <code>var</code>. Uses a layered integration pipeline that tries different algorithms layer by layer.</p>
+<blockquote>
+<p><strong>0.28.0</strong>: the returned result is <strong>not certified</strong> (it may be a pipeline candidate). Use
+<a href="api/rust-calculus.html#integrate_outcome"><code>integrate_outcome</code></a> when you need an antiderivative <em>with</em> a
+machine-checkable symbolic certificate.</p>
+</blockquote>
 <p><strong>Parameters</strong>:</p>
 <div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>the expression arena</td></tr>
@@ -5447,6 +5455,48 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 // result is Integral(my_func(x), x)
 <span class="boring">}</span></code></pre></pre>
 <p><strong>See also</strong>: <a href="api/rust-calculus.html#integrate_heuristic">integrate_heuristic</a>, <a href="api/rust-calculus.html#integrate_with_fuel">integrate_with_fuel</a>, <a href="api/rust-calculus.html#rational-function-integration">rational function integration</a>, <a href="api/rust-calculus.html#risch-algorithm">Risch algorithm</a></p>
+<hr />
+<h2 id="integrate_outcome"><a class="header" href="#integrate_outcome"><code>integrate_outcome</code></a></h2>
+<p><strong>Signature</strong> (new in 0.28.0):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn integrate_outcome&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+) -&gt; Outcome&lt;'a&gt;
+pub fn integrate_outcome_with_options&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    options: IntegrateOptions,
+) -&gt; Outcome&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: certified integration. Returns the three-valued [<code>Outcome</code>]:</p>
+<div class="table-wrapper"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>An antiderivative with a machine-checkable symbolic certificate (<code>D(F) − f ≡ 0</code> in the exact checker)</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>Proved non-elementary; <strong>no producer</strong> in 0.28.0 (the variant is reserved for the non-elementary layer)</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>Honest "I do not know": <code>residue</code> is <code>Integral(f, var)</code>; <code>uncertified</code> is the pipeline's candidate, <strong>not an answer</strong>, diagnostics only</td></tr>
+</tbody></table>
+</div>
+<p>A result the exact checker falsifies is never returned as <code>Found</code> (and every Risch result is
+additionally verified inside the tower's own field).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas::prelude::*;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let two_x = ctx.mul(&amp;[ctx.num(2), x]);
+let outcome = integrate_outcome(&amp;ctx, two_x, Symbol::new("x"));
+assert!(outcome.is_found());
+println!("{}", outcome.value());          // (2^-1)*(x^2)
+println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="api/rust-calculus.html#integrate">integrate</a>, [<code>Certificate</code>], [<code>CertDecline</code>]</p>
 <hr />
 <h2 id="integrate_heuristic"><a class="header" href="#integrate_heuristic"><code>integrate_heuristic</code></a></h2>
 <p><strong>Signature</strong>:</p>
@@ -13344,11 +13394,37 @@ True
 <tr><td><code>var</code></td><td><code>str</code></td><td>The integration variable</td></tr>
 </tbody></table>
 </div>
-<p><strong>Returns</strong>: the resulting expression. If no closed form can be found, returns the unevaluated <code>Integral(expr, var)</code> form.</p>
+<p><strong>Returns</strong>: the resulting expression. If no closed form can be found, returns the unevaluated <code>Integral(expr, var)</code> form. The result is <strong>not certified</strong>; use <code>integrate_outcome</code> when a machine-checkable certificate is required.</p>
 <p><strong>Example</strong>:</p>
 <pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("x^2")
 &gt;&gt;&gt; print(e.integrate("x"))
 (3^-1)*(x^3)
+</code></pre>
+<hr />
+<h4 id="expressionintegrate_outcome"><a class="header" href="#expressionintegrate_outcome">Expression.integrate_outcome</a></h4>
+<pre><code class="language-python">Expression.integrate_outcome(var: str, rules: bool = True) -&gt; dict
+</code></pre>
+<p>Certified integration (new in 0.28.0): the result is three-valued. <code>found</code> always carries a machine-checkable symbolic certificate (<code>D(F) − f ≡ 0</code>), while <code>unknown</code> honestly returns the unevaluated form. A result the exact checker falsifies is never returned as <code>found</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>var</code></td><td><code>str</code></td><td>The integration variable</td></tr>
+<tr><td><code>rules</code></td><td><code>bool</code></td><td>Whether the rule-table engine is enabled (default <code>True</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a dict with the keys:</p>
+<div class="table-wrapper"><table><thead><tr><th>Key</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>kind</code></td><td><code>"found"</code> / <code>"proved_nonelementary"</code> / <code>"unknown"</code></td></tr>
+<tr><td><code>value</code></td><td>The antiderivative, or the unevaluated <code>Integral(expr, var)</code> form when <code>unknown</code></td></tr>
+<tr><td><code>certificate</code></td><td>The certificate layer (<code>"structural"</code> / <code>"field"</code> / <code>"radical"</code>), <code>None</code> when uncertified</td></tr>
+<tr><td><code>uncertified</code></td><td>The pipeline's <strong>uncertified</strong> candidate (diagnostics only — explicitly not an answer), <code>None</code> when absent</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; e = ocas.Expression("2*x")
+&gt;&gt;&gt; e.integrate_outcome("x")["kind"]
+'found'
+&gt;&gt;&gt; ocas.Expression("exp(x^3)").integrate_outcome("x")["kind"]
+'unknown'
 </code></pre>
 <hr />
 <h4 id="expressionintegrate_heuristic"><a class="header" href="#expressionintegrate_heuristic">Expression.integrate_heuristic</a></h4>
@@ -15162,7 +15238,7 @@ ocas_expr_free(e);
 <p><strong>Signature</strong>:</p>
 <pre><code class="language-c">OcasExpr *ocas_expr_integrate(const OcasExpr *handle, const char *var, int *err_out);
 </code></pre>
-<p><strong>Description</strong>: Integrates the expression with respect to the variable <code>var</code>. If no symbolic solution is found, returns the unevaluated form <code>Integral(expr, var)</code>.</p>
+<p><strong>Description</strong>: Integrates the expression with respect to the variable <code>var</code>. If no symbolic solution is found, returns the unevaluated form <code>Integral(expr, var)</code>. The result is <strong>not certified</strong>; use <code>ocas_expr_integrate_outcome</code> when a machine-checkable certificate is required.</p>
 <p><strong>Parameters</strong>: Same as <code>ocas_expr_diff</code>.</p>
 <p><strong>Return value</strong>: The integral expression handle or <code>NULL</code>.</p>
 <p><strong>Example</strong>:</p>
@@ -15173,6 +15249,36 @@ printf("∫ = %s\n", s);  // Output: 3*(3^-1)*(x^3)
 ocas_string_free(s);
 ocas_expr_free(ie);
 ocas_expr_free(e);
+</code></pre>
+<hr />
+<h3 id="ocas_expr_integrate_outcome"><a class="header" href="#ocas_expr_integrate_outcome"><code>ocas_expr_integrate_outcome</code></a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><code class="language-c">OcasExpr *ocas_expr_integrate_outcome(const OcasExpr *handle, const char *var,
+                                      int *outcome_out, int *err_out);
+</code></pre>
+<p><strong>Description</strong>: Certified integration (new in 0.28.0). <code>*outcome_out</code> is one of
+<code>ocas_OCAS_INTEGRATION_FOUND</code>, <code>ocas_OCAS_INTEGRATION_PROVED_NONELEMENTARY</code> or
+<code>ocas_OCAS_INTEGRATION_UNKNOWN</code>. A <code>FOUND</code> result always carries a machine-checkable
+symbolic certificate (<code>D(F) − f ≡ 0</code>); <code>UNKNOWN</code> honestly returns the unevaluated
+<code>Integral(expr, var)</code> form; a result the exact checker falsifies is never returned as
+<code>FOUND</code>. <code>PROVED_NONELEMENTARY</code> has <strong>no producer</strong> in 0.28.0 (reserved for the
+non-elementary layer).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>handle</code></td><td>The integrand expression</td></tr>
+<tr><td><code>var</code></td><td>The integration variable name</td></tr>
+<tr><td><code>outcome_out</code></td><td>Output for the three-valued verdict; may be <code>NULL</code></td></tr>
+<tr><td><code>err_out</code></td><td>Error code output</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: A new expression handle (caller owns it) or <code>NULL</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-c">int outcome = -1;
+OcasExpr *ie = ocas_expr_integrate_outcome(e, "x", &amp;outcome, NULL);
+if (outcome == ocas_OCAS_INTEGRATION_FOUND) {
+    /* ie carries a certificate: D(ie) == integrand */
+}
+ocas_expr_free(ie);
 </code></pre>
 <hr />
 <h3 id="ocas_expr_integrate_heuristic"><a class="header" href="#ocas_expr_integrate_heuristic"><code>ocas_expr_integrate_heuristic</code></a></h3>
@@ -19910,6 +20016,11 @@ dsolve_system(ctx, equations, funcs, var)
 <li>$\log(c \cdot u)$ and $\log(u)$ (with $c$ a rational constant) → algebraically dependent ($\log(c \cdot u) = \log(u) + \log(c)$)</li>
 <li>$\exp(u + c)$ and $\exp(u)$ (with $c$ a rational constant) → algebraically dependent ($\exp(u + c) = e^c \cdot \exp(u)$)</li>
 <li>otherwise reject (conservative strategy: rather reject a true dependence than merge incorrectly)</li>
+<li><strong>Since 0.28.0 these are merged by exact field identities instead of being rejected</strong>
+(<code>tower/merge.rs</code>): <code>exp(u + c) = e^c·exp(u)</code>, <code>exp(−u) = exp(u)⁻¹</code>, <code>log(cu) = log(u) + log(c)</code>,
+<code>log(u^k) = k·log(u)</code>, <code>log(exp(u)) = u</code>, <code>exp(log(u)) = u</code>, registering constant generators
+(<code>log(2)</code>, <code>exp(1)</code>, <code>D t = 0</code>) when needed. The tower returns the <strong>rewritten</strong> integrand, and
+relations that cannot be decided are still declined honestly.</li>
 </ul>
 </li>
 <li><strong>Reject non-integral powers</strong>: if $f$ contains non-integral powers such as $\sqrt{x}$ (i.e. algebraic functions), reject (return <code>None</code>).</li>
@@ -20245,7 +20356,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <tr><td>Only polynomial solutions of the RDE</td><td>Rational solutions need denominator-bound analysis</td><td>Return <code>None</code>; the caller tries other layers</td></tr>
 <tr><td>At tower levels the logarithmic part only uses the logarithmic-derivative identity $a_1 = c \cdot Dd_1$</td><td>The full logarithmic part needs tower-level Rothstein–Trager / trace-function techniques</td><td>Return the unevaluated form (the base field $\mathbb{Q}(x)$ still gets the full treatment)</td></tr>
 <tr><td>Algebraic functions ($\sqrt{x}$, etc.) not supported</td><td>Needs algebraic-function field extensions</td><td>Common patterns are covered by the heuristic trigonometric substitution</td></tr>
-<tr><td>Conservative rejection of algebraically dependent generators</td><td>Detecting relations like $\log(2x)$ vs. $\log(x)$</td><td>Return <code>None</code></td></tr>
+<tr><td>Conservative rejection of algebraically dependent generators (exact <strong>merging</strong> since 0.28.0)</td><td>Detecting relations like $\log(2x)$ vs. $\log(x)$</td><td>Return <code>None</code></td></tr>
 <tr><td>Hyperexponential RDEs containing $I$</td><td>The RDE solver works only over $\mathbb{Q}[x]$</td><td>Trigonometric integrands are returned in unevaluated form</td></tr>
 </tbody></table>
 </div>
@@ -22927,7 +23038,47 @@ only the post-simplification passes.</p>
 <li>C: <code>ocas_expr_integrate(...)</code></li>
 </ul>
 <p>Both return the unevaluated <code>Integral(...)</code> form when no closed form is
-found, exactly like the Rust API.</p>
+found, exactly like the Rust API. Neither <strong>certifies</strong> its result; use
+<code>Expression.integrate_outcome</code> (Python) or <code>ocas_expr_integrate_outcome</code> (C)
+when a machine-checkable certificate is required.</p>
+<hr />
+<h2 id="0280-certificates-cycle-detection-and-residue-resolution"><a class="header" href="#0280-certificates-cycle-detection-and-residue-resolution">0.28.0: certificates, cycle detection and residue resolution</a></h2>
+<h3 id="symbolic-certificates-and-the-three-valued-outcome"><a class="header" href="#symbolic-certificates-and-the-three-valued-outcome">Symbolic certificates and the three-valued outcome</a></h3>
+<p><code>integrate_outcome</code> (exposed to Rust, Python and C) returns one of three values:</p>
+<div class="table-wrapper"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>Found { value, certificate }</code></td><td>An antiderivative <strong>with a machine-checkable certificate</strong> (<code>D(F) − f ≡ 0</code> in the exact checker)</td></tr>
+<tr><td><code>ProvedNonElementary { witness }</code></td><td>Proved non-elementary (no producer in 0.28.0; reserved for the non-elementary layer)</td></tr>
+<tr><td><code>Unknown { residue, uncertified }</code></td><td>Honest "I do not know": <code>residue</code> is the unevaluated <code>Integral(f, x)</code>; <code>uncertified</code> is the pipeline's candidate (<strong>not an answer</strong>, diagnostics only)</td></tr>
+</tbody></table>
+</div>
+<p>The certificate engine (<code>ocas-calc/src/integral/certify.rs</code>) tries three layers: structural zero
+(<code>normalize</code> plus like-term collection), elementary-field zero (trig→exp rewriting, <code>I² = −1</code>
+reduction, dependent <code>exp</code>/<code>log</code> atoms merged before embedding into a rational function field), and
+a reserved radical layer. Every layer is <strong>sound</strong>: treating atoms as independent generators can
+only miss an identity (a false negative), never certify a wrong answer. The field arithmetic runs
+under deterministic budgets and declines honestly when they are exhausted.</p>
+<p><code>ocas-calc/src/integral/risch.rs</code> additionally verifies every Risch result <strong>inside the tower's own
+field</strong>, so the engine cannot emit an answer the exact checker falsifies — that guard is how
+0.28.0 caught and contained a latent wrong answer (the exp-level rational part mis-scaled negative
+powers).</p>
+<h3 id="expression-level-cycle-detection-and-residue-resolution"><a class="header" href="#expression-level-cycle-detection-and-residue-resolution">Expression-level cycle detection and residue resolution</a></h3>
+<p>A chain entry (<code>integral/chain.rs</code>) is identified by the expression address <strong>plus</strong> <code>rule_depth</code>
+and <code>parts_depth</code>: a repeat of the same shape with a <em>smaller</em> budget is the pipeline's legitimate
+recursive descent and must be allowed; only an equal-budget repeat is a true cycle. The absolute
+entry backstop stays at 0.27.3's 256, and residue-resolution re-entries charge a separate budget so
+they cannot starve the primary chain.</p>
+<p>Several stages return a <strong>partial</strong> result (the partial fraction is done and the leftover
+<code>Integral(...)</code> is itself solvable). After the chain is finished the top-level entry resolves those
+residues: only "rational shape, ≤2 symbols, ≤64 nodes" residues are retried, and a resolution is
+accepted only when the residue count <strong>strictly decreases</strong>. A plain <code>Integral(f, x)</code> fallback is
+never resolved (that would re-run the whole chain, and with <code>rules = false</code> would defeat the
+caller's intent).</p>
+<h3 id="dependent-generator-merging-regular-towers"><a class="header" href="#dependent-generator-merging-regular-towers">Dependent-generator merging (regular towers)</a></h3>
+<p><code>ocas-calc/src/tower/merge.rs</code> merges algebraically dependent generators through exact field
+identities: <code>exp(u)</code>/<code>exp(u+c)</code>, <code>exp(u)</code>/<code>exp(−u)</code>, <code>log(u)</code>/<code>log(cu)</code>, <code>log(u)</code>/<code>log(u^k)</code>,
+<code>log(exp(u))</code> and <code>exp(log(u))</code>, registering constant generators (<code>log(2)</code>, <code>exp(1)</code>, <code>D t = 0</code>)
+when needed. The tower now carries the <strong>rewritten</strong> integrand, which is what <code>risch</code> converts;
+undecidable dependencies are still declined honestly.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="rational-functions-resultants--partial-fractions"><a class="header" href="#rational-functions-resultants--partial-fractions">Rational Functions, Resultants &amp; Partial Fractions</a></h1>
 <p>oCAS provides a complete stack for rational function arithmetic, resultant
 computation, and partial fraction decomposition over any Euclidean domain.
