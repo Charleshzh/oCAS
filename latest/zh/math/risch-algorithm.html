@@ -274,13 +274,16 @@
 </ul>
 </li>
 <li>
-<p><strong>积分对数部分</strong>：对 $a_1/d_1$（$d_1$ 无平方），检查是否匹配<strong>对数导数恒等式</strong>。</p>
+<p><strong>积分对数部分</strong>：对 $a_1/d_1$（$d_1$ 无平方），先检查<strong>对数导数恒等式</strong>（快路径），未命中则走 <strong>Rothstein–Trager 结式方法</strong>（0.29.0 起，仅限 $\mathbb{Q}$ 根；无理数根与非常量根诚实拒绝）。</p>
 </li>
 <li>
 <p><strong>基域</strong> $\mathbb{Q}(x)$：委托给有理函数积分器。</p>
 </li>
 </ol>
 <p>结果组装为 <code>LevelResult { elem, logs, extras }</code>，其中 <code>elem</code> 是域元素部分，<code>logs</code> 是 $\sum c_i \log(v_i)$ 形式的对数项，<code>extras</code> 是未能积分的部分。</p>
+<blockquote>
+<p><strong>0.29.0 新增（双曲指数层的 Laurent 拆分）</strong>：在 $t_\ell = \exp u$ 层，$t$ 整除自身导数（$Dt = Du \cdot t$），即 $t$ 是 <strong>special</strong> 多项式，含 $t$ 幂因子的分母<strong>不走</strong> Hermite 约化（$\gcd(v, Dv) = 1$ 的前提不成立，0.28.0 的塔内校验曾因此抓到一个负幂次系数缩放的潜伏错案）。现在先把分母拆为 $t^k \cdot d'$（$\gcd(d', t) = 1$），$t^k$ 部分按负幂层逐层解 Risch 微分方程，仅 $d'$ 进 Hermite。</p>
+</blockquote>
 <h3 id="hermite-约化"><a class="header" href="#hermite-约化">Hermite 约化</a></h3>
 <p><strong>目标</strong>：将有理函数 $a/d$ 分解为"已积"部分加"更简单"的剩余（剩余部分的分母无平方）。</p>
 <p><strong>算法</strong>（Bronstein Ch. 2 的 Hermite 约化；oCAS 采用无平方分解递推形式）：</p>
@@ -321,10 +324,19 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <p>当 $4c - b^2 &lt; 0$（实根情况），$\arctan$ 变为 $\text{artanh}$（反双曲正切），对应对数形式。</p>
 <h3 id="risch-微分方程"><a class="header" href="#risch-微分方程">Risch 微分方程</a></h3>
 <p>Risch 算法中最核心的子问题是求解 <strong>Risch 微分方程</strong>（Risch Differential Equation, RDE）。</p>
-<p><strong>问题</strong>. 给定微分域 $k_\ell$ 中的元素 $f, g$（两者都不含顶层变量 $t_\ell$），求 $q \in k_\ell[t_\ell]$ 满足：</p>
+<p><strong>问题</strong>（0.29.0 起的完整片段）. 给定微分域 $k_\ell$ 中的元素 $f, g$（<strong>允许含顶层变量</strong> $t_\ell$），求 $q \in k_\ell(t_\ell)$（<strong>有理函数</strong>，不限于多项式）满足：</p>
 <p>$$Dq + f \cdot q = g$$</p>
-<p>其中 $D$ 是塔导子（对 $t_\ell$ 的全导数）。注意 $f$ 和 $g$ 的系数在 $k_\ell$ 中，$q$ 是 $k_\ell[t_\ell]$ 中的多项式。</p>
-<p><strong>为什么只求多项式解</strong>：有理函数解 $q = p/d$ 需要额外的分母界（denominator bound）分析，这是当前 oCAS 实现未覆盖的片段。返回 <code>None</code> 时调用者回退到其他积分方法。</p>
+<p>其中 $D$ 是塔导子（对 $t_\ell$ 的全导数）。</p>
+<p><strong>求解管线</strong>（逐函数对照 SymPy 1.14 <code>integrals/rde.py</code>，即 Bronstein Ch. 6 的实现版）：</p>
+<ol>
+<li><strong>弱规范化</strong>（Thm 6.1.1）：把 $f$ 的每个"正整数留数"用对数导数吸收掉，得到 $f' = f - Dq_{wn}/q_{wn}$；原方程等价于 $Dz + f'z = q_{wn},g$（$z = q_{wn},y$）。</li>
+<li><strong>法分母界</strong>（Thm 6.1.2）：求 $h_n$ 使 $q_2 = z \cdot h_n$ 在所有 normal 不可约因子处为多项式，方程化为 $a \cdot Dq_2 + b \cdot q_2 = c$。</li>
+<li><strong>特殊分母界</strong>（Thm 6.2.1）：在超指数层处理 $t$ 的幂（$t$ 是 special 多项式）：$r = q_2 \cdot t^\nu \in k[t]$，其中 $\nu$ 由 $b, c$ 在 $t$ 处的阶给出；当 $\nu_b = 0$ 时用<strong>参数对数导数</strong>（<code>parametric_log_deriv</code>，0.29.0 在基域 $\mathbb{Q}(x)$ 上实现）精确改进 $\nu$。</li>
+<li><strong>次数界</strong>（§6.3）：给出 $\deg r$ 的上界 $n$（未移植 <code>limited_integrate</code> 改进——只会把界压低，错过即诚实拒绝）。</li>
+<li><strong>SPDE</strong>（Rothstein 特殊多项式微分方程）：把 $a \neq 1$ 的方程逐轮归约为 $a$ 常量的方程 $Dh + Bh = C$。</li>
+<li><strong>多项式 RDE 分派</strong>：<code>no_cancel_b_large</code>（无消去时的逐层剥离）；消去情形按生成元类型走 <code>cancel_exp</code> / <code>cancel_primitive</code>，<strong>递归到下一层</strong>重新求解完整 RDE——下层的有理解由此被利用（例如 $q = 1/t$ 正是这样产生的）。</li>
+</ol>
+<p><strong>为什么 0.29.0 起不限于多项式解</strong>：有理函数解 $q = p/d$ 需要的分母界（denominator bound）分析已经实现——弱规范化（Thm 6.1.1）、法分母界（Thm 6.1.2）与特殊分母界（Thm 6.2.1，含基层 <code>parametric_log_deriv</code> 改进）逐层把未知量约束为多项式，再经次数界与 SPDE 归约到消去情形；<code>limited_integrate</code> 次数界改进与高层的 <code>parametric_log_deriv</code> 未实现，命中时返回 <code>None</code> 回退到其他积分方法（只可能错过解，不会给出错解）。</p>
 <h4 id="基域-mathbbqx-上的-rde"><a class="header" href="#基域-mathbbqx-上的-rde">基域 $\mathbb{Q}(x)$ 上的 RDE</a></h4>
 <p>在基域 $k_0 = \mathbb{Q}(x)$ 上，RDE 化为常微分方程 $q'(x) + f(x) \cdot q(x) = g(x)$。</p>
 <p><strong>算法</strong>（<code>base_rde</code>）：</p>
@@ -562,12 +574,12 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 // Err(_)      — 化简中途 fuel 耗尽
 <span class="boring">}</span></code></pre></pre>
 <h3 id="范围限制与回退策略"><a class="header" href="#范围限制与回退策略">范围限制与回退策略</a></h3>
-<p>Risch 算法的当前实现有以下限制：</p>
+<p>Risch 算法的当前实现（0.29.0）有以下限制：</p>
 <div class="table-wrapper"><table><thead><tr><th>限制</th><th>原因</th><th>回退行为</th></tr></thead><tbody>
-<tr><td>只求 RDE 的多项式解</td><td>有理函数解需要分母界分析</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
-<tr><td>塔层上的对数部分只用对数导数恒等式 $a_1 = c \cdot Dd_1$</td><td>完整的对数部分需要塔层上的 Rothstein–Trager / 迹函数判定</td><td>返回未求值形式（基域 $\mathbb{Q}(x)$ 上仍使用完整处理）</td></tr>
+<tr><td><del>只求 RDE 的多项式解</del>（0.29.0 起为完整有理片段：弱规范化 + 法/特殊分母界 + 次数界 + SPDE + 抵消递归；<code>limited_integrate</code> 次数界改进与高层 <code>parametric_log_deriv</code> 未实现）</td><td>改进只降次数界，错过即诚实拒绝</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
+<tr><td>塔层上的对数部分（0.29.0 起为 Rothstein–Trager，仅 ℚ 根；无理数/非常量根拒绝）</td><td>代数数根需要 0.30.0 的代数扩张</td><td>返回未求值形式</td></tr>
 <tr><td>代数函数（$\sqrt{x}$ 等）不支持</td><td>需要代数函数域扩展</td><td>由启发式三角替换覆盖常见模式</td></tr>
-<tr><td>代数相关生成元保守拒绝（0.28.0 起改为精确合并）</td><td>$\log(2x)$ 与 $\log(x)$ 的关系检测</td><td>返回 <code>None</code></td></tr>
+<tr><td>代数相关生成元的部分合并（0.28.0 精确合并六类 + 0.29.0 的 $\exp(ku)=\exp(u)^k$；分数倍 $\exp(u/k)$ 需重基，未实现）</td><td>关系检测不完备</td><td>返回 <code>None</code></td></tr>
 <tr><td>含 $I$ 的超指数 RDE</td><td>RDE 求解器仅在 $\mathbb{Q}[x]$ 上工作</td><td>三角被积函数返回未求值形式</td></tr>
 </tbody></table>
 </div>

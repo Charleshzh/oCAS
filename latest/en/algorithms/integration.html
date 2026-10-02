@@ -251,11 +251,17 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 <code>log</code> or <code>exp</code> over the field below, and integrating recursively
 (Bronstein, <em>Symbolic Integration I</em>, ch. 5):</p>
 <ul>
-<li>at each level, the rational part is split off by Hermite reduction;</li>
-<li>the logarithmic part uses the logarithmic-derivative identity;</li>
+<li>at each level, the rational part is split off by Hermite reduction
+(at hyperexponential levels the <code>t</code>-power denominator is split off
+first as a Laurent polynomial, 0.29.0);</li>
+<li>the logarithmic part first tries the logarithmic-derivative identity,
+then the Rothstein–Trager resultant method (rational roots only,
+0.29.0);</li>
 <li>the polynomial part is integrated by undetermined coefficients at
 <code>log</code> levels and by the Risch differential equation <code>Dq + f·q = g</code>
-at <code>exp</code> levels;</li>
+at <code>exp</code> levels — solved over the <strong>full rational fragment</strong> since
+0.29.0 (weak normalization, denominator bounds, degree bounds, SPDE,
+cancellation recursions);</li>
 <li>the base <code>ℚ(x)</code> delegates to the rational-function integrator.</li>
 </ul>
 <p>The tower recursion is capped by <code>MAX_RISCH_DEPTH = 16</code>: beyond that
@@ -272,9 +278,12 @@ let ctx = AtomArena::new(&amp;arena);
 let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
 <h3 id="scope-limits"><a class="header" href="#scope-limits">Scope limits</a></h3>
-<p>The current fragment seeks only <strong>polynomial</strong> solutions of the Risch
-differential equation and uses only the logarithmic-derivative identity
-for logarithmic parts. Consequences:</p>
+<p>Since 0.29.0 the Risch differential equation is solved over the <strong>full
+rational fragment</strong> (denominator bounds included), and the logarithmic
+part uses Rothstein–Trager with <strong>rational roots only</strong> — irrational or
+non-constant resultant roots, and the unported <code>limited_integrate</code> /
+higher-level <code>parametric_log_deriv</code> refinements, decline honestly.
+Consequences:</p>
 <ul>
 <li><code>∫ exp(x)/x dx</code> has no elementary antiderivative — it is answered by
 the special-function table as <code>Ei(x)</code>.</li>
