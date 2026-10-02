@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.29.0] - 2026-10-01
+
+**超越 Risch 补全 / Completing the transcendental Risch fragment**
+
+### Added / 新增
+
+- **RDE 有理解**（`ocas-calc/src/integral/rde.rs` 全量重写）：把 Risch 微分方程 `Dq + f·q = g` 从「仅多项式解」扩为完整有理片段，逐函数对照 SymPy 1.14 `integrals/rde.py`（即 Bronstein ch. 6 的镜像）移植：弱规范化（Thm 6.1.1）、法分母界（Thm 6.1.2）、特殊分母界（Thm 6.2.1，含基层 `parametric_log_deriv` 改进）、次数界（§6.3，未移植 `limited_integrate` 改进——只降界不产错案）、SPDE、以及多项式 RDE 分派（`no_cancel_b_large` + `cancel_exp`/`cancel_primitive` 递归进下一层的完整管线）。典型新能力：`exp(exp(x) + x)`（内层方程的有理解为 `q = 1/exp(x)`）。
+  / The Risch differential equation is now solved over the **full rational fragment** (weak normalization, normal/special denominator bounds, degree bounds, SPDE, and the cancellation recursions), ported function-by-function against SymPy 1.14's `rde.py`.
+
+- **Rothstein–Trager 对数部分**（新模块 `integral/logpart.rs`）：各塔层的对数部分不再只认对数导数恒等式 `a1 = c·D d1`（它正是单根特例）。`R(z) = resultant_t(a1 − z·D d1, d1)` 由值插值构造（跳过首项消去节点——形式次模板下结果式与特化不可交换，这点与朴素实现相反）；ℚ 根经有理根定理候选筛 + 精确代入 + 综合除法完备性判定；每根 `vᵢ = gcd(a1 − cᵢ·D d1, d1)` 且经 `Πvᵢ == d1` 与残项 `t`-自由两项自证验证。无理根/非常量根一律诚实拒绝（前者归 0.30.0 的代数扩张）。新增 `KPoly::resultant`（域上 Euclidean 递归）。
+  / The general Rothstein–Trager logarithmic part at every tower level (resultant by value interpolation with a formal degree template, rational-root sieve with exact completeness check, per-root gcd, self-verifying identities).
+
+- **耦合微分系统基础设施**（`integral/coupled.rs`）：`y′ + A·y = b`（`A ∈ ℚ^{n×n}` 常量）经 Faddeev–LeVerrier 特征多项式 + ℚ 有理根 + RREF 零空间对角化解耦为基层标量 RDE；有理特征值不全则诚实拒绝。**未挂接**（Wave 0 归因显示题库无可解锁案例；RDE 抵消分支本可调用处与 SymPy 一样保持未实现），结果一律精确验证 `Dy + Ay == b`。
+  / Coupled-system solver infrastructure (eigen-decoupling into base-level scalar RDEs), shipped **unwired** with exact verification — no corpus case needs it yet.
+
+- **塔随机通用性测试**（`ocas-calc/src/tower/proptests.rs`）：随机塔（1–3 层 log/exp）× 随机域元素 `F`，`f = D F` 精确求导后走 `integrate_outcome`——`Found` 必带证书；随机被积式走旧 `integrate` 路径，凡无残项答案必须过证书门（该族 `certified_rate = 1.0` 作为硬断言）；对抗族（`exp(u)·exp(−u)`、`log(x)+log(3x)`、`exp(x)+exp(2x)`）端到端可认证。
+  / Property tests over random towers: integrate-by-construction through the certified outcome API, plus the legacy-path gate that every residue-free answer must certify.
+
+### Fixed / 修复
+
+- **指数层 Laurent 拆分**（`integral/risch.rs`）：修复 0.28.0 塔内校验抓到的潜伏错案——双曲指数层把 `t^k`（`t | Dt` 的 special 因子）送进 Hermite 约化，违反 `gcd(v, Dv) = 1` 前提并静默错缩放负幂次系数（最小复现 `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`，`t⁻²`/`t⁻⁴` 系数错 2× 与 4/3×）。现在 `den = t^k·d′` 先拆分：`t^k` 部分逐层 RDE（与正幂层同构），仅 `t`-互素部分进 Hermite；`hermite_tower` 的前提违反从 `debug_assert` 改为诚实拒绝。0.28.0 被兜住回退的 5 例现为认证正确答案。
+  / The hyperexponential-level Laurent split: `t`-power denominators no longer reach Hermite reduction (the `gcd(v, Dv) = 1` precondition), eliminating the latent negative-power coefficient mis-scaling.
+
+- **正则塔合并扩展**（`tower/merge.rs`）：新增 `exp(k·u) = exp(u)^k`（`k ∈ ℤ`）合并类——`exp(2x)`/`exp(x)`、`exp(4x³)`/`exp(x³)` 这类整数倍依赖对不再被当作独立生成元。
+  / New merge class `exp(k·u) = exp(u)^k` for nonzero integers `k`.
+
+- **链内残项解析**（`integral/mod.rs` + `chain.rs` 的 `parts` 作用域）：`rational`/`symbolic_rational` 阶段的残项改在**链内**即时解析（0.28.0 只在顶层解析一次），净回收 `rubi-00179/00627/01798`。**实测陷阱**：parts 递归内的解析会把内层残项变成含 `atan`/`log` 的完整答案，`∫ v·du` 随即要在分部续算中积分这些超越项（`rubi-01646` 的回归机制：预算耗尽回退）；`chain::parts_active` 作用域标记在 parts 子积分期间抑制解析，兼顾两者。0.28.0 设想的「替换机制回代校验门」（E1）实测**冗余且有害**（冗余：parts 抑制已覆盖；有害：撤掉慢性超时题 `rubi-01250` 的早退出口致其越过 10 s 预算），已实现后移除，记录在案。
+  / In-chain residue resolution with a parts-scope suppression flag (measured: naive in-chain resolution regresses `rubi-01646` by reshaping inner answers; the planned substitution commit gates proved redundant and harmful, implemented then removed).
+
+### Coverage / 覆盖率（诚实记录）
+
+- Rubi 1892 题子集：0.28.0 基线（solved 371、墙钟 433.7 s）→ **0.29.0 终态 solved 378（19.98%）、超时 12（持平）、崩溃 0、墙钟 ~430 s**；逐题 diff **新解 7、回归 0**（`rubi-00179/00184/00543/00627/00992/01524/01798`）。`verify_mismatches = 0`、证书假阳性 0。
+  / 378 solved (+7, zero regressions), timeouts flat at 12, wall clock slightly below the 0.28.0 baseline.
+- exp-log 桶 4 → **7/83**。Wave 0 归因（`ocas-tests/data/explog_attribution_029.csv`）：79 例未解中 **60 例带符号指数**（塔不可表示，与机制无关）、**13 例需符号常量塔**（部分另需 0.31.0 的 `polylog`）、纯数值仅 5 例（本波解出 3：`rubi-00184/00992/01524`；`rubi-00174` 需复根 → 0.30.0；`rubi-00666` SymPy 亦回退）。原计划「≥16/83」在既定范围内不可达——这是桶构成问题，不是机制不足。
+  / exp-log 4 → 7/83; the Wave-0 attribution shows 60/79 remaining carry symbolic exponents (tower-unrepresentable) and 13 need a symbolic-constant tower — the bucket's ceiling is structural, not the mechanisms'.
+- `certified_rate`：29.1%（110/378），未达 40% 目标。Wave G 复测预算前沿：400 → 1200 提升 29.1% → 31.7% 但超时 12 → 15、墙钟 +14%——与 0.28.0 同一「覆盖换时间」权衡，回退并记录。真正的修法是 0.32.0 的模证书。
+  / `certified_rate` stays 29.1%; re-measured the budget frontier (1200 → timeouts 15), reverted, recorded.
+- 双曲前端复测（Wave H）：ON 时 exp-log +1 但超时 +1（`rubi-01050`）、墙钟 +3.9%——未过「超时不增」门，保持默认关闭。
+  / Hyperbolic front-end re-measured: +1 solve but +1 timeout — stays off.
+
+---
+
 ## [0.28.0] - 2026-09-13
 
 **积分机制正确性地基 / Integration-mechanism correctness foundation**

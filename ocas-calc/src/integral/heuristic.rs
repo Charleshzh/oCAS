@@ -199,7 +199,9 @@ fn try_parts<'a>(
     };
 
     // Compute V = ∫ v' dx (recursive, at higher depth)
-    let v = integrate_raw(ctx, v_prime, var, parts_depth + 2, true, 0, parts_depth + 1);
+    let v = crate::integral::chain::with_parts_scope(|| {
+        integrate_raw(ctx, v_prime, var, parts_depth + 2, true, 0, parts_depth + 1)
+    });
     if contains_integral(v) {
         return None;
     }
@@ -214,15 +216,17 @@ fn try_parts<'a>(
     let u_prime_v = ctx.mul(&[u_prime, v]);
 
     // Compute ∫ u' * V dx (recursive)
-    let integral_u_prime_v = integrate_raw(
-        ctx,
-        u_prime_v,
-        var,
-        parts_depth + 2,
-        true,
-        0,
-        parts_depth + 1,
-    );
+    let integral_u_prime_v = crate::integral::chain::with_parts_scope(|| {
+        integrate_raw(
+            ctx,
+            u_prime_v,
+            var,
+            parts_depth + 2,
+            true,
+            0,
+            parts_depth + 1,
+        )
+    });
 
     // Build result: u * V - ∫ u' * V
     let u_times_v = ctx.mul(&[u, v]);
@@ -991,6 +995,14 @@ fn try_weierstrass<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> O
     }
 
     // Back-substitute t = tan(u/2).
+    //
+    // 0.29.0 E1 measurement (recorded for the wave notes): a commit gate
+    // that declined residue-carrying back-substituted answers turned out to
+    // be **redundant and harmful** — the E2 parts-scope suppression already
+    // keeps `rubi-01646` on its solving path, and removing the early-exit
+    // partial pushed the chronic grinder `rubi-01250` over the timeout.
+    // The 0.28.0 behaviour (commit; the chain ends on the partial and the
+    // top-level resolver gets the residues) is therefore kept.
     let back = ctx.fun("tan", &[ctx.mul(&[u, ctx.pow(ctx.num(2), ctx.num(-1))])]);
     substitute_atom(ctx, result_t, t_sym, back)
 }

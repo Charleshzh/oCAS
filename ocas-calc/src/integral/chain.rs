@@ -69,6 +69,9 @@ thread_local! {
     static STATE: RefCell<ChainState> = const { RefCell::new(ChainState::new()) };
     /// Non-zero while a residue resolution is in progress.
     static RESOLVE_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+    /// Non-zero while an integration-by-parts sub-integral is being
+    /// computed (0.29.0 E2).
+    static PARTS_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
     /// Whether a stage returned a **partial** (residue-carrying) result
     /// during the current top-level call.
     ///
@@ -123,6 +126,32 @@ pub(crate) fn with_resolve_scope<R>(f: impl FnOnce() -> R) -> R {
     RESOLVE_DEPTH.with(|d| d.set(d.get() + 1));
     let _guard = Guard;
     f()
+}
+
+/// Run `f` in an integration-by-parts sub-integral scope (0.29.0 E2).
+///
+/// In-chain residue resolution is suppressed while a parts sub-integral is
+/// being computed: resolution changes a partial answer's *shape* (a residue
+/// becomes a complete answer with `atan`/`log` terms), and the parts
+/// continuation `∫ v·du` then has to integrate those transcendental pieces,
+/// which burns the chain budget (measured: `rubi-01646` regresses from
+/// solved to fallback). The flag deliberately survives substitution
+/// boundaries (which reset the numeric `parts_depth` budget).
+pub(crate) fn with_parts_scope<R>(f: impl FnOnce() -> R) -> R {
+    struct Guard;
+    impl Drop for Guard {
+        fn drop(&mut self) {
+            PARTS_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+        }
+    }
+    PARTS_DEPTH.with(|d| d.set(d.get() + 1));
+    let _guard = Guard;
+    f()
+}
+
+/// Whether a parts sub-integral is anywhere on the current call stack.
+pub(crate) fn parts_active() -> bool {
+    PARTS_DEPTH.with(|d| d.get() > 0)
 }
 
 /// Reset the chain bookkeeping. Called by every public integration entry

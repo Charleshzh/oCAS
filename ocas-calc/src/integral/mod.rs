@@ -16,6 +16,7 @@
 pub(crate) mod binomial;
 pub mod certify;
 pub(crate) mod chain;
+pub(crate) mod coupled;
 pub(crate) mod elliptic;
 pub(crate) mod exp_log;
 pub(crate) mod halfpower;
@@ -23,6 +24,7 @@ pub(crate) mod heuristic;
 pub(crate) mod hyperbolic_reduction;
 pub(crate) mod inverse_trig;
 pub(crate) mod kernel_subst;
+pub(crate) mod logpart;
 pub mod outcome;
 pub(crate) mod quad_power;
 pub mod rational;
@@ -628,6 +630,13 @@ pub(crate) fn integrate_raw<'a>(
 /// clock for capability" rule the front-end is kept off the chain until
 /// Risch itself is budgeted (the planned performance wave); the rewrite and
 /// the merge are exercised by their unit tests and stay available for it.
+///
+/// **0.29.0 Wave H re-measurement** (with the Laurent split, rational RDE,
+/// and Rothstein–Trager landed): ON gives solved 378 → 378 with exp-log
+/// +1, but timeouts 12 → 13 (`rubi-01050`) and wall clock 430.3 → 447.2 s
+/// (+3.9%). The gate was "≥10 new solves, ≤5% wall clock, no new timeouts"
+/// — the timeout increase alone fails it. Kept OFF; the family's real fix
+/// is the 0.32.0 budget/complexity work.
 const HYPERBOLIC_EXP_ENABLED: bool = false;
 
 /// Try the rational-function integrator, then the Risch algorithm, then the
@@ -673,7 +682,18 @@ fn try_risch_or_fallback<'a>(
         };
     }
 
-    stage!("rational", || rational::integrate_rational(ctx, expr, var));
+    // 0.29.0 E2: the two partial-fraction producers (`rational` and
+    // `symbolic_rational`) resolve their `Integral` residues **in-chain**
+    // now; 0.28.0 resolved only at the top level. The substitution
+    // mechanisms' commit gates (E1: a residue-carrying back-substituted
+    // answer is declined) keep the measured `rubi-01646` regression of the
+    // un-gated prototype out.
+    if let Some(r) = traced_stage("rational", expr, || {
+        rational::integrate_rational(ctx, expr, var)
+    }) {
+        let r = resolve_in_chain(ctx, r, rules_enabled, rule_depth, parts_depth);
+        return accept_stage("rational", r, var);
+    }
     // Symbolic-constant rationals (coefficients in ℚ(symbols)): the ℚ
     // backend declines these; the symbolic backend also powers the
     // trig-rational class through Weierstrass t-rationals.
@@ -703,11 +723,13 @@ fn try_risch_or_fallback<'a>(
     stage!("hyperbolic_reduction", || {
         hyperbolic_reduction::integrate_hyperbolic_reduction(ctx, expr, var)
     });
-    stage!("symbolic_rational", || {
+    if let Some(r) = traced_stage("symbolic_rational", expr, || {
         symbolic_rational::integrate_rational_symbolic(ctx, expr, var)
-    });
-    stage!("risch", || risch::risch_integrate(ctx, expr, var));
-    // Trigonometric integrands: rewrite into complex exponentials, run
+    }) {
+        let r = resolve_in_chain(ctx, r, rules_enabled, rule_depth, parts_depth);
+        return accept_stage("symbolic_rational", r, var);
+    }
+    stage!("risch", || risch::risch_integrate(ctx, expr, var)); // Trigonometric integrands: rewrite into complex exponentials, run
     // Risch, then try to bring the answer back to real form. The tower
     // grinds on symbolic linear arguments (`cos(c + d*x)`), so this stage
     // only runs when every sin/cos argument has numeric coefficients.
@@ -880,6 +902,44 @@ fn accept_stage<'a>(stage: &str, result: Atom<'a>, _var: Symbol) -> Atom<'a> {
         eprintln!("[trace] partial  {stage} :: {result}");
     }
     result
+}
+
+/// In-chain residue resolution for the partial-fraction producers
+/// (0.29.0 E2): re-integrate the `Integral(g, v)` leftovers of a stage
+/// result through the budgeted resolver ([`residual::resolve`]) before the
+/// chain accepts the result. The nested chain entries are charged to the
+/// resolver's own budget, so resolution cannot starve the primary chain.
+fn resolve_in_chain<'a>(
+    ctx: &'a AtomArena<'a>,
+    result: Atom<'a>,
+    rules_enabled: bool,
+    rule_depth: usize,
+    parts_depth: usize,
+) -> Atom<'a> {
+    // Resolution changes the answer's *shape*: a partial becomes a complete
+    // answer with transcendental terms (`atan`, `log`). Inside an
+    // integration-by-parts recursion that is harmful — `v·du` then has to
+    // integrate those terms. Measured: `rubi-01646`'s parts path chokes on
+    // `log(tan(x/2))·sin(x)` once the inner Weierstrass integral resolves
+    // in-chain, and the chain burns its whole entry budget (fallback).
+    // `chain::parts_active` covers nested substitutions too: Weierstrass's
+    // inner chain resets the numeric `parts_depth`, so the flag — not the
+    // budget — is the reliable signal.
+    if chain::parts_active() {
+        return result;
+    }
+    if !residual::contains_residue(result) {
+        return result;
+    }
+    residual::resolve(
+        ctx,
+        result,
+        rules_enabled,
+        rule_depth,
+        parts_depth,
+        residual::MAX_RESIDUAL_STEPS,
+        residual::MAX_RESIDUAL_NODES,
+    )
 }
 
 pub(crate) fn fallback<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
@@ -1576,6 +1636,87 @@ mod tests {
             ocas_parse::parse(&ctx, "(a + b*x)/((d + e*x)^4*(a^2 + 2*a*b*x + b^2*x^2))").unwrap();
         let r = integrate(&ctx, expr, Symbol::new("x"));
         assert!(!contains_integral(r), "not solved: {r}");
+    }
+
+    /// 0.29.0 E2 guards: in-chain residue resolution. Of the un-gated
+    /// 0.27.3 prototype's six measured gains, `rubi-00259/00527/01077` were
+    /// already recovered by 0.28.0's top-level resolution; the in-chain
+    /// move's marginal gains are `rubi-00179/00627/01798` (all asserted
+    /// here together as the combined guard).
+    #[test]
+    fn wave_e_in_chain_resolution_recovers_the_prototype_gains() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // The six measured gains of the 0.27.3 in-chain-resolution
+        // prototype (0.28.0's top-level resolution already recovered
+        // 00259/00527/01077; 0.29.0's in-chain move adds the rest).
+        for src in [
+            "(2 + 3*x)^5/((1 - 2*x)^(5/2)*(3 + 5*x)^3)", // rubi-00179
+            "(d + e*x)^8/(a^2 + 2*a*b*x + b^2*x^2)^3",   // rubi-00259
+            "sec(c + d*x)^3*(A + B*sec(c + d*x) + C*sec(c + d*x)^2)/(a + a*sec(c + d*x))^3", // rubi-00527
+            "(2 + 3*x)^2/((1 - 2*x)^(5/2)*(3 + 5*x)^3)", // rubi-00627
+            "(1 + x)^2/(x^4*sqrt(1 - x^2))",             // rubi-01077
+            "(3 + 5*x)^3/((1 - 2*x)^(3/2)*(2 + 3*x)^3)", // rubi-01798
+        ] {
+            let expr = ocas_parse::parse(&ctx, src).unwrap();
+            let r = integrate(&ctx, expr, Symbol::new("x"));
+            assert!(
+                !contains_integral(r),
+                "0.29.0 E2 should solve `{src}`, got: {r}"
+            );
+        }
+    }
+
+    /// 0.29.0 Wave A/B/C pipeline guards: the tower merge extension, the
+    /// rational RDE, and the Rothstein–Trager logarithmic part unlock these
+    /// corpus shapes.
+    #[test]
+    fn wave_c_pipeline_gains() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        for src in [
+            // rubi-00184: dependent exp pair merges, then RT with roots ±1/2.
+            "exp(x)/(1 - exp(2*x))",
+            // rubi-01524: exp(4x³) = exp(x³)⁴ merges; polynomial hyperexp level.
+            "exp(x^3)*(1 - exp(4*x^3))^2*x^2",
+            // The RT double-root shape: ∫ dx/(exp(2x) − 1).
+            "1/(exp(2*x) - 1)",
+            // The RT single-root shape with a k-remainder: ∫ dx/(1 + exp(x)).
+            "1/(1 + exp(x))",
+            // The log-level two-root shape: ∫ dx/(x·log(x)·(log(x)+1)).
+            "1/(x*log(x)*(log(x) + 1))",
+            // rubi-00992: Wave B — the inner RDE has the rational solution
+            // q = 1/exp(x) (denominator bound + parametric log derivative).
+            "exp(exp(x) + x)",
+        ] {
+            let expr = ocas_parse::parse(&ctx, src).unwrap();
+            let r = integrate(&ctx, expr, Symbol::new("x"));
+            assert!(
+                !contains_integral(r),
+                "0.29.0 Wave A/C should solve `{src}`, got: {r}"
+            );
+        }
+    }
+
+    #[test]
+    fn wave_e_commit_gates_keep_the_prototype_regression_solved() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // `rubi-01646`: the un-gated prototype's regression — in-chain
+        // resolution let a substitution commit to a path ending in an outer
+        // residue. The 0.29.0 fix is E2's parts-scope suppression (in-chain
+        // resolution stays silent inside parts recursions); the E1
+        // back-substitution gates were measured to be redundant for this
+        // case and were removed again (they cost a timeout on the chronic
+        // grinder `rubi-01250`).
+        let expr = ocas_parse::parse(&ctx, "sin(x)/(-2 + cos(x) + cos(x)^2)").unwrap();
+        let r = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!contains_integral(r), "rubi-01646 regressed: {r}");
+        // `rubi-00638`: the case 0.28.0 top-level resolution gained; the
+        // in-chain move must not lose it.
+        let expr = ocas_parse::parse(&ctx, "1/(x^6*(5 + x^2))").unwrap();
+        let r = integrate(&ctx, expr, Symbol::new("x"));
+        assert!(!contains_integral(r), "rubi-00638 regressed: {r}");
     }
 
     #[test]

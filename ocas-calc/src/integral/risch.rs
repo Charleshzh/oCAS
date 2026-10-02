@@ -190,19 +190,77 @@ fn integrate_level<'a>(
     let tgen = &tower.gens[level - 1];
 
     // Split off the polynomial part.
-    let (p, r) = f.num.div_rem(&f.den);
-
-    // Hermite reduction on the proper part.
-    let (g, a1, d1) = hermite_tower(tower, level, &r, &f.den);
+    let (mut p, r) = f.num.div_rem(&f.den);
 
     let mut out = LevelResult::empty(top, n);
-    out.rational = g;
 
-    // Logarithmic part: only the identity a1 == c·D d1 is handled.
+    // 0.29.0: at a hyperexponential level `t` divides its own derivative
+    // (`D t = Du·t`), so a `t`-factor of the denominator is *special*:
+    // Hermite reduction requires `gcd(v, Dv) = 1` and silently mis-scales
+    // the answer when that fails (the latent bug the 0.28.0 tower check
+    // caught: `t⁻²`/`t⁻⁴` coefficients off by 2× and 4/3× in
+    // `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`). Split `den = t^k·d′` with
+    // `gcd(d′, t) = 1`; the `t^k` part integrates as a Laurent polynomial
+    // (one RDE per negative layer, exactly like the positive layers in
+    // [`integrate_kpoly_hyperexp`]), and only `d′` reaches Hermite.
+    let (r_eff, d_eff) = if tgen.kind == GenKind::Exp
+        && let Some(k) = t_adic_valuation(&f.den)
+        && k > 0
+    {
+        let t = KElem::var(top, n);
+        let du = tgen.dt.div(&t)?;
+        let tk = kpoly_monomial(top, n, k);
+        let d_prime = shift_down(&f.den, k);
+        // Partial-fraction split over the coprime factors: with
+        // `s·d′ + w·t^k = 1`, `r/(t^k·d′) = r·s/t^k + r·w/d′`.
+        let (g0, s, w) = d_prime.eea(&tk);
+        if !g0.is_one() {
+            return None;
+        }
+        let (q_poly, low) = r.mul(&s).div_rem(&tk);
+        p = p.add(&q_poly);
+        // Laurent layers: `low/t^k = Σ_j low_j·t^(j−k)`; each layer `m = j−k`
+        // is solved by `D q + m·Du·q = low_j` in the field below.
+        for (j, c) in low.coeffs.iter().enumerate() {
+            if c.is_zero() {
+                continue;
+            }
+            let m = j as i64 - k as i64;
+            let fj = du.mul_rational(&Rational::new(m, 1));
+            let qj = rde_solve(tower, level - 1, &fj, c)?;
+            let den_m = kpoly_monomial(top, n, k - j);
+            out.rational = krat_add(&out.rational, &KRat::new(KPoly::from_kelem(qj, top), den_m));
+        }
+        let (p2, r2) = r.mul(&w).div_rem(&d_prime);
+        p = p.add(&p2);
+        (r2, d_prime)
+    } else {
+        (r, f.den.clone())
+    };
+
+    // Hermite reduction on the proper part (coprime to `t` at exp levels).
+    let (g, a1, d1) = hermite_tower(tower, level, &r_eff, &d_eff)?;
+
+    out.rational = krat_add(&out.rational, &g);
+
+    // Logarithmic part: the logarithmic-derivative identity `a1 == c·D d1`
+    // stays as the fast path (it is exactly the single-root case `v = d1`);
+    // everything else goes through Rothstein–Trager (0.29.0, rational roots
+    // only — anything else declines honestly).
     if !a1.is_zero() {
         let dd1 = tower_diff_kpoly(&d1, &tower.gens[..level - 1], &tgen.dt);
         if let Some(c) = kpoly_scalar_multiple(&a1, &dd1) {
             out.logs.push((c, d1.kelem()));
+        } else if let Some((logs, rem)) = super::logpart::rothstein_trager(tower, level, &a1, &d1) {
+            out.logs.extend(logs);
+            if !rem.is_zero() {
+                // Hyperexponential levels: `D log v` leaves a `k`-valued
+                // remainder that integrates one level down.
+                let res = integrate_kelem_or_fallback(ctx, tower, level - 1, rem)?;
+                out.constant = out.constant.add(&res.elem_part());
+                out.logs.extend(res.logs);
+                out.extras.extend(res.extras);
+            }
         } else {
             out.extras
                 .push(integral_fallback_atom(ctx, tower, level, &a1, &d1)?);
@@ -211,11 +269,7 @@ fn integrate_level<'a>(
 
     // Polynomial part.
     if !p.is_zero() {
-        let pk = integrate_kpoly(ctx, tower, level, &p);
-        if pk.is_none() {
-            eprintln!("DEBUG risch: integrate_kpoly(level={level}) returned None");
-        }
-        let (poly_ans, const_ans, logs_p, extras_p) = pk?;
+        let (poly_ans, const_ans, logs_p, extras_p) = integrate_kpoly(ctx, tower, level, &p)?;
         out.poly = poly_ans;
         out.constant = const_ans;
         out.logs.extend(logs_p);
@@ -225,19 +279,65 @@ fn integrate_level<'a>(
     Some(out)
 }
 
+/// The `t`-adic valuation of a dense polynomial: the count of vanishing
+/// low-order coefficients (`None` for the zero polynomial).
+pub(crate) fn t_adic_valuation(p: &KPoly) -> Option<usize> {
+    if p.is_zero() {
+        return None;
+    }
+    Some(p.coeffs.iter().position(|c| !c.is_zero()).unwrap_or(0))
+}
+
+/// The monomial `t^k` as a polynomial over the coefficient field.
+pub(crate) fn kpoly_monomial(top: usize, n: usize, k: usize) -> KPoly {
+    let mut coeffs = vec![KElem::zero(n); k];
+    coeffs.push(KElem::one(n));
+    KPoly {
+        top,
+        coeffs,
+        n_vars: n,
+    }
+}
+
+/// `p / t^k` when `t^k` divides `p`: drop the vanishing low-order
+/// coefficients (the result is already trimmed since `p` was).
+fn shift_down(p: &KPoly, k: usize) -> KPoly {
+    debug_assert!(k <= p.coeffs.len());
+    debug_assert!(p.coeffs[..k].iter().all(|c| c.is_zero()));
+    KPoly {
+        top: p.top,
+        coeffs: p.coeffs[k..].to_vec(),
+        n_vars: p.n_vars,
+    }
+}
+
 /// Hermite reduction in `k(t)`: returns `(g, a1, d1)` with
 /// `a/d = D g + a1/d1` and `d1` squarefree.
-fn hermite_tower(tower: &Tower, level: usize, a: &KPoly, d: &KPoly) -> (KRat, KPoly, KPoly) {
+///
+/// Returns `None` when a denominator factor violates the reduction's
+/// precondition `gcd(u·Dv, v) = 1`. That can only happen for *special*
+/// polynomials; at a hyperexponential level the special factors are the
+/// powers of `t`, which [`integrate_level`] splits off before calling, so a
+/// failure here means an unmodelled dependency slipped past the tower merge
+/// — declining is honest, proceeding would silently mis-scale the answer
+/// (the 0.28.0 latent bug's mechanism, previously hidden behind a
+/// `debug_assert`).
+pub(crate) fn hermite_tower(
+    tower: &Tower,
+    level: usize,
+    a: &KPoly,
+    d: &KPoly,
+) -> Option<(KRat, KPoly, KPoly)> {
     let top = level;
     let n = d.n_vars;
     let factors = d.square_free();
     let m = factors.iter().map(|&(_, k)| k).max().unwrap_or(1);
     if m <= 1 {
-        return (
+        return Some((
             KRat::new(KPoly::zero(top, n), KPoly::one(top, n)),
             a.clone(),
             d.clone(),
-        );
+        ));
     }
     let (v, _) = factors
         .iter()
@@ -253,7 +353,9 @@ fn hermite_tower(tower: &Tower, level: usize, a: &KPoly, d: &KPoly) -> (KRat, KP
     let dv = tower_diff_kpoly(v, &tower.gens[..level - 1], &tgen.dt);
     let b = u.mul(&dv);
     let (g0, s0, _t0) = b.eea(v);
-    debug_assert!(g0.is_one());
+    if !g0.is_one() {
+        return None;
+    }
     let (_, s) = a.mul(&s0).div_rem(v);
     let (t, rem) = a.sub(&s.mul(&b)).div_rem(v);
     debug_assert!(rem.is_zero());
@@ -265,11 +367,11 @@ fn hermite_tower(tower: &Tower, level: usize, a: &KPoly, d: &KPoly) -> (KRat, KP
     let ds = tower_diff_kpoly(&s_scaled, &tower.gens[..level - 1], &tgen.dt);
     let new_a = t.add(&u.mul(&ds));
     let new_d = u.mul(&vm1);
-    let (g2, a1, d1) = hermite_tower(tower, level, &new_a, &new_d);
+    let (g2, a1, d1) = hermite_tower(tower, level, &new_a, &new_d)?;
 
     // Combine: g = -s_scaled/vm1 + g2.
     let g_term = KRat::new(s_scaled.neg(), vm1);
-    (krat_add(&g_term, &g2), a1, d1)
+    Some((krat_add(&g_term, &g2), a1, d1))
 }
 
 fn kpoly_pow(p: &KPoly, mut k: u64) -> KPoly {
@@ -486,7 +588,7 @@ fn integrate_kpoly_hyperexp<'a>(
     let mut q = vec![KElem::zero(n); m + 1];
     for i in (1..=m).rev() {
         let f_i = du.mul_rational(&Rational::new(i as i64, 1));
-        q[i] = rde_solve(ctx, tower, level - 1, &f_i, &p.coeff_at(i))?;
+        q[i] = rde_solve(tower, level - 1, &f_i, &p.coeff_at(i))?;
     }
 
     // The t⁰ coefficient is integrated recursively in the field below.
@@ -743,12 +845,55 @@ mod tests {
         let gens = tower.gen_atoms();
         let d = normalize(ctx, diff(ctx, result, var));
         let lhs = atom_to_rational(d, &gens).expect("derivative converts");
-        let rhs = atom_to_rational(normalize(ctx, integrand), &gens).expect("integrand converts");
+        // The tower may rewrite the integrand over merged generators
+        // (0.28.0), so the comparison must use the rewritten form.
+        let rhs = atom_to_rational(normalize(ctx, tower.expr), &gens).expect("integrand converts");
         // Compare semantically: cross-multiply since the two sides may be
         // different representatives of the same rational function.
         let lhs_e = KElem::new(lhs.numerator, lhs.denominator);
         let rhs_e = KElem::new(rhs.numerator, rhs.denominator);
         assert!(lhs_e.eq_cross(&rhs_e), "d/dx(result) != integrand");
+    }
+
+    /// The 0.28.0 latent bug (caught by the tower check there, fixed in
+    /// 0.29.0): the exp-level rational part mis-scaled negative powers of
+    /// `t` because Hermite reduction was applied to the special factor
+    /// `t^k` (`gcd(t, Dt) = t ≠ 1`). The Laurent split now routes those
+    /// layers through per-layer RDEs.
+    #[test]
+    fn integrate_exp_negative_power_layers() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // Minimal repro from the 0.28.0 post-mortem:
+        // ∫ (exp(x)²+1)³/(8·exp(x)⁴) dx
+        //   = t²/16 + 3x/8 − 3/(16·t²) − 1/(32·t⁴).
+        let t = ctx.fun("exp", &[x]);
+        let t2 = ctx.pow(t, ctx.num(2));
+        let num = ctx.pow(ctx.add(&[t2, ctx.num(1)]), ctx.num(3));
+        let den = ctx.mul(&[ctx.num(8), ctx.pow(t, ctx.num(4))]);
+        let f = ctx.mul(&[num, ctx.pow(den, ctx.num(-1))]);
+        assert_risch_antiderivative(&ctx, f, Symbol::new("x"));
+        // ∫ (1 + exp(x))/exp(x) dx = x − exp(−x): a single negative layer.
+        let g = ctx.mul(&[ctx.add(&[ctx.num(1), t]), ctx.pow(t, ctx.num(-1))]);
+        assert_risch_antiderivative(&ctx, g, Symbol::new("x"));
+    }
+
+    /// rubi-01524's shape: dependent `exp(4x³) = exp(x³)⁴` merges (0.29.0),
+    /// leaving a plain polynomial in `t` at the hyperexponential level.
+    #[test]
+    fn integrate_exp_integer_multiple_layers() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x3 = ctx.pow(ctx.var("x"), ctx.num(3));
+        let t = ctx.fun("exp", &[x3]);
+        let t4 = ctx.fun("exp", &[ctx.mul(&[ctx.num(4), x3])]);
+        let inner = ctx.pow(
+            ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), t4])]),
+            ctx.num(2),
+        );
+        let f = ctx.mul(&[t, inner, ctx.pow(ctx.var("x"), ctx.num(2))]);
+        assert_risch_antiderivative(&ctx, f, Symbol::new("x"));
     }
 
     #[test]

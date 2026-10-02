@@ -1,5 +1,76 @@
 # oCAS 基准测试结果（全量复测 @ 2026-08-06）
 
+## 0.29.0 超越 Risch 补全（Rubi 1892 题子集，2026-10-01）
+
+> 本轮按批准计划执行：Wave 0 exp-log 桶归因 → Wave A（塔合并扩展 + 指数层 Laurent
+> 拆分）→ Wave B（RDE 有理解全管线）→ Wave C（Rothstein–Trager 对数部分）→
+> Wave D（耦合系统基础设施）→ Wave E（链内残项解析 + parts 作用域抑制）→
+> Wave F（塔随机 proptest）→ Wave G（证书预算前沿复测）→ Wave H（双曲前端复测）。
+
+| 口径 | solved | fallback | **certified** | verified | mismatches | 超时 | 崩溃 | 总墙钟 |
+|---|---|---|---|---|---|---|---|---|
+| 0.28.0 终态（基线） | 371（19.61%） | 1521 | 107 / 371（28.8%） | 343 / 371（92.5%） | 0 | 12 | 0 | 433.7 s |
+| **0.29.0 终态（2026-10-01）** | **378（19.98%）** | **1514** | **110 / 378（29.1%）** | **350 / 378（92.6%）** | **0** | **12** | **0** | **440.1 s（+1.5%）** |
+
+- 逐题 diff（`diff_1892_failures.py`，对 `failures_final_028.jsonl`）：**新解 7、回归 0**：
+  `rubi-00179`（E 链内解析）、`rubi-00184`（C：RT 有理根 ±1/2 + 合并扩展）、
+  `rubi-00543`（E/A）、`rubi-00627`（E）、`rubi-00992`（B：有理 RDE，q = 1/t）、
+  `rubi-01524`（A：exp(4x³) = exp(x³)⁴ 合并）、`rubi-01798`（E）。
+- **验收线逐条判定**：
+  - 1892 逐题 diff **0 回归达成**；`verify_mismatches = 0` 达成；超时数不上升
+    达成（12）；墙钟 ≤ 433.7 × 1.15 达成（440.1 s）；证书假阳性 0 达成。
+  - **exp-log 桶「显著改善」弱化达成**：4 → 7/83。Wave 0 归因
+    （`ocas-tests/data/explog_attribution_029.csv`）给出桶构成：79 例未解中
+    **60 例带符号指数**（`log(c·(d+ex)^n)`、`x^r` 类，塔要求整数幂，与机制无关）、
+    **13 例符号系数但 tower-shaped**（需符号常量塔，其中若干另需 0.31.0 的
+    `polylog`）、纯数值仅 5 例（本波解出 3：`rubi-00184/00992/01524`；
+    `rubi-00174` 的 RT 根为 ±i/2 属 0.30.0 复根；`rubi-00666` SymPy 亦回退）。
+    批准的 ≥16/83 目标在既定范围内不可达，调整验收为「可达子桶全解出 + 归因入档」。
+  - **随机塔元素族证书通过率 100% 达成**（`tower/proptests.rs` 硬断言：
+    构造可解族走 `integrate_outcome` 必为 `Found`/诚实 `Unknown`；随机被积式
+    走旧路径，无残项答案必须过证书门）。
+  - **`certified_rate` 29.1% 未达 40%**（归因 `budget` 177 / `nonzero` 88 /
+    `notinfield` 3）。Wave G 复测预算前沿：`MAX_CERT_FIELD_WORK` 400 → 1200
+    提升 29.1% → 31.7%，但 3 个已解题被推过 10 s 预算（超时 12 → 15）、
+    墙钟 +14% —— 与 0.28.0 同一「覆盖换时间」权衡，回退 400 并记录。
+    真正的修法是 0.32.0 的模证书，不在本波硬攻。
+  - **双曲前端复测（Wave H）**：`HYPERBOLIC_EXP_ENABLED = true` 时 exp-log +1，
+    但超时 12 → 13（`rubi-01050`）、墙钟 430.3 → 447.2 s（+3.9%）。门槛为
+    「新增解 ≥10、墙钟 ≤5%、超时不增」——超时项未过，保持默认关闭。
+- **本波实现的机制明细**：
+  - **Wave A**：`tower/merge.rs` 新增 `exp(k·u) = exp(u)^k` 合并类；`risch.rs`
+    指数层 Laurent 拆分（`den = t^k·d′`：t^k 走逐层 RDE，t-互素部分进 Hermite；
+    `hermite_tower` 的 `gcd(u·Dv, v) = 1` 前提违反由 `debug_assert` 改为诚实拒绝）
+    —— 修复 0.28.0 塔内校验抓到的负幂次系数缩放潜伏错案（最小复现
+    `∫ (exp(x)²+1)³/(8·exp(x)⁴) dx`），被兜住的 5 例转为认证正确答案。
+  - **Wave B**：`rde.rs` 全量重写为完整 rischDE 管线（弱规范化 → 法分母界 →
+    特殊分母界 → 次数界 → SPDE → 多项式 RDE 分派），逐函数对照 SymPy 1.14
+    `rde.py`；基层 `parametric_log_deriv`（ℚ(x)、常量 η）实现，高层保守跳过；
+    `limited_integrate` 次数界改进未移植（只降界不产错案）。
+  - **Wave C**：`integral/logpart.rs`（RT 结式值插值 + 有理根筛 + 逐根 gcd +
+    双自证验证）+ `tower/elem.rs` 的 `KPoly::resultant`。**实现要点**：值插值
+    必须用形式次模板并在首项消去节点跳过（`a1 = 1, d1 = 1+t, Dd1 = t` 在节点 0
+    给 `Res(1, 1+t) = 1` 而形式多项式 `R(z) = −(1+z)` 要求 `R(0) = −1`——特化
+    与结果式在掉次节点不可交换）。
+  - **Wave D**：`integral/coupled.rs`（Faddeev–LeVerrier + RREF 零空间对角化解耦 →
+    基层标量 RDE；精确验证 `Dy + Ay == b`）。未挂接：Wave 0 归因显示题库无可解锁
+    案例，RDE 抵消分支调用点与 SymPy 一样保持未实现。
+  - **Wave E**：`rational`/`symbolic_rational` 残项改链内解析；实测陷阱与修法——
+    parts 递归内解析把内层残项变成含 `atan`/`log` 的完整答案，`∫v·du` 要在分部
+    续算中积分这些超越项（`rubi-01646` 回归机制：256 链条目耗尽）；`chain.rs`
+    新增 `parts_active` 作用域标记（Weierstrass 内层链会重置数值预算，标记不会），
+    parts 子积分期间抑制解析。0.28.0 设想的替换校验门（E1）实测冗余且有害
+    （撤掉 `rubi-01250` 的早退出口致其越过 10 s），实现后移除。
+  - **Wave F**：`tower/proptests.rs`（生成器 1 构造可解族、生成器 2 随机被积式、
+    依赖生成元对抗族）。
+- **复现命令**：`cargo bench -p ocas-tests --bench integrate_1892`；逐题 diff：
+  `uv run python ocas-tests/scripts/diff_1892_failures.py ocas-tests/data/failures_final_028.jsonl ocas-tests/data/integrate_1892_failures.jsonl`。
+  终态产物：`integrate_1892_report.json`、`integrate_1892_failures.jsonl`、
+  `integrate_1892_unverified.jsonl`；0.28.0 基线已另存 `report_final_028.json` /
+  `failures_final_028.jsonl` / `unverified_final_028.jsonl`。
+
+---
+
 ## 0.28.0 积分机制正确性地基（Rubi 1892 题子集，2026-09-13）
 
 > 本轮按《0.28.0 波次计划》执行：符号证书引擎 + 三值 `Outcome`、残项解析、表达式级循环检测、

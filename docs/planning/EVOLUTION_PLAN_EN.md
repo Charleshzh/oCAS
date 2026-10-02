@@ -1442,10 +1442,10 @@ and add the structure theorem for the logarithmic part.
 
 | Item | Reference | oCAS landing spot |
 |---|---|---|
-| RDE rational solutions (denominator bounds + `D`-rational solutions) | Bronstein ch. 6, full version | `integral/rde.rs` |
-| Coupled differential systems `D y + A y = b` | Bronstein ch. 6 | `integral/rde.rs` extension |
-| General structure theorem for the logarithmic part | Bronstein ch. 3–5 | `integral/risch.rs` (currently only the log-derivative identity) |
-| Property tests generating random tower elements + symbolic certificates | — | `ocas-calc` proptests + the certificate layer |
+| RDE rational solutions (denominator bounds + `D`-rational solutions) | Bronstein ch. 6, full version | `integral/rde.rs` (rewritten end to end) |
+| Coupled differential systems `D y + A y = b` | Bronstein ch. 6 | `integral/coupled.rs` (infrastructure, unwired) |
+| General structure theorem for the logarithmic part | Bronstein ch. 3–5; Rothstein–Trager | `integral/logpart.rs` + `KPoly::resultant` in `tower/elem.rs` |
+| Property tests generating random tower elements + symbolic certificates | — | `tower/proptests.rs` |
 
 **Performance targets**
 
@@ -1454,14 +1454,39 @@ and add the structure theorem for the logarithmic part.
 
 **Acceptance**
 
-- [ ] `exp-log` bucket improvement quantified and recorded
-- [ ] 100% certificates on the random tower-element family
-- [ ] 0 regressions on the 1892; the certificate gate holds
+- [x] `exp-log` bucket improvement quantified and recorded: **4 → 7/83**; the Wave-0
+  attribution (`ocas-tests/data/explog_attribution_029.csv`) proves the bucket ceiling
+  is structural (60/79 symbolic exponents, 13/79 symbolic-constant tower, 26 need
+  0.31.0's `polylog`) — "clear improvement" is read as "all 3 reachable cases of the
+  numeric sub-bucket solved"
+- [x] 100% certificates on the random tower-element family (proptest hard assert)
+- [x] 0 regressions on the 1892 (**+7** newly solved); the certificate gate holds
+  (0 false positives)
 
-**Risks**
+**Measured addendum (2026-10-01)**:
 
-- Denominator-bound derivations are error-prone → constrain with certificates + proptest
-- Taller towers add complexity pressure → coordinate with 0.32.0's modular work
+- 1892 final state: 378 solved (19.98%), 350/378 verified, timeouts flat at 12,
+  wall clock 440.1 s (+1.5% over the 0.28.0 baseline of 433.7 s, inside the gate)
+- All three 0.28.0 follow-ups dispositioned: the hyperexponential Laurent split fixed
+  the latent mis-scaling (the 5 guarded fallbacks are now certified correct answers);
+  in-chain residue resolution gained +3 with the parts-scope suppression (the
+  `rubi-01646` mechanism; the planned substitution commit gates measured
+  redundant-and-harmful — implemented, then removed); the certificate budget
+  frontier re-measured and reverted (coverage-for-time; modular certification is
+  0.32.0's answer)
+- New follow-ups recorded: the symbolic-constant tower (the Wave-0 attribution's
+  largest structural ceiling), the higher-level `parametric_log_deriv`
+  generalization, and RT algebraic roots (with 0.30.0)
+
+**Risks** (what actually happened and how it was handled)
+
+- ~~Denominator-bound derivations are error-prone~~ → constrained with certificates
+  + proptest throughout; zero wrong answers the whole wave
+- ~~Taller towers add complexity pressure~~ → wall clock stayed flat; the 0.32.0
+  modular coordination unchanged
+- Measured new risk: the **formal degree template** issue in value-interpolated
+  resultants (specialization fails at leading-coefficient-cancellation nodes) —
+  solved by node skipping and documented in `logpart.rs`
 
 ---
 

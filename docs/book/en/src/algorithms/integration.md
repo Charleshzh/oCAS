@@ -78,11 +78,17 @@ Elementary transcendental integrands are handled by building a
 `log` or `exp` over the field below, and integrating recursively
 (Bronstein, *Symbolic Integration I*, ch. 5):
 
-- at each level, the rational part is split off by Hermite reduction;
-- the logarithmic part uses the logarithmic-derivative identity;
+- at each level, the rational part is split off by Hermite reduction
+  (at hyperexponential levels the `t`-power denominator is split off
+  first as a Laurent polynomial, 0.29.0);
+- the logarithmic part first tries the logarithmic-derivative identity,
+  then the Rothstein–Trager resultant method (rational roots only,
+  0.29.0);
 - the polynomial part is integrated by undetermined coefficients at
   `log` levels and by the Risch differential equation `Dq + f·q = g`
-  at `exp` levels;
+  at `exp` levels — solved over the **full rational fragment** since
+  0.29.0 (weak normalization, denominator bounds, degree bounds, SPDE,
+  cancellation recursions);
 - the base `ℚ(x)` delegates to the rational-function integrator.
 
 The tower recursion is capped by `MAX_RISCH_DEPTH = 16`: beyond that
@@ -101,9 +107,12 @@ let result = integrate(&ctx, parse(&ctx, "x*exp(x)").unwrap(), Symbol::new("x"))
 
 ### Scope limits
 
-The current fragment seeks only **polynomial** solutions of the Risch
-differential equation and uses only the logarithmic-derivative identity
-for logarithmic parts. Consequences:
+Since 0.29.0 the Risch differential equation is solved over the **full
+rational fragment** (denominator bounds included), and the logarithmic
+part uses Rothstein–Trager with **rational roots only** — irrational or
+non-constant resultant roots, and the unported `limited_integrate` /
+higher-level `parametric_log_deriv` refinements, decline honestly.
+Consequences:
 
 - `∫ exp(x)/x dx` has no elementary antiderivative — it is answered by
   the special-function table as `Ei(x)`.

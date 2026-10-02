@@ -20,6 +20,7 @@
 //! | `log(u)` vs `log(v)` | `v = u^k` | `log(u) = log(v)/k` |
 //! | `log(u)` vs `log(v)` | `u/v` constant | `log(u) = log(v) + log(u/v)` |
 //! | `log(u)` vs `log(v)` | `u·v` constant | `log(u) = log(u·v) − log(v)` |
+//! | `exp(u)` vs `exp(v)` | `u/v ∈ ℤ` | `exp(u) = exp(v)^k` (0.29.0) |
 //! | `log(exp(u))` | — | `u` |
 //! | `exp(log(u))` | — | `u` |
 //!
@@ -97,6 +98,19 @@ pub(crate) fn merge_candidate<'a>(
                     return Some(Merge {
                         replacement: ctx.mul(&[g.atom, constant]),
                         constant: Some(constant),
+                    });
+                }
+                // exp(k·v) = exp(v)^k for a nonzero integer k (0.29.0).
+                // Corpus cases: `exp(2x)` with `exp(x)`, `exp(4x³)` with
+                // `exp(x³)`. The fractional direction (`u = v/k`) would need
+                // re-basing the existing generator and is left as follow-up.
+                let ratio = collect_terms(ctx, ctx.mul(&[arg, ctx.pow(g.arg, ctx.num(-1))]));
+                if let AtomNode::Num(k) = ratio.node()
+                    && *k != 0
+                {
+                    return Some(Merge {
+                        replacement: ctx.pow(g.atom, ctx.num(*k)),
+                        constant: None,
                     });
                 }
             }
@@ -295,6 +309,73 @@ mod tests {
         .expect("merge");
         assert!(merge.constant.is_some());
         assert_eq!(merge.constant.unwrap().to_string(), "exp(1)");
+    }
+
+    #[test]
+    fn exp_integer_multiple_merges_to_a_power() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let exp_x = ctx.fun("exp", &[x]);
+        let gens = vec![GenInfo {
+            kind: GenKind::Exp,
+            atom: exp_x,
+            arg: x,
+            dt: crate::tower::elem::KElem::zero(2),
+        }];
+        // exp(2x) = exp(x)² (the rubi-00184 pair).
+        let two_x = rebuild(&ctx, "2*x");
+        let merge = merge_candidate(
+            &ctx,
+            GenKind::Exp,
+            two_x,
+            ctx.fun("exp", &[two_x]),
+            &gens,
+            Symbol::new("x"),
+        )
+        .expect("merge");
+        assert_eq!(merge.replacement.to_string(), "(exp(x))^2");
+        assert!(merge.constant.is_none());
+        // exp(−2x) = exp(x)⁻².
+        let neg_two_x = rebuild(&ctx, "-2*x");
+        let merge = merge_candidate(
+            &ctx,
+            GenKind::Exp,
+            neg_two_x,
+            ctx.fun("exp", &[neg_two_x]),
+            &gens,
+            Symbol::new("x"),
+        )
+        .expect("merge");
+        assert_eq!(merge.replacement.to_string(), "(exp(x))^-2");
+    }
+
+    #[test]
+    fn exp_fractional_multiple_does_not_merge() {
+        // exp(x) against the existing exp(2x): re-basing the existing
+        // generator is not implemented, so no merge is recognised.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let two_x = rebuild(&ctx, "2*x");
+        let exp_2x = ctx.fun("exp", &[two_x]);
+        let gens = vec![GenInfo {
+            kind: GenKind::Exp,
+            atom: exp_2x,
+            arg: two_x,
+            dt: crate::tower::elem::KElem::zero(2),
+        }];
+        assert!(
+            merge_candidate(
+                &ctx,
+                GenKind::Exp,
+                x,
+                ctx.fun("exp", &[x]),
+                &gens,
+                Symbol::new("x"),
+            )
+            .is_none()
+        );
     }
 
     #[test]

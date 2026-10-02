@@ -111,11 +111,13 @@ where $g \in k_\ell(t_\ell)$ has an explicit antiderivative and $d_1$ is square-
    - **Primitive level** ($t_\ell = \log u$): the method of undetermined coefficients
    - **Hyperexponential level** ($t_\ell = \exp u$): the Risch differential equation
 
-3. **Integrate the logarithmic part**: for $a_1/d_1$ ($d_1$ square-free), check whether it matches the **logarithmic derivative identity**.
+3. **Integrate the logarithmic part**: for $a_1/d_1$ ($d_1$ square-free), first check the **logarithmic derivative identity** (the fast path), and when it misses, run the **Rothstein–Trager resultant method** (since 0.29.0, rational roots only; irrational and non-constant roots decline honestly).
 
 4. **Base field** $\mathbb{Q}(x)$: delegate to the rational-function integrator.
 
 The results are assembled into `LevelResult { elem, logs, extras }`, where `elem` is the field-element part, `logs` is the logarithmic part of the form $\sum c_i \log(v_i)$, and `extras` is the part that could not be integrated.
+
+> **New in 0.29.0 (Laurent split at hyperexponential levels)**: at a level $t_\ell = \exp u$, $t$ divides its own derivative ($Dt = Du \cdot t$) — $t$ is a **special** polynomial, and a denominator with a $t$-power factor must **not** go through Hermite reduction (the $\gcd(v, Dv) = 1$ precondition fails; 0.28.0's tower check caught a latent negative-power coefficient mis-scaling this way). The denominator is now split as $t^k \cdot d'$ with $\gcd(d', t) = 1$; the $t^k$ part is integrated layer by layer through Risch differential equations, and only $d'$ reaches Hermite.
 
 ### Hermite Reduction
 
@@ -183,13 +185,20 @@ When $4c - b^2 < 0$ (real-root case), $\arctan$ becomes $\text{artanh}$ (inverse
 
 The central subproblem of the Risch algorithm is solving the **Risch differential equation** (RDE).
 
-**Problem**. Given elements $f, g$ of the differential field $k_\ell$ (neither containing the top-level variable $t_\ell$), find $q \in k_\ell[t_\ell]$ satisfying:
+**Problem** (the complete fragment since 0.29.0). Given elements $f, g$ of the differential field $k_\ell$ (**either may contain the top-level variable** $t_\ell$), find $q \in k_\ell(t_\ell)$ (a **rational function**, no longer restricted to polynomials) satisfying:
 
 $$Dq + f \cdot q = g$$
 
-where $D$ is the tower derivation (total derivative with respect to $t_\ell$). Note that the coefficients of $f$ and $g$ lie in $k_\ell$ and $q$ is a polynomial in $k_\ell[t_\ell]$.
+where $D$ is the tower derivation (total derivative with respect to $t_\ell$).
 
-**Why only polynomial solutions?** Rational-function solutions $q = p/d$ require an additional denominator-bound analysis, a piece not covered by the current oCAS implementation. When `None` is returned, the caller falls back to other integration methods.
+**The solving pipeline** (ported function-by-function against SymPy 1.14's `integrals/rde.py`, itself a mirror of Bronstein Ch. 6):
+
+1. **Weak normalization** (Thm 6.1.1): absorb every positive-integer residue of $f$ into a logarithmic derivative, giving $f' = f - Dq_{wn}/q_{wn}$; the original equation is equivalent to $Dz + f'z = q_{wn}\,g$ with $z = q_{wn}\,y$.
+2. **Normal denominator bound** (Thm 6.1.2): compute $h_n$ so that $q_2 = z \cdot h_n$ is polynomial at every normal irreducible, reducing the equation to $a \cdot Dq_2 + b \cdot q_2 = c$.
+3. **Special denominator bound** (Thm 6.2.1): at hyperexponential levels handle the powers of $t$ (the special polynomial): $r = q_2 \cdot t^\nu \in k[t]$, where $\nu$ follows from the $t$-adic orders of $b$ and $c$; when $\nu_b = 0$ the **parametric logarithmic derivative** refinement sharpens $\nu$ exactly (implemented over the base field $\mathbb{Q}(x)$ since 0.29.0).
+4. **Degree bound** (§6.3): an upper bound $n$ on $\deg r$ (the `limited_integrate` refinements are not ported — they can only lower the bound, and a missed solution becomes an honest decline, never a wrong answer).
+5. **SPDE** (Rothstein's special polynomial differential equation): reduce any $a \neq 1$ equation round by round to one with constant $a$, $Dh + Bh = C$.
+6. **Polynomial-RDE dispatch**: `no_cancel_b_large` (leading-term peel when no cancellation is possible); the cancellation cases go through `cancel_exp` / `cancel_primitive`, **recursing one level down into the full RDE** — which is where rational solutions at lower levels get used (`q = 1/t` is produced exactly this way).
 
 #### RDE over the Base Field $\mathbb{Q}(x)$
 
@@ -502,10 +511,10 @@ The current implementation of the Risch algorithm has the following limitations:
 
 | Limitation | Reason | Fallback behavior |
 |---|---|---|
-| Only polynomial solutions of the RDE | Rational solutions need denominator-bound analysis | Return `None`; the caller tries other layers |
-| At tower levels the logarithmic part only uses the logarithmic-derivative identity $a_1 = c \cdot Dd_1$ | The full logarithmic part needs tower-level Rothstein–Trager / trace-function techniques | Return the unevaluated form (the base field $\mathbb{Q}(x)$ still gets the full treatment) |
+| ~~Only polynomial solutions of the RDE~~ (since 0.29.0: the full rational fragment — weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions; the `limited_integrate` refinements and the higher-level `parametric_log_deriv` are not implemented) | Refinements only lower the degree bound; a miss is an honest decline | Return `None`; the caller tries other layers |
+| At tower levels the logarithmic part (since 0.29.0: Rothstein–Trager, **rational roots only**; irrational/non-constant roots decline) | Algebraic roots need 0.30.0's algebraic extensions | Return the unevaluated form |
 | Algebraic functions ($\sqrt{x}$, etc.) not supported | Needs algebraic-function field extensions | Common patterns are covered by the heuristic trigonometric substitution |
-| Conservative rejection of algebraically dependent generators (exact **merging** since 0.28.0) | Detecting relations like $\log(2x)$ vs. $\log(x)$ | Return `None` |
+| Partial merging of algebraically dependent generators (six exact classes since 0.28.0, plus $\exp(ku) = \exp(u)^k$ since 0.29.0; fractional $\exp(u/k)$ would need re-basing, not implemented) | Relation detection is incomplete | Return `None` |
 | Hyperexponential RDEs containing $I$ | The RDE solver works only over $\mathbb{Q}[x]$ | Trigonometric integrands are returned in unevaluated form |
 
 When all layers fail, `Integral(expr, var)` is returned — this is an **intentional answer**, meaning "this integral has no closed form in the current implementation", not a program error.

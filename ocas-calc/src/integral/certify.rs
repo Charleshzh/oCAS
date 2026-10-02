@@ -87,6 +87,12 @@ const MAX_CERT_EXPONENT: u64 = 64;
 /// the number of generators: a 2 400-node difference over 10 generators
 /// measured 15 s, while the same shape over 5 generators costs ~20 ms. The
 /// product is a deterministic proxy for that cost.
+///
+/// 0.29.0 (Wave G) re-measured the frontier: 400 → 1200 lifted
+/// `certified_rate` 29.1% → 31.7% but pushed 3 previously-solved cases over
+/// the 10 s per-case budget (timeouts 12 → 15) and cost +14% wall clock —
+/// the same coverage-for-time trade 0.28.0 recorded. The genuine fix is the
+/// 0.32.0 complexity work (modular certification), not a looser budget.
 const MAX_CERT_FIELD_WORK: u64 = 400;
 
 /// Which layer produced a certificate.

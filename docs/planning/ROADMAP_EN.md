@@ -653,20 +653,63 @@ engine's most expensive entry condition (dependent generators being rejected).
 and add the structure theorem for the logarithmic part.
 (Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.4, §6 P1.)
 
-**Deliverables**:
+**Deliverables** (measured results recorded per item):
 
-- [ ] RDE **rational solutions** (denominator bounds + `D`-rational solutions, the full
-  Bronstein ch. 6)
-- [ ] **Coupled differential systems** (`D y + A y = b`)
-- [ ] The general **structure theorem for the logarithmic part** (no longer only the
-  logarithmic-derivative identity)
-- [ ] Generality testing: proptest generates random elements **from the tower** → integrate →
-  check the symbolic certificate
+- [x] RDE **rational solutions** (denominator bounds + `D`-rational solutions, the full
+  Bronstein ch. 6) — `rde.rs` rewritten end to end: weak normalization (Thm 6.1.1),
+  normal/special denominator bounds (Thms 6.1.2/6.2.1, with the base-field
+  `parametric_log_deriv` refinement), degree bounds (§6.3; the `limited_integrate`
+  refinements deliberately not ported — they only lower the bound), SPDE, and the
+  polynomial-RDE dispatch recursing into lower levels. Ported function-by-function
+  against SymPy 1.14 `rde.py`.
+- [x] **Coupled differential systems** (`D y + A y = b`) — new module
+  `integral/coupled.rs` (Faddeev–LeVerrier charpoly + rational roots + RREF
+  nullspaces → eigen-decoupling into base-level scalar RDEs; exactly verified).
+  **Not wired in**: the Wave-0 attribution found no 1892-corpus case it unlocks
+  (60/79 of the exp-log backlog carries symbolic exponents, 13/79 need a
+  symbolic-constant tower); accepted via unit tests.
+- [x] The general **structure theorem for the logarithmic part** (Rothstein–Trager,
+  rational roots only) — new module `integral/logpart.rs`: value-interpolated
+  resultant with a formal degree template (degree-drop nodes must be skipped —
+  specialization does *not* commute there), rational-root candidate sieve with
+  synthetic-division completeness, per-root gcd, and the two self-verifying
+  identities. Irrational/non-constant roots decline honestly (0.30.0). New
+  `KPoly::resultant`. The logarithmic-derivative identity stays as the fast path
+  (it is exactly the single-root case).
+- [x] Generality testing: `tower/proptests.rs` — random towers ×
+  integrate-by-construction through the certified outcome API, plus the
+  legacy-path gate that every residue-free answer must certify, plus the
+  dependent-generator adversarial family.
+- [x] (0.28.0 follow-up) **Hyperexponential Laurent split**: the latent
+  negative-power coefficient mis-scaling is fixed (`t^k` is special and never
+  reaches Hermite again; per-layer RDEs instead).
+- [x] (0.28.0 follow-up) **In-chain residue resolution** with the parts-scope
+  suppression: net `+3` (`rubi-00179/00627/01798`); the planned substitution
+  commit gates measured redundant-and-harmful (they removed a chronic grinder's
+  early-exit and cost a timeout) — implemented, measured, removed, recorded.
+- [x] (0.28.0 follow-up) Certificate budget frontier re-measured: 400 → 1200 lifts
+  29.1% → 31.7% but timeouts 12 → 15 and wall clock +14% — reverted; modular
+  certification is 0.32.0's answer.
+- [x] Regular-tower merge extension: `exp(k·u) = exp(u)^k` for nonzero integers `k`.
 
-**Success Criteria**:
+**Success Criteria** (recorded honestly):
 
-- Clear improvement in the `exp-log` bucket (baseline 79/83 unsolved); the certificate gate holds
-- 100% certificate pass rate on the random tower-element family; 0 regressions on the 1892
+- 1892 corpus: **solved 378 (19.98%), verified 350/378 (92.6%), mismatches 0,
+  timeouts 12 (flat), crashes 0, wall clock 440.1 s (−… within the ≤ 498 s gate)**;
+  per-case diff **+7 newly solved, 0 regressed** (`rubi-00179/00184/00543/00627/00992/01524/01798`)
+- `exp-log` bucket 4 → **7/83**: the Wave-0 attribution
+  (`explog_attribution_029.csv`) proves the bucket ceiling is structural (60/79
+  symbolic exponents, 13/79 symbolic-constant tower, 26 need 0.31.0's `polylog`),
+  so the original ≥16/83 target was unreachable in scope
+- Random tower-element family: 100% certificate pass rate (proptest hard assert) — met
+- Certificate gate holds: 0 false positives — met; `certified_rate` 29.1% misses the
+  40% aspiration (recorded honestly; handed to 0.32.0's modular certification)
+- Hyperbolic front-end re-measured (Wave H): +1 solve but +1 timeout and +3.9% wall
+  clock — fails the "no new timeouts" gate, stays off by default
+- Carried into 0.30.0: algebraic extensions (RT algebraic roots + integral basis +
+  multi-radical bases + inverse-function substitution); new follow-ups recorded this
+  wave: the symbolic-constant tower (the Wave-0 attribution's largest structural
+  ceiling) and the higher-level `parametric_log_deriv` generalization
 
 ### 0.30.0 — Algebraic Extensions and Inverse-Function Substitution
 
@@ -920,7 +963,7 @@ After 1.0, development will focus on:
 | 0.26.0 | Beta | Month 49 | Packed-monomial F5 fast channel + grevlex benchmarks (cyclic-6 grevlex 55.04 ms measured) ✅ |
 | 0.27.0 | Beta | Month 51 | Symbolic integration breadth (Rubi-grade rule set + 1892-problem coverage benchmark) (P0) |
 | 0.28.0 | Beta | Month 53 | Integration-mechanism correctness foundation **shipped** (symbolic certificates + three-valued outcome + expression-level cycle detection + regular towers + residue resolution; 1892: 371 solved, mismatches 0, timeouts flat at 12, wall clock −6.0%, 0 regressions; `certified_rate = 28.8%` short of the target, recorded honestly) |
-| 0.29.0 | Beta | Month 55 | Completing the transcendental Risch (rational RDE solutions + coupled systems + log-part structure theorem) |
+| 0.29.0 | Beta | Month 55 | Transcendental Risch completion **delivered** (full rational-RDE pipeline + Rothstein–Trager log part (rational roots) + coupled-system infrastructure (unwired) + tower proptests; 1892: 378 solved (+7), 0 regressions, timeouts flat at 12, wall clock within gate; `certified_rate` 29.1% missed the 40% aspiration, recorded honestly) |
 | 0.30.0 | Beta | Month 57 | Algebraic extensions and inverse-function substitution (integral basis + algebraic Hermite + residues + multi-radical bases + inverse-function engine) |
 | 0.31.0 | Beta | Month 59 | Non-elementary layer (`polylog`/`Li₂` heads + Li₂/Meijer G reductions + `ProvedNonElementary`) |
 | 0.32.0 | Beta | Month 61 | Complexity and performance (modular algorithms + parallel Risch + lazy series) |

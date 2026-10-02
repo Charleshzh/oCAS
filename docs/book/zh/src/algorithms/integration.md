@@ -64,10 +64,13 @@ let result = integrate(&ctx, expr, Symbol::new("x"));
 每个 `tᵢ` 是下层域上的 `log` 或 `exp`，然后递归积分（Bronstein
 《Symbolic Integration I》第 5 章）：
 
-- 每层由 Hermite 约化分出有理部分；
-- 对数部分使用对数导数恒等式；
+- 每层由 Hermite 约化分出有理部分（超指数层的 `t` 幂分母先按
+  Laurent 多项式拆出，0.29.0）；
+- 对数部分先试对数导数恒等式（快路径），未命中则走
+  Rothstein–Trager 结式方法（仅限 ℚ 根，0.29.0）；
 - 多项式部分在 `log` 层用待定系数、在 `exp` 层用 Risch 微分方程
-  `Dq + f·q = g` 积分；
+  `Dq + f·q = g` 积分——0.29.0 起在**完整有理片段**上求解
+  （弱规范化、分母界、次数界、SPDE、抵消递归）；
 - 基域 `ℚ(x)` 委托给有理函数积分器。
 
 塔递归深度受 `MAX_RISCH_DEPTH = 16` 上限约束：超过该深度时 Risch 层
@@ -85,8 +88,10 @@ let result = integrate(&ctx, parse(&ctx, "x*exp(x)").unwrap(), Symbol::new("x"))
 
 ### 范围限制
 
-当前片段只求 Risch 微分方程的**多项式**解，对数部分只使用对数导数
-恒等式。因此：
+0.29.0 起 Risch 微分方程在**完整有理片段**上求解（含分母界），
+对数部分用 Rothstein–Trager 但**仅限 ℚ 根**——无理数根、非常量根，
+以及未移植的 `limited_integrate` / 高层 `parametric_log_deriv` 改进，
+一律诚实回退。因此：
 
 - `∫ exp(x)/x dx` 没有初等原函数 —— 由特殊函数表回答为 `Ei(x)`。
 - 某些需要自由选择常数使下层可积的 `log` 塔情形（如 `log(x+1)`）

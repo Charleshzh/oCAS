@@ -351,6 +351,22 @@ mod tests {
     }
 
     #[test]
+    fn tower_merges_integer_multiple_exponentials() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // exp(x)·exp(2x): dependent (ratio 2). 0.29.0 merges exp(2x) = t².
+        let expr = ctx.mul(&[
+            ctx.fun("exp", &[x]),
+            ctx.fun("exp", &[ctx.mul(&[ctx.num(2), x])]),
+        ]);
+        let tower = build_tower(&ctx, expr, sym("x")).expect("tower");
+        assert_eq!(tower.gens.len(), 1);
+        assert_eq!(tower.gens[0].kind, GenKind::Exp);
+        assert_eq!(tower.expr.to_string(), "(exp(x))*((exp(x))^2)");
+    }
+
+    #[test]
     fn tower_rejects_trig_and_sqrt_power() {
         let arena = Arena::new();
         let ctx = AtomArena::new(&arena);

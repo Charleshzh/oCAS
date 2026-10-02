@@ -465,6 +465,43 @@ impl KPoly {
         }
     }
 
+    /// Resultant of two polynomials over the exact coefficient field
+    /// (0.29.0; Euclidean recursion — division in a field is exact, so no
+    /// pseudo-division is needed).
+    ///
+    /// Conventions: `Res(a, b) = (−1)^(deg a·deg b)·Res(b, a)`;
+    /// `Res(a, b₀) = b₀^(deg a)` for a constant `b₀` (so `Res(c₀, d₀) = 1`);
+    /// `Res(a, b) = 0` when they share a factor of positive degree.
+    pub fn resultant(&self, o: &Self) -> KElem {
+        debug_assert_eq!(self.top, o.top);
+        let n = self.n_vars;
+        if self.is_zero() || o.is_zero() {
+            return KElem::zero(n);
+        }
+        let da = self.degree().expect("non-zero polynomial");
+        let db = o.degree().expect("non-zero polynomial");
+        if db == 0 {
+            return o.coeffs[0].pow(da as u64);
+        }
+        if da < db {
+            let r = o.resultant(self);
+            return if da * db % 2 == 1 { r.neg() } else { r };
+        }
+        let (_, r) = self.div_rem(o);
+        if r.is_zero() {
+            // `o` divides `self` and deg o ≥ 1: a shared factor ⇒ zero.
+            return KElem::zero(n);
+        }
+        let dr = r.degree().expect("non-zero remainder");
+        // Res(a, b) = (−1)^(da·db) · lc(b)^(da − dr) · Res(b, r).
+        let mut acc = o.lc().pow((da - dr) as u64);
+        acc = acc.mul(&o.resultant(&r));
+        if da * db % 2 == 1 {
+            acc = acc.neg();
+        }
+        acc
+    }
+
     /// Exact division over the field `k`: returns `(quotient, remainder)`.
     pub fn div_rem(&self, d: &Self) -> (Self, Self) {
         assert!(!d.is_zero(), "KPoly::div_rem: division by zero");

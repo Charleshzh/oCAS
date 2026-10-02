@@ -511,7 +511,7 @@ fn lagrange_interpolate(points: &[(Rational, Rational)]) -> DPoly {
 
 /// Distinct rational roots of a polynomial over `ℚ`, plus whether the
 /// polynomial splits completely into linear factors over `ℚ`.
-fn rational_roots(f: &DPoly) -> Option<(Vec<Rational>, bool)> {
+pub(crate) fn rational_roots(f: &DPoly) -> Option<(Vec<Rational>, bool)> {
     let dom = RationalDomain;
     if f.is_zero() || f.degree()? == 0 {
         return Some((Vec::new(), true));
