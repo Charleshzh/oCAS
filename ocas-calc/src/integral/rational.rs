@@ -70,7 +70,7 @@ fn reset_rational_budget() {
 }
 
 /// Charge `units` against the module budget; `true` when exhausted.
-fn charge_rational_work(units: u64) -> bool {
+pub(crate) fn charge_rational_work(units: u64) -> bool {
     RATIONAL_WORK.with(|c| {
         let v = c.get().saturating_add(units);
         c.set(v);
@@ -457,6 +457,23 @@ fn rothstein_trager<'a>(
 
     let (roots, fully_split) = rational_roots(&rt)?;
     if !fully_split {
+        // 0.30.0: algebraic constant roots (quadratic / biquadratic-quartic
+        // factors of R) before the honest fallback — see
+        // `rt_algebraic` and docs/planning/ALGEBRAIC_RT_SPEC_CN.md.
+        //
+        // Suppressed inside a parts sub-integral scope (the 0.29.0 E2
+        // mechanism, now triggered one level earlier): the algebraic path
+        // turns the inner residue into a *complete* `atan`/`log` answer,
+        // and the parts continuation `∫ v·du` then has to integrate those
+        // transcendental terms — `rubi-01646` burns the whole chain budget
+        // and falls back. Declining here keeps the 0.29.0 partial shape
+        // (an honest `Integral` residue) the parts machinery handles.
+        if !super::chain::parts_active()
+            && let Some(terms) =
+                super::rt_algebraic::rothstein_trager_algebraic(ctx, a, d, &rt, &roots, x)
+        {
+            return Some(terms);
+        }
         return Some(vec![DLogOrAtom::Atom(integral_fallback(ctx, a, d, x)?)]);
     }
 
@@ -555,12 +572,12 @@ pub(crate) fn rational_roots(f: &DPoly) -> Option<(Vec<Rational>, bool)> {
 
 /// Square root of a positive rational: exact when the squarefree numerator
 /// is a perfect square, otherwise a radical atom `√(p·q) / q`.
-enum Sqrt<'a> {
+pub(crate) enum Sqrt<'a> {
     Rat(Rational),
     Rad(Atom<'a>),
 }
 
-fn sqrt_positive_rational<'a>(ctx: &'a AtomArena<'a>, r: &Rational) -> Option<Sqrt<'a>> {
+pub(crate) fn sqrt_positive_rational<'a>(ctx: &'a AtomArena<'a>, r: &Rational) -> Option<Sqrt<'a>> {
     let p = r.numer().to_i64()?;
     let q = r.denom().to_i64()?;
     let n = (p as i128).checked_mul(q as i128)?;
@@ -592,7 +609,11 @@ fn rat_is_negative(r: &Rational) -> bool {
 }
 
 /// `coeff · atom`, eliding a unit coefficient.
-fn scale_atom<'a>(ctx: &'a AtomArena<'a>, coeff: &Rational, atom: Atom<'a>) -> Option<Atom<'a>> {
+pub(crate) fn scale_atom<'a>(
+    ctx: &'a AtomArena<'a>,
+    coeff: &Rational,
+    atom: Atom<'a>,
+) -> Option<Atom<'a>> {
     if RationalDomain.is_one(coeff) {
         return Some(atom);
     }
@@ -618,7 +639,7 @@ fn linear_atom<'a>(
     Some(ctx.add(&[ax, rational_const_to_atom(ctx, b)?]))
 }
 
-fn poly_atom<'a>(ctx: &'a AtomArena<'a>, p: &DPoly, x: Atom<'a>) -> Option<Atom<'a>> {
+pub(crate) fn poly_atom<'a>(ctx: &'a AtomArena<'a>, p: &DPoly, x: Atom<'a>) -> Option<Atom<'a>> {
     rational_to_atom(
         ctx,
         &GeneratorField::from_polynomial(dense_to_sparse(p)),

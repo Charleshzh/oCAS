@@ -59,6 +59,15 @@ const HISTORICAL_WRONG_ANSWERS: &[(&str, &str)] = &[
     ("2*sin(x)", "sin(x)"),
     ("exp(x)", "exp(x)/2"),
     ("1/(1+x^2)", "2*atan(x)"),
+    // Latent wrong answer found by the tower proptest's certificate gate
+    // (0.30.0): `linear_form` read `x·x` as `1·x + 0` and the power rule
+    // emitted `(x·x)³/3` for `(x·x)²`. The certificate rejects it
+    // (`NonZero`); the producer is fixed in `integral::mod::linear_form`.
+    ("((x)*(x))^(2)", "((x)*(x))^3/3"),
+    // 0.30.0 algebraic Rothstein–Trager: a tampered coefficient inside the
+    // realified pair must be rejected by every layer (the radical layer
+    // included).
+    ("1/(x^2-2)", "8^(-1/2)*log((3*x-8^(1/2))/(2*x+8^(1/2)))"),
 ];
 
 /// A wrong antiderivative must never be certified.
@@ -146,6 +155,56 @@ fn certificates_never_contradict_the_numeric_oracle() {
         false_positives.is_empty(),
         "oracle mismatches: {false_positives:?}"
     );
+}
+
+/// 0.30.0 acceptance family: the algebraic Rothstein–Trager roots (base
+/// level) and the tower-level complex quadratic fragment
+/// (`docs/planning/ALGEBRAIC_RT_SPEC_CN.md` §6). Every case must solve with
+/// no residue, carry a symbolic certificate (the radical layer decides the
+/// `√Δ` literals), and agree with the numeric oracle. A doubled
+/// antiderivative must be rejected (scale tampering).
+#[test]
+fn algebraic_rt_family_solves_and_certifies() {
+    let cases = [
+        "1/(1+x^4)",             // biquadratic R = 256z⁴+1 (complex 4-cycle)
+        "1/(1-3*x^2+x^4)",       // two real quadratic factors sharing ℚ(√5)
+        "(1+x^2)/(1+4*x^2+x^4)", // repeated complex quadratic; pure atan
+        "1/(1-x^4+x^8)",         // repeated biquadratic (√6)
+        "1/(x^4+1)^2",           // Hermite rational part + algebraic log part
+        "exp(x)/(1+exp(2*x))",   // rubi-00174: tower-level R = 4z²+1
+    ];
+    for input in cases {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let expr = parse(&ctx, input).expect("parse integrand");
+        let result = integrate(&ctx, expr, var);
+        let text = result.to_string();
+        assert!(
+            !text.contains("Integral"),
+            "{input} must solve completely, got: {text}"
+        );
+        // The certificate must accept the emitted answer…
+        let normalized = ocas_atom::normalize::normalize(&ctx, expr);
+        let verdict = certify(&ctx, normalized, result, var);
+        assert!(
+            verdict.is_ok(),
+            "{input}: emitted answer must certify, got {verdict:?} for {text}"
+        );
+        // …the numeric oracle must agree…
+        let oracle = verify_antiderivative(expr, result, var);
+        assert!(
+            !matches!(oracle, Verify::Mismatch { .. }),
+            "{input}: oracle disagrees with {text}: {oracle:?}"
+        );
+        // …and scaling the answer by 2 must be rejected.
+        let two = ctx.num(2);
+        let doubled = ctx.mul(&[two, result]);
+        assert!(
+            certify(&ctx, normalized, doubled, var).is_err(),
+            "{input}: a doubled antiderivative certified!"
+        );
+    }
 }
 
 /// Structural certificates must be exact: a difference that does not

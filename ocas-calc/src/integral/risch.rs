@@ -251,8 +251,11 @@ fn integrate_level<'a>(
         let dd1 = tower_diff_kpoly(&d1, &tower.gens[..level - 1], &tgen.dt);
         if let Some(c) = kpoly_scalar_multiple(&a1, &dd1) {
             out.logs.push((c, d1.kelem()));
-        } else if let Some((logs, rem)) = super::logpart::rothstein_trager(tower, level, &a1, &d1) {
+        } else if let Some((logs, rem, extras)) =
+            super::logpart::rothstein_trager(ctx, tower, level, &a1, &d1)
+        {
             out.logs.extend(logs);
+            out.extras.extend(extras);
             if !rem.is_zero() {
                 // Hyperexponential levels: `D log v` leaves a `k`-valued
                 // remainder that integrates one level down.

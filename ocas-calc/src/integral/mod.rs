@@ -31,6 +31,7 @@ pub mod rational;
 pub(crate) mod rde;
 pub(crate) mod residual;
 pub(crate) mod risch;
+pub(crate) mod rt_algebraic;
 pub(crate) mod rules;
 pub(crate) mod rules_ext;
 pub(crate) mod special;
@@ -1235,8 +1236,9 @@ fn integrate_power<'a>(
 ///
 /// Accepts `p * q^-1`, `p * (q^-1)` with integer p, q (q > 0), as produced by
 /// rational arithmetic in the ODE solvers, and the normalized bare
-/// reciprocal `q^-1` (= 1/q).
-fn fraction_exponent<'a>(exp: Atom<'a>) -> Option<(i64, i64)> {
+/// reciprocal `q^-1` (= 1/q). Also used by the certificate's radical layer
+/// to recognize radical sites.
+pub(crate) fn fraction_exponent<'a>(exp: Atom<'a>) -> Option<(i64, i64)> {
     if let AtomNode::Pow(b, e) = exp.node()
         && let (AtomNode::Num(bb), AtomNode::Num(ee)) = (b.node(), e.node())
         && *ee == -1
@@ -1295,6 +1297,14 @@ pub(crate) fn linear_form<'a>(
                 if let AtomNode::Var(v) = a.node()
                     && *v == var
                 {
+                    // A second occurrence means `var²` (or worse): the
+                    // product is not affine in `var`. Skipping it silently
+                    // used to read `x·x` as `1·x + 0`, and the power rule
+                    // then returned the wrong `(x·x)³/3` for `(x·x)²`
+                    // (found by the tower proptest's certificate gate).
+                    if has_var {
+                        return None;
+                    }
                     has_var = true;
                     continue;
                 }
@@ -1717,6 +1727,40 @@ mod tests {
         let expr = ocas_parse::parse(&ctx, "1/(x^6*(5 + x^2))").unwrap();
         let r = integrate(&ctx, expr, Symbol::new("x"));
         assert!(!contains_integral(r), "rubi-00638 regressed: {r}");
+    }
+
+    #[test]
+    fn linear_form_rejects_repeated_variable_factors() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        // `x·x` is `x²`, not `1·x + 0`: a repeated variable factor makes the
+        // product non-affine. (Found by the tower proptest's certificate
+        // gate: `∫(x·x)²dx` used to return the wrong `(x·x)³/3`.)
+        assert!(linear_form(&ctx, ctx.mul(&[x, x]), Symbol::new("x")).is_none());
+        assert!(linear_form(&ctx, ctx.mul(&[ctx.num(2), x, x]), Symbol::new("x")).is_none());
+        // Genuine linear products still qualify.
+        let y = ctx.var("y");
+        assert!(linear_form(&ctx, ctx.mul(&[y, x]), Symbol::new("x")).is_some());
+    }
+
+    #[test]
+    fn repeated_variable_power_is_not_integrated_as_a_linear_form() {
+        // Regression guard for the proptest finding: any answer for
+        // `(x·x)²` must pass the symbolic certificate (or be an honest
+        // residue).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let expr = ocas_parse::parse(&ctx, "((x)*(x))^(2)").unwrap();
+        let result = integrate(&ctx, expr, Symbol::new("x"));
+        if !contains_integral(result) {
+            let normalized = ocas_atom::normalize::normalize(&ctx, expr);
+            assert!(
+                crate::integral::certify::certify(&ctx, normalized, result, Symbol::new("x"))
+                    .is_ok(),
+                "uncertifiable answer: {result}"
+            );
+        }
     }
 
     #[test]

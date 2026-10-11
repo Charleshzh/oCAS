@@ -16,6 +16,10 @@
 //! base level. Every returned solution is verified exactly
 //! (`D y + A·y == b` in the field) before it leaves the function.
 
+// Deliberately unwired infrastructure (see the module docs): the only
+// callers are the unit tests, so the plain-lib target reports dead code.
+#![allow(dead_code)]
+
 use ocas_domain::{Domain, Rational, RationalDomain};
 use ocas_poly::DenseUnivariatePolynomial;
 
@@ -78,10 +82,10 @@ pub(crate) fn solve_coupled_constant(
     // y = P·z.
     let p = transpose_cols(&basis, n);
     let mut out = Vec::with_capacity(n);
-    for i in 0..n {
+    for row in &p {
         let mut yi = KElem::zero(nv);
-        for (j, zj) in ys.iter().enumerate() {
-            yi = yi.add(&zj.mul_rational(&p[i][j]));
+        for (zj, pij) in ys.iter().zip(row.iter()) {
+            yi = yi.add(&zj.mul_rational(pij));
         }
         out.push(yi);
     }
@@ -125,8 +129,9 @@ fn char_poly_flv(a: &[Vec<Rational>]) -> DPoly {
         cs.push(ck.clone());
         // Bₖ = A·Bₖ₋₁ + cₖ·I
         b_prev = ab;
-        for i in 0..n {
-            b_prev[i][i] = dom.add(&b_prev[i][i], &ck);
+        for (i, row) in b_prev.iter_mut().enumerate() {
+            let v = dom.add(&row[i], &ck);
+            row[i] = v;
         }
     }
     // c(λ) = Σₖ cₖ·λ^(n−k) → ascending coefficients are cs reversed.
