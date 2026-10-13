@@ -142,8 +142,66 @@ pub(crate) fn quadratic_coeffs<'a>(
     None
 }
 
+/// Classify one additive term of a quadratic as `(coefficient, degree)`
+/// with degree 0 (constant), 1 (`coeff·x`), or 2 (`coeff·x²`). The
+/// coefficient may be any product of constants (the corpus and
+/// `collect_terms` write `(a+c)·b·x`-style three-factor terms); a repeated
+/// variable factor (`x·x`) is rejected, matching `linear_form`'s
+/// discipline.
+fn quad_term<'a>(ctx: &'a AtomArena<'a>, term: Atom<'a>, var: Symbol) -> Option<(Atom<'a>, u8)> {
+    match term.node() {
+        AtomNode::Var(v) if *v == var => Some((ctx.num(1), 1)),
+        AtomNode::Pow(base, exp)
+            if matches!(base.node(), AtomNode::Var(v) if *v == var)
+                && matches!(exp.node(), AtomNode::Num(2)) =>
+        {
+            Some((ctx.num(1), 2))
+        }
+        AtomNode::Mul(args) => {
+            let mut coeff: Vec<Atom<'a>> = Vec::new();
+            let mut slot: Option<u8> = None;
+            for f in args.iter() {
+                match f.node() {
+                    AtomNode::Var(v) if *v == var => {
+                        if slot.is_some() {
+                            return None;
+                        }
+                        slot = Some(1);
+                    }
+                    AtomNode::Pow(base, exp)
+                        if matches!(base.node(), AtomNode::Var(v) if *v == var)
+                            && matches!(exp.node(), AtomNode::Num(2)) =>
+                    {
+                        if slot.is_some() {
+                            return None;
+                        }
+                        slot = Some(2);
+                    }
+                    _ if crate::integral::is_constant(*f, var) => coeff.push(*f),
+                    _ => return None,
+                }
+            }
+            match slot {
+                Some(deg) => {
+                    let coeff = if coeff.is_empty() {
+                        ctx.num(1)
+                    } else {
+                        ocas_atom::normalize::normalize(ctx, ctx.mul(&coeff))
+                    };
+                    Some((coeff, deg))
+                }
+                // A constant product term.
+                None => Some((term, 0)),
+            }
+        }
+        _ if crate::integral::is_constant(term, var) => Some((term, 0)),
+        _ => None,
+    }
+}
+
 /// Parse a quadratic `a·x² + b·x + c` (any of the four parse shapes), with
-/// implicit coefficients made explicit.
+/// implicit coefficients made explicit. Coefficients *accumulate* across
+/// like-degree terms.
 fn quadratic_from_inner<'a>(
     ctx: &'a AtomArena<'a>,
     inner: Atom<'a>,
@@ -154,67 +212,13 @@ fn quadratic_from_inner<'a>(
     match inner.node() {
         AtomNode::Add(args) => {
             for term in args.iter() {
-                match term.node() {
-                    AtomNode::Pow(base, exp) => {
-                        if matches!(base.node(), AtomNode::Var(v) if *v == var)
-                            && matches!(exp.node(), AtomNode::Num(2))
-                        {
-                            a = ctx.num(1); // implicit coefficient 1
-                            found = true;
-                        } else if crate::integral::is_constant(*term, var) {
-                            c = *term;
-                            found = true;
-                        } else {
-                            return None;
-                        }
-                    }
-                    AtomNode::Var(v) if *v == var => {
-                        b = ctx.num(1); // implicit coefficient 1
-                        found = true;
-                    }
-                    AtomNode::Mul(args) if args.len() == 2 => {
-                        let (coeff, rest) = (args[0], args[1]);
-                        match rest.node() {
-                            AtomNode::Pow(base, exp)
-                                if matches!(base.node(), AtomNode::Var(v) if *v == var)
-                                    && matches!(exp.node(), AtomNode::Num(2)) =>
-                            {
-                                if !crate::integral::is_constant(coeff, var) {
-                                    return None;
-                                }
-                                a = coeff;
-                                found = true;
-                            }
-                            AtomNode::Var(v) if *v == var => {
-                                if !crate::integral::is_constant(coeff, var) {
-                                    return None;
-                                }
-                                b = coeff;
-                                found = true;
-                            }
-                            _ => {
-                                if crate::integral::is_constant(*term, var) {
-                                    c = *term;
-                                    found = true;
-                                } else {
-                                    return None;
-                                }
-                            }
-                        }
-                    }
-                    AtomNode::Num(_) => {
-                        c = *term;
-                        found = true;
-                    }
-                    _ => {
-                        if crate::integral::is_constant(*term, var) {
-                            c = *term;
-                            found = true;
-                        } else {
-                            return None;
-                        }
-                    }
+                let (coeff, deg) = quad_term(ctx, *term, var)?;
+                match deg {
+                    2 => a = ctx.add(&[a, coeff]),
+                    1 => b = ctx.add(&[b, coeff]),
+                    _ => c = ctx.add(&[c, coeff]),
                 }
+                found = true;
             }
         }
         AtomNode::Pow(base, exp) => {
@@ -225,9 +229,11 @@ fn quadratic_from_inner<'a>(
                 found = true;
             }
         }
-        AtomNode::Var(v) if *v == var => {
-            b = ctx.num(1);
-            found = true;
+        AtomNode::Var(v) => {
+            if *v == var {
+                b = ctx.num(1);
+                found = true;
+            }
         }
         _ => {
             if crate::integral::is_constant(inner, var) {
@@ -239,7 +245,11 @@ fn quadratic_from_inner<'a>(
     if !found {
         return None;
     }
-    Some((a, b, c))
+    Some((
+        ocas_atom::normalize::normalize(ctx, a),
+        ocas_atom::normalize::normalize(ctx, b),
+        ocas_atom::normalize::normalize(ctx, c),
+    ))
 }
 
 /// Evaluate a rational atom as `(p, q)` with `q > 0` (integers).

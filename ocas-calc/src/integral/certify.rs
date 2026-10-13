@@ -360,6 +360,10 @@ const MAX_CERT_REDUCTION_TERMS: usize = 8192;
 /// expansion estimate cannot see fractional powers, so the layer gates on
 /// the tree size directly).
 const MAX_CERT_RADICAL_NODES: usize = 2_000;
+/// Cap on the numerator/denominator size (terms) entering the triangular
+/// reduction — the entry-side counterpart of [`MAX_CERT_REDUCTION_TERMS`]
+/// (0.30.0 W4a, measured on a 2816-term denominator case).
+const MAX_CERT_RADICAL_POLY_TERMS: usize = 2_048;
 
 /// One radical relation `r^q = base` (`base` already rewritten, so it only
 /// mentions generators created *earlier* — the relation set is triangular).
@@ -565,6 +569,17 @@ fn radical_layer<'a>(
 
     let rf =
         atom_to_rational_extended(rewritten, &gens, gens.len()).ok_or(CertDecline::NotInField)?;
+    // Entry-size cap for the triangular reduction (0.30.0 W4a): the
+    // per-step term cap (`MAX_CERT_REDUCTION_TERMS`) still lets a
+    // multi-thousand-term numerator grind for ~14 s through 5 relations
+    // (measured on a Möbius multi-radical answer — over the corpus
+    // harness's per-case budget). Declining as `Budget` trades certificate
+    // coverage for determinism, the same convention as the other caps.
+    if rf.numerator.n_terms() > MAX_CERT_RADICAL_POLY_TERMS
+        || rf.denominator.n_terms() > MAX_CERT_RADICAL_POLY_TERMS
+    {
+        return Err(CertDecline::Budget);
+    }
     let num = reduce_mod_radicals(&rf.numerator, &relations).ok_or(CertDecline::Budget)?;
     if std::env::var_os("OCAS_CERT_TIMING").is_some() {
         eprintln!(

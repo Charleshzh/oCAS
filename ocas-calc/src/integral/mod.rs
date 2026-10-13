@@ -25,6 +25,7 @@ pub(crate) mod hyperbolic_reduction;
 pub(crate) mod inverse_trig;
 pub(crate) mod kernel_subst;
 pub(crate) mod logpart;
+pub(crate) mod multi_radical;
 pub mod outcome;
 pub(crate) mod quad_power;
 pub mod rational;
@@ -368,6 +369,25 @@ fn try_fold_linear_square<'a>(
         }
     }
     None
+}
+
+/// The affine base `p + q` when `expr` is its expanded square
+/// (`p² + 2·p·q + q²` written as a three-term sum), verified by exact
+/// re-expansion in [`try_fold_linear_square`]. Shared with
+/// `multi_radical`'s perfect-square-base handling (0.30.0 Wave 4a).
+pub(crate) fn affine_square_base<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    let AtomNode::Add(args) = expr.node() else {
+        return None;
+    };
+    let folded = try_fold_linear_square(ctx, args, var)?;
+    let AtomNode::Pow(b, _) = folded.node() else {
+        return None;
+    };
+    Some(*b)
 }
 
 /// Flatten a possibly nested sum into its top-level terms.
@@ -808,6 +828,15 @@ fn try_risch_or_fallback<'a>(
     // back-substitute. Declines (None) unless an exact integrability
     // condition holds.
     stage!("binomial", || binomial::integrate_binomial(ctx, expr, var));
+    // Multi-radical-base reduction (0.30.0 Wave 4a): integrands with ≥ 2
+    // distinct radical bases — Möbius rationalization of affine base pairs
+    // and gated same-radicand merges (MULTI_RADICAL_SPEC_CN.md). Runs after
+    // the single-base engines so they keep first claim on single-base
+    // shapes, and before exp_log (disjoint shapes) and heuristic (whose
+    // parts recursion would burn the chain budget on these products).
+    stage!("multi_radical", || {
+        multi_radical::integrate_multi_radical(ctx, expr, var)
+    });
     // exp/log-kernel substitutions (0.27.1): rational-in-e^(ax) and
     // hyperbolic-rational forms, f(log x)/x, log-power gaps of rule B6.
     stage!("exp_log", || exp_log::integrate_exp_log(ctx, expr, var));
@@ -1126,6 +1155,63 @@ pub(crate) fn replace_symbol<'a>(
                 .collect();
             ctx.fun(name.as_str(), &rebuilt)
         }
+    }
+}
+
+/// Exact zero test for coefficient-level expressions (0.30.0 W4a).
+///
+/// The discriminant gates (`sqrt_quadratic::delta` consumers and
+/// `quad_power::Quad::parse`) compute `4ac − b²` — for a perfect-square
+/// trinomial like `a² + 2abx + b²x²` that is `4·a²·b² − (2ab)·(2ab)`, two
+/// spellings `normalize` alone cannot cancel (pow vs flat product), and the
+/// S1.3/Q1 recurrences then **divide by a zero discriminant** (measured
+/// wrong answers: rubi-01610/01833 emitted `1/((−4a²b²) + 4·a·a·b·b)`
+/// coefficients). Order of attempts: structural zero, `collect_terms`,
+/// then the rational-function field over the free symbols (a zero
+/// numerator is an exact identity). Sound: it only ever declines a path
+/// whose denominator it cannot prove nonzero — never the reverse.
+pub(crate) fn is_zero_expr<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> bool {
+    if matches!(expr.node(), AtomNode::Num(0)) {
+        return true;
+    }
+    let folded = crate::ode::util::collect_terms(ctx, expr);
+    if matches!(folded.node(), AtomNode::Num(0)) {
+        return true;
+    }
+    let mut gens: Vec<Atom<'a>> = Vec::new();
+    collect_free_vars(folded, &mut gens);
+    if gens.is_empty() {
+        return false;
+    }
+    match crate::tower::convert::atom_to_rational_extended(folded, &gens, gens.len()) {
+        Some(rf) => rf.numerator.n_terms() == 0,
+        None => false,
+    }
+}
+
+/// Collect the distinct free `Var` atoms of `expr` (for [`is_zero_expr`]).
+fn collect_free_vars<'a>(expr: Atom<'a>, out: &mut Vec<Atom<'a>>) {
+    match expr.node() {
+        AtomNode::Var(_) => {
+            if !out.contains(&expr) {
+                out.push(expr);
+            }
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) => {
+            for a in args.iter() {
+                collect_free_vars(*a, out);
+            }
+        }
+        AtomNode::Pow(b, e) => {
+            collect_free_vars(*b, out);
+            collect_free_vars(*e, out);
+        }
+        AtomNode::Fun(_, args) => {
+            for a in args.iter() {
+                collect_free_vars(*a, out);
+            }
+        }
+        AtomNode::Num(_) => {}
     }
 }
 
@@ -1760,6 +1846,31 @@ mod tests {
                     .is_ok(),
                 "uncertifiable answer: {result}"
             );
+        }
+    }
+
+    #[test]
+    fn symbolic_perfect_square_half_power_never_emits_division_by_zero() {
+        // rubi-01610/01833 (0.30.0 W4a, harness `verify_mismatches`): the
+        // pipeline's answer to a symbolic perfect-square `^(3/2)` shape must
+        // never carry the 1/(4ac − b²) = 1/0 coefficient — honest fallback
+        // or a certifiable answer are both fine.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        for src in [
+            "(a + b*x)/(a^2 + 2*a*b*x + b^2*x^2)^(3/2)",
+            "(A + B*x)/(a^2 + 2*a*b*x + b^2*x^2)^(3/2)",
+        ] {
+            let expr = ocas_parse::parse(&ctx, src).unwrap();
+            let r = integrate(&ctx, expr, Symbol::new("x"));
+            if !contains_integral(r) {
+                let normalized = ocas_atom::normalize::normalize(&ctx, expr);
+                assert!(
+                    crate::integral::certify::certify(&ctx, normalized, r, Symbol::new("x"))
+                        .is_ok(),
+                    "{src}: uncertifiable answer: {r}"
+                );
+            }
         }
     }
 

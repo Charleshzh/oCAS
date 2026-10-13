@@ -68,6 +68,11 @@ const HISTORICAL_WRONG_ANSWERS: &[(&str, &str)] = &[
     // realified pair must be rejected by every layer (the radical layer
     // included).
     ("1/(x^2-2)", "8^(-1/2)*log((3*x-8^(1/2))/(2*x+8^(1/2)))"),
+    // 0.30.0 W4a (multi-radical): the pseudo-answer of a *wrong-direction*
+    // merge — `D(F)` carries `√(u·v)` while the integrand carries `√u·√v`;
+    // the radical field keeps them independent generators, so no layer may
+    // certify this (MULTI_RADICAL_SPEC_CN.md §6-9).
+    ("sqrt(1+x)*sqrt(1-x)", "x*sqrt(1-x^2)/2 + asin(x)/2"),
 ];
 
 /// A wrong antiderivative must never be certified.
@@ -198,6 +203,52 @@ fn algebraic_rt_family_solves_and_certifies() {
             "{input}: oracle disagrees with {text}: {oracle:?}"
         );
         // …and scaling the answer by 2 must be rejected.
+        let two = ctx.num(2);
+        let doubled = ctx.mul(&[two, result]);
+        assert!(
+            certify(&ctx, normalized, doubled, var).is_err(),
+            "{input}: a doubled antiderivative certified!"
+        );
+    }
+}
+
+/// 0.30.0 W4a acceptance family: multi-radical-base reduction
+/// (`docs/planning/MULTI_RADICAL_SPEC_CN.md` §5). Same three-way contract
+/// as the algebraic-RT family: solve completely, certify, agree with the
+/// oracle; a doubled antiderivative must be rejected.
+#[test]
+fn multi_radical_family_solves_and_certifies() {
+    let cases = [
+        "sqrt(1+2*x)/sqrt(3+4*x)",         // L1: Möbius quotient
+        "x^2*sqrt(1+x)/(2+3*x)^(3/2)",     // L3: higher half powers
+        "1/(sqrt(2+3*x)*sqrt(6+3*x))",     // L4: same-slope merge
+        "x^2/(sqrt(1+2*x)+sqrt(3+2*x))^2", // G1: denominator conjugate
+        "x^3*(sqrt(1-x)+sqrt(1+x))^2",     // G2: numerator square
+        "sqrt((1+x)^2)/(2+x)^(7/2)",       // P1: sheet factor
+        "x^(3/2)/sqrt(2*x+3*x^2)",         // P2: shared x factor
+    ];
+    for input in cases {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let expr = parse(&ctx, input).expect("parse integrand");
+        let result = integrate(&ctx, expr, var);
+        let text = result.to_string();
+        assert!(
+            !text.contains("Integral"),
+            "{input} must solve completely, got: {text}"
+        );
+        let normalized = ocas_atom::normalize::normalize(&ctx, expr);
+        let verdict = certify(&ctx, normalized, result, var);
+        assert!(
+            verdict.is_ok(),
+            "{input}: emitted answer must certify, got {verdict:?} for {text}"
+        );
+        let oracle = verify_antiderivative(expr, result, var);
+        assert!(
+            !matches!(oracle, Verify::Mismatch { .. }),
+            "{input}: oracle disagrees with {text}: {oracle:?}"
+        );
         let two = ctx.num(2);
         let doubled = ctx.mul(&[two, result]);
         assert!(

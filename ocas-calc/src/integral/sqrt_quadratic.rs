@@ -502,7 +502,11 @@ fn int_inv_q32<'a>(ctx: &'a AtomArena<'a>, qd: &Quad<'a>, p0: Atom<'a>) -> Optio
         return None;
     }
     let d = delta(ctx, qd);
-    if is_zero(d) {
+    // Exact zero test: a perfect-square trinomial with symbolic
+    // coefficients (`a² + 2abx + b²x²`) spells Δ = 4ac − b² as
+    // `4·a²·b² − (2ab)·(2ab)`, which structural `is_zero` cannot cancel —
+    // dividing by it emitted a 1/0 answer (rubi-01610/01833, 0.30.0 W4a).
+    if crate::integral::is_zero_expr(ctx, d) {
         return None;
     }
     let four_ac_minus_b2 = neg(ctx, d);
@@ -1576,6 +1580,28 @@ mod tests {
         let q2 = mk_quad(&ctx, 1, 0, 1);
         let f = ctx.mul(&[ctx.fun("sqrt", &[q1]), ctx.fun("sqrt", &[q2])]);
         assert!(integrate_sqrt_quadratic(&ctx, f, Symbol::new("x")).is_none());
+    }
+
+    /// rubi-01610/01833 (0.30.0 W4a gate): for the symbolic perfect-square
+    /// trinomial `a² + 2abx + b²x²`, `Δ = 4ac − b²` arrives as
+    /// `4·a²·b² − (2ab)·(2ab)` — two spellings `normalize` cannot cancel,
+    /// and S1.3 divides by Δ. The gate now decides zero exactly
+    /// (`integral::is_zero_expr`) and declines; before the fix the emitted
+    /// answer carried a `1/((−4a²b²) + 4·a·a·b·b)` (i.e. 1/0) coefficient.
+    #[test]
+    fn symbolic_perfect_square_inv_q32_declines() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        for src in [
+            "1/(a^2 + 2*a*b*x + b^2*x^2)^(3/2)",
+            "(a + b*x)/(a^2 + 2*a*b*x + b^2*x^2)^(3/2)",
+        ] {
+            let expr = normalize(&ctx, ocas_parse::parse(&ctx, src).unwrap());
+            assert!(
+                integrate_sqrt_quadratic(&ctx, expr, Symbol::new("x")).is_none(),
+                "symbolic perfect square must be declined: {src}"
+            );
+        }
     }
 
     // ------------------- deterministic budget (0.27.1 timeouts) ---------

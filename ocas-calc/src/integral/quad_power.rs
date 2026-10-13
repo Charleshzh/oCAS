@@ -431,7 +431,11 @@ impl<'a> Quad<'a> {
             ctx,
             ctx.add(&[ctx.mul(&[ctx.num(4), a, c]), ctx.mul(&[ctx.num(-1), b, b])]),
         );
-        if is_zero(ctx, disc) {
+        // Exact zero test (0.30.0 W4a): a symbolic perfect-square trinomial
+        // spells `4ac − b²` in two forms structural `is_zero` cannot cancel
+        // (`4·a²·b²` vs `(2ab)·(2ab)`); the Q1/Q2 recurrences divide by D
+        // (measured wrong answer: rubi-01610/01833 via the S1.3 cousin).
+        if crate::integral::is_zero_expr(ctx, disc) {
             return None;
         }
         Some(Quad {
@@ -1051,6 +1055,15 @@ mod tests {
     fn l2_repeated_root_declines() {
         // q = (x+1)² has D = 0 — declines (the rational backend owns it).
         assert_module_declined("1/(1 + 2*x + x^2)^3");
+    }
+
+    #[test]
+    fn l2_symbolic_perfect_square_declines() {
+        // Same guard with symbolic coefficients (0.30.0 W4a): D = 4ac − b²
+        // is `4·a²·b² − (2ab)·(2ab)` — zero, in spellings structural
+        // `is_zero` cannot cancel; the exact test (`is_zero_expr`) declines
+        // instead of dividing by zero (rubi-01610/01833 wrong answers).
+        assert_module_declined("1/(a^2 + 2*a*b*x + b^2*x^2)^3");
     }
 
     #[test]
