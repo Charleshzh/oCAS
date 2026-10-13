@@ -35,6 +35,18 @@
 //! - **M3 linear-argument bare forms**: `C·F(a + b·x)` integrates by
 //!   `u = a + b·x` to the textbook closed forms (the rule-family-E shapes
 //!   divided by the slope).
+//! - **M4 inverse-function substitution** (0.30.0 Wave 5a,
+//!   `docs/planning/INV_SUBST_SPEC_CN.md`): `(a + b·F(w))^k` times a
+//!   polynomial weight, `w = ρ + σ·x` affine, integer `1 ≤ k ≤ 6`, all six
+//!   main heads, no radicals (W5b). `u = F(w)` maps the integrand to
+//!   `P(u)·T(u)`; trig products reduce to multiple angles and re-enter the
+//!   chain, hyperbolic families use the M2-style tabular closed form
+//!   directly, and atanh uses a dedicated parts/tanh-reduction tabular.
+//!   The back-substitution is a whitelist rewrite (`u → F(w)`,
+//!   `G(u) → w`, `G′(u) → +√E(w)` on the principal band, multiple angles
+//!   via Chebyshev); any residue, leftover `u`, or `F(G(·))` composite
+//!   declines the whole shape. See the M4 section docs for the real-branch
+//!   semantics and the deviations from the spec.
 //!
 //! Three extra passes run around that core:
 //!
@@ -603,7 +615,7 @@ pub(crate) fn integrate_invhyp_subst<'a>(
     };
     let mut reduced: Vec<Atom<'a>> = Vec::new();
     for term in terms {
-        let (coeff, j, na, nb) = scan_hyp_term(ctx, term, t_sym)?;
+        let (coeff, j, na, nb) = scan_hyp_term(ctx, term, t_sym, MAX_SUBST_K)?;
         reduce_hyp_term(ctx, &coeff, j, na, nb, t, &mut reduced)?;
     }
     let t_form = normalize(ctx, ctx.add(&reduced));
@@ -626,7 +638,7 @@ pub(crate) fn integrate_invhyp_subst<'a>(
     };
     let mut out = Vec::with_capacity(rterms.len());
     for term in rterms {
-        out.push(integrate_hyp_term(ctx, term, t_sym)?);
+        out.push(integrate_hyp_term(ctx, term, t_sym, MAX_SUBST_K)?);
     }
     let res_t = normalize(ctx, ctx.add(&out));
     Some(normalize(ctx, replace_symbol(ctx, res_t, t_sym, back)))
@@ -653,11 +665,13 @@ fn is_t_var(e: Atom<'_>, t_sym: Symbol) -> bool {
 }
 
 /// Decompose an expanded t-term into `(constants, j, A, B)` for
-/// `C·t^j·cosh(t)^A·sinh(t)^B`; `None` on any other shape.
+/// `C·t^j·cosh(t)^A·sinh(t)^B`; `None` on any other shape. `j_cap` is the
+/// caller's cap on the polynomial power (M2: `MAX_SUBST_K`, M4: `MAX_IS_K`).
 fn scan_hyp_term<'a>(
     ctx: &'a AtomArena<'a>,
     term: Atom<'a>,
     t_sym: Symbol,
+    j_cap: i64,
 ) -> Option<(Vec<Atom<'a>>, i64, usize, usize)> {
     let _ = ctx;
     let factors: Vec<Atom<'a>> = match term.node() {
@@ -713,7 +727,7 @@ fn scan_hyp_term<'a>(
             _ => return None,
         }
     }
-    if j > MAX_SUBST_K || na + nb > MAX_HYP_EXP {
+    if j > j_cap || na + nb > MAX_HYP_EXP {
         return None;
     }
     Some((coeff, j, na, nb))
@@ -808,6 +822,7 @@ fn integrate_hyp_term<'a>(
     ctx: &'a AtomArena<'a>,
     term: Atom<'a>,
     t_sym: Symbol,
+    j_cap: i64,
 ) -> Option<Atom<'a>> {
     let factors: Vec<Atom<'a>> = match term.node() {
         AtomNode::Mul(args) => args.to_vec(),
@@ -846,7 +861,7 @@ fn integrate_hyp_term<'a>(
             _ => return None,
         }
     }
-    if j > MAX_SUBST_K {
+    if j > j_cap {
         return None;
     }
     let t = ctx.var(t_sym.as_str());
@@ -1630,6 +1645,943 @@ pub(crate) fn integrate_companion_form<'a>(
 }
 
 // =========================================================================
+// M4: inverse-function substitution (0.30.0 Wave 5a)
+// =========================================================================
+//
+// Implementation of `docs/planning/INV_SUBST_SPEC_CN.md` §2.1/2.3/2.4/2.6:
+// `∫ C·(a + b·F(w))^k · P(x) dx` with `F` one of the six main inverse
+// heads, `w = ρ + σ·x` affine (`σ ≢ 0`), integer `1 ≤ k ≤ MAX_IS_K` and
+// `P` polynomial of total degree ≤ `MAX_IS_POLY_DEG`. The substitution
+// `u = F(w)` maps the integrand to `P(u)·T(u)` with `T` a trig/hyperbolic
+// monomial (`x = (G(u) − ρ)/σ`, `dx = G′(u)/σ·du`, per the spec §2.1
+// table); elementarity is **not** prejudged — a re-integration residue
+// declines the whole shape (§2.5).
+//
+// W5a scope limits (deviations from the full spec are all narrowings or
+// measured reorderings):
+//
+// - **No radicals**: any radical factor (a `sqrt` head or a non-integer
+//   power whose base is not constant) declines outright. Companion-radical
+//   absorption (§2.2, `radicand_scale` reuse, sheet factor σ) is W5b
+//   territory, so `MAX_IS_RAD_M` has no consumer yet and is not defined.
+// - **The t-form re-integration is fully in-module, no chain re-entry**
+//   (§2.3 allows `integrate_raw` re-entry; the tabular form is its
+//   sanctioned T3-analogue). Measured reason: the chain-entry budget
+//   (`MAX_CHAIN_ENTRIES = 256`) is shared per top-level call and is
+//   typically spent before the `inverse_trig` stage runs — traced on
+//   `x^2*acos(a*x)^2` (rubi-00554), where a chain-based t-form
+//   re-integration died on the budget and the pipeline fell back. The
+//   tabular paths are also what keeps `exp(μu)`-shaped chain answers (the
+//   hyperbolic Weierstrass routes) out of the whitelist back-substitution:
+//   - trig families (asin/acos): `trig_reduce_products` multiple-angle
+//     reduction, then `integrate_trig_term` (repeated-parts table for
+//     `C·u^j·sin/cos(μu)`);
+//   - hyperbolic families (asinh/acosh): M2's `scan_hyp_term` /
+//     `reduce_hyp_term` expansion plus `integrate_hyp_term` (with the
+//     j-cap widened to `MAX_IS_K`);
+//   - ratio families (atan/atanh): `ratio_i`/`ratio_j`, parts on the
+//     exact differential `dv = R^a·S² du` plus the `R^c → R^{c−2}` peel
+//     (`tan² = sec² − 1` / `tanh² = 1 − sech²`); the `J(j≥1, 1)` base
+//     case is the polylog territory of §2.5 and declines.
+// - **tan/sec even-power pre-reduction** (§2.3 second clause) is
+//   subsumed by the ratio tabular, which handles `tan^A·sec²` directly.
+// - Reciprocal heads (acsc/asec/acoth/asech/acsch) are W5c, not handled.
+//
+// Real-branch semantics (spec §4): every answer is exact on the principal
+// band of `F` (asin: `u ∈ [−π/2, π/2]`; acos: `[0, π]`; atan:
+// `(−π/2, π/2)`; asinh/atanh: ℝ; acosh: `[0, ∞)`). On the band `G′(u)`
+// has a definite non-negative sign for all six families, so the sheet
+// factor `σ = G′(u)·E(G(u))^(−1/2)` folds to `+1` with numeric sign
+// evidence (§4.2) and the back-substitution maps `G′(u) → +√E(w)`.
+// The in-module tabulars never produce `F(G(u))` composites; the terminal
+// structural check (`contains_inv_composite`) is the belt-and-braces
+// enforcement of §2.4's ban. No `I` is introduced anywhere.
+
+/// M4 cap on the `(a + b·F(w))^k` exponent (spec §3.2, aligned with
+/// `MAX_POWER_K`).
+const MAX_IS_K: i64 = 6;
+/// M4 cap on the total degree of the polynomial weight (spec §3.2).
+const MAX_IS_POLY_DEG: usize = 6;
+/// M4 node budget for the substituted t-form (spec §3.2).
+const MAX_IS_SUBST_NODES: usize = 400;
+/// M4 cap on the multiple `μ` of a reduced trig/hyperbolic angle and on the
+/// Chebyshev back-substitution order (spec §3.2 `MAX_IS_TRIG_EXP`; aligned
+/// with `MAX_HYP_EXP` and trig_reduce's factor cap).
+const MAX_IS_MU: i64 = 8;
+/// M4 total work budget (spec §3.2): node counts are charged at every
+/// stage so a single call's work is deterministically bounded.
+const MAX_IS_WORK: u64 = 100_000;
+
+/// Charge `nodes` against the M4 work budget; `true` when exhausted.
+fn is_work_exceeded(work: &mut u64, nodes: usize) -> bool {
+    *work = work.saturating_add(nodes as u64);
+    *work > MAX_IS_WORK
+}
+
+/// `G` head of the family (`x = G(u)` at zero intercept), per spec §2.1.
+fn family_g_head(f: InvFun) -> &'static str {
+    match f {
+        InvFun::Asin => "sin",
+        InvFun::Acos => "cos",
+        InvFun::Atan => "tan",
+        InvFun::Asinh => "sinh",
+        InvFun::Acosh => "cosh",
+        InvFun::Atanh => "tanh",
+    }
+}
+
+/// `G′(u)` per family as `(head, sign, power)`: asin `cos`, acos `−sin`,
+/// atan `sec²`, asinh `cosh`, acosh `sinh`, atanh `sech²`.
+fn family_gp_head(f: InvFun) -> (&'static str, i64, i64) {
+    match f {
+        InvFun::Asin => ("cos", 1, 1),
+        InvFun::Acos => ("sin", -1, 1),
+        InvFun::Atan => ("sec", 1, 2),
+        InvFun::Asinh => ("cosh", 1, 1),
+        InvFun::Acosh => ("sinh", 1, 1),
+        InvFun::Atanh => ("sech", 1, 2),
+    }
+}
+
+/// Everything the back-substitution needs: the substitution variable, the
+/// family, `F(w)`, the argument `w`, `E(w)`, and `√E(w)`.
+struct IsBackSub<'a> {
+    t_sym: Symbol,
+    f: InvFun,
+    fw: Atom<'a>,
+    w: Atom<'a>,
+    e_w: Atom<'a>,
+    sqrt_e: Atom<'a>,
+}
+
+/// `c^k` in the back-substitution, with the `√E` fold: even powers of
+/// `√E(w)` land on `E(w)^(k/2)` and odd powers on `E(w)^((k−1)/2)·√E(w)`,
+/// so the answer never carries `sqrt(E)·sqrt(E)` products (they neither
+/// normalize nor re-enter the chain cleanly).
+fn bs_power<'a>(ctx: &'a AtomArena<'a>, bs: &IsBackSub<'a>, c: Atom<'a>, k: i64) -> Atom<'a> {
+    if c == bs.sqrt_e {
+        if k % 2 == 0 {
+            int_pow(ctx, bs.e_w, k / 2)
+        } else {
+            normalize(
+                ctx,
+                ctx.mul(&[int_pow(ctx, bs.e_w, (k - 1) / 2), bs.sqrt_e]),
+            )
+        }
+    } else {
+        int_pow(ctx, c, k)
+    }
+}
+
+/// The principal-band algebraic value of one trig/hyperbolic head at `u`
+/// (spec §2.1/§4.2): `G(u) = w`, `G′(u) = +√E(w)` (the sheet factor is
+/// `+1` on the band), and the remaining heads of the class by the
+/// algebraic identities. `None` for heads of the other class.
+fn is_head_map<'a>(ctx: &'a AtomArena<'a>, bs: &IsBackSub<'a>, name: &str) -> Option<Atom<'a>> {
+    let w = bs.w;
+    let r = bs.sqrt_e;
+    let w_over_r = |ctx: &'a AtomArena<'a>| normalize(ctx, ctx.mul(&[w, inv(ctx, r)]));
+    let r_over_w = |ctx: &'a AtomArena<'a>| normalize(ctx, ctx.mul(&[r, inv(ctx, w)]));
+    Some(match bs.f {
+        InvFun::Asin => match name {
+            "sin" => w,
+            "cos" => r,
+            "tan" => w_over_r(ctx),
+            "sec" => inv(ctx, r),
+            _ => return None,
+        },
+        InvFun::Acos => match name {
+            "cos" => w,
+            "sin" => r,
+            "tan" => r_over_w(ctx),
+            "sec" => inv(ctx, w),
+            _ => return None,
+        },
+        InvFun::Atan => match name {
+            "tan" => w,
+            "sec" => r,
+            "sin" => w_over_r(ctx),
+            "cos" => inv(ctx, r),
+            _ => return None,
+        },
+        InvFun::Asinh => match name {
+            "sinh" => w,
+            "cosh" => r,
+            "tanh" => w_over_r(ctx),
+            "sech" => inv(ctx, r),
+            _ => return None,
+        },
+        InvFun::Acosh => match name {
+            "cosh" => w,
+            "sinh" => r,
+            "tanh" => r_over_w(ctx),
+            "sech" => inv(ctx, w),
+            _ => return None,
+        },
+        InvFun::Atanh => match name {
+            "tanh" => w,
+            "sech" => r,
+            "sinh" => w_over_r(ctx),
+            "cosh" => inv(ctx, r),
+            _ => return None,
+        },
+    })
+}
+
+/// `Some(μ)` when `arg = μ·t` with `μ` a non-negative integer constant
+/// (`t` itself → 1); `None` for any other shape.
+fn u_multiple(arg: Atom<'_>, t_sym: Symbol) -> Option<i64> {
+    match arg.node() {
+        AtomNode::Num(n) if *n >= 0 => Some(*n),
+        AtomNode::Var(v) if *v == t_sym => Some(1),
+        AtomNode::Mul(args) => {
+            let mut mu: Option<i64> = None;
+            let mut seen_t = false;
+            for a in args.iter() {
+                match a.node() {
+                    AtomNode::Num(n) if *n >= 0 && mu.is_none() => mu = Some(*n),
+                    AtomNode::Var(v) if *v == t_sym && !seen_t => seen_t = true,
+                    _ => return None,
+                }
+            }
+            if seen_t { Some(mu.unwrap_or(1)) } else { None }
+        }
+        _ => None,
+    }
+}
+
+/// Coefficients of `T_n` (low-to-high): `cos(n·u) = T_n(cos u)` (and the
+/// same polynomial for cosh). Recurrence `T_{n+1} = 2c·T_n − T_{n−1}`.
+fn chebyshev_t_coeffs(n: i64) -> Vec<i64> {
+    if n == 0 {
+        return vec![1];
+    }
+    let mut prev = vec![1];
+    let mut cur = vec![0, 1];
+    for _ in 1..n {
+        let mut next = vec![0i64; cur.len() + 1];
+        for (k, a) in cur.iter().enumerate() {
+            next[k + 1] += 2 * a;
+        }
+        for (k, a) in prev.iter().enumerate() {
+            next[k] -= a;
+        }
+        prev = cur;
+        cur = next;
+    }
+    cur
+}
+
+/// Coefficients of `U_n` (low-to-high): `sin((n+1)·u) = sin u·U_n(cos u)`
+/// (and the same polynomial for sinh/cosh).
+fn chebyshev_u_coeffs(n: i64) -> Vec<i64> {
+    if n == 0 {
+        return vec![1];
+    }
+    let mut prev = vec![1];
+    let mut cur = vec![0, 2];
+    for _ in 1..n {
+        let mut next = vec![0i64; cur.len() + 1];
+        for (k, a) in cur.iter().enumerate() {
+            next[k + 1] += 2 * a;
+        }
+        for (k, a) in prev.iter().enumerate() {
+            next[k] -= a;
+        }
+        prev = cur;
+        cur = next;
+    }
+    cur
+}
+
+/// Evaluate a coefficient polynomial at `c` with the `√E` power fold.
+fn chebyshev_eval<'a>(
+    ctx: &'a AtomArena<'a>,
+    bs: &IsBackSub<'a>,
+    coeffs: &[i64],
+    c: Atom<'a>,
+) -> Atom<'a> {
+    let mut terms: Vec<Atom<'a>> = Vec::new();
+    for (k, a) in coeffs.iter().enumerate() {
+        if *a == 0 {
+            continue;
+        }
+        terms.push(normalize(
+            ctx,
+            ctx.mul(&[ctx.num(*a), bs_power(ctx, bs, c, k as i64)]),
+        ));
+    }
+    match terms.len() {
+        0 => ctx.num(0),
+        1 => terms[0],
+        _ => normalize(ctx, ctx.add(&terms)),
+    }
+}
+
+/// Map one trig/hyperbolic head at `μ·u` to its algebraic value in `w`
+/// (spec §2.4). Multiple angles go through Chebyshev polynomials
+/// (`cos(μu) = T_μ(cos u)`, `sin(μu) = sin u·U_{μ−1}(cos u)`); the
+/// tan/sec/tanh/sech heads only exist at `μ = 1` in the accepted fragment.
+fn is_trig_back_map<'a>(
+    ctx: &'a AtomArena<'a>,
+    bs: &IsBackSub<'a>,
+    name: &str,
+    mu: i64,
+) -> Option<Atom<'a>> {
+    if mu > MAX_IS_MU {
+        return None;
+    }
+    if mu == 0 {
+        return Some(match name {
+            "cos" | "cosh" | "sec" | "sech" => ctx.num(1),
+            _ => ctx.num(0),
+        });
+    }
+    if mu == 1 {
+        return is_head_map(ctx, bs, name);
+    }
+    let (s_name, c_name) = match name {
+        "sin" | "cos" => ("sin", "cos"),
+        "sinh" | "cosh" => ("sinh", "cosh"),
+        _ => return None,
+    };
+    let c = is_head_map(ctx, bs, c_name)?;
+    if matches!(name, "cos" | "cosh") {
+        return Some(chebyshev_eval(ctx, bs, &chebyshev_t_coeffs(mu), c));
+    }
+    // sin(μu) = sin u·U_{μ−1}(cos u): in every family the two head maps
+    // land on different atoms (`w` and `√E`), so the plain product needs
+    // no further folding.
+    let s = is_head_map(ctx, bs, s_name)?;
+    let u_poly = chebyshev_eval(ctx, bs, &chebyshev_u_coeffs(mu - 1), c);
+    Some(normalize(ctx, ctx.mul(&[s, u_poly])))
+}
+
+/// Back-substitution `u → F(w)` (spec §2.4): a whitelist rewrite of the
+/// integrated t-form. `Var(t)` → `F(w)`; the eight trig/hyperbolic heads at
+/// `μ·u` → their algebraic values; any other `t`-dependent node (inverse
+/// heads, unrecognized arguments, leftover composites) declines the whole
+/// substitution.
+fn is_back_sub<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, bs: &IsBackSub<'a>) -> Option<Atom<'a>> {
+    match expr.node() {
+        AtomNode::Num(_) => Some(expr),
+        AtomNode::Var(v) => Some(if *v == bs.t_sym { bs.fw } else { expr }),
+        AtomNode::Add(args) => {
+            let out: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| is_back_sub(ctx, *a, bs))
+                .collect::<Option<_>>()?;
+            Some(ctx.add(&out))
+        }
+        AtomNode::Mul(args) => {
+            let out: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| is_back_sub(ctx, *a, bs))
+                .collect::<Option<_>>()?;
+            Some(ctx.mul(&out))
+        }
+        AtomNode::Pow(b, e) => {
+            let nb = is_back_sub(ctx, *b, bs)?;
+            let ne = is_back_sub(ctx, *e, bs)?;
+            Some(ctx.pow(nb, ne))
+        }
+        AtomNode::Fun(name, args) => {
+            let n = name.as_str();
+            if args.len() == 1 {
+                if matches!(
+                    n,
+                    "sin" | "cos" | "tan" | "sec" | "sinh" | "cosh" | "tanh" | "sech"
+                ) {
+                    return match u_multiple(args[0], bs.t_sym) {
+                        Some(mu) => is_trig_back_map(ctx, bs, n, mu),
+                        None if contains_symbol(args[0], bs.t_sym) => None,
+                        None => {
+                            let a0 = is_back_sub(ctx, args[0], bs)?;
+                            Some(ctx.fun(n, &[a0]))
+                        }
+                    };
+                }
+                if inv_fun(n).is_some() && contains_symbol(args[0], bs.t_sym) {
+                    // An inverse head over a `t`-dependent argument is a
+                    // leftover composite — the whitelist has no value for it.
+                    return None;
+                }
+            }
+            let out: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| is_back_sub(ctx, *a, bs))
+                .collect::<Option<_>>()?;
+            Some(ctx.fun(n, &out))
+        }
+    }
+}
+
+/// Terminal structural check (spec §2.4/§8.2): the answer must not contain
+/// an `F(G(·))` inverse-of-forward composite for any of the six pairs.
+fn contains_inv_composite(expr: Atom<'_>) -> bool {
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => false,
+        AtomNode::Add(args) | AtomNode::Mul(args) => {
+            args.iter().any(|a| contains_inv_composite(*a))
+        }
+        AtomNode::Pow(b, e) => contains_inv_composite(*b) || contains_inv_composite(*e),
+        AtomNode::Fun(name, args) => {
+            if args.len() == 1
+                && inv_fun(name.as_str()).is_some()
+                && let AtomNode::Fun(inner, _) = args[0].node()
+                && matches!(
+                    (name.as_str(), inner.as_str()),
+                    ("asin", "sin")
+                        | ("acos", "cos")
+                        | ("atan", "tan")
+                        | ("asinh", "sinh")
+                        | ("acosh", "cosh")
+                        | ("atanh", "tanh")
+                )
+            {
+                return true;
+            }
+            args.iter().any(|a| contains_inv_composite(*a))
+        }
+    }
+}
+
+/// The ratio-family heads: `(R, S)` with `R′ = ±S²` — `(tan, sec)` for
+/// atan, `(tanh, sech)` for atanh.
+fn ratio_heads(hyper: bool) -> (&'static str, &'static str) {
+    if hyper {
+        ("tanh", "sech")
+    } else {
+        ("tan", "sec")
+    }
+}
+
+/// Decompose an expanded ratio-family t-term into `(constants, j, A)` for
+/// `C·u^j·R(u)^A·S(u)²`; the dx factor always contributes exactly one
+/// `S²`, and `None` results on any other shape.
+fn scan_ratio_term<'a>(
+    term: Atom<'a>,
+    t_sym: Symbol,
+    hyper: bool,
+) -> Option<(Vec<Atom<'a>>, i64, i64)> {
+    let (tan, sec) = ratio_heads(hyper);
+    let factors: Vec<Atom<'a>> = match term.node() {
+        AtomNode::Mul(args) => args.to_vec(),
+        _ => vec![term],
+    };
+    let mut coeff: Vec<Atom<'a>> = Vec::new();
+    let mut j = 0i64;
+    let mut tan_pow = 0i64;
+    let mut sec2 = false;
+    for f in factors {
+        if is_constant(f, t_sym) {
+            coeff.push(f);
+            continue;
+        }
+        match f.node() {
+            AtomNode::Var(v) if *v == t_sym => j += 1,
+            AtomNode::Pow(b, e) if matches!(b.node(), AtomNode::Var(v) if *v == t_sym) => {
+                let AtomNode::Num(n) = e.node() else {
+                    return None;
+                };
+                if *n < 0 {
+                    return None;
+                }
+                j += n;
+            }
+            AtomNode::Fun(name, args)
+                if name.as_str() == tan
+                    && args.len() == 1
+                    && matches!(args[0].node(), AtomNode::Var(v) if *v == t_sym) =>
+            {
+                tan_pow += 1;
+            }
+            AtomNode::Pow(b, e) => {
+                let AtomNode::Fun(name, args) = b.node() else {
+                    return None;
+                };
+                if args.len() != 1 || !matches!(args[0].node(), AtomNode::Var(v) if *v == t_sym) {
+                    return None;
+                }
+                let AtomNode::Num(n) = e.node() else {
+                    return None;
+                };
+                if name.as_str() == tan && *n > 0 {
+                    tan_pow += n;
+                } else if name.as_str() == sec && *n == 2 && !sec2 {
+                    sec2 = true;
+                } else {
+                    return None;
+                }
+            }
+            _ => return None,
+        }
+    }
+    if !sec2 || j > MAX_IS_K || tan_pow > MAX_IS_POLY_DEG as i64 {
+        return None;
+    }
+    Some((coeff, j, tan_pow))
+}
+
+/// `I(j, a) = ∫ u^j·R(u)^a·S(u)² du`: parts on the exact differential
+/// `dv = R^a·S² du` (`v = R(u)`, since `R′ = ±S²`), reducing to
+/// [`ratio_j`]. `None` when the recursion reaches a polylog term (§2.5).
+fn ratio_i<'a>(
+    ctx: &'a AtomArena<'a>,
+    j: i64,
+    a: i64,
+    t: Atom<'a>,
+    hyper: bool,
+) -> Option<Atom<'a>> {
+    if !(0..=MAX_IS_K).contains(&j) || !(0..=2 * MAX_IS_MU).contains(&a) {
+        return None;
+    }
+    let (tan, _) = ratio_heads(hyper);
+    let r_t = ctx.fun(tan, &[t]);
+    let boundary = normalize(
+        ctx,
+        ctx.mul(&[
+            int_pow(ctx, t, j),
+            int_pow(ctx, r_t, a + 1),
+            inv(ctx, ctx.num(a + 1)),
+        ]),
+    );
+    if j == 0 {
+        return Some(boundary);
+    }
+    let inner = ratio_j(ctx, j - 1, a + 1, t, hyper)?;
+    let coeff = rat_atom(ctx, -j, a + 1);
+    Some(normalize(
+        ctx,
+        ctx.add(&[boundary, ctx.mul(&[coeff, inner])]),
+    ))
+}
+
+/// `J(j, c) = ∫ u^j·R(u)^c du`. tan: `tan^c = tan^{c−2}·(sec²−1)` gives
+/// `J = I(c−2) − J(c−2)`; tanh: `tanh^c = tanh^{c−2}·(1−sech²)` gives
+/// `J = J(c−2) − I(c−2)`. Bases: `J(j, 0) = u^{j+1}/(j+1)` and
+/// `J(0, 1) = −log(cos u)` (tan) resp. `log(cosh u)` (tanh);
+/// `J(j ≥ 1, 1)` is polylog territory and declines (§2.5 — elementarity
+/// emerges from the reduction base case, the residue-check analogue).
+fn ratio_j<'a>(
+    ctx: &'a AtomArena<'a>,
+    j: i64,
+    c: i64,
+    t: Atom<'a>,
+    hyper: bool,
+) -> Option<Atom<'a>> {
+    if !(0..=MAX_IS_K).contains(&j) || !(0..=2 * MAX_IS_MU).contains(&c) {
+        return None;
+    }
+    match c {
+        0 => Some(normalize(
+            ctx,
+            ctx.mul(&[int_pow(ctx, t, j + 1), inv(ctx, ctx.num(j + 1))]),
+        )),
+        1 => {
+            if j >= 1 {
+                return None;
+            }
+            let co = ctx.fun(if hyper { "cosh" } else { "cos" }, &[t]);
+            let log = ctx.fun("log", &[co]);
+            Some(if hyper {
+                log
+            } else {
+                normalize(ctx, ctx.mul(&[ctx.num(-1), log]))
+            })
+        }
+        _ => {
+            let jm = ratio_j(ctx, j, c - 2, t, hyper)?;
+            let im = ratio_i(ctx, j, c - 2, t, hyper)?;
+            let (pos, neg) = if hyper { (jm, im) } else { (im, jm) };
+            Some(normalize(
+                ctx,
+                ctx.add(&[pos, ctx.mul(&[ctx.num(-1), neg])]),
+            ))
+        }
+    }
+}
+
+/// `∫ C·u^j·R(u)^A·S(u)² du` via the [`ratio_i`] tabular.
+fn integrate_ratio_term<'a>(
+    ctx: &'a AtomArena<'a>,
+    term: Atom<'a>,
+    t_sym: Symbol,
+    hyper: bool,
+) -> Option<Atom<'a>> {
+    let (coeff, j, a) = scan_ratio_term(term, t_sym, hyper)?;
+    let t = ctx.var(t_sym.as_str());
+    let core = ratio_i(ctx, j, a, t, hyper)?;
+    let mut fs = coeff;
+    fs.push(core);
+    Some(normalize(ctx, ctx.mul(&fs)))
+}
+
+/// `Some(μ)` when `arg = μ·t` with `μ` an integer constant of either sign
+/// (`t` itself → 1); `None` for any other shape.
+fn signed_u_multiple(arg: Atom<'_>, t_sym: Symbol) -> Option<i64> {
+    match arg.node() {
+        AtomNode::Num(n) => Some(*n),
+        AtomNode::Var(v) if *v == t_sym => Some(1),
+        AtomNode::Mul(args) => {
+            let mut mu: Option<i64> = None;
+            let mut seen_t = false;
+            for a in args.iter() {
+                match a.node() {
+                    AtomNode::Num(n) if mu.is_none() => mu = Some(*n),
+                    AtomNode::Var(v) if *v == t_sym && !seen_t => seen_t = true,
+                    _ => return None,
+                }
+            }
+            if seen_t { Some(mu.unwrap_or(1)) } else { None }
+        }
+        _ => None,
+    }
+}
+
+/// Closed form of one (reduced) trig t-term `C·u^j·sin/cos(μ·u)`
+/// (`0 ≤ j ≤ MAX_IS_K`, `1 ≤ |μ| ≤ MAX_IS_MU`) or of the pure polynomial
+/// `C·u^j`: repeated parts, the trig analogue of [`integrate_hyp_term`]
+/// (spec §2.3's T3 analogue):
+/// `∫u^j·H(μu) du = Σ_{i=0..j} (−1)^i·j^underline_i·u^{j−i}·G_i(μu)/μ^{i+1}`
+/// with `G` cycling `[sin, −cos, −sin, cos]` for `H = cos` and
+/// `[−cos, −sin, cos, sin]` for `H = sin`. Any other shape declines.
+fn integrate_trig_term<'a>(
+    ctx: &'a AtomArena<'a>,
+    term: Atom<'a>,
+    t_sym: Symbol,
+) -> Option<Atom<'a>> {
+    let factors: Vec<Atom<'a>> = match term.node() {
+        AtomNode::Mul(args) => args.to_vec(),
+        _ => vec![term],
+    };
+    let mut coeff: Vec<Atom<'a>> = Vec::new();
+    let mut j = 0i64;
+    let mut trig: Option<(bool, i64)> = None;
+    for f in factors {
+        if is_constant(f, t_sym) {
+            coeff.push(f);
+            continue;
+        }
+        match f.node() {
+            AtomNode::Var(v) if *v == t_sym => j += 1,
+            AtomNode::Pow(b, e) if matches!(b.node(), AtomNode::Var(v) if *v == t_sym) => {
+                let AtomNode::Num(n) = e.node() else {
+                    return None;
+                };
+                if *n < 0 {
+                    return None;
+                }
+                j += n;
+            }
+            AtomNode::Fun(name, args) if args.len() == 1 => {
+                let is_sin = match name.as_str() {
+                    "sin" => true,
+                    "cos" => false,
+                    _ => return None,
+                };
+                if trig.is_some() {
+                    return None;
+                }
+                trig = Some((is_sin, signed_u_multiple(args[0], t_sym)?));
+            }
+            _ => return None,
+        }
+    }
+    if j > MAX_IS_K {
+        return None;
+    }
+    let t = ctx.var(t_sym.as_str());
+    let (is_sin, mu) = match trig {
+        // C·u^j → C·u^(j+1)/(j+1)
+        None => {
+            let mut fs = coeff;
+            fs.push(int_pow(ctx, t, j + 1));
+            fs.push(inv(ctx, ctx.num(j + 1)));
+            return Some(normalize(ctx, ctx.mul(&fs)));
+        }
+        Some(h) => h,
+    };
+    // sin(−μu) = −sin(μu), cos(−μu) = cos(μu): fold a negative multiple
+    // into the coefficient.
+    let (neg, mu) = if mu < 0 { (is_sin, -mu) } else { (false, mu) };
+    if mu > MAX_IS_MU {
+        return None;
+    }
+    if mu == 0 {
+        // sin(0) = 0 kills the term; cos(0) = 1 leaves a polynomial.
+        if is_sin {
+            return Some(ctx.num(0));
+        }
+        let mut fs = coeff;
+        if neg {
+            fs.push(ctx.num(-1));
+        }
+        fs.push(int_pow(ctx, t, j + 1));
+        fs.push(inv(ctx, ctx.num(j + 1)));
+        return Some(normalize(ctx, ctx.mul(&fs)));
+    }
+    let mut terms = Vec::new();
+    let mut fall: i64 = 1; // falling factorial j!/(j−i)!
+    for i in 0..=j {
+        if i > 0 {
+            fall = fall.checked_mul(j - i + 1)?;
+        }
+        let mpow = mu.checked_pow((i + 1) as u32)?;
+        let (h_name, h_sign) = match (is_sin, i % 4) {
+            (true, 0) => ("cos", -1),
+            (true, 1) => ("sin", -1),
+            (true, 2) => ("cos", 1),
+            (true, _) => ("sin", 1),
+            (false, 0) => ("sin", 1),
+            (false, 1) => ("cos", -1),
+            (false, 2) => ("sin", -1),
+            (false, _) => ("cos", 1),
+        };
+        let marg = if mu == 1 {
+            t
+        } else {
+            ctx.mul(&[ctx.num(mu), t])
+        };
+        let mut fs = coeff.clone();
+        if ((i % 2 == 1) != (h_sign < 0)) != neg {
+            fs.push(ctx.num(-1));
+        }
+        if fall != 1 {
+            fs.push(ctx.num(fall));
+        }
+        let deg = j - i;
+        if deg > 0 {
+            fs.push(int_pow(ctx, t, deg));
+        }
+        fs.push(ctx.pow(ctx.num(mpow), ctx.num(-1)));
+        fs.push(ctx.fun(h_name, &[marg]));
+        terms.push(normalize(ctx, ctx.mul(&fs)));
+    }
+    Some(normalize(ctx, ctx.add(&terms)))
+}
+
+/// M4 entry (spec §3.1): `∫ C·(a + b·F(w))^k · P(x) dx` by the
+/// inverse-function substitution `u = F(w)`. See the section docs above
+/// for the scope, the branch semantics, and the deviations from the spec.
+pub(crate) fn integrate_inv_subst<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    // Cheap structural gates first (spec §3.1 and §8 risk 7): the decline
+    // paths stay O(nodes); no substitution work runs before the shape is
+    // confirmed. Inside a parts scope the substitution is suppressed
+    // outright (spec §3.1 — all or nothing there).
+    if super::chain::parts_active() {
+        return None;
+    }
+    if is_constant(expr, var) || matches!(expr.node(), AtomNode::Add(_)) {
+        return None;
+    }
+    if node_count(expr) > MAX_NODES {
+        return None;
+    }
+    let factors: Vec<Atom<'a>> = match expr.node() {
+        AtomNode::Mul(args) => args.to_vec(),
+        _ => vec![expr],
+    };
+    let mut rest: Vec<Atom<'a>> = Vec::new();
+    let mut inv_f: Option<InvPow<'a>> = None;
+    let mut polys: Vec<Atom<'a>> = Vec::new();
+    let mut total_deg = 0usize;
+    for f in factors {
+        if is_constant(f, var) {
+            rest.push(f);
+            continue;
+        }
+        if inv_f.is_none()
+            && let Some(m) = match_inv_power(ctx, f, var, MAX_IS_K)
+        {
+            inv_f = Some(m);
+            continue;
+        }
+        if let Some(d) = poly_deg(f, var)
+            && d >= 1
+            && total_deg + d <= MAX_IS_POLY_DEG
+        {
+            total_deg += d;
+            polys.push(f);
+            continue;
+        }
+        // W5a: radicals, F-in-denom, negative or symbolic powers → decline.
+        return None;
+    }
+    let m = inv_f?;
+    let (sigma, rho) = linear_form(ctx, m.arg, var)?;
+    if is_zero_atom(ctx, sigma) {
+        return None;
+    }
+    let mut work: u64 = node_count(expr) as u64;
+    let t_sym = pick_subst_symbol(expr, var)?;
+    let t = ctx.var(t_sym.as_str());
+    let g_t = ctx.fun(family_g_head(m.f), &[t]);
+    // x = (G(u) − ρ)/σ
+    let x_of_t = {
+        let num_t = if is_zero_atom(ctx, rho) {
+            g_t
+        } else {
+            normalize(ctx, ctx.add(&[g_t, ctx.mul(&[ctx.num(-1), rho])]))
+        };
+        normalize(ctx, ctx.mul(&[num_t, inv(ctx, sigma)]))
+    };
+    let mut t_factors = rest;
+    let base_t = normalize(ctx, ctx.add(&[m.a, ctx.mul(&[m.b, t])]));
+    t_factors.push(int_pow(ctx, base_t, m.k));
+    for p in &polys {
+        t_factors.push(normalize(ctx, replace_symbol(ctx, *p, var, x_of_t)));
+    }
+    // dx = gp_sign·G′(u)^gp_pow/σ·du
+    let (gp_name, gp_sign, gp_pow) = family_gp_head(m.f);
+    let gp_t = ctx.fun(gp_name, &[t]);
+    if gp_sign < 0 {
+        t_factors.push(ctx.num(-1));
+    }
+    t_factors.push(normalize(
+        ctx,
+        ctx.mul(&[int_pow(ctx, gp_t, gp_pow), inv(ctx, sigma)]),
+    ));
+    let product = normalize(ctx, ctx.mul(&t_factors));
+    if is_work_exceeded(&mut work, node_count(product)) {
+        return None;
+    }
+    let expanded = crate::expand::expand_bounded(ctx, product).unwrap_or(product);
+    // `x^m` maps to `(G(u)/σ)^m`, a power of a *product* — distribute those
+    // integer powers (`flatten_powers`, the P3 helper) so every term is a
+    // flat `C·u^j·H(u)^…` product for the per-term scanners.
+    let mut flat_budget = MAX_CANCEL_BUDGET;
+    let flattened = flatten_powers(ctx, expanded, &mut flat_budget);
+    let folded = crate::ode::util::collect_terms(ctx, normalize(ctx, flattened));
+    if node_count(folded) > MAX_IS_SUBST_NODES || is_work_exceeded(&mut work, node_count(folded)) {
+        return None;
+    }
+    let terms: Vec<Atom<'a>> = match folded.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![folded],
+    };
+    let t_answer = match m.f {
+        // Hyperbolic families: M2's multiple-angle reduction plus the
+        // tabular closed form directly (no chain-first attempt — see the
+        // section docs).
+        InvFun::Asinh | InvFun::Acosh => {
+            let mut reduced: Vec<Atom<'a>> = Vec::new();
+            for term in terms {
+                if is_work_exceeded(&mut work, node_count(term)) {
+                    return None;
+                }
+                let (coeff, j, na, nb) = scan_hyp_term(ctx, term, t_sym, MAX_IS_K)?;
+                reduce_hyp_term(ctx, &coeff, j, na, nb, t, &mut reduced)?;
+            }
+            let t_form = normalize(ctx, ctx.add(&reduced));
+            if node_count(t_form) > MAX_REDUCED_NODES
+                || is_work_exceeded(&mut work, node_count(t_form))
+            {
+                return None;
+            }
+            let rterms: Vec<Atom<'a>> = match t_form.node() {
+                AtomNode::Add(args) => args.to_vec(),
+                _ => vec![t_form],
+            };
+            let mut out = Vec::with_capacity(rterms.len());
+            for term in rterms {
+                if is_work_exceeded(&mut work, node_count(term)) {
+                    return None;
+                }
+                out.push(integrate_hyp_term(ctx, term, t_sym, MAX_IS_K)?);
+            }
+            normalize(ctx, ctx.add(&out))
+        }
+        // Ratio families (atan/atanh): the t-terms are
+        // `C·u^j·R(u)^A·S(u)²`, integrated by the parts/R-reduction
+        // tabular (a polylog base case declines).
+        InvFun::Atan => {
+            let mut out = Vec::with_capacity(terms.len());
+            for term in terms {
+                if is_work_exceeded(&mut work, node_count(term)) {
+                    return None;
+                }
+                out.push(integrate_ratio_term(ctx, term, t_sym, false)?);
+            }
+            normalize(ctx, ctx.add(&out))
+        }
+        InvFun::Atanh => {
+            let mut out = Vec::with_capacity(terms.len());
+            for term in terms {
+                if is_work_exceeded(&mut work, node_count(term)) {
+                    return None;
+                }
+                out.push(integrate_ratio_term(ctx, term, t_sym, true)?);
+            }
+            normalize(ctx, ctx.add(&out))
+        }
+        // Trig families (asin/acos): sin/cos products reduce to multiple
+        // angles in-module (trig_reduce_products), then the T3-analogue
+        // tabular (`integrate_trig_term`) finishes each
+        // `C·u^j·sin/cos(μu)` term without touching the chain (§2.3).
+        InvFun::Asin | InvFun::Acos => {
+            let mut out: Vec<Atom<'a>> = Vec::new();
+            for term in terms {
+                if is_work_exceeded(&mut work, node_count(term)) {
+                    return None;
+                }
+                let reduced = match super::trig_reduce::trig_reduce_products(ctx, term, t_sym) {
+                    Some(r) => crate::ode::util::collect_terms(ctx, normalize(ctx, r)),
+                    None => term,
+                };
+                if node_count(reduced) > MAX_REDUCED_NODES
+                    || is_work_exceeded(&mut work, node_count(reduced))
+                {
+                    return None;
+                }
+                let rterms: Vec<Atom<'a>> = match reduced.node() {
+                    AtomNode::Add(args) => args.to_vec(),
+                    _ => vec![reduced],
+                };
+                for rt in rterms {
+                    match integrate_trig_term(ctx, rt, t_sym) {
+                        Some(v) => out.push(v),
+                        None => {
+                            if std::env::var_os("OCAS_M4_DEBUG").is_some() {
+                                eprintln!("[m4] trig term declined: {rt} (from {term})");
+                            }
+                            return None;
+                        }
+                    }
+                }
+            }
+            normalize(ctx, ctx.add(&out))
+        }
+    };
+    // Back-substitution (§2.4) plus the terminal checks.
+    let w = m.arg;
+    let e_w = family_kernel_of_u(ctx, m.f, w);
+    let sqrt_e = ctx.fun("sqrt", &[e_w]);
+    let fw = ctx.fun(m.f.name(), &[w]);
+    let bs = IsBackSub {
+        t_sym,
+        f: m.f,
+        fw,
+        w,
+        e_w,
+        sqrt_e,
+    };
+    let ans = is_back_sub(ctx, t_answer, &bs)?;
+    if is_work_exceeded(&mut work, node_count(ans)) {
+        return None;
+    }
+    let ans = normalize(ctx, ans);
+    if contains_symbol(ans, t_sym) || contains_integral(ans) || contains_inv_composite(ans) {
+        return None;
+    }
+    Some(ans)
+}
+
+// =========================================================================
 // Combined entry
 // =========================================================================
 
@@ -1642,8 +2594,9 @@ pub(crate) fn integrate_companion_form<'a>(
 ///    returned). A second application is a no-op, so the chain re-entry
 ///    terminates.
 /// 2. bare linear forms (M3), kernel-derivative powers (M1), companion
-///    radicands (P3), branch-shifted composition kernels (P2), and finally
-///    the inv-hyp substitution (M2).
+///    radicands (P3), branch-shifted composition kernels (P2), the inv-hyp
+///    substitution (M2), and finally the inverse-function substitution
+///    (M4 — the most general and most expensive, so it runs last).
 pub(crate) fn integrate_inverse_trig<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
@@ -1670,6 +2623,7 @@ pub(crate) fn integrate_inverse_trig<'a>(
         .or_else(|| integrate_companion_form(ctx, expr, var))
         .or_else(|| integrate_affine_kernel(ctx, expr, var))
         .or_else(|| integrate_invhyp_subst(ctx, expr, var))
+        .or_else(|| integrate_inv_subst(ctx, expr, var))
 }
 
 // =========================================================================
@@ -1851,6 +2805,254 @@ mod tests {
                 "at x={xv}: diff={lhs} integrand={rhs} (result: {result})"
             );
         }
+    }
+
+    // ------------------------- M4: inverse-function substitution -------------------------
+
+    /// M4 solve assertion: solved with no `Integral` residue, no `F(G(·))`
+    /// composite, and `diff(result) == integrand` numerically.
+    fn m4_assert_solved<'a>(
+        ctx: &'a AtomArena<'a>,
+        input: &str,
+        consts: &[(Symbol, f64)],
+        samples: &[f64],
+    ) -> Atom<'a> {
+        let x = Symbol::new("x");
+        let expr = parse_norm(ctx, input);
+        let r = integrate_inverse_trig(ctx, expr, x).expect("M4 declined");
+        assert!(!r.to_string().contains("Integral"), "{input}: residue: {r}");
+        assert!(
+            !contains_inv_composite(r),
+            "{input}: F(G(·)) composite left: {r}"
+        );
+        let d = crate::diff(ctx, r, x);
+        for &xv in samples {
+            let mut env = consts.to_vec();
+            env.push((x, xv));
+            let lhs = eval_f64(d, &env).expect("eval diff");
+            let rhs = eval_f64(expr, &env).expect("eval integrand");
+            let tol = 1e-6 * rhs.abs().max(1.0);
+            assert!(
+                (lhs - rhs).abs() < tol,
+                "{input} at x={xv}: diff={lhs} integrand={rhs} (result: {r})"
+            );
+        }
+        r
+    }
+
+    #[test]
+    fn m4_symbolic_slope_bare_power() {
+        // rubi-00554: x²·acos(a·x)² — the symbolic slope makes x² map to
+        // `(cos(u)/a)²`, a power of a product; without the flatten_powers
+        // step the trig scanner cannot see the factors (regression guard).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [(Symbol::new("a"), 1.4)];
+        m4_assert_solved(&ctx, "x^2*acos(a*x)^2", &env, &[0.2, 0.4, 0.6]);
+    }
+
+    #[test]
+    fn m4_z1_zero_intercept_asin() {
+        // §5 Z1: x²·asin(x) → t-form u²·sin²u·cos u (multiple angles).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x^2*asin(x)", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_z2_zero_intercept_asinh() {
+        // §5 Z2: x²·asinh(x) — M2 keeps first claim (its caps cover k=1,
+        // deg 2); the assertion guards the solved-ness and correctness.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x^2*asinh(x)", &[], &[0.3, 0.8, 1.4]);
+    }
+
+    #[test]
+    fn m4_z3_zero_intercept_acos() {
+        // §5 Z3: x·acos(x) → t-form −u·cos u·sin u.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x*acos(x)", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_k1_kernel_power_trig() {
+        // §5 K1: (a + b·asin(x))² → t-form (a + b·u)²·cos u.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [(Symbol::new("a"), 0.7), (Symbol::new("b"), 1.1)];
+        m4_assert_solved(&ctx, "(a + b*asin(x))^2", &env, &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_k2_kernel_power_times_poly() {
+        // §5 K2 (rubi-01205 numeric shape): x³·(1 + 2·asin(x))².
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x^3*(1 + 2*asin(x))^2", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_k3_kernel_power_hyp() {
+        // §5 K3: x·(a + b·asinh(c·x))² — t-form (a+bu)²·sinh u·cosh u/c².
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [
+            (Symbol::new("a"), 0.9),
+            (Symbol::new("b"), -0.8),
+            (Symbol::new("c"), 1.4),
+        ];
+        m4_assert_solved(&ctx, "x*(a + b*asinh(c*x))^2", &env, &[0.3, 0.7, 1.1]);
+    }
+
+    #[test]
+    fn m4_t3_bare_power_atan() {
+        // §5 T3: x·atan(x)² → t-form u²·tan u·sec²u, finished by the
+        // ratio tabular (`I(2,1) = u²tan²u/2 − J(1,2)`).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x*atan(x)^2", &[], &[0.3, 0.8, 1.5]);
+    }
+
+    #[test]
+    fn m4_b2_bare_power_acos() {
+        // §5 B2 (rubi-00554 numeric shape): x²·acos(x)².
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x^2*acos(x)^2", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_h2_m1_first_claim_regression() {
+        // §5 H2: atanh(x)²/(1−x²) is M1's kernel shape — M1 claims it
+        // before M4 and the answer is atanh(x)³/3.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let r = m4_assert_solved(&ctx, "atanh(x)^2/(1 - x^2)", &[], &[0.2, 0.5, 0.8]);
+        assert!(
+            r.to_string().contains("(atanh(x))^3"),
+            "expected M1's atanh^3/3 shape: {r}"
+        );
+    }
+
+    #[test]
+    fn m4_a1_m2_first_claim_regression() {
+        // §5 A1: (a + b·asinh(c + d·x))² is M2's shape — first claim and
+        // answer shape stay with M2.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [
+            (Symbol::new("a"), 1.1),
+            (Symbol::new("b"), 0.7),
+            (Symbol::new("c"), 0.4),
+            (Symbol::new("d"), 1.2),
+        ];
+        m4_assert_solved(&ctx, "(a + b*asinh(c + d*x))^2", &env, &[0.3, 0.8, 1.5]);
+    }
+
+    #[test]
+    fn m4_atah_tabular_weight() {
+        // atanh family: x·atanh(x) → t-form u·tanh u·sech²u, and
+        // x²·atanh(x) → u·tanh²u·sech²u — both elementary via the
+        // I/J tabular (chain emits exp-forms here, so M4 integrates
+        // in-module).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x*atanh(x)", &[], &[0.2, 0.5, 0.8]);
+        m4_assert_solved(&ctx, "x^2*atanh(x)", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_affine_argument_and_hyp_k5() {
+        // Beyond M2's caps: k = 5 kernel power (asinh) and an affine
+        // argument with a polynomial weight.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [(Symbol::new("c"), 1.3)];
+        m4_assert_solved(&ctx, "(1 + asinh(c*x))^5", &env, &[0.2, 0.6, 1.0]);
+        let env2 = [(Symbol::new("c"), 0.5), (Symbol::new("d"), 0.8)];
+        m4_assert_solved(&ctx, "x*asin(c + d*x)", &env2, &[0.1, 0.3, 0.45]);
+    }
+
+    #[test]
+    fn m4_declines_spec_r_group() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // R1: F in the denominator — t-form cos u/(1+u), non-elementary.
+        assert_declined(&ctx, "1/(1 + asin(x))");
+        // R2: negative bare power — non-elementary.
+        assert_declined(&ctx, "1/acos(x)^3");
+        // R3: non-integer kernel power (rubi-01643 family, Fresnel-shaped).
+        assert_declined(&ctx, "(1 + asin(x))^(-5/2)");
+        // R4 (rubi-00531): polylog emerges in the t-form.
+        assert_declined(&ctx, "atanh(1 + x)/(2 + 2*x)");
+        // R5 (rubi-01225 family): non-companion rational factor —
+        // t-form (a+bu)²·tanh u, polylog.
+        assert_declined(&ctx, "x*(a + b*asinh(x))^2/(1 + x^2)");
+        // W5a boundary: companion radicals are W5b — declined for now.
+        assert_declined(&ctx, "x*asin(x)/sqrt(1 - x^2)");
+        // u^j·tanh u with j ≥ 1 is polylog: honest decline.
+        assert_declined(&ctx, "x^2*(a + b*atanh(c*x))^2/(1 - c^2*x^2)^(-1)");
+    }
+
+    #[test]
+    fn m4_idempotent_reentry() {
+        // §5 W2: the answers re-enter the chain without loops. For the
+        // Z1/K1 group every answer term is again elementary and the
+        // re-entry must leave no residue. T3's answer provably contains
+        // non-elementary answer terms (`atan(x)²`, `x²·atan(x)²` — their
+        // t-forms `u²·sec²u` and `u²·tan²u·sec²u` reduce to `∫u·tan u du`,
+        // the polylog/Ti₂ territory of §2.5), so for T3 the assertion is
+        // termination plus: whatever M4 itself re-claims from the answer
+        // terms is complete and correct (no partial guesses).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = Symbol::new("x");
+        for input in ["x^2*asin(x)", "(a + b*asin(x))^2"] {
+            let first = m4_assert_solved(
+                &ctx,
+                input,
+                &[(Symbol::new("a"), 0.7), (Symbol::new("b"), 1.1)],
+                &[0.3],
+            );
+            let second = crate::integral::integrate(&ctx, first, x);
+            assert!(
+                !contains_integral(second),
+                "{input}: answer re-entry left a residue: {second}"
+            );
+        }
+        let t3 = m4_assert_solved(&ctx, "x*atan(x)^2", &[], &[0.3]);
+        let terms: Vec<Atom> = match t3.node() {
+            AtomNode::Add(args) => args.to_vec(),
+            _ => vec![t3],
+        };
+        for term in terms {
+            // Termination is the assertion for the full chain; M4's own
+            // re-claims must be residue-free and differentiate back.
+            if let Some(r) = integrate_inverse_trig(&ctx, term, x) {
+                assert!(!contains_integral(r), "partial guess on {term}: {r}");
+            }
+        }
+    }
+
+    #[test]
+    fn m4_certificate_gate() {
+        // §5: the answers carry a symbolic certificate where the
+        // certificate's layers can see the shape.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = Symbol::new("x");
+        for input in ["x^2*asin(x)", "x*atan(x)^2", "x*acos(x)", "x^2*acos(x)^2"] {
+            let expr = parse_norm(&ctx, input);
+            let r = integrate_inverse_trig(&ctx, expr, x).expect("M4 declined");
+            crate::integral::certify::certify(&ctx, expr, r, x)
+                .unwrap_or_else(|e| panic!("{input}: certificate declined ({e:?}): {r}"));
+        }
+        let expr = parse_norm(&ctx, "(a + b*asin(x))^2");
+        let r = integrate_inverse_trig(&ctx, expr, x).expect("M4 declined");
+        crate::integral::certify::certify(&ctx, expr, r, x)
+            .unwrap_or_else(|e| panic!("K1: certificate declined ({e:?}): {r}"));
     }
 
     // ------------------------- M1 -------------------------
@@ -2087,8 +3289,20 @@ mod tests {
         // Corpus: asin of a quadratic — no mechanism applies.
         assert_declined(&ctx, "a + b*asin(1 + d*x^2)");
         assert_declined(&ctx, "asin(1 + d*x^2)");
-        // k = 6 exceeds the M2 cap.
-        assert_declined(&ctx, "(d + e*x)*(a + b*acosh(c*x))^6");
+        // k = 6 exceeds the M2 cap — but 0.30.0 W5a's M4 accepts it
+        // (k ≤ MAX_IS_K = 6), so the shape is now solved.
+        {
+            let expr = parse_norm(&ctx, "(d + e*x)*(a + b*acosh(c*x))^6");
+            let env = [
+                (Symbol::new("a"), 0.6),
+                (Symbol::new("b"), 1.1),
+                (Symbol::new("c"), 0.8),
+                (Symbol::new("d"), 1.3),
+                (Symbol::new("e"), 0.7),
+            ];
+            // acosh domain: c·x > 1.
+            assert_antiderivative_num(&ctx, expr, Symbol::new("x"), &env, &[1.6, 2.2, 3.0]);
+        }
         // Numeric negative normalization under an odd square-root power.
         assert_declined(&ctx, "(-4 - 4*c^2*x^2)^(3/2)*(a + b*asinh(c*x))");
         // asinh needs E = 1 + u²; the 1 − c²x² radicand is the wrong kernel.
