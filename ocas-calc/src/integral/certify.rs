@@ -719,7 +719,17 @@ fn merge_dependent_atoms<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol
     for _ in 0..MAX_CERT_MERGE_ROUNDS {
         let mut gens: Vec<GenInfo<'a>> = Vec::new();
         let mut changed = false;
-        for (name, app) in collect_funs(current) {
+        // Register the *simplest argument first*: the loop only merges a
+        // candidate into an already-registered generator, and the integer
+        // class `exp(k·v) = exp(v)^k` (merge.rs, 0.29.0) rewrites the
+        // *multiple* into the base. Registering `exp(2x)` before `exp(x)`
+        // left the ratio `1/2` (fractional — no relation) and the field saw
+        // both as independent: the tower proptest's
+        // `exp(2x) + exp(x)·exp(2x)` counterexample.
+        let mut candidates = collect_funs(current);
+        candidates
+            .sort_by_key(|(_, app)| app.children().first().map_or(0usize, |a| node_count(*a)));
+        for (name, app) in candidates {
             if gens.iter().any(|g| g.atom == app) {
                 continue;
             }
@@ -1023,6 +1033,27 @@ mod tests {
         assert!(matches!(
             cert.method,
             CertMethod::RadicalField | CertMethod::ElementaryField | CertMethod::Structural
+        ));
+    }
+
+    #[test]
+    fn merge_orders_integer_multiples_after_their_base() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // Regression (tower proptest counterexample, 0.30.0 W5b review):
+        // `∫ (exp(2x) + exp(x)·exp(2x)) dx = exp(2x)/2 + exp(x)³/3`. The
+        // difference needs `exp(2x) = exp(x)²`; registering `exp(2x)` first
+        // (source order) left the ratio 1/2 and the field saw two
+        // independent generators, so the certificate declined.
+        let cert = certify_str(
+            &ctx,
+            "exp(2*x) + exp(x)*exp(2*x)",
+            "exp(2*x)/2 + exp(x)^3/3",
+        )
+        .expect("certificate");
+        assert!(matches!(
+            cert.method,
+            CertMethod::Structural | CertMethod::ElementaryField
         ));
     }
 

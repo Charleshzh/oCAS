@@ -5,3 +5,4 @@
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
 cc 1294f0313149ccf55cbd2242c9827ee9716552b58f130a96b26a1cb037734bf6 # shrinks to f_src = "((x) * (x))^(2)"
+cc 9038787e14505b4fb999dfea8a275170abb94c2a75a05e35cafde459d2fa8767 # shrinks to f_src = "(exp(2*x)) + ((exp(x)) * (exp(2*x)))"

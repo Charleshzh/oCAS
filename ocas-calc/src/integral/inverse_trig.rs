@@ -35,10 +35,13 @@
 //! - **M3 linear-argument bare forms**: `C·F(a + b·x)` integrates by
 //!   `u = a + b·x` to the textbook closed forms (the rule-family-E shapes
 //!   divided by the slope).
-//! - **M4 inverse-function substitution** (0.30.0 Wave 5a,
+//! - **M4 inverse-function substitution** (0.30.0 Wave 5,
 //!   `docs/planning/INV_SUBST_SPEC_CN.md`): `(a + b·F(w))^k` times a
 //!   polynomial weight, `w = ρ + σ·x` affine, integer `1 ≤ k ≤ 6`, all six
-//!   main heads, no radicals (W5b). `u = F(w)` maps the integrand to
+//!   main heads, plus (W5b) at most one companion radical
+//!   `(s·E(w))^(m/2)`, integer `|m| ≤ 5`, absorbed as
+//!   `s^(m/2)·G′(u)^m·σ` with the sheet factor σ = +1 on the principal
+//!   band. `u = F(w)` maps the integrand to
 //!   `P(u)·T(u)`; trig products reduce to multiple angles and re-enter the
 //!   chain, hyperbolic families use the M2-style tabular closed form
 //!   directly, and atanh uses a dedicated parts/tanh-reduction tabular.
@@ -375,7 +378,12 @@ fn radicand_normalization<'a>(
 
 /// Gate on the square-root normalization: a numeric `s` must be positive
 /// (real square root); a symbolic `s` is assumed positive (module docs).
+/// An `s` carrying the imaginary unit is neither (W5b: M4's companion
+/// absorption reuses this gate; the rubi-00408 family declines here).
 fn sqrt_norm_positive(s_atom: Atom<'_>) -> bool {
+    if mentions_imaginary(s_atom) {
+        return false;
+    }
     match rat_of(s_atom) {
         Some((p, q)) => (p > 0) == (q > 0),
         None => true,
@@ -1657,13 +1665,31 @@ pub(crate) fn integrate_companion_form<'a>(
 // table); elementarity is **not** prejudged — a re-integration residue
 // declines the whole shape (§2.5).
 //
-// W5a scope limits (deviations from the full spec are all narrowings or
+// W5a/W5b scope limits (deviations from the full spec are all narrowings or
 // measured reorderings):
 //
-// - **No radicals**: any radical factor (a `sqrt` head or a non-integer
-//   power whose base is not constant) declines outright. Companion-radical
-//   absorption (§2.2, `radicand_scale` reuse, sheet factor σ) is W5b
-//   territory, so `MAX_IS_RAD_M` has no consumer yet and is not defined.
+// - **Companion radicals** (W5b, §2.2): at most one radical factor
+//   `(s·E(w))^(m/2)` with integer `0 < |m| ≤ MAX_IS_RAD_M` is accepted, and
+//   only when the radicand is the family's own kernel at the same argument
+//   (`radicand_scale` reuse, the P3 mechanism). It absorbs as
+//   `s^(m/2)·G′(u)^m·σ`, merged with the `dx` factor's `G′(u)` power into a
+//   single head power. Non-companion radicands, a second radical base, and
+//   imaginary-carrying radicands all decline (§2.5-4). Narrowings: a
+//   *negative* combined head power is only integrated where the existing
+//   tabulars see it — the ratio families convert `R^A·S^B` (`B < 0`) to the
+//   exact `sin^A·cos^{−A−B}` / `sinh^A·cosh^{−A−B}` form and re-use the
+//   trig/hyperbolic machinery; the trig/hyperbolic families (asin/acos/
+//   asinh/acosh) decline negative combined powers (e.g. the elementary but
+//   unimplemented `u·sin u·sec²u` family).
+// - **Sheet factor σ emission record (§4.2)**: for odd `m` the absorption
+//   carries `σ = G′(u)·E(G(u))^(−1/2)`, a per-interval `±1` constant of zero
+//   formal derivative. On the principal band of every one of the six
+//   families the unsigned `G′` head is non-negative (asin `cos u ≥ 0` on
+//   `[−π/2, π/2]`, acos `sin u ≥ 0` on `[0, π]`, atan `sec² u > 0`, asinh
+//   `cosh u > 0`, acosh `sinh u ≥ 0` on `[0, ∞)`, atanh `sech²u > 0`), so
+//   the sign evidence is definite and σ folds to `+1`; the emitted answer
+//   is exact on that band (the same standing semantics as the
+//   back-substitution's `G′(u) → +√E(w)`). No σ node is emitted.
 // - **The t-form re-integration is fully in-module, no chain re-entry**
 //   (§2.3 allows `integrate_raw` re-entry; the tabular form is its
 //   sanctioned T3-analogue). Measured reason: the chain-entry budget
@@ -1690,9 +1716,13 @@ pub(crate) fn integrate_companion_form<'a>(
 // Real-branch semantics (spec §4): every answer is exact on the principal
 // band of `F` (asin: `u ∈ [−π/2, π/2]`; acos: `[0, π]`; atan:
 // `(−π/2, π/2)`; asinh/atanh: ℝ; acosh: `[0, ∞)`). On the band `G′(u)`
-// has a definite non-negative sign for all six families, so the sheet
-// factor `σ = G′(u)·E(G(u))^(−1/2)` folds to `+1` with numeric sign
-// evidence (§4.2) and the back-substitution maps `G′(u) → +√E(w)`.
+// has a definite non-negative sign for all six families — the
+// back-substitution (`cos u → +√E(w)`) already assumes it. The radical
+// absorption extends the same convention: for odd `m`,
+// `(s·E)^(m/2) = s^(m/2)·G′^m·σ` folds the sheet factor σ to `+1` with
+// the principal-band sign evidence (§4.2), and the `√E(w)` answers
+// re-enter the certificate's radical layer through the `r² = E(w)`
+// relation.
 // The in-module tabulars never produce `F(G(u))` composites; the terminal
 // structural check (`contains_inv_composite`) is the belt-and-braces
 // enforcement of §2.4's ban. No `I` is introduced anywhere.
@@ -1708,6 +1738,9 @@ const MAX_IS_SUBST_NODES: usize = 400;
 /// Chebyshev back-substitution order (spec §3.2 `MAX_IS_TRIG_EXP`; aligned
 /// with `MAX_HYP_EXP` and trig_reduce's factor cap).
 const MAX_IS_MU: i64 = 8;
+/// M4 cap on the companion-radical half-power: `(s·E(w))^(m/2)` is accepted
+/// for integer `0 < |m| ≤ MAX_IS_RAD_M` (spec §3.2, W5b).
+const MAX_IS_RAD_M: i64 = 5;
 /// M4 total work budget (spec §3.2): node counts are charged at every
 /// stage so a single call's work is deterministically bounded.
 const MAX_IS_WORK: u64 = 100_000;
@@ -1957,6 +1990,20 @@ fn is_trig_back_map<'a>(
     Some(normalize(ctx, ctx.mul(&[s, u_poly])))
 }
 
+/// The inverse/forward head pairs whose composites are banned (§2.4) —
+/// the same six pairs [`contains_inv_composite`] enforces on the answer.
+fn is_inv_pair(f: &str, g: &str) -> bool {
+    matches!(
+        (f, g),
+        ("asin", "sin")
+            | ("acos", "cos")
+            | ("atan", "tan")
+            | ("asinh", "sinh")
+            | ("acosh", "cosh")
+            | ("atanh", "tanh")
+    )
+}
+
 /// Back-substitution `u → F(w)` (spec §2.4): a whitelist rewrite of the
 /// integrated t-form. `Var(t)` → `F(w)`; the eight trig/hyperbolic heads at
 /// `μ·u` → their algebraic values; any other `t`-dependent node (inverse
@@ -1983,6 +2030,11 @@ fn is_back_sub<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, bs: &IsBackSub<'a>) -
         AtomNode::Pow(b, e) => {
             let nb = is_back_sub(ctx, *b, bs)?;
             let ne = is_back_sub(ctx, *e, bs)?;
+            // `(√E)^k` folds to `E^(k/2)` resp. `E^((k−1)/2)·√E` (W5b): the
+            // answer never carries a powered `√E` literal.
+            if let AtomNode::Num(k) = ne.node() {
+                return Some(bs_power(ctx, bs, nb, *k));
+            }
             Some(ctx.pow(nb, ne))
         }
         AtomNode::Fun(name, args) => {
@@ -2002,8 +2054,25 @@ fn is_back_sub<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, bs: &IsBackSub<'a>) -
                     };
                 }
                 if inv_fun(n).is_some() && contains_symbol(args[0], bs.t_sym) {
-                    // An inverse head over a `t`-dependent argument is a
-                    // leftover composite — the whitelist has no value for it.
+                    // W5b cross-family algebraic value: the ratio tabular's
+                    // `∫sech u du = asin(tanh u)` base maps to `asin(w)`.
+                    // Only a *non-inverse-pair* trig/hyperbolic head under
+                    // the inverse head maps this way — a same-pair
+                    // `F(G(·))` composite stays a decline (§2.4 ban).
+                    if let AtomNode::Fun(inner, iargs) = args[0].node()
+                        && iargs.len() == 1
+                        && !is_inv_pair(n, inner.as_str())
+                        && matches!(
+                            inner.as_str(),
+                            "sin" | "cos" | "tan" | "sec" | "sinh" | "cosh" | "tanh" | "sech"
+                        )
+                        && let Some(mu) = u_multiple(iargs[0], bs.t_sym)
+                    {
+                        let v = is_trig_back_map(ctx, bs, inner.as_str(), mu)?;
+                        return Some(ctx.fun(n, &[v]));
+                    }
+                    // An inverse head over any other `t`-dependent argument
+                    // is a leftover composite — no whitelist value for it.
                     return None;
                 }
             }
@@ -2056,14 +2125,16 @@ fn ratio_heads(hyper: bool) -> (&'static str, &'static str) {
     }
 }
 
-/// Decompose an expanded ratio-family t-term into `(constants, j, A)` for
-/// `C·u^j·R(u)^A·S(u)²`; the dx factor always contributes exactly one
-/// `S²`, and `None` results on any other shape.
+/// Decompose an expanded ratio-family t-term into `(constants, j, A, B)`
+/// for `C·u^j·R(u)^A·S(u)^B`. Without a companion radical the `dx` factor
+/// contributes exactly `S²`; W5b's absorption `(s·E)^(m/2) → s^(m/2)·S^m·σ`
+/// shifts it to `S^(2+m)`, so `B` is any integer here (negative `B` is an
+/// exact reciprocal power of `cos`/`cosh` — see [`integrate_ratio_term`]).
 fn scan_ratio_term<'a>(
     term: Atom<'a>,
     t_sym: Symbol,
     hyper: bool,
-) -> Option<(Vec<Atom<'a>>, i64, i64)> {
+) -> Option<(Vec<Atom<'a>>, i64, i64, i64)> {
     let (tan, sec) = ratio_heads(hyper);
     let factors: Vec<Atom<'a>> = match term.node() {
         AtomNode::Mul(args) => args.to_vec(),
@@ -2072,7 +2143,7 @@ fn scan_ratio_term<'a>(
     let mut coeff: Vec<Atom<'a>> = Vec::new();
     let mut j = 0i64;
     let mut tan_pow = 0i64;
-    let mut sec2 = false;
+    let mut sec_pow = 0i64;
     for f in factors {
         if is_constant(f, t_sym) {
             coeff.push(f);
@@ -2090,11 +2161,15 @@ fn scan_ratio_term<'a>(
                 j += n;
             }
             AtomNode::Fun(name, args)
-                if name.as_str() == tan
-                    && args.len() == 1
-                    && matches!(args[0].node(), AtomNode::Var(v) if *v == t_sym) =>
+                if args.len() == 1 && matches!(args[0].node(), AtomNode::Var(v) if *v == t_sym) =>
             {
-                tan_pow += 1;
+                if name.as_str() == tan {
+                    tan_pow += 1;
+                } else if name.as_str() == sec {
+                    sec_pow += 1;
+                } else {
+                    return None;
+                }
             }
             AtomNode::Pow(b, e) => {
                 let AtomNode::Fun(name, args) = b.node() else {
@@ -2108,8 +2183,8 @@ fn scan_ratio_term<'a>(
                 };
                 if name.as_str() == tan && *n > 0 {
                     tan_pow += n;
-                } else if name.as_str() == sec && *n == 2 && !sec2 {
-                    sec2 = true;
+                } else if name.as_str() == sec && *n != 0 {
+                    sec_pow += n;
                 } else {
                     return None;
                 }
@@ -2117,10 +2192,10 @@ fn scan_ratio_term<'a>(
             _ => return None,
         }
     }
-    if !sec2 || j > MAX_IS_K || tan_pow > MAX_IS_POLY_DEG as i64 {
+    if j > MAX_IS_K || tan_pow > MAX_IS_POLY_DEG as i64 || sec_pow.abs() > 2 + MAX_IS_RAD_M {
         return None;
     }
-    Some((coeff, j, tan_pow))
+    Some((coeff, j, tan_pow, sec_pow))
 }
 
 /// `I(j, a) = ∫ u^j·R(u)^a·S(u)² du`: parts on the exact differential
@@ -2202,19 +2277,257 @@ fn ratio_j<'a>(
     }
 }
 
-/// `∫ C·u^j·R(u)^A·S(u)² du` via the [`ratio_i`] tabular.
+/// `∫ C·u^j·R(u)^A·S(u)^B du` (W5b: any integer `B`). `B < 0` converts to
+/// the exact `sin/cosh`-family form and re-uses the trig/hyperbolic
+/// machinery; `B ≥ 0` goes through [`ratio_rs`].
 fn integrate_ratio_term<'a>(
     ctx: &'a AtomArena<'a>,
     term: Atom<'a>,
     t_sym: Symbol,
     hyper: bool,
 ) -> Option<Atom<'a>> {
-    let (coeff, j, a) = scan_ratio_term(term, t_sym, hyper)?;
+    let (coeff, j, a, b) = scan_ratio_term(term, t_sym, hyper)?;
     let t = ctx.var(t_sym.as_str());
-    let core = ratio_i(ctx, j, a, t, hyper)?;
+    if b < 0 {
+        // `sec = 1/cos` / `sech = 1/cosh` hold exactly (no branch), so
+        // `R^A·S^B = s(u)^A·c(u)^(−A−B)`: a pure sin/cos (sinh/cosh) term,
+        // integrable by the trig/hyperbolic tabulars when `−A−B ≥ 0`.
+        // Otherwise the reciprocal cosine power survives — decline (§2.5).
+        let c_pow = -a - b;
+        if c_pow < 0 {
+            return None;
+        }
+        let (s_name, c_name) = if hyper {
+            ("sinh", "cosh")
+        } else {
+            ("sin", "cos")
+        };
+        let mut fs = coeff;
+        if j > 0 {
+            fs.push(int_pow(ctx, t, j));
+        }
+        if a > 0 {
+            fs.push(int_pow(ctx, ctx.fun(s_name, &[t]), a));
+        }
+        if c_pow > 0 {
+            fs.push(int_pow(ctx, ctx.fun(c_name, &[t]), c_pow));
+        }
+        let conv = normalize(ctx, ctx.mul(&fs));
+        return integrate_sincos_term(ctx, conv, t_sym, hyper);
+    }
+    let core = ratio_rs(ctx, j, a, b, t, hyper)?;
     let mut fs = coeff;
     fs.push(core);
     Some(normalize(ctx, ctx.mul(&fs)))
+}
+
+/// Integrate a `C·u^j·s(u)^A·c(u)^B` term (`sin/cos` or `sinh/cosh` at the
+/// bare angle `u`): the same multiple-angle reduction + tabular the
+/// Asin/Acos and Asinh/Acosh dispatch branches run, factored out for the
+/// ratio family's negative-`S`-power conversions (W5b).
+fn integrate_sincos_term<'a>(
+    ctx: &'a AtomArena<'a>,
+    term: Atom<'a>,
+    t_sym: Symbol,
+    hyper: bool,
+) -> Option<Atom<'a>> {
+    if hyper {
+        let t = ctx.var(t_sym.as_str());
+        let (coeff, j, na, nb) = scan_hyp_term(ctx, term, t_sym, MAX_IS_K)?;
+        let mut reduced: Vec<Atom<'a>> = Vec::new();
+        reduce_hyp_term(ctx, &coeff, j, na, nb, t, &mut reduced)?;
+        let t_form = normalize(ctx, ctx.add(&reduced));
+        if node_count(t_form) > MAX_REDUCED_NODES {
+            return None;
+        }
+        let rterms: Vec<Atom<'a>> = match t_form.node() {
+            AtomNode::Add(args) => args.to_vec(),
+            _ => vec![t_form],
+        };
+        let mut out = Vec::with_capacity(rterms.len());
+        for rt in rterms {
+            out.push(integrate_hyp_term(ctx, rt, t_sym, MAX_IS_K)?);
+        }
+        return Some(normalize(ctx, ctx.add(&out)));
+    }
+    let reduced = match super::trig_reduce::trig_reduce_products(ctx, term, t_sym) {
+        Some(r) => crate::ode::util::collect_terms(ctx, normalize(ctx, r)),
+        None => term,
+    };
+    if node_count(reduced) > MAX_REDUCED_NODES {
+        return None;
+    }
+    let rterms: Vec<Atom<'a>> = match reduced.node() {
+        AtomNode::Add(args) => args.to_vec(),
+        _ => vec![reduced],
+    };
+    let mut out = Vec::with_capacity(rterms.len());
+    for rt in rterms {
+        out.push(integrate_trig_term(ctx, rt, t_sym)?);
+    }
+    Some(normalize(ctx, ctx.add(&out)))
+}
+
+/// `∫ u^j·R(u)^A·S(u)^B du` with `B ≥ 0` (the `R′ = S²` family: `(R, S)` is
+/// `(tan, sec)` resp. `(tanh, sech)`; `S′ = ±R·S` with `−` hyperbolic).
+///
+/// - even `B ≥ 2`: `S^B = S²·(1 ± R²)^((B−2)/2)` expands to `R^a·S²` terms
+///   for the [`ratio_i`] tabular;
+/// - odd `B`, odd `A ≥ 1`: parts on `d(S^B) = ±B·R·S^B du` with
+///   `R^(A−1) = (R²)^((A−1)/2)` a polynomial in `S²`, so the primitive of
+///   `dv = R^A·S^B du` is a polynomial in `S` and the reduced terms are
+///   pure `S` powers ([`ratio_s_pow`]);
+/// - odd `B`, even `A`: `R^A = (R²)^(A/2)` expands likewise;
+/// - `B = 0`: [`ratio_j`].
+fn ratio_rs<'a>(
+    ctx: &'a AtomArena<'a>,
+    j: i64,
+    a: i64,
+    b: i64,
+    t: Atom<'a>,
+    hyper: bool,
+) -> Option<Atom<'a>> {
+    if !(0..=MAX_IS_K).contains(&j) || !(0..=2 * MAX_IS_MU).contains(&a) {
+        return None;
+    }
+    if b == 0 {
+        return ratio_j(ctx, j, a, t, hyper);
+    }
+    if !(1..=2 * MAX_IS_MU).contains(&b) {
+        return None;
+    }
+    let (_, sec) = ratio_heads(hyper);
+    let s_t = ctx.fun(sec, &[t]);
+    if b % 2 == 0 {
+        // S² = 1 ∓ R²: hyper `(1 − R²)^k`, trig `(1 + R²)^k`, k = (B−2)/2.
+        let k = (b - 2) / 2;
+        let mut terms = Vec::new();
+        for i in 0..=k {
+            let c = binom(k, i) * if hyper && i % 2 == 1 { -1 } else { 1 };
+            let core = ratio_i(ctx, j, a + 2 * i, t, hyper)?;
+            terms.push(normalize(ctx, ctx.mul(&[ctx.num(c), core])));
+        }
+        return Some(normalize(ctx, ctx.add(&terms)));
+    }
+    if a == 0 {
+        return ratio_s_pow(ctx, j, b, t, hyper);
+    }
+    // Sign of `S′ = sgn·R·S` and of `(R²)^k` expanded in `S²`:
+    // hyperbolic `R² = 1 − S²` gives `(−1)^i`; trig `R² = S² − 1` gives
+    // `(−1)^(k−i)`.
+    let sq_sign = |k: i64, i: i64| {
+        if if hyper { i % 2 == 1 } else { (k - i) % 2 == 1 } {
+            -1i64
+        } else {
+            1
+        }
+    };
+    if a % 2 == 1 {
+        // dv = R^A·S^B du = R^(A−1)·d(S^B)/(sgn·B): with
+        // R^(A−1) = Σ_i c_i·S^(2i) the primitive is
+        // v = Σ_i c_i·S^(B+2i)/(sgn·(B+2i)).
+        let k = (a - 1) / 2;
+        let sgn: i64 = if hyper { -1 } else { 1 };
+        let mut v_terms = Vec::new();
+        for i in 0..=k {
+            let c = binom(k, i) * sq_sign(k, i);
+            let p = b + 2 * i;
+            v_terms.push((c, p));
+        }
+        let mut v_atoms = Vec::with_capacity(v_terms.len());
+        let mut inner = Vec::with_capacity(v_terms.len());
+        for (c, p) in v_terms {
+            let coeff = rat_atom(ctx, c, sgn * p);
+            v_atoms.push(normalize(ctx, ctx.mul(&[coeff, int_pow(ctx, s_t, p)])));
+            if j > 0 {
+                let red = ratio_s_pow(ctx, j - 1, p, t, hyper)?;
+                inner.push(normalize(ctx, ctx.mul(&[coeff, red])));
+            }
+        }
+        let v = normalize(ctx, ctx.add(&v_atoms));
+        let boundary = normalize(ctx, ctx.mul(&[int_pow(ctx, t, j), v]));
+        if j == 0 {
+            return Some(boundary);
+        }
+        let inner = normalize(ctx, ctx.add(&inner));
+        return Some(normalize(
+            ctx,
+            ctx.add(&[boundary, ctx.mul(&[ctx.num(-j), inner])]),
+        ));
+    }
+    // Even `A ≥ 2`, odd `B`: `R^A = (R²)^(A/2)` → `Σ d_i·S^(B+2i)`.
+    let k = a / 2;
+    let mut terms = Vec::new();
+    for i in 0..=k {
+        let c = binom(k, i) * sq_sign(k, i);
+        let red = ratio_s_pow(ctx, j, b + 2 * i, t, hyper)?;
+        terms.push(normalize(ctx, ctx.mul(&[ctx.num(c), red])));
+    }
+    Some(normalize(ctx, ctx.add(&terms)))
+}
+
+/// `∫ u^j·S(u)^b du`, odd `b ≥ 1`. The `j = 0` reduction
+/// `∫S^b = (R·S^(b−2) + (b−2)·∫S^(b−2))/(b−1)` is family-independent
+/// (`d(R·S^(b−2)) = (b−1)·S^b − (b−2)·S^(b−2)` in both families); the bases
+/// are `∫sec u du = log(sec u + tan u)` and `∫sech u du = asin(tanh u)`
+/// (both exact on the principal band; the latter back-substitutes to
+/// `asin(w)` through the whitelist's cross-family head map). `j ≥ 1`
+/// integrates by parts on `v = ∫S^b du`; the surviving `u^j·S(u)` (`j ≥ 1`)
+/// base is polylog territory and declines (§2.5).
+fn ratio_s_pow<'a>(
+    ctx: &'a AtomArena<'a>,
+    j: i64,
+    b: i64,
+    t: Atom<'a>,
+    hyper: bool,
+) -> Option<Atom<'a>> {
+    if !(0..=MAX_IS_K).contains(&j) || !(1..=2 * MAX_IS_MU).contains(&b) {
+        return None;
+    }
+    let (tan, sec) = ratio_heads(hyper);
+    let r_t = ctx.fun(tan, &[t]);
+    let s_t = ctx.fun(sec, &[t]);
+    if b == 1 {
+        if j >= 1 {
+            return None;
+        }
+        return Some(if hyper {
+            // d/du asin(tanh u) = sech²u/√(1 − tanh²u) = sech u (sech > 0).
+            ctx.fun("asin", &[r_t])
+        } else {
+            ctx.fun("log", &[normalize(ctx, ctx.add(&[s_t, r_t]))])
+        });
+    }
+    if j == 0 {
+        let rec = ratio_s_pow(ctx, 0, b - 2, t, hyper)?;
+        return Some(normalize(
+            ctx,
+            ctx.mul(&[
+                inv(ctx, ctx.num(b - 1)),
+                ctx.add(&[
+                    ctx.mul(&[r_t, int_pow(ctx, s_t, b - 2)]),
+                    ctx.mul(&[ctx.num(b - 2), rec]),
+                ]),
+            ]),
+        ));
+    }
+    // Parts with `v = ∫S^b du = (R·S^(b−2) + (b−2)·H_{b−2})/(b−1)`:
+    // `∫ u^j·S^b = u^j·H_b − j·∫ u^(j−1)·H_b du`.
+    let h_b = ratio_s_pow(ctx, 0, b, t, hyper)?;
+    let boundary = normalize(ctx, ctx.mul(&[int_pow(ctx, t, j), h_b]));
+    let t1 = ratio_rs(ctx, j - 1, 1, b - 2, t, hyper)?; // ∫ u^(j−1)·R·S^(b−2)
+    let t2 = ratio_s_pow(ctx, j - 1, b - 2, t, hyper)?; // ∫ u^(j−1)·S^(b−2)
+    let inner = normalize(
+        ctx,
+        ctx.mul(&[
+            inv(ctx, ctx.num(b - 1)),
+            ctx.add(&[t1, ctx.mul(&[ctx.num(b - 2), t2])]),
+        ]),
+    );
+    Some(normalize(
+        ctx,
+        ctx.add(&[boundary, ctx.mul(&[ctx.num(-j), inner])]),
+    ))
 }
 
 /// `Some(μ)` when `arg = μ·t` with `μ` an integer constant of either sign
@@ -2361,6 +2674,55 @@ fn integrate_trig_term<'a>(
     Some(normalize(ctx, ctx.add(&terms)))
 }
 
+/// Match a radical factor `R^(m/2)` with integer `0 < |m| ≤ MAX_IS_RAD_M`
+/// (W5b): the `sqrt(R)` / `sqrt(R)^n` spellings (`m = 1` / `m = n`),
+/// half-power exponents `R^(p/2)` (`m = p`), and negative integer powers
+/// `R^p` (`m = 2p`, the squared-kernel reciprocals — `|2p| ≤ 5`). Positive
+/// integer powers are polynomial weights and never reach here (the caller
+/// tries [`poly_deg`] first). Companionship of `R` is *not* checked here;
+/// the caller runs [`radicand_scale`] against the family kernel.
+fn match_radical_pow(factor: Atom<'_>) -> Option<(Atom<'_>, i64)> {
+    match factor.node() {
+        AtomNode::Fun(name, args) if name.as_str() == "sqrt" && args.len() == 1 => {
+            Some((args[0], 1))
+        }
+        AtomNode::Pow(b, e) => {
+            if let AtomNode::Fun(name, args) = b.node()
+                && name.as_str() == "sqrt"
+                && args.len() == 1
+                && let AtomNode::Num(n) = e.node()
+            {
+                if *n != 0 && n.unsigned_abs() <= MAX_IS_RAD_M as u64 {
+                    return Some((args[0], *n));
+                }
+                return None;
+            }
+            let (p, q) = rat_of(*e)?;
+            let m = match (p, q) {
+                (p, 2) if p != 0 && p.unsigned_abs() <= MAX_IS_RAD_M as u64 => p,
+                (p, 1) if (-2..=-1).contains(&p) => 2 * p,
+                _ => return None,
+            };
+            Some((*b, m))
+        }
+        _ => None,
+    }
+}
+
+/// True when the imaginary unit (the corpus spelling `i` or the internal
+/// `I`) occurs anywhere in `expr` — M4 emits no complex answers, so an
+/// `i`-carrying radicand or normalization declines (rubi-00408).
+fn mentions_imaginary(expr: Atom<'_>) -> bool {
+    match expr.node() {
+        AtomNode::Num(_) => false,
+        AtomNode::Var(v) => matches!(v.as_str(), "i" | "I"),
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            args.iter().any(|a| mentions_imaginary(*a))
+        }
+        AtomNode::Pow(b, e) => mentions_imaginary(*b) || mentions_imaginary(*e),
+    }
+}
+
 /// M4 entry (spec §3.1): `∫ C·(a + b·F(w))^k · P(x) dx` by the
 /// inverse-function substitution `u = F(w)`. See the section docs above
 /// for the scope, the branch semantics, and the deviations from the spec.
@@ -2389,6 +2751,7 @@ pub(crate) fn integrate_inv_subst<'a>(
     let mut rest: Vec<Atom<'a>> = Vec::new();
     let mut inv_f: Option<InvPow<'a>> = None;
     let mut polys: Vec<Atom<'a>> = Vec::new();
+    let mut rad: Option<(Atom<'a>, i64)> = None;
     let mut total_deg = 0usize;
     for f in factors {
         if is_constant(f, var) {
@@ -2409,7 +2772,16 @@ pub(crate) fn integrate_inv_subst<'a>(
             polys.push(f);
             continue;
         }
-        // W5a: radicals, F-in-denom, negative or symbolic powers → decline.
+        // W5b: at most one radical factor; companionship (the family's own
+        // kernel at the same argument) is verified after the affine gate.
+        if rad.is_none()
+            && let Some(rm) = match_radical_pow(f)
+        {
+            rad = Some(rm);
+            continue;
+        }
+        // F-in-denom, extra radical bases, negative or symbolic powers of
+        // anything else → decline.
         return None;
     }
     let m = inv_f?;
@@ -2418,6 +2790,33 @@ pub(crate) fn integrate_inv_subst<'a>(
         return None;
     }
     let mut work: u64 = node_count(expr) as u64;
+    // W5b companion-radical absorption (§2.2): `(s·E(w))^(m/2)` maps to
+    // `s^(m/2)·G′(u)^m·σ`. Companionship is P3's `radicand_scale` (same
+    // argument `w`, same family kernel, constant normalization quotient).
+    let mut rad_data: Option<(i64, Atom<'a>)> = None;
+    if let Some((r, rm)) = rad {
+        let e_u = family_kernel_of_u(ctx, m.f, m.arg);
+        // `x = −ρ/σ`, the abscissa where the argument vanishes and
+        // `E(u) = e0 ∈ {±1}` (the P3 candidate point).
+        let x_root = normalize(ctx, ctx.mul(&[ctx.num(-1), rho, inv(ctx, sigma)]));
+        let s_atom = radicand_scale(ctx, r, e_u, x_root, var)?;
+        // Odd `m` takes the half power of `s`: a numeric normalization must
+        // be positive (real square root), a symbolic one is assumed
+        // positive (the module's standing sign convention).
+        if rm % 2 != 0 && !sqrt_norm_positive(s_atom) {
+            return None;
+        }
+        // No `I` (spec §1.3-7): an imaginary radicand normalization would
+        // put `i^(m/2)` into the answer — decline (rubi-00408 family).
+        if mentions_imaginary(r) || mentions_imaginary(s_atom) {
+            return None;
+        }
+        // Charge the companion check against the M4 work budget.
+        if is_work_exceeded(&mut work, 2 * node_count(r)) {
+            return None;
+        }
+        rad_data = Some((rm, s_atom));
+    }
     let t_sym = pick_subst_symbol(expr, var)?;
     let t = ctx.var(t_sym.as_str());
     let g_t = ctx.fun(family_g_head(m.f), &[t]);
@@ -2436,15 +2835,31 @@ pub(crate) fn integrate_inv_subst<'a>(
     for p in &polys {
         t_factors.push(normalize(ctx, replace_symbol(ctx, *p, var, x_of_t)));
     }
-    // dx = gp_sign·G′(u)^gp_pow/σ·du
+    // dx = gp_sign·G′(u)^gp_pow/σ·du. A companion radical contributes
+    // `s^(rm/2)·G′(u)^rm·σ` with the *same* unsigned head (E(G(u)) is
+    // `G′²` for the trig/hyperbolic families and `G′` itself for the ratio
+    // families, so `E^(rm/2) = head^rm·σ` in both), and the two merge into
+    // a single head power (§2.2). The sheet factor σ (odd `rm`) is `+1`
+    // on the principal band of every family — see the section docs for the
+    // §4.2 emission record.
     let (gp_name, gp_sign, gp_pow) = family_gp_head(m.f);
     let gp_t = ctx.fun(gp_name, &[t]);
     if gp_sign < 0 {
         t_factors.push(ctx.num(-1));
     }
+    let mut gp_total = gp_pow;
+    if let Some((rm, s_atom)) = &rad_data {
+        gp_total += rm;
+        t_factors.push(ctx.pow(*s_atom, rat_atom(ctx, *rm, 2)));
+        if std::env::var_os("OCAS_M4_DEBUG").is_some() {
+            eprintln!(
+                "[m4] companion radical (s·E)^({rm}/2) absorbed; sheet factor σ folded to +1 (principal band)"
+            );
+        }
+    }
     t_factors.push(normalize(
         ctx,
-        ctx.mul(&[int_pow(ctx, gp_t, gp_pow), inv(ctx, sigma)]),
+        ctx.mul(&[int_pow(ctx, gp_t, gp_total), inv(ctx, sigma)]),
     ));
     let product = normalize(ctx, ctx.mul(&t_factors));
     if is_work_exceeded(&mut work, node_count(product)) {
@@ -2988,10 +3403,13 @@ mod tests {
         // R4 (rubi-00531): polylog emerges in the t-form.
         assert_declined(&ctx, "atanh(1 + x)/(2 + 2*x)");
         // R5 (rubi-01225 family): non-companion rational factor —
-        // t-form (a+bu)²·tanh u, polylog.
+        // t-form (a+bu)²·tanh u, polylog. (The radical `(1+x²)^(−1)` IS
+        // the asinh companion with m = −2 since W5b; the decline emerges
+        // from the t-form's negative cosh power, not the shape gate.)
         assert_declined(&ctx, "x*(a + b*asinh(x))^2/(1 + x^2)");
-        // W5a boundary: companion radicals are W5b — declined for now.
-        assert_declined(&ctx, "x*asin(x)/sqrt(1 - x^2)");
+        // W5b: companion radicals are accepted — CR1/CR2/CR3 below. The
+        // non-companion and multi-base radical declines live in
+        // `m4_w5b_declines_non_companion_radicals`.
         // u^j·tanh u with j ≥ 1 is polylog: honest decline.
         assert_declined(&ctx, "x^2*(a + b*atanh(c*x))^2/(1 - c^2*x^2)^(-1)");
     }
@@ -3053,9 +3471,255 @@ mod tests {
         let r = integrate_inverse_trig(&ctx, expr, x).expect("M4 declined");
         crate::integral::certify::certify(&ctx, expr, r, x)
             .unwrap_or_else(|e| panic!("K1: certificate declined ({e:?}): {r}"));
+        // W5b companion-radical answers certify through the radical layer's
+        // `r² = E(w)` relation (§4.2/§4.3).
+        for input in [
+            "x*asin(x)/sqrt(1 - x^2)",
+            "x^3*asin(x)/sqrt(1 - x^2)",
+            "x*(1 - x^2)^(3/2)*atanh(x)",
+        ] {
+            let expr = parse_norm(&ctx, input);
+            let r = integrate_inverse_trig(&ctx, expr, x).expect("M4 declined");
+            crate::integral::certify::certify(&ctx, expr, r, x)
+                .unwrap_or_else(|e| panic!("{input}: certificate declined ({e:?}): {r}"));
+        }
+    }
+
+    // ------------------------- M4/W5b: companion radicals -------------------------
+
+    #[test]
+    fn m4_cr1_companion_sqrt_inverse() {
+        // §5 CR1: x·asin(x)/√(1−x²) → t-form u·sin u (the dx `cos u` and
+        // the radical's `cos⁻¹ u` cancel) → x − √(1−x²)·asin x.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let r = m4_assert_solved(&ctx, "x*asin(x)/sqrt(1 - x^2)", &[], &[0.2, 0.5, 0.8]);
+        let rs = r.to_string();
+        assert!(
+            rs.contains("sqrt") && rs.contains("asin(x)"),
+            "expected the √E literal × asin(x) in the answer: {r}"
+        );
+    }
+
+    #[test]
+    fn m4_cr2_companion_with_cubic_weight() {
+        // §5 CR2 (rubi-01568 family): x³·asin(x)/√(1−x²) → t-form u·sin³u.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x^3*asin(x)/sqrt(1 - x^2)", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_cr3_atanh_companion_half3() {
+        // §5 CR3 (rubi-01733 numeric shape; SymPy declines): the t-form is
+        // u·tanh u·sech⁵u — odd sech power, integrated by the `d(S^B)`
+        // parts tabular with the `∫sech u du = asin(tanh u)` base, which
+        // back-substitutes to `asin(x)`.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let r = m4_assert_solved(&ctx, "x*(1 - x^2)^(3/2)*atanh(x)", &[], &[0.2, 0.5, 0.8]);
+        assert!(
+            r.to_string().contains("asin(x)"),
+            "expected the cross-family asin(w) term: {r}"
+        );
+    }
+
+    #[test]
+    fn m4_w5b_symbolic_companion_scale() {
+        // rubi-01568: symbolic normalization s = d (assumed positive) under
+        // an odd half power; rubi-01823: k = 2 kernel power × x³ × m = −1.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [
+            (Symbol::new("a"), 0.9),
+            (Symbol::new("b"), 1.1),
+            (Symbol::new("c"), 0.8),
+            (Symbol::new("d"), 1.7),
+        ];
+        m4_assert_solved(
+            &ctx,
+            "x^3*(d - c^2*d*x^2)^(1/2)*(a + b*asin(c*x))",
+            &env,
+            &[0.2, 0.5, 0.8],
+        );
+        m4_assert_solved(
+            &ctx,
+            "x^3*(a + b*asin(c*x))^2/(d - c^2*d*x^2)^(1/2)",
+            &env,
+            &[0.2, 0.5, 0.8],
+        );
+    }
+
+    #[test]
+    fn m4_w5b_companion_all_families() {
+        // One companion-radical solve per remaining family: acos (sheet
+        // and dx signs), asinh/acosh (hyperbolic, m = −1 and m = +1), and
+        // atan (odd sec power through the `d(S^B)` tabular).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        m4_assert_solved(&ctx, "x*acos(x)/sqrt(1 - x^2)", &[], &[0.2, 0.5, 0.8]);
+        m4_assert_solved(&ctx, "x*asinh(x)/sqrt(1 + x^2)", &[], &[0.3, 0.8, 1.4]);
+        m4_assert_solved(&ctx, "x*sqrt(1 + x^2)*asinh(x)", &[], &[0.3, 0.8, 1.4]);
+        m4_assert_solved(&ctx, "x*acosh(x)/sqrt(x^2 - 1)", &[], &[1.4, 1.9, 2.4]);
+        m4_assert_solved(&ctx, "x*(1 + x^2)^(3/2)*atan(x)", &[], &[0.3, 0.8, 1.5]);
+    }
+
+    #[test]
+    fn m4_w5b_negative_s_power_conversion() {
+        // rubi-00689: atanh companion with m = −5 — the t-form's
+        // `sech^(−3)` is the exact reciprocal `cosh³`, so the term
+        // `u·tanh·cosh²` converts to the hyperbolic machinery.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let env = [(Symbol::new("a"), 0.9), (Symbol::new("c"), 1.7)];
+        m4_assert_solved(
+            &ctx,
+            "atanh(a*x)/(c - a^2*c*x^2)^(5/2)",
+            &env,
+            &[0.2, 0.5, 0.8],
+        );
+        // m = −3 with a weight: `u·cosh u` after the cancellation.
+        m4_assert_solved(&ctx, "atanh(x)/(1 - x^2)^(3/2)", &[], &[0.2, 0.5, 0.8]);
+    }
+
+    #[test]
+    fn m4_w5b_declines_non_companion_radicals() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // Companion exponent but an unrelated base (`d + e·x²` is not
+        // `s·(1 − x²)` for symbolic e, d).
+        assert_declined(&ctx, "x*asin(x)*sqrt(d + e*x^2)");
+        // Two radical bases: one companion, one not — declined.
+        assert_declined(&ctx, "x*asin(x)*sqrt(1 - x^2)*sqrt(1 + x^2)");
+        // Imaginary-carrying radicand (rubi-00408 family): no `I`.
+        assert_declined(&ctx, "x*asinh(x)*sqrt(i + i*x^2)");
+        // Companion with m = −2: the combined head power is negative
+        // (`u·sin u·sec u` — polylog territory), honest decline.
+        assert_declined(&ctx, "x*asin(x)/(1 - x^2)");
+        // Odd half power with a negative numeric normalization: no real
+        // square root of s.
+        assert_declined(&ctx, "x*asinh(x)*sqrt(-4 - 4*x^2)");
+        // Symbolic exponent on the radicand: undecidable, decline (§2.5-5).
+        assert_declined(&ctx, "x*asin(x)*(1 - x^2)^(n/2)");
+    }
+
+    #[test]
+    fn m4_w5b_idempotent_reentry() {
+        // §5 W2 for the W5b answers: re-entering them terminates with no
+        // residue introduced by M4's own re-claims.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = Symbol::new("x");
+        for input in ["x*asin(x)/sqrt(1 - x^2)", "x*(1 - x^2)^(3/2)*atanh(x)"] {
+            let first = m4_assert_solved(&ctx, input, &[], &[0.3]);
+            let terms: Vec<Atom> = match first.node() {
+                AtomNode::Add(args) => args.to_vec(),
+                _ => vec![first],
+            };
+            for term in terms {
+                // Termination is the assertion for the full chain; M4's own
+                // re-claims must be complete and correct (no partial guesses).
+                if let Some(r) = integrate_inverse_trig(&ctx, term, x) {
+                    assert!(
+                        !contains_integral(r),
+                        "{input}: partial guess on {term}: {r}"
+                    );
+                }
+            }
+        }
     }
 
     // ------------------------- M1 -------------------------
+
+    /// W5b probe over the companion-radical rows of
+    /// `ocas-tests/data/invtrig_attribution_030.csv` (run with
+    /// `--nocapture` and `OCAS_PROBE=1` to see the table). Solved rows are
+    /// verified by numeric differentiation at the samples; the assertions
+    /// lock the probed outcomes as regression guards.
+    #[test]
+    fn m4_w5b_bucket_probe_lock() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = Symbol::new("x");
+        let env = [
+            (Symbol::new("a"), 0.9),
+            (Symbol::new("b"), 1.1),
+            (Symbol::new("c"), 0.8),
+            (Symbol::new("d"), 1.7),
+            (Symbol::new("f"), 1.3),
+            (Symbol::new("g"), 0.7),
+        ];
+        let samples = [0.2, 0.5, 0.8];
+        // (rubi id, input, solved?)
+        let probes: &[(&str, &str, bool)] = &[
+            ("01568", "x^3*(d - c^2*d*x^2)^(1/2)*(a + b*asin(c*x))", true),
+            (
+                "01823",
+                "x^3*(a + b*asin(c*x))^2/(d - c^2*d*x^2)^(1/2)",
+                true,
+            ),
+            ("01733", "x*(1 - a^2*x^2)^(3/2)*atanh(a*x)", true),
+            ("00689", "atanh(a*x)/(c - a^2*c*x^2)^(5/2)", true),
+            (
+                "00320",
+                "(f + g*x)^2*(d - c^2*d*x^2)^(3/2)*(a + b*asin(c*x))^2",
+                true,
+            ),
+            (
+                "00459",
+                "x^5*(a + b*asin(c*x))/(d - c^2*d*x^2)^(3/2)",
+                false,
+            ),
+            (
+                "00228",
+                "x^3*(a + b*asin(c*x))/(d - c^2*d*x^2)^(5/2)",
+                false,
+            ),
+            ("00811", "asin(a*x)^2/(c - a^2*c*x^2)^(3/2)", false),
+            (
+                "01666",
+                "x^2*(d - c^2*d*x^2)^(3/2)*(a + b*asin(c*x))^n",
+                false,
+            ),
+            ("00610", "(1 - a^2*x^2)^(1/2)/atanh(a*x)^2", false),
+            ("01571", "(c - a^2*c*x^2)^(5/2)/acosh(a*x)^(3/2)", false),
+            (
+                "00408",
+                "(f - i*c*f*x)^(5/2)*(a + b*asinh(c*x))/(d + i*c*d*x)^(5/2)",
+                false,
+            ),
+        ];
+        for (id, input, expect_solved) in probes {
+            let expr = parse_norm(&ctx, input);
+            let r = integrate_inverse_trig(&ctx, expr, x);
+            let solved = r.is_some_and(|r| !contains_integral(r));
+            if std::env::var_os("OCAS_PROBE").is_some() {
+                let shape = match &r {
+                    Some(a) => a.to_string(),
+                    None => "<declined>".to_string(),
+                };
+                eprintln!("[probe] rubi-{id}: solved={solved} {input} => {shape}");
+            }
+            assert_eq!(solved, *expect_solved, "rubi-{id}: {input}");
+            if let Some(ans) = r {
+                // Numeric diff verification (the same discipline as the
+                // m4_assert_solved tests).
+                assert!(!contains_inv_composite(ans), "rubi-{id}: composite: {ans}");
+                let d = crate::diff(&ctx, ans, x);
+                for &xv in &samples {
+                    let mut e = env.to_vec();
+                    e.push((x, xv));
+                    let lhs = eval_f64(d, &e).expect("eval diff");
+                    let rhs = eval_f64(expr, &e).expect("eval integrand");
+                    let tol = 1e-6 * rhs.abs().max(1.0);
+                    assert!(
+                        (lhs - rhs).abs() < tol,
+                        "rubi-{id} at x={xv}: diff={lhs} integrand={rhs} (result: {ans})"
+                    );
+                }
+            }
+        }
+    }
 
     #[test]
     fn m1_asinh_kernel_sqrt_fun_form() {
