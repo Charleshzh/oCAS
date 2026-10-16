@@ -1513,15 +1513,68 @@ cover the inverse-function families.
 
 **Acceptance**
 
-- [ ] Irreducible-denominator families solve, recorded per case
-- [ ] `inverse-trig-hyper` bucket (baseline 138/146 unsolved) improvement quantified
-- [ ] The certificate gate holds; 0 regressions on the 1892
+- [x] Irreducible-denominator families solve, recorded per case: `1/(1+x⁴)`, `1/(1−3x²+x⁴)`,
+  `(1+x²)/(1+4x²+x⁴)`, `1/(1−x⁴+x⁸)`, `1/(x⁴+1)²`, `exp(x)/(1+exp(2x))` (`rubi-00174`) are all
+  solved and certified
+- [x] `inverse-trig-hyper` bucket improvement quantified: 8/146 → **22/146**
+  (**not met** against the W5 line of ≥48/146)
+- [x] The certificate gate holds (0 false positives); 0 regressions on the 1892
 
-**Risks**
+**Measured addendum (2026-10-10)**:
 
-- Residues over algebraic extensions plus branch handling are new hard ground → deliver in
-  steps (quartic/quadratic radicals first, then the general case)
-- May hit undecidable points → `Unknown` as the backstop
+- **Wave by wave** (commit → full bench at wave end, `ocas-tests/data/bench_030_*.log`):
+  W1–W3 (`54daf8b`) 390 solved (+12), 182/390 certified (46.7%), 428.2 s;
+  W4a (`094e7fd`) 436 (+46), 212/436 certified (48.6%), 465.6 s, radical 51→84;
+  W5a (`43b49fe`) 443 (+7), inverse-trig-hyper 8→15, 462.2 s;
+  W5b (`0b89d45`) 449 (+6), inverse-trig-hyper 15→20, 489.4 s;
+  W5c (`2bd5a00`) 451 (+2, `rubi-00511`/`01708`), inverse-trig-hyper 20→22, 489.5 s
+- **0.30.0 final state** (`bench_030_w5c.log`, whose runtime behaviour matches the release
+  tree): solved **451** (coverage 23.84%), verified 410/451, unverified 41, certified
+  **220/451 (48.8%)**, timeouts 12, crashes 0, mismatches 0, certificate false positives 0,
+  wall clock **489.5 s** (gate ≤ 498.8 s = the 0.28.0 baseline 433.7 × 1.15)
+- **Deviations**: the `hyperbolic` bucket is flat at 9 (untouched); `mixed-other` 75→83,
+  `power-binomial` 159→174 and `trig` 52→54 are spill-over gains from the RT algebraic roots
+  and the MR reductions; `rational` stays at 2 and `special` at 15
+- **Not met**: the W5 line `inverse-trig-hyper ≥ 48/146` (actual 22/146 — the spec's 30–40
+  estimate was too high; most candidates land on negative merged head powers, `polylog`
+  requirements, symbolic powers, or shapes beyond the companion radical); Bronstein ch. 7–8
+  (integral basis / algebraic Hermite / algebraic residues / algebraic generators in the tower)
+  was not done
+- **Negative-return experiments and their reverts**:
+  - **W4b/c** (MR-Q/MR-C collapsible layers + elliptic route + MR-F/E): **+2 solves /
+    −3 regressions** and a 499.4 s wall clock that **breaks the gate** → reverted wholesale;
+    the elliptic routing layer unlocked **zero** corpus cases (`elliptic.rs` accepts only
+    Legendre normal forms)
+  - **W6a** (single-radical atomic-layer reduction, new file `integral/single_radical.rs`):
+    measured **+29 solves** (radical +18, power-binomial +9, inverse-trig-hyper +2) with
+    **0 regressions**, but it broke three gates — one **branch-sign wrong answer**
+    (`rubi-00401`), timeouts 12 → 14, wall clock 523 s; **the wiring was reverted** and the
+    module ships as an unwired asset (the `coupled.rs` precedent, with its own 9 tests) for
+    0.31.0 to fix the branch first
+- **Pre-existing wrong answers fixed along the way**: the latent `linear_form` `x·x` case
+  (present since 0.29.0, hit at random by the tower proptest's certificate gate); the two
+  spellings of a zero discriminant `4ac − b²` (`rubi-01610/01833`); the
+  `quadratic_from_inner` constant-term overwrite (dropping `a` in `1/sqrt(a+b+x²)`); the
+  certificate's `exp` integer-multiple merge order (declining `exp(2x)+exp(x)·exp(2x)`);
+  the non-antiderivative `ratio_s_pow(j ≥ 1, b ≥ 3)` (fixed in W5c, pinned by a per-cell
+  numeric check against Simpson); and the `sqrt_norm_positive` imaginary-normalization hole
+- One further regression, self-introduced during 0.30.0 and caught in flight, was
+  `rubi-01646` (the algebraic-roots path reshaping a residue inside
+  `chain::parts_active()`); it is suppressed, leaving nothing behind for 0.31.0
+
+**Risks** (what actually happened and how it was handled)
+
+- ~~Residues over algebraic extensions plus branch handling are new hard ground~~ →
+  the stepwise delivery landed as "atomic-layer reduction + RT algebraic roots" instead of an
+  algebraic tower, and branch handling did become W6a's **actual blocker** (the `rubi-00401`
+  branch-sign wrong answer), so the module stayed unwired
+- ~~May hit undecidable points~~ → `Unknown` / the unevaluated `Integral` as the backstop,
+  with zero wrong answers throughout (apart from the single case in the unwired W6a trial,
+  which was reverted)
+- Measured new risk: the MR-Q/MR-C collapsible layers and the elliptic route were
+  **net-negative** (+2 solves / −3 regressions) and were reverted; the certificate decline
+  buckets also shifted with the radical layer landing (`budget` 177 → 56, `notinfield` 3 → 84),
+  showing the radical layer moved the decline surface from "budget" to "outside the field"
 
 ---
 
@@ -1550,6 +1603,11 @@ or Meijer G (baseline: 122 cases whose reference answer contains `polylog`, 8.0%
 - [ ] `polylog`/`Li₂` heads + numerical verification land
 - [ ] Reachable and still-declined case counts recorded separately
 - [ ] The certificate gate holds; `verify_mismatches` stays 0
+- [ ] (carried from 0.30.0) fix the `rubi-00401` **branch-sign wrong answer** before wiring
+  `single_radical.rs`, then re-measure the W6a gates; the Bronstein ch. 7–8 algebraic tower
+  (integral basis / algebraic Hermite / algebraic residues / algebraic generators in the tower);
+  and the remaining `inverse-trig-hyper` decline surface (0.30.0 achieved 22/146 against the
+  W5 line of ≥48/146)
 
 **Risks**
 

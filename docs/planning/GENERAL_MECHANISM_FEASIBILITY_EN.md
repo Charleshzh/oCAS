@@ -189,6 +189,20 @@ latent wrong answer (exp-level rational-part coefficient scaling) and opened thr
 gate, and that solver bug. P1 (0.29.0) proceeds as planned.
 | **P1** | **0.29.0** | Complete the transcendental Risch (rational RDE solutions + coupled systems + log-part structure theorem) | clear improvement in the `exp-log` bucket; **0 regressions**; certificate gate holds |
 | **P2** | **0.30.0** | Algebraic extensions (regular tower + integral basis + algebraic Hermite + residues) + multi-radical bases + inverse-function substitution engine | the `1/(1+x⁴)` / `1/(1−3x²+x⁴)` families solve; the radical and `inverse-trig-hyper` buckets improve; certificate gate holds |
+
+**P2 measured (0.30.0, 2026-10-10)**: the multi-radical-base reduction and the inverse-function
+substitution engine **shipped** (1892: solved 378 → 451, 0 regressions, timeouts flat at 12, wall
+clock 439.6 → 489.5 s, 0 certificate false positives; radical bucket **51 → 84**; `certified_rate`
+29.1% → 48.8%). Gates judged per item: the `1/(1+x⁴)` / `1/(1−3x²+x⁴)` families solve with a
+passing certificate (**met**); the radical bucket improves (**met**); the `inverse-trig-hyper`
+bucket improves but **misses** the W5 line of ≥48/146 (8 → **22/146**); the certificate gate holds
+(**met**, zero false positives). **Not done**: the algebraic tower (algebraic generators into the
+tower / integral basis / algebraic Hermite / residues, Bronstein ch. 7–8) — this wave covered the
+reachable part of the same families through atomic-layer reduction plus RT algebraic roots; that
+item, together with W6a (`integral/single_radical.rs`: measured +29 solves / 0 regressions but a
+`rubi-00401` branch-sign wrong answer, timeouts 12 → 14 and wall clock 523 s, so the wiring was
+reverted and the module kept as an unwired asset), is folded into the **0.31** evaluation. Wording
+matches the ROADMAP 0.30.0 entry and CHANGELOG 0.30.0.
 | **P3** | **0.31.0** | Non-elementary layer (`polylog`/`Li₂` heads + oracle + Li₂/Meijer reductions + `ProvedNonElementary`) | the reachable part of the 122 `polylog` cases; the rest of `exp-log`; certificate gate holds |
 | **P4** | **0.32.0** | Performance (modular + parallel Risch + lazy series) | wall clock no worse than the 0.28.0 baseline; timeout count falls |
 

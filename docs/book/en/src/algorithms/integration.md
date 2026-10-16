@@ -41,11 +41,25 @@ wins. This chapter explains each layer and when the unevaluated
 8. **Trig product-to-sum / power reduction** (0.27.x) — products and
    powers of `sin`/`cos` at linear arguments reduce to multiple-angle
    sums, integrated termwise.
-9. **Heuristic techniques** — integration by parts, trigonometric
-   substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.
-10. **Bounded expansion retry** (0.27.x) — products are distributed over
+9. **Multi-radical base reduction** (0.30.0) — integrands carrying two or
+   more distinct radical bases are rationalized at the atomic layer
+   (MR-L Möbius rationalization of an affine base pair, graded
+   same-radicand merges, conjugate / reciprocal / nested-radical
+   substitutions, perfect-square sheet factors). The stage sits in the
+   chain **after `binomial` and before `exp_log`**, so the single-base
+   engines keep first claim on single-base shapes, and it declines
+   honestly outside its fragment.
+10. **Inverse-function substitution** (0.30.0) — the M4 mechanism at the
+    **end of the `inverse_trig` dispatch order**: `u = F(w)` over 11 heads
+    (`asin`/`acos`/`atan`/`asinh`/`acosh`/`atanh` plus
+    `acsc`/`asec`/`acoth`/`asech`/`acsch`) × affine arguments × integer
+    kernel powers × polynomial weights, with companion radicals absorbed
+    as sheet factors.
+11. **Heuristic techniques** — integration by parts, trigonometric
+    substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.
+12. **Bounded expansion retry** (0.27.x) — products are distributed over
     sums (64-term budget) and integrated termwise.
-11. **Unevaluated form** — `Integral(expr, var)`.
+13. **Unevaluated form** — `Integral(expr, var)`.
 
 ---
 
@@ -82,8 +96,12 @@ Elementary transcendental integrands are handled by building a
   (at hyperexponential levels the `t`-power denominator is split off
   first as a Laurent polynomial, 0.29.0);
 - the logarithmic part first tries the logarithmic-derivative identity,
-  then the Rothstein–Trager resultant method (rational roots only,
-  0.29.0);
+  then the Rothstein–Trager resultant method: 0.29.0 decides **rational**
+  roots only, and 0.30.0 adds algebraic **constant** roots (real/complex
+  quadratic factors and biquadratic quartics `Az⁴+Bz²+C` at the base
+  level, complex quadratics at tower levels, each self-verified inside
+  the extension); non-constant roots and higher-degree factors still
+  decline honestly;
 - the polynomial part is integrated by undetermined coefficients at
   `log` levels and by the Risch differential equation `Dq + f·q = g`
   at `exp` levels — solved over the **full rational fragment** since
@@ -109,10 +127,13 @@ let result = integrate(&ctx, parse(&ctx, "x*exp(x)").unwrap(), Symbol::new("x"))
 
 Since 0.29.0 the Risch differential equation is solved over the **full
 rational fragment** (denominator bounds included), and the logarithmic
-part uses Rothstein–Trager with **rational roots only** — irrational or
-non-constant resultant roots, and the unported `limited_integrate` /
-higher-level `parametric_log_deriv` refinements, decline honestly.
-Consequences:
+part uses Rothstein–Trager over ℚ roots; 0.30.0 extends that log part by
+its algebraic **constant**-root fragment (quadratic and
+biquadratic-quartic factors, in-extension self-verification). Everything
+outside those fragments — non-constant roots, degree ≥ 3 or
+non-biquadratic-quartic factors, mixed extensions, and the unported
+`limited_integrate` / higher-level `parametric_log_deriv` refinements —
+declines honestly. Consequences:
 
 - `∫ exp(x)/x dx` has no elementary antiderivative — it is answered by
   the special-function table as `Ei(x)`.
@@ -228,9 +249,12 @@ when a machine-checkable certificate is required.
 The certificate engine (`ocas-calc/src/integral/certify.rs`) tries three layers: structural zero
 (`normalize` plus like-term collection), elementary-field zero (trig→exp rewriting, `I² = −1`
 reduction, dependent `exp`/`log` atoms merged before embedding into a rational function field), and
-a reserved radical layer. Every layer is **sound**: treating atoms as independent generators can
-only miss an identity (a false negative), never certify a wrong answer. The field arithmetic runs
-under deterministic budgets and declines honestly when they are exhausted.
+the **radical layer**, landed in 0.30.0 (`CertMethod::RadicalField`): `sqrt(S)` and `S^(p/q)` are
+unified as a generator `r` carrying the relation `r^q = S`, and the difference is decided zero by
+triangular-column remainder reduction, under deterministic budgets (q ≤ 8, radicals ≤ 8, terms ≤
+8192, nodes ≤ 2000, entry terms ≤ 2048). Every layer is **sound**: treating atoms as independent
+generators can only miss an identity (a false negative), never certify a wrong answer. The field
+arithmetic runs under deterministic budgets and declines honestly when they are exhausted.
 
 `ocas-calc/src/integral/risch.rs` additionally verifies every Risch result **inside the tower's own
 field**, so the engine cannot emit an answer the exact checker falsifies — that guard is how

@@ -717,21 +717,75 @@ and add the structure theorem for the logarithmic part.
 cover the inverse-function families.
 (Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.2, §3.5, §6 P2.)
 
-**Deliverables**:
+**Deliverables** (measured results recorded per item):
 
-- [ ] Algebraic generators entering the tower (`√x` and general radicals; `tower/build.rs`
-  currently rejects them outright)
-- [ ] **Integral basis** (Trager) + **algebraic Hermite reduction** + algebraic residues
-  (Bronstein ch. 7–8)
-- [ ] Multi-radical-base reduction (an estimated 222 cases with ≥2 distinct radical bases)
-- [ ] Inverse-function substitution engine: polynomial weight × `(a+b·f(ax+b))^k`
-  (the `inverse-trig-hyper` bucket, baseline 138/146 unsolved)
-- [ ] Reuse `ocas-poly`'s Trager factorisation + resultants + algebraic-field GCD
+- [~] Algebraic generators entering the tower (`√x` and general radicals; `tower/build.rs`
+  still rejects them outright) — **not done as planned**: the same families' reachable part is
+  covered instead by the *atomic-layer reduction* route (`integral/multi_radical.rs` plus the
+  RT algebraic roots in `logpart.rs`)
+- [~] **Integral basis** (Trager) + **algebraic Hermite reduction** + algebraic residues
+  (Bronstein ch. 7–8) — **not done**: the full algebraic tower (integral basis / algebraic
+  Hermite / algebraic residues / algebraic generators in the tower), together with the W6a
+  branch fix, is carried into 0.31.0 for evaluation
+- [x] Multi-radical-base reduction (an estimated 222 cases with ≥2 distinct radical bases) —
+  new module `integral/multi_radical.rs` (~2900 lines incl. 25 tests, spec
+  `MULTI_RADICAL_SPEC_CN.md`): Möbius rationalization of two affine bases (MR-L), same-radicand
+  merges over ≥3 bases (numeric-evidence gate + degree gate + certificate guard), pairwise
+  rounds, conjugate rationalization (MR-G), reciprocal bases (MR-R), nested-radical removal
+  (MR-I, ≤2 levels), perfect-square sheet factors (MR-P); MR-Q/MR-C accept only collapsible
+  layers and otherwise decide elliptic honestly. **The W4b/c collapsible layers + elliptic route
+  measured net-negative and were reverted** (below)
+- [x] Inverse-function substitution engine: polynomial weight × `(a+b·f(ax+b))^k` — the M4
+  mechanism in `integral/inverse_trig.rs` (~1900 lines added incl. 25 tests, spec
+  `INV_SUBST_SPEC_CN.md`): 11 heads × affine arguments × integer kernel powers (k ≤ 6) ×
+  polynomial weights (degree ≤ 6), companion radicals `(s·E(w))^{m/2}` absorbed;
+  `derivative.rs` gained the five reciprocal-head derivatives. Bucket 8/146 → **22/146**
+  (`inverse-trig-hyper`)
+- [x] Reuse `ocas-poly`'s Trager factorisation + resultants + algebraic-field GCD — via the RT
+  algebraic constant roots (`logpart.rs`) and `rt_algebraic.rs`, computing each per-root gcd in
+  the extension `DenseUnivariatePolynomial<AlgebraicNumberField>`; the identities `Πv == d` and
+  the cross-multiplied residue identity are verified in-extension before emission
+- [x] **RT algebraic constant roots** (the carry-over from 0.29.0's irrational roots): base-level
+  quadratic factors (real `ℚ(√Δ)`, complex conjugate pairs realified as `log(u²+w²)`/`atan`) +
+  biquadratic-quartic factors `Az⁴+Bz²+C` (the complex 4-cycle, the `1/(1+x⁴)` family) +
+  complex quadratic factors at tower levels; everything outside the fragment (degree ≥ 3,
+  non-biquadratic quartics, mixed extensions, real-root biquadratics) declines honestly
+- [x] **Certificate radical layer** (`certify.rs`, `CertMethod::RadicalField` producing for the
+  first time): `sqrt(S)` and `S^(p/q)` are unified as a generator `r` with the relation
+  `r^q = S` and decided by triangular remainders; deterministic budgets q ≤ 8, radicals ≤ 8,
+  terms ≤ 8192, nodes ≤ 2000, entry terms ≤ 2048
+- [x] Pre-existing wrong answers fixed along the way: the latent `linear_form` `x·x` case, the
+  two spellings of a zero discriminant `4ac − b²` (`rubi-01610/01833`), the
+  `quadratic_from_inner` constant-term overwrite (dropping `a` in `1/sqrt(a+b+x²)`), the
+  certificate's `exp` integer-multiple merge order (declining `exp(2x)+exp(x)·exp(2x)`),
+  the non-antiderivative `ratio_s_pow(j ≥ 1, b ≥ 3)` (fixed in W5c), and the
+  `sqrt_norm_positive` imaginary-normalization hole
+- [~] **W6a single-radical atomic-layer reduction experiment** (new file
+  `integral/single_radical.rs`): measured **+29 solves / 0 regressions**, but one branch-sign
+  wrong answer (`rubi-00401`), timeouts 12 → 14 and wall clock 523 s **break three gates →
+  the wiring was reverted**; the module ships as an unwired asset (with its own 9 tests, the
+  `coupled.rs` precedent) for 0.31.0 to fix the branch first
 
-**Success Criteria**:
+**Success Criteria** (honest record):
 
-- The `1/(1+x⁴)`, `1/(1−3x²+x⁴)` and irreducible sextic/octic denominator families solve
-- Clear improvement in the radical bucket (baseline 356/407 unsolved); the certificate gate holds
+- The acceptance family is **fully solved and certified**: `1/(1+x⁴)`, `1/(1−3x²+x⁴)`,
+  `(1+x²)/(1+4x²+x⁴)`, `1/(1−x⁴+x⁸)`, `1/(x⁴+1)²`, `exp(x)/(1+exp(2x))` (`rubi-00174`) — met
+- Clear improvement in the radical bucket (baseline 356/407 unsolved) — **met**: solved 51 → **84**,
+  unsolved 407 → 323
+- **Not met**: the W5 acceptance line `inverse-trig-hyper ≥ 48/146` (the spec's 30–40 estimate was
+  too high) — actual **22/146**; W5a/W5b/W5c unlocked +7 / +6 / +2
+- **Not met**: the Bronstein ch. 7–8 algebraic tower (integral basis / algebraic Hermite /
+  algebraic residues / algebraic generators in the tower)
+- **Met**: 1892 per-case **0 regressions**, the certificate gate holds (**0 certificate false
+  positives**), `verify_mismatches = 0`, crashes 0, timeouts flat at 12, wall clock
+  439.6 → 489.5 s (gate ≤ 498.8 s = the 0.28.0 baseline 433.7 × 1.15); final state 451 solved
+  (coverage 23.84%), verified 410/451, unverified 41
+- **Negative-return experiments (recorded honestly)**: W4b/c (MR-Q/MR-C collapsible layers +
+  elliptic route + MR-F/E) measured **+2 solves / −3 regressions and a 499.4 s wall clock that
+  breaks the gate** → reverted; the routing layer unlocked zero corpus cases
+- Carried into 0.31.0: the W6a branch-sign fix plus a wiring re-evaluation; the Bronstein
+  ch. 7–8 algebraic tower; the remaining `inverse-trig-hyper` decline surface; and 0.29.0's
+  symbolic-constant tower with the `polylog`/`Li₂` reductions
 
 ### 0.31.0 — The Non-Elementary Layer
 
@@ -750,6 +804,15 @@ dilogarithms or Meijer G (baseline: 122 cases whose reference answer contains `p
   non-elementary mechanism
 - [ ] `ProvedNonElementary` becomes available for the first time (an engineered subset of
   Singer's structure theorems)
+- [ ] (carried from 0.30.0) fix the **branch-sign wrong answer** in `rubi-00401` *before* wiring
+  `single_radical.rs`, then re-measure the three W6a gates (+29 solves / 0 regressions /
+  timeouts flat at 12 / wall clock within the gate)
+- [ ] (carried from 0.30.0) the Bronstein ch. 7–8 algebraic tower: **integral basis / algebraic
+  Hermite reduction / algebraic residues / algebraic generators in the tower**
+  (`tower/build.rs` still rejects non-integer powers)
+- [ ] (carried from 0.30.0) the remaining `inverse-trig-hyper` decline surface: negative merged
+  head powers, `polylog` requirements, symbolic powers and shapes outside the companion radical
+  (0.30.0 achieved 22/146 against the W5 line of ≥48/146)
 
 **Success Criteria**:
 
@@ -964,7 +1027,7 @@ After 1.0, development will focus on:
 | 0.27.0 | Beta | Month 51 | Symbolic integration breadth (Rubi-grade rule set + 1892-problem coverage benchmark) (P0) |
 | 0.28.0 | Beta | Month 53 | Integration-mechanism correctness foundation **shipped** (symbolic certificates + three-valued outcome + expression-level cycle detection + regular towers + residue resolution; 1892: 371 solved, mismatches 0, timeouts flat at 12, wall clock −6.0%, 0 regressions; `certified_rate = 28.8%` short of the target, recorded honestly) |
 | 0.29.0 | Beta | Month 55 | Transcendental Risch completion **delivered** (full rational-RDE pipeline + Rothstein–Trager log part (rational roots) + coupled-system infrastructure (unwired) + tower proptests; 1892: 378 solved (+7), 0 regressions, timeouts flat at 12, wall clock within gate; `certified_rate` 29.1% missed the 40% aspiration, recorded honestly) |
-| 0.30.0 | Beta | Month 57 | Algebraic extensions and inverse-function substitution (integral basis + algebraic Hermite + residues + multi-radical bases + inverse-function engine) |
+| 0.30.0 | Beta | Month 57 | Algebraic extensions and inverse-function substitution **delivered** (RT algebraic constant roots [quadratic/biquadratic-quartic factors] + certificate radical layer + multi-radical-base reduction [MR-L/G/R/I/P] + inverse-function engine [11 heads × affine × integer kernel powers × polynomial weights] + `single_radical.rs` as an unwired asset; 1892: 451 solved (+73), 0 regressions, timeouts flat at 12, wall clock 489.5 s (inside the 0.28.0 baseline ×1.15 gate), `certified_rate` **29.1% → 48.8%**; radical bucket 51→84, inverse-trig-hyper 8→22 (≥48/146 not met), the ch. 7–8 algebraic tower not done, and the W4b/c and W6a negative-return experiments reverted — all recorded honestly) |
 | 0.31.0 | Beta | Month 59 | Non-elementary layer (`polylog`/`Li₂` heads + Li₂/Meijer G reductions + `ProvedNonElementary`) |
 | 0.32.0 | Beta | Month 61 | Complexity and performance (modular algorithms + parallel Risch + lazy series) |
 | 0.33.0 | Beta | Month 63 | Gröbner performance at scale (katsura-6 < 1 s, cyclic-7 within 10× of msolve) (P1; formerly 0.28.0) |

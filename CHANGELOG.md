@@ -9,6 +9,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.30.0] - 2026-10-10
+
+**代数扩张（RT 代数数根 + 多根式基归约）与反函数代换 / Algebraic extensions (RT algebraic roots + multi-radical reduction) and inverse-function substitution**
+
+### Added / 新增
+
+- **Rothstein–Trager 代数数根**（新模块 `integral/rt_algebraic.rs` + `logpart.rs` 塔层扩展）：0.29.0 只看 `R(z)` 的有理根，本波接受**代数常量根**——`R(z)` 的二次因子（实：`ℚ(√Δ)` 实根对；复：共轭对实值化为 `log(u²+w²)`/`atan`）与**双二次四次因子** `Az⁴+Bz²+C`（复 4-循环，`1/(1+x⁴)` 族）。每根 `v = gcd(a − c·d′, d)` 在扩域（`DenseUnivariatePolynomial<AlgebraicNumberField>`）上计算，`Πv == d` 与交叉相乘留数恒等式在域内自证后才发射；塔层（`logpart.rs` Wave 2b）只做「`R` 归约为 `ℚ[z]` 后各因子为复二次」的片段，`rubi-00174` 形实值化为 `atan(exp(x))`。片段外（≥3 次、非双二次四次、混合扩域、实根双二次）一律诚实拒绝（不引入 `RootSum`）。
+  / Rothstein–Trager algebraic constant roots at the base level (real/complex quadratics and the biquadratic complex 4-cycle) and at tower levels (complex quadratics, realified), each verified in-extension before emission; everything outside the fragment declines honestly.
+
+- **证书根式层**（`certify.rs`，`CertMethod::RadicalField` 首次产出）：`sqrt(S)` 与 `S^(p/q)` 统一为生成元 `r` 与关系 `r^q = S`，三角列余式约化判零；`1/sqrt(1-x²) → asin(x)` 类此前被拒的答案现在可证；确定性预算（q ≤ 8、根式 ≤ 8、项 ≤ 8192、节点 ≤ 2000、**入口项数 ≤ 2048**）。`certified_rate` 由此从 29.1% 升到 48.8%。
+  / The certificate's radical layer (triangular reduction modulo `r^q = S`) makes radical-carried answers machine-checkable; `certified_rate` 29.1% → 48.8%.
+
+- **多根式基归约**（新模块 `integral/multi_radical.rs`，约 2900 行含 25 测试；规格 `MULTI_RADICAL_SPEC_CN.md`）：≥2 个不同根式基的**原子层**归约——MR-L 双仿射基 **Möbius 有理化** `t^L = (a+bx)/(c+dx)`（t-形有理性结构检查后回积分、逐基幂回代）、同根合并（积形 `√u·√v → √(u·v)`，数值证据门 + 度数门 + 错并伪答案证书护栏）、≥3 基配对轮、MR-G `√u±√v` 共轭有理化、MR-R 倒数基 `u = 1/x`、MR-I 嵌套去根（≤2 层）、MR-P 完全平方基片层因子 `σ = w·(w²)^(−1/2)`；MR-Q/MR-C 只收可坍缩层，一般情形诚实判定为椭圆。`chain::parts_active()` 作用域内整体拒绝；含任何函数头的基一律拒绝（与 W5 的接口契约）。
+  / Multi-radical-base atomic reduction: Möbius rationalization of two affine bases, gated same-radicand merges over ≥ 3 bases, conjugate rationalization, reciprocal and nested-radical substitutions, and perfect-square sheet factors — with the certificate as the gate and honest declines outside the fragment.
+
+- **反函数代换引擎**（`integral/inverse_trig.rs` 的 M4 机制，+约 1900 行含 25 测试；规格 `INV_SUBST_SPEC_CN.md`）：`u = F(w)` 代换覆盖 **11 个头**（asin/acos/atan/asinh/acosh/atanh + acsc/asec/acoth/asech/acsch）× 仿射参数 × 整数核幂（k ≤ 6）× 多项式权（≤ 6 次），**伴随根式** `(s·E(w))^{m/2}`（|m| ≤ 5）吸收为 `G′(u)^m·σ`；t-形在模块内 tabular 回积分（三角/双曲多角化、ratio 族递降表），白名单回代 + 三道终检（t 残留 / `Integral` 残留 / `F(G(·))` 复合）；`polylog` 需求由残项涌现、诚实拒绝。`derivative.rs` 补齐 5 条倒数头导数（答案此前含未求值 `Derivative` 占位、无法验证）。
+  / The inverse-function substitution engine: 11 heads (including the five reciprocal ones), affine arguments, integer kernel powers, polynomial weights and companion-radical absorption, with a whitelist back-substitution and three final checks.
+
+### Fixed / 修复
+
+- **`rubi-01646` 回归**（0.30.0 W1–W3 自引入、运行中捕获）：代数根路径会把 parts 内层残项升级为含 `atan` 的完整答案，分部续算随即要积分这些超越项并烧尽链预算——0.29.0 E2 机制在更强发射面上的复现。`rational.rs` 现于 `chain::parts_active()` 作用域内抑制该路径。
+  / The in-tree algebraic-roots path regressed `rubi-01646` by shape-changing a parts-scope residue; the path is now suppressed inside `chain::parts_active()`.
+
+- **`linear_form` 潜伏错案**（0.29.0 已存在，塔 proptest 的证书门随机命中）：把 `x·x` 读作 `1·x + 0`，幂法则对 `(x·x)²` 发射错误的 `(x·x)³/3`。重复变量因子现返回 `None`；回归种子入库。
+  / `linear_form` misread `x·x` as `1·x + 0`; repeated variable factors now decline (found by the tower proptest's certificate gate).
+
+- **零判别式错案**（W4a 暴露的既有错案）：`sqrt_quadratic` 的 S1.3 与 `quad_power` 的 Q1/Q2 在符号完全平方下把 `4ac − b²` 的两种拼写（`4·a²·b²` 与 `(2ab)·(2ab)`）当作非零，除以 0 后发射 `rubi-01610/01833` 的 1/0 系数答案。新增 `integral::is_zero_expr`（结构零 → `collect_terms` → 自由符号有理域嵌入三层精确判零）接入两门。
+  / The discriminant gates divided by a symbolically-zero `4ac − b²` spelled two ways; `is_zero_expr` now decides zero exactly (collect_terms + a rational-function-field embedding).
+
+- **`quadratic_from_inner` 常数项覆盖**（既有错案）：二次解析把常数项后写覆盖先写，`1/sqrt(a+b+x²)` 的答案丢掉 `a`；现累加，并接受多常量因子系数项（`collect_terms` 的 `8·b·x` 拼写）。
+  / `quadratic_from_inner` overwrote instead of accumulating constant terms (dropping `a` in `1/sqrt(a+b+x²)`); terms now accumulate and multi-factor coefficients parse.
+
+- **证书 `exp` 整数倍合并顺序**（W5b 评审期由塔 proptest 抓到）：`merge_dependent_atoms` 按源码序注册生成元，`exp(2x)` 先于 `exp(x)` 注册使比值 `1/2`（非整数）错过 `exp(k·v) = exp(v)^k` 关系，初等域层视两者独立而拒证 `exp(2x) + exp(x)·exp(2x)`（答案正确但不可证）。现按参数规模升序注册（基在前、倍数在后），反例种子入库。
+  / The certificate's dependent-atom merge registered `exp(2x)` before `exp(x)`, missing the integer-multiple relation and declining a correct answer; generators are now registered simplest-argument-first.
+
+- **`ratio_s_pow(j ≥ 1, b ≥ 3)` 非原函数**（既有潜伏错案，W5c 扩展使其可达）：四个 ratio 族在 `j ≥ 1, b ≥ 3` 上返回非原函数（`∫u·sec³u du` 偏差约 3%）；现诚实拒绝非初等归约，并新增逐格数值自检（vs Simpson）。
+  / The ratio tabular returned a non-antiderivative for `j ≥ 1, b ≥ 3` in all four families; it now declines honestly, pinned by a per-cell numeric self-check.
+
+- **`sqrt_norm_positive` 的虚数归一化**：共享门现拒绝含 `i` 的根式归一化，堵住 M2 曾发射 `i^{1/2}` 的漏洞。
+  / The shared square-root normalization gate now rejects imaginary normalizations (an `i^{1/2}` hole in M2).
+
+### Changed / 变更
+
+- **链序**：新增 `multi_radical` 阶段（`binomial` 之后、`exp_log` 之前）；`inverse_trig` 分派序末新增 M4；`sqrt_norm_positive` 等共享门收紧。`integral/single_radical.rs` 以未接线资产形式入库（见下）。
+  / Chain order: a new `multi_radical` stage and the M4 dispatch arm; shared gates tightened. `integral/single_radical.rs` ships unwired (below).
+
+### 实测（1892 题库，与 0.29.0 基线逐题对照）
+
+- **solved 378 → 451（+73）、逐题回归 0、`verify_mismatches` 0、崩溃 0、超时 12 持平、墙钟 439.6 → 489.5 s（+11.4%，门 ≤ 498.8 s）、证书假阳性 0**
+- `certified_rate` **29.1% → 48.8%**（110/378 → 220/451）
+- 桶变化（0.29.0 → 0.30.0）：radical 51→84、power-binomial 159→174、inverse-trig-hyper 8→22、mixed-other 75→83、trig 52→54、exp-log 7→8
+- 验收族：`1/(1+x⁴)`、`1/(1−3x²+x⁴)`、`(1+x²)/(1+4x²+x⁴)`、`1/(1−x⁴+x⁸)`、`1/(x⁴+1)²`、`exp(x)/(1+exp(2x))`（`rubi-00174`）全部可解且证书通过
+
+### 未达与负收益实验（如实记录）
+
+- **W5 验收口径未达**：inverse-trig-hyper 桶 8/146 → **22/146**（规格预估 30–40 偏高）；W5a/W5b/W5c 分别解锁 +7/+6/+2。多数候选落在负合并头幂、`polylog` 需求、符号幂与伴随根式外的拒绝面。
+- **W4b/c（MR-Q/MR-C 坍缩层 + 椭圆路由 + MR-F/E）实测净负，已回退**：+2 解 / −3 回归、墙钟 499.4 s 破门；椭圆路由层对 corpus 零解锁（`elliptic.rs` 只收 Legendre 正规形）。
+- **W6a（单根式原子层归约）试验：未接线资产**（`integral/single_radical.rs`）：实测 **+29 解**（radical +18、power-binomial +9、invtrig +2）、0 回归，但破三门——`rubi-00401` 一处**分支符号错案**、超时 12→14、墙钟 523 s。接线已回退，模块以 `coupled.rs` 先例保留（含自身 9 测试），0.31 先修分支再评估接线。
+- **代数生成元进塔（Bronstein ch. 7–8：积分基 / 代数 Hermite / 代数留数）未做**——本波以原子层归约 + RT 代数根覆盖同一批族的可及部分；完整代数塔连同 W6a 的修复列入 0.31 评估。
+
+### 文档 / Docs
+
+- 新增规格 `docs/planning/ALGEBRAIC_RT_SPEC_CN.md`（含实现偏差记录）、`MULTI_RADICAL_SPEC_CN.md`、`INV_SUBST_SPEC_CN.md`；`docs/book/{en,zh}/src/math/risch-algorithm.md` 限制表同步；`ocas-tests/scripts/attribute_030.py` 修 `SYMBOLIC_POW` 正则缺陷并重跑归因；`ocas/examples/integrate_probe.rs`（单例探针，含证书模式）。
+
+---
+
 ## [0.29.0] - 2026-10-01
 
 **超越 Risch 补全 / Completing the transcendental Risch fragment**

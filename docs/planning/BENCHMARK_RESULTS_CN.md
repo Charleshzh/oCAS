@@ -1,5 +1,180 @@
 # oCAS 基准测试结果（全量复测 @ 2026-08-06）
 
+## 0.30.0 代数扩张与反函数代换（Rubi 1892 题子集，2026-10-10）
+
+> 本轮按批准计划执行：Wave 0 归因 → Wave 1–3（RT 代数数根 + 证书根式层）→
+> Wave 4a（多根式基归约：Möbius/合并/共轭/倒数/去嵌套/片层）→ Wave 4b/c（坍缩层 +
+> 椭圆路由 + MR-F/E，**实测净负，已回退**）→ Wave 5a（反函数代换引擎 M4）→
+> Wave 5b（伴随根式吸收）→ Wave 5c（5 个倒数头 + 比率表错案修复）→
+> Wave 6a（单根式原子层归约，**未接线资产，接线已回退**）。
+> 终态数字取自 `bench_030_w5c.log`（运行时行为与发布树一致）。
+
+### 1. 基线与终态
+
+| 口径 | solved | fallback | **certified** | verified | mismatches | 超时 | 崩溃 | 总墙钟 |
+|---|---|---|---|---|---|---|---|---|
+| 0.29.0 终态（基线） | 378（19.98%） | 1514 | 110 / 378（29.1%） | 351 / 378（92.9%） | 0 | 12 | 0 | 439.6 s |
+| **0.30.0 终态（2026-10-10）** | **451（23.84%）** | **1441** | **220 / 451（48.8%）** | **410 / 451（90.9%）** | **0** | **12** | **0** | **489.5 s（+11.4%）** |
+
+> 口径备注：两行均为**同一次 0.30.0 测量会话**的复跑值（`bench_030_w0_baseline.log` /
+> `bench_030_w5c.log`）；0.29.0 **发布当时**的记录为 verified 350/378（本文件 §0.29.0、
+> ROADMAP/EVOLUTION_PLAN 的 0.29.0 小节）——同一代码两次运行相差 1 例（数值 oracle 的
+> 边缘判定），两处数字均如实保留，不做回溯改写。
+
+> 门：墙钟 ≤ 498.8 s（0.28.0 基线 433.7 s × 1.15）——**489.5 s 在门内**。
+> 证书假阳性 **0**；`unverified` 41 例全部为 inconclusive（数值 oracle 未判定，
+> 非错案）。未解 1441 例中 12 例超时。
+
+### 2. 逐波次对照（波次结束时全量 bench）
+
+| 波次（提交） | solved | certified | 超时 | 墙钟 | 关键变化 |
+|---|---|---|---|---|---|
+| 0.29.0 基线 | 378 | 110/378（29.1%） | 12 | 439.6 s | — |
+| W1–W3（`54daf8b`） | 390（+12） | 182/390（46.7%） | 12 | 428.2 s | RT 代数数根 + 证书根式层 + 多根式基归约主体 |
+| W4a（`094e7fd`） | 436（+46） | 212/436（48.6%） | 12 | 465.6 s | radical 51 → 84 |
+| **W4b/c（回退）** | 448（较 W4a +12，含 3 例回归） | 218/448（48.7%） | 12 | **499.4 s 破门** | 见 §3，已整体回退 |
+| W5a（`43b49fe`） | 443（较 W4a 回退后 +7） | 218/443（49.2%） | 12 | 462.2 s | inverse-trig-hyper 8 → 15 |
+| W5b（`0b89d45`） | 449（+6） | 218/449（48.6%） | 12 | 489.4 s | inverse-trig-hyper 15 → 20 |
+| W5c（`2bd5a00`） | 451（+2） | 220/451（48.8%） | 12 | 489.5 s | inverse-trig-hyper 20 → 22（`rubi-00511`/`01708`） |
+| **W6a（未接线，接线已回退）** | 478（较基线 +29、较 W5c +27） | 242/478（50.6%） | **14** | **523 s** | 见 §3 |
+
+- Δ 均相对上一行（W5a 相对回退后的 W4a 基线）；W6a 一行另行标注对 0.29.0 基线
+  的累计收益（**+29 解**，权威口径）与对 W5c 的增量（+27）。
+- W4b/c 的 448 是**回退前的实测值**；回退后回到 W4a 基线（436），故 W5a 的
+  起点是 436（443 − 436 = +7 一致）。
+- W6a 的 **+29 解**（radical +18、power-binomial +9、inverse-trig-hyper +2）
+  是相对 **0.29.0 基线**的口径，对 W5c 为 +27（均含 W5c 的 +73）；逐题 **0 回归**
+  是对照 W5c 产物（`diff_1892_failures.py`）的结果。
+
+### 3. 负收益实验记录与回退
+
+**W4b/c（MR-Q/MR-C 坍缩层 + 椭圆路由 + MR-F/E）——净负，已回退**
+
+- 相对 W4a（436）：**+2 解 / −3 回归**，墙钟 465.6 → **499.4 s 破门**（门 498.8 s）。
+- **椭圆路由层对 corpus 零解锁**：`elliptic.rs` 只收 Legendre 正规形，题库中
+  候选形状无一路由命中，路由代码不产生任何解。
+- 处置：坍缩层 + 椭圆路由 + MR-F/E **整体回退**；MR-Q/MR-C 只保留「可坍缩层」
+  判定，一般情形诚实判定为椭圆并拒绝。
+
+**W6a（单根式原子层归约，新文件 `integral/single_radical.rs`）——破三门，接线已回退**
+
+- 实测收益：**+29 解**（radical +18、power-binomial +9、inverse-trig-hyper +2）、
+  solved 451 → 478、coverage 23.84% → 25.26%、certified 242/478（50.6%）。
+- **逐题 0 回归**（`diff_1892_failures.py` 对照 W5c 产物）。
+- 但破三门：
+  1. **分支符号错案**：`rubi-00401` 一处（数值 oracle 判 mismatch，mismatches 0 → 1）；
+  2. **超时 12 → 14**；
+  3. **墙钟 523 s**（> 门 498.8 s）。
+- 处置：**接线回退**；模块以**未接线资产**形式入库（含自身 9 测试，先例
+  `integral/coupled.rs`），0.31.0 先修分支符号再评估接线。
+
+### 4. 本波实现的机制明细
+
+- **W1–W3**：`integral/rt_algebraic.rs` + `logpart.rs` 扩展——RT 对数部分接受
+  **代数常量根**：`R(z)` 的二次因子（实 `ℚ(√Δ)` 根对；复共轭对实值化为
+  `log(u²+w²)`/`atan`）与双二次四次因子 `Az⁴+Bz²+C`（复 4-循环，`1/(1+x⁴)` 族）；
+  每根 `v = gcd(a − c·d′, d)` 在扩域 `DenseUnivariatePolynomial<AlgebraicNumberField>`
+  上计算，`Πv == d` 与交叉相乘留数恒等式在域内自证后才发射；片段外（≥3 次、
+  非双二次四次、混合扩域、实根双二次）一律诚实拒绝（不引入 `RootSum`）。
+  同时落地**证书根式层**（`certify.rs`，`CertMethod::RadicalField` 首次产出）：
+  `sqrt(S)` 与 `S^(p/q)` 统一为生成元 `r` 与关系 `r^q = S`，三角列余式约化判零，
+  确定性预算 q ≤ 8、根式 ≤ 8、项 ≤ 8192、节点 ≤ 2000、入口项数 ≤ 2048。
+  多根式基归约（新模块 `integral/multi_radical.rs`，约 2900 行含 25 测试）：
+  MR-L 双仿射基 Möbius 有理化 `t^L = (a+bx)/(c+dx)`（t-形有理性结构检查后回积分、
+  逐基幂回代）、同根合并（积形 `√u·√v → √(u·v)`，数值证据门 + 度数门 + 错并
+  伪答案证书护栏）、≥3 基配对轮、MR-G `√u±√v` 共轭有理化、MR-R 倒数基 `u = 1/x`、
+  MR-I 嵌套去根（≤2 层）、MR-P 完全平方基片层因子 `σ = w·(w²)^(−1/2)`。
+  `chain::parts_active()` 作用域内整体拒绝；含函数头的基一律拒绝。
+- **W4a**：radical 归约扩展（radical 桶 51 → 84）；`rubi-01646` 回归的抑制
+  （代数根路径在 `chain::parts_active()` 作用域内把 parts 内层残项升级为
+  含 `atan` 的完整答案，分部续算随即烧尽链预算——0.29.0 E2 机制在更强发射面上的复现）。
+- **W5a/W5b/W5c**：`integral/inverse_trig.rs` 的 M4 机制（+约 1900 行含 25 测试）：
+  `u = F(w)` 代换覆盖 **11 个头**（asin/acos/atan/asinh/acosh/atanh +
+  acsc/asec/acoth/asech/acsch）× 仿射参数 × 整数核幂（k ≤ 6）× 多项式权
+  （≤ 6 次），**伴随根式** `(s·E(w))^{m/2}`（|m| ≤ 5）吸收为 `G′(u)^m·σ`；
+  t-形在模块内 tabular 回积分（三角/双曲多角化、ratio 族递降表），白名单回代 +
+  三道终检（t 残留 / `Integral` 残留 / `F(G(·))` 复合）；`polylog` 需求由残项
+  涌现、诚实拒绝。`derivative.rs` 补齐 5 条倒数头导数（答案此前含未求值
+  `Derivative` 占位、无法验证）。
+- **W6a（未接线）**：`integral/single_radical.rs`——单根式原子层归约，
+  仅以未接线资产入库（9 测试）。
+
+### 5. 桶变化（0.29.0 → 0.30.0）
+
+| 桶 | 0.29.0 solved | 0.30.0 solved | Δ |
+|---|---|---|---|
+| exp-log | 7 | 8 | +1 |
+| hyperbolic | 9 | 9 | 0 |
+| inverse-trig-hyper | 8 | 22 | +14 |
+| mixed-other | 75 | 83 | +8 |
+| power-binomial | 159 | 174 | +15 |
+| radical | 51 | **84** | **+33** |
+| rational | 2 | 2 | 0 |
+| special | 15 | 15 | 0 |
+| trig | 52 | 54 | +2 |
+
+### 6. 验收线逐条判定
+
+- **验收族全部可解且证书通过达成**：`1/(1+x⁴)`、`1/(1−3x²+x⁴)`、
+  `(1+x²)/(1+4x²+x⁴)`、`1/(1−x⁴+x⁸)`、`1/(x⁴+1)²`、`exp(x)/(1+exp(2x))`
+  （`rubi-00174`）。
+- **radical 桶显著改善达成**：未解 356 → 323（solved 51 → 84）。
+- **`inverse-trig-hyper` W5 口径 ≥ 48/146 未达**：实得 **22/146**（W5a/W5b/W5c
+  分别 +7/+6/+2）。规格预估 30–40 偏高；多数候选落在负合并头幂、`polylog` 需求、
+  符号幂与伴随根式外的拒绝面。
+- **Bronstein ch. 7–8 未做**：积分基 / 代数 Hermite / 代数留数 / 代数生成元进塔
+  均未落地（`tower/build.rs` 仍拒绝非整数幂）；完整代数塔连同 W6a 的分支修复
+  列入 0.31.0 评估。
+- **逐题 0 回归达成**；`verify_mismatches = 0` 达成；崩溃 0 达成；超时数不上升
+  达成（12）；证书假阳性 0 达成；墙钟 ≤ 498.8 s 达成（489.5 s）。
+- **`certified_rate` 29.1% → 48.8% 达成（本波首次越过 40%）**：根式层把此前
+  被拒的 `1/sqrt(1−x²) → asin(x)` 类答案变为可证（0.29.0 的 29.1% 与 0.28.0 的
+  28.8% 均未达 40%）。拒绝桶重排：
+  `budget` 177 → 56、`nonzero` 88 → 91、`notinfield` 3 → 84——根式层把拒绝面从
+  「预算」搬到了「域外」。
+- **未达之后的去向**：`inverse-trig-hyper` 剩余拒绝面、代数塔与 W6a 分支修复
+  均记入 0.31.0 承接项。
+
+### 7. 顺带修复的既有错案（本波发现）
+
+- `linear_form` 的 `x·x` 潜伏错案（0.29.0 已存在）：把 `x·x` 读作 `1·x + 0`，
+  幂法则对 `(x·x)²` 发射错误的 `(x·x)³/3`；由塔 proptest 的证书门随机命中，
+  重复变量因子现返回 `None`，回归种子入库。
+- 零判别式 `4ac − b²` 拼写错案（W4a 暴露的既有错案）：`sqrt_quadratic` S1.3 与
+  `quad_power` Q1/Q2 把符号完全平方的两种拼写（`4·a²·b²` 与 `(2ab)·(2ab)`）
+  当作非零，除以 0 后发射 `rubi-01610/01833` 的 1/0 系数答案；新增
+  `integral::is_zero_expr`（结构零 → `collect_terms` → 自由符号有理域嵌入三层
+  精确判零）接入两门。
+- `quadratic_from_inner` 常数项覆盖（既有错案）：二次解析把常数项后写覆盖先写，
+  `1/sqrt(a+b+x²)` 的答案丢掉 `a`；现累加，并接受多常量因子系数项。
+- 证书 `exp` 整数倍合并顺序（W5b 评审期由塔 proptest 抓到）：`merge_dependent_atoms`
+  按源码序注册生成元，`exp(2x)` 先于 `exp(x)` 注册使比值 `1/2` 错过
+  `exp(k·v) = exp(v)^k` 关系，初等域层视两者独立而拒证
+  `exp(2x) + exp(x)·exp(2x)`（答案正确但不可证）；现按参数规模升序注册，
+  反例种子入库。
+- `ratio_s_pow(j ≥ 1, b ≥ 3)` 非原函数（既有潜伏错案，W5c 扩展使其可达）：
+  四个 ratio 族在 `j ≥ 1, b ≥ 3` 上返回非原函数（`∫u·sec³u du` 偏差约 3%）；
+  现诚实拒绝非初等归约，并新增逐格数值自检（vs Simpson）。
+- `sqrt_norm_positive` 的虚数归一化：共享门现拒绝含 `i` 的根式归一化，
+  堵住 M2 曾发射 `i^{1/2}` 的漏洞。
+
+### 8. 复现命令
+
+- 全量 bench：`cargo bench -p ocas-tests --bench integrate_1892`
+- 逐题 diff：`uv run python ocas-tests/scripts/diff_1892_failures.py
+  ocas-tests/data/failures_final_029.jsonl
+  ocas-tests/data/integrate_1892_failures.jsonl`
+- 归因脚本：`uv run python ocas-tests/scripts/attribute_030.py`
+  （输出 `radical_attribution_030.csv`、`invtrig_attribution_030.csv`）
+- 单例探针：`cargo run --release --example integrate_probe -p ocas -- <expr>`
+- 波次日志：`ocas-tests/data/bench_030_{w0_baseline,w3,w4,w4b,w4c,w4bc,w5,w5b,w5b2,w5c,w6a}.log`
+- 终态产物：`integrate_1892_report.json`、`integrate_1892_failures.jsonl`、
+  `integrate_1892_unverified.jsonl`；0.29.0 基线另存 `report_final_029.json` /
+  `failures_final_029.jsonl` / `unverified_final_029.jsonl` /
+  `failures_final_030.jsonl`。
+
+---
+
 ## 0.29.0 超越 Risch 补全（Rubi 1892 题子集，2026-10-01）
 
 > 本轮按批准计划执行：Wave 0 exp-log 桶归因 → Wave A（塔合并扩展 + 指数层 Laurent
