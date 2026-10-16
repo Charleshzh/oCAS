@@ -184,6 +184,59 @@ fn diff_function<'a>(
             ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(u, ctx.num(2))])]),
             ctx.num(-1),
         ),
+        // Reciprocal inverse heads (0.30.0 Wave 5c). Each is written on the
+        // branch band its own inverse-function substitution lives on
+        // (`w > 0` for acsc/asec/acsch, `0 < w < 1` for asech, `|w| > 1` for
+        // acoth): there the textbook `|w|` factor of
+        // `d/dw acsc(w) = −1/(|w|√(w²−1))` is the plain `w`, so the algebraic
+        // forms below differentiate exactly and are the ones the
+        // `integral::inverse_trig` Wave 5c answers invert (a `Derivative`
+        // residue there would leave every W5c answer uncertifiable). Both
+        // reciprocal-hyperbolic heads share the `1/(1−w²)` form with `atanh`.
+        "acsc" => ctx.mul(&[
+            ctx.num(-1),
+            ctx.pow(
+                ctx.mul(&[
+                    u,
+                    ctx.fun("sqrt", &[ctx.add(&[ctx.pow(u, ctx.num(2)), ctx.num(-1)])]),
+                ]),
+                ctx.num(-1),
+            ),
+        ]),
+        "asec" => ctx.pow(
+            ctx.mul(&[
+                u,
+                ctx.fun("sqrt", &[ctx.add(&[ctx.pow(u, ctx.num(2)), ctx.num(-1)])]),
+            ]),
+            ctx.num(-1),
+        ),
+        "acoth" => ctx.pow(
+            ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(u, ctx.num(2))])]),
+            ctx.num(-1),
+        ),
+        "asech" => ctx.mul(&[
+            ctx.num(-1),
+            ctx.pow(
+                ctx.mul(&[
+                    u,
+                    ctx.fun(
+                        "sqrt",
+                        &[ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), ctx.pow(u, ctx.num(2))])])],
+                    ),
+                ]),
+                ctx.num(-1),
+            ),
+        ]),
+        "acsch" => ctx.mul(&[
+            ctx.num(-1),
+            ctx.pow(
+                ctx.mul(&[
+                    u,
+                    ctx.fun("sqrt", &[ctx.add(&[ctx.num(1), ctx.pow(u, ctx.num(2))])]),
+                ]),
+                ctx.num(-1),
+            ),
+        ]),
         "sinh" => ctx.fun("cosh", &[u]),
         "cosh" => ctx.fun("sinh", &[u]),
         "tanh" => ctx.pow(ctx.fun("sech", &[u]), ctx.num(2)),
