@@ -35,6 +35,12 @@ pub(crate) mod risch;
 pub(crate) mod rt_algebraic;
 pub(crate) mod rules;
 pub(crate) mod rules_ext;
+// 0.30.0 Wave 6a experiment: implemented and measured, **not wired** (its
+// wiring was reverted after the full-corpus run broke the wrong-answer,
+// timeout and wall-clock gates; see the module docs for the measurements and
+// the branch fix 0.31 needs). Declared so its tests keep running — the
+// `coupled.rs` precedent.
+pub(crate) mod single_radical;
 pub(crate) mod special;
 pub(crate) mod sqrt_quadratic;
 pub(crate) mod symbolic_rational;
