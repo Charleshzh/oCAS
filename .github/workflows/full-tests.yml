@@ -1,0 +1,55 @@
+name: full-tests
+
+# Weekly long-running test sweep for the suites whose tests are `#[ignore]`d in
+# the normal PR CI because each one takes minutes: the deep correctness cases,
+# slow multivariate-factorization proptests, release-mode Gröbner timings, etc.
+#
+# This workflow is expected to expose long-standing failures the first time it
+# runs; triage them, but never delete or weaken a test just to make this
+# workflow green.
+
+on:
+  schedule:
+    # Every Sunday at 03:00 UTC.
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-tests:
+    name: Full test suite (long / ignored tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@1.97.1
+      - uses: Swatinem/rust-cache@v2
+      - uses: astral-sh/setup-uv@v6
+      # ocas-tests/scripts/*.py (SymPy comparison oracles) run under the
+      # uv-managed environment created from ocas-tests/uv.lock.
+      - name: Sync Python test environment
+        run: |
+          cd ocas-tests
+          uv sync
+      - name: Long unit tests — ocas-core
+        run: cargo test -p ocas-core --lib -- --ignored
+      - name: Long unit tests — ocas-domain
+        run: cargo test -p ocas-domain --lib -- --ignored
+      - name: Long unit tests — ocas-poly
+        run: cargo test -p ocas-poly --lib -- --ignored
+      - name: Long unit tests — ocas-calc
+        run: cargo test -p ocas-calc --lib -- --ignored
+      - name: Long correctness integration tests
+        run: cargo test -p ocas-tests --test correctness -- --ignored
+      - name: Long Gröbner timing tests
+        run: cargo test -p ocas-tests --test groebner_timing -- --ignored

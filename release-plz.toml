@@ -1,9 +1,14 @@
 # release-plz configuration
 #
-# All 13 crates in this workspace share one version (workspace.package.version)
-# and are released together.
+# All workspace crates share one version (workspace.package.version) and are
+# released together; `ocas-tests` is `publish = false` and stays internal.
 
 [workspace]
+# Do not create a GitHub Release per crate. The only GitHub Release is the
+# project-level `v<x.y.z>` release created by release.yml from the root tag
+# (the release-plz workflow creates that root tag after a successful publish).
+# Per-crate tags are still created and are useful as crates.io lineage markers.
+git_release_enable = false
 # Don't let release-plz re-verify each crate with `cargo package` in a
 # stripped temporary directory: that context drops the workspace root and
 # cannot resolve `workspace = true` manifests (cargo metadata fails with

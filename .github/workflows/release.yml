@@ -159,6 +159,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.package.outputs.artifact }}
+          # The project-level release notes are generated from the merged
+          # commits/PR labels (see .github/release.yml).
+          generate_release_notes: true
 
   # NOTE: Python wheels are NOT built here. wheels.yml has its own
   # `on: push: tags: v*` trigger and runs independently. Publishing to

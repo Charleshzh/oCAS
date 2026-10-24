@@ -1,0 +1,27 @@
+name: consistency
+
+# Version / documentation drift guard: every user-facing version surface must
+# agree with `[workspace.package].version`. Deliberately no paths-ignore —
+# README/CHANGELOG/book edits are exactly the changes that can introduce drift.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consistency:
+    name: Version & docs consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Check release consistency
+        run: python3 ocas-tests/scripts/check_release_consistency.py

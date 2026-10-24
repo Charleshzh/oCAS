@@ -9,14 +9,71 @@ on:
       - 'docs/**'
       - 'LICENSE'
       - 'lychee.toml'
+  # Manual run: useful to rehearse the pipeline after workflow changes.
+  workflow_dispatch:
+
+# Never run two releases concurrently (crates.io publishes are not idempotent
+# in a useful way; a half-published workspace must not interleave).
+concurrency:
+  group: release-plz-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   pull-requests: write
+  actions: read
 
 jobs:
+  # The release must not start on a red tree: wait for the CI workflow to
+  # conclude for *this* commit. The publish step below (release-plz) runs
+  # `cargo publish`, so this gate is what keeps a broken commit off crates.io.
+  preflight:
+    name: Wait for CI on this commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - name: Wait until CI concludes for ${{ github.sha }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          deadline=$((SECONDS + 6400)) # ~106 min; the CI test matrix can take ~90 min
+          no_run_warned=0
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            line=$(gh run list -R "$GITHUB_REPOSITORY" --commit "$SHA" \
+              --workflow CI --limit 1 --json status,conclusion \
+              --jq '.[0] // empty' 2>/dev/null || true)
+            if [ -z "$line" ]; then
+              # Configuration-only pushes can be ignored by CI's paths-ignore;
+              # release-plz would then have nothing to release anyway.
+              if [ "$no_run_warned" -eq 0 ] && [ "$SECONDS" -gt 600 ]; then
+                echo "::warning::No CI run found for $SHA after 10 minutes; continuing (configuration-only change?)"
+                no_run_warned=1
+                exit 0
+              fi
+              sleep 30
+              continue
+            fi
+            status=$(printf '%s' "$line" | jq -r '.status')
+            conclusion=$(printf '%s' "$line" | jq -r '.conclusion')
+            echo "CI status=$status conclusion=$conclusion"
+            if [ "$status" = "completed" ]; then
+              if [ "$conclusion" = "success" ]; then
+                echo "CI is green for $SHA; proceeding."
+                exit 0
+              fi
+              echo "::error::CI concluded '$conclusion' for $SHA; refusing to release."
+              exit 1
+            fi
+            sleep 60
+          done
+          echo "::error::Timed out waiting for CI on $SHA"
+          exit 1
+
   release-plz:
     name: Release-plz
+    needs: preflight
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -48,3 +105,47 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      # The root `v<x.y.z>` tag is the trigger for release.yml (C artifacts),
+      # wheels.yml (PyPI) and docs.yml (versioned book snapshot). It must be
+      # pushed with a PAT: tags pushed with the default GITHUB_TOKEN do not
+      # create workflow runs (GitHub's anti-recursion rule).
+      #
+      # The step is idempotent: it only tags when the workspace version is
+      # already the latest crates.io release, and skips when the tag exists.
+      - name: Create root release tag after a successful publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
+        run: |
+          set -euo pipefail
+          V=$(grep -E '^version\s*=' Cargo.toml | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "workspace version: $V"
+
+          if [ -z "${TAG_TOKEN:-}" ]; then
+            echo "::error::RELEASE_PLZ_TOKEN secret is not configured."
+            echo "Create a fine-grained PAT with 'Contents: Read and write' for this repository and store it as RELEASE_PLZ_TOKEN."
+            echo "Fallback: git tag -a v$V -m 'oCAS v$V' && git push origin v$V"
+            exit 1
+          fi
+
+          PUB=""
+          for _ in $(seq 1 12); do
+            PUB=$(curl -fsSL -H 'User-Agent: ocas-release' \
+              https://crates.io/api/v1/crates/ocas | jq -r '.crate.max_version' || true)
+            [ "$PUB" = "$V" ] && break
+            sleep 10
+          done
+          if [ "$PUB" != "$V" ]; then
+            echo "workspace version $V is not the latest crates.io release (crates.io: $PUB); nothing to tag."
+            exit 0
+          fi
+
+          if git ls-remote --tags origin "refs/tags/v$V" | grep -q "refs/tags/v$V$"; then
+            echo "tag v$V already exists; nothing to do."
+            exit 0
+          fi
+
+          git tag -a "v$V" -m "oCAS v$V"
+          git push "https://x-access-token:${TAG_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "v$V"
+          echo "Pushed v$V; release.yml, wheels.yml and docs.yml run from the tag push."
