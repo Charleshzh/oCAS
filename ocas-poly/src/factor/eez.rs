@@ -3298,6 +3298,7 @@ mod tests {
 mod proptests {
     use super::*;
     use proptest::prelude::*;
+    use std::collections::BTreeMap;
 
     /// A random small multivariate polynomial over ℤ in exactly `n_vars`
     /// variables that is monic in variable 0. Kept deliberately tiny (few
@@ -3419,5 +3420,136 @@ mod proptests {
             let nontrivial = factors.len() >= 2 || factors.iter().any(|(_, m)| *m >= 2);
             prop_assert!(nontrivial, "factorization is trivial: {:?}", factors);
         }
+    }
+
+    /// A random monomial in `n_vars` variables: main-variable degree ≤ 2 and
+    /// every secondary-variable degree ≤ 1.
+    fn monomial_deg(n_vars: usize) -> impl Strategy<Value = Vec<usize>> {
+        (0usize..=2, prop::collection::vec(0usize..=1, n_vars - 1)).prop_map(move |(e0, rest)| {
+            let mut exp = Vec::with_capacity(n_vars);
+            exp.push(e0);
+            exp.extend(rest);
+            exp
+        })
+    }
+
+    /// A random small sparse ℤ polynomial in 2 or 3 variables.
+    ///
+    /// Deliberately tiny (≤ 7 terms, main-variable degree ≤ 2, secondary
+    /// degrees ≤ 1, coefficients in `-3..=3`) so that 32 debug-mode
+    /// factorizations fit the normal unit-test budget. A non-constant term is
+    /// guaranteed: the public `factor()` entry points treat constants as an
+    /// empty factorization, which is out of scope for a reconstruction
+    /// property.
+    fn any_sparse_zmp() -> impl Strategy<Value = ZmPoly> {
+        (2usize..=3, 2usize..=5).prop_flat_map(|(n_vars, n_terms)| {
+            prop::collection::vec((monomial_deg(n_vars), -3i64..=3), n_terms..=n_terms + 2)
+                .prop_map(move |raw| {
+                    let mut terms: BTreeMap<Vec<usize>, i64> = BTreeMap::new();
+                    for (exp, c) in raw {
+                        terms.insert(exp, c);
+                    }
+                    let mut collected: Vec<(Vec<usize>, Integer)> = terms
+                        .into_iter()
+                        .filter(|(_, c)| *c != 0)
+                        .map(|(exp, c)| (exp, Integer::from(c)))
+                        .collect();
+                    let all_constant = collected.iter().all(|(exp, _)| exp.iter().all(|&e| e == 0));
+                    if collected.is_empty() || all_constant {
+                        // Degenerate draw: force a non-constant input x_0.
+                        let mut lead = vec![0usize; n_vars];
+                        lead[0] = 1;
+                        collected = vec![(lead, Integer::from(1))];
+                    }
+                    ZmPoly::from_terms(IntegerDomain, n_vars, collected)
+                })
+        })
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(32))]
+
+        /// The public `factor()` entry point must be lossless on arbitrary
+        /// sparse input: multiplying the returned factors back with their
+        /// multiplicities must reproduce the input up to a unit.
+        ///
+        /// "Up to a unit" is the correct reconstruction notion here: content
+        /// and global sign are conventions of an integer factorization, not
+        /// information. Both public dispatch paths are covered — bivariate
+        /// inputs with a constant leading coefficient in x_0 take the
+        /// Wang/Hensel path, trivariate inputs (and bivariate ones with a
+        /// non-constant leading coefficient) take the EEZ path. Do not weaken
+        /// this to a triviality check: a reconstruction failure is a lost or
+        /// corrupted factor, the exact class of silent bug this pins.
+        ///
+        /// Regression guard for the 2026-10-24 bivariate-factorization bug: the
+        /// sweep originally found a silent-wrong-answer case (pinned in
+        /// `factor_known_bug_bivariate_gcd_shortcut`); the `bivariate_gcd`
+        /// y-content shortcut and the `bivariate_factor_z` reconstruction
+        /// safety net now keep this property green.
+        #[test]
+        fn factor_roundtrip_random_sparse_z(f in any_sparse_zmp()) {
+            let factors = f.factor();
+            let mut product = one_mpoly(&IntegerDomain, f.n_vars());
+            for (g, multiplicity) in &factors {
+                for _ in 0..*multiplicity {
+                    product = product.mul(g);
+                }
+            }
+            prop_assert!(
+                equal_up_to_unit(&product, &f),
+                "factor() lost information: f = {:?}, factors = {:?}, product = {:?}",
+                f,
+                factors,
+                product
+            );
+        }
+    }
+
+    /// Minimal reproducer for the silent-wrong-answer bug found by
+    /// `factor_roundtrip_random_sparse_z` on 2026-10-24.
+    ///
+    /// `f = y - x²` is irreducible in ℤ[x, y], so a correct `factor()` returns
+    /// it as the only non-unit factor (up to sign/content). Instead the public
+    /// bivariate path returns `[(-1, 1), (x² - y, 1), (x, 2)]`: multiplying
+    /// those back gives `-x²·(x² - y) = x⁴ - x²y`, a degree-4 polynomial for a
+    /// degree-2 input. The result is not a missed factorization — it is a
+    /// factor list that does not reconstruct the input at all.
+    ///
+    /// Root cause traced by hand: `multivariate_gcd::bivariate_gcd` has a
+    /// `deg_y_gcd_bound == 0` shortcut that returns the univariate gcd of the
+    /// *y-constant parts* of the inputs. For `gcd(y - x², -2x)` that is
+    /// `gcd(-x², -2x) = x`, which does not divide `y - x²`. The bogus `x`
+    /// drives `square_free_factorization_bivariate` to emit `(f, 1)` and
+    /// `(x, 2)`; `bivariate_factor_z` (unlike `multivariate_factor_z`) has no
+    /// reconstruction safety net, so the wrong list escapes to the caller.
+    ///
+    /// Fixed on 2026-10-24 by (a) replacing the `bivariate_gcd` degenerate
+    /// shortcut's y^0-term extraction with the proper y-content and (b) adding
+    /// the same "never wrong, fall back to `[(f, 1)]`" reconstruction safety
+    /// net that `multivariate_factor_z` already had.
+    #[test]
+    fn factor_known_bug_bivariate_gcd_shortcut() {
+        // f = y - x^2, irreducible over the integers.
+        let f = MP::<IntegerDomain>::from_terms(
+            IntegerDomain,
+            2,
+            vec![
+                (vec![0, 1], Integer::from(1)),
+                (vec![2, 0], Integer::from(-1)),
+            ],
+        );
+        let factors = f.factor();
+        let mut product = one_mpoly(&IntegerDomain, f.n_vars());
+        for (g, multiplicity) in &factors {
+            for _ in 0..*multiplicity {
+                product = product.mul(g);
+            }
+        }
+        assert!(
+            equal_up_to_unit(&product, &f),
+            "bivariate factor() returned a wrong factorization: \
+             f = {f:?}, factors = {factors:?}, product = {product:?}"
+        );
     }
 }

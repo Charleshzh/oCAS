@@ -55,8 +55,13 @@ pub fn bivariate_gcd(a: &ZMPoly, b: &ZMPoly) -> Option<ZMPoly> {
     let deg_y_gcd_bound = deg_y_a.min(deg_y_b);
 
     if deg_y_gcd_bound == 0 {
-        // GCD is purely in x — univariate GCD of the contents.
-        return Some(zmpoly_constant_in_y(a).gcd_univariate_x(&zmpoly_constant_in_y(b)));
+        // At least one input is independent of `y`, so the GCD is independent
+        // of `y` as well and divides the content of both inputs in `y` (the
+        // GCD of the x-polynomial coefficients). Extracting only the `y^0`
+        // terms instead is wrong: for `gcd(y - x^2, -2x)` it yielded `x`,
+        // which does not divide `y - x^2` (0.30.0 bivariate-factorization
+        // bug, see `factor::eez` regression tests).
+        return Some(zmpoly_content_in_y(a).gcd_univariate_x(&zmpoly_content_in_y(b)));
     }
 
     // Collect evaluation points and compute univariate GCD images.
@@ -155,22 +160,38 @@ fn eval_univariate_x(p: &ZMPoly, value: &Integer) -> DenseUnivariatePolynomial<I
     DenseUnivariatePolynomial::from_coeffs(domain, coeffs)
 }
 
-/// Extract the terms of `p` that have zero degree in y (i.e. purely in x),
-/// as a univariate polynomial. This is a fallback for degenerate GCD cases.
-fn zmpoly_constant_in_y(p: &ZMPoly) -> DenseUnivariatePolynomial<IntegerDomain> {
+/// Content of `p` with respect to `y`: the GCD over ℤ[x] of the coefficients
+/// of the powers of `y`, as a univariate polynomial in `x`.
+///
+/// Used by the degenerate bivariate-GCD shortcut: when at least one input is
+/// independent of `y`, the GCD is independent of `y` too, so it divides the
+/// `y`-content of both inputs.
+fn zmpoly_content_in_y(p: &ZMPoly) -> DenseUnivariatePolynomial<IntegerDomain> {
     let domain = IntegerDomain;
-    let mut coeffs_map: std::collections::BTreeMap<usize, Integer> = Default::default();
+    // Group the coefficients by y-degree: p = sum_i c_i(x) * y^i.
+    let mut by_y: std::collections::BTreeMap<usize, std::collections::BTreeMap<usize, Integer>> =
+        Default::default();
     for (exp, coeff) in p.terms_ref() {
-        if exp[1] == 0 {
-            coeffs_map.insert(exp[0], coeff.clone());
+        by_y.entry(exp[1])
+            .or_default()
+            .insert(exp[0], coeff.clone());
+    }
+    let mut content: Option<DenseUnivariatePolynomial<IntegerDomain>> = None;
+    for coeffs_map in by_y.values() {
+        let max_deg = *coeffs_map.keys().max().unwrap_or(&0);
+        let mut coeffs = vec![Integer::from(0); max_deg + 1];
+        for (deg, c) in coeffs_map {
+            coeffs[*deg] = c.clone();
         }
+        let poly = DenseUnivariatePolynomial::from_coeffs(domain, coeffs);
+        content = Some(match content {
+            None => poly,
+            Some(g) => g.gcd(&poly),
+        });
     }
-    let max_deg = *coeffs_map.keys().max().unwrap_or(&0);
-    let mut coeffs = vec![Integer::from(0); max_deg + 1];
-    for (deg, c) in coeffs_map {
-        coeffs[deg] = c;
-    }
-    DenseUnivariatePolynomial::from_coeffs(domain, coeffs)
+    // Callers only reach the shortcut for nonzero inputs; be defensive anyway.
+    content
+        .unwrap_or_else(|| DenseUnivariatePolynomial::from_coeffs(domain, vec![Integer::from(0)]))
 }
 
 /// Given a set of `(y_value, g_x_image)` pairs, interpolate the bivariate GCD.
@@ -402,7 +423,8 @@ pub fn bivariate_gcd_fp(a: &FpMPoly, b: &FpMPoly) -> Option<FpMPoly> {
     let deg_y_gcd_bound = deg_y_a.min(deg_y_b);
 
     if deg_y_gcd_bound == 0 {
-        // GCD is purely in x — univariate GCD of the contents.
+        // Same degenerate case as in [`bivariate_gcd`]: use the `y`-content of
+        // both inputs, not just their y^0 terms.
         return Some(fp_univariate_gcd_x(a, b));
     }
 
@@ -482,11 +504,12 @@ fn fp_eval_univariate_x(p: &FpMPoly, value: usize) -> DenseUnivariatePolynomial<
     DenseUnivariatePolynomial::from_coeffs(field, coeffs)
 }
 
-/// Univariate GCD of the y=0 content (both polynomials viewed as univariate in x).
+/// Univariate GCD of the y-content of both polynomials (viewed as univariate
+/// in x). See [`zmpoly_content_in_y`] for why the y^0 terms are not enough.
 fn fp_univariate_gcd_x(a: &FpMPoly, b: &FpMPoly) -> FpMPoly {
     let field = a.domain().clone();
-    let a_x = fp_extract_constant_in_y(a);
-    let b_x = fp_extract_constant_in_y(b);
+    let a_x = fp_content_in_y(a);
+    let b_x = fp_content_in_y(b);
     let g = monic_fp(&a_x.gcd(&b_x), &field);
     let mut result = FpMPoly::new(field, a.n_vars());
     for (i, c) in g.coeffs().iter().enumerate() {
@@ -510,21 +533,36 @@ fn monic_fp(
     }
 }
 
-/// Extract terms with y-degree 0 as a univariate polynomial.
-fn fp_extract_constant_in_y(p: &FpMPoly) -> DenseUnivariatePolynomial<FiniteField> {
+/// Content of `p` with respect to `y`: the GCD over `𝔽_p[x]` of the
+/// coefficients of the powers of `y`, normalized to be monic.
+fn fp_content_in_y(p: &FpMPoly) -> DenseUnivariatePolynomial<FiniteField> {
     let field = p.domain().clone();
-    let mut coeffs_map: std::collections::BTreeMap<usize, FiniteFieldElement> = Default::default();
+    let mut by_y: std::collections::BTreeMap<
+        usize,
+        std::collections::BTreeMap<usize, FiniteFieldElement>,
+    > = Default::default();
     for (exp, coeff) in p.terms_ref() {
-        if exp[1] == 0 {
-            coeffs_map.insert(exp[0], coeff.clone());
+        by_y.entry(exp[1])
+            .or_default()
+            .insert(exp[0], coeff.clone());
+    }
+    let mut content: Option<DenseUnivariatePolynomial<FiniteField>> = None;
+    for coeffs_map in by_y.values() {
+        let max_deg = *coeffs_map.keys().max().unwrap_or(&0);
+        let mut coeffs = vec![field.zero(); max_deg + 1];
+        for (deg, c) in coeffs_map {
+            coeffs[*deg] = c.clone();
         }
+        let poly = DenseUnivariatePolynomial::from_coeffs(field.clone(), coeffs);
+        content = Some(match content {
+            None => poly,
+            Some(g) => g.gcd(&poly),
+        });
     }
-    let max_deg = *coeffs_map.keys().max().unwrap_or(&0);
-    let mut coeffs = vec![field.zero(); max_deg + 1];
-    for (deg, c) in coeffs_map {
-        coeffs[deg] = c;
+    match content {
+        Some(g) => monic_fp(&g, &field),
+        None => DenseUnivariatePolynomial::from_coeffs(field.clone(), vec![field.zero()]),
     }
-    DenseUnivariatePolynomial::from_coeffs(field, coeffs)
 }
 
 /// Interpolate the bivariate GCD from univariate images in ℤ_p.

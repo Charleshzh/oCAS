@@ -396,7 +396,55 @@ pub fn bivariate_factor_z(f: &ZMPoly, x_var: usize, y_var: usize) -> Vec<(ZMPoly
         }
     }
 
+    // Safety net: the bivariate path is heuristic (evaluation/interpolation
+    // GCD plus Hensel lifting), so a factor list that does not reconstruct the
+    // input must never escape to the caller. Fall back to "irreducible as
+    // given", exactly like `factor::eez::multivariate_factor_z` does.
+    let mut product = one_mpoly(f.n_vars());
+    for (g, m) in &result {
+        for _ in 0..*m {
+            product = product.mul(g);
+        }
+    }
+    if !equal_up_to_unit_z(&product, f) {
+        return vec![(f.clone(), 1)];
+    }
+
     result
+}
+
+/// Whether `a == ±b`. The bivariate-factorization safety net only accepts a
+/// list whose product is exactly the input up to a global sign.
+fn equal_up_to_unit_z(a: &ZMPoly, b: &ZMPoly) -> bool {
+    if a.is_zero() || b.is_zero() {
+        return a.is_zero() && b.is_zero();
+    }
+    if a.n_terms() != b.n_terms() {
+        return false;
+    }
+    let (e0, c0) = match a.terms_ref().iter().next() {
+        Some(t) => t,
+        None => return false,
+    };
+    let bc0 = b.coeff(e0);
+    if a.domain().is_zero(&bc0) {
+        return false;
+    }
+    let neg_bc0 = a.domain().sub(&Integer::from(0), &bc0);
+    let same_sign = c0 == &bc0;
+    let opposite_sign = c0 == &neg_bc0;
+    if !same_sign && !opposite_sign {
+        return false;
+    }
+    let zero = Integer::from(0);
+    a.terms_ref().iter().all(|(e, c)| {
+        let bc = b.coeff(e);
+        if same_sign {
+            c == &bc
+        } else {
+            *c == a.domain().sub(&zero, &bc)
+        }
+    })
 }
 
 /// Square-free factorization of a bivariate integer polynomial using the
@@ -433,6 +481,15 @@ fn one_mpoly(n_vars: usize) -> ZMPoly {
         IntegerDomain,
         n_vars,
         vec![(vec![0; n_vars], Integer::from(1))],
+    )
+}
+
+/// The constant polynomial 1 in `n_vars` variables over `domain`.
+fn one_mpoly_fp(n_vars: usize, domain: &FiniteField) -> FpMPoly {
+    FpMPoly::from_terms(
+        domain.clone(),
+        n_vars,
+        vec![(vec![0; n_vars], domain.one())],
     )
 }
 
@@ -934,7 +991,47 @@ pub fn bivariate_factor_fp(f: &FpMPoly, x_var: usize, y_var: usize) -> Vec<(FpMP
         result.push((primitive, 1));
     }
 
+    // Safety net: same contract as the ℤ path — never return a factor list
+    // that does not reconstruct the input up to a nonzero field constant.
+    let mut product = one_mpoly_fp(f.n_vars(), f.domain());
+    for (g, m) in &result {
+        for _ in 0..*m {
+            product = product.mul(g);
+        }
+    }
+    if !equal_up_to_unit_fp(&product, f) {
+        return vec![(f.clone(), 1)];
+    }
+
     result
+}
+
+/// Whether `a` and `b` differ by a nonzero field constant.
+fn equal_up_to_unit_fp(a: &FpMPoly, b: &FpMPoly) -> bool {
+    if a.is_zero() || b.is_zero() {
+        return a.is_zero() && b.is_zero();
+    }
+    if a.n_terms() != b.n_terms() {
+        return false;
+    }
+    let field = a.domain();
+    let (e0, c0) = match a.terms_ref().iter().next() {
+        Some(t) => t,
+        None => return false,
+    };
+    let bc0 = b.coeff(e0);
+    if field.is_zero(&bc0) {
+        return false;
+    }
+    let inv = match field.inv(&bc0) {
+        Some(v) => v,
+        None => return false,
+    };
+    let ratio = field.mul(c0, &inv);
+    a.terms_ref().iter().all(|(e, c)| {
+        let bc = b.coeff(e);
+        *c == field.mul(&ratio, &bc)
+    })
 }
 
 #[cfg(test)]
