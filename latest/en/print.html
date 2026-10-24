@@ -183,7 +183,7 @@
 <p>oCAS uses a layered crate architecture: 13 workspace members from the low-level arena allocator up to the top-level language bindings, with dependencies strictly pointing downward. All coefficient domains (arbitrary-precision integers/rationals, finite fields, real balls, complex numbers, double-precision floats) are abstracted behind a unified <code>Domain</code> trait, and the polynomial algebra, Gröbner basis, symbolic calculus, and ODE solving modules share the same expression infrastructure.</p>
 <hr />
 <h2 id="version-feature-matrix"><a class="header" href="#version-feature-matrix">Version Feature Matrix</a></h2>
-<p>The table below lists the key features added in each oCAS release (0.1 → 0.27):</p>
+<p>The table below lists the key features added in each oCAS release (0.1 → 0.30):</p>
 <div class="table-wrapper"><table><thead><tr><th>Version</th><th>Date</th><th>Key additions</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>Workspace setup, arena allocator, unified error types, minimal C ABI example, cross-platform CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>Expression tree <code>Atom</code> (hash consing), parser based on <code>logos</code>/<code>chumsky</code>, normalizer</td></tr>
@@ -217,6 +217,8 @@
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>Verified-coverage criterion (independent numeric oracle: 5-point central differences + elliptic defining integrals), stage tracing + all 33 hang attributions, deterministic per-stage budgets, bounded-expansion pre-pass, hyperbolic closed forms, rational-derivative kernel substitution, trig phase shift, inverse-composition cancellation, <code>exp(inverse function)</code> algebraization, half-power front-end + elliptic Legendre reduction (<code>EllipticF/E</code>); six wrong-answer classes fixed (verified coverage 93.1%, mismatches 0, timeouts 33 → 13, wall clock −22%)</td></tr>
 <tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27-line close-out: special-function derivative table + oracle heads (<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel), special-function reduction families (polynomial × <code>F</code>, <code>Ei(n,·)</code>, <code>F/xᵐ</code>, <code>F²</code>), exact linear-square fold <code>p²+2pq+q² → (p+q)²</code>, affine-argument half-power front-end with the sheet factor on both branches; Rubi coverage 18.45% → 19.56% (+21 solved, 0 regressed, mismatches 0, timeouts 13 → 12)</td></tr>
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>Integration-mechanism correctness foundation: symbolic certificate engine (structural/elementary-field layers with <code>I² = −1</code> reduction and dependent-atom merging, deterministic budgets), three-valued <code>Outcome</code> and <code>integrate_outcome</code> (exposed to Python/C), expression-level cycle detection (budget-aware entry keys plus a separate residue budget), regular-tower dependency merging, in-tower exact verification of Risch results (caught and contained a latent wrong answer), and a hyperbolic front-end disabled for its wall-clock cost; Rubi coverage 19.56% → 19.61% (371 solved, +1 newly solved / 0 regressed), mismatches 0, timeouts flat at 12, wall clock −6.0%; <code>certified_rate = 28.8%</code> (target 1.0 not met, recorded honestly)</td></tr>
+<tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>Completing the transcendental Risch fragment: rational solutions of the Risch differential equation over the full rational fragment (weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions), Rothstein–Trager logarithmic part at every tower level (resultant by value interpolation, ℚ rational-root sieve with an exact completeness check, per-root gcd self-verified by <code>Πvᵢ == d1</code>), coupled-system infrastructure <code>integral/coupled.rs</code> (shipped unwired), random-tower proptests (every residue-free answer must certify; <code>certified_rate = 1.0</code> there); the latent exp-level Laurent-split wrong answer fixed; Rubi coverage 19.61% → 19.98% (378 solved, +7 newly solved / 0 regressed), verified 351/378, mismatches 0, timeouts flat at 12, wall clock 439.6 s, <code>certified_rate</code> 28.8% → 29.1%</td></tr>
+<tr><td><strong>0.30.0</strong></td><td>2026-10-24</td><td>Algebraic extensions and inverse-function substitution: RT algebraic constant roots (base-level real/complex quadratics and biquadratic quartics <code>Az⁴+Bz²+C</code>, complex quadratics at tower levels, each self-verified in the extension), the certificate <strong>radical layer</strong> (<code>CertMethod::RadicalField</code>: <code>sqrt(S)</code> / <code>S^(p/q)</code> unified as <code>r^q = S</code> with triangular reduction), multi-radical-base reduction (<code>integral/multi_radical.rs</code>: MR-L Möbius rationalization, gated same-radicand merges, MR-G/R/I/P), and the inverse-function substitution engine (<code>integral/inverse_trig.rs</code> M4: 11 heads × affine arguments × integer kernel powers × polynomial weights); Rubi solved 378 → 451 (coverage 23.84%), verified 410/451, <code>certified_rate</code> 29.1% → 48.8% (220/451), mismatches 0, timeouts flat at 12, wall clock 489.5 s, 0 regressions, 0 certificate false positives; radical bucket 51 → 84, inverse-trig-hyper 8 → 22 (the ≥48/146 line not met, recorded honestly)</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -334,7 +336,7 @@ dashed edges are optional dependencies):</p>
 </div>
 <hr />
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.28.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
+<p>oCAS is currently at version <strong>0.30.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <p>This chapter gets you up and running with oCAS in about 5 minutes. oCAS 0.24 supports three language interfaces: <strong>Rust</strong>, <strong>Python</strong>, and <strong>C/C++</strong>.</p>
@@ -5349,8 +5351,12 @@ machine-checkable symbolic certificate.</p>
 │ 10. rule-table engine      (integrate_rules, A–H)    │
 │ 11. sqrt-quadratic engine  (integrate_sqrt_quadratic)│
 │ 12. Chebyshev binomials    (integrate_binomial)      │
+│ 12b. multi-radical bases  (integrate_multi_radical,  │
+│      0.30.0; after 12, before 13)                    │
 │ 13. exp/log kernels        (integrate_exp_log)       │
 │ 14. inverse-trig/hyperbolic (integrate_inverse_trig) │
+│ 14b. inverse-function M4   (last arm of 14, 0.30.0)  │
+│      u = F(w), 11 heads, affine args, kernel pows    │
 │ 15. trig product-to-sum    (trig_reduce_products)    │
 │ 16. trig-denominator power reductions                │
 │     (integrate_trig_reduction)                       │
@@ -20365,7 +20371,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <p>The current implementation of the Risch algorithm has the following limitations:</p>
 <div class="table-wrapper"><table><thead><tr><th>Limitation</th><th>Reason</th><th>Fallback behavior</th></tr></thead><tbody>
 <tr><td><del>Only polynomial solutions of the RDE</del> (since 0.29.0: the full rational fragment — weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions; the <code>limited_integrate</code> refinements and the higher-level <code>parametric_log_deriv</code> are not implemented)</td><td>Refinements only lower the degree bound; a miss is an honest decline</td><td>Return <code>None</code>; the caller tries other layers</td></tr>
-<tr><td>At tower levels the logarithmic part (since 0.29.0: Rothstein–Trager, <strong>rational roots only</strong>; irrational/non-constant roots decline)</td><td>Algebraic roots need 0.30.0's algebraic extensions</td><td>Return the unevaluated form</td></tr>
+<tr><td>At tower levels the logarithmic part (Rothstein–Trager since 0.29.0; since 0.30.0 <strong>algebraic constant roots</strong> are accepted: quadratic and biquadratic-quartic factors at the base level, complex quadratic factors at tower levels, realified as <code>log(u²+w²)</code>/<code>atan</code> conjugate pairs; other degrees and non-constant roots still decline)</td><td>Factors outside the fragment (degree ≥ 3, non-biquadratic quartics, …) are out of 0.30.0's scope</td><td>Return the unevaluated form</td></tr>
 <tr><td>Algebraic functions ($\sqrt{x}$, etc.) not supported</td><td>Needs algebraic-function field extensions</td><td>Common patterns are covered by the heuristic trigonometric substitution</td></tr>
 <tr><td>Partial merging of algebraically dependent generators (six exact classes since 0.28.0, plus $\exp(ku) = \exp(u)^k$ since 0.29.0; fractional $\exp(u/k)$ would need re-basing, not implemented)</td><td>Relation detection is incomplete</td><td>Return <code>None</code></td></tr>
 <tr><td>Hyperexponential RDEs containing $I$</td><td>The RDE solver works only over $\mathbb{Q}[x]$</td><td>Trigonometric integrands are returned in unevaluated form</td></tr>
@@ -22913,6 +22919,20 @@ intercepts, radicals, special forms); templates may carry residual
 <li><strong>Trig product-to-sum / power reduction</strong> (0.27.x) — products and
 powers of <code>sin</code>/<code>cos</code> at linear arguments reduce to multiple-angle
 sums, integrated termwise.</li>
+<li><strong>Multi-radical base reduction</strong> (0.30.0) — integrands carrying two or
+more distinct radical bases are rationalized at the atomic layer
+(MR-L Möbius rationalization of an affine base pair, graded
+same-radicand merges, conjugate / reciprocal / nested-radical
+substitutions, perfect-square sheet factors). The stage sits in the
+chain <strong>after <code>binomial</code> and before <code>exp_log</code></strong>, so the single-base
+engines keep first claim on single-base shapes, and it declines
+honestly outside its fragment.</li>
+<li><strong>Inverse-function substitution</strong> (0.30.0) — the M4 mechanism at the
+<strong>end of the <code>inverse_trig</code> dispatch order</strong>: <code>u = F(w)</code> over 11 heads
+(<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code> plus
+<code>acsc</code>/<code>asec</code>/<code>acoth</code>/<code>asech</code>/<code>acsch</code>) × affine arguments × integer
+kernel powers × polynomial weights, with companion radicals absorbed
+as sheet factors.</li>
 <li><strong>Heuristic techniques</strong> — integration by parts, trigonometric
 substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.</li>
 <li><strong>Bounded expansion retry</strong> (0.27.x) — products are distributed over
@@ -22949,8 +22969,12 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 (at hyperexponential levels the <code>t</code>-power denominator is split off
 first as a Laurent polynomial, 0.29.0);</li>
 <li>the logarithmic part first tries the logarithmic-derivative identity,
-then the Rothstein–Trager resultant method (rational roots only,
-0.29.0);</li>
+then the Rothstein–Trager resultant method: 0.29.0 decides <strong>rational</strong>
+roots only, and 0.30.0 adds algebraic <strong>constant</strong> roots (real/complex
+quadratic factors and biquadratic quartics <code>Az⁴+Bz²+C</code> at the base
+level, complex quadratics at tower levels, each self-verified inside
+the extension); non-constant roots and higher-degree factors still
+decline honestly;</li>
 <li>the polynomial part is integrated by undetermined coefficients at
 <code>log</code> levels and by the Risch differential equation <code>Dq + f·q = g</code>
 at <code>exp</code> levels — solved over the <strong>full rational fragment</strong> since
@@ -22974,10 +22998,13 @@ let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::n
 <h3 id="scope-limits"><a class="header" href="#scope-limits">Scope limits</a></h3>
 <p>Since 0.29.0 the Risch differential equation is solved over the <strong>full
 rational fragment</strong> (denominator bounds included), and the logarithmic
-part uses Rothstein–Trager with <strong>rational roots only</strong> — irrational or
-non-constant resultant roots, and the unported <code>limited_integrate</code> /
-higher-level <code>parametric_log_deriv</code> refinements, decline honestly.
-Consequences:</p>
+part uses Rothstein–Trager over ℚ roots; 0.30.0 extends that log part by
+its algebraic <strong>constant</strong>-root fragment (quadratic and
+biquadratic-quartic factors, in-extension self-verification). Everything
+outside those fragments — non-constant roots, degree ≥ 3 or
+non-biquadratic-quartic factors, mixed extensions, and the unported
+<code>limited_integrate</code> / higher-level <code>parametric_log_deriv</code> refinements —
+declines honestly. Consequences:</p>
 <ul>
 <li><code>∫ exp(x)/x dx</code> has no elementary antiderivative — it is answered by
 the special-function table as <code>Ei(x)</code>.</li>
@@ -23074,9 +23101,12 @@ when a machine-checkable certificate is required.</p>
 <p>The certificate engine (<code>ocas-calc/src/integral/certify.rs</code>) tries three layers: structural zero
 (<code>normalize</code> plus like-term collection), elementary-field zero (trig→exp rewriting, <code>I² = −1</code>
 reduction, dependent <code>exp</code>/<code>log</code> atoms merged before embedding into a rational function field), and
-a reserved radical layer. Every layer is <strong>sound</strong>: treating atoms as independent generators can
-only miss an identity (a false negative), never certify a wrong answer. The field arithmetic runs
-under deterministic budgets and declines honestly when they are exhausted.</p>
+the <strong>radical layer</strong>, landed in 0.30.0 (<code>CertMethod::RadicalField</code>): <code>sqrt(S)</code> and <code>S^(p/q)</code> are
+unified as a generator <code>r</code> carrying the relation <code>r^q = S</code>, and the difference is decided zero by
+triangular-column remainder reduction, under deterministic budgets (q ≤ 8, radicals ≤ 8, terms ≤
+8192, nodes ≤ 2000, entry terms ≤ 2048). Every layer is <strong>sound</strong>: treating atoms as independent
+generators can only miss an identity (a false negative), never certify a wrong answer. The field
+arithmetic runs under deterministic budgets and declines honestly when they are exhausted.</p>
 <p><code>ocas-calc/src/integral/risch.rs</code> additionally verifies every Risch result <strong>inside the tower's own
 field</strong>, so the engine cannot emit an answer the exact checker falsifies — that guard is how
 0.28.0 caught and contained a latent wrong answer (the exp-level rational part mis-scaled negative
@@ -25140,17 +25170,23 @@ with short-lived feature branches and pull requests.</p>
 <li>Optional: GMP/MPFR/FLINT system libraries for backend features</li>
 </ul>
 <h2 id="quality-gates"><a class="header" href="#quality-gates">Quality gates</a></h2>
+<p>Two tiers: run the <strong>fast</strong> gate on every change, and the <strong>full</strong> gate before
+opening a pull request (CI parity).</p>
+<p>Fast (default feedback loop):</p>
 <pre><code class="language-bash">cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
-cargo test --workspace --exclude ocas-py --features egg
+cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
+</code></pre>
+<p>Full (CI parity — adds the cross-system correctness suite in <code>ocas-tests</code>):</p>
+<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg
 cargo deny check
 </code></pre>
-<h2 id="python-bindings-1"><a class="header" href="#python-bindings-1">Python bindings</a></h2>
-<pre><code class="language-bash">cd ocas-py
-uv venv .venv
-uv pip install pytest maturin
-uv run maturin develop
-uv run python -m pytest ../ocas-tests/tests/python/ -v
+<p>Tests marked <code>#[ignore]</code> (slow property tests, performance acceptance tests,
+work-in-progress fixes) are deliberately outside both gates; the scheduled
+long-test sweep (<code>.github/workflows/full-tests.yml</code>, weekly) runs them, and they
+can also be invoked explicitly:</p>
+<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg -- --ignored
+cargo test --release -p ocas-domain --lib -- --ignored   # performance acceptance
 </code></pre>
 <h2 id="coding-standards"><a class="header" href="#coding-standards">Coding standards</a></h2>
 <ul>
@@ -25158,11 +25194,61 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 <li>Run <code>cargo fmt --all</code> before submitting.</li>
 <li>Prefer arena allocation for expression trees; avoid per-node <code>Box</code>/<code>Rc</code>.</li>
 <li>Use <code>thiserror</code> for error types; propagate with <code>?</code>.</li>
-<li>Backend code lives behind feature flags; GPL code only in <code>ocas-gpl</code>.</li>
+<li>Backend code lives behind feature flags. <code>ocas-gpl</code> is an independent
+placeholder crate for future GPL-3.0-or-later backends; the top-level <code>ocas</code>
+facade does not expose a <code>gpl</code> feature, so a GPL backend has to be opted into
+by depending on <code>ocas-gpl</code> directly.</li>
 <li>Public APIs for stable releases must include rustdoc examples.</li>
 </ul>
-<p>See the repository's <code>CLAUDE.md</code> and <code>ARCHITECTURE_EN.md</code> for the full
-conventions, layered-dependency rules, and release process.</p>
+<p>See <code>docs/planning/ARCHITECTURE_EN.md</code> for the full conventions and the
+layered-dependency rules.</p>
+<h2 id="python-bindings-1"><a class="header" href="#python-bindings-1">Python bindings</a></h2>
+<pre><code class="language-bash">cd ocas-py
+uv venv .venv
+uv pip install pytest maturin
+uv run maturin develop
+uv run python -m pytest ../ocas-tests/tests/python/ -v
+</code></pre>
+<h2 id="release-process"><a class="header" href="#release-process">Release process</a></h2>
+<p>Releases are automated; the root <code>vX.Y.Z</code> tag is the release switch.</p>
+<ol>
+<li>
+<p><strong>Release PR and tag creation.</strong> After <code>main</code> moves, release-plz
+(<code>.github/workflows/release-plz.yml</code>) opens (and later updates) a release PR
+that bumps <code>workspace.package.version</code>. When that PR is merged, the workflow
+first waits for CI to be green on the merge commit, then publishes the crates
+in dependency order, and creates the root <code>vX.Y.Z</code> tag. Tag creation needs
+the <code>RELEASE_PLZ_TOKEN</code> secret (a PAT with <code>contents: write</code>): a tag pushed
+with the default <code>GITHUB_TOKEN</code> does not trigger the downstream workflows.</p>
+</li>
+<li>
+<p><strong>Tag fan-out.</strong></p>
+<ul>
+<li><code>release.yml</code> validates the tag against the workspace version, dry-runs
+<code>cargo publish</code> for every crate, and attaches the C artifact to the
+project-level GitHub Release.</li>
+<li><code>wheels.yml</code> builds the Python wheels and sdist with maturin and publishes
+to PyPI (pre-release tags go to TestPyPI).</li>
+<li><code>docs.yml</code> rebuilds the bilingual mdBook and publishes both
+<code>/latest/{en,zh}/</code> and a frozen <code>/v&lt;version&gt;/{en,zh}/</code> snapshot to GitHub
+Pages.</li>
+</ul>
+</li>
+<li>
+<p><strong>Manual fallback.</strong> If the automation fails, tag a commit that is on
+<code>main</code> and green in CI:</p>
+<pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
+git push origin vX.Y.Z
+</code></pre>
+<p>Do not run the publish steps locally; publishing is done by CI.</p>
+</li>
+<li>
+<p><strong>Version surfaces.</strong> Keep <code>Cargo.toml</code>, <code>CHANGELOG.md</code>, the READMEs, and the
+version tables in <code>docs/book/*/src/introduction.md</code> in sync.
+<code>consistency.yml</code> enforces this on every push and pull request via
+<code>ocas-tests/scripts/check_release_consistency.py</code>.</p>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="external-references"><a class="header" href="#external-references">External References</a></h1>
 <ul>
 <li><a href="https://docs.rs/ocas">Rust API documentation (docs.rs)</a> — auto-generated
@@ -25174,9 +25260,9 @@ docs, build locally with <code>cargo doc -p ocas --features gmp,mpfr,flint --no-
 releases, feature flags, and dependency graph.</li>
 <li><a href="https://github.com/charleshzh/ocas">GitHub repository</a> — source code,
 issue tracker, and contribution guide.</li>
-<li><a href="https://charleshzh.github.io/ocas/latest/">Documentation site</a> — this
+<li><a href="https://charleshzh.github.io/oCAS/latest/en/">Documentation site</a> — this
 book, served from GitHub Pages. Versioned snapshots live under
-<code>/ocas/v&lt;version&gt;/</code> for each release tag.</li>
+<code>/oCAS/v&lt;version&gt;/en/</code> and <code>/oCAS/v&lt;version&gt;/zh/</code> for each release tag.</li>
 </ul>
 
                     </main>

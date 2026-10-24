@@ -333,8 +333,12 @@ machine-checkable symbolic certificate.</p>
 │ 10. rule-table engine      (integrate_rules, A–H)    │
 │ 11. sqrt-quadratic engine  (integrate_sqrt_quadratic)│
 │ 12. Chebyshev binomials    (integrate_binomial)      │
+│ 12b. multi-radical bases  (integrate_multi_radical,  │
+│      0.30.0; after 12, before 13)                    │
 │ 13. exp/log kernels        (integrate_exp_log)       │
 │ 14. inverse-trig/hyperbolic (integrate_inverse_trig) │
+│ 14b. inverse-function M4   (last arm of 14, 0.30.0)  │
+│      u = F(w), 11 heads, affine args, kernel pows    │
 │ 15. trig product-to-sum    (trig_reduce_products)    │
 │ 16. trig-denominator power reductions                │
 │     (integrate_trig_reduction)                       │
