@@ -134,6 +134,46 @@ fn mechanism_sample_has_no_wrong_answers() {
     );
 }
 
+/// `rubi-00401` branch-shape pin for the 0.30.0 W6a single-radical stage.
+///
+/// The 0.30.0 Wave 6a single-radical atomic-layer reduction
+/// (`ocas-calc/src/integral/single_radical.rs`) shipped **unwired**: with the
+/// stage in the pipeline, `rubi-00401` got a *wrong* answer — the `x = 1/t`
+/// substitution mishandled the sign/branch factor of a quotient radicand, so
+/// the emitted antiderivative was off by a global sign (oracle relative
+/// error 2.0). The wiring was reverted and the branch bug is the first item
+/// on the 0.31 W6a list.
+///
+/// So today the engine is expected to *decline* this shape (fallback is
+/// fine). The only thing this pin forbids is a wrong closed form — hence the
+/// deliberately narrow `Mismatch` assertion. **Once W6a is wired, this test
+/// is the hard gate for the fix**: `rubi-00401` must then verify (not just
+/// fall back), and the `Indeterminate` arm below must be tightened to a
+/// failure. Do not delete or loosen this assertion to make a wiring
+/// experiment green; that is exactly the class of silent wrong answer the
+/// numerical oracle exists to catch.
+#[test]
+fn wave_030_w6a_branch_shape_never_wrong() {
+    let input = "sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)";
+    let (text, verdict) = integrate_and_verify(input);
+    match verdict {
+        Verify::Verified { checked, .. } => {
+            eprintln!("rubi-00401: verified by {checked} sample point(s): {text}");
+        }
+        Verify::Mismatch { detail, .. } => {
+            panic!("rubi-00401 wrong-antiderivative regression: {input} -> {text}\n    {detail}")
+        }
+        Verify::Indeterminate { reason } => {
+            // Fallback (or an undecidable sample) is acceptable while W6a is
+            // unwired. 0.31 W6a must turn this arm into a failure.
+            eprintln!(
+                "rubi-00401: not yet wired (fallback allowed until 0.31 W6a): {reason}\n    \
+                 result: {text}"
+            );
+        }
+    }
+}
+
 /// The 0.27.3 mechanisms must not introduce wrong answers. Each entry is a
 /// shape a new mechanism claims:
 ///
