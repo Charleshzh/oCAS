@@ -44,13 +44,34 @@ graph TD
 | `ocas-atom` | 3 | Expression tree (`Atom`), normalization, transformers, pattern matching, e-graph integration |
 | `ocas-rewrite` | 3 | Pattern matching, rewriting, rule-based simplification |
 | `ocas-calc` | 4 | Differentiation, integration, equation solving, series expansion |
-| `ocas-eval` | 4 | Interpreter, AST compiler, JIT via Cranelift/LLVM |
+| `ocas-eval` | 4 | Interpreter, AST compiler, JIT via Cranelift (LLVM backend planned) |
 | `ocas-parse` | 4 | Lexer, parser, Mathematica/Python syntax support |
 | `ocas` | 5 | Top-level Rust API and prelude |
 | `ocas-py` | 5 | Python bindings via PyO3 |
 | `ocas-c` | 5 | C/C++ bindings via cbindgen + C-ABI shim |
 | `ocas-gpl` | - | Optional GPL-only backends isolated in a separate crate |
 | `ocas-tests` | - | Integration tests, regression tests, benchmarks |
+
+---
+
+## Accepted Deviations
+
+The following deviations are **known and intentional**; changing them requires a
+review of this document:
+
+- **Runtime dependency `ocas-rewrite` → `ocas-parse`**: `ocas-rewrite` sits on
+  layer 3, but initializes its built-in rule table by parsing rule strings with
+  `ocas_parse::parse` (`pattern_from_str` in `ocas-rewrite/src/rules.rs`), i.e. a
+  layer-3 crate calls the layer-4 `ocas-parse`. The dependency graph remains a
+  DAG, but this violates "each layer depends only on lower layers". Future work:
+  replace the string rules with structured constructors, or move the pure lexer
+  part of `ocas-parse` down to a lower layer. Until then this is the single
+  accepted cross-layer exception.
+- **`ocas-gpl` is a placeholder crate**: the `ocas` facade no longer exposes
+  `gpl` / `python` features (neither was wired); enabling a GPL backend means
+  depending on `ocas-gpl` directly, and that crate has no implementation yet.
+- **JIT is Cranelift-only**: the LLVM (inkwell) backend is on the roadmap for
+  0.34.0; the workspace has no LLVM dependency.
 
 ---
 

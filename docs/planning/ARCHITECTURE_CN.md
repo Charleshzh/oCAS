@@ -40,13 +40,29 @@ graph TD
 | `ocas-atom` | 3 | 表达式树（Atom）、规范化、转换器、模式匹配、e-graph 集成 |
 | `ocas-rewrite` | 3 | 模式匹配、重写、基于规则的化简 |
 | `ocas-calc` | 4 | 微分、积分、方程求解、级数展开 |
-| `ocas-eval` | 4 | 解释器、AST 编译器、Cranelift/LLVM JIT |
+| `ocas-eval` | 4 | 解释器、AST 编译器、Cranelift JIT（LLVM 后端规划中） |
 | `ocas-parse` | 4 | 词法分析器、语法分析器、Mathematica/Python 语法支持 |
 | `ocas` | 5 | 顶层 Rust API 与 prelude |
 | `ocas-py` | 5 | 基于 PyO3 的 Python 绑定 |
 | `ocas-c` | 5 | 基于 cbindgen 与 C-ABI 封装的 C/C++ 绑定 |
 | `ocas-gpl` | - | 隔离在单独 crate 中的可选 GPL 专属后端 |
 | `ocas-tests` | - | 集成测试、回归测试、基准测试 |
+
+---
+
+## 已知偏差（accepted deviations）
+
+以下偏差**已知且有意保留**，修改前需同步评审：
+
+- **`ocas-rewrite` → `ocas-parse` 的运行期依赖**：`ocas-rewrite` 位于第 3 层，但在
+  初始化内置规则表时用 `ocas_parse::parse` 解析规则字符串
+  （`ocas-rewrite/src/rules.rs` 的 `pattern_from_str`），即第 3 层调用第 4 层的
+  `ocas-parse`。依赖图仍是 DAG、无环，但违反「每一层只依赖更底层」。后续方向：把内置
+  规则改为结构化构造，或把 `ocas-parse` 的纯词法部分下沉到更低层；在此之前，本项作为
+  唯一接受的跨层例外记录。
+- **`ocas-gpl` 当前为占位 crate**：`ocas` facade 不再暴露 `gpl` / `python` feature
+  （均未接线）；GPL 后端启用需直接依赖 `ocas-gpl`，该 crate 目前无实现。
+- **JIT 仅 Cranelift**：LLVM（inkwell）后端在路线图 0.34.0，工作区无 LLVM 依赖。
 
 ---
 

@@ -695,7 +695,7 @@ and add the structure theorem for the logarithmic part.
 **Success Criteria** (recorded honestly):
 
 - 1892 corpus: **solved 378 (19.98%), verified 350/378 (92.6%), mismatches 0,
-  timeouts 12 (flat), crashes 0, wall clock 440.1 s (−… within the ≤ 498 s gate)**;
+  timeouts 12 (flat), crashes 0, wall clock 440.1 s (+1.5%, within the ≤ 498 s gate)**;
   per-case diff **+7 newly solved, 0 regressed** (`rubi-00179/00184/00543/00627/00992/01524/01798`)
 - `exp-log` bucket 4 → **7/83**: the Wave-0 attribution
   (`explog_attribution_029.csv`) proves the bucket ceiling is structural (60/79

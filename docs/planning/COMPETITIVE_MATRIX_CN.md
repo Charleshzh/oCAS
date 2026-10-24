@@ -5,6 +5,12 @@
 > FLINT GitHub/changelog、msolve GitHub/Groebner.jl 论文、GiNaC 官网/Codeberg、
 > Numerica GitHub、mathcore crates.io
 > **评估基准**：oCAS 0.26.0（2026-08-04 发布）
+>
+> **快照说明（2026-10-24）**：本文档是 2026-08-06 的全量复测快照（oCAS 0.26.0）。
+> oCAS 0.27–0.30 在符号积分（Rubi 1892 子集 solved 370 → 451、证书率 0 → 48.8%）
+> 与代数扩张上的进展记录在 [BENCHMARK_RESULTS_CN.md](BENCHMARK_RESULTS_CN.md) 与
+> [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)；本矩阵的竞品数据与「Rubi 规则集仍未
+> 集成」这一主要差距结论不受影响。下次全量复测随 0.31 进行，届时同步版本行。
 
 ---
 

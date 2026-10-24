@@ -8,5 +8,6 @@
   与依赖图。
 - [GitHub 仓库](https://github.com/charleshzh/ocas)：源代码、Issue 跟踪与贡献
   指南。
-- [文档站点](https://charleshzh.github.io/oCAS/latest/)：本书，由 GitHub Pages
-  提供。每个发布 tag 下 `/oCAS/v<版本>/` 存有对应的版本快照。
+- [文档站点](https://charleshzh.github.io/oCAS/latest/zh/)：本书，由 GitHub Pages
+  提供。每个发布 tag 下 `/oCAS/v<版本>/en/` 与 `/oCAS/v<版本>/zh/` 存有对应的
+  版本快照。

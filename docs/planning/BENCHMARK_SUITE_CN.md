@@ -103,7 +103,7 @@
 - CPU: Intel Core Ultra 7 255H
 - Rust: 1.97.1 (toolchain)
 - Python: 3.12
-- oCAS: 0.26.0
+- oCAS: 0.30.0
 - Symbolica: 2.2.0 (pip show symbolica)
 - SymPy: 1.14.0 (pip show sympy)
 - FLINT: 3.6.0 (if applicable)
@@ -143,3 +143,31 @@
 4. **C1（大系数 GCD）**：模 GCD 性能
 5. **J1/J2（JIT 求值）**：JIT 性能对标
 6. 其余按需执行
+
+---
+
+## 6. 现役 harness（0.30.0 起）
+
+文档第 2 节的用例仍是设计目标；当前仓库里实际运行的 harness 是：
+
+- **Rubi 1892 题子集**：`ocas-tests/benches/integrate_1892.rs`（单轮 report 式，非
+  criterion 迭代）。语料由 `ocas-tests/scripts/fetch_rub_i_corpus.py` 下载
+  （SHA-256 固定），落在被 gitignore 的 `ocas-tests/data/`；缺语料时 bench 打印指引并
+  **exit 0**，因此自动化必须检查 report 字段而不是只看退出码。
+  ```
+  uv run python ocas-tests/scripts/fetch_rubi_corpus.py   # 首次
+  cargo bench -p ocas-tests --bench integrate_1892
+  ```
+  关键输出字段：`solved`、`fallback`、`coverage_pct`、`timed_out`、`crashed`、
+  `verify_mismatches`、`verified_solved`、`certified_solved`、`certified_rate`、
+  `cert_methods`（`field`/`radical`/`structural`）、`wall time`。
+- **criterion 基准**：`ocas-tests/benches/` 下 21 个 bench（集成/多项式/Gröbner/JIT/
+  eval/parse 等），用 `cargo bench -p ocas-tests --bench <name>` 运行。
+- **正确性对比**：`ocas-tests/tests/correctness/`（SymPy/Symbolica 对比，需 `uv`；
+  缺失时静默跳过）+ `ocas-tests/scripts/check_release_consistency.py`（版本一致性，
+  纯标准库，CI 每次 push 运行）。
+- **长测试**：`#[ignore]` 套件由 `.github/workflows/full-tests.yml` 每周日跑
+  `--ignored`；PR CI 不执行。
+```
+
+（注：新增于 2026-10-24，对应 0.30.0 发布收口与测试门禁补洞。）
