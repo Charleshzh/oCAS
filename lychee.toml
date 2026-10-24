@@ -45,12 +45,6 @@ exclude = [
   # mdBook's 404.html uses href="/" as a root link; lychee cannot
   # resolve root-relative links against a local file tree.
   "^/$",
-  # GitHub Pages site does not exist until the first successful deploy.
-  # Remove this entry after the site goes live.
-  "charleshzh.github.io/ocas",
-  # The crate is not yet published to crates.io, so docs.rs returns 404.
-  # Remove this entry after `cargo publish`.
-  "docs.rs/ocas",
 ]
 
 # Exclude URLs from the loop (regex, applied to the URL string).

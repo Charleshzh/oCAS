@@ -1578,42 +1578,82 @@ cover the inverse-function families.
 
 ---
 
-### 0.31.0 — The Non-Elementary Layer
+### 0.31.0 — The Non-Elementary Layer (split into 0.31a / 0.31b)
 
-**Goal**: cover what is **completely unreachable** today: antiderivatives needing dilogarithms
-or Meijer G (baseline: 122 cases whose reference answer contains `polylog`, 8.0% of the unsolved).
+**Goal**: cover what is **completely unreachable** today: antiderivatives needing
+dilogarithms or Meijer G (baseline: 122 cases whose reference answer contains `polylog`,
+8.0% of the unsolved).
 (Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.6, §6 P3.)
+
+**Scope split (2026-10-24 planning review)**
+
+The original 0.31.0 carried seven work streams (`polylog`/Li₂ heads, Li₂ reduction,
+Meijer G, `ProvedNonElementary`, the W6a branch fix and wiring, the Bronstein ch. 7–8
+algebraic tower, and the remaining `inverse-trig-hyper` decline surface) at roughly
+2–4× the size of 0.30.0. The last two estimates of this kind were high by 2–9×
+(multi-radical bases estimated at 222 cases → radical gained +33, the whole W4a wave
++46; inverse-function substitution estimated at 30–40 → +14, i.e. 22/146), and the
+122-case `polylog` attribution has not been re-audited since 2026-09-12. The wave is
+therefore split:
+
+- **0.31a (the declarable cut)**: `polylog`/Li₂ heads + numerical oracle evaluation,
+  the Li₂ reduction skeleton, and the `rubi-00401` branch fix followed by wiring
+  `single_radical.rs` and re-measuring the three W6a gates, plus two acceptance artefacts
+- **0.31b (deferred, SPEC first)**: Meijer G/Slater, `ProvedNonElementary`, the Bronstein
+  ch. 7–8 algebraic tower and the remaining `inverse-trig-hyper` decline surface →
+  targeted after 0.32.0
+- **Ordering relative to 0.32.0**: 0.31a must ship with no new timeouts and a wall clock
+  ≤ 489.5×1.10 ≈ 538.5 s; 0.32.0's performance wave is the precondition for widening the
+  non-elementary mechanisms in 0.31b
 
 **Functionality**
 
-| Item | Reference | oCAS landing spot |
-|---|---|---|
-| `polylog`/`Li₂` heads + oracle evaluators | the 0.27.3 pattern for `Ei`/`Si`/`Ci` | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
-| Li₂ reduction (logarithmic-rational integration) | Lewin's formulas; Raab/Baddoura | `integral/special.rs` or a new module |
-| Meijer G / Slater expansion (or the holonomic route) | SymPy `meijerg` | a new `ocas-calc::integral` module |
-| `ProvedNonElementary` available for the first time | Singer's structure theorems (engineered subset) | the third `Outcome` value |
+| Item | Cut | Reference | oCAS landing spot |
+|---|---|---|---|
+| `polylog`/`Li₂` heads + oracle evaluators | 0.31a | the 0.27.3 pattern for `Ei`/`Si`/`Ci` | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
+| Li₂ reduction skeleton (logarithmic-rational integration) | 0.31a | Lewin's formulas; Raab/Baddoura | `integral/special.rs` or a new module (spec `POLYLOG_SPEC_CN.md`) |
+| `rubi-00401` branch-sign fix + W6a wiring re-measurement | 0.31a | the 0.30.0 W6a experiment | `integral/single_radical.rs` + the wiring point in `integral/mod.rs` |
+| Meijer G / Slater expansion (or the holonomic route) | 0.31b | SymPy `meijerg` | a new `ocas-calc::integral` module (SPEC pending) |
+| `ProvedNonElementary` available for the first time | 0.31b | Singer's structure theorems (engineered subset) | the third `Outcome` value (SPEC pending) |
+| Bronstein ch. 7–8 algebraic tower (integral basis / algebraic Hermite / algebraic residues / generators in the tower) | 0.31b | Bronstein ch. 7–8; Trager | `tower/build.rs` + `integral/risch.rs` (SPEC pending) |
 
-**Performance targets**
+**Performance targets (quantified hard targets; baseline = the 0.30.0 final state)**
 
-- The reachable part of the 122 `polylog` cases unlocks
-- 100% numerical verification of the new heads in the oracle
+- solved **≥ 470 (+19 floor)**; `exp-log` bucket **≥ 10/83** (8/83 in 0.30.0)
+- `mismatches` 0, per-case regressions 0, certificate false positives 0, timeouts ≤ 14
+- wall clock **≤ 538.5 s = 489.5 × 1.10**; two same-tree re-runs recorded before release
+- no 0.31b item counts toward 0.31.0's solved commitment
 
 **Acceptance**
 
-- [ ] `polylog`/`Li₂` heads + numerical verification land
-- [ ] Reachable and still-declined case counts recorded separately
+- [ ] `polylog`/`Li₂` heads + numerical oracle evaluation land (100% per-case oracle pass)
+- [ ] Li₂ reduction skeleton lands: reachable and still-declined case counts recorded separately
+- [ ] (carried from 0.30.0) the `rubi-00401` branch-sign wrong answer is fixed and, after
+  wiring, the three W6a gates are re-measured (+29 solves / 0 regressions / timeouts flat
+  at 12 / wall clock within the gate); `rubi-00401` now has a pinned regression test
+  (added by this improvement in `ocas-tests/tests/correctness/integral_verify.rs`)
 - [ ] The certificate gate holds; `verify_mismatches` stays 0
-- [ ] (carried from 0.30.0) fix the `rubi-00401` **branch-sign wrong answer** before wiring
-  `single_radical.rs`, then re-measure the W6a gates; the Bronstein ch. 7–8 algebraic tower
-  (integral basis / algebraic Hermite / algebraic residues / algebraic generators in the tower);
-  and the remaining `inverse-trig-hyper` decline surface (0.30.0 achieved 22/146 against the
-  W5 line of ≥48/146)
+- [ ] 0.31b handover: one SPEC each for Meijer G, `ProvedNonElementary`, the Bronstein
+  ch. 7–8 algebraic tower and the remaining `inverse-trig-hyper` decline surface, then move
+  them to 0.32.0/0.33.0
 
 **Risks**
 
-- Meijer G needs a Mellin table and Slater expansion — substantial → Li₂ first, Meijer second
-- Branch/domain semantics are more intricate → formal certificates and real-valued semantics
-  annotated separately
+- **Wall-clock budget**: the 0.30.0 final state is 489.5 s against a 498.8 s gate; the
+  release-day re-run at 494.0 s left only 4.8 s of margin, and two same-tree re-runs
+  differed by 4.5 s (94% of that margin). Any 0.31a mechanism that adds a timeout or 10%
+  wall clock breaks the gate, so 0.31a ships in the order "heads and oracle first,
+  reduction second, wiring re-measured separately"
+- **The `rubi-00401` pinned-test gap**: the 0.30.0 W6a branch-sign wrong answer was
+  documented in prose only; this improvement adds a pinned regression test, and follow-up
+  branch wrong answers of the same family are pinned before they are fixed
+- **SPEC gap**: 0.31 currently has 0 dedicated SPECs — this improvement adds one skeleton
+  (`POLYLOG_SPEC_CN.md`); Meijer G, the Bronstein tower and the `inverse-trig-hyper`
+  decline surface still have none
+- Meijer G needs a Mellin table and Slater expansion — substantial → Li₂ first, Meijer
+  second (both in 0.31b)
+- Branch/domain semantics are more intricate → formal certificates and real-valued
+  semantics annotated separately (the deviation template in the POLYLOG SPEC)
 
 ---
 

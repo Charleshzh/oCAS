@@ -787,37 +787,79 @@ cover the inverse-function families.
   ch. 7–8 algebraic tower; the remaining `inverse-trig-hyper` decline surface; and 0.29.0's
   symbolic-constant tower with the `polylog`/`Li₂` reductions
 
-### 0.31.0 — The Non-Elementary Layer
+### 0.31.0 — The Non-Elementary Layer (split into 0.31a / 0.31b)
 
 **Goal**: cover what is **completely unreachable** today: antiderivatives that need
 dilogarithms or Meijer G (baseline: 122 cases whose reference answer contains `polylog`,
 8.0% of the unsolved set).
 (Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.6, §6 P3.)
 
-**Deliverables**:
+**Scope split (2026-10-24 planning review)**: the original 0.31.0 listed seven work
+streams at roughly 2–4× the size of 0.30.0, and the last two estimates of this kind were
+both high by 2–9× (multi-radical bases estimated at 222 cases → radical gained +33, with
+the whole W4a wave at +46; inverse-function substitution estimated at 30–40 → +14, i.e.
+22/146; the 122-case `polylog` attribution itself has not been re-audited since
+2026-09-12). It is therefore split into a **declarable cut 0.31a** and **deferred 0.31b**:
+0.31a commits only to the quantified hard targets, while 0.31b gets a SPEC first and moves
+to 0.32.0/0.33.0.
 
-- [ ] `polylog`/`Li₂` function heads + numerical oracle evaluators (add the head and its
+#### 0.31a — the declarable cut
+
+- [ ] `polylog`/`Li₂` function heads + numerical oracle evaluation (add the head and its
   numeric verification **before** the reduction — the pattern 0.27.3 already proved out for
-  `Ei`/`Si`/`Ci`/`Shi`/`Chi`/Fresnel)
-- [ ] Li₂ reduction (logarithmic-rational integration)
+  `Ei`/`Si`/`Ci`/`Shi`/`Chi`/Fresnel; spec skeleton: `POLYLOG_SPEC_CN.md`)
+- [ ] Li₂ reduction skeleton (logarithmic-rational integration; accepts only the fragment
+  it can self-certify, declines honestly outside it)
+- [ ] (carried from 0.30.0) fix the **branch-sign wrong answer** in `rubi-00401` *before*
+  wiring `single_radical.rs`, then re-measure the three W6a gates (+29 solves / 0
+  regressions / timeouts flat at 12 / wall clock within the gate)
+- [ ] (carried from 0.30.0) the part of the remaining `inverse-trig-hyper` decline surface
+  that is caused by `polylog` requirements (0.30.0 achieved 22/146 against the W5 line of
+  ≥48/146)
+- [ ] 0.31a acceptance artefacts: the pinned `rubi-00401` regression test (added by this
+  improvement in `ocas-tests/tests/correctness/integral_verify.rs`) plus the POLYLOG SPEC's
+  "deviations from this document" record
+
+#### 0.31b — deferred (SPEC first, scheduled after 0.32.0)
+
 - [ ] Meijer G / Slater expansion (or the holonomic/D-finite route) as the general
-  non-elementary mechanism
-- [ ] `ProvedNonElementary` becomes available for the first time (an engineered subset of
-  Singer's structure theorems)
-- [ ] (carried from 0.30.0) fix the **branch-sign wrong answer** in `rubi-00401` *before* wiring
-  `single_radical.rs`, then re-measure the three W6a gates (+29 solves / 0 regressions /
-  timeouts flat at 12 / wall clock within the gate)
-- [ ] (carried from 0.30.0) the Bronstein ch. 7–8 algebraic tower: **integral basis / algebraic
-  Hermite reduction / algebraic residues / algebraic generators in the tower**
-  (`tower/build.rs` still rejects non-integer powers)
-- [ ] (carried from 0.30.0) the remaining `inverse-trig-hyper` decline surface: negative merged
-  head powers, `polylog` requirements, symbolic powers and shapes outside the companion radical
-  (0.30.0 achieved 22/146 against the W5 line of ≥48/146)
+  non-elementary mechanism → SPEC first, target after 0.32.0
+- [ ] `ProvedNonElementary` available for the first time (an engineered subset of Singer's
+  structure theorems) → same SPEC decision point as Meijer G, target after 0.32.0
+- [ ] (carried from 0.30.0) the Bronstein ch. 7–8 algebraic tower: **integral basis /
+  algebraic Hermite reduction / algebraic residues / algebraic generators in the tower**
+  (`tower/build.rs` still rejects non-integer powers) → moves to 0.32.0/0.33.0
+- [ ] (carried from 0.30.0) the remaining `inverse-trig-hyper` decline surface outside the
+  polylog-driven part: negative merged head powers, symbolic powers and shapes beyond the
+  companion radical → moves to 0.32.0/0.33.0
+- 0.31-specific SPEC status: this improvement adds one skeleton, `POLYLOG_SPEC_CN.md`;
+  every 0.31b item still has 0 SPECs (Meijer G and the Bronstein tower each need one)
 
-**Success Criteria**:
+**Ordering relative to 0.32.0**: 0.31a ships only if it adds no timeouts and keeps the
+wall clock at ≤ 0.30.0's baseline × 1.10; 0.32.0's modular algorithms / parallel Risch /
+lazy series are the performance precondition for widening any non-elementary mechanism
+later. Anything that breaks the gate rolls into 0.31b/0.32.0 instead of being forced
+through with a larger budget (the 0.29.0 budget 400→1200 experiment and 0.30.0's W6a are
+the precedents).
 
-- The reachable part of the 122 `polylog` cases unlocks; the rest of the `exp-log` bucket improves
-- The new function heads verify numerically in the oracle; the certificate gate holds
+**Success Criteria (quantified hard targets; baseline = the 0.30.0 final state)**:
+
+| Metric | 0.30.0 final | 0.31.0 gate | Reading |
+|---|---|---|---|
+| solved | 451 (23.84%) | **≥ 470 (+19 floor)** | discounted by the historical 15–30% realisation rate; no "reachable part" wording |
+| `exp-log` bucket | 8/83 | **≥ 10/83** | the bucket ceiling from the 0.29.0 attribution stands |
+| `mismatches` | 0 | **0** | hard gate |
+| per-case regressions | 0 | **0** | hard gate |
+| timeouts | 12 | **≤ 14** | W6a briefly hit 14, so 14 is a ceiling, not a target |
+| certificate false positives | 0 | **0** | hard gate |
+| wall clock | 489.5 s (gate 498.8 = the 0.28.0 baseline 433.7 × 1.15) | **≤ 538.5 s = 489.5 × 1.10** | two same-tree re-runs must be recorded before release |
+
+**Wall-clock and variance policy**: the 0.30.0 wall clock was 489.5 s, and 494.0 s on the
+release-day re-run (against a 498.8 s gate, leaving only 4.8 s of margin); the two
+same-tree re-runs differed by 4.5 s, which already consumes 94% of that margin. The 0.31.0
+gate is base × 1.10 ≤ **538.5 s**, and release requires recording two same-tree re-runs;
+if they differ by more than 8 s (~1.6%), the gate is read against the slower one. No 0.31b
+item counts toward 0.31.0's solved commitment.
 
 ### 0.32.0 — Complexity and Performance (treating complexity as an algorithmic problem)
 
@@ -1028,7 +1070,7 @@ After 1.0, development will focus on:
 | 0.28.0 | Beta | Month 53 | Integration-mechanism correctness foundation **shipped** (symbolic certificates + three-valued outcome + expression-level cycle detection + regular towers + residue resolution; 1892: 371 solved, mismatches 0, timeouts flat at 12, wall clock −6.0%, 0 regressions; `certified_rate = 28.8%` short of the target, recorded honestly) |
 | 0.29.0 | Beta | Month 55 | Transcendental Risch completion **delivered** (full rational-RDE pipeline + Rothstein–Trager log part (rational roots) + coupled-system infrastructure (unwired) + tower proptests; 1892: 378 solved (+7), 0 regressions, timeouts flat at 12, wall clock within gate; `certified_rate` 29.1% missed the 40% aspiration, recorded honestly) |
 | 0.30.0 | Beta | Month 57 | Algebraic extensions and inverse-function substitution **delivered** (RT algebraic constant roots [quadratic/biquadratic-quartic factors] + certificate radical layer + multi-radical-base reduction [MR-L/G/R/I/P] + inverse-function engine [11 heads × affine × integer kernel powers × polynomial weights] + `single_radical.rs` as an unwired asset; 1892: 451 solved (+73), 0 regressions, timeouts flat at 12, wall clock 489.5 s (inside the 0.28.0 baseline ×1.15 gate), `certified_rate` **29.1% → 48.8%**; radical bucket 51→84, inverse-trig-hyper 8→22 (≥48/146 not met), the ch. 7–8 algebraic tower not done, and the W4b/c and W6a negative-return experiments reverted — all recorded honestly) |
-| 0.31.0 | Beta | Month 59 | Non-elementary layer (`polylog`/`Li₂` heads + Li₂/Meijer G reductions + `ProvedNonElementary`) |
+| 0.31.0 | Beta | Month 59 | Non-elementary layer, **declarable cut 0.31a** (`polylog`/`Li₂` heads + numerical oracle + Li₂ reduction skeleton + the `rubi-00401` branch fix with `single_radical.rs` wiring re-measured against the three W6a gates; quantified gates: solved ≥470, `exp-log` ≥10/83, 0 regressions, timeouts ≤14, wall clock ≤538.5 s = 489.5×1.10); **0.31b deferred**: Meijer G/Slater, `ProvedNonElementary`, the Bronstein ch. 7–8 algebraic tower and the remaining `inverse-trig-hyper` decline surface → SPEC first, moved to 0.32.0/0.33.0 (after the 0.32.0 performance wave) |
 | 0.32.0 | Beta | Month 61 | Complexity and performance (modular algorithms + parallel Risch + lazy series) |
 | 0.33.0 | Beta | Month 63 | Gröbner performance at scale (katsura-6 < 1 s, cyclic-7 within 10× of msolve) (P1; formerly 0.28.0) |
 | 0.34.0 | Beta | Month 65 | Code generation extension (LLVM/inkwell JIT backend) (P1; formerly 0.29.0) |

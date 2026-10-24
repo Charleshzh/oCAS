@@ -7,9 +7,9 @@
 //! use ocas::prelude::*;
 //! ```
 //!
-//! Backends (GMP, MPFR, FLINT, LLVM, Python, GPL) are opt-in via feature flags
-//! to keep the default build portable, including on Windows MSVC where GMP is
-//! not readily available.
+//! Backends (GMP, MPFR, FLINT) and the optional JIT/SIMD/e-graph extensions
+//! are opt-in via feature flags to keep the default build portable, including
+//! on Windows MSVC where GMP is not readily available.
 
 #![warn(missing_docs)]
 
@@ -50,8 +50,9 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 ///   [`EvaluationError`], [`EvalTree`], [`Instr`], [`Instruction`], [`Slot`]
 /// - **Runtime**: [`Arena`], [`OcasError`], [`Result`]
 ///
-/// Optional backends (GMP, MPFR, FLINT, LLVM, etc.) are enabled via the
-/// corresponding feature flags on this crate.
+/// Optional backends and extensions (GMP, MPFR, FLINT, `egg`, JIT, SIMD,
+/// fast polynomial evaluation, mimalloc) are enabled via the corresponding
+/// feature flags on this crate.
 pub mod prelude {
     pub use ocas_atom::tensor::{
         Contracted, IndexPosition, IndexSlot, Symmetry, Tensor, TensorProduct, contract,

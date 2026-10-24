@@ -1412,40 +1412,67 @@ solved 370 → **371**、verified 343/371、`verify_mismatches = 0`、超时 12�
 
 ---
 
-### 0.31.0 — 非初等层
+### 0.31.0 — 非初等层（拆为 0.31a / 0.31b）
 
 **目标**：补上今天**完全不可达**的一类：需要二重对数/Meijer G 的原函数
 （基线：122 例参考答案含 `polylog`，占未解 8.0%）。
 （依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3.6、§6 P3）
 
+**范围拆分（2026-10-24 规划复核）**
+
+原 0.31.0 的 7 条工作流（`polylog`/Li₂ 头、Li₂ 归约、Meijer G、`ProvedNonElementary`、
+W6a 分支修复 + 接线、Bronstein ch. 7–8 代数塔、`inverse-trig-hyper` 剩余拒绝面）
+量级约为 0.30.0 的 2–4 倍；历史同类估算两次高估 2–9 倍（多根式基估 222 例 →
+radical 实得 +33、W4a 整波 +46；反函数代换估 30–40 例 → 实得 +14，即 22/146），
+且「122 例 `polylog`」归因自 2026-09-12 后未再审计。故拆为：
+
+- **0.31a（可宣布切片）**：`polylog`/Li₂ 函数头 + 数值 oracle 核验、Li₂ 归约骨架、
+  `rubi-00401` 分支修复后 `single_radical.rs` 接线复测 W6a 三门，外加两项验收物
+- **0.31b（后移，先写 SPEC）**：Meijer G/Slater、`ProvedNonElementary`、
+  Bronstein ch. 7–8 代数塔、`inverse-trig-hyper` 剩余拒绝面 → 目标 0.32.0 之后
+- **与 0.32.0 的顺序**：0.31a 必须在不新增超时、墙钟 ≤ 489.5×1.10 ≈ 538.5 s 内交付；
+  0.32.0 的性能波是 0.31b 扩大非初等机制的前置条件
+
 **功能**
 
-| 条目 | 参考 | oCAS 落地位置 |
-|---|---|---|
-| `polylog`/`Li₂` 函数头 + oracle 数值核验 | 0.27.3 对 `Ei`/`Si`/`Ci` 的落地模式 | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
-| Li₂ 归约（对数-有理积分） | Lewin 公式；Raab/Baddoura | `integral/special.rs` 或新模块 |
-| Meijer G / Slater 展开（或 holonomic 路线） | SymPy `meijerg` | `ocas-calc::integral` 新模块 |
-| `ProvedNonElementary` 首次可用 | Singer 结构定理（工程化子集） | `Outcome` 第三值 |
+| 条目 | 归属 | 参考 | oCAS 落地位置 |
+|---|---|---|---|
+| `polylog`/`Li₂` 函数头 + oracle 数值核验 | 0.31a | 0.27.3 对 `Ei`/`Si`/`Ci` 的落地模式 | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
+| Li₂ 归约骨架（对数-有理积分） | 0.31a | Lewin 公式；Raab/Baddoura | `integral/special.rs` 或新模块（规格 `POLYLOG_SPEC_CN.md`） |
+| `rubi-00401` 分支符号修复 + W6a 接线复测 | 0.31a | 0.30.0 W6a 试验 | `integral/single_radical.rs` + `integral/mod.rs` 接线点 |
+| Meijer G / Slater 展开（或 holonomic 路线） | 0.31b | SymPy `meijerg` | `ocas-calc::integral` 新模块（SPEC 待写） |
+| `ProvedNonElementary` 首次可用 | 0.31b | Singer 结构定理（工程化子集） | `Outcome` 第三值（SPEC 待写） |
+| Bronstein ch. 7–8 代数塔（积分基 / 代数 Hermite / 代数留数 / 生成元进塔） | 0.31b | Bronstein ch. 7–8；Trager | `tower/build.rs` + `integral/risch.rs`（SPEC 待写） |
 
-**性能指标**
+**性能指标（量化硬指标；基线 = 0.30.0 终态）**
 
-- 122 例 `polylog` 题可及部分解锁
-- 新增函数头在 oracle 中数值核验通过率 100%
+- solved **≥ 470（+19 下界）**；`exp-log` 桶 **≥ 10/83**（0.30.0 为 8/83）
+- `mismatches` 0、逐题回归 0、证书假阳性 0、超时 ≤ 14
+- 墙钟 **≤ 538.5 s = 489.5 × 1.10**；发布前记录两次同树复跑方差
+- 0.31b 全部条目不进入 0.31.0 的 solved 承诺
 
 **验收**
 
-- [ ] `polylog`/`Li₂` 头 + 数值核验落地
-- [ ] 可及题数与被拒题数分别入档
+- [ ] `polylog`/`Li₂` 头 + 数值 oracle 核验落地（oracle 逐例通过率 100%）
+- [ ] Li₂ 归约骨架落地：可及题数与被拒题数分别入档
+- [ ] （0.30.0 承接）`rubi-00401` 分支符号错案修复，接线后复测 W6a 三门
+  （+29 解 / 0 回归 / 超时 12 持平 / 墙钟 ≤ 门）；`rubi-00401`
+  已有 pinned 回归测试（本次改进加入 `ocas-tests/tests/correctness/integral_verify.rs`）
 - [ ] 证书门保持；`verify_mismatches` 保持 0
-- [ ] （0.30.0 承接）接线 `single_radical.rs` 前先修 `rubi-00401` 的**分支符号错案**
-  并复测 W6a 三门；Bronstein ch. 7–8 代数塔（积分基 / 代数 Hermite / 代数留数 /
-  代数生成元进塔）；`inverse-trig-hyper` 剩余拒绝面（0.30.0 实得 22/146，
-  W5 口径 ≥48/146 未达）
+- [ ] 0.31b 移交：Meijer G、`ProvedNonElementary`、Bronstein ch. 7–8 代数塔、
+  `inverse-trig-hyper` 剩余拒绝面各写 1 份 SPEC 并移入 0.32.0/0.33.0
 
 **风险**
 
-- Meijer G 的 Mellin 表与 Slater 展开工作量大 → 先 Li₂ 后 Meijer
-- 分支/定义域语义更复杂 → 形式证书与实值语义分别标注
+- **墙钟预算**：0.30.0 终态 489.5 s，门 498.8 s；发布日复跑 494.0 s 后余量仅 4.8 s，
+  两次同树复跑差 4.5 s（占余量 94%）——0.31a 任一机制引入超时或 +10% 墙钟即触门，
+  因此 0.31a 按「先头与 oracle、后归约、接线单独复测」的顺序交付
+- **`rubi-00401` 无 pinned 测试的缺口**：0.30.0 W6a 的分支符号错案此前只有散文引用；
+  本次改进已加入 pinned 回归测试，后续同族分支错案按「先 pin 再修」处理
+- **SPEC 缺口**：0.31 当前 0 份专属 SPEC——本次改进新增 `POLYLOG_SPEC_CN.md` 骨架 1 份；
+  Meijer G、Bronstein 代数塔、`inverse-trig-hyper` 拒绝面仍为 0 份
+- Meijer G 的 Mellin 表与 Slater 展开工作量大 → 先 Li₂ 后 Meijer（均属 0.31b）
+- 分支/定义域语义更复杂 → 形式证书与实值语义分别标注（POLYLOG SPEC 的偏差模板）
 
 ---
 

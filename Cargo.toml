@@ -46,7 +46,6 @@ num-rational = "0.4"
 num-traits = "0.2"
 num-integer = "0.1"
 num-complex = "0.4"
-inkwell = "0.5"
 rayon = "1.10"
 hashbrown = "0.17"
 ahash = "0.8"
@@ -76,7 +75,9 @@ rand_xoshiro = "0.7"
 [profile.release]
 codegen-units = 1
 lto = true
-panic = "abort"
+# Do NOT set `panic = "abort"` here: the C and Python bindings rely on
+# `catch_unwind` at the FFI boundary (ocas-c, ocas-py) to convert Rust panics
+# into error returns instead of aborting the host process.
 
 [profile.dev.package."*"]
 opt-level = 3

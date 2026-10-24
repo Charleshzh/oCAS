@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.30.0] - 2026-10-10
+## [0.30.0] - 2026-10-24
 
 **代数扩张（RT 代数数根 + 多根式基归约）与反函数代换 / Algebraic extensions (RT algebraic roots + multi-radical reduction) and inverse-function substitution**
 
@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   / The inverse-function substitution engine: 11 heads (including the five reciprocal ones), affine arguments, integer kernel powers, polynomial weights and companion-radical absorption, with a whitelist back-substitution and three final checks.
 
 ### Fixed / 修复
+
+- **`Arena::reset` 改为 `&mut self`**（`ocas-core`，安全修复，issue #44）：此前 `allocate_with(&self) -> &mut T` 与 `reset(&self)` 可在安全代码中组合——reset 后继续使用旧引用会构造别名 `&mut` / use-after-free（Miri 判 UB）。现在 `reset` 取独占借用，旧用法在编译期被拒绝，新增 `compile_fail` doctest 守护。
+  / **`Arena::reset` now takes `&mut self`** (`ocas-core`, security fix, issue #44): combining `allocate_with(&self) -> &mut T` with `reset(&self)` let safe code keep using old references after a reset (aliased `&mut` / use-after-free, UB per Miri); the exclusive borrow rejects the old pattern at compile time, guarded by a `compile_fail` doctest.
+
+- **二元因式分解静默错答**（0.30.0 验证期由新增 proptest 抓到并修复）：`SparseMultivariatePolynomial<IntegerDomain, Lex>::factor()` 的二元路径可能返回**无法重构输入**的因子列表——最小例 `y − x²`（不可约）被返回为 `[(-1,1), (x²−y,1), (x,2)]`，乘回是 4 次多项式。根因有二：`multivariate_gcd::bivariate_gcd` 的退化捷径（`y`-度界为 0）只取 `y⁰` 项而非 `y`-内容，给出不整除输入的假 GCD；且 `bivariate_factor_z`（不同于 EEZ 路径）缺少「不重构就回退 `[(f,1)]`」的安全网。现两处均已修复（ℤ 与 𝔽_p 的 GCD 捷径改用 `y`-内容；两条二元因式分解路径加乘积重构安全网），并新增确定性最小复现与随机稀疏 round-trip proptest（均不再 ignore）。
+  / **Bivariate factorization silent wrong answer** (found by the new proptest and fixed during 0.30.0 verification): the ℤ[x,y] path could return a factor list that does not reconstruct the input — minimal case `y − x²` (irreducible) came back as `[(-1,1), (x²−y,1), (x,2)]`, whose product has degree 4. Two causes: the degenerate `bivariate_gcd` shortcut used the `y⁰` terms instead of the `y`-content (a bogus GCD not dividing the input), and `bivariate_factor_z` lacked the EEZ path's "fall back to `[(f,1)]` when the factorization does not reconstruct" safety net. Both are fixed (content-based shortcut for ℤ and 𝔽_p; reconstruction nets on both bivariate factor paths), with a deterministic minimal pin and the random sparse round-trip proptest enabled.
 
 - **`rubi-01646` 回归**（0.30.0 W1–W3 自引入、运行中捕获）：代数根路径会把 parts 内层残项升级为含 `atan` 的完整答案，分部续算随即要积分这些超越项并烧尽链预算——0.29.0 E2 机制在更强发射面上的复现。`rational.rs` 现于 `chain::parts_active()` 作用域内抑制该路径。
   / The in-tree algebraic-roots path regressed `rubi-01646` by shape-changing a parts-scope residue; the path is now suppressed inside `chain::parts_active()`.
@@ -54,6 +60,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **链序**：新增 `multi_radical` 阶段（`binomial` 之后、`exp_log` 之前）；`inverse_trig` 分派序末新增 M4；`sqrt_norm_positive` 等共享门收紧。`integral/single_radical.rs` 以未接线资产形式入库（见下）。
   / Chain order: a new `multi_radical` stage and the M4 dispatch arm; shared gates tightened. `integral/single_radical.rs` ships unwired (below).
+
+- **release profile 默认 unwind**：移除 `panic = "abort"`，使 `ocas-c` 与 `ocas-py` 在 FFI 边界的 `catch_unwind` 在 release 构建中生效——panic 转为错误返回，而不是中止宿主进程。
+  / Release profile defaults to unwind: `panic = "abort"` is removed so that `catch_unwind` at the `ocas-c` / `ocas-py` FFI boundary works in release builds — a panic becomes an error return instead of aborting the host process.
+
+- **清理 facade 虚壳 feature 与死依赖**：移除 `ocas` 的 `python`/`gpl` feature 及对应可选依赖（均未接线；`ocas-py` 仅为 cdylib），移除未使用的 `inkwell` workspace 依赖；`ocas-gpl` 保留为独立占位 crate。
+  / Removed facade placeholder features and dead dependencies: the `python`/`gpl` features and their optional dependencies on `ocas` (never wired; `ocas-py` is cdylib-only) and the unused `inkwell` workspace dependency; `ocas-gpl` remains an independent placeholder crate.
 
 ### 实测（1892 题库，与 0.29.0 基线逐题对照）
 

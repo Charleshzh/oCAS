@@ -9,16 +9,20 @@
 > **Languages / 语言**: [English](README.md) · [中文](docs/README_CN.md)
 
 **oCAS** is a modern, high-performance computer algebra system written in Rust.
-It is designed to match or exceed the core performance of Symbolica and
-SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
+Its performance target is to match or exceed the core performance of Symbolica
+and SageMath while remaining free and open under the **LGPL-3.0-or-later**
+license. This is a target, not a measured current result: the gap against the
+reference systems is tracked in
+[GAP_ANALYSIS_EN.md](docs/planning/GAP_ANALYSIS_EN.md) and
+[BENCHMARK_RESULTS_CN.md](docs/planning/BENCHMARK_RESULTS_CN.md) (Chinese).
 
-> **Status**: Beta (0.23.0). The full symbolic engine, polynomial algebra,
+> **Status**: Beta (0.30.0). The full symbolic engine, polynomial algebra,
 > equation solvers, ODE solvers (first/second-order + systems + series +
 > Laplace IVP), JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. `pip install ocas` is available on PyPI.
 > See the
-> [documentation](https://charleshzh.github.io/ocas/latest/en/)
-> ([中文](https://charleshzh.github.io/ocas/latest/zh/)),
+> [documentation](https://charleshzh.github.io/oCAS/latest/en/)
+> ([中文](https://charleshzh.github.io/oCAS/latest/zh/)),
 > [Rust API docs](https://docs.rs/ocas), and
 > [roadmap](docs/planning/ROADMAP_EN.md).
 >
@@ -39,7 +43,7 @@ SageMath while remaining free and open under the **LGPL-3.0-or-later** license.
 | C/C++ API | ✅ cbindgen | ✅ | ⚠️ Limited |
 | Rust API | ✅ Native | ✅ | ❌ |
 | High-performance backend | GMP / FLINT 3 / Arb / LinBox | Self-hosted + optional | FLINT / Singular / PARI |
-| JIT code generation | Cranelift / LLVM | Custom | Limited |
+| JIT code generation | Cranelift | Custom | Limited |
 | E-graph simplification | ✅ `egg` (optional) | ❌ | Partial |
 
 oCAS targets researchers, engineers, and developers who need a fast,
@@ -76,7 +80,7 @@ embeddable, and license-clean symbolic computation engine.
   arithmetic, adaptive Monte Carlo integration (Vegas).
 - **Automatic differentiation**: forward-mode via hyper-dual numbers.
 - **JIT compilation**: compile repeated expressions to native code with
-  Cranelift or LLVM.
+  Cranelift (an LLVM backend is planned for 0.34).
 - **Multi-language bindings**: Rust, Python, and C/C++ from a single codebase.
 - **Optimized integer arithmetic**: SOO (small-object optimization) stores
   values fitting in `i64` on the stack with GMP fallback for large values.
@@ -119,7 +123,7 @@ See [ARCHITECTURE_EN.md](docs/planning/ARCHITECTURE_EN.md) for the full design.
 
 ```toml
 [dependencies]
-ocas = "0.23"
+ocas = "0.30"
 ```
 
 ```rust
@@ -182,17 +186,20 @@ cargo test --workspace --exclude ocas-py
 
 ## Performance
 
-oCAS aims for competitive performance with Symbolica and SageMath on core
-workloads:
+Matching Symbolica and SageMath on core workloads is a **target**, not a
+measured current result. oCAS builds on competitive components:
 
 - Integer and rational arithmetic via **GMP**.
 - Polynomial multiplication, GCD, and factorization via **FLINT 3**.
 - Exact linear algebra via **faer** (default) and **LinBox** (optional).
 - JIT evaluation via **Cranelift**.
 
-Benchmarks are under active development. See
-[ocas-tests/benches](ocas-tests/benches). For the gap analysis against
-Symbolica, SageMath, and SymPy, see [GAP_ANALYSIS_EN.md](docs/planning/GAP_ANALYSIS_EN.md).
+Benchmarks are under active development; benchmark code lives in
+[ocas-tests/benches](ocas-tests/benches). The measured gap against Symbolica,
+SageMath, and SymPy and its attribution are documented in
+[GAP_ANALYSIS_EN.md](docs/planning/GAP_ANALYSIS_EN.md) (English) and
+[BENCHMARK_RESULTS_CN.md](docs/planning/BENCHMARK_RESULTS_CN.md) (Chinese).
+Do not quote a speed-up without a fresh benchmark run.
 
 ---
 

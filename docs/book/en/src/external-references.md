@@ -10,6 +10,6 @@
   releases, feature flags, and dependency graph.
 - [GitHub repository](https://github.com/charleshzh/ocas) — source code,
   issue tracker, and contribution guide.
-- [Documentation site](https://charleshzh.github.io/ocas/latest/) — this
+- [Documentation site](https://charleshzh.github.io/oCAS/latest/) — this
   book, served from GitHub Pages. Versioned snapshots live under
-  `/ocas/v<version>/` for each release tag.
+  `/oCAS/v<version>/` for each release tag.

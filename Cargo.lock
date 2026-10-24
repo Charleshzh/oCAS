@@ -1010,10 +1010,8 @@ dependencies = [
  "ocas-core",
  "ocas-domain",
  "ocas-eval",
- "ocas-gpl",
  "ocas-parse",
  "ocas-poly",
- "ocas-py",
  "ocas-rewrite",
 ]
 

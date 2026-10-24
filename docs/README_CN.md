@@ -8,16 +8,18 @@
 
 > **语言**: [English](../README.md) · [中文](README_CN.md)
 
-**oCAS** 是一个使用 Rust 编写的现代化高性能计算机代数系统。它的目标是在核心
-性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later** 许可证下
-保持自由与开放。
+**oCAS** 是一个使用 Rust 编写的现代化高性能计算机代数系统。它的性能目标是
+在核心性能上达到或超越 Symbolica 与 SageMath，同时在 **LGPL-3.0-or-later**
+许可证下保持自由与开放。这只是目标而非当前实测结论；与参考系统的实测差距
+记录在 [GAP_ANALYSIS_CN.md](planning/GAP_ANALYSIS_CN.md) 与
+[BENCHMARK_RESULTS_CN.md](planning/BENCHMARK_RESULTS_CN.md)。
 
-> **状态**：Beta (0.23.0)。完整的符号引擎、多项式代数、方程求解器、ODE
+> **状态**：Beta (0.30.0)。完整的符号引擎、多项式代数、方程求解器、ODE
 > 求解器（一阶/二阶 + 系统 + 级数 + Laplace 初值问题）、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。`pip install ocas`
 > 已在 PyPI 上线。详见
-> [文档](https://charleshzh.github.io/ocas/latest/zh/)
->（[English](https://charleshzh.github.io/ocas/latest/en/)）、
+> [文档](https://charleshzh.github.io/oCAS/latest/zh/)
+>（[English](https://charleshzh.github.io/oCAS/latest/en/)）、
 > [Rust API 文档](https://docs.rs/ocas)与
 > [路线图](planning/ROADMAP_CN.md)。
 >
@@ -37,7 +39,7 @@
 | C/C++ API | ✅ cbindgen | ✅ | ⚠️ 有限 |
 | Rust API | ✅ 原生 | ✅ | ❌ |
 | 高性能后端 | GMP / FLINT 3 / Arb / LinBox | 自托管 + 可选 | FLINT / Singular / PARI |
-| JIT 代码生成 | Cranelift / LLVM | 自研 | 有限 |
+| JIT 代码生成 | Cranelift | 自研 | 有限 |
 | E-图化简 | ✅ `egg`（可选） | ❌ | 部分 |
 
 oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研究人员、工程师与
@@ -61,7 +63,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 - **方程求解**：线性方程组、多项式方程组、代数数。
 - **数值求值**：任意精度浮点、区间算术、自适应蒙特卡洛积分（Vegas）。
 - **自动微分**：通过超对偶数的前向模式。
-- **JIT 编译**：将重复表达式编译为 Cranelift 或 LLVM 原生代码。
+- **JIT 编译**：将重复表达式编译为 Cranelift 原生代码（LLVM 后端规划在 0.34）。
 - **多语言绑定**：基于同一代码库提供 Rust、Python 与 C/C++ 接口。
 - **优化整数算术**：SOO（小对象优化）将 fit i64 的值栈分配，大值回退 GMP。
 - **模方法多变量 GCD**：通过模素数约化与重构计算 $\mathbb{Z}[x,y]$ 上的 GCD。
@@ -102,7 +104,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 
 ```toml
 [dependencies]
-ocas = "0.23"
+ocas = "0.30"
 ```
 
 ```rust
@@ -165,15 +167,19 @@ cargo test --workspace --exclude ocas-py
 
 ## 性能
 
-oCAS 致力于在核心工作负载上与 Symbolica 和 SageMath 竞争性能：
+与 Symbolica、SageMath 在核心工作负载上持平是**目标**，而不是当前的实测结论。
+oCAS 主要建立在以下有竞争力的组件之上：
 
 - 整数与有理数运算通过 **GMP**。
 - 多项式乘法、最大公因式与因式分解通过 **FLINT 3**。
 - 精确线性代数默认使用 **faer**，可选 **LinBox**。
 - JIT 求值通过 **Cranelift**。
 
-基准测试正在积极开发中，参见 [ocas-tests/benches](../ocas-tests/benches)。与
-Symbolica、SageMath、SymPy 的差距分析见 [GAP_ANALYSIS_CN.md](planning/GAP_ANALYSIS_CN.md)。
+基准测试正在积极开发中，基准代码位于 [ocas-tests/benches](../ocas-tests/benches)。
+与 Symbolica、SageMath、SymPy 的实测差距与失败归因记录在
+[GAP_ANALYSIS_CN.md](planning/GAP_ANALYSIS_CN.md) 与
+[BENCHMARK_RESULTS_CN.md](planning/BENCHMARK_RESULTS_CN.md)。没有新的基准结果时，
+不应引用任何加速比声明。
 
 ---
 

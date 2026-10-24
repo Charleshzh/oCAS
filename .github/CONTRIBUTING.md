@@ -39,10 +39,12 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    ```bash
    cargo build
    ```
-5. Run tests:
+5. Run the fast quality gate (see [Quality Gates](#quality-gates--质量门禁) below):
    ```bash
-   cargo test --workspace --exclude ocas-py
+   cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
    ```
+
+The layered-architecture rules are documented in `docs/planning/ARCHITECTURE_EN.md` (Chinese: `docs/planning/ARCHITECTURE_CN.md`).
 
 **中文**
 
@@ -59,10 +61,58 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    ```bash
    cargo build
    ```
-5. 运行测试：
+5. 运行 fast 质量门禁（见下文[质量门禁](#quality-gates--质量门禁)）：
    ```bash
-   cargo test --workspace
+   cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
    ```
+
+分层架构规则见 `docs/planning/ARCHITECTURE_CN.md`（英文：`docs/planning/ARCHITECTURE_EN.md`）。
+
+---
+
+## Quality Gates / 质量门禁
+
+**English**
+
+Two tiers: the **fast** gate for every change, the **full** gate before opening a pull request (CI parity).
+
+Fast gate:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
+cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
+```
+
+Full gate (adds the cross-system correctness suite in `ocas-tests`):
+
+```bash
+cargo test --workspace --exclude ocas-py --features egg
+cargo deny check
+```
+
+Tests marked `#[ignore]` (slow property tests, performance acceptance tests, work-in-progress fixes) are outside both gates; the scheduled long-test workflow (`.github/workflows/full-tests.yml`) runs them, and they can be invoked with `cargo test ... -- --ignored` (add `--release` for the performance acceptance tests).
+
+**中文**
+
+分为两级：每次改动运行 **fast（快速）** 门禁，提交 Pull Request 前运行 **full（完整）** 门禁（与 CI 一致）。
+
+Fast 门禁：
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
+cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
+```
+
+Full 门禁（额外包含 `ocas-tests` 中的跨系统正确性测试套件）：
+
+```bash
+cargo test --workspace --exclude ocas-py --features egg
+cargo deny check
+```
+
+标记为 `#[ignore]` 的测试（慢速属性测试、性能验收测试、进行中的修复）不在两级门禁内；它们由定时长测工作流（`.github/workflows/full-tests.yml`）运行，可通过 `cargo test ... -- --ignored` 显式执行（性能验收测试加 `--release`）。
 
 ---
 
@@ -75,11 +125,11 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    git checkout -b feature/my-feature
    ```
 2. Make your changes.
-3. Ensure tests pass and code is formatted:
+3. Run the quality gates described above; at minimum the fast gate must pass:
    ```bash
-   cargo fmt --check
-   cargo clippy --workspace -- -D warnings
-   cargo test --workspace --exclude ocas-py
+   cargo fmt --all -- --check
+   cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
+   cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
    ```
 4. Commit with a clear message:
    ```
@@ -94,11 +144,11 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
    git checkout -b feature/my-feature
    ```
 2. 进行修改。
-3. 确保测试通过且代码已格式化：
+3. 运行上述质量门禁；至少 fast 门禁必须通过：
    ```bash
-   cargo fmt --check
-   cargo clippy --workspace -- -D warnings
-   cargo test --workspace --exclude ocas-py
+   cargo fmt --all -- --check
+   cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
+   cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
    ```
 4. 使用清晰的提交信息：
    ```
@@ -135,14 +185,14 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
 - Add unit tests for new functions.
 - Add property tests for algebraic invariants using `proptest` where appropriate.
 - Include regression tests in `ocas-tests` for comparisons with SymPy/SageMath.
-- Run the full test suite before submitting a PR.
+- Run the full quality gate before submitting a PR.
 
 **中文**
 
 - 为新函数添加单元测试。
 - 在适当时使用 `proptest` 为代数不变量添加属性测试。
 - 在 `ocas-tests` 中包含与 SymPy/SageMath 对比的回归测试。
-- 提交 PR 前运行完整测试套件。
+- 提交 PR 前运行 full 质量门禁。
 
 ---
 
@@ -151,14 +201,44 @@ By contributing to oCAS, you agree that your contributions will be licensed unde
 **English**
 
 - Do not introduce GPL-only dependencies into the default build.
-- GPL-compatible backends must be placed in the `ocas-gpl` crate and guarded by the `gpl` feature.
+- `ocas-gpl` is an independent placeholder crate for future GPL-3.0-or-later backends. The top-level `ocas` facade does not expose a `gpl` feature, so a GPL backend has to be opted into by depending on `ocas-gpl` directly.
 - When adding a new dependency, run `cargo-deny` to verify license compatibility.
 
 **中文**
 
 - 不要向默认构建引入 GPL-only 依赖。
-- GPL 兼容后端必须放在 `ocas-gpl` crate 中，并通过 `gpl` feature 保护。
+- `ocas-gpl` 是用于未来 GPL-3.0-or-later 后端的独立占位 crate。顶层 `ocas` facade 不再暴露 `gpl` feature，因此 GPL 后端必须通过直接依赖 `ocas-gpl` 来显式启用。
 - 添加新依赖时，运行 `cargo-deny` 验证许可证兼容性。
+
+---
+
+## Release Process / 发布流程
+
+**English**
+
+Releases are automated; the root `vX.Y.Z` tag is the release switch.
+
+1. After `main` moves, release-plz (`.github/workflows/release-plz.yml`) opens (and later updates) a release PR that bumps `workspace.package.version`. When that PR is merged, the workflow waits for CI to be green on the merge commit, publishes the crates, and creates the root `vX.Y.Z` tag. Tag creation requires the `RELEASE_PLZ_TOKEN` secret (a PAT with `contents: write`); a tag pushed with the default `GITHUB_TOKEN` does not trigger downstream workflows.
+2. The tag push triggers `release.yml` (validates the tag against the workspace version and attaches the C artifact to the project-level GitHub Release), `wheels.yml` (builds wheels + sdist with maturin and publishes to PyPI; pre-release tags go to TestPyPI), and `docs.yml` (rebuilds the bilingual mdBook and publishes `/latest/{en,zh}/` plus a frozen `/v<version>/{en,zh}/` snapshot).
+3. Manual fallback for a commit that is on `main` and green in CI:
+   ```bash
+   git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+4. Keep `Cargo.toml`, `CHANGELOG.md`, the READMEs, and the book version tables in sync; `consistency.yml` enforces this on every push and pull request.
+
+**中文**
+
+发布已自动化；顶层 `vX.Y.Z` 标签就是发布开关。
+
+1. `main` 前进后，release-plz（`.github/workflows/release-plz.yml`）创建（并随后更新）一个提升 `workspace.package.version` 的发版 PR。该 PR 合并后，workflow 等待合并提交的 CI 变绿，发布各 crate，并创建顶层 `vX.Y.Z` 标签。打标签需要 `RELEASE_PLZ_TOKEN` secret（具备 `contents: write` 权限的 PAT）；用默认 `GITHUB_TOKEN` 推送的标签不会触发下游 workflow。
+2. 标签推送触发 `release.yml`（校验标签与工作区版本一致，并把 C 绑定产物附加到项目级 GitHub Release）、`wheels.yml`（用 maturin 构建 wheel + sdist 并发布到 PyPI；预发布标签发到 TestPyPI）以及 `docs.yml`（重建双语 mdBook，并发布 `/latest/{en,zh}/` 与冻结的 `/v<version>/{en,zh}/` 版本快照）。
+3. 手动兜底（对已在 `main` 上且 CI 通过的提交）：
+   ```bash
+   git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+4. 保持 `Cargo.toml`、`CHANGELOG.md`、两个 README 与书籍版本表同步；`consistency.yml` 会在每次 push 与 Pull Request 上强制执行该检查。
 
 ---
 
