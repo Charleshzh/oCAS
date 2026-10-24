@@ -63,12 +63,13 @@ impl WorkspaceArena {
         self.arena.as_ref().expect("arena present until drop")
     }
 
-    /// Reset the arena in place, invalidating all values allocated so
-    /// far. References handed out before the reset must not be used
-    /// afterwards.
+    /// Reset the arena in place, invalidating all values allocated so far.
+    ///
+    /// The exclusive borrow makes this sound: no reference handed out by the
+    /// arena can still be live while `reset` is callable.
     pub fn reset(&mut self) {
         self.arena
-            .as_ref()
+            .as_mut()
             .expect("arena present until drop")
             .reset();
     }
@@ -76,7 +77,7 @@ impl WorkspaceArena {
 
 impl Drop for WorkspaceArena {
     fn drop(&mut self) {
-        if let Some(arena) = self.arena.take() {
+        if let Some(mut arena) = self.arena.take() {
             // Return the arena to the pool in a clean state for the next
             // computation.
             arena.reset();

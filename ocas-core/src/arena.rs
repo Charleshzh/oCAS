@@ -76,7 +76,9 @@ impl Arena {
     ///
     /// The closure form avoids any ambiguity about when mutation of the arena
     /// occurs. The returned `&mut T` is unique because `alloc_raw` advances the
-    /// arena offset for each allocation via interior mutability.
+    /// arena offset for each allocation via interior mutability. Uniqueness
+    /// across generations is enforced by [`reset`](Arena::reset) taking
+    /// `&mut self`: a live reference and a reset cannot coexist.
     ///
     /// # Panics
     ///
@@ -178,25 +180,39 @@ impl Arena {
     /// This makes repeated build–reset cycles allocation-free in the steady
     /// state, which is the basis of the workspace pool in `ocas-atom`.
     ///
-    /// # Safety contract (enforced by convention)
+    /// # Exclusivity (the soundness argument)
     ///
-    /// Any reference returned by [`allocate_with`](Arena::allocate_with) or
-    /// [`allocate_slice`](Arena::allocate_slice) before the reset **must not**
-    /// be used afterwards — the memory may be handed out again for different
-    /// values. Callers must treat reset as the end of a generation.
+    /// `reset` takes `&mut self`, so it cannot be called while any reference
+    /// returned by [`allocate_with`](Arena::allocate_with) or
+    /// [`allocate_slice`](Arena::allocate_slice) is still live: the borrow
+    /// checker rejects that program. Without the exclusive borrow, a safe
+    /// caller could hold a `&mut T` across the reset, observe the same memory
+    /// re-used for a different value, and obtain aliased mutable references —
+    /// a use-after-free in safe code (see oCAS issue #44).
     ///
     /// # Example
     ///
     /// ```
     /// use ocas_core::arena::Arena;
     ///
-    /// let arena = Arena::new();
+    /// let mut arena = Arena::new();
     /// let _ = arena.allocate_with(|| 1);
     /// arena.reset();
     /// let value = arena.allocate_with(|| 2);
     /// assert_eq!(*value, 2);
     /// ```
-    pub fn reset(&self) {
+    ///
+    /// Keeping a value across the reset must not compile:
+    ///
+    /// ```compile_fail
+    /// use ocas_core::arena::Arena;
+    ///
+    /// let mut arena = Arena::new();
+    /// let value = arena.allocate_with(|| 1i32);
+    /// arena.reset(); // error[E0502]: cannot borrow `arena` as mutable ...
+    /// *value = 2;
+    /// ```
+    pub fn reset(&mut self) {
         let mut chunks = self.chunks.borrow_mut();
         // Keep the first chunk (reusable block), release the rest.
         chunks.truncate(1);
@@ -326,7 +342,7 @@ mod tests {
 
         #[test]
         fn reset_keeps_first_chunk() {
-            let arena = Arena::with_capacity(64);
+            let mut arena = Arena::with_capacity(64);
             // Force several chunks (64-byte blocks, 8-byte values).
             for i in 0..100u64 {
                 arena.allocate_with(|| i);
@@ -338,7 +354,7 @@ mod tests {
 
         #[test]
         fn reset_allows_reuse() {
-            let arena = Arena::new();
+            let mut arena = Arena::new();
             let _ = arena.allocate_with(|| 1u64);
             arena.reset();
             let value = arena.allocate_with(|| 2u64);
@@ -347,7 +363,7 @@ mod tests {
 
         #[test]
         fn reset_reuse_steady_state_allocates_nothing() {
-            let arena = Arena::with_capacity(4096);
+            let mut arena = Arena::with_capacity(4096);
             for round in 0..1000 {
                 for i in 0..50u64 {
                     let v = arena.allocate_with(|| i + round);
