@@ -1,0 +1,794 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Higher: FGLM &amp; Elimination Theory - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html" class="active"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/fglm-elimination.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="fglm--elimination-theory"><a class="header" href="#fglm--elimination-theory">FGLM &amp; Elimination Theory</a></h1>
+<p>This chapter systematically presents the FGLM algorithm for changing the order of Gröbner bases of zero-dimensional ideals, the elimination theorem, and Gröbner-basis-based ideal operations (quotients, saturations, intersections, primary decomposition, radicals). Together these tools form the core infrastructure of oCAS's polynomial-system solving and algebraic-geometry computations.</p>
+<hr />
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before reading this chapter, we recommend the following background:</p>
+<ul>
+<li><strong>Gröbner basis theory</strong>: Buchberger's algorithm, the F4/F5 algorithms, S-polynomials, reduced Gröbner bases — see <a href="./groebner-theory.html">Gröbner Basis Theory</a></li>
+<li><strong>Polynomial algebra</strong>: multivariate polynomial rings $\mathbb{F}[x_1, \ldots, x_n]$, monomial orders (Lex / Grlex / Grevlex) — see <a href="./polynomial-algebra.html">Polynomial Algebra</a></li>
+<li><strong>Linear algebra</strong>: Gaussian elimination, vector-space dimension, linear dependence — see <a href="./linear-algebra.html">Linear Algebra</a></li>
+<li><strong>Polynomial factorization</strong>: square-free factorization, univariate polynomial factorization — see <a href="./poly-gcd-factoring.html">Polynomial GCD &amp; Factorization</a></li>
+</ul>
+<p>For a systematic study path, see the <a href="./overview.html">Mathematics Overview</a>.</p>
+<hr />
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="zero-dimensional-ideals"><a class="header" href="#zero-dimensional-ideals">Zero-Dimensional Ideals</a></h3>
+<p><strong>Definition</strong>. Let $I \subseteq R = \mathbb{F}[x_1, \ldots, x_n]$ be an ideal. $I$ is called <strong>zero-dimensional</strong> if the quotient ring $R/I$ is <strong>finite-dimensional</strong> as an $\mathbb{F}$-vector space.</p>
+<p>Equivalent conditions (any of the following implies zero-dimensionality):</p>
+<ol>
+<li><strong>Algebraic geometry</strong>: the affine variety $V(I) \subseteq \overline{\mathbb{F}}^n$ is a finite set</li>
+<li><strong>Gröbner-basis characterization</strong>: for every variable $x_i$ ($1 \leq i \leq n$), the Gröbner basis contains a polynomial $g$ with $\text{lm}(g) = x_i^{N_i}$ (a pure power)</li>
+<li><strong>Finiteness of the staircase</strong>: the set of standard monomials (monomials not divisible by any leading monomial) is finite</li>
+</ol>
+<p><strong>Example</strong>. $I = \langle x^2 - 1, y - x \rangle \subseteq \mathbb{Q}[x, y]$. Its Lex Gröbner basis is ${x^2 - 1, y - x}$ with leading terms ${x^2, y}$. For $x$ we have $x^2$ and for $y$ we have $y$ — the pure-power condition is satisfied, so $I$ is zero-dimensional. Indeed $V(I) = {(1, 1), (-1, -1)}$ is finite.</p>
+<p><strong>Counterexample</strong>. $J = \langle x - y \rangle \subseteq \mathbb{Q}[x, y]$. Its leading terms are ${x}$; there is no pure-power leading term for $y$. $V(J) = {(t, t) : t \in \overline{\mathbb{Q}}}$ is infinite, so $J$ is positive-dimensional.</p>
+<h3 id="the-staircase-and-standard-monomials"><a class="header" href="#the-staircase-and-standard-monomials">The Staircase and Standard Monomials</a></h3>
+<p><strong>Definition</strong>. Let $G = {g_1, \ldots, g_t}$ be a Gröbner basis of an ideal $I$ with respect to a monomial order $\succ$. Let $\text{LT}(I) = \langle \text{lm}(g_1), \ldots, \text{lm}(g_t) \rangle$ be the leading-term ideal.</p>
+<p>The set of <strong>standard monomials</strong> is defined as</p>
+<p>$$\text{Std}(I) = {x^\alpha \in \mathbb{F}[x_1, \ldots, x_n] : x^\alpha \notin \text{LT}(I)}$$</p>
+<p>i.e. the monomials not divisible by any $\text{lm}(g_i)$. The set of standard monomials is also called the <strong>staircase</strong>, because in two dimensions its shape resembles a staircase.</p>
+<p><strong>Core property</strong>. The standard monomials form an $\mathbb{F}$-vector-space basis of $R/I$. That is, every coset $f + I \in R/I$ has a <strong>unique</strong> representation</p>
+<p>$$f + I = \sum_{x^\alpha \in \text{Std}(I)} c_\alpha \cdot x^\alpha + I$$</p>
+<p>with $c_\alpha \in \mathbb{F}$. This is equivalent to saying that the normal form of $f$ with respect to the Gröbner basis is a unique linear combination of standard monomials.</p>
+<p><strong>Example</strong>. $I = \langle x^2, xy \rangle \subseteq \mathbb{F}[x, y]$ (Grevlex order). The leading terms are ${x^2, xy}$.</p>
+<ul>
+<li>$1$: not divisible by $x^2$ or $xy$ → standard monomial ✓</li>
+<li>$y$: not divisible → ✓</li>
+<li>$y^2$: not divisible → ✓</li>
+<li>$y^k$ ($k \geq 0$): not divisible → ✓</li>
+<li>$x$: not divisible → ✓</li>
+<li>$x^2$: divisible by $x^2$ → ✗</li>
+<li>$xy$: divisible by $xy$ → ✗</li>
+</ul>
+<p>The staircase is ${1, x, y, y^2, y^3, \ldots}$ — an infinite set! This reflects that $I$ is positive-dimensional ($V(I) = {(0, t) : t \in \overline{\mathbb{F}}}$).</p>
+<p><strong>Dimension</strong>. For a zero-dimensional ideal, the size of the staircase</p>
+<p>$$D = \dim_{\mathbb{F}}(R/I) = |\text{Std}(I)|$$</p>
+<p>is a finite positive integer, called the <strong>vector-space dimension</strong> of $I$ or the <strong>stable value of the Hilbert function</strong>. This dimension $D$ plays a central role in the complexity analysis of the FGLM algorithm.</p>
+<h3 id="normal-forms"><a class="header" href="#normal-forms">Normal Forms</a></h3>
+<p><strong>Definition</strong>. The <strong>normal form</strong> $\text{NF}(f, G)$ of a polynomial $f$ with respect to a Gröbner basis $G$ is the remainder of dividing $f$ by $G$ with remainder. It satisfies:</p>
+<ol>
+<li>$\text{NF}(f, G) \in f + I$ ($\text{NF}(f, G)$ is congruent to $f$ modulo $I$)</li>
+<li>Every term of $\text{NF}(f, G)$ is a standard monomial</li>
+<li>The representation is unique (for a reduced Gröbner basis)</li>
+</ol>
+<p>For a zero-dimensional ideal, the normal form can be represented as a coefficient vector of length $D$ — one component per standard monomial. This is precisely the key that lets the FGLM algorithm turn normal-form computation into linear-algebra operations.</p>
+<hr />
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="the-elimination-theorem"><a class="header" href="#the-elimination-theorem">The Elimination Theorem</a></h3>
+<p><strong>Elimination ideal</strong>. Let $I \subseteq \mathbb{F}[x_1, \ldots, x_n]$ and fix $1 \leq \ell \leq n$. The $\ell$-th <strong>elimination ideal</strong> is</p>
+<p>$$I_\ell = I \cap \mathbb{F}[x_{\ell+1}, \ldots, x_n]$$</p>
+<p>i.e. the ideal of the polynomials of $I$ that do not involve the first $\ell$ variables.</p>
+<p><strong>Elimination Theorem</strong>. Let $G$ be a Gröbner basis of $I$ with respect to the <strong>Lex order</strong> ($x_1 \succ x_2 \succ \cdots \succ x_n$). Then</p>
+<p>$$G_\ell = G \cap \mathbb{F}[x_{\ell+1}, \ldots, x_n]$$</p>
+<p>is a Gröbner basis of $I_\ell$.</p>
+<p>In other words, the polynomials of a Lex Gröbner basis that do not involve $x_1, \ldots, x_\ell$ generate exactly the elimination ideal $I_\ell$.</p>
+<p><strong>Sketch of proof</strong>. The key property of the Lex order is: if $x^\alpha \succ x^\beta$ and $\alpha_1 = \cdots = \alpha_\ell = 0$, then $\beta_1 = \cdots = \beta_\ell = 0$. Hence the intersection of the leading-term ideal $\langle \text{lt}(g) : g \in G \rangle$ with $\mathbb{F}[x_{\ell+1}, \ldots, x_n]$ is generated exactly by the leading terms of $G_\ell$. $\square$</p>
+<p><strong>Applications</strong>. The elimination theorem is the theoretical basis of all of the following constructions:</p>
+<ul>
+<li><strong>Implicit-function elimination</strong>: eliminate variables from a system of equations, obtaining relations in the remaining variables only</li>
+<li><strong>The Rabinowitsch trick for ideal quotients</strong>: eliminate after introducing an auxiliary variable</li>
+<li><strong>Ideal intersection</strong>: eliminate after introducing the auxiliary variable $t$</li>
+<li><strong>Polynomial-system solving</strong>: extract constraints variable by variable from the Lex GB</li>
+</ul>
+<p><strong>Note</strong>. Gröbner bases in the Grevlex order do <strong>not</strong> have the elimination property. Hence every operation requiring elimination must be performed in the Lex order. This is exactly the core value of the FGLM order-change algorithm: first compute the basis quickly in Grevlex, then convert it to Lex with FGLM for elimination.</p>
+<h3 id="the-fglm-algorithm"><a class="header" href="#the-fglm-algorithm">The FGLM Algorithm</a></h3>
+<p>The FGLM algorithm (Faugère–Gianni–Lazard–Mora, 1993) provides an efficient change of order for Gröbner bases of <strong>zero-dimensional ideals</strong>. Its core idea: using normal-form computations in the source order, enumerate monomials in the target order and construct the target-order Gröbner basis directly by linear-algebra methods — completely avoiding a re-run of F4 in the target order.</p>
+<h4 id="motivation"><a class="header" href="#motivation">Motivation</a></h4>
+<p>Suppose we already have a Gröbner basis $G_{\text{grevlex}}$ of $I$ in the Grevlex order (the most efficient computational order). For elimination or solving, we need a basis $G_{\text{lex}}$ in the Lex order.</p>
+<p>Comparison of the two methods:</p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Complexity</th><th>Description</th></tr></thead><tbody>
+<tr><td>Re-running F4 (Lex)</td><td>exponential (worst case)</td><td>recomputes everything; intermediate polynomials may blow up</td></tr>
+<tr><td>FGLM</td><td>$O(n \cdot D^3)$</td><td>$D = \dim(R/I)$; pure linear algebra</td></tr>
+</tbody></table>
+</div>
+<p>For zero-dimensional ideals, FGLM is almost always faster — especially when $D$ is moderate but the intermediate polynomials of the Lex basis are enormous.</p>
+<h4 id="algorithm-description"><a class="header" href="#algorithm-description">Algorithm Description</a></h4>
+<p><strong>Input</strong>: a reduced Gröbner basis $G_{\text{src}}$ of a zero-dimensional ideal $I$ in the source order $O_1$, and a target order $O_2$.</p>
+<p><strong>Output</strong>: a reduced Gröbner basis $G_{\text{tgt}}$ of $I$ in the target order $O_2$.</p>
+<p><strong>Initialization</strong>:</p>
+<ol>
+<li>Extract all leading monomials $\text{lm}(g_1), \ldots, \text{lm}(g_t)$ from $G_{\text{src}}$</li>
+<li>Compute the staircase $\text{Std}(I)$ (BFS: start from $1$, extend variable by variable, skip monomials divisible by a leading term, until no new standard monomial appears — zero-dimensionality guarantees termination)</li>
+<li>Let $D = |\text{Std}(I)|$ and number the standard monomials $s_1, s_2, \ldots, s_D$</li>
+<li>For each variable $x_i$, construct the <strong>multiplication matrix</strong> $M_i$: for each standard monomial $s_j$, compute the normal form of $x_i \cdot s_j$ (under $G_{\text{src}}$), giving a $D \times D$ matrix</li>
+</ol>
+<p><strong>Main loop</strong>: enumerate the monomials in increasing target order $O_2$:</p>
+<pre><code>seen_nfs ← []     // seen normal forms (D-dimensional vectors)
+seen_mons ← []    // corresponding monomials
+boundary ← {1}    // boundary set
+visited ← ∅       // visited monomials
+GB_tgt ← ∅
+
+while boundary ≠ ∅:
+    m ← the O2-smallest monomial in boundary
+    visited ← visited ∪ {m}
+
+    // compute the normal form of m w.r.t. the source-order basis (D-dim coordinate vector)
+    nf ← normal_form(m, G_src, staircase)
+
+    if nf ∈ span(seen_nfs):      // linearly dependent?
+        // found a relation nf = Σ c_i · seen_nfs[i]
+        coeffs ← Gaussian_solve(seen_nfs, nf)
+        // construct the new polynomial: m - Σ c_i · seen_mons[i]
+        new_poly ← (m, 1) + Σ (-c_i, seen_mons[i])
+        GB_tgt ← GB_tgt ∪ {new_poly}
+        // all multiples of m lie in the ideal; mark them as visited
+        mark_multiples(visited, m)
+    else:
+        // linearly independent: m is a new standard monomial in the target order
+        seen_nfs.append(nf)
+        seen_mons.append(m)
+        // add the neighbours of m to the boundary
+        for i = 1 to n:
+            if m · x_i ∉ visited:
+                boundary ← boundary ∪ {m · x_i}
+
+return minimize(GB_tgt).auto_reduce()
+</code></pre>
+<h4 id="key-subroutines"><a class="header" href="#key-subroutines">Key Subroutines</a></h4>
+<p><strong>Normal-form computation</strong>. The normal form of a monomial $m$ under $G_{\text{src}}$ is a $D$-dimensional vector. In the implementation, $m$ is turned into the monomial polynomial with coefficient $1$, divided by $G_{\text{src}}$ with remainder, and then each term of the remainder is mapped to its position index in the staircase.</p>
+<p><strong>Linear-relation detection</strong>. Maintain an augmented matrix $[\text{seen_nfs} \mid \text{nf}]$ ($D$ rows, $k+1$ columns, where $k$ is the number of seen normal forms). Perform Gaussian elimination whenever a new nf is added:</p>
+<ul>
+<li>if the augmented column is all zero after elimination → linearly dependent; extract the coefficient vector</li>
+<li>if the augmented column has a non-zero entry after elimination → linearly independent; add to seen_nfs</li>
+</ul>
+<p>This can be implemented efficiently with incremental Gaussian elimination (processing one column at a time), avoiding repeated elimination.</p>
+<p><strong>Marking multiples</strong>. When a linear relation $\text{nf}(m) = \sum c_i \cdot \text{nf}(m_i)$ is found, the constructed polynomial $m - \sum c_i m_i \in I$ has leading term $m$ (in the target order). All multiples $m \cdot x^\alpha$ of $m$ necessarily lie in $I$ as well, so they need not be considered further — they are removed from the boundary.</p>
+<h4 id="complexity-analysis"><a class="header" href="#complexity-analysis">Complexity Analysis</a></h4>
+<ul>
+<li><strong>Staircase computation</strong>: $O(D)$ monomials, each requiring one divisibility check against every leading monomial of the basis (each check costs $O(n)$ comparisons)</li>
+<li><strong>Multiplication matrices</strong>: $n$ matrices of size $D \times D$, one normal-form computation per entry → $O(n \cdot D^2 \cdot T_{\text{NF}})$</li>
+<li><strong>Main loop</strong>: at most $D$ linearly independent standard monomials are discovered, and each linear-dependence discovery emits one target-basis element; the total number of iterations is $\le D + |G_{\text{tgt}}|$, with the implementation's safety cap at $D(D+1) + 4n$</li>
+<li><strong>Per iteration</strong>: one normal-form computation $O(T_{\text{NF}})$ + one Gaussian elimination $O(D^2)$</li>
+<li><strong>Total complexity</strong>: $O(n \cdot D^3)$ field operations</li>
+</ul>
+<p>where $T_{\text{NF}}$ is the cost of one normal-form computation, typically linear in $D$ for sparse polynomials.</p>
+<h4 id="correctness"><a class="header" href="#correctness">Correctness</a></h4>
+<p><strong>Theorem</strong> (Faugère–Gianni–Lazard–Mora 1993). Let $I$ be a zero-dimensional ideal and $G_{\text{src}}$ a reduced Gröbner basis of $I$ in the order $O_1$. The FGLM algorithm outputs a $G_{\text{tgt}}$ that is a reduced Gröbner basis of $I$ in the order $O_2$.</p>
+<p><strong>Sketch of proof</strong>:</p>
+<ol>
+<li>Normal-form computation is order-independent — the normal-form map w.r.t. $G_{\text{src}}$ and the one w.r.t. $G_{\text{tgt}}$ are representations of the same linear map in different bases</li>
+<li>The main loop enumerates monomials in increasing target order and exactly covers all standard monomials and the monomials producing leading terms</li>
+<li>The linear-relation detection guarantees that the output polynomials generate exactly the leading-term ideal</li>
+<li><code>minimize</code> and <code>auto_reduce</code> guarantee reducedness</li>
+</ol>
+<h3 id="ideal-operations"><a class="header" href="#ideal-operations">Ideal Operations</a></h3>
+<p>Gröbner bases turn the basic arithmetic operations on ideals into algorithms. This section presents the core ideal operations implemented in oCAS; each one relies on the elimination theorem.</p>
+<h4 id="ideal-quotient"><a class="header" href="#ideal-quotient">Ideal Quotient</a></h4>
+<p><strong>Definition</strong>. The <strong>ideal quotient</strong> of two ideals $I, J \subseteq R$ is</p>
+<p>$$I : J = {f \in R : f \cdot g \in I, , \forall g \in J}$$</p>
+<p>For a principal ideal $J = \langle g \rangle$ it is written simply as $I : g$.</p>
+<p><strong>Rabinowitsch trick</strong>. The key trick for computing $I : g$ is to introduce a new variable $w$. Note, however, that the auxiliary-variable construction actually computes the <strong>saturation</strong>:</p>
+<p>$$I : g^\infty = \left( I \cdot R[w] + \langle 1 - wg \rangle \right) \cap R$$</p>
+<p>i.e. in the extended ring $R[w]$, lift the generators of $I$, add $1 - wg$, compute a Gröbner basis, and then take the polynomials not involving $w$ (elimination). When $I$ is already saturated with respect to $g$ (i.e. $I : g = I : g^\infty$, e.g. square-free ideals without embedded components), this equals $I : g$. oCAS's <code>ideal_quotient</code> implements exactly this elimination construction (mathematically, $I : g^\infty$).</p>
+<p><strong>Proof of correctness</strong>. By localization, $R[w]/\langle 1 - wg \rangle \cong R[1/g]$ ($w \mapsto 1/g$). Hence $f \in (I \cdot R[w] + \langle 1-wg\rangle) \cap R$ iff $f \in I \cdot R[1/g]$, i.e. iff $g^N f \in I$ for some $N$, i.e. $f \in I : g^N \subseteq I : g^\infty$. Conversely, if $g^N f \in I$, then</p>
+<p>$$f = f\bigl(1-(wg)^N\bigr) + w^N \cdot (g^N f)$$</p>
+<p>where the first term lies in $\langle 1-wg\rangle$ (since $1-(wg)^N$ is divisible by $1-wg$) and the second in $I \cdot R[w]$. $\square$</p>
+<p><strong>Several generators</strong>. For $J = \langle g_1, \ldots, g_m \rangle$, one has</p>
+<p>$$I : J^\infty = \bigcap_{j=1}^{m} (I : g_j^\infty)$$</p>
+<p>Implemented by computing each $I : g_j^\infty$ and then intersecting the results (which is precisely the behavior of <code>ideal_quotient</code>).</p>
+<p><strong>Example</strong>. $I = \langle x^2, xy \rangle$, $J = \langle x \rangle$.</p>
+<p>$$I : x = \langle x^2, xy \rangle : \langle x \rangle$$</p>
+<p>In $\mathbb{Q}[x, y, w]$, compute $\text{GB}(x^2, xy, 1 - wx)$ and eliminate $w$:</p>
+<ul>
+<li>$1 - wx \implies w = 1/x$</li>
+<li>$x^2 \cdot w = x$, $xy \cdot w = y$ (since $x^2 w - x = -x(1-wx)$ and $xy w - y = -y(1-wx)$)</li>
+</ul>
+<p>Elimination yields $\langle x, y \rangle$, hence $\langle x^2, xy \rangle : \langle x \rangle = \langle x, y \rangle$.</p>
+<h4 id="ideal-intersection"><a class="header" href="#ideal-intersection">Ideal Intersection</a></h4>
+<p><strong>Definition</strong>. $I \cap J$ is the ideal of the polynomials that belong to both $I$ and $J$.</p>
+<p><strong>The auxiliary-variable method</strong>. Introduce a new variable $t$:</p>
+<p>$$I \cap J = \langle t \cdot f_i, , (1-t) \cdot g_j \rangle_{i,j} \cap R$$</p>
+<p>where ${f_i}$ and ${g_j}$ are generators of $I$ and $J$ respectively.</p>
+<p><strong>Intuition</strong>. At $t = 1$ the constraints degenerate to $f_i = 0$ (the conditions of $I$); at $t = 0$ they degenerate to $g_j = 0$ (the conditions of $J$). After eliminating $t$, the polynomials satisfying both sets of conditions are obtained.</p>
+<p><strong>Correctness</strong>. $h \in I \cap J$ ⟺ $h = t \cdot h + (1-t) \cdot h$, where $t \cdot h \in t \cdot I$ and $(1-t) \cdot h \in (1-t) \cdot J$. Conversely, a polynomial in the elimination ideal vanishes at both $t = 0$ and $t = 1$, so it belongs to both $I$ and $J$. $\square$</p>
+<p><strong>Example</strong>. $\langle x \rangle \cap \langle y \rangle = \langle xy \rangle$.</p>
+<p>In $\mathbb{Q}[x, y, t]$, compute $\text{GB}(tx, (1-t)y)$ and eliminate $t$:</p>
+<ul>
+<li>$tx = 0 \implies t = 0$ or $x = 0$</li>
+<li>$(1-t)y = 0 \implies t = 1$ or $y = 0$</li>
+</ul>
+<p>Elimination yields $\langle xy \rangle$. $\square$</p>
+<h4 id="ideal-saturation"><a class="header" href="#ideal-saturation">Ideal Saturation</a></h4>
+<p><strong>Definition</strong>. The <strong>saturation</strong> of $I$ with respect to $J$ is</p>
+<p>$$I : J^\infty = \bigcup_{k=1}^{\infty} (I : J^k)$$</p>
+<p>Equivalently, $I : J^\infty$ is the "restriction" of $I$ away from $V(J)$ — it agrees with $I$ outside the zero set of $J$.</p>
+<p><strong>Iterative computation</strong>. By the ascending chain condition there exists $k_0$ with $I : J^{k_0} = I : J^{k_0+1} = \cdots = I : J^\infty$. The algorithm repeatedly computes $I : J$ until stabilization:</p>
+<pre><code>I_old ← I
+loop:
+    I_new ← I_old : J
+    if I_new == I_old:  // compare Gröbner bases
+        return I_new
+    I_old ← I_new
+</code></pre>
+<p><strong>Applications</strong>. Saturation is extremely important in algebraic geometry:</p>
+<ul>
+<li><strong>Radical computation</strong>: $\sqrt{I} = I : h^\infty$ (in the positive-dimensional case, $h$ is related to the Jacobian)</li>
+<li><strong>Primary decomposition</strong>: separating the components of different dimensions</li>
+<li><strong>Closure computation</strong>: projective closures, complete intersections</li>
+</ul>
+<p><strong>Example</strong>. $\langle x^2 y, xy^2 \rangle : \langle x \rangle^\infty$.</p>
+<p>Computing the quotients round by round according to the mathematical definition:</p>
+<p>First round: $\langle x^2 y, xy^2 \rangle : \langle x \rangle = \langle xy, y^2 \rangle$</p>
+<p>Second round: $\langle xy, y^2 \rangle : \langle x \rangle = \langle y \rangle$</p>
+<p>Third round: $\langle y \rangle : \langle x \rangle = \langle y \rangle$ (stable)</p>
+<p>Hence $\langle x^2 y, xy^2 \rangle : \langle x \rangle^\infty = \langle y \rangle$. $\square$</p>
+<p>(Note: oCAS's <code>ideal_quotient</code> computes $I : g^\infty$ in a single elimination step — in this example one call already yields $\langle y \rangle$, and the iteration in <code>ideal_saturate</code> merely confirms stability.)</p>
+<h4 id="sums-products-and-membership"><a class="header" href="#sums-products-and-membership">Sums, Products, and Membership</a></h4>
+<p>These are the most basic ideal operations; they are comparatively simple to implement:</p>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Definition</th><th>Implementation</th></tr></thead><tbody>
+<tr><td>$I + J$</td><td>$\langle f_1, \ldots, f_m, g_1, \ldots, g_k \rangle$</td><td>merge the generators and compute a GB</td></tr>
+<tr><td>$I \cdot J$</td><td>$\langle f_i g_j \rangle_{i,j}$</td><td>all pairwise products of the generators, then compute a GB</td></tr>
+<tr><td>$f \in I$ ?</td><td>—</td><td>compute $\text{NF}(f, G_I)$ and check whether it is zero</td></tr>
+</tbody></table>
+</div>
+<h3 id="primary-decomposition"><a class="header" href="#primary-decomposition">Primary Decomposition</a></h3>
+<p><strong>Definition</strong>. An ideal $Q \subseteq R$ is called a <strong>primary ideal</strong> if $fg \in Q$ implies $f \in Q$ or $g^n \in Q$ (for some $n \geq 1$).</p>
+<p><strong>Primary decomposition theorem</strong> (Lasker–Noether). Every ideal $I \subseteq \mathbb{F}[x_1, \ldots, x_n]$ ($\mathbb{F}$ of characteristic zero) has a primary decomposition</p>
+<p>$$I = Q_1 \cap Q_2 \cap \cdots \cap Q_r$$</p>
+<p>where each $Q_i$ is a primary ideal. The corresponding <strong>associated prime ideals</strong> are $\mathfrak{p}_i = \sqrt{Q_i}$.</p>
+<h4 id="zero-dimensional-primary-decomposition"><a class="header" href="#zero-dimensional-primary-decomposition">Zero-Dimensional Primary Decomposition</a></h4>
+<p>For zero-dimensional ideals, primary decomposition can be achieved by factoring the univariate polynomials in a Lex Gröbner basis.</p>
+<p><strong>Key observation</strong>. The Lex GB of a zero-dimensional ideal contains a polynomial $p_1(x_1)$ in $x_1$ alone, a polynomial $p_2(x_1, x_2)$ in $x_1, x_2$, and so on. The factorization of $p_1(x_1)$ corresponds to the different branches of the ideal in the $x_1$ direction.</p>
+<p><strong>Algorithm</strong> (matching the oCAS implementation <code>primary_decomp_zero_dim</code>):</p>
+<ol>
+<li>Compute the Lex Gröbner basis $G$ of $I$</li>
+<li>Extract the polynomial $p_1(x_1)$ in $x_1$ alone and compute its <strong>square-free part</strong> $\tilde{p}_1 = p_1 / \gcd(p_1, p_1')$</li>
+<li>Factor $\tilde{p}_1$ over $\mathbb{Q}$ into pairwise distinct irreducible factors $\tilde{p}_1 = q_1 \cdot q_2 \cdots q_s$</li>
+<li>For each factor $q_i$, separate the branch by saturation: $I_i = I : \left(\prod_{j \neq i} q_j\right)^\infty$ (the source saturates by each other factor sequentially)</li>
+<li>The associated prime ideal of branch $I_i$ is taken as $\mathfrak{p}_i = \mathrm{GB}(I + \langle q_i \rangle)$</li>
+</ol>
+<p><strong>Note</strong>. If $\tilde{p}_1$ has only one irreducible factor (or $G$ contains no polynomial in $x_1$ alone), the algorithm returns the single branch ${\text{primary} = I,; \text{prime} = \sqrt{I}}$. The current implementation handles only the factorization in the first variable $x_1$; it does <strong>not</strong> recurse into the remaining variables.</p>
+<p><strong>Example</strong>. $I = \langle x^2 - 1, y - x \rangle \subseteq \mathbb{Q}[x, y]$.</p>
+<p>Lex GB: ${x^2 - 1, y - x}$. $p_1(x) = x^2 - 1$ is already square-free and factors as $q_1 = x - 1$, $q_2 = x + 1$.</p>
+<ul>
+<li>Branch 1: $I_1 = I : \langle x + 1 \rangle^\infty = \langle x - 1, y - 1 \rangle$ (associated prime $\langle x - 1, y - 1 \rangle$)</li>
+<li>Branch 2: $I_2 = I : \langle x - 1 \rangle^\infty = \langle x + 1, y + 1 \rangle$ (associated prime $\langle x + 1, y + 1 \rangle$)</li>
+</ul>
+<p>Check: $\langle x^2 - 1, y - x \rangle = \langle x - 1, y - 1 \rangle \cap \langle x + 1, y + 1 \rangle$; both branches are prime.</p>
+<p>For comparison, for $I = \langle x^2, xy \rangle$ the square-free part of $p_1(x) = x^2$ has only the single factor $x$, so the algorithm returns the single branch ${\text{primary} = \langle x^2, xy \rangle,; \text{prime} = \sqrt{I} = \langle x \rangle}$. The ideal nevertheless admits the finer decomposition $\langle x^2, xy \rangle = \langle x \rangle \cap \langle x^2, y \rangle$, where $\langle x \rangle$ is prime and $\langle x^2, y \rangle$ is primary with associated prime $\langle x, y \rangle$ (an embedded component).</p>
+<h4 id="positive-dimensional-primary-decomposition"><a class="header" href="#positive-dimensional-primary-decomposition">Positive-Dimensional Primary Decomposition</a></h4>
+<p>Primary decomposition of positive-dimensional ideals is much more complicated; oCAS currently marks it as not yet implemented (<code>TODO</code>). A complete implementation requires:</p>
+<ul>
+<li>the Gianni–Trager–Zacharias algorithm</li>
+<li>or the characteristic method of Eisenbud–Huneke–Vasconcelos</li>
+</ul>
+<h3 id="radicals"><a class="header" href="#radicals">Radicals</a></h3>
+<p><strong>Definition</strong>. The <strong>radical</strong> of an ideal $I$ is</p>
+<p>$$\sqrt{I} = {f \in R : f^n \in I \text{ for some } n \geq 1}$$</p>
+<p>Equivalently, $\sqrt{I}$ is the largest ideal containing $I$ with $V(\sqrt{I}) = V(I)$ (the same zero set).</p>
+<h4 id="zero-dimensional-radicals"><a class="header" href="#zero-dimensional-radicals">Zero-Dimensional Radicals</a></h4>
+<p>For zero-dimensional ideals, radical computation uses the square-free factorization of the univariate polynomials in the Lex GB.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Compute the Lex GB $G$</li>
+<li>For each polynomial $p_i(x_i)$ in $G$ involving only $x_i$, compute its square-free part $\tilde{p}_i = p_i / \gcd(p_i, p_i')$</li>
+<li>Replace $p_i$ by $\tilde{p}_i$ to obtain generators of $\sqrt{I}$</li>
+</ol>
+<p><strong>Correctness</strong>. The radical of a zero-dimensional ideal corresponds to reducing the exponent of each associated prime ideal to $1$. Square-free factorization achieves exactly this — the square-free part of $p_i^{e_i}$ is $p_i$.</p>
+<p><strong>Example</strong>. $\sqrt{\langle x^2, xy \rangle}$.</p>
+<p>Lex GB: ${x^2, xy}$. The square-free part of $x^2$: $x^2 / \gcd(x^2, 2x) = x^2 / x = x$.</p>
+<p>Radical: $\langle x, xy \rangle = \langle x \rangle$ (since $x$ already divides $xy$). $\square$</p>
+<h4 id="positive-dimensional-radicals-jacobian-saturation"><a class="header" href="#positive-dimensional-radicals-jacobian-saturation">Positive-Dimensional Radicals: Jacobian Saturation</a></h4>
+<p>For positive-dimensional ideals, oCAS uses a Jacobian-based saturation method (a simplified Kemper algorithm):</p>
+<p>$$\sqrt{I} = I : h^\infty$$</p>
+<p>where $h$ is related to the Jacobian determinant.</p>
+<p><strong>Algorithm</strong> (characteristic zero, matching <code>radical_via_jacobian</code>):</p>
+<ol>
+<li>For each generator $f_i$ of $I$ and each variable $x_j$, compute the partial derivative $\partial f_i / \partial x_j$ (skipping constant/zero derivatives)</li>
+<li>Choose $h$ heuristically: the source does <strong>not</strong> compute the true gcd, but folds the non-trivial derivatives with <code>reduce</code>, keeping the one of <strong>smallest total degree</strong>. This is a heuristic approximation of the classical Jacobian-saturation formula ($\sqrt{I} = I : h^\infty$, where $h$ must be a suitable Jacobian-related element) — $h$ is just a single partial derivative (one entry of the Jacobian matrix); it is not guaranteed to divide the Jacobian determinant, nor is the saturation result guaranteed to equal $\sqrt{I}$</li>
+<li>Compute $I : h^\infty$ (iterative saturation)</li>
+</ol>
+<p><strong>Theoretical basis</strong>. At a regular point, the rank of the Jacobian matrix equals the dimension of the variety (Jacobian criterion); the singular points are exactly those where the rank is deficient (less than $n - \dim$) — where the exponent structure is non-trivial. The saturation $I : h^\infty$ serves to remove these powers.</p>
+<p><strong>Limitation</strong>. When all partial derivatives are constant/zero, or $h$ is a constant polynomial (total degree 0), the algorithm falls back to returning the original GB. Since $h$ is chosen heuristically rather than being a genuine Jacobian-related element, the saturation result is only an approximation of $\sqrt{I}$ (it may be too large, or too small and miss components) — for positive-dimensional ideals, a complete radical computation requires more refined algorithms (such as Gianni–Trager–Zacharias or Eisenbud–Huneke–Vasconcelos).</p>
+<h3 id="testing-primality-and-primaryness"><a class="header" href="#testing-primality-and-primaryness">Testing Primality and Primaryness</a></h3>
+<p><strong>Zero-dimensional primality test</strong>. A zero-dimensional ideal $I$ is prime if and only if every polynomial in its Lex GB involving only $x_i$ is irreducible.</p>
+<p>oCAS implementation (<code>is_prime_zero_dim</code>):</p>
+<ol>
+<li>Compute the Lex GB</li>
+<li>Extract each univariate polynomial $p_i(x_i)$</li>
+<li>For polynomials of degree $\le 3$, check reducibility with the <strong>rational-root theorem</strong> (a polynomial of degree $d \le 3$ over $\mathbb{Q}$ is irreducible iff it has no rational root); polynomials of degree $&gt; 3$ receive no full factorization check</li>
+</ol>
+<p><strong>Note</strong>. Positive-dimensional ideals currently conservatively return <code>false</code> — a prime positive-dimensional ideal is misreported as non-prime (<strong>false negative</strong>). In the zero-dimensional case, however, a reducible degree-$&gt;3$ univariate polynomial without rational roots (such as $(x^2-2)(x^2-3)$) is misjudged as irreducible, so <strong>false positives</strong> (reporting a non-prime ideal as prime) are possible.</p>
+<p><strong>Primaryness test</strong>. An ideal $I$ is primary if and only if it has exactly one associated prime ideal. The implementation checks the number of components via primary decomposition.</p>
+<hr />
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<h3 id="the-fglm-implementation"><a class="header" href="#the-fglm-implementation">The FGLM Implementation</a></h3>
+<p>The FGLM algorithm is implemented in <code>ocas-poly/src/groebner/fglm.rs</code>.</p>
+<h4 id="entry-function"><a class="header" href="#entry-function">Entry Function</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn fglm&lt;D: Domain, O2: MonomialOrder&gt;(
+    gb: &amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;,
+) -&gt; Option&lt;GroebnerBasis&lt;D, O2&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Generic parameters:</p>
+<ul>
+<li><code>D</code>: the coefficient domain (implementing the <code>Domain</code> trait)</li>
+<li><code>O2</code>: the target monomial order</li>
+<li>the source order of the input basis is determined by the type parameter <code>impl MonomialOrder</code> of <code>gb</code></li>
+</ul>
+<p>Returns <code>None</code> when the ideal is not zero-dimensional (the staircase computation finds infinitely many standard monomials).</p>
+<h4 id="staircase-computation"><a class="header" href="#staircase-computation">Staircase Computation</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn compute_staircase(lms: &amp;[Vec&lt;usize&gt;], n_vars: usize) -&gt; Option&lt;Vec&lt;Vec&lt;usize&gt;&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>BFS algorithm:</p>
+<ul>
+<li>start from the all-zero exponent vector $1 = x_1^0 \cdots x_n^0$</li>
+<li>for each monomial $m$ in the queue, check whether it is divisible by some $\text{lm}(g_i)$</li>
+<li>if not divisible → add it to the staircase and enqueue its $n$ neighbours (incrementing one variable exponent of $m$ at a time)</li>
+<li>safety threshold 100,000: if the BFS visits more than this many monomials, the ideal is judged positive-dimensional</li>
+</ul>
+<p>The divisibility check compares component by component:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn monomial_divides_big(lm: &amp;[usize], big: &amp;[usize]) -&gt; bool {
+    lm.iter().zip(big.iter()).all(|(a, b)| a &lt;= b)
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="normal-form-computation"><a class="header" href="#normal-form-computation">Normal-Form Computation</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn normal_form_monomial&lt;D: Domain&gt;(
+    m: &amp;[usize],
+    gb: &amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;,
+    staircase: &amp;[Vec&lt;usize&gt;],
+    domain: &amp;D,
+) -&gt; Vec&lt;D::Element&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Build the monomial $m$ as the monomial polynomial $1 \cdot x^m$, divide it by the GB with remainder, and then map each term of the remainder to its position index in the staircase. Returns a coordinate vector of length $D$.</p>
+<h4 id="linear-relation-detection"><a class="header" href="#linear-relation-detection">Linear-Relation Detection</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn find_relation&lt;D: Domain&gt;(
+    seen: &amp;[Vec&lt;D::Element&gt;],
+    nf: &amp;[D::Element],
+    domain: &amp;D,
+) -&gt; Option&lt;Vec&lt;D::Element&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Build the augmented matrix $[\text{seen}^T \mid \text{nf}]$ ($D$ rows, $k+1$ columns) and perform forward elimination + back substitution:</p>
+<ol>
+<li>find a pivot (a non-zero element) column by column and swap rows</li>
+<li>normalize the pivot row and eliminate that column in the remaining rows</li>
+<li>check consistency: if some row has all zeros on the left but a non-zero right-hand side → no solution (linearly independent)</li>
+<li>extract the coefficient vector by back substitution</li>
+</ol>
+<p>Returns <code>Some(coeffs)</code> when linearly dependent and <code>None</code> when linearly independent.</p>
+<h4 id="marking-multiples"><a class="header" href="#marking-multiples">Marking Multiples</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn mark_multiples(
+    visited: &amp;mut HashMap&lt;Vec&lt;usize&gt;, bool&gt;,
+    m: &amp;[usize],
+    n_vars: usize,
+    max_deg: usize,
+)
+<span class="boring">}</span></code></pre></pre>
+<p>BFS marks all multiples of $m$ (with total degree at most <code>max_deg</code>) as visited. <code>max_deg</code> is set to $2D$ — large enough to cover all monomials that could produce new leading terms.</p>
+<h4 id="main-loop-details"><a class="header" href="#main-loop-details">Main-Loop Details</a></h4>
+<p>The main loop maintains:</p>
+<ul>
+<li><code>boundary</code>: the set of candidate monomials (initially ${1}$, the all-zero exponent vector)</li>
+<li><code>seen_nfs</code>: the list of seen normal-form vectors</li>
+<li><code>seen_mons</code>: the corresponding list of monomials</li>
+<li><code>new_basis</code>: the output Gröbner basis</li>
+</ul>
+<p>Each step takes the target-order-smallest monomial in the boundary, computes its normal form, and tests for linear dependence. If dependent → output the new polynomial and mark multiples; if independent → add it to <code>seen</code> and expand its neighbours.</p>
+<p>Loop termination: the boundary is empty or the number of steps exceeds $D(D+1) + 4n$ (a safety bound).</p>
+<p>Finally, <code>minimize()</code> (removing redundant polynomials) and <code>auto_reduce()</code> (mutual reduction) are applied to <code>new_basis</code>, producing the reduced Gröbner basis.</p>
+<h3 id="implementing-ideal-operations"><a class="header" href="#implementing-ideal-operations">Implementing Ideal Operations</a></h3>
+<p>The ideal operations are implemented in <code>ocas-poly/src/ideal.rs</code>, uniformly using the Lex order to guarantee the elimination property.</p>
+<h4 id="membership"><a class="header" href="#membership">Membership</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_contains&lt;D: Domain + 'static&gt;(
+    generators: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    f: &amp;SparseMultivariatePolynomial&lt;D, Lex&gt;,
+    algo: Algorithm,
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p>Compute the GB, then compute the normal form of $f$ and check whether it is zero.</p>
+<h4 id="ideal-quotient-1"><a class="header" href="#ideal-quotient-1">Ideal Quotient</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_quotient&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Internal flow:</p>
+<ol>
+<li>For each generator $g_j$ of $J$, call <code>quotient_single_generator</code> (the Rabinowitsch trick)</li>
+<li><code>quotient_single_generator</code> implements:
+<ul>
+<li>lift the generators of $I$ into $R[w]$</li>
+<li>add $1 - wg$</li>
+<li>compute the Lex GB</li>
+<li>eliminate $w$ (take the polynomials not involving $w$)</li>
+</ul>
+</li>
+<li>Intersect the results of all $I : g_j^\infty$ (<code>intersect_generators</code>)</li>
+</ol>
+<h4 id="ideal-intersection-1"><a class="header" href="#ideal-intersection-1">Ideal Intersection</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_intersection&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Internally calls <code>intersect_generators</code>:</p>
+<ol>
+<li>Introduce the auxiliary variable $t$ (index 0)</li>
+<li>Construct the generators ${t \cdot f_i} \cup {(1-t) \cdot g_j}$</li>
+<li>Compute the Lex GB in the extended ring $R[t]$</li>
+<li>Eliminate $t$ to obtain generators of $I \cap J$</li>
+</ol>
+<h4 id="ideal-saturation-1"><a class="header" href="#ideal-saturation-1">Ideal Saturation</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_saturate&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Iteratively calls <code>ideal_quotient</code> until the GB stabilizes (a two-way containment check: every basis element of each side reduces to zero against the other), with a cap of 20 rounds; the current result is returned when the cap is exceeded.</p>
+<h4 id="primary-decomposition-1"><a class="header" href="#primary-decomposition-1">Primary Decomposition</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn primary_decomposition(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; Vec&lt;PrimaryComponent&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Currently only the zero-dimensional case is implemented (<code>primary_decomp_zero_dim</code>), and only the first variable is handled:</p>
+<ol>
+<li>Compute the Lex GB</li>
+<li>Extract the univariate polynomial $p_1(x_1)$ in $x_1$ alone and compute its square-free part</li>
+<li>Factor the square-free part over $\mathbb{Q}$</li>
+<li>Separate the branches by saturation (sequentially saturating by each other factor via <code>ideal_saturate</code>)</li>
+<li>The associated prime of a branch is taken as $\mathrm{GB}(I + \langle q_i \rangle)$; a single factor yields the single branch ($\text{prime} = \sqrt{I}$)</li>
+</ol>
+<p>The <code>PrimaryComponent</code> struct contains:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PrimaryComponent {
+    pub primary: GroebnerBasis&lt;RationalDomain, Lex&gt;,  // the primary ideal
+    pub prime: GroebnerBasis&lt;RationalDomain, Lex&gt;,     // the associated prime ideal
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="radicals-1"><a class="header" href="#radicals-1">Radicals</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_radical(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; GroebnerBasis&lt;RationalDomain, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Two cases:</p>
+<ul>
+<li><strong>Zero-dimensional</strong> (<code>radical_zero_dim</code>): apply square-free factorization to each univariate polynomial in the Lex GB, replace them, and regenerate the GB</li>
+<li><strong>Positive-dimensional</strong> (<code>radical_via_jacobian</code>): compute the non-trivial partial derivatives of all generators with respect to all variables, take $h$ as the one of <strong>smallest total degree</strong> (a heuristic, not the true gcd), and compute $I : h^\infty$</li>
+</ul>
+<h4 id="other-tests"><a class="header" href="#other-tests">Other Tests</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_zero_dimensional(gb: &amp;GroebnerBasis&lt;RationalDomain, Lex&gt;) -&gt; bool
+pub fn is_prime_ideal(generators: &amp;[...]) -&gt; bool
+pub fn is_primary_ideal(generators: &amp;[...]) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li><code>is_zero_dimensional</code>: checks whether every variable has a pure-power leading term</li>
+<li><code>is_prime_ideal</code>: zero-dimensional: check irreducibility; positive-dimensional: conservatively return <code>false</code></li>
+<li><code>is_primary_ideal</code>: checks whether there is exactly one associated prime ideal</li>
+</ul>
+<h3 id="solving-zero-dimensional-systems"><a class="header" href="#solving-zero-dimensional-systems">Solving Zero-Dimensional Systems</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn solve_polynomial_system(
+    equations: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+    algo: Algorithm,
+) -&gt; PolynomialSystemSolution
+<span class="boring">}</span></code></pre></pre>
+<p>Algorithm flow:</p>
+<ol>
+<li>Compute the Lex GB (if the input is not already a GB)</li>
+<li>Check zero-dimensionality</li>
+<li>Solve by triangular decomposition (<code>solve_triangular</code>) — back-substitution starting from the <strong>smallest variable</strong> in the Lex order ($x_n$):
+<ul>
+<li>extract the polynomial in $x_n$ alone → isolate real roots and find them numerically</li>
+<li>for each root, substitute into the polynomial involving $x_{n-1}$ → find the roots of $x_{n-1}$</li>
+<li>recurse until all variables are determined (the results are returned in the order $x_1, \ldots, x_n$)</li>
+</ul>
+</li>
+</ol>
+<p>Return type:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum PolynomialSystemSolution {
+    ZeroDimensional(ZeroDimSolutions),  // finitely many solutions
+    PositiveDimensional(GroebnerBasis),  // positive-dimensional (infinitely many solutions)
+    Empty,                               // no solutions
+}
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="advanced-topics"><a class="header" href="#advanced-topics">Advanced Topics</a></h2>
+<h3 id="choosing-between-fglm-and-f4"><a class="header" href="#choosing-between-fglm-and-f4">Choosing Between FGLM and F4</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Scenario</th><th>Recommended method</th><th>Reason</th></tr></thead><tbody>
+<tr><td>Zero-dimensional + Lex GB needed</td><td>Grevlex F4 → FGLM</td><td>$O(n \cdot D^3)$ is far faster than Lex F4</td></tr>
+<tr><td>Zero-dimensional + Grevlex GB needed</td><td>F4 directly</td><td>no order change needed</td></tr>
+<tr><td>Positive-dimensional + Lex GB needed</td><td>Lex F4 or <code>reorder</code></td><td>FGLM does not apply</td></tr>
+<tr><td>Elimination + zero-dimensional</td><td>FGLM → elimination</td><td>the elimination theorem guarantees correctness</td></tr>
+<tr><td>Elimination + positive-dimensional</td><td>Lex F4</td><td>FGLM does not apply</td></tr>
+</tbody></table>
+</div>
+<h3 id="fglm-over-arbitrary-fields"><a class="header" href="#fglm-over-arbitrary-fields">FGLM over Arbitrary Fields</a></h3>
+<p>oCAS's FGLM implementation works generically over an arbitrary field $D$; normal-form computation goes entirely through the operations of the <code>Domain</code> trait (finite-field elements are stored as canonical representatives in $[0, p)$). Note that the <code>FpPoly</code> <code>i64</code> fast path of F4/F5 for $\mathbb{F}_p$ is not used by FGLM.</p>
+<h3 id="limitations"><a class="header" href="#limitations">Limitations</a></h3>
+<ol>
+<li><strong>Zero-dimensional only</strong>: the staircase of a positive-dimensional ideal is infinite, so FGLM does not apply</li>
+<li><strong>The $D^3$ bottleneck</strong>: when the vector-space dimension $D$ is very large (e.g. $D &gt; 10^4$), Gaussian elimination becomes the bottleneck</li>
+<li><strong>Memory</strong>: the $D \times D$ multiplication matrices and the augmented matrix must be stored</li>
+</ol>
+<h3 id="relation-to-the-literature"><a class="header" href="#relation-to-the-literature">Relation to the Literature</a></h3>
+<p>The oCAS implementation is based directly on the original papers:</p>
+<ul>
+<li>FGLM: Faugère, Gianni, Lazard, Mora (1993), <em>Efficient Computation of Zero-dimensional Gröbner Bases by Change of Ordering</em>, JSC</li>
+<li>Ideal operations: Cox, Little, O'Shea, <em>Ideals, Varieties, and Algorithms</em>, Chapters 4, 8</li>
+<li>Primary decomposition: Gianni, Trager, Zacharias (1988), <em>Gröbner Bases and Primary Decomposition of Polynomial Ideals</em></li>
+<li>Radical computation: Kemper (2002), <em>A Course in Commutative Algebra</em></li>
+</ul>
+<hr />
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li>J.-C. Faugère, P. Gianni, D. Lazard, T. Mora. "Efficient Computation of Zero-dimensional Gröbner Bases by Change of Ordering." <em>Journal of Symbolic Computation</em>, 16(4):329–344, 1993.</li>
+<li>D. Cox, J. Little, D. O'Shea. <em>Ideals, Varieties, and Algorithms</em>. 4th ed., Springer, 2015. Chapters 3 (elimination), 4 (ideal quotients and saturation), 8 (primary decomposition).</li>
+<li>W. W. Adams, P. Loustaunau. <em>An Introduction to Gröbner Bases</em>. AMS, 1994.</li>
+<li>P. Gianni, B. Trager, G. Zacharias. "Gröbner Bases and Primary Decomposition of Polynomial Ideals." <em>Journal of Symbolic Computation</em>, 6(2–3):149–167, 1988.</li>
+<li>G. Kemper. <em>A Course in Commutative Algebra</em>. Springer, 2011.</li>
+<li>T. Becker, V. Weispfenning. <em>Gröbner Bases: A Computational Approach to Commutative Algebra</em>. Springer, 1993.</li>
+</ol>
+<hr />
+<p><strong>See also</strong>:</p>
+<ul>
+<li><a href="../api/rust-groebner.html">Rust API: Gröbner Bases and Ideals</a> — function signatures and complete examples</li>
+<li><a href="./groebner-theory.html">Gröbner Basis Theory</a> — the theoretical basis of the Buchberger/F4/F5 algorithms</li>
+<li><a href="./polynomial-algebra.html">Polynomial Algebra</a> — monomial orders and multivariate division with remainder</li>
+<li><a href="./poly-gcd-factoring.html">Polynomial GCD &amp; Factorization</a> — square-free factorization and factorization algorithms</li>
+<li><a href="../solvers.html">Solvers</a> — polynomial-system solving and ODEs</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/risch-algorithm.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/algebraic-number-fields.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/risch-algorithm.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/algebraic-number-fields.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

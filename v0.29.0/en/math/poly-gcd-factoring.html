@@ -1,0 +1,763 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Advanced: Polynomial GCD &amp; Factorization - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html" class="active"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/poly-gcd-factoring.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="advanced-polynomial-gcd-and-factorization"><a class="header" href="#advanced-polynomial-gcd-and-factorization">Advanced: Polynomial GCD and Factorization</a></h1>
+<p>This chapter systematically explains the core algorithms for computing polynomial greatest common divisors (GCDs) and factorization. These algorithms are the foundational building blocks of a computer algebra system — Gröbner basis computation, rational function simplification, and the partial fraction decomposition used in ODE solving all depend on them. We start from the classical Euclidean algorithm, gradually introduce modular methods, Hensel lifting, and multivariate extensions, and finally cover factorization over finite fields and algebraic number fields.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before reading this chapter, we recommend studying:</p>
+<ul>
+<li><a href="./polynomial-algebra.html">Basic: Polynomial Algebra</a> — polynomial rings, degrees, monomial orders</li>
+<li><a href="./finite-fields.html">Basic: Finite Fields and Modular Arithmetic</a> — construction of $\mathbb{F}_p$, modular inverse, CRT</li>
+<li><a href="./linear-algebra.html">Basic: Linear Algebra</a> — matrix operations, determinants</li>
+</ul>
+<h3 id="review-of-the-euclidean-algorithm"><a class="header" href="#review-of-the-euclidean-algorithm">Review of the Euclidean Algorithm</a></h3>
+<p>Let $\mathbb{F}$ be a field and $f, g \in \mathbb{F}[x]$ with $g \ne 0$. The Euclidean algorithm computes the GCD by repeated division with remainder:</p>
+<p>$$f = q_1 g + r_1, \quad g = q_2 r_1 + r_2, \quad r_1 = q_3 r_2 + r_3, \quad \ldots, \quad r_{k-2} = q_k r_{k-1} + r_k$$</p>
+<p>The last nonzero remainder $r_k$ is $\gcd(f, g)$ (up to a constant factor).</p>
+<p>In $\mathbb{Z}[x]$, the coefficients are not field elements, so division with remainder may not be possible. We need <strong>pseudo-division</strong>:</p>
+<p>$$\text{lc}(g)^{d+1} \cdot f = q \cdot g + r, \quad d = \deg(f) - \deg(g)$$</p>
+<p>where $\text{lc}(g)$ is the leading coefficient of $g$. This guarantees that the quotient and remainder lie in $\mathbb{Z}[x]$, at the cost of possible coefficient growth in the remainders.</p>
+<h3 id="pseudo-remainder-sequences-prs"><a class="header" href="#pseudo-remainder-sequences-prs">Pseudo-Remainder Sequences (PRS)</a></h3>
+<p>Applying the Euclidean algorithm directly to $\mathbb{Z}[x]$ with pseudo-division leads to <strong>coefficient growth</strong>: at degrees above about 16, the coefficients of intermediate results can reach hundreds of digits. To control this growth, the literature proposes several <strong>pseudo-remainder sequences</strong>:</p>
+<ul>
+<li><strong>Primitive PRS</strong>: at each step, take the <strong>primitive part</strong> of the pseudo-remainder (divide by the content of the coefficients), keeping the intermediate remainders primitive and avoiding needless coefficient growth</li>
+<li><strong>Subresultant PRS</strong>: carefully chosen scaling factors keep the intermediate coefficients at exactly the theoretical size of the subresultant determinants, avoiding the excessive growth of the primitive PRS</li>
+</ul>
+<p>In oCAS, <code>DenseUnivariatePolynomial::gcd</code> uses the Euclidean algorithm with pseudo-remainders (<code>ocas-poly/src/gcd.rs</code>), returning a primitive GCD. Since pseudo-remainders explode at higher degrees (in practice roughly $\deg &gt; 16$), <code>gcd_modular_z</code> (Brown's modular GCD, <code>ocas-poly/src/gcd/modular.rs</code>) should be used instead there; the two are chosen explicitly by the caller — there is no automatic degree-based dispatch.</p>
+<h3 id="resultant"><a class="header" href="#resultant">Resultant</a></h3>
+<p>The <strong>resultant</strong> $\text{Res}(f, g)$ of two polynomials $f, g \in \mathbb{F}[x]$ is a scalar satisfying:</p>
+<p>$$\text{Res}(f, g) = 0 \iff \gcd(f, g) \ne 1$$</p>
+<p>The resultant can be computed as the determinant of the Sylvester matrix, or more efficiently via a PRS (Brown's PRS algorithm). In oCAS, the <code>resultant()</code> method is implemented with the Brown PRS algorithm.</p>
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="definition-of-gcd"><a class="header" href="#definition-of-gcd">Definition of GCD</a></h3>
+<p>Let $D$ be a unique factorization domain (UFD) and $f, g \in D[x]$. The <strong>greatest common divisor</strong> $\gcd(f, g)$ of $f$ and $g$ is the monic polynomial $d$ satisfying:</p>
+<ol>
+<li>$d \mid f$ and $d \mid g$ (common divisor)</li>
+<li>for any common divisor $c$, we have $c \mid d$ (maximality)</li>
+</ol>
+<p>In $\mathbb{F}[x]$ ($\mathbb{F}$ a field), the GCD is always monic (multiply by the inverse of the leading coefficient). In $\mathbb{Z}[x]$, the GCD is usually taken to be <strong>primitive</strong>, i.e. with coefficients whose GCD is 1.</p>
+<h3 id="content-and-primitive-part"><a class="header" href="#content-and-primitive-part">Content and Primitive Part</a></h3>
+<p>The <strong>content</strong> of a polynomial $f = \sum a_i x^i \in \mathbb{Z}[x]$ is defined as the GCD of its coefficients:</p>
+<p>$$\text{cont}(f) = \gcd(a_0, a_1, \ldots, a_n)$$</p>
+<p>The <strong>primitive part</strong> is defined as:</p>
+<p>$$\text{pp}(f) = f / \text{cont}(f)$$</p>
+<p><strong>Gauss's lemma</strong>: the product of two primitive polynomials is again primitive. It follows that:</p>
+<p>$$\gcd(f, g) = \gcd(\text{cont}(f),, \text{cont}(g)) \cdot \gcd(\text{pp}(f),, \text{pp}(g))$$</p>
+<p>This allows the content (an integer GCD) and the primitive part (a polynomial GCD) to be computed separately.</p>
+<p>In oCAS:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::DenseUnivariatePolynomial;
+use ocas_domain::IntegerDomain;
+
+let f = DenseUnivariatePolynomial::from_coeffs(
+    IntegerDomain,
+    vec![Integer::from(6), Integer::from(4), Integer::from(2)],
+);
+assert_eq!(f.content(), Integer::from(2));       // cont(f) = gcd(6,4,2) = 2
+assert_eq!(f.primitive_part().coeffs(),           // pp(f) = 3 + 2x + x²
+    &amp;[Integer::from(3), Integer::from(2), Integer::from(1)]);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="square-free-factorization"><a class="header" href="#square-free-factorization">Square-free Factorization</a></h3>
+<h4 id="motivation"><a class="header" href="#motivation">Motivation</a></h4>
+<p>The first step of complete factorization is to decompose the polynomial into powers of square-free factors:</p>
+<p>$$f = c \cdot g_1^1 \cdot g_2^2 \cdot g_3^3 \cdots$$</p>
+<p>where the $g_i$ are pairwise coprime and square-free ($\gcd(g_i, g_i') = 1$). This greatly simplifies the subsequent irreducible factorization — each $g_i$ only needs to be factored once.</p>
+<h4 id="yuns-algorithm"><a class="header" href="#yuns-algorithm">Yun's Algorithm</a></h4>
+<p>For fields of characteristic 0 (such as $\mathbb{Q}$ or $\mathbb{Z}$), Yun's algorithm is based on the observation that if $f = g_1 g_2^2 g_3^3 \cdots$, then</p>
+<p>$$\gcd(f, f') = g_2 g_3^2 g_4^3 \cdots$$</p>
+<p><strong>Algorithm steps</strong>:</p>
+<pre><code>Input: f ∈ ℤ[x] (already made primitive)
+Output: [(g₁, 1), (g₂, 2), …] such that f = ∏ gₖᵏ
+
+1. f ← pp(f),  f' ← derivative(f)
+2. g ← gcd(f, f')
+3. w ← f / g
+4. k ← 1
+5. while w ≠ 1:
+6.     h ← gcd(w, g)
+7.     z ← w / h          // z = gₖ (square-free factor of multiplicity k)
+8.     if z ≠ 1: output (z, k)
+9.     g ← g / h
+10.    w ← h
+11.    k ← k + 1
+</code></pre>
+<p><strong>Key property</strong>: the GCD computation at each iteration exactly removes the factors of higher multiplicity, so $z = w/h$ contains precisely the factors of multiplicity $k$.</p>
+<p><strong>Complexity</strong>: $O(n^2)$ coefficient operations ($n = \deg f$), with the GCD computations as the bottleneck.</p>
+<h4 id="the-special-case-over-finite-fields"><a class="header" href="#the-special-case-over-finite-fields">The Special Case over Finite Fields</a></h4>
+<p>In $\mathbb{F}_p[x]$, when $p \mid \deg f$, the formal derivative $f'$ may vanish (for example $f(x) = x^p - 1$ has $f' = 0$ over $\mathbb{F}_p$). In that case $f$ is a $p$-th power of some polynomial: $f(x) = g(x^p) = g(x)^p$. The Musser/Bernardin algorithm detects this situation, takes the $p$-th root and recurses, multiplying the multiplicities by $p$.</p>
+<p>In oCAS, <code>DenseUnivariatePolynomial::square_free_factorization()</code> implements Yun's algorithm (<code>ocas-poly/src/factor/mod.rs</code>), and <code>square_free_factorization_ff()</code> implements the finite-field version (<code>ocas-poly/src/factor/finite_field.rs</code>).</p>
+<h3 id="modular-gcd-brown-1971"><a class="header" href="#modular-gcd-brown-1971">Modular GCD (Brown 1971)</a></h3>
+<h4 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h4>
+<p>Computing GCDs directly over $\mathbb{Z}[x]$ with pseudo-division leads to exponential coefficient growth. Brown's modular algorithm "projects" the problem onto several $\mathbb{F}_p[x]$, exploits the efficient GCD over fields, and reconstructs the answer with CRT.</p>
+<h4 id="core-idea"><a class="header" href="#core-idea">Core Idea</a></h4>
+<p>Let $a, b \in \mathbb{Z}[x]$ and $g = \gcd(a, b)$ (primitive). The key observation:</p>
+<p>$$\text{lc}(g) \mid \gcd(\text{lc}(a), \text{lc}(b)) \equiv \gamma$$</p>
+<p>Therefore $\gamma^{-1} \cdot \text{lc}(g) \mid 1$, i.e. the monic GCD modulo $p$ multiplied by $\gamma$ gives a scaled version of the GCD over $\mathbb{Z}[x]$.</p>
+<h4 id="algorithm-steps"><a class="header" href="#algorithm-steps">Algorithm Steps</a></h4>
+<pre><code>Input: a, b ∈ ℤ[x] (nonzero)
+Output: gcd(a, b) ∈ ℤ[x] (primitive)
+
+1. a_p ← pp(a),  b_p ← pp(b)
+2. γ ← gcd(lc(a_p), lc(b_p))    // a multiple of the leading coefficient of the GCD
+3. images ← [],  best_deg ← ∞
+4. for p in primes_from(2³⁰):    // start from primes greater than 2³⁰
+5.     if p | γ: continue
+6.     field ← FiniteField(p)
+7.     g_p ← monic(gcd(a_p mod p, b_p mod p))
+8.     g_scaled ← g_p · (γ mod p) · (lc(g_p)⁻¹ mod p)
+9.     
+10.    if deg(g_scaled) &gt; best_deg: continue    // unlucky prime, discard
+11.    if deg(g_scaled) &lt; best_deg:             // a smaller GCD found
+12.        best_deg ← deg(g_scaled)
+13.        images ← [(p, g_scaled)]
+14.    else: images.append((p, g_scaled))
+15.    
+16.    // CRT reconstruction + trial division verification
+17.    candidate ← primitive_part(CRT_reconstruct(images))
+18.    if candidate divides a_p AND candidate divides b_p:
+19.        return candidate
+20.    
+21.    if the number of primes tried &gt; MAX_PRIMES: break
+22.
+23. return fallback_pseudo_remainder_gcd(a, b)  // extreme fallback
+</code></pre>
+<h4 id="key-details"><a class="header" href="#key-details">Key Details</a></h4>
+<p><strong>Prime selection</strong>: primes start above $2^{30}$. Each prime contributes roughly 30 bits of precision to the CRT reconstruction, so a polynomial whose coefficients have bit-length $L$ typically needs only about $L/30$ primes (in practice at most a few dozen).</p>
+<p><strong>Landau-$\gamma$ scaling</strong>: the monic modular GCD $g_p$ must be multiplied by $\gamma = \gcd(\text{lc}(a), \text{lc}(b))$ to align with the GCD over $\mathbb{Z}[x]$. Specifically, $\text{lc}(g_p)^{-1} \cdot \gamma \bmod p$ is the scaling factor.</p>
+<p><strong>CRT symmetric representatives</strong>: reconstruction uses the symmetric residue range $(-p/2, p/2]$ rather than $[0, p)$, keeping the absolute values of coefficients minimal.</p>
+<p><strong>Unlucky prime detection</strong>: if the degree of the modular GCD for some prime $p$ is higher than the current best, that prime is "unlucky" ($p$ divides the denominator of some coefficient of the true GCD) and is simply discarded. If the degree is lower, all previous primes were unlucky, so the images are cleared and computation restarts.</p>
+<p><strong>Trial division verification</strong>: the CRT-reconstructed candidate $c$ must satisfy $c \mid a_p$ and $c \mid b_p$ (exact division); otherwise more primes are collected.</p>
+<p><strong>Safe fallback</strong>: after at most 10000 primes (in practice rarely more than a few dozen are needed), the algorithm falls back to a pseudo-remainder GCD to guarantee termination.</p>
+<p>In oCAS, <code>gcd_modular_z()</code> is implemented in <code>ocas-poly/src/gcd/modular.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::gcd::modular::gcd_modular_z;
+
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![i(-1), i(0), i(1)]); // x² - 1
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![i(1), i(2), i(1)]);  // x² + 2x + 1
+let g = gcd_modular_z(&amp;a, &amp;b);
+assert_eq!(g.coeffs(), &amp;[i(1), i(1)]);  // x + 1
+<span class="boring">}</span></code></pre></pre>
+<h3 id="multivariate-gcd-brown-evaluationinterpolation"><a class="header" href="#multivariate-gcd-brown-evaluationinterpolation">Multivariate GCD (Brown Evaluation–Interpolation)</a></h3>
+<h4 id="the-problem-1"><a class="header" href="#the-problem-1">The Problem</a></h4>
+<p>Given $f, g \in \mathbb{Z}[x_1, \ldots, x_n]$, compute $\gcd(f, g)$. The challenges for multivariate GCD are: (1) multivariate polynomials have no canonical "division with remainder"; (2) the coefficient structure is more complex.</p>
+<h4 id="browns-evaluationinterpolation-strategy-bivariate-case"><a class="header" href="#browns-evaluationinterpolation-strategy-bivariate-case">Brown's Evaluation–Interpolation Strategy (Bivariate Case)</a></h4>
+<p>Let $f, g \in \mathbb{Z}[x, y]$, viewed as polynomials in the main variable $x$ with coefficients in $\mathbb{Z}[y]$.</p>
+<p><strong>Steps</strong>:</p>
+<ol>
+<li><strong>Evaluate</strong>: choose $\alpha \in \mathbb{Z}$ and compute $f(x, \alpha)$ and $g(x, \alpha)$ (univariate polynomials)</li>
+<li><strong>Univariate GCD</strong>: $d_\alpha(x) = \gcd(f(x, \alpha), g(x, \alpha))$</li>
+<li><strong>Verify</strong>: check that the degree of $d_\alpha(x)$ equals the degree of the true GCD (take the minimal consistent degree over several $\alpha$)</li>
+<li><strong>Lagrange interpolation</strong>: for sufficiently many $\alpha_1, \ldots, \alpha_k$, compute the $d_{\alpha_i}(x)$ and treat each $x$-coefficient as a polynomial in $y$, recovered by Lagrange interpolation to obtain $d(x, y)$</li>
+</ol>
+<p><strong>Key condition</strong>: $\alpha$ must be "lucky" — i.e. the degree of $\gcd(f(x, \alpha), g(x, \alpha))$ equals the degree of the true GCD. If $\alpha$ is unlucky (for example it makes a leading coefficient vanish), it must be retried.</p>
+<h4 id="recursion-for-the-multivariate-case"><a class="header" href="#recursion-for-the-multivariate-case">Recursion for the Multivariate Case</a></h4>
+<p>An $n$-variable GCD reduces recursively by one variable:</p>
+<ol>
+<li>Choose an evaluation point $\alpha$ for $x_n$; compute $f|<em>{x_n = \alpha}$ and $g|</em>{x_n = \alpha}$</li>
+<li>Recursively compute the GCD in $n-1$ variables</li>
+<li>Interpolate to recover the dependence on $x_n$</li>
+</ol>
+<h4 id="embedding-mathbbz-into-mathbbq"><a class="header" href="#embedding-mathbbz-into-mathbbq">Embedding $\mathbb{Z}$ into $\mathbb{Q}$</a></h4>
+<p>When computing GCDs over $\mathbb{Z}[x_1, \ldots, x_n]$, handling the content is crucial:</p>
+<ol>
+<li>First extract the <strong>content with respect to the main variable</strong> $x_0$ (content in $x_0$), i.e. the GCD of all $x_0^k$ coefficients</li>
+<li>Compute the multivariate GCD of the primitive parts</li>
+<li>The final GCD is $\gcd(\text{cont}_x(f), \text{cont}_x(g)) \cdot \gcd(\text{pp}_x(f), \text{pp}_x(g))$</li>
+</ol>
+<h3 id="hensel-lifting"><a class="header" href="#hensel-lifting">Hensel Lifting</a></h3>
+<h4 id="core-idea-1"><a class="header" href="#core-idea-1">Core Idea</a></h4>
+<p>Hensel lifting is the key technique for "lifting" a factorization modulo $p$ to one modulo $p^k$ (or to $\mathbb{Z}$). Let $f \in \mathbb{Z}[x]$ be monic with</p>
+<p>$$f \equiv g_0 \cdot h_0 \pmod{p}, \quad \gcd(g_0, h_0) = 1 \pmod{p}$$</p>
+<p>The goal is to find $g, h \in \mathbb{Z}[x]$ such that $f = g \cdot h$, with $g \equiv g_0 \pmod{p}$ and $h \equiv h_0 \pmod{p}$.</p>
+<h4 id="linear-hensel-lifting-two-factor-case"><a class="header" href="#linear-hensel-lifting-two-factor-case">Linear Hensel Lifting (Two-Factor Case)</a></h4>
+<p>Let $s, t$ be the Bézout coefficients over $\mathbb{F}_p[x]$: $s \cdot g_0 + t \cdot h_0 = 1 \pmod{p}$.</p>
+<p><strong>Iteration steps</strong> (from $m = p$ until $m &gt; B$):</p>
+<pre><code>1. e ← f - g·h                    // the error
+2. if e = 0: return (g, h)        // exact factorization
+3. ē ← (e / m) mod p              // the "derivative" of the error
+4. Δg ← (t · ē) mod g₀           // correction to g (deg &lt; deg g₀)
+5. Δh ← (ē - Δg · h₀) / g₀      // correction to h (exact division)
+6. g ← g + Δg · m
+7. h ← h + Δh · m
+8. m ← m · p
+</code></pre>
+<p>Each iteration lifts the precision from $\bmod m$ to $\bmod m \cdot p$.</p>
+<h4 id="the-mignotte-bound"><a class="header" href="#the-mignotte-bound">The Mignotte Bound</a></h4>
+<p>When should lifting stop? We need an upper bound on the size of the factor coefficients. The <strong>Landau–Mignotte bound</strong> states:</p>
+<p>$$|g|_\infty \le 2^n |f|_2$$</p>
+<p>where $n = \deg f$ and $|f|_2 = \sqrt{\sum a_i^2}$ is the 2-norm. It therefore suffices to lift until $p^k &gt; 2 \cdot 2^n |f|_2$.</p>
+<h4 id="multi-factor-hensel-lifting"><a class="header" href="#multi-factor-hensel-lifting">Multi-Factor Hensel Lifting</a></h4>
+<p>For $r &gt; 2$ factors, a <strong>factor-by-factor peeling</strong> strategy is used:</p>
+<pre><code>Input: f, [g₁, g₂, …, gᵣ] mod p
+Output: [G₁, G₂, …, Gᵣ] such that f = ∏ Gᵢ
+
+1. for i = 1, …, r-1:
+2.     h₀ ← g_{i+1} · g_{i+2} · … · gᵣ  (the product of the remaining factors)
+3.     (Gᵢ, H) ← hensel_lift_pair(f_current, gᵢ, h₀, p, bound)
+4.     f_current ← H
+5. Gᵣ ← f_current
+</code></pre>
+<p>Each step is a two-factor Hensel lift.</p>
+<h4 id="zassenhaus-factor-recombination"><a class="header" href="#zassenhaus-factor-recombination">Zassenhaus Factor Recombination</a></h4>
+<p>Hensel lifting produces $r$ factors $\tilde{g}_1, \ldots, \tilde{g}_r$ modulo $p^k$. The true factors over $\mathbb{Z}[x]$ are products of some subset of the $\tilde{g}_i$ (reduced modulo $p^k$ into the symmetric range $(-p^k/2, p^k/2]$).</p>
+<p><strong>Recombination strategy</strong>:</p>
+<pre><code>1. remaining ← [g̃₁, …, g̃ᵣ]
+2. result ← []
+3. for size = 1, 2, …, r:
+4.     for each subset S ⊂ remaining of size |S|:
+5.         candidate ← primitive_part(lc(rest) · ∏_{i∈S} g̃ᵢ)
+6.         reduce candidate to symmetric range mod p^k
+7.         if candidate divides f:
+8.             result.append(candidate)
+9.             remaining ← remaining \ S
+10.            rest ← f / (∏ result)
+11.            break  // restart from size=1
+12. return result
+</code></pre>
+<p><strong>Key optimization</strong>: multiplying by the leading coefficient of the current cofactor before taking the primitive part is Zassenhaus's classical trick — a true factor $h$ satisfies $\text{lc}(\text{rest}) \cdot \prod S = c \cdot h$.</p>
+<p><strong>Complexity</strong>: worst case $2^r$ subsets ($r$ = the number of mod-$p$ factors), but in practice the number of factors is usually small.</p>
+<p>In oCAS, Hensel lifting and Zassenhaus recombination are implemented in <code>ocas-poly/src/factor/hensel.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// The complete ℤ[x] factorization pipeline:
+// 1. Square-free factorization
+// 2. For each square-free component:
+//    a. Choose a prime p (not dividing the leading coefficient, and f mod p square-free)
+//    b. Factor over 𝔽_p (Cantor-Zassenhaus)
+//    c. Hensel lift to ℤ
+//    d. Zassenhaus recombination
+// Entry point: DenseUnivariatePolynomial::factor()
+<span class="boring">}</span></code></pre></pre>
+<h3 id="the-berlekamp-algorithm"><a class="header" href="#the-berlekamp-algorithm">The Berlekamp Algorithm</a></h3>
+<h4 id="applicability"><a class="header" href="#applicability">Applicability</a></h4>
+<p>Factoring square-free polynomials over the finite field $\mathbb{F}_p$ with small prime $p$. When $p$ is small ($p \le 1000$), the matrix method is more efficient than the randomized Cantor–Zassenhaus algorithm.</p>
+<h4 id="theoretical-foundation"><a class="header" href="#theoretical-foundation">Theoretical Foundation</a></h4>
+<p>Let $f \in \mathbb{F}_p[x]$ be a square-free polynomial of degree $n$. Define the <strong>Frobenius matrix</strong> $Q \in \mathbb{F}_p^{n \times n}$:</p>
+<p>$$Q_{ij} = [x^j] \text{ coefficient in } x^{ip} \bmod f$$</p>
+<p>i.e. row $i$ of $Q$ is the coefficient vector of $x^{ip} \bmod f$.</p>
+<p><strong>Key theorem</strong>: $v \in \mathbb{F}_p^n$ satisfies $Q^T v = v$ (i.e. $v$ lies in the null space of $Q^T - I$) if and only if the corresponding polynomial $v(x) = \sum v_i x^i$ satisfies</p>
+<p>$$v(x)^p \equiv v(x) \pmod{f}$$</p>
+<p>This means $v(x)$ takes values in $\mathbb{F}_p$, and</p>
+<p>$$f \mid \prod_{a \in \mathbb{F}_p} (v(x) - a)$$</p>
+<p>Therefore $\gcd(f, v(x) - a)$ gives a nontrivial factor of $f$ for some $a \in \mathbb{F}_p$.</p>
+<h4 id="algorithm-steps-1"><a class="header" href="#algorithm-steps-1">Algorithm Steps</a></h4>
+<pre><code>Input: monic square-free f ∈ 𝔽_p[x], deg f = n
+Output: the list of irreducible factors of f
+
+1. Construct the Frobenius matrix Q
+2. Compute a basis {v₁, v₂, …, vᵣ} of the null space of Q^T - I
+3. factors ← [f]
+4. for each vⱼ (r ≥ 1):
+5.     new_factors ← []
+6.     for each factor g in factors:
+7.         if deg(g) ≤ 1:
+8.             new_factors.append(g); continue
+9.         for a = 0, 1, …, p-1:
+10.            d ← gcd(g, vⱼ - a)
+11.            if 0 &lt; deg(d) &lt; deg(g):
+12.                new_factors.append(d)
+13.                g ← g / d
+14.        new_factors.append(g)
+15.    factors ← new_factors
+16. return factors
+</code></pre>
+<p><strong>Null space dimension</strong>: if $f$ has $r$ irreducible factors, the null space has dimension $r$. Hence only $r - 1$ nontrivial null space vectors are needed for a complete split.</p>
+<p><strong>Complexity</strong>: $O(n^3)$ (matrix elimination) + $O(r \cdot n^2 \cdot p)$ (GCD splitting). When $p$ is large, the cost of the $a$-loop becomes prohibitive and Cantor–Zassenhaus should be used instead.</p>
+<p>In oCAS, <code>berlekamp()</code> is implemented in <code>ocas-poly/src/factor/finite_field.rs</code>. It is used automatically when $p \le 1000$.</p>
+<h3 id="the-cantorzassenhaus-algorithm"><a class="header" href="#the-cantorzassenhaus-algorithm">The Cantor–Zassenhaus Algorithm</a></h3>
+<h4 id="applicability-1"><a class="header" href="#applicability-1">Applicability</a></h4>
+<p>Factoring square-free polynomials over the finite field $\mathbb{F}_p$ with large prime $p$. It proceeds in two stages: <strong>distinct-degree factorization</strong> (DDF) and <strong>equal-degree factorization</strong> (EDF).</p>
+<h4 id="distinct-degree-factorization-ddf"><a class="header" href="#distinct-degree-factorization-ddf">Distinct-Degree Factorization (DDF)</a></h4>
+<p><strong>Goal</strong>: decompose $f$ as $f = g_1 \cdot g_2 \cdots g_s$, where every irreducible factor of $g_d$ has degree exactly $d$.</p>
+<p><strong>Theoretical foundation</strong>: the elements of $\mathbb{F}_{p^d}$ are exactly the roots of $x^{p^d} - x = 0$. Hence the irreducible factors of $f$ of degree $d$ divide exactly</p>
+<p>$$\gcd(f,, x^{p^d} - x)$$</p>
+<p>but do not divide the earlier $x^{p^{d'}} - x$ ($d' &lt; d$).</p>
+<p><strong>Algorithm</strong>:</p>
+<pre><code>Input: monic square-free f ∈ 𝔽_p[x]
+Output: [(g₁, 1), (g₂, 2), …] where the factors of gₖ have degree k
+
+1. current ← f,  h ← x,  degree ← 1
+2. while deg(current) ≥ 2·degree:
+3.     h ← h^p mod current           // Frobenius iteration: h = x^(p^degree)
+4.     g ← gcd(current, h - x)
+5.     if deg(g) &gt; 0:
+6.          output (monic(g), degree)
+7.         current ← current / g
+8.         h ← h mod current
+9.     degree ← degree + 1
+10. if deg(current) &gt; 0:
+11.      output (monic(current), deg(current))
+</code></pre>
+<p><strong>Optimizing the Frobenius iteration</strong>: $x^{p^d}$ need not be computed directly (the exponent is enormous); instead iterate $h \leftarrow h^p \bmod f$ step by step, using fast modular exponentiation each time.</p>
+<p><strong>Complexity</strong>: $O(n^2 \log p)$ per Frobenius iteration, $O(n^3 \log p)$ in total.</p>
+<h4 id="equal-degree-factorization-edf"><a class="header" href="#equal-degree-factorization-edf">Equal-Degree Factorization (EDF)</a></h4>
+<p><strong>Goal</strong>: completely split $f = g_1 g_2 \cdots g_r$ (each $g_i$ irreducible of degree $d$).</p>
+<p><strong>Odd characteristic case</strong> ($p &gt; 2$):</p>
+<p>Use the fact that exactly half of the elements of $\mathbb{F}_{p^d}$ are quadratic residues. For a random polynomial $a$, compute</p>
+<p>$$b = a^{(p^d - 1)/2} \bmod f$$</p>
+<p>Then $b$ takes the value $1$ on each irreducible factor $g_i$ where $a$ is a quadratic residue in that factor's field, and $-1$ where it is a non-residue. Therefore</p>
+<p>$$\gcd(f,, b - 1) = \prod_{i:, a \text{ is a quadratic residue in } g_i} g_i$$</p>
+<p>gives a nontrivial split of $f$ (unless all $g_i$ agree, which happens with probability $2^{1-r}$).</p>
+<p><strong>Characteristic 2 case</strong> ($p = 2$):</p>
+<p>The $b - 1$ trick does not apply ($1 = -1$). Instead use the <strong>trace map</strong>:</p>
+<p>$$T(a) = a + a^2 + a^{2^2} + \cdots + a^{2^{d-1}} \bmod f$$</p>
+<p>$T(a)$ takes values in $\mathbb{F}<em>2$ on each $\mathbb{F}</em>{2^d}$ (a property of the trace), and for random $a$ the values on different factors are independent. Hence $\gcd(f, T(a))$ gives a nontrivial split.</p>
+<pre><code>Input: f (the product of the d-degree factors from DDF)
+Output: the list of irreducible factors of f
+
+1. factors ← [f]
+2. while there exists a factor with deg &gt; d:
+3.     for each factor g with deg(g) &gt; d:
+4.         choose a random polynomial a (deg &lt; deg(g))
+5.         if p = 2:
+6.             b ← T(a) = Σᵢ₌₀^{d-1} a^{2^i} mod g
+7.         else:
+8.             b ← a^{(p^d-1)/2} mod g
+9.         d₁ ← gcd(g, b - 1)   // or gcd(g, b) for char 2
+10.        if 0 &lt; deg(d₁) &lt; deg(g):
+11.            replace g by d₁ and g/d₁ in factors
+12. return factors
+</code></pre>
+<p>In oCAS, <code>cantor_zassenhaus()</code> is implemented in <code>ocas-poly/src/factor/finite_field.rs</code>; the top-level entry <code>factor_over_finite_field()</code> automatically chooses Berlekamp ($p \le 1000$) or Cantor–Zassenhaus according to the size of $p$.</p>
+<h3 id="wangs-eez-multivariate-factorization"><a class="header" href="#wangs-eez-multivariate-factorization">Wang's EEZ Multivariate Factorization</a></h3>
+<h4 id="the-problem-2"><a class="header" href="#the-problem-2">The Problem</a></h4>
+<p>Given $f \in \mathbb{Z}[x_1, \ldots, x_n]$ (or $\mathbb{F}_p[x_1, \ldots, x_n]$), factor it into irreducible factors.</p>
+<h4 id="strategy-overview"><a class="header" href="#strategy-overview">Strategy Overview</a></h4>
+<p>Wang's (1978) EEZ (Evaluation, Exact division, Zassenhaus) algorithm generalizes univariate Hensel lifting to the multivariate case:</p>
+<ol>
+<li><strong>Evaluate</strong>: choose evaluation points for the auxiliary variables to obtain a univariate image $f(x_1, \alpha_2, \ldots, \alpha_n)$</li>
+<li><strong>Univariate factorization</strong>: factor the univariate image over $\mathbb{Z}$ (or $\mathbb{F}_p$)</li>
+<li><strong>Variable-by-variable Hensel lifting</strong>: lift back to the multivariate factorization one variable at a time</li>
+<li><strong>Zassenhaus recombination</strong>: combine the lifted factors</li>
+</ol>
+<h4 id="wangs-leading-coefficient-preprocessing"><a class="header" href="#wangs-leading-coefficient-preprocessing">Wang's Leading-Coefficient Preprocessing</a></h4>
+<p>One difficulty of multivariate factorization is the nonconstant leading coefficient. Let $\ell(x_1, \ldots, x_n)$ be the leading coefficient of $f$ in the main variable $x_0$. If $\ell$ is not constant, the leading coefficients $\ell_i$ of the factors $f_i$ need not be constant either, and $\prod \ell_i = \ell$.</p>
+<p><strong>Wang's greedy assignment</strong>:</p>
+<ol>
+<li>Factor $\ell$ into powers of irreducible factors: $\ell = \prod g_j^{e_j}$</li>
+<li>At the evaluation point $\alpha = (\alpha_2, \ldots, \alpha_n)$, the image of $\ell$ splits into the images of the univariate factors</li>
+<li>Assign the nontrivial factors $g_j$ of $\ell$ to the corresponding $f_i$ so that $g_j(\alpha) = \text{lc}(u_i)$ ($u_i$ the univariate image factor)</li>
+<li>Ensure consistency of the assignment via pairwise coprimality conditions ($\alpha_j = |g_j(\alpha)| &gt; 1$)</li>
+</ol>
+<h4 id="variable-by-variable-hensel-lifting"><a class="header" href="#variable-by-variable-hensel-lifting">Variable-by-Variable Hensel Lifting</a></h4>
+<p>Let $f$ have $n$ variables and let the univariate image factors be $u_1, \ldots, u_r$.</p>
+<p><strong>Lifting the variable $x_k$</strong> ($k = 1, 2, \ldots, n-1$, one variable at a time in index order):</p>
+<ol>
+<li>Evaluate the current factors $F_i^{(k-1)}$ (in the variables $x_1, \ldots, x_{k-1}$) at $x_k = \alpha_k$ to obtain the $u_i$</li>
+<li>Compute Bézout coefficients $b_i$ such that $\sum b_i \prod_{j \ne i} u_j = 1$</li>
+<li>For $t = 1, 2, \ldots$, successively solve the <strong>multivariate Diophantine equation</strong>:</li>
+</ol>
+<p>$$\sum_i \sigma_i \cdot \prod_{j \ne i} F_j = e_t$$</p>
+<p>where $e_t$ is the $t$-th term of the Taylor expansion of the current error $f - \prod F_i$</p>
+<ol start="4">
+<li>Correct $F_i \leftarrow F_i + \sigma_i \cdot (x_k - \alpha_k)^t$</li>
+</ol>
+<h4 id="the-multivariate-diophantine-equation-solver"><a class="header" href="#the-multivariate-diophantine-equation-solver">The Multivariate Diophantine Equation Solver</a></h4>
+<p>When lifting the variable $x_k$, the equations to solve have the form:</p>
+<p>$$\sum_{i=1}^{r} \sigma_i \cdot \prod_{j \ne i} u_j = e \pmod{(x_k - \alpha_k)^t}$$</p>
+<p>with $\deg_{x_0}(\sigma_i) &lt; \deg_{x_0}(u_i)$. This is a linear system (in the coefficients of the $\sigma_i$) that can be solved recursively:</p>
+<ul>
+<li>when $k = 1$ (univariate): the extended Euclidean algorithm</li>
+<li>when $k &gt; 1$: recurse on $k-1$ variables — evaluate at $\alpha_k$, solve the smaller system, then interpolate</li>
+</ul>
+<h4 id="p-adic-coefficient-hensel-lifting"><a class="header" href="#p-adic-coefficient-hensel-lifting">p-adic Coefficient Hensel Lifting</a></h4>
+<p>For the nonconstant leading coefficient case over $\mathbb{Z}[x_1, \ldots, x_n]$, Wang EEZ must be followed by <strong>p-adic coefficient lifting</strong>:</p>
+<ol>
+<li>Reduce the coefficients of the multivariate factors modulo $p$ to obtain a skeleton over $\mathbb{F}_p$</li>
+<li>Iteratively solve the mod-$p$ Diophantine equations, lifting the coefficients step by step from $\bmod p$ to $\bmod p^k$</li>
+<li>Continue until the error vanishes or $p^k$ exceeds the coefficient bound (the Gelfond bound)</li>
+</ol>
+<p><strong>The Gelfond coefficient bound</strong>:</p>
+<p>$$B = \left(\sqrt{\prod_v (d_v + 1) \cdot 2^{2 \sum d_v - n}} + 1\right) \cdot |f|_\infty \cdot |\text{lc}(f)|$$</p>
+<p>where $d_v$ is the degree in the variable $v$ and $n$ is the number of variables.</p>
+<h4 id="sparse-diophantine-solving"><a class="header" href="#sparse-diophantine-solving">Sparse Diophantine Solving</a></h4>
+<p>When the Diophantine correction terms have a sparse structure, dense recursive solving can be avoided. oCAS implements a <strong>skeleton interpolation</strong> strategy:</p>
+<ol>
+<li>Extract the skeleton from the terms of the error $e$ — the possible exponent patterns of the correction terms</li>
+<li>Evaluate at several random base points to obtain univariate Diophantine equations</li>
+<li>Interpolate the coefficients through a Vandermonde system</li>
+<li>Verify the interpolated result</li>
+</ol>
+<p>This is especially effective when the factors have many variables but low degree in each.</p>
+<p>In oCAS, the general EEZ algorithm is implemented in <code>ocas-poly/src/factor/eez.rs</code>, with a bivariate specialization in <code>ocas-poly/src/factor/multivariate.rs</code> (which currently requires the leading coefficient in the main variable to be constant):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Multivariate factorization entry over ℤ (eez.rs):
+pub fn multivariate_factor_z(f: &amp;ZmPoly) -&gt; Vec&lt;(ZmPoly, usize)&gt;
+
+// Multivariate factorization entry over 𝔽_p (eez.rs):
+pub fn multivariate_factor_fp(f: &amp;FpMPoly) -&gt; Vec&lt;(FpMPoly, usize)&gt;
+
+// Bivariate specialization entries (multivariate.rs):
+pub fn bivariate_factor_z(f: &amp;ZMPoly, x_var: usize, y_var: usize) -&gt; Vec&lt;(ZMPoly, usize)&gt;
+pub fn bivariate_factor_fp(f: &amp;FpMPoly, x_var: usize, y_var: usize) -&gt; Vec&lt;(FpMPoly, usize)&gt;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="trager-factorization-over-algebraic-number-fields"><a class="header" href="#trager-factorization-over-algebraic-number-fields">Trager Factorization over Algebraic Number Fields</a></h3>
+<h4 id="the-problem-3"><a class="header" href="#the-problem-3">The Problem</a></h4>
+<p>Given $f \in K[x]$ where $K = \mathbb{Q}(\alpha)$ is an algebraic number field ($\alpha$ a root of the minimal polynomial $m(\alpha) = 0$), factor $f$ into irreducible factors in $K[x]$.</p>
+<h4 id="reduction-via-the-norm"><a class="header" href="#reduction-via-the-norm">Reduction via the Norm</a></h4>
+<p>The core idea of Trager's algorithm is to reduce the problem from $K[x]$ to $\mathbb{Q}[x]$ via the <strong>norm</strong>:</p>
+<p>$$N(f) = \text{Res}_\alpha(m(\alpha),, f(x, \alpha))$$</p>
+<p>The norm $N(f) \in \mathbb{Q}[x]$ has degree $\deg_x(f) \cdot [K:\mathbb{Q}]$, and if $f$ is reducible in $K[x]$, then $N(f)$ is reducible in $\mathbb{Q}[x]$.</p>
+<h4 id="computing-the-norm-by-evaluationinterpolation"><a class="header" href="#computing-the-norm-by-evaluationinterpolation">Computing the Norm by Evaluation–Interpolation</a></h4>
+<p>Constructing the Sylvester matrix directly to compute the resultant is expensive. oCAS uses <strong>evaluation–interpolation</strong>:</p>
+<ol>
+<li>Compute the scalar resultants $\text{Res}_\alpha(m, f(x_j, \alpha))$ at $\deg_x(f) \cdot [K:\mathbb{Q}] + 1$ rational points $x_j$</li>
+<li>Each scalar resultant is the norm of an element of $\mathbb{Q}(\alpha)$, obtained by evaluating $m$ at $[K:\mathbb{Q}]$ points and taking the product</li>
+<li>Recover $N(f) \in \mathbb{Q}[x]$ by Newton divided-difference interpolation</li>
+</ol>
+<h4 id="the-trager-shift"><a class="header" href="#the-trager-shift">The Trager Shift</a></h4>
+<p>If $N(f)$ has repeated factors, information about the factors of $f$ is lost. The <strong>Trager shift</strong> substitutes $x \mapsto x - s\alpha$ ($s \ge 0$) to make the norm square-free:</p>
+<p>$$N(f(x - s\alpha)) \text{ is square-free}$$</p>
+<p>Such an $s$ always exists (only finitely many $s$ are bad); in practice $s = 0$ or a small value suffices.</p>
+<h4 id="factorization-steps"><a class="header" href="#factorization-steps">Factorization Steps</a></h4>
+<pre><code>Input: f ∈ K[x] (square-free)
+Output: the irreducible factors of f in K[x]
+
+1. for s = 0, 1, 2, …:
+2.     g ← f(x - s·α)
+3.     N ← Res_α(m, g(x, α))  via evaluation-interpolation
+4.     if N is square-free: break
+5. 
+6. N₁, …, Nₖ ← factor_over_Q(N)   // factor over ℚ
+7. for each Nᵢ:
+8.     N̂ᵢ ← embed_Q_to_K(Nᵢ)
+9.     hᵢ ← gcd_K(g, N̂ᵢ)          // GCD over K
+10.    output ← compose_linear(hᵢ, +s·α)   // inverse shift
+11. return [monic(output₁), …]
+</code></pre>
+<h4 id="modular-gcd-over-algebraic-number-fields"><a class="header" href="#modular-gcd-over-algebraic-number-fields">Modular GCD over Algebraic Number Fields</a></h4>
+<p>The $K[x]$ GCD in step 9 is computed efficiently by modular methods (<code>gcd_anf</code>):</p>
+<ol>
+<li>Choose a prime $p$ such that $m$ is irreducible over $\mathbb{F}_p$ (ensuring $\mathbb{F}_p[\alpha]/(m) \cong \text{GF}(p^d)$)</li>
+<li>Map $a, b \in K[x]$ to $\text{GF}(p^d)[x]$</li>
+<li>Compute the monic GCD over $\text{GF}(p^d)[x]$</li>
+<li>CRT combination + rational reconstruction + trial division verification</li>
+</ol>
+<p>Unlucky primes (where the modular GCD degree is too large) are discarded; after at most 1000 primes the algorithm falls back to a dense Euclidean GCD.</p>
+<p>In oCAS, Trager's algorithm is implemented in <code>ocas-poly/src/factor/algebraic.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Factorization entry over K = ℚ(α):
+impl DenseUnivariatePolynomial&lt;AlgebraicNumberField&gt; {
+    pub fn factor(&amp;self) -&gt; Factors&lt;AlgebraicNumberField&gt;
+}
+
+// Example: x² - 2 factors over ℚ(√2) as (x - √2)(x + √2)
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+let f = DenseUnivariatePolynomial::from_coeffs(field.clone(), vec![
+    field.from_base(Rational::new(-2, 1)),
+    field.zero(),
+    field.one(),
+]);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);  // (x - √2) and (x + √2)
+<span class="boring">}</span></code></pre></pre>
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<h3 id="file-map"><a class="header" href="#file-map">File Map</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Source file</th><th>Algorithm</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ocas-poly/src/dense.rs</code></td><td>Euclidean GCD, Karatsuba multiplication</td><td>Core data structure for univariate polynomials</td></tr>
+<tr><td><code>ocas-poly/src/gcd/modular.rs</code></td><td>Brown modular GCD</td><td>Efficient GCD over $\mathbb{Z}[x]$</td></tr>
+<tr><td><code>ocas-poly/src/factor/mod.rs</code></td><td>Top-level entry, Yun square-free factorization</td><td><code>factor()</code> and <code>square_free_factorization()</code></td></tr>
+<tr><td><code>ocas-poly/src/factor/finite_field.rs</code></td><td>Berlekamp, Cantor–Zassenhaus (DDF + EDF)</td><td>Factorization over $\mathbb{F}_p[x]$</td></tr>
+<tr><td><code>ocas-poly/src/factor/hensel.rs</code></td><td>Hensel lifting, Zassenhaus recombination, Mignotte bound</td><td>The $\mathbb{Z}[x]$ factorization pipeline</td></tr>
+<tr><td><code>ocas-poly/src/factor/multivariate.rs</code></td><td>Bivariate factorization (Wang EEZ specialization; leading coefficient in the main variable must be constant)</td><td>$\mathbb{Z}[x,y]$ and $\mathbb{F}_p[x,y]$</td></tr>
+<tr><td><code>ocas-poly/src/factor/eez.rs</code></td><td>General multivariate EEZ Hensel lifting</td><td>$\mathbb{Z}[x_1,\ldots,x_n]$ and $\mathbb{F}_p[x_1,\ldots,x_n]$</td></tr>
+<tr><td><code>ocas-poly/src/factor/algebraic.rs</code></td><td>Trager's algorithm (factorization over algebraic number fields)</td><td>$\mathbb{Q}(\alpha)[x]$</td></tr>
+<tr><td><code>ocas-poly/src/multivariate_gcd.rs</code></td><td>Multivariate GCD (evaluation–interpolation)</td><td>Supports multivariate factorization</td></tr>
+</tbody></table>
+</div>
+<h3 id="algorithm-selection-strategy"><a class="header" href="#algorithm-selection-strategy">Algorithm Selection Strategy</a></h3>
+<p>oCAS automatically selects the best algorithm according to the input:</p>
+<pre><code>factor(f ∈ ℤ[x]):
+  1. Square-free factorization (Yun's algorithm)
+  2. For each square-free component g:
+     a. if deg(g) ≤ 1: return it directly
+     b. choose a prime p (not dividing lc(g), and g mod p square-free)
+     c. factor over 𝔽_p (Cantor–Zassenhaus; the general factor_over_finite_field entry switches to Berlekamp automatically when p ≤ 1000)
+     d. if the number of mod-p factors = 1: g is irreducible, return
+     e. Hensel lifting (the Mignotte bound determines the precision)
+     f. Zassenhaus factor recombination
+     g. non-monic case: leading coefficient transformation a^{d-1}·f(x/a)
+
+factor(f ∈ 𝔽_p[x]):
+  1. Extract the leading coefficient
+  2. Square-free factorization (Musser/Bernardin, handling characteristic p)
+  3. For each square-free component: Berlekamp (small p) or Cantor-Zassenhaus
+
+factor(f ∈ ℚ(α)[x]):
+  1. Yun square-free factorization (using the modular GCD gcd_anf)
+  2. For each component: Trager norm + ℚ factorization + K-GCD recovery
+
+factor(f ∈ ℤ[x₁,…,xₙ]):
+  1. Extract the content (in the main variable x₀)
+  2. Square-free factorization
+  3. Wang leading-coefficient preprocessing
+  4. Choose evaluation points, factor the univariate image
+  5. EEZ variable-by-variable Hensel lifting
+  6. p-adic coefficient lifting (when the leading coefficient is nonconstant)
+  7. Zassenhaus recombination
+</code></pre>
+<h3 id="performance-characteristics"><a class="header" href="#performance-characteristics">Performance Characteristics</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Algorithm</th><th>Time complexity</th><th>Space complexity</th><th>Use case</th></tr></thead><tbody>
+<tr><td>Euclidean GCD (PRS)</td><td>$O(n^2)$</td><td>$O(n)$</td><td>Low degree ($\lesssim 16$)</td></tr>
+<tr><td>Brown modular GCD</td><td>$O(n^2 \cdot k)$</td><td>$O(n \cdot k)$</td><td>High-degree $\mathbb{Z}[x]$, $k$ = number of primes</td></tr>
+<tr><td>Hensel lifting</td><td>$O(n^2 \cdot \log B)$</td><td>$O(n \cdot r)$</td><td>$r$ factors, $B$ = Mignotte bound</td></tr>
+<tr><td>Zassenhaus recombination</td><td>$O(2^r \cdot n)$</td><td>$O(n \cdot r)$</td><td>$r$ mod-$p$ factors</td></tr>
+<tr><td>Berlekamp</td><td>$O(n^3 + r \cdot n^2 p)$</td><td>$O(n^2)$</td><td>Small $p$</td></tr>
+<tr><td>Cantor–Zassenhaus</td><td>$O(n^3 \log p)$</td><td>$O(n)$</td><td>Large $p$</td></tr>
+<tr><td>Wang EEZ</td><td>Exponential in the number of variables</td><td>Multivariate polynomials</td><td>Multivariate factorization</td></tr>
+<tr><td>Trager</td><td>$O(n^3 [K:\mathbb{Q}]^2)$</td><td>$O(n \cdot [K:\mathbb{Q}])$</td><td>Algebraic number fields</td></tr>
+</tbody></table>
+</div>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><strong>[Gathen–Gerhard]</strong> J. von zur Gathen and J. Gerhard, <em>Modern Computer Algebra</em>, 3rd ed., Cambridge University Press, 2013. Chapters 14–15 (factoring), 18 (GCD).</li>
+<li><strong>[Brown]</strong> W. S. Brown, "On Euclid's Algorithm and the Computation of Polynomial Greatest Common Divisors," <em>J. ACM</em>, 18(4):478–504, 1971.</li>
+<li><strong>[Zassenhaus]</strong> H. Zassenhaus, "On Hensel Factorization I," <em>J. Number Theory</em>, 1(3):291–311, 1969.</li>
+<li><strong>[Wang]</strong> P. S. Wang, "An Improved Multivariate Polynomial Factoring Algorithm," <em>Math. Comp.</em>, 32(144):1215–1231, 1978.</li>
+<li><strong>[Berlekamp]</strong> E. R. Berlekamp, "Factoring Polynomials over Large Finite Fields," <em>Math. Comp.</em>, 24(111):713–735, 1970.</li>
+<li><strong>[Cantor–Zassenhaus]</strong> D. G. Cantor and H. Zassenhaus, "A New Algorithm for Factoring Polynomials over Finite Fields," <em>Math. Comp.</em>, 36(154):587–592, 1981.</li>
+<li><strong>[Trager]</strong> B. M. Trager, "Algebraic Factoring and Rational Function Integration," <em>Proc. SYMSAC '76</em>, pp. 219–226, 1976.</li>
+<li><strong>[Mignotte]</strong> M. Mignotte, <em>Mathematics for Computer Algebra</em>, Springer, 1992.</li>
+<li><strong>[Geddes–Czapor–Labahn]</strong> K. O. Geddes, S. R. Czapor, and G. Labahn, <em>Algorithms for Computer Algebra</em>, Kluwer, 1992. Chapters 6 (multivariate factoring), 7 (GCD).</li>
+<li><strong>[Knuth]</strong> D. E. Knuth, <em>The Art of Computer Programming</em>, Vol. 2, §4.6.2, Addison-Wesley, 1997.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/linear-algebra.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/groebner-theory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/linear-algebra.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/groebner-theory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

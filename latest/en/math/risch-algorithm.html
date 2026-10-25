@@ -279,13 +279,16 @@ relations that cannot be decided are still declined honestly.</li>
 </ul>
 </li>
 <li>
-<p><strong>Integrate the logarithmic part</strong>: for $a_1/d_1$ ($d_1$ square-free), check whether it matches the <strong>logarithmic derivative identity</strong>.</p>
+<p><strong>Integrate the logarithmic part</strong>: for $a_1/d_1$ ($d_1$ square-free), first check the <strong>logarithmic derivative identity</strong> (the fast path), and when it misses, run the <strong>Rothstein–Trager resultant method</strong> (since 0.29.0, rational roots only; irrational and non-constant roots decline honestly).</p>
 </li>
 <li>
 <p><strong>Base field</strong> $\mathbb{Q}(x)$: delegate to the rational-function integrator.</p>
 </li>
 </ol>
 <p>The results are assembled into <code>LevelResult { elem, logs, extras }</code>, where <code>elem</code> is the field-element part, <code>logs</code> is the logarithmic part of the form $\sum c_i \log(v_i)$, and <code>extras</code> is the part that could not be integrated.</p>
+<blockquote>
+<p><strong>New in 0.29.0 (Laurent split at hyperexponential levels)</strong>: at a level $t_\ell = \exp u$, $t$ divides its own derivative ($Dt = Du \cdot t$) — $t$ is a <strong>special</strong> polynomial, and a denominator with a $t$-power factor must <strong>not</strong> go through Hermite reduction (the $\gcd(v, Dv) = 1$ precondition fails; 0.28.0's tower check caught a latent negative-power coefficient mis-scaling this way). The denominator is now split as $t^k \cdot d'$ with $\gcd(d', t) = 1$; the $t^k$ part is integrated layer by layer through Risch differential equations, and only $d'$ reaches Hermite.</p>
+</blockquote>
 <h3 id="hermite-reduction"><a class="header" href="#hermite-reduction">Hermite Reduction</a></h3>
 <p><strong>Goal</strong>: decompose a rational function $a/d$ into an "already integrated" part plus a "simpler" remainder (the denominator of the remainder is square-free).</p>
 <p><strong>Algorithm</strong> (Hermite reduction as in Bronstein ch. 2; oCAS uses the square-free-factorization recursive form):</p>
@@ -326,10 +329,18 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <p>When $4c - b^2 &lt; 0$ (real-root case), $\arctan$ becomes $\text{artanh}$ (inverse hyperbolic tangent), corresponding to the logarithmic form.</p>
 <h3 id="the-risch-differential-equation"><a class="header" href="#the-risch-differential-equation">The Risch Differential Equation</a></h3>
 <p>The central subproblem of the Risch algorithm is solving the <strong>Risch differential equation</strong> (RDE).</p>
-<p><strong>Problem</strong>. Given elements $f, g$ of the differential field $k_\ell$ (neither containing the top-level variable $t_\ell$), find $q \in k_\ell[t_\ell]$ satisfying:</p>
+<p><strong>Problem</strong> (the complete fragment since 0.29.0). Given elements $f, g$ of the differential field $k_\ell$ (<strong>either may contain the top-level variable</strong> $t_\ell$), find $q \in k_\ell(t_\ell)$ (a <strong>rational function</strong>, no longer restricted to polynomials) satisfying:</p>
 <p>$$Dq + f \cdot q = g$$</p>
-<p>where $D$ is the tower derivation (total derivative with respect to $t_\ell$). Note that the coefficients of $f$ and $g$ lie in $k_\ell$ and $q$ is a polynomial in $k_\ell[t_\ell]$.</p>
-<p><strong>Why only polynomial solutions?</strong> Rational-function solutions $q = p/d$ require an additional denominator-bound analysis, a piece not covered by the current oCAS implementation. When <code>None</code> is returned, the caller falls back to other integration methods.</p>
+<p>where $D$ is the tower derivation (total derivative with respect to $t_\ell$).</p>
+<p><strong>The solving pipeline</strong> (ported function-by-function against SymPy 1.14's <code>integrals/rde.py</code>, itself a mirror of Bronstein Ch. 6):</p>
+<ol>
+<li><strong>Weak normalization</strong> (Thm 6.1.1): absorb every positive-integer residue of $f$ into a logarithmic derivative, giving $f' = f - Dq_{wn}/q_{wn}$; the original equation is equivalent to $Dz + f'z = q_{wn},g$ with $z = q_{wn},y$.</li>
+<li><strong>Normal denominator bound</strong> (Thm 6.1.2): compute $h_n$ so that $q_2 = z \cdot h_n$ is polynomial at every normal irreducible, reducing the equation to $a \cdot Dq_2 + b \cdot q_2 = c$.</li>
+<li><strong>Special denominator bound</strong> (Thm 6.2.1): at hyperexponential levels handle the powers of $t$ (the special polynomial): $r = q_2 \cdot t^\nu \in k[t]$, where $\nu$ follows from the $t$-adic orders of $b$ and $c$; when $\nu_b = 0$ the <strong>parametric logarithmic derivative</strong> refinement sharpens $\nu$ exactly (implemented over the base field $\mathbb{Q}(x)$ since 0.29.0).</li>
+<li><strong>Degree bound</strong> (§6.3): an upper bound $n$ on $\deg r$ (the <code>limited_integrate</code> refinements are not ported — they can only lower the bound, and a missed solution becomes an honest decline, never a wrong answer).</li>
+<li><strong>SPDE</strong> (Rothstein's special polynomial differential equation): reduce any $a \neq 1$ equation round by round to one with constant $a$, $Dh + Bh = C$.</li>
+<li><strong>Polynomial-RDE dispatch</strong>: <code>no_cancel_b_large</code> (leading-term peel when no cancellation is possible); the cancellation cases go through <code>cancel_exp</code> / <code>cancel_primitive</code>, <strong>recursing one level down into the full RDE</strong> — which is where rational solutions at lower levels get used (<code>q = 1/t</code> is produced exactly this way).</li>
+</ol>
 <h4 id="rde-over-the-base-field-mathbbqx"><a class="header" href="#rde-over-the-base-field-mathbbqx">RDE over the Base Field $\mathbb{Q}(x)$</a></h4>
 <p>Over the base field $k_0 = \mathbb{Q}(x)$, the RDE becomes the ordinary differential equation $q'(x) + f(x) \cdot q(x) = g(x)$.</p>
 <p><strong>Algorithm</strong> (<code>base_rde</code>):</p>
@@ -569,10 +580,10 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <h3 id="limitations-and-fallback-strategy"><a class="header" href="#limitations-and-fallback-strategy">Limitations and Fallback Strategy</a></h3>
 <p>The current implementation of the Risch algorithm has the following limitations:</p>
 <div class="table-wrapper"><table><thead><tr><th>Limitation</th><th>Reason</th><th>Fallback behavior</th></tr></thead><tbody>
-<tr><td>Only polynomial solutions of the RDE</td><td>Rational solutions need denominator-bound analysis</td><td>Return <code>None</code>; the caller tries other layers</td></tr>
-<tr><td>At tower levels the logarithmic part only uses the logarithmic-derivative identity $a_1 = c \cdot Dd_1$</td><td>The full logarithmic part needs tower-level Rothstein–Trager / trace-function techniques</td><td>Return the unevaluated form (the base field $\mathbb{Q}(x)$ still gets the full treatment)</td></tr>
+<tr><td><del>Only polynomial solutions of the RDE</del> (since 0.29.0: the full rational fragment — weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions; the <code>limited_integrate</code> refinements and the higher-level <code>parametric_log_deriv</code> are not implemented)</td><td>Refinements only lower the degree bound; a miss is an honest decline</td><td>Return <code>None</code>; the caller tries other layers</td></tr>
+<tr><td>At tower levels the logarithmic part (since 0.29.0: Rothstein–Trager, <strong>rational roots only</strong>; irrational/non-constant roots decline)</td><td>Algebraic roots need 0.30.0's algebraic extensions</td><td>Return the unevaluated form</td></tr>
 <tr><td>Algebraic functions ($\sqrt{x}$, etc.) not supported</td><td>Needs algebraic-function field extensions</td><td>Common patterns are covered by the heuristic trigonometric substitution</td></tr>
-<tr><td>Conservative rejection of algebraically dependent generators (exact <strong>merging</strong> since 0.28.0)</td><td>Detecting relations like $\log(2x)$ vs. $\log(x)$</td><td>Return <code>None</code></td></tr>
+<tr><td>Partial merging of algebraically dependent generators (six exact classes since 0.28.0, plus $\exp(ku) = \exp(u)^k$ since 0.29.0; fractional $\exp(u/k)$ would need re-basing, not implemented)</td><td>Relation detection is incomplete</td><td>Return <code>None</code></td></tr>
 <tr><td>Hyperexponential RDEs containing $I$</td><td>The RDE solver works only over $\mathbb{Q}[x]$</td><td>Trigonometric integrands are returned in unevaluated form</td></tr>
 </tbody></table>
 </div>

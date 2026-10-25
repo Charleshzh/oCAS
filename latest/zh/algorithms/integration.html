@@ -237,10 +237,13 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 每个 <code>tᵢ</code> 是下层域上的 <code>log</code> 或 <code>exp</code>，然后递归积分（Bronstein
 《Symbolic Integration I》第 5 章）：</p>
 <ul>
-<li>每层由 Hermite 约化分出有理部分；</li>
-<li>对数部分使用对数导数恒等式；</li>
+<li>每层由 Hermite 约化分出有理部分（超指数层的 <code>t</code> 幂分母先按
+Laurent 多项式拆出，0.29.0）；</li>
+<li>对数部分先试对数导数恒等式（快路径），未命中则走
+Rothstein–Trager 结式方法（仅限 ℚ 根，0.29.0）；</li>
 <li>多项式部分在 <code>log</code> 层用待定系数、在 <code>exp</code> 层用 Risch 微分方程
-<code>Dq + f·q = g</code> 积分；</li>
+<code>Dq + f·q = g</code> 积分——0.29.0 起在<strong>完整有理片段</strong>上求解
+（弱规范化、分母界、次数界、SPDE、抵消递归）；</li>
 <li>基域 <code>ℚ(x)</code> 委托给有理函数积分器。</li>
 </ul>
 <p>塔递归深度受 <code>MAX_RISCH_DEPTH = 16</code> 上限约束：超过该深度时 Risch 层
@@ -256,8 +259,10 @@ let ctx = AtomArena::new(&amp;arena);
 let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
 <h3 id="范围限制"><a class="header" href="#范围限制">范围限制</a></h3>
-<p>当前片段只求 Risch 微分方程的<strong>多项式</strong>解，对数部分只使用对数导数
-恒等式。因此：</p>
+<p>0.29.0 起 Risch 微分方程在<strong>完整有理片段</strong>上求解（含分母界），
+对数部分用 Rothstein–Trager 但<strong>仅限 ℚ 根</strong>——无理数根、非常量根，
+以及未移植的 <code>limited_integrate</code> / 高层 <code>parametric_log_deriv</code> 改进，
+一律诚实回退。因此：</p>
 <ul>
 <li><code>∫ exp(x)/x dx</code> 没有初等原函数 —— 由特殊函数表回答为 <code>Ei(x)</code>。</li>
 <li>某些需要自由选择常数使下层可积的 <code>log</code> 塔情形（如 <code>log(x+1)</code>）
