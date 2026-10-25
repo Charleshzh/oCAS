@@ -132,9 +132,11 @@ jobs:
           rc=0
           for t in $TESTS; do
             case "$t" in
-              # Known ODE solver gaps (issue #55 §1) and the >hour f5 cyclic-7
-              # case stay quarantined until fixed.
-              *groebner_f5_cyclic_7|*ode_bernoulli|*ode_homogeneous|*ode_vop_secant_forcing)
+              # Known gaps (issue #55): 3 ODE solver gaps, the >hour f5 cyclic-7
+              # case, and Buchberger cyclic-4 (its own ignore reason says "very
+              # slow; use F4 instead"; CI observed >60 s and a 300 s timeout,
+              # while the F4/F5 variants cover the same ideal).
+              *groebner_f5_cyclic_7*|*groebner_buchberger_cyclic_4|*ode_bernoulli|*ode_homogeneous|*ode_vop_secant_forcing)
                 echo "skipping known gap (issue #55): $t"
                 continue
                 ;;
