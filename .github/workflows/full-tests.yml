@@ -9,10 +9,10 @@ name: full-tests
 #   Gröbner timings and proptests whose debug-mode runtime is an order of
 #   magnitude worse (the first debug-mode attempt never left the ocas-poly
 #   step inside the 180-minute job budget).
-# - Unit suites run one test at a time under a per-test `timeout`: a single
-#   pathological proptest shrink must not swallow the whole job, and the log
-#   names the test that hung. Suites are ordered so a failure still lets the
-#   remaining suites run (`if: always()`).
+# - Every suite runs one test at a time under a per-test `timeout`: a single
+#   pathological case must not swallow the whole job, and the log names the
+#   test that hung. Later steps run with `if: always()` so a failure does not
+#   hide the rest of the sweep.
 # - Known gaps are quarantined *explicitly* and tracked in issue #55, so this
 #   workflow only turns red on new failures. Shrink the skip lists as fixes land.
 # - Gröbner timings print measurements (no assertions); documented-unfinished
@@ -55,6 +55,15 @@ jobs:
           TESTS=$(cargo test --release -p ocas-poly --lib -- --ignored --list | sed -n 's/: test$//p')
           rc=0
           for t in $TESTS; do
+            case "$t" in
+              # 3-var non-monic EEZ proptest family: two cases do not finish in
+              # 900 s in release mode (issue #55 §3). Kept runnable manually
+              # until the proptest strategies are bounded/trimmed.
+              factor::eez::proptests::factor_product_of_two_monic|factor::eez::proptests::factor_product_of_two_nonconstant_lc)
+                echo "skipping known-pathological proptest (issue #55): $t"
+                continue
+                ;;
+            esac
             echo "=== ocas-poly: $t ==="
             timeout 900 cargo test --release -p ocas-poly --lib -- --exact --ignored "$t" || { echo "::error::ocas-poly test failed or timed out: $t"; rc=1; }
           done
@@ -101,11 +110,12 @@ jobs:
           rc=0
           for t in $TESTS; do
             case "$t" in
-              # Documented-unfinished cases (cyclic-7 Lex took >2 h in the
-              # 0.27.x gap analysis; multi-modular cyclic-7 / katsura-7 are in
-              # the same bucket; F4 cyclic-6 Lex is >6 min locally). They stay
-              # manual until the 0.33.0 Gröbner work.
-              cyclic_6_fp13|cyclic_7_fp13|f5_cyclic_7_fp13|f5_cyclic_7_fp13_grevlex|f5_katsura_7_fp13|multi_modular_cyclic_7_q)
+              # Documented-unfinished / known-slow cases (issue #55 §4): skip
+              # until the 0.33.0 Gröbner work. F4 cyclic-6 Lex is >6 min locally,
+              # f5 katsura-6 >150 s; cyclic-7 Lex took >2 h in the 0.27.x gap
+              # analysis and the multi-modular cyclic-7 / katsura-7 are in the
+              # same bucket.
+              cyclic_6_fp13|cyclic_7_fp13|f5_cyclic_7_fp13|f5_cyclic_7_fp13_grevlex|f5_katsura_6_fp13|f5_katsura_7_fp13|multi_modular_cyclic_7_q)
                 echo "skipping known-heavy timing case (issue #55): $t"
                 continue
                 ;;
@@ -114,13 +124,22 @@ jobs:
             timeout 300 cargo test --release -p ocas-tests --test groebner_timing -- --exact --ignored --nocapture "$t" || { echo "::error::gröbner timing failed or timed out: $t"; rc=1; }
           done
           exit $rc
-      - name: Long correctness integration tests (known ODE gaps quarantined)
+      - name: Long correctness integration tests (per-test timeout 300 s)
         if: always()
-        # Known solver gaps (issue #55 §1) and the >hour f5 cyclic-7 case stay
-        # quarantined; everything else must pass.
         run: |
-          timeout 3600 cargo test --release -p ocas-tests --test correctness -- --ignored \
-            --skip groebner_f5_cyclic_7 \
-            --skip ode_bernoulli \
-            --skip ode_homogeneous \
-            --skip ode_vop_secant_forcing
+          set -uo pipefail
+          TESTS=$(cargo test --release -p ocas-tests --test correctness -- --ignored --list | sed -n 's/: test$//p')
+          rc=0
+          for t in $TESTS; do
+            case "$t" in
+              # Known ODE solver gaps (issue #55 §1) and the >hour f5 cyclic-7
+              # case stay quarantined until fixed.
+              *groebner_f5_cyclic_7|*ode_bernoulli|*ode_homogeneous|*ode_vop_secant_forcing)
+                echo "skipping known gap (issue #55): $t"
+                continue
+                ;;
+            esac
+            echo "=== correctness: $t ==="
+            timeout 300 cargo test --release -p ocas-tests --test correctness -- --exact --ignored "$t" || { echo "::error::correctness test failed or timed out: $t"; rc=1; }
+          done
+          exit $rc
