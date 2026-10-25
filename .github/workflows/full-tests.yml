@@ -4,16 +4,20 @@ name: full-tests
 # the normal PR CI because each one takes minutes: the deep correctness cases,
 # slow multivariate-factorization proptests, release-mode Gröbner timings, etc.
 #
-# Design notes (learned from the first run on 2026-10-25):
+# Design notes (learned from the first dispatches on 2026-10-25):
 # - Everything runs in `--release`: the ignored set contains release-mode
 #   Gröbner timings and proptests whose debug-mode runtime is an order of
 #   magnitude worse (the first debug-mode attempt never left the ocas-poly
 #   step inside the 180-minute job budget).
-# - The Gröbner timing suite contains cases that are documented as unfinished
+# - Unit suites run one test at a time under a per-test `timeout`: a single
+#   pathological proptest shrink must not swallow the whole job, and the log
+#   names the test that hung. Suites are ordered so a failure still lets the
+#   remaining suites run (`if: always()`).
+# - The Gröbner timing suite contains cases documented as unfinished
 #   (cyclic-7 Lex took >2 h in the 0.27.x gap analysis; katsura-7 and the
 #   multi-modular cyclic-7 are in the same bucket). They are skipped here and
 #   stay manual until the 0.33.0 Gröbner work lands; the bounded cases still
-#   run weekly.
+#   run weekly (they print timings, they do not assert thresholds).
 # - Failures are the point of this workflow: triage them, link an issue, and
 #   never delete or weaken a test just to make the workflow green.
 
@@ -38,7 +42,7 @@ jobs:
   unit-ignored:
     name: Ignored unit tests (release)
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@1.97.1
@@ -47,15 +51,32 @@ jobs:
         run: cargo test --release -p ocas-core --lib -- --ignored
       - name: Long unit tests — ocas-domain
         run: cargo test --release -p ocas-domain --lib -- --ignored
-      - name: Long unit tests — ocas-poly
-        run: cargo test --release -p ocas-poly --lib -- --ignored
-      - name: Long unit tests — ocas-calc
-        run: cargo test --release -p ocas-calc --lib -- --ignored
+      - name: Long unit tests — ocas-poly (per-test timeout 300 s)
+        run: |
+          set -uo pipefail
+          TESTS=$(cargo test --release -p ocas-poly --lib -- --ignored --list | sed -n 's/: test$//p')
+          rc=0
+          for t in $TESTS; do
+            echo "=== ocas-poly: $t ==="
+            timeout 300 cargo test --release -p ocas-poly --lib -- --exact --ignored "$t" || { echo "::error::ocas-poly test failed or timed out: $t"; rc=1; }
+          done
+          exit $rc
+      - name: Long unit tests — ocas-calc (per-test timeout 300 s)
+        if: always()
+        run: |
+          set -uo pipefail
+          TESTS=$(cargo test --release -p ocas-calc --lib -- --ignored --list | sed -n 's/: test$//p')
+          rc=0
+          for t in $TESTS; do
+            echo "=== ocas-calc: $t ==="
+            timeout 300 cargo test --release -p ocas-calc --lib -- --exact --ignored "$t" || { echo "::error::ocas-calc test failed or timed out: $t"; rc=1; }
+          done
+          exit $rc
 
   integration-ignored:
     name: Ignored integration tests (release)
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 170
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@1.97.1
@@ -67,15 +88,18 @@ jobs:
         run: |
           cd ocas-tests
           uv sync
-      - name: Long correctness integration tests
-        # groebner_f5_cyclic_7 is a known-unfinished >hour case (same bucket as
-        # the Gröbner work deferred to 0.33.0); everything else runs.
-        run: cargo test --release -p ocas-tests --test correctness -- --ignored --skip groebner_f5_cyclic_7
       - name: Long Gröbner timing tests (bounded cases only)
         # cyclic-7 Lex / katsura-7 / multi-modular cyclic-7 are documented as
         # unfinished (>2 h) in GAP_ANALYSIS; they stay manual until 0.33.0.
         run: |
-          cargo test --release -p ocas-tests --test groebner_timing -- --ignored \
+          timeout 1800 cargo test --release -p ocas-tests --test groebner_timing -- --ignored \
             --skip cyclic_7 \
             --skip katsura_7 \
             --skip multi_modular_cyclic_7
+      - name: Long correctness integration tests
+        if: always()
+        # groebner_f5_cyclic_7 is a known-unfinished >hour case (same bucket as
+        # the Gröbner work deferred to 0.33.0); everything else runs.
+        run: |
+          timeout 3600 cargo test --release -p ocas-tests --test correctness -- --ignored \
+            --skip groebner_f5_cyclic_7
