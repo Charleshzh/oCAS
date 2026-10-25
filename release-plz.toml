@@ -9,6 +9,10 @@
 # (the release-plz workflow creates that root tag after a successful publish).
 # Per-crate tags are still created and are useful as crates.io lineage markers.
 git_release_enable = false
+# The project keeps one root CHANGELOG.md (bilingual). Disable per-crate
+# changelog updates so release-plz does not open release PRs that only add
+# `<crate>/CHANGELOG.md` files (the 0.30.0 window created two such PRs, #53/#54).
+changelog_update = false
 # Don't let release-plz re-verify each crate with `cargo package` in a
 # stripped temporary directory: that context drops the workspace root and
 # cannot resolve `workspace = true` manifests (cargo metadata fails with
