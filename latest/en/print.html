@@ -218,7 +218,7 @@
 <tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27-line close-out: special-function derivative table + oracle heads (<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel), special-function reduction families (polynomial × <code>F</code>, <code>Ei(n,·)</code>, <code>F/xᵐ</code>, <code>F²</code>), exact linear-square fold <code>p²+2pq+q² → (p+q)²</code>, affine-argument half-power front-end with the sheet factor on both branches; Rubi coverage 18.45% → 19.56% (+21 solved, 0 regressed, mismatches 0, timeouts 13 → 12)</td></tr>
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>Integration-mechanism correctness foundation: symbolic certificate engine (structural/elementary-field layers with <code>I² = −1</code> reduction and dependent-atom merging, deterministic budgets), three-valued <code>Outcome</code> and <code>integrate_outcome</code> (exposed to Python/C), expression-level cycle detection (budget-aware entry keys plus a separate residue budget), regular-tower dependency merging, in-tower exact verification of Risch results (caught and contained a latent wrong answer), and a hyperbolic front-end disabled for its wall-clock cost; Rubi coverage 19.56% → 19.61% (371 solved, +1 newly solved / 0 regressed), mismatches 0, timeouts flat at 12, wall clock −6.0%; <code>certified_rate = 28.8%</code> (target 1.0 not met, recorded honestly)</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>Completing the transcendental Risch fragment: rational solutions of the Risch differential equation over the full rational fragment (weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions), Rothstein–Trager logarithmic part at every tower level (resultant by value interpolation, ℚ rational-root sieve with an exact completeness check, per-root gcd self-verified by <code>Πvᵢ == d1</code>), coupled-system infrastructure <code>integral/coupled.rs</code> (shipped unwired), random-tower proptests (every residue-free answer must certify; <code>certified_rate = 1.0</code> there); the latent exp-level Laurent-split wrong answer fixed; Rubi coverage 19.61% → 19.98% (378 solved, +7 newly solved / 0 regressed), verified 351/378, mismatches 0, timeouts flat at 12, wall clock 439.6 s, <code>certified_rate</code> 28.8% → 29.1%</td></tr>
-<tr><td><strong>0.30.0</strong></td><td>2026-10-24</td><td>Algebraic extensions and inverse-function substitution: RT algebraic constant roots (base-level real/complex quadratics and biquadratic quartics <code>Az⁴+Bz²+C</code>, complex quadratics at tower levels, each self-verified in the extension), the certificate <strong>radical layer</strong> (<code>CertMethod::RadicalField</code>: <code>sqrt(S)</code> / <code>S^(p/q)</code> unified as <code>r^q = S</code> with triangular reduction), multi-radical-base reduction (<code>integral/multi_radical.rs</code>: MR-L Möbius rationalization, gated same-radicand merges, MR-G/R/I/P), and the inverse-function substitution engine (<code>integral/inverse_trig.rs</code> M4: 11 heads × affine arguments × integer kernel powers × polynomial weights); Rubi solved 378 → 451 (coverage 23.84%), verified 410/451, <code>certified_rate</code> 29.1% → 48.8% (220/451), mismatches 0, timeouts flat at 12, wall clock 489.5 s, 0 regressions, 0 certificate false positives; radical bucket 51 → 84, inverse-trig-hyper 8 → 22 (the ≥48/146 line not met, recorded honestly)</td></tr>
+<tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>Algebraic extensions and inverse-function substitution: RT algebraic constant roots (base-level real/complex quadratics and biquadratic quartics <code>Az⁴+Bz²+C</code>, complex quadratics at tower levels, each self-verified in the extension), the certificate <strong>radical layer</strong> (<code>CertMethod::RadicalField</code>: <code>sqrt(S)</code> / <code>S^(p/q)</code> unified as <code>r^q = S</code> with triangular reduction), multi-radical-base reduction (<code>integral/multi_radical.rs</code>: MR-L Möbius rationalization, gated same-radicand merges, MR-G/R/I/P), and the inverse-function substitution engine (<code>integral/inverse_trig.rs</code> M4: 11 heads × affine arguments × integer kernel powers × polynomial weights); Rubi solved 378 → 451 (coverage 23.84%), verified 410/451, <code>certified_rate</code> 29.1% → 48.8% (220/451), mismatches 0, timeouts flat at 12, wall clock 489.5 s, 0 regressions, 0 certificate false positives; radical bucket 51 → 84, inverse-trig-hyper 8 → 22 (the ≥48/146 line not met, recorded honestly)</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -25210,25 +25210,29 @@ uv run maturin develop
 uv run python -m pytest ../ocas-tests/tests/python/ -v
 </code></pre>
 <h2 id="release-process"><a class="header" href="#release-process">Release process</a></h2>
-<p>Releases are automated; the root <code>vX.Y.Z</code> tag is the release switch.</p>
+<p>Releases are automated and CI-gated; the root <code>vX.Y.Z</code> tag is the release switch.
+There is only one changelog — the root <code>CHANGELOG.md</code> (<code>release-plz.toml</code> sets
+<code>changelog_update = false</code>; no per-crate changelogs or release PRs).</p>
 <ol>
 <li>
-<p><strong>Release PR and tag creation.</strong> After <code>main</code> moves, release-plz
-(<code>.github/workflows/release-plz.yml</code>) opens (and later updates) a release PR
-that bumps <code>workspace.package.version</code>. When that PR is merged, the workflow
-first waits for CI to be green on the merge commit, then publishes the crates
-in dependency order, and creates the root <code>vX.Y.Z</code> tag. Tag creation needs
-the <code>RELEASE_PLZ_TOKEN</code> secret (a PAT with <code>contents: write</code>): a tag pushed
-with the default <code>GITHUB_TOKEN</code> does not trigger the downstream workflows.</p>
+<p><strong>Version bump and tag creation.</strong> Bump <code>workspace.package.version</code> and
+<code>CHANGELOG.md</code> on <code>main</code> yourself (12 publishable crates; <code>ocas-tests</code> is
+<code>publish = false</code>), then push. The <code>release-plz</code> workflow waits for CI to be
+green on that exact commit, publishes the crates in dependency order, and
+creates the root <code>vX.Y.Z</code> tag. Tag creation needs the <code>RELEASE_PLZ_TOKEN</code>
+secret (a fine-grained PAT with <code>Contents: Read and write</code>): a tag pushed with
+the default <code>GITHUB_TOKEN</code> does not trigger the downstream workflows. If the
+version did not change, release-plz is a no-op.</p>
 </li>
 <li>
 <p><strong>Tag fan-out.</strong></p>
 <ul>
 <li><code>release.yml</code> validates the tag against the workspace version, dry-runs
-<code>cargo publish</code> for every crate, and attaches the C artifact to the
+<code>cargo publish</code> for every crate, and attaches the C artifacts to the
 project-level GitHub Release.</li>
 <li><code>wheels.yml</code> builds the Python wheels and sdist with maturin and publishes
-to PyPI (pre-release tags go to TestPyPI).</li>
+to PyPI (pre-release tags go to TestPyPI); the <code>pypi</code> environment asks an
+owner to approve the publish job.</li>
 <li><code>docs.yml</code> rebuilds the bilingual mdBook and publishes both
 <code>/latest/{en,zh}/</code> and a frozen <code>/v&lt;version&gt;/{en,zh}/</code> snapshot to GitHub
 Pages.</li>
@@ -25240,13 +25244,15 @@ Pages.</li>
 <pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
 git push origin vX.Y.Z
 </code></pre>
-<p>Do not run the publish steps locally; publishing is done by CI.</p>
+<p>Do not run the publish steps locally; publishing is done by CI. <code>v*</code> tags are
+protected, so creation is allowed but deletion/force-push is not.</p>
 </li>
 <li>
-<p><strong>Version surfaces.</strong> Keep <code>Cargo.toml</code>, <code>CHANGELOG.md</code>, the READMEs, and the
-version tables in <code>docs/book/*/src/introduction.md</code> in sync.
-<code>consistency.yml</code> enforces this on every push and pull request via
-<code>ocas-tests/scripts/check_release_consistency.py</code>.</p>
+<p><strong>Version surfaces.</strong> Keep <code>Cargo.toml</code>, <code>CHANGELOG.md</code>, the READMEs, the
+version tables in <code>docs/book/*/src/introduction.md</code>, and the <code>Current version</code>
+line in <code>AGENTS.md</code> in sync. <code>consistency.yml</code> enforces this on every push and
+pull request via <code>ocas-tests/scripts/check_release_consistency.py</code>. Rotate
+<code>CARGO_REGISTRY_TOKEN</code> / <code>RELEASE_PLZ_TOKEN</code> before they expire.</p>
 </li>
 </ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="external-references"><a class="header" href="#external-references">External References</a></h1>

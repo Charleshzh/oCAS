@@ -230,25 +230,29 @@ uv run maturin develop
 uv run python -m pytest ../ocas-tests/tests/python/ -v
 </code></pre>
 <h2 id="release-process"><a class="header" href="#release-process">Release process</a></h2>
-<p>Releases are automated; the root <code>vX.Y.Z</code> tag is the release switch.</p>
+<p>Releases are automated and CI-gated; the root <code>vX.Y.Z</code> tag is the release switch.
+There is only one changelog — the root <code>CHANGELOG.md</code> (<code>release-plz.toml</code> sets
+<code>changelog_update = false</code>; no per-crate changelogs or release PRs).</p>
 <ol>
 <li>
-<p><strong>Release PR and tag creation.</strong> After <code>main</code> moves, release-plz
-(<code>.github/workflows/release-plz.yml</code>) opens (and later updates) a release PR
-that bumps <code>workspace.package.version</code>. When that PR is merged, the workflow
-first waits for CI to be green on the merge commit, then publishes the crates
-in dependency order, and creates the root <code>vX.Y.Z</code> tag. Tag creation needs
-the <code>RELEASE_PLZ_TOKEN</code> secret (a PAT with <code>contents: write</code>): a tag pushed
-with the default <code>GITHUB_TOKEN</code> does not trigger the downstream workflows.</p>
+<p><strong>Version bump and tag creation.</strong> Bump <code>workspace.package.version</code> and
+<code>CHANGELOG.md</code> on <code>main</code> yourself (12 publishable crates; <code>ocas-tests</code> is
+<code>publish = false</code>), then push. The <code>release-plz</code> workflow waits for CI to be
+green on that exact commit, publishes the crates in dependency order, and
+creates the root <code>vX.Y.Z</code> tag. Tag creation needs the <code>RELEASE_PLZ_TOKEN</code>
+secret (a fine-grained PAT with <code>Contents: Read and write</code>): a tag pushed with
+the default <code>GITHUB_TOKEN</code> does not trigger the downstream workflows. If the
+version did not change, release-plz is a no-op.</p>
 </li>
 <li>
 <p><strong>Tag fan-out.</strong></p>
 <ul>
 <li><code>release.yml</code> validates the tag against the workspace version, dry-runs
-<code>cargo publish</code> for every crate, and attaches the C artifact to the
+<code>cargo publish</code> for every crate, and attaches the C artifacts to the
 project-level GitHub Release.</li>
 <li><code>wheels.yml</code> builds the Python wheels and sdist with maturin and publishes
-to PyPI (pre-release tags go to TestPyPI).</li>
+to PyPI (pre-release tags go to TestPyPI); the <code>pypi</code> environment asks an
+owner to approve the publish job.</li>
 <li><code>docs.yml</code> rebuilds the bilingual mdBook and publishes both
 <code>/latest/{en,zh}/</code> and a frozen <code>/v&lt;version&gt;/{en,zh}/</code> snapshot to GitHub
 Pages.</li>
@@ -260,13 +264,15 @@ Pages.</li>
 <pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
 git push origin vX.Y.Z
 </code></pre>
-<p>Do not run the publish steps locally; publishing is done by CI.</p>
+<p>Do not run the publish steps locally; publishing is done by CI. <code>v*</code> tags are
+protected, so creation is allowed but deletion/force-push is not.</p>
 </li>
 <li>
-<p><strong>Version surfaces.</strong> Keep <code>Cargo.toml</code>, <code>CHANGELOG.md</code>, the READMEs, and the
-version tables in <code>docs/book/*/src/introduction.md</code> in sync.
-<code>consistency.yml</code> enforces this on every push and pull request via
-<code>ocas-tests/scripts/check_release_consistency.py</code>.</p>
+<p><strong>Version surfaces.</strong> Keep <code>Cargo.toml</code>, <code>CHANGELOG.md</code>, the READMEs, the
+version tables in <code>docs/book/*/src/introduction.md</code>, and the <code>Current version</code>
+line in <code>AGENTS.md</code> in sync. <code>consistency.yml</code> enforces this on every push and
+pull request via <code>ocas-tests/scripts/check_release_consistency.py</code>. Rotate
+<code>CARGO_REGISTRY_TOKEN</code> / <code>RELEASE_PLZ_TOKEN</code> before they expire.</p>
 </li>
 </ol>
 

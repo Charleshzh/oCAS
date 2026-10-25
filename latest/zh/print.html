@@ -218,7 +218,7 @@
 <tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27 线收尾：特殊函数导数表 + oracle 扩头（<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel）、特殊函数归约族（多项式 × <code>F</code>、<code>Ei(n,·)</code>、<code>F/xᵐ</code>、<code>F²</code>）、精确线性平方折叠 <code>p²+2pq+q² → (p+q)²</code>、半幂前端仿射变元与两支片层因子；Rubi 覆盖率 18.45% → 19.56%（新解 21、回归 0、mismatches 0、超时 13 → 12）</td></tr>
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>积分机制正确性地基：符号证书引擎（结构/初等域 + <code>I² = −1</code> 约化 + 依赖原子合并，确定性预算）、三值 <code>Outcome</code> 与 <code>integrate_outcome</code>（Python/C 同步暴露）、表达式级循环检测（预算感知入口键 + 独立残项预算）、正则塔依赖生成元合并、Risch 结果塔内精确校验（抓到并兜住一个潜伏错案）、双曲前端因墙钟代价默认关闭；Rubi 覆盖率 19.56% → 19.61%（371 solved，+1 新解 0 回归），mismatches 0，超时 12 持平，墙钟 −6.0%；<code>certified_rate = 28.8%</code>（目标 1.0 未达，如实记录）</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>超越 Risch 补全：Risch 微分方程的有理解（完整有理片段：弱规范化、法/特殊分母界、次数界、SPDE、抵消递归）、各塔层的 Rothstein–Trager 对数部分（结果式值插值、ℚ 有理根筛 + 完备性判定、逐根 gcd 经 <code>Πvᵢ == d1</code> 自证）、耦合微分系统基础设施 <code>integral/coupled.rs</code>（<strong>未挂接</strong>）、塔随机通用性测试（凡无残项答案必须过证书门，该族 <code>certified_rate = 1.0</code>）；修复指数层 Laurent 拆分的潜伏错案；Rubi 覆盖率 19.61% → 19.98%（378 solved，新解 7 / 回归 0）、verified 351/378、mismatches 0、超时 12 持平、墙钟 439.6 s，<code>certified_rate</code> 28.8% → 29.1%</td></tr>
-<tr><td><strong>0.30.0</strong></td><td>2026-10-24</td><td>代数扩张与反函数代换：RT 代数常量根（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次因子，均在扩域内自证）、证书<strong>根式层</strong>（<code>CertMethod::RadicalField</code>：<code>sqrt(S)</code> / <code>S^(p/q)</code> 统一为 <code>r^q = S</code> 三角列约化）、多根式基归约（<code>integral/multi_radical.rs</code>：MR-L Möbius 有理化、带门同根合并、MR-G/R/I/P）、反函数代换引擎（<code>integral/inverse_trig.rs</code> M4：11 头 × 仿射变元 × 整数核幂 × 多项式权）；Rubi solved 378 → 451（coverage 23.84%）、verified 410/451、<code>certified_rate</code> 29.1% → 48.8%（220/451）、mismatches 0、超时 12 持平、墙钟 489.5 s、0 回归、证书假阳性 0；radical 桶 51 → 84、inverse-trig-hyper 8 → 22（≥48/146 口径未达，如实记录）</td></tr>
+<tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>代数扩张与反函数代换：RT 代数常量根（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次因子，均在扩域内自证）、证书<strong>根式层</strong>（<code>CertMethod::RadicalField</code>：<code>sqrt(S)</code> / <code>S^(p/q)</code> 统一为 <code>r^q = S</code> 三角列约化）、多根式基归约（<code>integral/multi_radical.rs</code>：MR-L Möbius 有理化、带门同根合并、MR-G/R/I/P）、反函数代换引擎（<code>integral/inverse_trig.rs</code> M4：11 头 × 仿射变元 × 整数核幂 × 多项式权）；Rubi solved 378 → 451（coverage 23.84%）、verified 410/451、<code>certified_rate</code> 29.1% → 48.8%（220/451）、mismatches 0、超时 12 持平、墙钟 489.5 s、0 回归、证书假阳性 0；radical 桶 51 → 84、inverse-trig-hyper 8 → 22（≥48/146 口径未达，如实记录）</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -25070,15 +25070,17 @@ uv run maturin develop
 uv run python -m pytest ../ocas-tests/tests/python/ -v
 </code></pre>
 <h2 id="发布流程"><a class="header" href="#发布流程">发布流程</a></h2>
-<p>发布已自动化；顶层 <code>vX.Y.Z</code> 标签就是发布开关。</p>
+<p>发布已自动化且有 CI 门禁；顶层 <code>vX.Y.Z</code> 标签就是发布开关。变更日志只有根
+<code>CHANGELOG.md</code> 一份（<code>release-plz.toml</code> 设 <code>changelog_update = false</code>，不生成
+per-crate CHANGELOG，也不创建发版 PR）。</p>
 <ol>
 <li>
-<p><strong>发版 PR 与打标签。</strong> <code>main</code> 前进后，release-plz
-（<code>.github/workflows/release-plz.yml</code>）会创建（并随后更新）一个提升
-<code>workspace.package.version</code> 的发版 PR。该 PR 合并后，workflow 先等待合并提交
-的 CI 变绿，再按依赖序发布各 crate，并创建顶层 <code>vX.Y.Z</code> 标签。打标签需要
-<code>RELEASE_PLZ_TOKEN</code> secret（具备 <code>contents: write</code> 权限的 PAT）：用默认
-<code>GITHUB_TOKEN</code> 推送的标签不会触发下游 workflow。</p>
+<p><strong>版本 bump 与打标签。</strong> 自行在 <code>main</code> 上提升 <code>workspace.package.version</code> 并更新
+<code>CHANGELOG.md</code>（12 个可发布 crate；<code>ocas-tests</code> 为 <code>publish = false</code>），然后 push。
+<code>release-plz</code> workflow 先等待该提交的 CI 变绿，再按依赖序发布各 crate，最后创建
+顶层 <code>vX.Y.Z</code> 标签。打标签需要 <code>RELEASE_PLZ_TOKEN</code> secret（具备
+<code>Contents: Read and write</code> 权限的 fine-grained PAT）：用默认 <code>GITHUB_TOKEN</code>
+推送的标签不会触发下游 workflow。版本未变化时 release-plz 自然 no-op。</p>
 </li>
 <li>
 <p><strong>标签触发的下游流程。</strong></p>
@@ -25086,7 +25088,7 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 <li><code>release.yml</code> 校验标签与工作区版本一致，对每个 crate 做 <code>cargo publish</code>
 试运行，并把 C 绑定产物附加到项目级 GitHub Release。</li>
 <li><code>wheels.yml</code> 用 maturin 构建 Python wheel 与 sdist 并发布到 PyPI（预发布
-标签发到 TestPyPI）。</li>
+标签发到 TestPyPI）；<code>pypi</code> environment 会要求 owner 批准发布 job。</li>
 <li><code>docs.yml</code> 重新构建双语 mdBook，并把 <code>/latest/{en,zh}/</code> 与冻结的
 <code>/v&lt;version&gt;/{en,zh}/</code> 版本快照部署到 GitHub Pages。</li>
 </ul>
@@ -25096,13 +25098,14 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 <pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
 git push origin vX.Y.Z
 </code></pre>
-<p>不要在本地执行发布步骤；发布由 CI 完成。</p>
+<p>不要在本地执行发布步骤；发布由 CI 完成。<code>v*</code> 受保护：可创建，不可删除/强推。</p>
 </li>
 <li>
-<p><strong>版本一致性。</strong> 保持 <code>Cargo.toml</code>、<code>CHANGELOG.md</code>、两个 README 与
-<code>docs/book/*/src/introduction.md</code> 中的版本表同步。<code>consistency.yml</code> 会在每次
-push 与 Pull Request 上通过 <code>ocas-tests/scripts/check_release_consistency.py</code>
-强制执行该检查。</p>
+<p><strong>版本一致性。</strong> 保持 <code>Cargo.toml</code>、<code>CHANGELOG.md</code>、两个 README、
+<code>docs/book/*/src/introduction.md</code> 中的版本表以及 <code>AGENTS.md</code> 的 <code>Current version</code>
+行同步。<code>consistency.yml</code> 会在每次 push 与 Pull Request 上通过
+<code>ocas-tests/scripts/check_release_consistency.py</code> 强制执行该检查。请在到期前轮换
+<code>CARGO_REGISTRY_TOKEN</code> / <code>RELEASE_PLZ_TOKEN</code>。</p>
 </li>
 </ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="外部参考"><a class="header" href="#外部参考">外部参考</a></h1>
