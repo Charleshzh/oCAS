@@ -216,29 +216,33 @@ cargo deny check
 
 **English**
 
-Releases are automated; the root `vX.Y.Z` tag is the release switch.
+Releases are automated and CI-gated; the root `vX.Y.Z` tag is the release switch. There is only one changelog — the root `CHANGELOG.md` (`release-plz.toml` sets `changelog_update = false`, so no per-crate changelogs or release PRs are generated).
 
-1. After `main` moves, release-plz (`.github/workflows/release-plz.yml`) opens (and later updates) a release PR that bumps `workspace.package.version`. When that PR is merged, the workflow waits for CI to be green on the merge commit, publishes the crates, and creates the root `vX.Y.Z` tag. Tag creation requires the `RELEASE_PLZ_TOKEN` secret (a PAT with `contents: write`); a tag pushed with the default `GITHUB_TOKEN` does not trigger downstream workflows.
-2. The tag push triggers `release.yml` (validates the tag against the workspace version and attaches the C artifact to the project-level GitHub Release), `wheels.yml` (builds wheels + sdist with maturin and publishes to PyPI; pre-release tags go to TestPyPI), and `docs.yml` (rebuilds the bilingual mdBook and publishes `/latest/{en,zh}/` plus a frozen `/v<version>/{en,zh}/` snapshot).
-3. Manual fallback for a commit that is on `main` and green in CI:
+1. Bump `workspace.package.version` and `CHANGELOG.md` on `main` yourself (12 publishable crates; `ocas-tests` is `publish = false`), then push. If the version did not change, release-plz is a no-op.
+2. The `release-plz` workflow waits for CI to be green on that exact commit (`preflight`), publishes the crates to crates.io in dependency order, and then creates the root `vX.Y.Z` tag. Tag creation needs the `RELEASE_PLZ_TOKEN` secret (a fine-grained PAT with `Contents: Read and write`); a tag pushed with the default `GITHUB_TOKEN` does not trigger the downstream workflows.
+3. The tag triggers `release.yml` (validates the tag against the workspace version, dry-runs packaging and attaches the C artifacts to the project-level GitHub Release), `wheels.yml` (builds wheels + sdist with maturin and publishes to PyPI; pre-release tags go to TestPyPI — note that the `pypi` environment asks an owner to approve the publish job), and `docs.yml` (publishes `/latest/{en,zh}/` plus a frozen `/v<version>/{en,zh}/` snapshot).
+4. Manual fallback for a commit that is on `main` and green in CI:
    ```bash
    git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
    git push origin vX.Y.Z
    ```
-4. Keep `Cargo.toml`, `CHANGELOG.md`, the READMEs, and the book version tables in sync; `consistency.yml` enforces this on every push and pull request.
+   `v*` tags are protected by the `protect-release-tags` ruleset: creation is allowed, deletion/force-push is not.
+5. Keep `Cargo.toml`, `CHANGELOG.md`, the READMEs, the book version tables and the `Current version` line of `AGENTS.md` in sync; `consistency.yml` enforces this on every push and pull request. Rotate `CARGO_REGISTRY_TOKEN` / `RELEASE_PLZ_TOKEN` before they expire.
 
 **中文**
 
-发布已自动化；顶层 `vX.Y.Z` 标签就是发布开关。
+发布已自动化且有 CI 门禁；顶层 `vX.Y.Z` 标签就是发布开关。变更日志只有根 `CHANGELOG.md` 一份（`release-plz.toml` 设 `changelog_update = false`，不生成 per-crate CHANGELOG，也不创建发版 PR）。
 
-1. `main` 前进后，release-plz（`.github/workflows/release-plz.yml`）创建（并随后更新）一个提升 `workspace.package.version` 的发版 PR。该 PR 合并后，workflow 等待合并提交的 CI 变绿，发布各 crate，并创建顶层 `vX.Y.Z` 标签。打标签需要 `RELEASE_PLZ_TOKEN` secret（具备 `contents: write` 权限的 PAT）；用默认 `GITHUB_TOKEN` 推送的标签不会触发下游 workflow。
-2. 标签推送触发 `release.yml`（校验标签与工作区版本一致，并把 C 绑定产物附加到项目级 GitHub Release）、`wheels.yml`（用 maturin 构建 wheel + sdist 并发布到 PyPI；预发布标签发到 TestPyPI）以及 `docs.yml`（重建双语 mdBook，并发布 `/latest/{en,zh}/` 与冻结的 `/v<version>/{en,zh}/` 版本快照）。
-3. 手动兜底（对已在 `main` 上且 CI 通过的提交）：
+1. 自行在 `main` 上提升 `workspace.package.version` 并更新 `CHANGELOG.md`（12 个可发布 crate；`ocas-tests` 为 `publish = false`），然后 push。版本未变化时 release-plz 自然 no-op。
+2. `release-plz` workflow 先等待该提交的 CI 变绿（`preflight`），再按依赖序发布各 crate 到 crates.io，最后创建顶层 `vX.Y.Z` 标签。打标签需要 `RELEASE_PLZ_TOKEN` secret（具备 `Contents: Read and write` 权限的 fine-grained PAT）；用默认 `GITHUB_TOKEN` 推送的标签不会触发下游 workflow。
+3. 标签触发 `release.yml`（校验标签与工作区版本一致、做打包试运行，并把 C 绑定产物附加到项目级 GitHub Release）、`wheels.yml`（用 maturin 构建 wheel + sdist 并发布到 PyPI；预发布标签发到 TestPyPI——注意 `pypi` environment 会要求 owner 批准发布 job）以及 `docs.yml`（发布 `/latest/{en,zh}/` 与冻结的 `/v<version>/{en,zh}/` 版本快照）。
+4. 手动兜底（对已在 `main` 上且 CI 通过的提交）：
    ```bash
    git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
    git push origin vX.Y.Z
    ```
-4. 保持 `Cargo.toml`、`CHANGELOG.md`、两个 README 与书籍版本表同步；`consistency.yml` 会在每次 push 与 Pull Request 上强制执行该检查。
+   `v*` 受 `protect-release-tags` ruleset 保护：可创建，不可删除/强推。
+5. 保持 `Cargo.toml`、`CHANGELOG.md`、两个 README、书籍版本表以及 `AGENTS.md` 的 `Current version` 行同步；`consistency.yml` 会在每次 push 与 Pull Request 上强制执行该检查。请在到期前轮换 `CARGO_REGISTRY_TOKEN` / `RELEASE_PLZ_TOKEN`。
 
 ---
 

@@ -62,19 +62,21 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 
 ## 发布流程
 
-发布已自动化；顶层 `vX.Y.Z` 标签就是发布开关。
+发布已自动化且有 CI 门禁；顶层 `vX.Y.Z` 标签就是发布开关。变更日志只有根
+`CHANGELOG.md` 一份（`release-plz.toml` 设 `changelog_update = false`，不生成
+per-crate CHANGELOG，也不创建发版 PR）。
 
-1. **发版 PR 与打标签。** `main` 前进后，release-plz
-   （`.github/workflows/release-plz.yml`）会创建（并随后更新）一个提升
-   `workspace.package.version` 的发版 PR。该 PR 合并后，workflow 先等待合并提交
-   的 CI 变绿，再按依赖序发布各 crate，并创建顶层 `vX.Y.Z` 标签。打标签需要
-   `RELEASE_PLZ_TOKEN` secret（具备 `contents: write` 权限的 PAT）：用默认
-   `GITHUB_TOKEN` 推送的标签不会触发下游 workflow。
+1. **版本 bump 与打标签。** 自行在 `main` 上提升 `workspace.package.version` 并更新
+   `CHANGELOG.md`（12 个可发布 crate；`ocas-tests` 为 `publish = false`），然后 push。
+   `release-plz` workflow 先等待该提交的 CI 变绿，再按依赖序发布各 crate，最后创建
+   顶层 `vX.Y.Z` 标签。打标签需要 `RELEASE_PLZ_TOKEN` secret（具备
+   `Contents: Read and write` 权限的 fine-grained PAT）：用默认 `GITHUB_TOKEN`
+   推送的标签不会触发下游 workflow。版本未变化时 release-plz 自然 no-op。
 2. **标签触发的下游流程。**
    - `release.yml` 校验标签与工作区版本一致，对每个 crate 做 `cargo publish`
      试运行，并把 C 绑定产物附加到项目级 GitHub Release。
    - `wheels.yml` 用 maturin 构建 Python wheel 与 sdist 并发布到 PyPI（预发布
-     标签发到 TestPyPI）。
+     标签发到 TestPyPI）；`pypi` environment 会要求 owner 批准发布 job。
    - `docs.yml` 重新构建双语 mdBook，并把 `/latest/{en,zh}/` 与冻结的
      `/v<version>/{en,zh}/` 版本快照部署到 GitHub Pages。
 3. **手动兜底。** 若自动化失败，请对已在 `main` 上且 CI 通过的提交打标签：
@@ -84,9 +86,10 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
    git push origin vX.Y.Z
    ```
 
-   不要在本地执行发布步骤；发布由 CI 完成。
+   不要在本地执行发布步骤；发布由 CI 完成。`v*` 受保护：可创建，不可删除/强推。
 
-4. **版本一致性。** 保持 `Cargo.toml`、`CHANGELOG.md`、两个 README 与
-   `docs/book/*/src/introduction.md` 中的版本表同步。`consistency.yml` 会在每次
-   push 与 Pull Request 上通过 `ocas-tests/scripts/check_release_consistency.py`
-   强制执行该检查。
+4. **版本一致性。** 保持 `Cargo.toml`、`CHANGELOG.md`、两个 README、
+   `docs/book/*/src/introduction.md` 中的版本表以及 `AGENTS.md` 的 `Current version`
+   行同步。`consistency.yml` 会在每次 push 与 Pull Request 上通过
+   `ocas-tests/scripts/check_release_consistency.py` 强制执行该检查。请在到期前轮换
+   `CARGO_REGISTRY_TOKEN` / `RELEASE_PLZ_TOKEN`。

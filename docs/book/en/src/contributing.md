@@ -66,21 +66,25 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 
 ## Release process
 
-Releases are automated; the root `vX.Y.Z` tag is the release switch.
+Releases are automated and CI-gated; the root `vX.Y.Z` tag is the release switch.
+There is only one changelog — the root `CHANGELOG.md` (`release-plz.toml` sets
+`changelog_update = false`; no per-crate changelogs or release PRs).
 
-1. **Release PR and tag creation.** After `main` moves, release-plz
-   (`.github/workflows/release-plz.yml`) opens (and later updates) a release PR
-   that bumps `workspace.package.version`. When that PR is merged, the workflow
-   first waits for CI to be green on the merge commit, then publishes the crates
-   in dependency order, and creates the root `vX.Y.Z` tag. Tag creation needs
-   the `RELEASE_PLZ_TOKEN` secret (a PAT with `contents: write`): a tag pushed
-   with the default `GITHUB_TOKEN` does not trigger the downstream workflows.
+1. **Version bump and tag creation.** Bump `workspace.package.version` and
+   `CHANGELOG.md` on `main` yourself (12 publishable crates; `ocas-tests` is
+   `publish = false`), then push. The `release-plz` workflow waits for CI to be
+   green on that exact commit, publishes the crates in dependency order, and
+   creates the root `vX.Y.Z` tag. Tag creation needs the `RELEASE_PLZ_TOKEN`
+   secret (a fine-grained PAT with `Contents: Read and write`): a tag pushed with
+   the default `GITHUB_TOKEN` does not trigger the downstream workflows. If the
+   version did not change, release-plz is a no-op.
 2. **Tag fan-out.**
    - `release.yml` validates the tag against the workspace version, dry-runs
-     `cargo publish` for every crate, and attaches the C artifact to the
+     `cargo publish` for every crate, and attaches the C artifacts to the
      project-level GitHub Release.
    - `wheels.yml` builds the Python wheels and sdist with maturin and publishes
-     to PyPI (pre-release tags go to TestPyPI).
+     to PyPI (pre-release tags go to TestPyPI); the `pypi` environment asks an
+     owner to approve the publish job.
    - `docs.yml` rebuilds the bilingual mdBook and publishes both
      `/latest/{en,zh}/` and a frozen `/v<version>/{en,zh}/` snapshot to GitHub
      Pages.
@@ -92,9 +96,11 @@ Releases are automated; the root `vX.Y.Z` tag is the release switch.
    git push origin vX.Y.Z
    ```
 
-   Do not run the publish steps locally; publishing is done by CI.
+   Do not run the publish steps locally; publishing is done by CI. `v*` tags are
+   protected, so creation is allowed but deletion/force-push is not.
 
-4. **Version surfaces.** Keep `Cargo.toml`, `CHANGELOG.md`, the READMEs, and the
-   version tables in `docs/book/*/src/introduction.md` in sync.
-   `consistency.yml` enforces this on every push and pull request via
-   `ocas-tests/scripts/check_release_consistency.py`.
+4. **Version surfaces.** Keep `Cargo.toml`, `CHANGELOG.md`, the READMEs, the
+   version tables in `docs/book/*/src/introduction.md`, and the `Current version`
+   line in `AGENTS.md` in sync. `consistency.yml` enforces this on every push and
+   pull request via `ocas-tests/scripts/check_release_consistency.py`. Rotate
+   `CARGO_REGISTRY_TOKEN` / `RELEASE_PLZ_TOKEN` before they expire.

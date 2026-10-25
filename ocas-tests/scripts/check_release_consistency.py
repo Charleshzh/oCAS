@@ -177,6 +177,20 @@ def check_book_version_statement(report: Report, version: str) -> None:
             report.fail(path, line_number, expected, f"**{match.group('version')}**")
 
 
+def check_agents_version(report: Report, version: str) -> None:
+    """AGENTS.md's cross-harness version line must match the workspace version."""
+    path = report.root / "AGENTS.md"
+    lines = read_lines(path, report)
+    if not lines:
+        return
+    pattern = re.compile(r"Current version:\s*\*\*(?P<version>[0-9][^*]*)\*\*")
+    line_number, _, match = find_first(lines, pattern)
+    expected = f"Current version: **{version}**"
+    if match is None:
+        report.fail(path, 0, expected, "未找到匹配行")
+    elif match.group("version") != version:
+        report.fail(path, line_number, expected, f"Current version: **{match.group('version')}**")
+
 def check_changelog(report: Report, version: str) -> str | None:
     """Check the CHANGELOG's first release heading; return its date (or None)."""
     path = report.root / "CHANGELOG.md"
@@ -280,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
         check_status_badge(report, version)
         check_install_snippet(report, version)
         check_book_version_statement(report, version)
+        check_agents_version(report, version)
         changelog_date = check_changelog(report, version)
         check_book_table_dates(report, version, changelog_date)
         check_docs_site_urls(report)

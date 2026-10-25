@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.30.0] - 2026-10-24
+## [0.30.0] - 2026-10-25
 
 **代数扩张（RT 代数数根 + 多根式基归约）与反函数代换 / Algebraic extensions (RT algebraic roots + multi-radical reduction) and inverse-function substitution**
 
