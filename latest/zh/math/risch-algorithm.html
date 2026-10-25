@@ -577,7 +577,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <p>Risch 算法的当前实现（0.29.0）有以下限制：</p>
 <div class="table-wrapper"><table><thead><tr><th>限制</th><th>原因</th><th>回退行为</th></tr></thead><tbody>
 <tr><td><del>只求 RDE 的多项式解</del>（0.29.0 起为完整有理片段：弱规范化 + 法/特殊分母界 + 次数界 + SPDE + 抵消递归；<code>limited_integrate</code> 次数界改进与高层 <code>parametric_log_deriv</code> 未实现）</td><td>改进只降次数界，错过即诚实拒绝</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
-<tr><td>塔层上的对数部分（0.29.0 起为 Rothstein–Trager，仅 ℚ 根；无理数/非常量根拒绝）</td><td>代数数根需要 0.30.0 的代数扩张</td><td>返回未求值形式</td></tr>
+<tr><td>塔层上的对数部分（0.29.0 起为 Rothstein–Trager；0.30.0 起接受代数常量根：基层二次/双二次四次因子，塔层复二次因子，共轭对实值化为 <code>log(u²+w²)</code>/<code>atan</code> 形；其余次数与非常量根仍拒绝）</td><td>片段外因子（≥3 次、非双二次四次等）不在 0.30.0 范围</td><td>返回未求值形式</td></tr>
 <tr><td>代数函数（$\sqrt{x}$ 等）不支持</td><td>需要代数函数域扩展</td><td>由启发式三角替换覆盖常见模式</td></tr>
 <tr><td>代数相关生成元的部分合并（0.28.0 精确合并六类 + 0.29.0 的 $\exp(ku)=\exp(u)^k$；分数倍 $\exp(u/k)$ 需重基，未实现）</td><td>关系检测不完备</td><td>返回 <code>None</code></td></tr>
 <tr><td>含 $I$ 的超指数 RDE</td><td>RDE 求解器仅在 $\mathbb{Q}[x]$ 上工作</td><td>三角被积函数返回未求值形式</td></tr>

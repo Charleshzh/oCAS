@@ -189,17 +189,22 @@
 <li>可选：用于后端特性的 GMP/MPFR/FLINT 系统库</li>
 </ul>
 <h2 id="质量门禁"><a class="header" href="#质量门禁">质量门禁</a></h2>
+<p>分为两级：每次改动都运行 <strong>fast（快速）</strong> 门禁，提交 Pull Request 前运行
+<strong>full（完整）</strong> 门禁（与 CI 一致）。</p>
+<p>Fast（默认反馈回路）：</p>
 <pre><code class="language-bash">cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
-cargo test --workspace --exclude ocas-py --features egg
+cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
+</code></pre>
+<p>Full（与 CI 一致——额外包含 <code>ocas-tests</code> 中的跨系统正确性测试套件）：</p>
+<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg
 cargo deny check
 </code></pre>
-<h2 id="python-绑定"><a class="header" href="#python-绑定">Python 绑定</a></h2>
-<pre><code class="language-bash">cd ocas-py
-uv venv .venv
-uv pip install pytest maturin
-uv run maturin develop
-uv run python -m pytest ../ocas-tests/tests/python/ -v
+<p>标记为 <code>#[ignore]</code> 的测试（慢速属性测试、性能验收测试、进行中的修复）刻意不在
+两级门禁内，由定时长测任务（<code>.github/workflows/full-tests.yml</code>，每周）执行，
+也可以显式运行：</p>
+<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg -- --ignored
+cargo test --release -p ocas-domain --lib -- --ignored   # 性能验收
 </code></pre>
 <h2 id="编码规范"><a class="header" href="#编码规范">编码规范</a></h2>
 <ul>
@@ -207,10 +212,55 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 <li>提交前运行 <code>cargo fmt --all</code>。</li>
 <li>表达式树优先使用 arena 分配；避免逐节点 <code>Box</code>/<code>Rc</code>。</li>
 <li>错误类型使用 <code>thiserror</code>；用 <code>?</code> 传播。</li>
-<li>后端代码隐藏在 feature flag 后；GPL 代码只能放在 <code>ocas-gpl</code>。</li>
+<li>后端代码隐藏在 feature flag 后。<code>ocas-gpl</code> 是用于未来 GPL-3.0-or-later 后端的
+独立占位 crate；顶层 <code>ocas</code> facade 不再暴露 <code>gpl</code> feature，因此 GPL 后端必须
+通过直接依赖 <code>ocas-gpl</code> 来显式启用。</li>
 <li>稳定版本的公共 API 必须包含 rustdoc 示例。</li>
 </ul>
-<p>完整约定、分层依赖规则与发布流程见仓库的 <code>CLAUDE.md</code> 与 <code>ARCHITECTURE_CN.md</code>。</p>
+<p>完整约定与分层依赖规则见 <code>docs/planning/ARCHITECTURE_CN.md</code>。</p>
+<h2 id="python-绑定"><a class="header" href="#python-绑定">Python 绑定</a></h2>
+<pre><code class="language-bash">cd ocas-py
+uv venv .venv
+uv pip install pytest maturin
+uv run maturin develop
+uv run python -m pytest ../ocas-tests/tests/python/ -v
+</code></pre>
+<h2 id="发布流程"><a class="header" href="#发布流程">发布流程</a></h2>
+<p>发布已自动化；顶层 <code>vX.Y.Z</code> 标签就是发布开关。</p>
+<ol>
+<li>
+<p><strong>发版 PR 与打标签。</strong> <code>main</code> 前进后，release-plz
+（<code>.github/workflows/release-plz.yml</code>）会创建（并随后更新）一个提升
+<code>workspace.package.version</code> 的发版 PR。该 PR 合并后，workflow 先等待合并提交
+的 CI 变绿，再按依赖序发布各 crate，并创建顶层 <code>vX.Y.Z</code> 标签。打标签需要
+<code>RELEASE_PLZ_TOKEN</code> secret（具备 <code>contents: write</code> 权限的 PAT）：用默认
+<code>GITHUB_TOKEN</code> 推送的标签不会触发下游 workflow。</p>
+</li>
+<li>
+<p><strong>标签触发的下游流程。</strong></p>
+<ul>
+<li><code>release.yml</code> 校验标签与工作区版本一致，对每个 crate 做 <code>cargo publish</code>
+试运行，并把 C 绑定产物附加到项目级 GitHub Release。</li>
+<li><code>wheels.yml</code> 用 maturin 构建 Python wheel 与 sdist 并发布到 PyPI（预发布
+标签发到 TestPyPI）。</li>
+<li><code>docs.yml</code> 重新构建双语 mdBook，并把 <code>/latest/{en,zh}/</code> 与冻结的
+<code>/v&lt;version&gt;/{en,zh}/</code> 版本快照部署到 GitHub Pages。</li>
+</ul>
+</li>
+<li>
+<p><strong>手动兜底。</strong> 若自动化失败，请对已在 <code>main</code> 上且 CI 通过的提交打标签：</p>
+<pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
+git push origin vX.Y.Z
+</code></pre>
+<p>不要在本地执行发布步骤；发布由 CI 完成。</p>
+</li>
+<li>
+<p><strong>版本一致性。</strong> 保持 <code>Cargo.toml</code>、<code>CHANGELOG.md</code>、两个 README 与
+<code>docs/book/*/src/introduction.md</code> 中的版本表同步。<code>consistency.yml</code> 会在每次
+push 与 Pull Request 上通过 <code>ocas-tests/scripts/check_release_consistency.py</code>
+强制执行该检查。</p>
+</li>
+</ol>
 
                     </main>
 

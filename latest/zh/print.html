@@ -183,7 +183,7 @@
 <p>oCAS 采用分层 crate 架构，从底层 arena 分配器到顶层语言绑定共 13 个 workspace 成员，依赖方向严格向下。所有系数域（任意精度整数/有理数、有限域、实数球、复数、双精度浮点）通过统一的 <code>Domain</code> trait 抽象，多项式代数、Gröbner 基、符号微积分、ODE 求解等模块共享同一表达式基础设施。</p>
 <hr />
 <h2 id="版本特性对照表"><a class="header" href="#版本特性对照表">版本特性对照表</a></h2>
-<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.27）：</p>
+<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.30）：</p>
 <div class="table-wrapper"><table><thead><tr><th>版本</th><th>日期</th><th>关键新增</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>工作空间搭建、Arena 分配器、统一错误类型、C ABI 最小示例、跨平台 CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>表达式树 <code>Atom</code>（hash consing）、基于 <code>logos</code>/<code>chumsky</code> 的解析器、规范化器</td></tr>
@@ -217,6 +217,8 @@
 <tr><td><strong>0.27.2</strong></td><td>2026-09-11</td><td>已验证覆盖率口径（独立数值 oracle：5 点中心差分 + 椭圆定义积分）、阶段打点与 33 例悬挂归因、确定性阶段预算、有界展开预通道、双曲闭式族、有理导数核代换、三角相位归一、逆函数复合消去、<code>exp(逆函数)</code> 代数化、半幂前端 + 椭圆 Legendre 约化（<code>EllipticF/E</code>）；修复六组错案（已验证覆盖率 93.1%、mismatches 0、超时 33 → 13、墙钟 −22%）</td></tr>
 <tr><td><strong>0.27.3</strong></td><td>2026-09-12</td><td>0.27 线收尾：特殊函数导数表 + oracle 扩头（<code>Ei</code>/<code>Ei(n,z)</code>/<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>/Fresnel）、特殊函数归约族（多项式 × <code>F</code>、<code>Ei(n,·)</code>、<code>F/xᵐ</code>、<code>F²</code>）、精确线性平方折叠 <code>p²+2pq+q² → (p+q)²</code>、半幂前端仿射变元与两支片层因子；Rubi 覆盖率 18.45% → 19.56%（新解 21、回归 0、mismatches 0、超时 13 → 12）</td></tr>
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>积分机制正确性地基：符号证书引擎（结构/初等域 + <code>I² = −1</code> 约化 + 依赖原子合并，确定性预算）、三值 <code>Outcome</code> 与 <code>integrate_outcome</code>（Python/C 同步暴露）、表达式级循环检测（预算感知入口键 + 独立残项预算）、正则塔依赖生成元合并、Risch 结果塔内精确校验（抓到并兜住一个潜伏错案）、双曲前端因墙钟代价默认关闭；Rubi 覆盖率 19.56% → 19.61%（371 solved，+1 新解 0 回归），mismatches 0，超时 12 持平，墙钟 −6.0%；<code>certified_rate = 28.8%</code>（目标 1.0 未达，如实记录）</td></tr>
+<tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>超越 Risch 补全：Risch 微分方程的有理解（完整有理片段：弱规范化、法/特殊分母界、次数界、SPDE、抵消递归）、各塔层的 Rothstein–Trager 对数部分（结果式值插值、ℚ 有理根筛 + 完备性判定、逐根 gcd 经 <code>Πvᵢ == d1</code> 自证）、耦合微分系统基础设施 <code>integral/coupled.rs</code>（<strong>未挂接</strong>）、塔随机通用性测试（凡无残项答案必须过证书门，该族 <code>certified_rate = 1.0</code>）；修复指数层 Laurent 拆分的潜伏错案；Rubi 覆盖率 19.61% → 19.98%（378 solved，新解 7 / 回归 0）、verified 351/378、mismatches 0、超时 12 持平、墙钟 439.6 s，<code>certified_rate</code> 28.8% → 29.1%</td></tr>
+<tr><td><strong>0.30.0</strong></td><td>2026-10-24</td><td>代数扩张与反函数代换：RT 代数常量根（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次因子，均在扩域内自证）、证书<strong>根式层</strong>（<code>CertMethod::RadicalField</code>：<code>sqrt(S)</code> / <code>S^(p/q)</code> 统一为 <code>r^q = S</code> 三角列约化）、多根式基归约（<code>integral/multi_radical.rs</code>：MR-L Möbius 有理化、带门同根合并、MR-G/R/I/P）、反函数代换引擎（<code>integral/inverse_trig.rs</code> M4：11 头 × 仿射变元 × 整数核幂 × 多项式权）；Rubi solved 378 → 451（coverage 23.84%）、verified 410/451、<code>certified_rate</code> 29.1% → 48.8%（220/451）、mismatches 0、超时 12 持平、墙钟 489.5 s、0 回归、证书假阳性 0；radical 桶 51 → 84、inverse-trig-hyper 8 → 22（≥48/146 口径未达，如实记录）</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -333,7 +335,7 @@
 </div>
 <hr />
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.28.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.30.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
 <p>本章帮助你在 5 分钟内完成 oCAS 的安装与首次运行。oCAS 0.24 支持 <strong>Rust</strong>、<strong>Python</strong> 和 <strong>C/C++</strong> 三种语言接口。</p>
@@ -5375,8 +5377,12 @@ println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
 │ 10. 规则表引擎          (integrate_rules, A–H 族)     │
 │ 11. 二次根式引擎        (integrate_sqrt_quadratic)    │
 │ 12. Chebyshev 二项微分  (integrate_binomial)          │
+│ 12b. 多根式基归约        (integrate_multi_radical,    │
+│      0.30.0；binomial 之后，exp_log 之前)             │
 │ 13. exp/log 核代换      (integrate_exp_log)           │
 │ 14. 反三角/反双曲       (integrate_inverse_trig)      │
+│ 14b. 反函数代换 M4   (inverse_trig 分派序末, 0.30.0)  │
+│      u = F(w)：11 头、仿射变元、整数核幂、多项式权    │
 │ 15. 三角积化和差        (trig_reduce_products)        │
 │ 16. 三角分母幂递推      (integrate_trig_reduction)    │
 │ 17. 单三角核有理式 + tan/sec                          │
@@ -20394,7 +20400,7 @@ let result = integrate_with_fuel(&amp;ctx, expr, Symbol::new("x"), &amp;fuel);
 <p>Risch 算法的当前实现（0.29.0）有以下限制：</p>
 <div class="table-wrapper"><table><thead><tr><th>限制</th><th>原因</th><th>回退行为</th></tr></thead><tbody>
 <tr><td><del>只求 RDE 的多项式解</del>（0.29.0 起为完整有理片段：弱规范化 + 法/特殊分母界 + 次数界 + SPDE + 抵消递归；<code>limited_integrate</code> 次数界改进与高层 <code>parametric_log_deriv</code> 未实现）</td><td>改进只降次数界，错过即诚实拒绝</td><td>返回 <code>None</code>，调用者尝试其他层</td></tr>
-<tr><td>塔层上的对数部分（0.29.0 起为 Rothstein–Trager，仅 ℚ 根；无理数/非常量根拒绝）</td><td>代数数根需要 0.30.0 的代数扩张</td><td>返回未求值形式</td></tr>
+<tr><td>塔层上的对数部分（0.29.0 起为 Rothstein–Trager；0.30.0 起接受代数常量根：基层二次/双二次四次因子，塔层复二次因子，共轭对实值化为 <code>log(u²+w²)</code>/<code>atan</code> 形；其余次数与非常量根仍拒绝）</td><td>片段外因子（≥3 次、非双二次四次等）不在 0.30.0 范围</td><td>返回未求值形式</td></tr>
 <tr><td>代数函数（$\sqrt{x}$ 等）不支持</td><td>需要代数函数域扩展</td><td>由启发式三角替换覆盖常见模式</td></tr>
 <tr><td>代数相关生成元的部分合并（0.28.0 精确合并六类 + 0.29.0 的 $\exp(ku)=\exp(u)^k$；分数倍 $\exp(u/k)$ 需重基，未实现）</td><td>关系检测不完备</td><td>返回 <code>None</code></td></tr>
 <tr><td>含 $I$ 的超指数 RDE</td><td>RDE 求解器仅在 $\mathbb{Q}[x]$ 上工作</td><td>三角被积函数返回未求值形式</td></tr>
@@ -22928,6 +22934,14 @@ log/atan/atanh）。</li>
 <code>IntegrateOptions { rules: false }</code> 关闭。</li>
 <li><strong>三角积化和差/降幂</strong>（0.27.x）—— 线性变元 <code>sin</code>/<code>cos</code> 乘积与幂化为
 多倍角和式后逐项积分。</li>
+<li><strong>多根式基归约</strong>（0.30.0）—— 含两个及以上不同根式基的被积函数在原子层
+有理化（MR-L 双仿射基 Möbius 有理化、带门同根合并、共轭/倒数/嵌套去根
+代换、完全平方片层因子）。该阶段在链中位于 <strong><code>binomial</code> 之后、
+<code>exp_log</code> 之前</strong>，单基引擎因此保持对单基形状的先占权；片段之外诚实拒绝。</li>
+<li><strong>反函数代换</strong>（0.30.0）—— <code>inverse_trig</code> <strong>分派序末的 M4 机制</strong>：
+<code>u = F(w)</code> 覆盖 11 个头（<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code>
+以及 <code>acsc</code>/<code>asec</code>/<code>acoth</code>/<code>asech</code>/<code>acsch</code>）× 仿射变元 × 整数核幂 ×
+多项式权，伴随根式吸收为片层因子。</li>
 <li><strong>启发式技巧</strong> —— 分部积分、三角替换、Weierstrass $t = \tan(x/2)$、
 Euler 替换。</li>
 <li><strong>有界展开重试</strong>（0.27.x）—— 分配展开乘积为和式（项数预算 64）
@@ -22960,7 +22974,9 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 <li>每层由 Hermite 约化分出有理部分（超指数层的 <code>t</code> 幂分母先按
 Laurent 多项式拆出，0.29.0）；</li>
 <li>对数部分先试对数导数恒等式（快路径），未命中则走
-Rothstein–Trager 结式方法（仅限 ℚ 根，0.29.0）；</li>
+Rothstein–Trager 结式方法：0.29.0 只判定 <strong>ℚ 根</strong>，0.30.0 增加代数
+<strong>常量根</strong>（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次
+因子，均在扩域内自证）；非常量根与更高次因子仍然诚实拒绝；</li>
 <li>多项式部分在 <code>log</code> 层用待定系数、在 <code>exp</code> 层用 Risch 微分方程
 <code>Dq + f·q = g</code> 积分——0.29.0 起在<strong>完整有理片段</strong>上求解
 （弱规范化、分母界、次数界、SPDE、抵消递归）；</li>
@@ -22980,9 +22996,11 @@ let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::n
 <span class="boring">}</span></code></pre></pre>
 <h3 id="范围限制"><a class="header" href="#范围限制">范围限制</a></h3>
 <p>0.29.0 起 Risch 微分方程在<strong>完整有理片段</strong>上求解（含分母界），
-对数部分用 Rothstein–Trager 但<strong>仅限 ℚ 根</strong>——无理数根、非常量根，
-以及未移植的 <code>limited_integrate</code> / 高层 <code>parametric_log_deriv</code> 改进，
-一律诚实回退。因此：</p>
+对数部分用 Rothstein–Trager 的 ℚ 根判定；0.30.0 再由其代数<strong>常量根</strong>
+片段（二次因子与双二次四次因子，扩域内自证）扩展该对数部分。片段之外
+——非常量根、次数 ≥ 3 或非双二次四次的因子、混合扩域，以及未移植的
+<code>limited_integrate</code> / 高层 <code>parametric_log_deriv</code> 改进——一律诚实回退。
+因此：</p>
 <ul>
 <li><code>∫ exp(x)/x dx</code> 没有初等原函数 —— 由特殊函数表回答为 <code>Ei(x)</code>。</li>
 <li>某些需要自由选择常数使下层可积的 <code>log</code> 塔情形（如 <code>log(x+1)</code>）
@@ -23068,8 +23086,10 @@ fuel 仅约束化简后的传递。</p>
 </tbody></table>
 </div>
 <p>证书引擎（<code>ocas-calc/src/integral/certify.rs</code>）分层判定：结构零（<code>normalize</code> + 同类项收集）、
-初等域零（三角→指数、<code>I² = −1</code> 约化、依赖 <code>exp</code>/<code>log</code> 原子合并后嵌入有理函数域）、根式域
-（接口预留）。各层都是<strong>可靠的</strong>：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
+初等域零（三角→指数、<code>I² = −1</code> 约化、依赖 <code>exp</code>/<code>log</code> 原子合并后嵌入有理函数域）、<strong>根式层</strong>
+（0.30.0 已落地：<code>CertMethod::RadicalField</code>——把 <code>sqrt(S)</code> 与 <code>S^(p/q)</code> 统一为生成元 <code>r</code> 与
+关系 <code>r^q = S</code>，以三角列余式约化判零；确定性预算 q ≤ 8、根式 ≤ 8、项 ≤ 8192、节点 ≤ 2000、
+入口项 ≤ 2048）。各层都是<strong>可靠的</strong>：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
 正确。域运算有确定性预算，超预算即诚实拒绝。</p>
 <p><code>ocas-calc/src/integral/risch.rs</code> 还会在<strong>塔自身的域</strong>里校验每个 Risch 结果，因此引擎不会发射
 被精确检查器证伪的答案——0.28.0 正是靠这条护栏抓到并兜住一个潜伏错案（指数层有理部分对负幂次
@@ -25013,17 +25033,22 @@ pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
 <li>可选：用于后端特性的 GMP/MPFR/FLINT 系统库</li>
 </ul>
 <h2 id="质量门禁"><a class="header" href="#质量门禁">质量门禁</a></h2>
+<p>分为两级：每次改动都运行 <strong>fast（快速）</strong> 门禁，提交 Pull Request 前运行
+<strong>full（完整）</strong> 门禁（与 CI 一致）。</p>
+<p>Fast（默认反馈回路）：</p>
 <pre><code class="language-bash">cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
-cargo test --workspace --exclude ocas-py --features egg
+cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
+</code></pre>
+<p>Full（与 CI 一致——额外包含 <code>ocas-tests</code> 中的跨系统正确性测试套件）：</p>
+<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg
 cargo deny check
 </code></pre>
-<h2 id="python-绑定"><a class="header" href="#python-绑定">Python 绑定</a></h2>
-<pre><code class="language-bash">cd ocas-py
-uv venv .venv
-uv pip install pytest maturin
-uv run maturin develop
-uv run python -m pytest ../ocas-tests/tests/python/ -v
+<p>标记为 <code>#[ignore]</code> 的测试（慢速属性测试、性能验收测试、进行中的修复）刻意不在
+两级门禁内，由定时长测任务（<code>.github/workflows/full-tests.yml</code>，每周）执行，
+也可以显式运行：</p>
+<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg -- --ignored
+cargo test --release -p ocas-domain --lib -- --ignored   # 性能验收
 </code></pre>
 <h2 id="编码规范"><a class="header" href="#编码规范">编码规范</a></h2>
 <ul>
@@ -25031,10 +25056,55 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 <li>提交前运行 <code>cargo fmt --all</code>。</li>
 <li>表达式树优先使用 arena 分配；避免逐节点 <code>Box</code>/<code>Rc</code>。</li>
 <li>错误类型使用 <code>thiserror</code>；用 <code>?</code> 传播。</li>
-<li>后端代码隐藏在 feature flag 后；GPL 代码只能放在 <code>ocas-gpl</code>。</li>
+<li>后端代码隐藏在 feature flag 后。<code>ocas-gpl</code> 是用于未来 GPL-3.0-or-later 后端的
+独立占位 crate；顶层 <code>ocas</code> facade 不再暴露 <code>gpl</code> feature，因此 GPL 后端必须
+通过直接依赖 <code>ocas-gpl</code> 来显式启用。</li>
 <li>稳定版本的公共 API 必须包含 rustdoc 示例。</li>
 </ul>
-<p>完整约定、分层依赖规则与发布流程见仓库的 <code>CLAUDE.md</code> 与 <code>ARCHITECTURE_CN.md</code>。</p>
+<p>完整约定与分层依赖规则见 <code>docs/planning/ARCHITECTURE_CN.md</code>。</p>
+<h2 id="python-绑定"><a class="header" href="#python-绑定">Python 绑定</a></h2>
+<pre><code class="language-bash">cd ocas-py
+uv venv .venv
+uv pip install pytest maturin
+uv run maturin develop
+uv run python -m pytest ../ocas-tests/tests/python/ -v
+</code></pre>
+<h2 id="发布流程"><a class="header" href="#发布流程">发布流程</a></h2>
+<p>发布已自动化；顶层 <code>vX.Y.Z</code> 标签就是发布开关。</p>
+<ol>
+<li>
+<p><strong>发版 PR 与打标签。</strong> <code>main</code> 前进后，release-plz
+（<code>.github/workflows/release-plz.yml</code>）会创建（并随后更新）一个提升
+<code>workspace.package.version</code> 的发版 PR。该 PR 合并后，workflow 先等待合并提交
+的 CI 变绿，再按依赖序发布各 crate，并创建顶层 <code>vX.Y.Z</code> 标签。打标签需要
+<code>RELEASE_PLZ_TOKEN</code> secret（具备 <code>contents: write</code> 权限的 PAT）：用默认
+<code>GITHUB_TOKEN</code> 推送的标签不会触发下游 workflow。</p>
+</li>
+<li>
+<p><strong>标签触发的下游流程。</strong></p>
+<ul>
+<li><code>release.yml</code> 校验标签与工作区版本一致，对每个 crate 做 <code>cargo publish</code>
+试运行，并把 C 绑定产物附加到项目级 GitHub Release。</li>
+<li><code>wheels.yml</code> 用 maturin 构建 Python wheel 与 sdist 并发布到 PyPI（预发布
+标签发到 TestPyPI）。</li>
+<li><code>docs.yml</code> 重新构建双语 mdBook，并把 <code>/latest/{en,zh}/</code> 与冻结的
+<code>/v&lt;version&gt;/{en,zh}/</code> 版本快照部署到 GitHub Pages。</li>
+</ul>
+</li>
+<li>
+<p><strong>手动兜底。</strong> 若自动化失败，请对已在 <code>main</code> 上且 CI 通过的提交打标签：</p>
+<pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
+git push origin vX.Y.Z
+</code></pre>
+<p>不要在本地执行发布步骤；发布由 CI 完成。</p>
+</li>
+<li>
+<p><strong>版本一致性。</strong> 保持 <code>Cargo.toml</code>、<code>CHANGELOG.md</code>、两个 README 与
+<code>docs/book/*/src/introduction.md</code> 中的版本表同步。<code>consistency.yml</code> 会在每次
+push 与 Pull Request 上通过 <code>ocas-tests/scripts/check_release_consistency.py</code>
+强制执行该检查。</p>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="外部参考"><a class="header" href="#外部参考">外部参考</a></h1>
 <ul>
 <li><a href="https://docs.rs/ocas">Rust API 文档（docs.rs）</a>：公共 Rust API 的自动生成
@@ -25045,8 +25115,9 @@ uv run python -m pytest ../ocas-tests/tests/python/ -v
 与依赖图。</li>
 <li><a href="https://github.com/charleshzh/ocas">GitHub 仓库</a>：源代码、Issue 跟踪与贡献
 指南。</li>
-<li><a href="https://charleshzh.github.io/ocas/latest/">文档站点</a>：本书，由 GitHub Pages
-提供。每个发布 tag 下 <code>/ocas/v&lt;版本&gt;/</code> 存有对应的版本快照。</li>
+<li><a href="https://charleshzh.github.io/oCAS/latest/zh/">文档站点</a>：本书，由 GitHub Pages
+提供。每个发布 tag 下 <code>/oCAS/v&lt;版本&gt;/en/</code> 与 <code>/oCAS/v&lt;版本&gt;/zh/</code> 存有对应的
+版本快照。</li>
 </ul>
 
                     </main>
