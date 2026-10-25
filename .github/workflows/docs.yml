@@ -12,9 +12,12 @@ on:
 permissions:
   contents: write
 
-# Do not cancel an in-flight deploy; PR builds run to completion but never deploy.
+# Serialize every docs deploy on a single group: two tag releases (e.g. a
+# backfill) must not push gh-pages concurrently — the second push would be
+# rejected with "cannot lock ref" and lose its versioned snapshot.
+# cancel-in-progress stays false so an in-flight deploy always finishes.
 concurrency:
-  group: docs-${{ github.ref }}
+  group: docs-gh-pages
   cancel-in-progress: false
 
 jobs:
