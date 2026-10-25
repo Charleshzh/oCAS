@@ -1,0 +1,893 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Solvers - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html" class="active"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-solvers.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-solvers"><a class="header" href="#rust-api-reference-solvers">Rust API Reference: Solvers</a></h1>
+<p>This chapter covers the equation solving functionality in oCAS, organized into three modules: linear systems and Diophantine equations (<code>ocas-calc::solve</code>), polynomial system solving (<code>ocas-poly::ideal</code>), and ordinary differential equation solving (<code>ocas-calc::ode</code>).</p>
+<hr />
+<h2 id="linear-systems"><a class="header" href="#linear-systems">Linear systems</a></h2>
+<h3 id="solve_linear_rational"><a class="header" href="#solve_linear_rational">solve_linear_rational</a></h3>
+<p><strong>Signature</strong>: <code>pub fn solve_linear_rational(a: &amp;[Vec&lt;i64&gt;], b: &amp;[i64]) -&gt; Result&lt;Vec&lt;(i64, i64)&gt;, SolveError&gt;</code></p>
+<p><strong>Description</strong>: Solves the linear system $A\mathbf{x} = \mathbf{b}$ over the field of rational numbers $\mathbb{Q}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;[Vec&lt;i64&gt;]</code></td><td>The $n \times n$ coefficient matrix stored row-major; each <code>Vec&lt;i64&gt;</code> is one row</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;[i64]</code></td><td>The right-hand side vector of length $n$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Result&lt;Vec&lt;(i64, i64)&gt;, SolveError&gt;</code></p>
+<ul>
+<li><code>Ok(vec)</code>: the solution vector; each element <code>(num, den)</code> represents the rational number $\frac{\text{num}}{\text{den}}$, with $\text{den} &gt; 0$ and $\gcd(|\text{num}|, \text{den}) = 1$ guaranteed</li>
+<li><code>Err(SolveError)</code>: see the error list below</li>
+</ul>
+<p><strong>Errors</strong>:</p>
+<ul>
+<li><code>SolveError::EmptySystem</code> — $A$ or $\mathbf{b}$ is empty</li>
+<li><code>SolveError::NonSquare</code> — $A$ is not square (or the length of $\mathbf{b}$ does not match the number of rows)</li>
+<li><code>SolveError::Inconsistent</code> — the system has no solution (rank of the augmented matrix &gt; rank of the coefficient matrix)</li>
+<li><code>SolveError::Underdetermined { rank }</code> — the system has infinitely many solutions (rank deficient)</li>
+<li><code>SolveError::ResultNotInDomain</code> — the solution is not in the target domain</li>
+<li><code>SolveError::Matrix(_)</code> — an internal matrix operation failed (converted via <code>From&lt;MatrixError&gt;</code>)</li>
+<li><code>SolveError::Other(_)</code> — any other error</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::solve_linear_rational;
+
+// Solve:
+//   2x + y = 5
+//   x - y = 1
+// → x = 2, y = 1
+let a = vec![vec![2, 1], vec![1, -1]];
+let b = vec![5, 1];
+let x = solve_linear_rational(&amp;a, &amp;b).unwrap();
+assert_eq!(x, vec![(2, 1), (1, 1)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#solve_linear_integer"><code>solve_linear_integer</code></a>, <a href="./rust-matrix.html#solve"><code>Matrix::solve</code></a></p>
+<hr />
+<h3 id="solve_linear_integer"><a class="header" href="#solve_linear_integer">solve_linear_integer</a></h3>
+<p><strong>Signature</strong>: <code>pub fn solve_linear_integer(a: &amp;[Vec&lt;i64&gt;], b: &amp;[i64]) -&gt; Result&lt;Vec&lt;i64&gt;, SolveError&gt;</code></p>
+<p><strong>Description</strong>: Solves the linear system $A\mathbf{x} = \mathbf{b}$ over the ring of integers $\mathbb{Z}$. Requires the solution to be integral; otherwise an error is returned.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;[Vec&lt;i64&gt;]</code></td><td>The $n \times n$ coefficient matrix stored row-major</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;[i64]</code></td><td>The right-hand side vector of length $n$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Result&lt;Vec&lt;i64&gt;, SolveError&gt;</code></p>
+<ul>
+<li><code>Ok(vec)</code>: the integral solution vector</li>
+<li><code>Err(SolveError)</code>: the error types are the same as for <a href="#solve_linear_rational"><code>solve_linear_rational</code></a>, with a possible additional <code>ResultNotInDomain</code> (the solution contains fractions)</li>
+</ul>
+<p><strong>Errors</strong>: same as <a href="#solve_linear_rational"><code>solve_linear_rational</code></a>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::solve_linear_integer;
+
+// Solve:
+//   x + y = 3
+//   x - y = 1
+// → x = 2, y = 1
+let a = vec![vec![1, 1], vec![1, -1]];
+let b = vec![3, 1];
+let x = solve_linear_integer(&amp;a, &amp;b).unwrap();
+assert_eq!(x, vec![2, 1]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#solve_linear_rational"><code>solve_linear_rational</code></a></p>
+<hr />
+<h2 id="diophantine-equations"><a class="header" href="#diophantine-equations">Diophantine equations</a></h2>
+<h3 id="diophantinesolution"><a class="header" href="#diophantinesolution">DiophantineSolution</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiophantineSolution {
+    /// Particular solution (x0, y0)
+    pub particular: (i64, i64),
+    /// Homogeneous solution step (x_step, y_step)
+    pub general: (i64, i64),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Representation of the solutions of the linear Diophantine equation $ax + by = c$.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>particular</code></td><td><code>(i64, i64)</code></td><td>A particular solution $(x_0, y_0)$</td></tr>
+<tr><td><code>general</code></td><td><code>(i64, i64)</code></td><td>A basis solution $(x_{\text{step}}, y_{\text{step}})$ of the homogeneous equation $ax + by = 0$; the general solution is $(x_0 + k \cdot x_{\text{step}},; y_0 + k \cdot y_{\text{step}})$ with $k \in \mathbb{Z}$</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="solve_diophantine"><a class="header" href="#solve_diophantine">solve_diophantine</a></h3>
+<p><strong>Signature</strong>: <code>pub fn solve_diophantine(a: i64, b: i64, c: i64) -&gt; Option&lt;DiophantineSolution&gt;</code></p>
+<p><strong>Description</strong>: Solves the linear Diophantine equation $ax + by = c$ using the extended Euclidean algorithm. A solution exists if and only if $\gcd(a, b) \mid c$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>i64</code></td><td>The coefficient of $x$</td></tr>
+<tr><td><code>b</code></td><td><code>i64</code></td><td>The coefficient of $y$</td></tr>
+<tr><td><code>c</code></td><td><code>i64</code></td><td>The constant on the right-hand side</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Option&lt;DiophantineSolution&gt;</code></p>
+<ul>
+<li><code>Some(sol)</code>: the particular/general solution structure when a solution exists</li>
+<li><code>None</code>: $\gcd(a, b) \nmid c$; the equation has no integer solution</li>
+</ul>
+<p><strong>Errors</strong>: does not return a <code>Result</code>; returns <code>None</code> when unsolvable.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::solve_diophantine;
+
+// Solve 3x + 5y = 1
+// Particular solution: x = 2, y = -1 (since 3×2 + 5×(-1) = 1)
+// General solution: x = 2 + 5k, y = -1 - 3k
+let sol = solve_diophantine(3, 5, 1).unwrap();
+assert_eq!(sol.particular, (2, -1));
+assert_eq!(sol.general, (5, -3));
+
+// No solution: 2x + 4y = 3 (gcd(2,4)=2 does not divide 3)
+assert!(solve_diophantine(2, 4, 3).is_none());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#solve_linear_integer"><code>solve_linear_integer</code></a></p>
+<hr />
+<h2 id="polynomial-system-solving"><a class="header" href="#polynomial-system-solving">Polynomial system solving</a></h2>
+<h3 id="realsolution"><a class="header" href="#realsolution">RealSolution</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct RealSolution {
+    /// The value of each variable (in variable order)
+    pub values: Vec&lt;f64&gt;,
+    /// Algebraic multiplicity
+    pub multiplicity: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A real solution (numerical approximation) of a polynomial system of equations.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>Vec&lt;f64&gt;</code></td><td>The variable values $[x_1, x_2, \dots, x_n]$, in the order of the variables in the original system</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>usize</code></td><td>The algebraic multiplicity of the solution (the current implementation always sets this to 1; the actual multiplicity is not computed yet)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="zerodimsolutions"><a class="header" href="#zerodimsolutions">ZeroDimSolutions</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct ZeroDimSolutions {
+    /// All real solutions
+    pub solutions: Vec&lt;RealSolution&gt;,
+    /// Vector space dimension of the quotient ring k[x₁,...,xₙ]/I
+    pub vector_space_dimension: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The solution result of a zero-dimensional polynomial system.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>solutions</code></td><td><code>Vec&lt;RealSolution&gt;</code></td><td>All real solutions (may contain approximations)</td></tr>
+<tr><td><code>vector_space_dimension</code></td><td><code>usize</code></td><td>The vector space dimension of the quotient ring $k[x_1, \dots, x_n]/I$, equal to the product of the degrees of the univariate polynomials in the Lex GB</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="polynomialsystemsolution"><a class="header" href="#polynomialsystemsolution">PolynomialSystemSolution</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub enum PolynomialSystemSolution {
+    /// Zero-dimensional system: finitely many solutions
+    ZeroDimensional(ZeroDimSolutions),
+    /// Positive-dimensional system: the solution set has a positive-dimensional component; returns a Gröbner basis
+    PositiveDimensional(GroebnerBasis&lt;RationalDomain, Lex&gt;),
+    /// Inconsistent system (the ideal is ⟨1⟩), no solutions
+    Empty,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The enum type of the result of solving a polynomial system. The system automatically determines the dimension and selects the appropriate solving strategy.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ZeroDimensional(z)</code></td><td>The system has finitely many solutions; <code>z</code> contains all real solutions and the vector space dimension</td></tr>
+<tr><td><code>PositiveDimensional(gb)</code></td><td>The solution set of the system has a positive-dimensional component (infinitely many solutions); returns a Lex-order Gröbner basis</td></tr>
+<tr><td><code>Empty</code></td><td>The system is inconsistent (the Gröbner basis is {1}); no solutions. Note: an empty input equation list returns <code>PositiveDimensional</code> (with an empty basis), not <code>Empty</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="solve_polynomial_system"><a class="header" href="#solve_polynomial_system">solve_polynomial_system</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn solve_polynomial_system(
+    equations: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+    algo: Algorithm,
+) -&gt; PolynomialSystemSolution
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Solves the polynomial system $f_1 = f_2 = \cdots = f_m = 0$. Automatically computes a Lex-order Gröbner basis, determines the dimension of the system, and for zero-dimensional systems finds all real solutions by triangular decomposition and back substitution.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equations</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>The polynomial system; each polynomial represents one equation $f_i = 0$</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner basis algorithm selection: <code>Algorithm::Auto</code> (automatic), <code>Algorithm::Buchberger</code>, <code>Algorithm::F4</code>, <code>Algorithm::F5</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <a href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a></p>
+<p><strong>Errors</strong>: does not return a <code>Result</code>; all possible outcomes are expressed through the enum variants (zero-dimensional solutions, positive-dimensional basis, empty system).</p>
+<p><strong>Algorithm description</strong>:</p>
+<ol>
+<li>Compute a Gröbner basis of the ideal generated by the equations (using the specified algorithm). Since the input polynomials are already typed in Lex order (<code>SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;</code>), the GB is computed directly in Lex order; no order change is needed</li>
+<li>If the GB is {1}, return <code>Empty</code> (the system is inconsistent, no solutions)</li>
+<li>Determine whether it is zero-dimensional: whether each variable $x_i$ has a pure-power leading monomial $x_i^{N_i}$ in the GB</li>
+<li><strong>Zero-dimensional</strong>: extract the triangular structure of the Lex GB and back-substitute variable by variable starting from the last one (Sturm root isolation + bisection refinement), solving the real roots of the univariate polynomial for each variable; the quotient-ring dimension is estimated as the product of the univariate polynomial degrees</li>
+<li><strong>Positive-dimensional</strong>: return the Lex GB for further analysis</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+use ocas_poly::ideal::{solve_polynomial_system, PolynomialSystemSolution};
+
+let d = RationalDomain;
+
+// System:
+//   x² + y² - 1 = 0  (unit circle)
+//   x - y = 0        (line y = x)
+// Solutions: (±1/√2, ±1/√2)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),   // x²
+    (vec![0, 2], Rational::new(1, 1)),   // y²
+    (vec![0, 0], Rational::new(-1, 1)),  // -1
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),   // x
+    (vec![0, 1], Rational::new(-1, 1)),  // -y
+]);
+
+let sol = solve_polynomial_system(&amp;[f1, f2], Algorithm::Auto);
+match sol {
+    PolynomialSystemSolution::ZeroDimensional(z) =&gt; {
+        assert_eq!(z.solutions.len(), 2);
+        // Two solutions: approximately (0.707, 0.707) and (-0.707, -0.707)
+    }
+    _ =&gt; panic!("expected zero-dimensional system"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="./rust-groebner.html"><code>GroebnerBasis</code></a>, <a href="./rust-groebner.html#algorithm"><code>Algorithm</code></a>, <a href="./rust-groebner.html#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h2 id="ordinary-differential-equation-ode-solving"><a class="header" href="#ordinary-differential-equation-ode-solving">Ordinary differential equation (ODE) solving</a></h2>
+<h3 id="ode"><a class="header" href="#ode">ODE</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub struct ODE&lt;'a&gt; {
+    /// Equation in standard form lhs - rhs = 0
+    pub equation: Atom&lt;'a&gt;,
+    /// Unknown function, e.g. y(x)
+    pub func: Atom&lt;'a&gt;,
+    /// Independent variable, e.g. x
+    pub var: Symbol,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Describes an ordinary differential equation. The equation is stored in the standard form <code>equation = 0</code>, where <code>func</code> is the unknown function (e.g., $y(x)$) and <code>var</code> is the independent variable (e.g., $x$).</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The normalized form of the equation (<code>lhs - rhs</code>)</td></tr>
+<tr><td><code>func</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The unknown function, e.g., <code>y(x)</code></td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>The independent variable symbol, e.g., <code>"x"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Construction example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::ODE;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+
+// Represents y' - y = 0
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="odesolution"><a class="header" href="#odesolution">ODESolution</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub enum ODESolution&lt;'a&gt; {
+    /// Explicit solution y = expr
+    Explicit(Atom&lt;'a&gt;),
+    /// Implicit solution F(x, y) = 0
+    Implicit(Atom&lt;'a&gt;),
+    /// Parametric solution (x(t), y(t))
+    Parametric(Atom&lt;'a&gt;, Atom&lt;'a&gt;),
+    /// Series solution (truncated expression + number of terms)
+    Series(Atom&lt;'a&gt;, usize),
+    /// System solution (components)
+    System(&amp;'a [Atom&lt;'a&gt;]),
+    /// Failed to solve; returns the original ODE
+    Unsolved(ODE&lt;'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The enum type of the result of solving an ODE.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Explicit(expr)</code></td><td>An explicit solution $y = \text{expr}$, containing free constants C1, C2, ...</td></tr>
+<tr><td><code>Implicit(expr)</code></td><td>An implicit solution $F(x, y) = 0$ (stores the expression $F$)</td></tr>
+<tr><td><code>Parametric(x(t), y(t))</code></td><td>A parametric solution: two expressions giving $x(t)$ and $y(t)$</td></tr>
+<tr><td><code>Series(expr, n)</code></td><td>A series solution; <code>expr</code> is the truncated series expression and <code>n</code> the number of terms</td></tr>
+<tr><td><code>System(components)</code></td><td>A system solution; <code>components[i]</code> is the solution for the $i$-th unknown function</td></tr>
+<tr><td><code>Unsolved(ode)</code></td><td>No analytic solution found; returns the original ODE</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="odetype"><a class="header" href="#odetype">ODEType</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ODEType {
+    Separable,
+    LinearFirst,
+    Bernoulli,
+    Exact,
+    Homogeneous,
+    LinearConstantCoeff,
+    CauchyEuler,
+    ReductionOfOrder,
+    PowerSeries,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: The ODE type enum, which determines which solution method is used.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Equation form</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Separable</code></td><td>$g(y),y' = f(x)$</td><td>Separable: $\int g(y),dy = \int f(x),dx + C$</td></tr>
+<tr><td><code>LinearFirst</code></td><td>$y' + p(x),y = q(x)$</td><td>First-order linear: integrating factor $\mu = e^{\int p,dx}$</td></tr>
+<tr><td><code>Bernoulli</code></td><td>$y' + p(x),y = q(x),y^n$</td><td>Bernoulli equation: substitution $v = y^{1-n}$ reduces to linear</td></tr>
+<tr><td><code>Exact</code></td><td>$M,dx + N,dy = 0$, $\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}$</td><td>Exact equation: potential function $F(x,y) = C$</td></tr>
+<tr><td><code>Homogeneous</code></td><td>$y' = f(y/x)$</td><td>Homogeneous equation: substitution $v = y/x$ reduces to separable</td></tr>
+<tr><td><code>LinearConstantCoeff</code></td><td>$a,y'' + b,y' + c,y = f(x)$</td><td>Linear with constant coefficients: characteristic equation + undetermined coefficients (polynomial/exponential/trigonometric forcing)</td></tr>
+<tr><td><code>CauchyEuler</code></td><td>$a,x^2,y'' + b,x,y' + c,y = f(x)$</td><td>Cauchy-Euler: substitution $x = e^t$ reduces to constant coefficients</td></tr>
+<tr><td><code>ReductionOfOrder</code></td><td>$a(x),y'' + b(x),y' + c(x),y = f(x)$</td><td>Reduction of order: tries simple candidate solutions $y_1$; $y_2 = y_1 \int \frac{e^{-\int p,dx}}{y_1^2},dx$; nonzero forcing uses variation of parameters for the particular solution</td></tr>
+<tr><td><code>PowerSeries</code></td><td>linear ODE, ordinary point $x_0 = 0$</td><td>Power series: $y = \sum_{n=0}^{N-1} a_n x^n$; falls back to the Frobenius method automatically on failure</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>Note: variation of parameters and the Frobenius method are used internally as solving routines (the former for particular solutions in reduction of order, the latter as the fallback when the power series fails), but they are <strong>not</strong> separate <code>ODEType</code> variants.</p>
+</blockquote>
+<hr />
+<h3 id="classify_ode"><a class="header" href="#classify_ode">classify_ode</a></h3>
+<p><strong>Signature</strong>: <code>pub fn classify_ode&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, ode: ODE&lt;'a&gt;) -&gt; Vec&lt;ODEType&gt;</code></p>
+<p><strong>Description</strong>: Analyzes the ODE and returns all applicable solution methods, ordered by priority. The order actually returned (implemented in <code>classify.rs</code>): for first-order equations, <code>LinearFirst</code> → <code>Bernoulli</code> → <code>Separable</code> → <code>Exact</code> → <code>Homogeneous</code> are checked in that order; for second-order (and higher) linear equations, <code>LinearConstantCoeff</code> → <code>CauchyEuler</code> → <code>ReductionOfOrder</code> (second order only); finally, <code>PowerSeries</code> is appended as a fallback for any linear equation of order ≥ 1.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>ode</code></td><td><code>ODE&lt;'a&gt;</code></td><td>The ODE to classify</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;ODEType&gt;</code> — the list of all applicable solution methods (possibly empty).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_calc::ode::{classify_ode, ODE, ODEType};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+
+// y' - y = 0 is first-order linear
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+let eq = ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]);
+let ode = ODE { equation: eq, func: y, var: Symbol::new("x") };
+let methods = classify_ode(&amp;ctx, ode);
+assert!(methods.contains(&amp;ODEType::LinearFirst));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#dsolve"><code>dsolve</code></a>, <a href="#odetype"><code>ODEType</code></a></p>
+<hr />
+<h3 id="dsolve"><a class="header" href="#dsolve">dsolve</a></h3>
+<p><strong>Signature</strong>: <code>pub fn dsolve&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, ode: ODE&lt;'a&gt;, hint: Option&lt;ODEType&gt;) -&gt; ODESolution&lt;'a&gt;</code></p>
+<p><strong>Description</strong>: Solves an ordinary differential equation. Automatically classifies the ODE type and tries the methods in priority order; a specific method can also be requested via <code>hint</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>ode</code></td><td><code>ODE&lt;'a&gt;</code></td><td>The ODE to solve</td></tr>
+<tr><td><code>hint</code></td><td><code>Option&lt;ODEType&gt;</code></td><td>Optional: a specific solution method. When <code>None</code>, the ODE is classified automatically and the methods are tried in priority order</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <a href="#odesolution"><code>ODESolution&lt;'a&gt;</code></a></p>
+<p><strong>Solution strategy</strong> (when <code>hint = None</code>):</p>
+<ol>
+<li>Call <a href="#classify_ode"><code>classify_ode</code></a> to obtain the list of candidate methods</li>
+<li>Try each method in priority order</li>
+<li>The solution of the first successful method is returned</li>
+<li><code>ODESolution::Unsolved</code> is returned when all methods fail</li>
+</ol>
+<p><strong>First-order solvers</strong>:</p>
+<ul>
+<li><strong>Separable</strong>: $\int g(y),dy = \int f(x),dx + C$</li>
+<li><strong>First-order linear</strong>: integrating factor $\mu(x) = e^{\int p(x),dx}$, general solution $y = \frac{1}{\mu}\left(\int \mu,q,dx + C\right)$</li>
+<li><strong>Bernoulli</strong>: substitution $v = y^{1-n}$ reduces to first-order linear</li>
+<li><strong>Exact equations</strong>: find a potential function $F$ such that $\frac{\partial F}{\partial x} = M$ and $\frac{\partial F}{\partial y} = N$; when not exact, an integrating factor $\mu(x)$ or $\mu(y)$ is attempted</li>
+<li><strong>Homogeneous</strong>: substitution $v = y/x$ reduces to separable</li>
+</ul>
+<p><strong>Second-order solvers</strong>:</p>
+<ul>
+<li><strong>Constant coefficients</strong>: characteristic equation $ar^2 + br + c = 0$; build the fundamental solution set according to the discriminant $\Delta = b^2 - 4ac$; find a particular solution by undetermined coefficients</li>
+<li><strong>Cauchy-Euler</strong>: substitution $x = e^t$ converts to a constant-coefficient equation; indicial equation $ar^2 + (b-a)r + c = 0$</li>
+<li><strong>Reduction of order</strong>: tries simple candidate solutions ($1, x, x^2, e^x, e^{-x}, e^{2x}$); once one is found, constructs a second solution via $y_2 = y_1 \int \frac{e^{-\int p,dx}}{y_1^2},dx$</li>
+<li><strong>Variation of parameters</strong>: given fundamental solutions $y_1, y_2$ of the homogeneous equation, finds a particular solution using the Wronskian $W = y_1 y_2' - y_1' y_2$</li>
+</ul>
+<p><strong>Series solvers</strong> (dispatched by <code>PowerSeries</code>, fixed expansion point $x_0 = 0$, 8 terms):</p>
+<ul>
+<li><strong>Power series</strong>: expand $y = \sum_{n=0}^{N-1} a_n x^n$ at the ordinary point $x_0 = 0$; substitute into the ODE and recurse to determine the coefficients</li>
+<li><strong>Frobenius</strong> (internal fallback): when the power series is not applicable at the ordinary point, falls back to the regular singular point method, expanding $y = x^r \sum_{n=0}^{N-1} a_n x^n$; the indicial equation determines $r$</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::{dsolve, ODE, ODESolution};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+
+// Solve y' - y = 0 → C1*exp(x)
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+let sol = dsolve(&amp;ctx, ode, None);
+assert!(matches!(sol, ODESolution::Explicit(_)));
+
+// Specify a method
+let sol_hint = dsolve(&amp;ctx, ode, Some(ODEType::LinearFirst));
+assert!(matches!(sol_hint, ODESolution::Explicit(_)));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#classify_ode"><code>classify_ode</code></a>, <a href="#dsolve_ivp"><code>dsolve_ivp</code></a>, <a href="#dsolve_system"><code>dsolve_system</code></a></p>
+<hr />
+<h3 id="dsolve_ivp"><a class="header" href="#dsolve_ivp">dsolve_ivp</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn dsolve_ivp&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    ode: ODE&lt;'a&gt;,
+    y0: Atom&lt;'a&gt;,
+    y1: Option&lt;Atom&lt;'a&gt;&gt;,
+) -&gt; ODESolution&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Solves the initial value problem (IVP) for first- or second-order linear constant-coefficient ODEs using the Laplace transform. The result is an explicit solution without free constants.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>ode</code></td><td><code>ODE&lt;'a&gt;</code></td><td>The ODE (must be linear with constant coefficients)</td></tr>
+<tr><td><code>y0</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The initial condition $y(0)$</td></tr>
+<tr><td><code>y1</code></td><td><code>Option&lt;Atom&lt;'a&gt;&gt;</code></td><td>$y'(0)$ for second-order problems; ignored for first-order problems</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <a href="#odesolution"><code>ODESolution&lt;'a&gt;</code></a></p>
+<ul>
+<li><code>Explicit(expr)</code>: an explicit solution without free constants</li>
+<li><code>Unsolved</code>: the Laplace transform method is not applicable or the inverse cannot be computed</li>
+</ul>
+<p><strong>Method description</strong>:</p>
+<ol>
+<li>Take the Laplace transform of both sides of the ODE, using $\mathcal{L}{y'} = sY - y(0)$ and $\mathcal{L}{y''} = s^2 Y - sy(0) - y'(0)$</li>
+<li>Substitute the initial conditions to obtain an algebraic equation for $Y(s)$</li>
+<li>Solve for $Y(s)$</li>
+<li>Perform the inverse Laplace transform via partial fraction decomposition + lookup of standard pairs</li>
+</ol>
+<p><strong>Supported forcing terms</strong>: polynomials, exponentials $e^{kx}$, sines/cosines $\sin(\omega x)$/$\cos(\omega x)$, and linear combinations of $e^{kx}\sin(\omega x)$/$e^{kx}\cos(\omega x)$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::{dsolve_ivp, ODE, ODESolution};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+
+// y' - y = 0, y(0) = 1  →  y = exp(x)
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+let sol = dsolve_ivp(&amp;ctx, ode, ctx.num(1), None);
+assert!(matches!(sol, ODESolution::Explicit(_)));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#dsolve"><code>dsolve</code></a></p>
+<hr />
+<h3 id="dsolve_system"><a class="header" href="#dsolve_system">dsolve_system</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn dsolve_system&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    equations: &amp;[Atom&lt;'a&gt;],
+    funcs: &amp;[Atom&lt;'a&gt;],
+    var: Symbol,
+) -&gt; ODESolution&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Solves a $2 \times 2$ constant-coefficient linear ODE system $\mathbf{Y}' = A\mathbf{Y}$. The general solution is obtained via eigenvalue decomposition.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>equations</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>The list of equations, each of the form <code>Derivative(y_i, x) - (a_i1*y1 + a_i2*y2) = 0</code></td></tr>
+<tr><td><code>funcs</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>The list of unknown functions, e.g., <code>[y1(x), y2(x)]</code></td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>The independent variable symbol</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <a href="#odesolution"><code>ODESolution&lt;'a&gt;</code></a></p>
+<ul>
+<li><code>System(&amp;[Atom])</code>: the general solution of each component (containing free constants C1, C2)</li>
+<li><code>Unsolved</code>: the system is not supported (not 2×2, or the eigenvalues have no closed form)</li>
+</ul>
+<p><strong>Supported cases</strong>:</p>
+<ul>
+<li>Distinct real eigenvalues $\lambda_1 \neq \lambda_2$: $\mathbf{Y} = C_1 \mathbf{v}_1 e^{\lambda_1 x} + C_2 \mathbf{v}_2 e^{\lambda_2 x}$</li>
+<li>Repeated real eigenvalues (with a generalized eigenvector): $\mathbf{Y} = (C_1 \mathbf{v} + C_2(\mathbf{w} + x\mathbf{v}))e^{\lambda x}$</li>
+<li>Conjugate complex eigenvalues $\alpha \pm \beta i$: real-valued fundamental solutions such as $e^{\alpha x}(\mathbf{p}\cos\beta x - \mathbf{q}\sin\beta x)$</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::{dsolve_system, ODESolution};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y1 = ctx.fun("y1", &amp;[x]);
+let y2 = ctx.fun("y2", &amp;[x]);
+let dy1 = ctx.fun("Derivative", &amp;[y1, x]);
+let dy2 = ctx.fun("Derivative", &amp;[y2, x]);
+
+// Harmonic oscillator: y1' = y2, y2' = -y1
+let eq1 = ctx.add(&amp;[dy1, ctx.mul(&amp;[ctx.num(-1), y2])]);
+let eq2 = ctx.add(&amp;[dy2, y1]);
+let sol = dsolve_system(&amp;ctx, &amp;[eq1, eq2], &amp;[y1, y2], Symbol::new("x"));
+assert!(matches!(sol, ODESolution::System(_)));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#dsolve"><code>dsolve</code></a></p>
+<hr />
+<h2 id="solveerror"><a class="header" href="#solveerror">SolveError</a></h2>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SolveError {
+    /// The system of equations is empty
+    EmptySystem,
+    /// The system is nonlinear
+    NonLinear,
+    /// The coefficient matrix is not square (or the equation count does not match the unknown count)
+    NonSquare,
+    /// The system is inconsistent (no solution)
+    Inconsistent,
+    /// The system is underdetermined (infinitely many solutions)
+    Underdetermined { rank: usize },
+    /// The result is not in the target domain
+    ResultNotInDomain,
+    /// An internal matrix operation failed
+    Matrix(MatrixError),
+    /// Other error with a description
+    Other(String),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Errors that can occur during equation solving. Implements the <code>Display</code> and <code>Error</code> traits. Implements <code>From&lt;MatrixError&gt;</code>: <code>ShapeMismatch</code> → <code>NonSquare</code>, <code>Inconsistent</code> → <code>Inconsistent</code>, <code>Underdetermined { rank }</code> → <code>Underdetermined { rank }</code>, <code>ResultNotInDomain</code> → <code>ResultNotInDomain</code>, <code>RightHandSideIsNotVector</code> → <code>Other("right-hand side is not a vector")</code>.</p>
+<p><strong>Variants</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>EmptySystem</code></td><td>The input system of equations is empty</td></tr>
+<tr><td><code>NonLinear</code></td><td>The system is nonlinear in the target variables</td></tr>
+<tr><td><code>NonSquare</code></td><td>The coefficient matrix is not square (equation count ≠ unknown count)</td></tr>
+<tr><td><code>Inconsistent</code></td><td>The rank of the augmented matrix is greater than the rank of the coefficient matrix</td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td>The rank of the coefficient matrix is less than the number of variables; <code>rank</code> is the actual rank</td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td>The solution is not in the target number domain (e.g., an integral solution was requested but the solution contains fractions)</td></tr>
+<tr><td><code>Matrix(MatrixError)</code></td><td>An internal matrix operation failed (converted automatically via <code>From&lt;MatrixError&gt;</code>)</td></tr>
+<tr><td><code>Other(String)</code></td><td>Other error with a description</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::{solve_linear_rational, SolveError};
+
+// Inconsistent system: x + y = 1, x + y = 2
+let a = vec![vec![1, 1], vec![1, 1]];
+let b = vec![1, 2];
+let result = solve_linear_rational(&amp;a, &amp;b);
+assert_eq!(result, Err(SolveError::Inconsistent));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="helper-functions"><a class="header" href="#helper-functions">Helper functions</a></h2>
+<h3 id="substitute_solution_collected"><a class="header" href="#substitute_solution_collected">substitute_solution_collected</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute_solution_collected&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    equation: Atom&lt;'a&gt;,
+    func: Atom&lt;'a&gt;,
+    sol: Atom&lt;'a&gt;,
+    var: Symbol,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Substitutes a candidate solution into the ODE equation and returns the residual after collecting like terms. A zero residual means the candidate solution satisfies the ODE. Mainly used for verification.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>The expression arena</td></tr>
+<tr><td><code>equation</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The ODE equation (in <code>lhs - rhs</code> form)</td></tr>
+<tr><td><code>func</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The unknown function (e.g., <code>y(x)</code>)</td></tr>
+<tr><td><code>sol</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The candidate solution expression</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>The independent variable symbol</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Atom&lt;'a&gt;</code> — the residual expression after substitution and simplification. If zero, the candidate solution is correct.</p>
+<hr />
+<h2 id="source-modules"><a class="header" href="#source-modules">Source modules</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Module</th><th>Path</th><th>Contents</th></tr></thead><tbody>
+<tr><td>Linear solving</td><td><code>ocas-calc/src/solve.rs</code></td><td><code>solve_linear_rational</code>, <code>solve_linear_integer</code>, <code>solve_diophantine</code>, <code>SolveError</code></td></tr>
+<tr><td>Polynomial systems</td><td><code>ocas-poly/src/ideal.rs</code></td><td><code>solve_polynomial_system</code>, <code>PolynomialSystemSolution</code>, <code>RealSolution</code>, <code>ZeroDimSolutions</code></td></tr>
+<tr><td>ODE classification</td><td><code>ocas-calc/src/ode/classify.rs</code></td><td><code>classify_ode</code>, <code>ODEType</code></td></tr>
+<tr><td>First-order ODEs</td><td><code>ocas-calc/src/ode/first_order.rs</code></td><td>separable, linear, Bernoulli, exact, and homogeneous solvers</td></tr>
+<tr><td>Second-order ODEs</td><td><code>ocas-calc/src/ode/second_order.rs</code></td><td>constant-coefficient, Cauchy-Euler, reduction-of-order, and variation-of-parameters solvers</td></tr>
+<tr><td>Series solutions for ODEs</td><td><code>ocas-calc/src/ode/series.rs</code></td><td>power series and Frobenius solvers</td></tr>
+<tr><td>Laplace transforms for ODEs</td><td><code>ocas-calc/src/ode/laplace.rs</code></td><td>the Laplace transform implementation behind <code>dsolve_ivp</code></td></tr>
+<tr><td>ODE systems</td><td><code>ocas-calc/src/ode/systems.rs</code></td><td>the eigenvalue decomposition implementation behind <code>dsolve_system</code></td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-calculus.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-rewrite.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-calculus.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-rewrite.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,1427 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>求值与 JIT - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html" class="active"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-evaluation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考求值与-jit"><a class="header" href="#rust-api-参考求值与-jit">Rust API 参考：求值与 JIT</a></h1>
+<p>oCAS 的求值系统将符号表达式编译为栈式虚拟机指令序列，然后在数值类型上高效执行。支持三种执行后端：解释器（通用）、JIT 编译（Cranelift 生成原生机器码）、SIMD 批量求值（向量化处理多组参数）。</p>
+<p><strong>模块路径</strong>：<code>ocas_eval</code></p>
+<p><strong>编译管线</strong>：</p>
+<pre><code class="language-text">Atom (arena-backed)
+  → EvalTree (owned intermediate, 可选常量折叠优化)
+  → Instr sequence (编译 + 优化 pass)
+  → ExpressionEvaluator (栈式 VM 解释器)
+  → 或 JitCompiledFunction (Cranelift, feature = "jit")
+  → 或 VectorEvaluator (SIMD 批量, feature = "simd")
+</code></pre>
+<p><strong>Feature flags</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>Flag</th><th>功能</th></tr></thead><tbody>
+<tr><td><code>jit</code></td><td>启用 Cranelift JIT 编译后端</td></tr>
+<tr><td><code>simd</code></td><td>启用 SIMD 批量求值（<code>pulp</code>，运行时检测 SSE2/AVX2/AVX-512）</td></tr>
+<tr><td><code>fast-poly</code></td><td>启用快速多项式求值优化</td></tr>
+</tbody></table>
+</div>
+<p><strong>导入方式</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{
+    ExpressionEvaluator, EvaluationDomain, PowfExtension,
+    FunctionMap, EvalTree,
+    Instr, Instruction, Slot,
+    EvaluationError,
+    StreamingEvaluator,
+    compile_atom, compile_atom_with,
+    compile_atoms_multi, compile_atoms_multi_with,
+};
+use ocas_eval::instruction::BuiltinOp;
+
+// JIT (feature = "jit")
+use ocas_eval::jit::{JitCompiledFunction, JitCompiledF32, JitEngine, FloatWidth};
+
+// SIMD (feature = "simd")
+use ocas_eval::simd::{VectorEvaluator, VectorEvaluatorF32};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="evaltree"><a class="header" href="#evaltree">EvalTree</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum EvalTree {
+    Num(f64),
+    Var(String),
+    Fun(String, Vec&lt;EvalTree&gt;),
+    Add(Vec&lt;EvalTree&gt;),
+    Mul(Vec&lt;EvalTree&gt;),
+    Pow(Box&lt;EvalTree&gt;, Box&lt;EvalTree&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：arena 无关的、拥有所有权的中间表示。从 <code>Atom</code> 转换而来，断开与 arena 生命周期的绑定，使编译管线可自由进行多遍优化。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Num(f64)</code></td><td>数值常量</td></tr>
+<tr><td><code>Var(String)</code></td><td>变量引用</td></tr>
+<tr><td><code>Fun(String, Vec&lt;EvalTree&gt;)</code></td><td>命名函数应用</td></tr>
+<tr><td><code>Add(Vec&lt;EvalTree&gt;)</code></td><td>求和</td></tr>
+<tr><td><code>Mul(Vec&lt;EvalTree&gt;)</code></td><td>乘积</td></tr>
+<tr><td><code>Pow(Box&lt;EvalTree&gt;, Box&lt;EvalTree&gt;)</code></td><td>幂运算 base^exp</td></tr>
+</tbody></table>
+</div>
+<h4 id="evaltreefrom_atom"><a class="header" href="#evaltreefrom_atom">EvalTree::from_atom</a></h4>
+<p><strong>签名</strong>：<code>pub fn from_atom(atom: Atom&lt;'_&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：从 <code>Atom</code> 转换为拥有的 <code>EvalTree</code>。递归遍历表达式树，将 arena 句柄转为独立数据。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'_&gt;</code></td><td>源表达式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：拥有的 <code>EvalTree</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_eval::EvalTree;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let atom = ctx.add(&amp;[ctx.var("x"), ctx.num(2)]);
+let tree = EvalTree::from_atom(atom);
+// tree = Add([Var("x"), Num(2.0)])
+<span class="boring">}</span></code></pre></pre>
+<h4 id="evaltreefold_constants"><a class="header" href="#evaltreefold_constants">EvalTree::fold_constants</a></h4>
+<p><strong>签名</strong>：<code>pub fn fold_constants(&amp;self) -&gt; EvalTree</code></p>
+<p><strong>功能</strong>：折叠常量子树并应用代数恒等式。在编译前运行，减少指令数。</p>
+<p><strong>优化规则</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>模式</th><th>规则</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td>删除零项；全常量项求和；单项折叠</td></tr>
+<tr><td><code>Mul</code></td><td>吸收零因子；删除单位因子；全常量因子求积；单因子折叠</td></tr>
+<tr><td><code>Pow</code></td><td><code>x^1 → x</code>，<code>x^0 → 1</code>，<code>Num^Num</code> 直接求值</td></tr>
+<tr><td><code>Fun</code></td><td>内建函数的全常量参数直接求值（外部函数不折叠，可能有副作用）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：优化后的新 <code>EvalTree</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::EvalTree;
+
+let tree = EvalTree::Add(vec![
+    EvalTree::Num(3.0),
+    EvalTree::Mul(vec![
+        EvalTree::Num(0.0),
+        EvalTree::Var("x".into()),
+    ]),
+]);
+let folded = tree.fold_constants();
+assert_eq!(folded, EvalTree::Num(3.0));
+// 输出：3 + 0*x → 3
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="expressionevaluatort"><a class="header" href="#expressionevaluatort">ExpressionEvaluator&lt;T&gt;</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct ExpressionEvaluator&lt;T: EvaluationDomain&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：编译好的表达式，可反复执行数值求值。持有指令序列、预分配栈、常量表和可选的用户自定义函数注册表。类型参数 <code>T</code> 实现 <code>EvaluationDomain</code>，通常为 <code>f64</code>。</p>
+<h3 id="编译方法"><a class="header" href="#编译方法">编译方法</a></h3>
+<h4 id="expressionevaluatorcompile"><a class="header" href="#expressionevaluatorcompile">ExpressionEvaluator::compile</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile(atom: Atom&lt;'_&gt;) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将 <code>Atom</code> 编译为可执行求值器。内部先转为 <code>EvalTree</code>，再折叠常量、生成指令序列。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'_&gt;</code></td><td>源表达式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(ExpressionEvaluator&lt;T&gt;)</code> 或编译错误。</p>
+<p><strong>错误</strong>：见 <a href="#evaluationerror"><code>EvaluationError</code></a>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+assert_eq!(eval.param_count(), 1);
+assert_eq!(eval.result_count(), 1);
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorcompile_with"><a class="header" href="#expressionevaluatorcompile_with">ExpressionEvaluator::compile_with</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile_with(atom: Atom&lt;'_&gt;, map: FunctionMap&lt;T&gt;) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：编译表达式，并传入用户自定义函数注册表。表达式中出现的 <code>ExternalFun</code> 节点通过 <code>map</code> 解析。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'_&gt;</code></td><td>源表达式</td></tr>
+<tr><td><code>map</code></td><td><code>FunctionMap&lt;T&gt;</code></td><td>自定义函数注册表（无外部函数时传入空映射）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(ExpressionEvaluator&lt;T&gt;)</code> 或编译/解析错误。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, FunctionMap};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("myfunc", &amp;[ctx.var("x")]);
+
+let mut fmap = FunctionMap::&lt;f64&gt;::new();
+fmap.register("myfunc", 1, Box::new(|args| args[0] * args[0]));
+
+let eval = ExpressionEvaluator::compile_with(expr, fmap).unwrap();
+let result = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(result, vec![9.0]);
+// 输出：myfunc(3) = 3² = 9
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorcompile_multi"><a class="header" href="#expressionevaluatorcompile_multi">ExpressionEvaluator::compile_multi</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile_multi(atoms: &amp;[Atom&lt;'_&gt;]) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将多个 <code>Atom</code> 编译为单个多输出求值器。跨所有输出共享常量、公共子表达式（CSE）和栈槽位，避免重复计算。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atoms</code></td><td><code>&amp;[Atom&lt;'_&gt;]</code></td><td>多个表达式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(ExpressionEvaluator&lt;T&gt;)</code>，<code>result_count() == atoms.len()</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let expr1 = ctx.mul(&amp;[x, x]);       // x²
+let expr2 = ctx.add(&amp;[x, ctx.num(1)]); // x+1
+
+let eval: ExpressionEvaluator&lt;f64&gt; =
+    ExpressionEvaluator::compile_multi(&amp;[expr1, expr2]).unwrap();
+let results = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(results, vec![9.0, 4.0]);
+// 输出：x²=9, x+1=4
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorcompile_multi_with"><a class="header" href="#expressionevaluatorcompile_multi_with">ExpressionEvaluator::compile_multi_with</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn compile_multi_with(atoms: &amp;[Atom&lt;'_&gt;], map: FunctionMap&lt;T&gt;) -&gt; Result&lt;Self&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：<code>compile_multi</code> 的带函数映射版本（<code>map</code> 直接传入，而非 <code>Option</code>）。</p>
+<h3 id="执行方法"><a class="header" href="#执行方法">执行方法</a></h3>
+<h4 id="expressionevaluatorevaluate"><a class="header" href="#expressionevaluatorevaluate">ExpressionEvaluator::evaluate</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn evaluate(&amp;self, params: &amp;[T]) -&gt; Result&lt;Vec&lt;T&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：用给定参数值执行编译好的表达式。每次调用分配新的栈和结果缓冲区。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[T]</code></td><td>参数值，长度必须等于 <code>param_count()</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(Vec&lt;T&gt;)</code>，长度等于 <code>result_count()</code>。</p>
+<p><strong>错误</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>错误</th><th>条件</th></tr></thead><tbody>
+<tr><td><code>WrongArity</code></td><td><code>params.len() != param_count()</code></td></tr>
+<tr><td><code>DivisionByZero</code></td><td>求值过程中遇到除零</td></tr>
+<tr><td><code>FunctionNotFound</code></td><td>外部函数未注册</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let result = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(result[0], 10.0);
+// 输出：3² + 1 = 10
+<span class="boring">}</span></code></pre></pre>
+<h4 id="expressionevaluatorevaluate_with_stack"><a class="header" href="#expressionevaluatorevaluate_with_stack">ExpressionEvaluator::evaluate_with_stack</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; ExpressionEvaluator&lt;T&gt; {
+    pub fn evaluate_with_stack(
+        &amp;self,
+        params: &amp;[T],
+        stack: &amp;mut Vec&lt;T&gt;,
+        results: &amp;mut Vec&lt;T&gt;,
+    ) -&gt; Result&lt;()&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：使用调用者提供的缓冲区执行求值，避免每次调用的堆分配。流式和批处理场景应优先使用此方法。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[T]</code></td><td>参数值</td></tr>
+<tr><td><code>stack</code></td><td><code>&amp;mut Vec&lt;T&gt;</code></td><td>栈缓冲区（自动 resize 到 <code>stack_size()</code>）</td></tr>
+<tr><td><code>results</code></td><td><code>&amp;mut Vec&lt;T&gt;</code></td><td>结果缓冲区（自动填充）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(())</code> 或求值错误。</p>
+<h3 id="访问器"><a class="header" href="#访问器">访问器</a></h3>
+<h4 id="expressionevaluatorparam_count"><a class="header" href="#expressionevaluatorparam_count">ExpressionEvaluator::param_count</a></h4>
+<p><strong>签名</strong>：<code>pub fn param_count(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回期望的参数个数。</p>
+<h4 id="expressionevaluatorresult_count"><a class="header" href="#expressionevaluatorresult_count">ExpressionEvaluator::result_count</a></h4>
+<p><strong>签名</strong>：<code>pub fn result_count(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回输出结果个数（单输出表达式为 1，<code>compile_multi</code> 创建的可能大于 1）。</p>
+<h4 id="expressionevaluatorstack_size"><a class="header" href="#expressionevaluatorstack_size">ExpressionEvaluator::stack_size</a></h4>
+<p><strong>签名</strong>：<code>pub fn stack_size(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回求值所需栈大小（参数 + 常量 + 临时值 + 输出）。<code>evaluate_with_stack</code> 的 <code>stack</code> 参数应预分配此容量。</p>
+<hr />
+<h2 id="jit-编译feature--jit"><a class="header" href="#jit-编译feature--jit">JIT 编译（feature = "jit"）</a></h2>
+<p>JIT 后端使用 Cranelift 将指令序列编译为原生机器码，常量嵌入为立即数，调用 libm 进行超越函数计算。性能通常比解释器快 10 倍以上。</p>
+<h3 id="expressionevaluatorcompile_jit"><a class="header" href="#expressionevaluatorcompile_jit">ExpressionEvaluator::compile_jit</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_jit(&amp;self) -&gt; Result&lt;JitCompiledFunction&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将当前求值器的指令序列编译为双精度（f64）原生代码。</p>
+<p><strong>返回值</strong>：<code>Ok(JitCompiledFunction)</code> 或编译错误。</p>
+<p><strong>错误</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>错误</th><th>条件</th></tr></thead><tbody>
+<tr><td><code>UnsupportedOperation</code></td><td>包含 JIT 无法降低的指令（如外部函数、<code>sec</code>/<code>csc</code>/<code>cot</code>）</td></tr>
+<tr><td><code>JitCompilationError</code></td><td>Cranelift 后端编译失败</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+let result = jit.call(&amp;[3.0]);
+assert_eq!(result, vec![10.0]);
+// 输出：3² + 1 = 10（原生机器码执行）
+<span class="boring">}</span></code></pre></pre>
+<h3 id="expressionevaluatorcompile_jit_f32"><a class="header" href="#expressionevaluatorcompile_jit_f32">ExpressionEvaluator::compile_jit_f32</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "jit")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_jit_f32(&amp;self) -&gt; Result&lt;JitCompiledF32&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将指令序列编译为单精度（f32）原生代码。常量从 f64 窄化为 f32；结果精度为 f32。</p>
+<p><strong>错误</strong>：与 <code>compile_jit</code> 相同。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.mul(&amp;[ctx.var("x"), ctx.num(2)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit_f32 = eval.compile_jit_f32().unwrap();
+let result = jit_f32.call(&amp;[3.0_f32]);
+assert_eq!(result, vec![6.0_f32]);
+// 输出：3 × 2 = 6（f32 精度）
+<span class="boring">}</span></code></pre></pre>
+<h3 id="jitcompiledfunction"><a class="header" href="#jitcompiledfunction">JitCompiledFunction</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct JitCompiledFunction { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：JIT 编译好的双精度函数，可反复调用。</p>
+<h4 id="jitcompiledfunctioncall"><a class="header" href="#jitcompiledfunctioncall">JitCompiledFunction::call</a></h4>
+<p><strong>签名</strong>：<code>pub fn call(&amp;self, params: &amp;[f64]) -&gt; Vec&lt;f64&gt;</code></p>
+<p><strong>功能</strong>：用给定参数调用 JIT 编译的函数。每次分配新的结果向量。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[f64]</code></td><td>参数值</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：结果向量，长度等于 <code>result_count()</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+let result = jit.call(&amp;[3.0]);
+assert_eq!(result, vec![10.0]);
+// 输出：x²+1 在 x=3 时的值 10
+<span class="boring">}</span></code></pre></pre>
+<h4 id="jitcompiledfunctioncall_into"><a class="header" href="#jitcompiledfunctioncall_into">JitCompiledFunction::call_into</a></h4>
+<p><strong>签名</strong>：<code>pub fn call_into(&amp;self, params: &amp;[f64], results: &amp;mut [f64])</code></p>
+<p><strong>功能</strong>：调用 JIT 函数，结果写入调用者提供的缓冲区，避免每次调用的堆分配。<code>results.len()</code> 必须至少为 <code>result_count()</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[f64]</code></td><td>参数值</td></tr>
+<tr><td><code>results</code></td><td><code>&amp;mut [f64]</code></td><td>结果缓冲区</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+let mut buf = vec![0.0_f64; jit.result_count()];
+jit.call_into(&amp;[42.0], &amp;mut buf);
+assert_eq!(buf, vec![1765.0]);
+// 结果在 buf 中（42² + 1 = 1765），无堆分配
+<span class="boring">}</span></code></pre></pre>
+<h4 id="jitcompiledfunctionparam_count"><a class="header" href="#jitcompiledfunctionparam_count">JitCompiledFunction::param_count</a></h4>
+<p><strong>签名</strong>：<code>pub fn param_count(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回期望的参数个数。</p>
+<h4 id="jitcompiledfunctionresult_count"><a class="header" href="#jitcompiledfunctionresult_count">JitCompiledFunction::result_count</a></h4>
+<p><strong>签名</strong>：<code>pub fn result_count(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回结果个数。</p>
+<h3 id="jitcompiledf32"><a class="header" href="#jitcompiledf32">JitCompiledF32</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct JitCompiledF32 { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：JIT 编译好的单精度函数。API 与 <code>JitCompiledFunction</code> 完全对称，参数和返回值为 <code>f32</code>。</p>
+<h4 id="jitcompiledf32call"><a class="header" href="#jitcompiledf32call">JitCompiledF32::call</a></h4>
+<p><strong>签名</strong>：<code>pub fn call(&amp;self, params: &amp;[f32]) -&gt; Vec&lt;f32&gt;</code></p>
+<h4 id="jitcompiledf32call_into"><a class="header" href="#jitcompiledf32call_into">JitCompiledF32::call_into</a></h4>
+<p><strong>签名</strong>：<code>pub fn call_into(&amp;self, params: &amp;[f32], results: &amp;mut [f32])</code></p>
+<h4 id="jitcompiledf32param_count"><a class="header" href="#jitcompiledf32param_count">JitCompiledF32::param_count</a></h4>
+<p><strong>签名</strong>：<code>pub fn param_count(&amp;self) -&gt; usize</code></p>
+<h4 id="jitcompiledf32result_count"><a class="header" href="#jitcompiledf32result_count">JitCompiledF32::result_count</a></h4>
+<p><strong>签名</strong>：<code>pub fn result_count(&amp;self) -&gt; usize</code></p>
+<h3 id="jitengine"><a class="header" href="#jitengine">JitEngine</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct JitEngine;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：JIT 编译引擎的入口点。提供底层 <code>compile</code> 方法，可直接从指令序列编译。</p>
+<h4 id="jitenginecompile"><a class="header" href="#jitenginecompile">JitEngine::compile</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl JitEngine {
+    pub fn compile(
+        instructions: &amp;[Instr],
+        param_count: usize,
+        constants: &amp;[f64],
+        result_indices: &amp;[usize],
+    ) -&gt; Result&lt;JitCompiledFunction&gt;
+
+    pub fn compile_f32(
+        instructions: &amp;[Instr],
+        param_count: usize,
+        constants: &amp;[f32],
+        result_indices: &amp;[usize],
+    ) -&gt; Result&lt;JitCompiledF32&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将指令序列编译为可调用的 JIT 函数。<code>compile</code> 生成双精度 <code>JitCompiledFunction</code>，<code>compile_f32</code> 生成单精度 <code>JitCompiledF32</code>（libm 调用使用 <code>*f</code> 符号变体）。这是 <code>ExpressionEvaluator::compile_jit</code> / <code>compile_jit_f32</code> 的底层实现。内部 <code>compile_module</code> 返回 JIT 模块（由调用者保持存活）与入口函数指针，但对外只暴露编译好的函数对象。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>instructions</code></td><td><code>&amp;[Instr]</code></td><td>指令序列</td></tr>
+<tr><td><code>param_count</code></td><td><code>usize</code></td><td>参数个数</td></tr>
+<tr><td><code>constants</code></td><td><code>&amp;[f64]</code>（<code>compile</code>）/ <code>&amp;[f32]</code>（<code>compile_f32</code>）</td><td>常量值（嵌入为立即数）</td></tr>
+<tr><td><code>result_indices</code></td><td><code>&amp;[usize]</code></td><td>结果槽索引</td></tr>
+</tbody></table>
+</div>
+<h3 id="floatwidth"><a class="header" href="#floatwidth">FloatWidth</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum FloatWidth {
+    F32,
+    F64,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：JIT 代码生成的浮点宽度选择。<code>F32</code> 使用 <code>*f</code> 变体的 libm 函数（如 <code>sinf</code>），<code>F64</code> 使用标准 libm。</p>
+<hr />
+<h2 id="simd-批量求值feature--simd"><a class="header" href="#simd-批量求值feature--simd">SIMD 批量求值（feature = "simd"）</a></h2>
+<p><code>VectorEvaluator</code> 使用 <code>pulp</code> 库实现运行时检测的 SIMD 向量化求值。在 x86_64 上自动选择 SSE2（2 路 f64）、AVX2（4 路 f64）或 AVX-512（8 路 f64）。f32 版本的通道数翻倍。</p>
+<h3 id="vectorevaluator"><a class="header" href="#vectorevaluator">VectorEvaluator</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct VectorEvaluator { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：双精度 SIMD 批量求值器。将多组输入参数分为 SIMD 宽度的 chunk 并行处理，余量回退到标量。</p>
+<h4 id="expressionevaluatorcompile_vector_evaluator"><a class="header" href="#expressionevaluatorcompile_vector_evaluator">ExpressionEvaluator::compile_vector_evaluator</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_vector_evaluator(&amp;self) -&gt; Result&lt;VectorEvaluator&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从编译好的 <code>ExpressionEvaluator</code> 创建 SIMD 批量求值器。构造时检测 SIMD 宽度，预分配栈和常量缓冲区。若表达式包含外部函数（SIMD 模式不支持），返回 <code>UnsupportedOperation</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>self</code></td><td><code>&amp;ExpressionEvaluator&lt;f64&gt;</code></td><td>源求值器</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, simd::VectorEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let simd_eval = eval.compile_vector_evaluator().unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h4 id="vectorevaluatorevaluate"><a class="header" href="#vectorevaluatorevaluate">VectorEvaluator::evaluate</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl VectorEvaluator {
+    pub fn evaluate(&amp;self, params: &amp;[Vec&lt;f64&gt;]) -&gt; Result&lt;Vec&lt;Vec&lt;f64&gt;&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：批量求值。<code>params[i]</code> 是第 <code>i</code> 个参数的所有采样点。所有 <code>params[i]</code> 长度必须相同。返回 <code>Vec&lt;Vec&lt;f64&gt;&gt;</code>，其中 <code>result[j][i]</code> 是第 <code>i</code> 个采样点的第 <code>j</code> 个输出。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>params</code></td><td><code>&amp;[Vec&lt;f64&gt;]</code></td><td>参数向量，每个 <code>Vec</code> 长度相同</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(Vec&lt;Vec&lt;f64&gt;&gt;)</code> 或求值错误。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, simd::VectorEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.mul(&amp;[ctx.var("x"), ctx.var("x")]), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let simd_eval = eval.compile_vector_evaluator().unwrap();
+let x_values: Vec&lt;f64&gt; = (0..1000).map(|i| i as f64 * 0.01).collect();
+let results = simd_eval.evaluate(&amp;[x_values]).unwrap();
+assert_eq!(results.len(), 1);
+assert_eq!(results[0].len(), 1000);
+assert_eq!(results[0][0], 1.0);
+// results[0] 包含 1000 个 x²+1 的值，SIMD 并行计算
+<span class="boring">}</span></code></pre></pre>
+<h3 id="vectorevaluatorf32"><a class="header" href="#vectorevaluatorf32">VectorEvaluatorF32</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct VectorEvaluatorF32 { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：单精度 SIMD 批量求值器。通道数是 <code>VectorEvaluator</code> 的两倍（如 AVX2 上为 8 路 f32 vs 4 路 f64）。</p>
+<h4 id="expressionevaluatorcompile_vector_evaluator_f32"><a class="header" href="#expressionevaluatorcompile_vector_evaluator_f32">ExpressionEvaluator::compile_vector_evaluator_f32</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[cfg(feature = "simd")]
+impl ExpressionEvaluator&lt;f64&gt; {
+    pub fn compile_vector_evaluator_f32(&amp;self) -&gt; Result&lt;VectorEvaluatorF32&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从 f64 求值器创建 f32 SIMD 求值器，常量窄化为 f32。外部函数同样不支持（返回 <code>UnsupportedOperation</code>）。</p>
+<h4 id="vectorevaluatorf32evaluate"><a class="header" href="#vectorevaluatorf32evaluate">VectorEvaluatorF32::evaluate</a></h4>
+<p><strong>签名</strong>：<code>pub fn evaluate(&amp;self, params: &amp;[Vec&lt;f32&gt;]) -&gt; Result&lt;Vec&lt;Vec&lt;f32&gt;&gt;&gt;</code></p>
+<p><strong>功能</strong>：单精度批量求值，接口与 <code>VectorEvaluator::evaluate</code> 对称。</p>
+<hr />
+<h2 id="streamingevaluatora-t"><a class="header" href="#streamingevaluatora-t">StreamingEvaluator&lt;'a, T&gt;</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct StreamingEvaluator&lt;'a, T: EvaluationDomain&gt; {
+    evaluator: &amp;'a ExpressionEvaluator&lt;T&gt;,
+    params: Vec&lt;T&gt;,
+    stack: Vec&lt;T&gt;,
+    results: Vec&lt;T&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：流式求值器，复用内部缓冲区，处理任意长的输入流时内存使用恒定。所有 scratch 内存（参数暂存、求值栈、结果缓冲区）在创建时一次性分配，每行复用。</p>
+<h3 id="streamingevaluatornew"><a class="header" href="#streamingevaluatornew">StreamingEvaluator::new</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; StreamingEvaluator&lt;'_, T&gt; {
+    pub fn new(evaluator: &amp;ExpressionEvaluator&lt;T&gt;) -&gt; StreamingEvaluator&lt;'_, T&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建流式求值器，预分配所有缓冲区。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>evaluator</code></td><td><code>&amp;ExpressionEvaluator&lt;T&gt;</code></td><td>源求值器（借用）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="streamingevaluatorfor_each"><a class="header" href="#streamingevaluatorfor_each">StreamingEvaluator::for_each</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; StreamingEvaluator&lt;'_, T&gt; {
+    pub fn for_each&lt;I, S, F&gt;(&amp;mut self, rows: I, mut sink: F) -&gt; Result&lt;usize&gt;
+    where
+        I: IntoIterator&lt;Item = S&gt;,
+        S: AsRef&lt;[T]&gt;,
+        F: FnMut(&amp;[T]),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：处理输入流的每一行，对每行结果调用 <code>sink</code> 回调。内存使用恒定，不随行数增长。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>I: IntoIterator&lt;Item = S&gt;</code></td><td>输入行迭代器，每行 <code>AsRef&lt;[T]&gt;</code> 长度等于 <code>param_count()</code></td></tr>
+<tr><td><code>sink</code></td><td><code>FnMut(&amp;[T])</code></td><td>结果回调，<code>&amp;[T]</code> 长度等于 <code>result_count()</code>，仅在回调内有效</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(处理的行数)</code> 或求值错误。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+let rows = (0..1_000_000).map(|i| [i as f64]);
+let n = stream.for_each(rows, |results| {
+    // results[0] 为当前行的 x+1，仅在回调内有效
+}).unwrap();
+assert_eq!(n, 1_000_000);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#streamingevaluatorevaluate_chunk">StreamingEvaluator::evaluate_chunk</a></p>
+<h3 id="streamingevaluatorevaluate_chunk"><a class="header" href="#streamingevaluatorevaluate_chunk">StreamingEvaluator::evaluate_chunk</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain + PowfExtension&gt; StreamingEvaluator&lt;'_, T&gt; {
+    pub fn evaluate_chunk&lt;S: AsRef&lt;[T]&gt;&gt;(&amp;mut self, rows: &amp;[S]) -&gt; Result&lt;Vec&lt;Vec&lt;T&gt;&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：处理一批行并收集所有结果。适用于有界批次；无界流应使用 <code>for_each</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rows</code></td><td><code>&amp;[S]</code></td><td>输入行切片</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Ok(Vec&lt;Vec&lt;T&gt;&gt;)</code>，每个 <code>Vec&lt;T&gt;</code> 对应一行的结果。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+let rows: Vec&lt;[f64; 1]&gt; = (0..100).map(|i| [i as f64]).collect();
+let all_results = stream.evaluate_chunk(&amp;rows).unwrap();
+assert_eq!(all_results.len(), 100);
+assert_eq!(all_results[0][0], 1.0); // x=0 → 0+1=1
+assert_eq!(all_results[99][0], 100.0); // x=99 → 99+1=100
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="functionmapt"><a class="header" href="#functionmapt">FunctionMap&lt;T&gt;</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct FunctionMap&lt;T: EvaluationDomain&gt; {
+    entries: Vec&lt;(String, FunctionEntry&lt;T&gt;)&gt;,
+    name_to_idx: HashMap&lt;String, usize&gt;,
+    aliases: HashMap&lt;String, String&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：用户自定义函数注册表。允许在表达式求值期间调用注册的外部函数。名称查找不区分大小写，支持别名。</p>
+<h3 id="functionmapnew"><a class="header" href="#functionmapnew">FunctionMap::new</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn new() -&gt; Self
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建空的函数映射。</p>
+<h3 id="functionmapregister"><a class="header" href="#functionmapregister">FunctionMap::register</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn register(&amp;mut self, name: &amp;str, arity: usize, func: Box&lt;dyn Fn(&amp;[T]) -&gt; T + Send + Sync&gt;)
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：注册一个外部函数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>函数名（不区分大小写）</td></tr>
+<tr><td><code>arity</code></td><td><code>usize</code></td><td>期望的参数个数</td></tr>
+<tr><td><code>func</code></td><td><code>Box&lt;dyn Fn(&amp;[T]) -&gt; T + Send + Sync&gt;</code></td><td>函数实现</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::FunctionMap;
+
+let mut fmap = FunctionMap::&lt;f64&gt;::new();
+fmap.register("square", 1, Box::new(|args| args[0] * args[0]));
+fmap.register("add3", 3, Box::new(|args| args[0] + args[1] + args[2]));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="functionmapregister_alias"><a class="header" href="#functionmapregister_alias">FunctionMap::register_alias</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn register_alias(&amp;mut self, alias: &amp;str, canonical: &amp;str)
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：为已注册的函数名添加别名。查找 <code>alias</code> 时会重定向到 <code>canonical</code>。</p>
+<h3 id="functionmapresolve"><a class="header" href="#functionmapresolve">FunctionMap::resolve</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: EvaluationDomain&gt; FunctionMap&lt;T&gt; {
+    pub fn resolve(&amp;self, name: &amp;str) -&gt; Option&lt;&amp;FunctionEntry&lt;T&gt;&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：按名称查找函数（解析别名和大小写）。</p>
+<h3 id="functionmapindex_of"><a class="header" href="#functionmapindex_of">FunctionMap::index_of</a></h3>
+<p><strong>签名</strong>：<code>pub fn index_of(&amp;self, name: &amp;str) -&gt; Option&lt;usize&gt;</code></p>
+<p><strong>功能</strong>：返回函数在映射中的索引（用于指令中的 <code>fn_idx</code>）。</p>
+<h3 id="functionmapcall_by_index"><a class="header" href="#functionmapcall_by_index">FunctionMap::call_by_index</a></h3>
+<p><strong>签名</strong>：<code>pub fn call_by_index(&amp;self, idx: usize, args: &amp;[T]) -&gt; Option&lt;T&gt;</code></p>
+<p><strong>功能</strong>：按索引调用函数。</p>
+<h3 id="functionmaplen--is_empty"><a class="header" href="#functionmaplen--is_empty">FunctionMap::len / is_empty</a></h3>
+<p><strong>签名</strong>：<code>pub fn len(&amp;self) -&gt; usize</code> / <code>pub fn is_empty(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：返回已注册函数数量 / 判断是否为空。</p>
+<h3 id="functionentryt"><a class="header" href="#functionentryt">FunctionEntry&lt;T&gt;</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct FunctionEntry&lt;T: EvaluationDomain&gt; {
+    pub arity: usize,
+    // private func field
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：已注册的外部函数条目。<code>arity</code> 为期望的参数个数。</p>
+<hr />
+<h2 id="指令集"><a class="header" href="#指令集">指令集</a></h2>
+<h3 id="slot"><a class="header" href="#slot">Slot</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Slot {
+    Param(usize),
+    Const(usize),
+    Temp(usize),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：求值器栈中的命名槽位。用于公开的 <code>Instruction</code> 类型，以语义而非原始索引引用栈位置。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Param(usize)</code></td><td>参数槽，0 基索引</td></tr>
+<tr><td><code>Const(usize)</code></td><td>常量槽，0 基索引</td></tr>
+<tr><td><code>Temp(usize)</code></td><td>临时值槽，0 基索引</td></tr>
+</tbody></table>
+</div>
+<h3 id="instruction"><a class="header" href="#instruction">Instruction</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Instruction {
+    Add(Slot, Vec&lt;Slot&gt;),
+    Mul(Slot, Vec&lt;Slot&gt;),
+    Pow(Slot, Slot, i64),
+    Powf(Slot, Slot, Slot),
+    Fun(Slot, Symbol, Slot),
+    ExternalFun(Slot, usize, Vec&lt;Slot&gt;),
+    Assign(Slot, Slot),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：自文档化的公开指令。与内部 <code>Instr</code> 不同，使用 <code>Slot</code> 而非原始索引，便于检查和序列化。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>格式</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td><code>dst = sum(sources)</code></td><td>求和</td></tr>
+<tr><td><code>Mul</code></td><td><code>dst = product(sources)</code></td><td>求积</td></tr>
+<tr><td><code>Pow</code></td><td><code>dst = base^exp</code></td><td>整数次幂</td></tr>
+<tr><td><code>Powf</code></td><td><code>dst = base^exp</code></td><td>浮点次幂</td></tr>
+<tr><td><code>Fun</code></td><td><code>dst = builtin(src)</code></td><td>内建函数</td></tr>
+<tr><td><code>ExternalFun</code></td><td><code>dst = fns[idx](srcs...)</code></td><td>外部函数</td></tr>
+<tr><td><code>Assign</code></td><td><code>dst = src</code></td><td>复制</td></tr>
+</tbody></table>
+</div>
+<h3 id="instr"><a class="header" href="#instr">Instr</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Instr {
+    Add { dst: usize, srcs: Vec&lt;usize&gt; },
+    Mul { dst: usize, srcs: Vec&lt;usize&gt; },
+    Pow { dst: usize, base: usize, exp: i64 },
+    Powf { dst: usize, base: usize, exp: usize },
+    BuiltinOp { dst: usize, op: BuiltinOp, src: usize },
+    ExternalFun { dst: usize, fn_idx: usize, srcs: Vec&lt;usize&gt; },
+    Copy { dst: usize, src: usize },
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：内部索引式指令，由 <code>ExpressionEvaluator</code> 执行。所有索引是栈中的绝对位置。</p>
+<p><strong>栈布局</strong>：</p>
+<pre><code class="language-text">[params (param_count)] [constants (const_count)] [temporaries (temp_count)] [outputs (result_count)]
+</code></pre>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Add { dst, srcs }</code></td><td><code>stack[dst] = stack[srcs[0]] + stack[srcs[1]] + ...</code></td></tr>
+<tr><td><code>Mul { dst, srcs }</code></td><td><code>stack[dst] = stack[srcs[0]] * stack[srcs[1]] * ...</code></td></tr>
+<tr><td><code>Pow { dst, base, exp }</code></td><td><code>stack[dst] = stack[base]^exp</code>，<code>exp</code> 为 <code>i64</code></td></tr>
+<tr><td><code>Powf { dst, base, exp }</code></td><td><code>stack[dst] = stack[base]^stack[exp]</code>，浮点指数</td></tr>
+<tr><td><code>BuiltinOp { dst, op, src }</code></td><td><code>stack[dst] = op(stack[src])</code></td></tr>
+<tr><td><code>ExternalFun { dst, fn_idx, srcs }</code></td><td><code>stack[dst] = fns[fn_idx](&amp;stack[srcs...])</code></td></tr>
+<tr><td><code>Copy { dst, src }</code></td><td><code>stack[dst] = stack[src]</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="builtinop"><a class="header" href="#builtinop">BuiltinOp</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum BuiltinOp {
+    Sin, Cos, Tan,
+    Sec, Csc, Cot,
+    Exp, Log,
+    Sqrt, Abs,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：预解析的内建函数操作码。编译器在编译时将 <code>Symbol</code> 名称转换为 <code>BuiltinOp</code> 变体，避免在热路径上进行字符串匹配。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>数学</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Sin</code></td><td>$\sin(x)$</td><td>正弦</td></tr>
+<tr><td><code>Cos</code></td><td>$\cos(x)$</td><td>余弦</td></tr>
+<tr><td><code>Tan</code></td><td>$\tan(x)$</td><td>正切</td></tr>
+<tr><td><code>Sec</code></td><td>$\sec(x) = 1/\cos(x)$</td><td>正割</td></tr>
+<tr><td><code>Csc</code></td><td>$\csc(x) = 1/\sin(x)$</td><td>余割</td></tr>
+<tr><td><code>Cot</code></td><td>$\cot(x) = 1/\tan(x)$</td><td>余切</td></tr>
+<tr><td><code>Exp</code></td><td>$e^x$</td><td>指数函数</td></tr>
+<tr><td><code>Log</code></td><td>$\ln(x)$</td><td>自然对数</td></tr>
+<tr><td><code>Sqrt</code></td><td>$\sqrt{x}$</td><td>平方根</td></tr>
+<tr><td><code>Abs</code></td><td>$</td><td>x</td></tr>
+</tbody></table>
+</div>
+<h4 id="builtinopfrom_name"><a class="header" href="#builtinopfrom_name">BuiltinOp::from_name</a></h4>
+<p><strong>签名</strong>：<code>pub fn from_name(name: &amp;str) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：尝试从函数名解析为内建操作码。不区分大小写。<code>"log"</code> 和 <code>"ln"</code> 均映射到 <code>Log</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>函数名</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Some(BuiltinOp)</code> 或 <code>None</code>（非内建函数）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::instruction::BuiltinOp;
+
+assert_eq!(BuiltinOp::from_name("sin"), Some(BuiltinOp::Sin));
+assert_eq!(BuiltinOp::from_name("Log"), Some(BuiltinOp::Log));
+assert_eq!(BuiltinOp::from_name("ln"), Some(BuiltinOp::Log));
+assert_eq!(BuiltinOp::from_name("myfunc"), None);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="evaluationdomain-trait"><a class="header" href="#evaluationdomain-trait">EvaluationDomain trait</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait EvaluationDomain: Sized + Clone + 'static {
+    fn from_f64(value: f64) -&gt; Self;
+    fn zero() -&gt; Self;
+    fn one() -&gt; Self;
+    fn add_ref(&amp;self, other: &amp;Self) -&gt; Self;
+    fn sub_ref(&amp;self, other: &amp;Self) -&gt; Self;
+    fn mul_ref(&amp;self, other: &amp;Self) -&gt; Self;
+    fn div_ref(&amp;self, other: &amp;Self) -&gt; Result&lt;Self&gt;;
+    fn neg_ref(&amp;self) -&gt; Self;
+    fn powi_ref(&amp;self, exp: i64) -&gt; Self;
+    fn resolve_builtin(name: &amp;str, arg: &amp;Self) -&gt; Result&lt;Self&gt;;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：可作为求值域的类型的 trait。与代数 <code>Domain</code> trait 不同（<code>Domain</code> 是对象安全的、使用 <code>&amp;self</code> 接收器），<code>EvaluationDomain</code> 使用静态方法和值操作，兼容 <code>f64</code> 等 <code>Copy</code> 类型。</p>
+<p><strong>方法</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>签名</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>from_f64</code></td><td><code>fn from_f64(f64) -&gt; Self</code></td><td>从 <code>f64</code> 创建值</td></tr>
+<tr><td><code>zero</code></td><td><code>fn zero() -&gt; Self</code></td><td>加法单位元</td></tr>
+<tr><td><code>one</code></td><td><code>fn one() -&gt; Self</code></td><td>乘法单位元</td></tr>
+<tr><td><code>add_ref</code></td><td><code>fn add_ref(&amp;self, &amp;Self) -&gt; Self</code></td><td>加法</td></tr>
+<tr><td><code>sub_ref</code></td><td><code>fn sub_ref(&amp;self, &amp;Self) -&gt; Self</code></td><td>减法</td></tr>
+<tr><td><code>mul_ref</code></td><td><code>fn mul_ref(&amp;self, &amp;Self) -&gt; Self</code></td><td>乘法</td></tr>
+<tr><td><code>div_ref</code></td><td><code>fn div_ref(&amp;self, &amp;Self) -&gt; Result&lt;Self&gt;</code></td><td>除法，除零返回 <code>DivisionByZero</code></td></tr>
+<tr><td><code>neg_ref</code></td><td><code>fn neg_ref(&amp;self) -&gt; Self</code></td><td>取反</td></tr>
+<tr><td><code>powi_ref</code></td><td><code>fn powi_ref(&amp;self, i64) -&gt; Self</code></td><td>整数次幂，<code>exp == 0</code> 时返回 1</td></tr>
+<tr><td><code>resolve_builtin</code></td><td><code>fn resolve_builtin(name: &amp;str, &amp;Self) -&gt; Result&lt;Self&gt;</code></td><td>执行内建函数</td></tr>
+</tbody></table>
+</div>
+<p><strong>实现</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>f64</code></td><td>标准双精度浮点（始终可用）</td></tr>
+<tr><td><code>DoubleF64</code></td><td>oCAS 双精度浮点（~31 位有效数字）</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::EvaluationDomain;
+
+let x = f64::from_f64(3.0);
+let y = f64::from_f64(2.0);
+assert_eq!(x.add_ref(&amp;y), 5.0);
+assert_eq!(f64::resolve_builtin("sin", &amp;std::f64::consts::FRAC_PI_2).unwrap(), 1.0);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="powfextension-trait"><a class="header" href="#powfextension-trait">PowfExtension trait</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait PowfExtension: EvaluationDomain {
+    fn powf_ref(&amp;self, exp: &amp;Self) -&gt; Result&lt;Self&gt;;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：浮点指数幂的扩展 trait。从 <code>EvaluationDomain</code> 分离出来，因为整数域无法有意义地计算 $a^b$（$b$ 非整数）。</p>
+<p><strong>实现</strong>：<code>f64</code>、<code>DoubleF64</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::PowfExtension;
+
+let base = 2.0_f64;
+let exp = 0.5_f64;
+let result = base.powf_ref(&amp;exp).unwrap();
+assert!((result - std::f64::consts::SQRT_2).abs() &lt; 1e-15);
+// 输出：2^0.5 ≈ 1.4142135623730951
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="编译函数"><a class="header" href="#编译函数">编译函数</a></h2>
+<p>以下自由函数是 <code>ExpressionEvaluator</code> 编译方法的底层入口。</p>
+<h3 id="compile_atom"><a class="header" href="#compile_atom">compile_atom</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_atom&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atom: Atom&lt;'_&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将 <code>Atom</code> 编译为求值器。等价于 <code>ExpressionEvaluator::compile</code>。</p>
+<h3 id="compile_atom_with"><a class="header" href="#compile_atom_with">compile_atom_with</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_atom_with&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atom: Atom&lt;'_&gt;,
+    function_map: Option&lt;FunctionMap&lt;T&gt;&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：带可选函数映射的编译。</p>
+<h3 id="compile_tree--compile_tree_with"><a class="header" href="#compile_tree--compile_tree_with">compile_tree / compile_tree_with</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_tree&lt;T: EvaluationDomain + PowfExtension&gt;(
+    tree: &amp;EvalTree,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+
+pub fn compile_tree_with&lt;T: EvaluationDomain + PowfExtension&gt;(
+    tree: &amp;EvalTree,
+    function_map: Option&lt;FunctionMap&lt;T&gt;&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从 <code>EvalTree</code> 编译。适用于需要先对 <code>EvalTree</code> 进行自定义优化再编译的场景。</p>
+<h3 id="compile_atoms_multi--compile_atoms_multi_with"><a class="header" href="#compile_atoms_multi--compile_atoms_multi_with">compile_atoms_multi / compile_atoms_multi_with</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_atoms_multi&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atoms: &amp;[Atom&lt;'_&gt;],
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+
+pub fn compile_atoms_multi_with&lt;T: EvaluationDomain + PowfExtension&gt;(
+    atoms: &amp;[Atom&lt;'_&gt;],
+    function_map: Option&lt;FunctionMap&lt;T&gt;&gt;,
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将多个 <code>Atom</code> 编译为单个多输出求值器。跨输出共享 CSE 和常量。</p>
+<h3 id="compile_trees_multi"><a class="header" href="#compile_trees_multi">compile_trees_multi</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn compile_trees_multi&lt;T: EvaluationDomain + PowfExtension&gt;(
+    trees: &amp;[&amp;EvalTree],
+) -&gt; Result&lt;ExpressionEvaluator&lt;T&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将多个 <code>EvalTree</code> 编译为单个多输出求值器。</p>
+<hr />
+<h2 id="evaluationerror"><a class="header" href="#evaluationerror">EvaluationError</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[non_exhaustive]
+pub enum EvaluationError {
+    UndefinedVariable { name: String },
+    TypeMismatch { expected: String, found: String },
+    DivisionByZero,
+    FunctionNotFound { name: String },
+    WrongArity { name: String, expected: usize, got: usize },
+    JitCompilationError { message: String },
+    UnsupportedOperation { message: String },
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：求值过程中可能产生的错误。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>UndefinedVariable { name }</code></td><td>表达式引用了未提供的变量</td></tr>
+<tr><td><code>TypeMismatch { expected, found }</code></td><td>类型不匹配（如期望浮点却得到整数）</td></tr>
+<tr><td><code>DivisionByZero</code></td><td>除零</td></tr>
+<tr><td><code>FunctionNotFound { name }</code></td><td>用户自定义函数未在注册表中找到</td></tr>
+<tr><td><code>WrongArity { name, expected, got }</code></td><td>函数调用参数个数错误</td></tr>
+<tr><td><code>JitCompilationError { message }</code></td><td>JIT 编译失败（Cranelift 后端错误）</td></tr>
+<tr><td><code>UnsupportedOperation { message }</code></td><td>请求的操作在当前域不支持</td></tr>
+</tbody></table>
+</div>
+<p><strong>Display 格式</strong>：</p>
+<pre><code class="language-text">undefined variable 'x'
+type mismatch: expected float, found integer
+division by zero
+function 'f' not found
+wrong arity for 'f': expected 2, got 1
+JIT compilation error: &lt;message&gt;
+unsupported operation: &lt;message&gt;
+</code></pre>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::EvaluationError;
+
+let err = EvaluationError::UndefinedVariable { name: "x".into() };
+assert_eq!(err.to_string(), "undefined variable 'x'");
+
+let err = EvaluationError::WrongArity {
+    name: "f".into(),
+    expected: 2,
+    got: 1,
+};
+assert_eq!(err.to_string(), "wrong arity for 'f': expected 2, got 1");
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="使用模式"><a class="header" href="#使用模式">使用模式</a></h2>
+<h3 id="基本求值"><a class="header" href="#基本求值">基本求值</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+// 构建 x² + 2x + 1
+let x = ctx.var("x");
+let expr = ctx.add(&amp;[
+    ctx.mul(&amp;[x, x]),
+    ctx.mul(&amp;[ctx.num(2), x]),
+    ctx.num(1),
+]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+
+// 求值
+let result = eval.evaluate(&amp;[3.0]).unwrap();
+assert_eq!(result[0], 16.0); // 9 + 6 + 1 = 16
+<span class="boring">}</span></code></pre></pre>
+<h3 id="jit-热循环"><a class="header" href="#jit-热循环">JIT 热循环</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::ExpressionEvaluator;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("sin", &amp;[ctx.var("x")]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let jit = eval.compile_jit().unwrap();
+
+let mut results = vec![0.0; jit.result_count()];
+for i in 0..1_000_000 {
+    jit.call_into(&amp;[i as f64 * 0.001], &amp;mut results);
+    // 使用 results[0]...
+}
+// 零分配热循环，原生机器码执行
+<span class="boring">}</span></code></pre></pre>
+<h3 id="simd-批量处理"><a class="header" href="#simd-批量处理">SIMD 批量处理</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, simd::VectorEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("exp", &amp;[ctx.var("x")]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let simd = eval.compile_vector_evaluator().unwrap();
+
+let x: Vec&lt;f64&gt; = (0..10000).map(|i| i as f64 * 0.001).collect();
+let results = simd.evaluate(&amp;[x]).unwrap();
+// results[0] 包含 10000 个 e^x 的值
+<span class="boring">}</span></code></pre></pre>
+<h3 id="流式处理大数据集"><a class="header" href="#流式处理大数据集">流式处理大数据集</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, StreamingEvaluator};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.add(&amp;[ctx.var("x"), ctx.num(1)]);
+
+let eval: ExpressionEvaluator&lt;f64&gt; = ExpressionEvaluator::compile(expr).unwrap();
+let mut stream = StreamingEvaluator::new(&amp;eval);
+
+// 处理 100 万行，内存使用恒定
+let rows = (0..1_000_000).map(|i| [i as f64]);
+let n = stream.for_each(rows, |_results| {
+    // 处理 results...
+}).unwrap();
+assert_eq!(n, 1_000_000);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="自定义函数"><a class="header" href="#自定义函数">自定义函数</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_eval::{ExpressionEvaluator, FunctionMap};
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.fun("sigmoid", &amp;[ctx.var("x")]);
+
+let mut fmap = FunctionMap::&lt;f64&gt;::new();
+fmap.register("sigmoid", 1, Box::new(|args| {
+    1.0 / (1.0 + (-args[0]).exp())
+}));
+
+let eval = ExpressionEvaluator::compile_with(expr, fmap).unwrap();
+let result = eval.evaluate(&amp;[0.0]).unwrap();
+assert!((result[0] - 0.5).abs() &lt; 1e-15);
+// 输出：sigmoid(0) = 0.5
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="./rust-expressions.html">表达式系统</a>（<code>Atom</code>、<code>AtomArena</code>）、<a href="./rust-numeric-integration.html">数值积分</a>（<code>Vegas</code> 使用求值器）、<a href="./rust-autodiff.html">自动微分</a>（<code>HyperDual</code> 域上的求值）</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-rewrite.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-autodiff.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-rewrite.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-autodiff.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
