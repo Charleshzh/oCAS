@@ -368,12 +368,8 @@ println!("{:?}", outcome.certificate());  // Some(Certificate { .. })
 │ 10. 规则表引擎          (integrate_rules, A–H 族)     │
 │ 11. 二次根式引擎        (integrate_sqrt_quadratic)    │
 │ 12. Chebyshev 二项微分  (integrate_binomial)          │
-│ 12b. 多根式基归约        (integrate_multi_radical,    │
-│      0.30.0；binomial 之后，exp_log 之前)             │
 │ 13. exp/log 核代换      (integrate_exp_log)           │
 │ 14. 反三角/反双曲       (integrate_inverse_trig)      │
-│ 14b. 反函数代换 M4   (inverse_trig 分派序末, 0.30.0)  │
-│      u = F(w)：11 头、仿射变元、整数核幂、多项式权    │
 │ 15. 三角积化和差        (trig_reduce_products)        │
 │ 16. 三角分母幂递推      (integrate_trig_reduction)    │
 │ 17. 单三角核有理式 + tan/sec                          │

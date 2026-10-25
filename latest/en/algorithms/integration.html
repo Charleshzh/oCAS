@@ -219,20 +219,6 @@ intercepts, radicals, special forms); templates may carry residual
 <li><strong>Trig product-to-sum / power reduction</strong> (0.27.x) — products and
 powers of <code>sin</code>/<code>cos</code> at linear arguments reduce to multiple-angle
 sums, integrated termwise.</li>
-<li><strong>Multi-radical base reduction</strong> (0.30.0) — integrands carrying two or
-more distinct radical bases are rationalized at the atomic layer
-(MR-L Möbius rationalization of an affine base pair, graded
-same-radicand merges, conjugate / reciprocal / nested-radical
-substitutions, perfect-square sheet factors). The stage sits in the
-chain <strong>after <code>binomial</code> and before <code>exp_log</code></strong>, so the single-base
-engines keep first claim on single-base shapes, and it declines
-honestly outside its fragment.</li>
-<li><strong>Inverse-function substitution</strong> (0.30.0) — the M4 mechanism at the
-<strong>end of the <code>inverse_trig</code> dispatch order</strong>: <code>u = F(w)</code> over 11 heads
-(<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code> plus
-<code>acsc</code>/<code>asec</code>/<code>acoth</code>/<code>asech</code>/<code>acsch</code>) × affine arguments × integer
-kernel powers × polynomial weights, with companion radicals absorbed
-as sheet factors.</li>
 <li><strong>Heuristic techniques</strong> — integration by parts, trigonometric
 substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.</li>
 <li><strong>Bounded expansion retry</strong> (0.27.x) — products are distributed over
@@ -265,21 +251,11 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 <code>log</code> or <code>exp</code> over the field below, and integrating recursively
 (Bronstein, <em>Symbolic Integration I</em>, ch. 5):</p>
 <ul>
-<li>at each level, the rational part is split off by Hermite reduction
-(at hyperexponential levels the <code>t</code>-power denominator is split off
-first as a Laurent polynomial, 0.29.0);</li>
-<li>the logarithmic part first tries the logarithmic-derivative identity,
-then the Rothstein–Trager resultant method: 0.29.0 decides <strong>rational</strong>
-roots only, and 0.30.0 adds algebraic <strong>constant</strong> roots (real/complex
-quadratic factors and biquadratic quartics <code>Az⁴+Bz²+C</code> at the base
-level, complex quadratics at tower levels, each self-verified inside
-the extension); non-constant roots and higher-degree factors still
-decline honestly;</li>
+<li>at each level, the rational part is split off by Hermite reduction;</li>
+<li>the logarithmic part uses the logarithmic-derivative identity;</li>
 <li>the polynomial part is integrated by undetermined coefficients at
 <code>log</code> levels and by the Risch differential equation <code>Dq + f·q = g</code>
-at <code>exp</code> levels — solved over the <strong>full rational fragment</strong> since
-0.29.0 (weak normalization, denominator bounds, degree bounds, SPDE,
-cancellation recursions);</li>
+at <code>exp</code> levels;</li>
 <li>the base <code>ℚ(x)</code> delegates to the rational-function integrator.</li>
 </ul>
 <p>The tower recursion is capped by <code>MAX_RISCH_DEPTH = 16</code>: beyond that
@@ -296,15 +272,9 @@ let ctx = AtomArena::new(&amp;arena);
 let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
 <h3 id="scope-limits"><a class="header" href="#scope-limits">Scope limits</a></h3>
-<p>Since 0.29.0 the Risch differential equation is solved over the <strong>full
-rational fragment</strong> (denominator bounds included), and the logarithmic
-part uses Rothstein–Trager over ℚ roots; 0.30.0 extends that log part by
-its algebraic <strong>constant</strong>-root fragment (quadratic and
-biquadratic-quartic factors, in-extension self-verification). Everything
-outside those fragments — non-constant roots, degree ≥ 3 or
-non-biquadratic-quartic factors, mixed extensions, and the unported
-<code>limited_integrate</code> / higher-level <code>parametric_log_deriv</code> refinements —
-declines honestly. Consequences:</p>
+<p>The current fragment seeks only <strong>polynomial</strong> solutions of the Risch
+differential equation and uses only the logarithmic-derivative identity
+for logarithmic parts. Consequences:</p>
 <ul>
 <li><code>∫ exp(x)/x dx</code> has no elementary antiderivative — it is answered by
 the special-function table as <code>Ei(x)</code>.</li>
@@ -401,12 +371,9 @@ when a machine-checkable certificate is required.</p>
 <p>The certificate engine (<code>ocas-calc/src/integral/certify.rs</code>) tries three layers: structural zero
 (<code>normalize</code> plus like-term collection), elementary-field zero (trig→exp rewriting, <code>I² = −1</code>
 reduction, dependent <code>exp</code>/<code>log</code> atoms merged before embedding into a rational function field), and
-the <strong>radical layer</strong>, landed in 0.30.0 (<code>CertMethod::RadicalField</code>): <code>sqrt(S)</code> and <code>S^(p/q)</code> are
-unified as a generator <code>r</code> carrying the relation <code>r^q = S</code>, and the difference is decided zero by
-triangular-column remainder reduction, under deterministic budgets (q ≤ 8, radicals ≤ 8, terms ≤
-8192, nodes ≤ 2000, entry terms ≤ 2048). Every layer is <strong>sound</strong>: treating atoms as independent
-generators can only miss an identity (a false negative), never certify a wrong answer. The field
-arithmetic runs under deterministic budgets and declines honestly when they are exhausted.</p>
+a reserved radical layer. Every layer is <strong>sound</strong>: treating atoms as independent generators can
+only miss an identity (a false negative), never certify a wrong answer. The field arithmetic runs
+under deterministic budgets and declines honestly when they are exhausted.</p>
 <p><code>ocas-calc/src/integral/risch.rs</code> additionally verifies every Risch result <strong>inside the tower's own
 field</strong>, so the engine cannot emit an answer the exact checker falsifies — that guard is how
 0.28.0 caught and contained a latent wrong answer (the exp-level rational part mis-scaled negative

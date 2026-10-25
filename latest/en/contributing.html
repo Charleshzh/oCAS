@@ -190,38 +190,11 @@ with short-lived feature branches and pull requests.</p>
 <li>Optional: GMP/MPFR/FLINT system libraries for backend features</li>
 </ul>
 <h2 id="quality-gates"><a class="header" href="#quality-gates">Quality gates</a></h2>
-<p>Two tiers: run the <strong>fast</strong> gate on every change, and the <strong>full</strong> gate before
-opening a pull request (CI parity).</p>
-<p>Fast (default feedback loop):</p>
 <pre><code class="language-bash">cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --features egg --exclude ocas-py -- -D warnings
-cargo test --workspace --exclude ocas-py --exclude ocas-tests --features egg
-</code></pre>
-<p>Full (CI parity — adds the cross-system correctness suite in <code>ocas-tests</code>):</p>
-<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg
+cargo test --workspace --exclude ocas-py --features egg
 cargo deny check
 </code></pre>
-<p>Tests marked <code>#[ignore]</code> (slow property tests, performance acceptance tests,
-work-in-progress fixes) are deliberately outside both gates; the scheduled
-long-test sweep (<code>.github/workflows/full-tests.yml</code>, weekly) runs them, and they
-can also be invoked explicitly:</p>
-<pre><code class="language-bash">cargo test --workspace --exclude ocas-py --features egg -- --ignored
-cargo test --release -p ocas-domain --lib -- --ignored   # performance acceptance
-</code></pre>
-<h2 id="coding-standards"><a class="header" href="#coding-standards">Coding standards</a></h2>
-<ul>
-<li>Follow the <a href="https://rust-lang.github.io/api-guidelines/">Rust API Guidelines</a>.</li>
-<li>Run <code>cargo fmt --all</code> before submitting.</li>
-<li>Prefer arena allocation for expression trees; avoid per-node <code>Box</code>/<code>Rc</code>.</li>
-<li>Use <code>thiserror</code> for error types; propagate with <code>?</code>.</li>
-<li>Backend code lives behind feature flags. <code>ocas-gpl</code> is an independent
-placeholder crate for future GPL-3.0-or-later backends; the top-level <code>ocas</code>
-facade does not expose a <code>gpl</code> feature, so a GPL backend has to be opted into
-by depending on <code>ocas-gpl</code> directly.</li>
-<li>Public APIs for stable releases must include rustdoc examples.</li>
-</ul>
-<p>See <code>docs/planning/ARCHITECTURE_EN.md</code> for the full conventions and the
-layered-dependency rules.</p>
 <h2 id="python-bindings"><a class="header" href="#python-bindings">Python bindings</a></h2>
 <pre><code class="language-bash">cd ocas-py
 uv venv .venv
@@ -229,46 +202,17 @@ uv pip install pytest maturin
 uv run maturin develop
 uv run python -m pytest ../ocas-tests/tests/python/ -v
 </code></pre>
-<h2 id="release-process"><a class="header" href="#release-process">Release process</a></h2>
-<p>Releases are automated; the root <code>vX.Y.Z</code> tag is the release switch.</p>
-<ol>
-<li>
-<p><strong>Release PR and tag creation.</strong> After <code>main</code> moves, release-plz
-(<code>.github/workflows/release-plz.yml</code>) opens (and later updates) a release PR
-that bumps <code>workspace.package.version</code>. When that PR is merged, the workflow
-first waits for CI to be green on the merge commit, then publishes the crates
-in dependency order, and creates the root <code>vX.Y.Z</code> tag. Tag creation needs
-the <code>RELEASE_PLZ_TOKEN</code> secret (a PAT with <code>contents: write</code>): a tag pushed
-with the default <code>GITHUB_TOKEN</code> does not trigger the downstream workflows.</p>
-</li>
-<li>
-<p><strong>Tag fan-out.</strong></p>
+<h2 id="coding-standards"><a class="header" href="#coding-standards">Coding standards</a></h2>
 <ul>
-<li><code>release.yml</code> validates the tag against the workspace version, dry-runs
-<code>cargo publish</code> for every crate, and attaches the C artifact to the
-project-level GitHub Release.</li>
-<li><code>wheels.yml</code> builds the Python wheels and sdist with maturin and publishes
-to PyPI (pre-release tags go to TestPyPI).</li>
-<li><code>docs.yml</code> rebuilds the bilingual mdBook and publishes both
-<code>/latest/{en,zh}/</code> and a frozen <code>/v&lt;version&gt;/{en,zh}/</code> snapshot to GitHub
-Pages.</li>
+<li>Follow the <a href="https://rust-lang.github.io/api-guidelines/">Rust API Guidelines</a>.</li>
+<li>Run <code>cargo fmt --all</code> before submitting.</li>
+<li>Prefer arena allocation for expression trees; avoid per-node <code>Box</code>/<code>Rc</code>.</li>
+<li>Use <code>thiserror</code> for error types; propagate with <code>?</code>.</li>
+<li>Backend code lives behind feature flags; GPL code only in <code>ocas-gpl</code>.</li>
+<li>Public APIs for stable releases must include rustdoc examples.</li>
 </ul>
-</li>
-<li>
-<p><strong>Manual fallback.</strong> If the automation fails, tag a commit that is on
-<code>main</code> and green in CI:</p>
-<pre><code class="language-bash">git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
-git push origin vX.Y.Z
-</code></pre>
-<p>Do not run the publish steps locally; publishing is done by CI.</p>
-</li>
-<li>
-<p><strong>Version surfaces.</strong> Keep <code>Cargo.toml</code>, <code>CHANGELOG.md</code>, the READMEs, and the
-version tables in <code>docs/book/*/src/introduction.md</code> in sync.
-<code>consistency.yml</code> enforces this on every push and pull request via
-<code>ocas-tests/scripts/check_release_consistency.py</code>.</p>
-</li>
-</ol>
+<p>See the repository's <code>CLAUDE.md</code> and <code>ARCHITECTURE_EN.md</code> for the full
+conventions, layered-dependency rules, and release process.</p>
 
                     </main>
 

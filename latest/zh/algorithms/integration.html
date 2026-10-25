@@ -208,14 +208,6 @@ log/atan/atanh）。</li>
 <code>IntegrateOptions { rules: false }</code> 关闭。</li>
 <li><strong>三角积化和差/降幂</strong>（0.27.x）—— 线性变元 <code>sin</code>/<code>cos</code> 乘积与幂化为
 多倍角和式后逐项积分。</li>
-<li><strong>多根式基归约</strong>（0.30.0）—— 含两个及以上不同根式基的被积函数在原子层
-有理化（MR-L 双仿射基 Möbius 有理化、带门同根合并、共轭/倒数/嵌套去根
-代换、完全平方片层因子）。该阶段在链中位于 <strong><code>binomial</code> 之后、
-<code>exp_log</code> 之前</strong>，单基引擎因此保持对单基形状的先占权；片段之外诚实拒绝。</li>
-<li><strong>反函数代换</strong>（0.30.0）—— <code>inverse_trig</code> <strong>分派序末的 M4 机制</strong>：
-<code>u = F(w)</code> 覆盖 11 个头（<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code>
-以及 <code>acsc</code>/<code>asec</code>/<code>acoth</code>/<code>asech</code>/<code>acsch</code>）× 仿射变元 × 整数核幂 ×
-多项式权，伴随根式吸收为片层因子。</li>
 <li><strong>启发式技巧</strong> —— 分部积分、三角替换、Weierstrass $t = \tan(x/2)$、
 Euler 替换。</li>
 <li><strong>有界展开重试</strong>（0.27.x）—— 分配展开乘积为和式（项数预算 64）
@@ -245,15 +237,10 @@ let result = integrate(&amp;ctx, expr, Symbol::new("x"));
 每个 <code>tᵢ</code> 是下层域上的 <code>log</code> 或 <code>exp</code>，然后递归积分（Bronstein
 《Symbolic Integration I》第 5 章）：</p>
 <ul>
-<li>每层由 Hermite 约化分出有理部分（超指数层的 <code>t</code> 幂分母先按
-Laurent 多项式拆出，0.29.0）；</li>
-<li>对数部分先试对数导数恒等式（快路径），未命中则走
-Rothstein–Trager 结式方法：0.29.0 只判定 <strong>ℚ 根</strong>，0.30.0 增加代数
-<strong>常量根</strong>（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次
-因子，均在扩域内自证）；非常量根与更高次因子仍然诚实拒绝；</li>
+<li>每层由 Hermite 约化分出有理部分；</li>
+<li>对数部分使用对数导数恒等式；</li>
 <li>多项式部分在 <code>log</code> 层用待定系数、在 <code>exp</code> 层用 Risch 微分方程
-<code>Dq + f·q = g</code> 积分——0.29.0 起在<strong>完整有理片段</strong>上求解
-（弱规范化、分母界、次数界、SPDE、抵消递归）；</li>
+<code>Dq + f·q = g</code> 积分；</li>
 <li>基域 <code>ℚ(x)</code> 委托给有理函数积分器。</li>
 </ul>
 <p>塔递归深度受 <code>MAX_RISCH_DEPTH = 16</code> 上限约束：超过该深度时 Risch 层
@@ -269,12 +256,8 @@ let ctx = AtomArena::new(&amp;arena);
 let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
 <h3 id="范围限制"><a class="header" href="#范围限制">范围限制</a></h3>
-<p>0.29.0 起 Risch 微分方程在<strong>完整有理片段</strong>上求解（含分母界），
-对数部分用 Rothstein–Trager 的 ℚ 根判定；0.30.0 再由其代数<strong>常量根</strong>
-片段（二次因子与双二次四次因子，扩域内自证）扩展该对数部分。片段之外
-——非常量根、次数 ≥ 3 或非双二次四次的因子、混合扩域，以及未移植的
-<code>limited_integrate</code> / 高层 <code>parametric_log_deriv</code> 改进——一律诚实回退。
-因此：</p>
+<p>当前片段只求 Risch 微分方程的<strong>多项式</strong>解，对数部分只使用对数导数
+恒等式。因此：</p>
 <ul>
 <li><code>∫ exp(x)/x dx</code> 没有初等原函数 —— 由特殊函数表回答为 <code>Ei(x)</code>。</li>
 <li>某些需要自由选择常数使下层可积的 <code>log</code> 塔情形（如 <code>log(x+1)</code>）
@@ -360,10 +343,8 @@ fuel 仅约束化简后的传递。</p>
 </tbody></table>
 </div>
 <p>证书引擎（<code>ocas-calc/src/integral/certify.rs</code>）分层判定：结构零（<code>normalize</code> + 同类项收集）、
-初等域零（三角→指数、<code>I² = −1</code> 约化、依赖 <code>exp</code>/<code>log</code> 原子合并后嵌入有理函数域）、<strong>根式层</strong>
-（0.30.0 已落地：<code>CertMethod::RadicalField</code>——把 <code>sqrt(S)</code> 与 <code>S^(p/q)</code> 统一为生成元 <code>r</code> 与
-关系 <code>r^q = S</code>，以三角列余式约化判零；确定性预算 q ≤ 8、根式 ≤ 8、项 ≤ 8192、节点 ≤ 2000、
-入口项 ≤ 2048）。各层都是<strong>可靠的</strong>：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
+初等域零（三角→指数、<code>I² = −1</code> 约化、依赖 <code>exp</code>/<code>log</code> 原子合并后嵌入有理函数域）、根式域
+（接口预留）。各层都是<strong>可靠的</strong>：把原子当作独立生成元只会漏判（假阴性），不会把错误答案判成
 正确。域运算有确定性预算，超预算即诚实拒绝。</p>
 <p><code>ocas-calc/src/integral/risch.rs</code> 还会在<strong>塔自身的域</strong>里校验每个 Risch 结果，因此引擎不会发射
 被精确检查器证伪的答案——0.28.0 正是靠这条护栏抓到并兜住一个潜伏错案（指数层有理部分对负幂次

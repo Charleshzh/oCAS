@@ -1,0 +1,641 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>进阶：数论算法 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html" class="active"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/number-theory-algorithms.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="进阶数论算法"><a class="header" href="#进阶数论算法">进阶：数论算法</a></h1>
+<p>本章系统讲解 oCAS 中实现的核心数论算法：素性判定、整数分解、离散对数、中国剩余定理、二次剩余以及有理重构。每个算法从数学原理出发，逐步深入到 oCAS 的具体实现细节。</p>
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<p>阅读本章前，读者应熟悉以下概念：</p>
+<ul>
+<li><strong>素数与整除</strong>：素数定义、最大公因数、Euclid 算法、扩展 Euclid 算法</li>
+<li><strong>模算术</strong>：同余、模逆（扩展 Euclid 求 $a^{-1} \bmod m$）、快速模幂（binary exponentiation）</li>
+<li><strong>Euler φ 函数</strong>：$\varphi(n) = n \prod_{p \mid n}(1 - 1/p)$，计数 $[1, n]$ 中与 $n$ 互素的整数个数</li>
+<li><strong>积性函数</strong>：$f(mn) = f(m)f(n)$ 当 $\gcd(m, n) = 1$；完全积性则对所有 $m, n$ 成立</li>
+<li><strong>Fermat 小定理</strong>：$p$ 素数且 $\gcd(a, p) = 1$ 时 $a^{p-1} \equiv 1 \pmod{p}$</li>
+<li><strong>群论基础</strong>：循环群、元素的阶、生成元（原根）</li>
+</ul>
+<p><strong>推荐阅读</strong>：Shoup《A Computational Introduction to Number Theory and Algebra》Ch.1–9。</p>
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="素性判定问题"><a class="header" href="#素性判定问题">素性判定问题</a></h3>
+<p>给定正整数 $n$，判断 $n$ 是否为素数。这是一个判定问题，但确定性算法（如 AKS）的实际速度远不如概率性算法。现代实践采用<strong>概率素数测试</strong>（probable prime test）：合数通过测试的概率可压到极低，但无法绝对排除。</p>
+<h3 id="整数分解问题"><a class="header" href="#整数分解问题">整数分解问题</a></h3>
+<p>给定合数 $n$，找到非平凡因子 $d$（$1 &lt; d &lt; n$）。重复递归直到所有因子均为素数，得到 $n = p_1^{e_1} \cdots p_k^{e_k}$。分解的难度是 RSA 等公钥密码安全性的基础假设。</p>
+<h3 id="离散对数问题"><a class="header" href="#离散对数问题">离散对数问题</a></h3>
+<p>在群 $\mathbb{Z}_p^*$ 中，给定 $g$ 和 $h$，求 $x$ 使得 $g^x \equiv h \pmod{p}$。当 $p - 1$ 光滑（只有小素因子）时，Pohlig–Hellman 算法可高效求解。</p>
+<h3 id="二次剩余"><a class="header" href="#二次剩余">二次剩余</a></h3>
+<p>对奇素数 $p$ 和整数 $a$，若存在 $x$ 满足 $x^2 \equiv a \pmod{p}$，则称 $a$ 是模 $p$ 的<strong>二次剩余</strong>（quadratic residue）。Legendre 符号 $\left(\frac{a}{p}\right) = 1$ 表示是，$-1$ 表示非，$0$ 表示 $p \mid a$。</p>
+<h3 id="积性数论函数"><a class="header" href="#积性数论函数">积性数论函数</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>定义</th><th>积性</th></tr></thead><tbody>
+<tr><td>$\varphi(n)$</td><td>$#{k \in [1,n] : \gcd(k,n)=1}$</td><td>是</td></tr>
+<tr><td>$\mu(n)$</td><td>$1$（$n=1$），$(-1)^k$（$n$ 恰好 $k$ 个不同素因子），$0$（$n$ 有平方因子）</td><td>是</td></tr>
+<tr><td>$\tau(n)$</td><td>正因子个数 $= \prod(e_i + 1)$</td><td>是</td></tr>
+<tr><td>$\sigma_k(n)$</td><td>$\sum_{d \mid n} d^k$</td><td>是</td></tr>
+<tr><td>$\lambda(n)$</td><td>Liouville 函数 $= (-1)^{\Omega(n)}$</td><td>是（完全积性）</td></tr>
+</tbody></table>
+</div>
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="bpsw-素性判定"><a class="header" href="#bpsw-素性判定">BPSW 素性判定</a></h3>
+<p><strong>BPSW 测试</strong>（Baillie–Pomerance–Selfridge–Wagstaff）将两个独立的概率素数测试串联：一个 base-2 强 Miller–Rabin 测试 + 一个强 Lucas 概率素数测试。自 1980 年提出以来，<strong>没有任何已知合数能通过 BPSW 测试</strong>（$n &lt; 2^{64}$ 范围内已被穷举验证）。</p>
+<h4 id="millerrabin-测试"><a class="header" href="#millerrabin-测试">Miller–Rabin 测试</a></h4>
+<p><strong>原理</strong>：设 $n - 1 = d \cdot 2^r$（$d$ 为奇数）。对底数 $a$，计算 $a^d \bmod n$。若结果为 $1$ 或在序列 $a^d, a^{2d}, a^{4d}, \ldots, a^{d \cdot 2^{r-1}} \pmod{n}$ 中出现 $-1$，则 $n$ 通过该轮测试。</p>
+<p><strong>判定</strong>：若 $n$ 是素数，则对任意 $1 &lt; a &lt; n$ 都通过。若 $n$ 是合数，则至少 $3/4$ 的底数是证人（witness），即能揭穿 $n$。测试 $k$ 个随机底数后，合数通过全部的概率 $\leq 4^{-k}$。</p>
+<p><strong>确定性</strong>：对 $n &lt; 3.317 \times 10^{24}$，使用固定底数集 ${2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}$ 的 Miller–Rabin 测试是<strong>确定性</strong>的。oCAS 使用这 12 个底数作为 <code>MR_WITNESSES</code> 常量。</p>
+<h4 id="强-lucas-概率素数测试"><a class="header" href="#强-lucas-概率素数测试">强 Lucas 概率素数测试</a></h4>
+<p><strong>Lucas 序列</strong>：对参数 $(P, Q)$，定义</p>
+<p>$$U_0 = 0,\quad U_1 = 1,\quad U_{m+1} = P \cdot U_m - Q \cdot U_{m-1}$$</p>
+<p>$$V_0 = 2,\quad V_1 = P,\quad V_{m+1} = P \cdot V_m - Q \cdot V_{m-1}$$</p>
+<p><strong>二进制阶梯（binary ladder）</strong>：高效计算 $(U_k, V_k, Q^k) \bmod n$。利用倍增公式：</p>
+<p>$$U_{2m} = U_m \cdot V_m, \quad V_{2m} = V_m^2 - 2Q^m$$</p>
+<p>和递增公式：</p>
+<p>$$2U_{m+1} = P \cdot U_m + V_m, \quad 2V_{m+1} = D \cdot U_m + P \cdot V_m$$</p>
+<p>其中 $D = P^2 - 4Q$。通过模 $n$ 的 half-mod 操作（$n$ 为奇数时 $\text{half_mod}(x, n) = y$ 满足 $2y \equiv x \pmod{n}$）避免除法。</p>
+<p><strong>Selfridge 参数选择</strong>：选择第一个 $D \in {5, -7, 9, -11, 13, \ldots}$ 使得 Jacobi 符号 $\left(\frac{D}{n}\right) = -1$，然后令 $P = 1$，$Q = (1 - D)/4$。</p>
+<p><strong>强 Lucas 测试</strong>：写 $n + 1 = d \cdot 2^r$（$d$ 为奇数），$n$ 通过当且仅当 $U_d \equiv 0 \pmod{n}$ 或存在 $0 \leq i &lt; r$ 使得 $V_{d \cdot 2^i} \equiv 0 \pmod{n}$。</p>
+<h4 id="bpsw-组合"><a class="header" href="#bpsw-组合">BPSW 组合</a></h4>
+<pre><code>is_prime_bpsw(n):
+    1. 若 n &lt; 2，返回 false；若 n 等于 {2,3,5,…,37} 中的素数，返回 true
+    2. 若 n 被 2..37 中的某个素数整除，返回 false
+    3. 若 n 是完全平方数，返回 false
+    4. 强 Miller–Rabin 测试（底数 2）
+    5. 若通过，执行强 Lucas PRP 测试（Selfridge 参数）
+    6. 两者都通过返回 true
+</code></pre>
+<p>oCAS 中 <code>is_prime()</code> 使用完整的 12 底数 Miller–Rabin，而 <code>is_prime_bpsw()</code> 使用单底数 Miller–Rabin + Lucas 测试。两者互补：<code>is_prime()</code> 在 $n &lt; 3.317 \times 10^{24}$ 时确定性；<code>is_prime_bpsw()</code> 理论上更强（组合两种不同原理的测试）。</p>
+<h3 id="整数分解策略"><a class="header" href="#整数分解策略">整数分解策略</a></h3>
+<p>oCAS 的 <code>factor_integer</code> 是一个<strong>分层驱动器</strong>（driver），将多种分解算法组合为一个递增策略。</p>
+<h4 id="试除法trial-division"><a class="header" href="#试除法trial-division">试除法（Trial Division）</a></h4>
+<p>首先用 Eratosthenes 筛生成 $\leq 1000$ 的素数列表，逐一试除。这步的复杂度为 $O(\pi(1000)) = O(168)$，代价极小但能快速剥离小因子。</p>
+<p>$$n = \prod_{p \leq 1000} p^{e_p} \cdot C$$</p>
+<p>余因子 $C$ 的最小素因子 $&gt; 1000$。</p>
+<h4 id="pollard-rhobrent-变体"><a class="header" href="#pollard-rhobrent-变体">Pollard rho–Brent 变体</a></h4>
+<p><strong>原理</strong>：基于生日悖论的随机碰撞检测。定义序列 $x_0, x_1, x_2, \ldots$ 满足 $x_{i+1} = x_i^2 + c \pmod{n}$（$c$ 为随机常数）。序列模 $n$ 最终进入循环，而模真因子 $p$ 会更早碰撞。</p>
+<p><strong>Brent 变体</strong>的核心优化：</p>
+<ol>
+<li><strong>指数搜索</strong>：用 $2^k$ 步长检测碰撞（Floyd 的龟兔法每步都检测，Brent 只在 2 的幂处检测）</li>
+<li><strong>批量 GCD</strong>：积累若干个 $(x_i - y_i)$ 的乘积后一次性取 $\gcd$，摊销 GCD 的高代价</li>
+<li><strong>回溯（backtrack）</strong>：当批量 GCD 返回 $n$ 本身时，在该批量内逐个重试</li>
+</ol>
+<p><strong>时间复杂度</strong>：期望 $O(n^{1/4})$ 次模乘。实践中对中等大小因子（&lt; 20 位）非常高效。</p>
+<h4 id="pollard-p---1-方法stage-1"><a class="header" href="#pollard-p---1-方法stage-1">Pollard $p - 1$ 方法（Stage 1）</a></h4>
+<p><strong>原理</strong>：若 $n$ 有因子 $p$ 且 $p - 1$ 是 $B_1$-光滑的（即 $p - 1$ 的所有素因子幂 $\leq B_1$），则 $p - 1 \mid M$ 其中 $M = \prod_{q \leq B_1} q^{\lfloor \log_q B_1 \rfloor}$。由 Fermat 小定理，对任意 $\gcd(a, p) = 1$：</p>
+<p>$$a^M \equiv 1 \pmod{p} \implies p \mid \gcd(a^M - 1, n)$$</p>
+<p><strong>实现细节</strong>：</p>
+<ul>
+<li>用 Eratosthenes 筛生成 $q \leq B_1$ 的素数</li>
+<li>逐素数做模幂：$a \leftarrow a^{q^e} \bmod n$（$q^e \leq B_1 &lt; q^{e+1}$）</li>
+<li>每累积一定步数后检测 $\gcd(a - 1, n)$</li>
+<li>若 $\gcd = n$（所有因子都 $p-1$ 光滑），方法失败</li>
+<li>若 $1 &lt; \gcd &lt; n$，找到非平凡因子</li>
+</ul>
+<p><strong>局限</strong>：要求 $p - 1$ 光滑。若 $p - 1$ 有大素因子，方法无效。</p>
+<h4 id="williams-p--1-方法stage-1"><a class="header" href="#williams-p--1-方法stage-1">Williams $p + 1$ 方法（Stage 1）</a></h4>
+<p><strong>原理</strong>：与 $p - 1$ 方法互补。若 $p + 1$ 是 $B_1$-光滑的，利用 Lucas $V$ 序列代替模幂。</p>
+<p><strong>Lucas $V$ 序列</strong>：取 $Q = 1$，随机选择 $P$ 使得 $\left(\frac{P^2 - 4}{n}\right) = -1$（Jacobi 符号）。计算 $V_M \bmod n$，其中 $M = \prod_{q \leq B_1} q^{\lfloor \log_q B_1 \rfloor}$。若 $p + 1$ 是 $B_1$-光滑的，则 $V_M \equiv V_0 = 2 \pmod{p}$，即 $p \mid \gcd(V_M - 2, n)$。</p>
+<p><strong>参数选择</strong>：随机选 $P$，检查 $\text{jacobi}(P^2 - 4, n) = -1$。oCAS 实现中使用 <code>lucas_uv_mod</code>（与 BPSW 共享的 Lucas 链代码）。</p>
+<p><strong>局限</strong>：要求 $p + 1$ 光滑。与 $p - 1$ 方法互补（某些 $p$ 满足一个但不满足另一个）。</p>
+<h4 id="lenstra-椭圆曲线方法ecm"><a class="header" href="#lenstra-椭圆曲线方法ecm">Lenstra 椭圆曲线方法（ECM）</a></h4>
+<p><strong>原理</strong>：将整数分解转化为椭圆曲线群阶的光滑性问题。对随机椭圆曲线 $E/\mathbb{F}_p$，其群阶 $|E(\mathbb{F}_p)|$ 在 Hasse 区间 $[p + 1 - 2\sqrt{p}, p + 1 + 2\sqrt{p}]$ 内均匀分布（Sato–Tate）。ECM 成功的条件是某条曲线的群阶为 $B_1$-光滑的。</p>
+<p><strong>关键优势</strong>：与 rho 和 $p \pm 1$ 方法不同，ECM 不固定群阶区间——每换一条曲线就换一个群阶。这使得 ECM 对<strong>任何大小的因子</strong>都有概率成功，复杂度取决于最小因子 $p$ 的光滑性，而非 $n$ 本身。</p>
+<p><strong>Suyama 参数化</strong>：从随机 $\sigma \notin {0, 1, 5}$ 构造 Montgomery 曲线：</p>
+<p>$$u = \sigma^2 - 5, \quad v = 4\sigma$$</p>
+<p>$$A = \frac{(v - u)^3(3u + v)}{4u^3 v} - 2$$</p>
+<p>曲线为 $B y^2 = x^3 + A x^2 + x$，基点为 $(u^3, v^3)$。Suyama 参数化保证基点总是有理的，且在构造过程中若分母的 GCD 暴露出 $n$ 的因子，则立即返回。</p>
+<p><strong>Montgomery 坐标</strong>：使用射影坐标 $(X : Z)$（省略 $Y$ 坐标），曲线方程为 $By^2 = x^3 + Ax^2 + x$，其中 $x = X/Z$。</p>
+<ul>
+<li><strong>倍点</strong> $[2](X : Z)$：用常量 $a_{24} = (A + 2)/4$ 计算，只需 4 次模乘 + 4 次模加/减</li>
+<li><strong>差分加法</strong> $P + Q$ 给定 $P - Q$：只需 6 次模乘</li>
+<li><strong>Montgomery 阶梯</strong>：标量乘 $[k]P$ 通过交替倍点和加法计算，<strong>始终使用基点作为固定差分</strong></li>
+</ul>
+<p><strong>Stage 1 算法</strong>：计算 $[M]P$ 其中 $M = \prod_{q \leq B_1} q^{\lfloor \log_q B_1 \rfloor}$。在计算过程中取 GCD，若发现非平凡因子则返回。</p>
+<h4 id="驱动器-factor_integer"><a class="header" href="#驱动器-factor_integer">驱动器 <code>factor_integer</code></a></h4>
+<p><code>factor_integer</code> 将上述算法组合为一个递增策略：</p>
+<pre><code>factor_integer(n):
+    1. 试除法：剥离所有 p ≤ 1000 的因子
+    2. 对余因子 C（若 C &gt; 1）：
+       a. 若 is_prime_bpsw(C)，记录为素因子
+       b. 否则调用 find_factor(C) 拆分，递归处理
+</code></pre>
+<p><code>find_factor(n)</code> 的升级策略：</p>
+<ol>
+<li>先做一次 Pollard rho–Brent（对小因子最廉价，无光滑性要求）</li>
+<li>循环（$B_1$ 从 2000 开始）：
+<ul>
+<li>Pollard $p - 1$（Stage 1，要求某因子 $p - 1$ 为 $B_1$-光滑）</li>
+<li>Williams $p + 1$（Stage 1，要求某因子 $p + 1$ 为 $B_1$-光滑，与 $p - 1$ 互补）</li>
+<li>ECM：曲线数 $\approx B_1 / 550$（限制在 10–300 之间）</li>
+<li>全部失败后 $B_1 \leftarrow B_1 \times 4$，继续循环</li>
+</ul>
+</li>
+</ol>
+<p>曲线预算约为 $B_1 / 550$ 是 ECM 平滑度试探的标准经验比例，保证每档 $B_1$ 下有足够的随机曲线覆盖 Hasse 区间内的群阶。</p>
+<h3 id="离散对数"><a class="header" href="#离散对数">离散对数</a></h3>
+<h4 id="baby-step-giant-stepbsgs"><a class="header" href="#baby-step-giant-stepbsgs">Baby-Step Giant-Step（BSGS）</a></h4>
+<p><strong>问题</strong>：给定 $g, h, p$，求 $x$ 使得 $g^x \equiv h \pmod{p}$（$0 \leq x &lt; m$，$m$ 为 $g$ 的阶的上界）。</p>
+<p><strong>算法</strong>：令 $m = \lfloor \sqrt{\text{bound}} \rfloor + 1$。</p>
+<ol>
+<li><strong>Baby steps</strong>：计算并存储 ${(j, g^j \bmod p) : 0 \leq j &lt; m}$ 到 HashMap</li>
+<li><strong>Giant steps</strong>：计算 $g^{-m} \bmod p$，对 $i = 0, 1, \ldots, m-1$，检查 $h \cdot (g^{-m})^i \bmod p$ 是否在表中</li>
+<li>若找到匹配 $g^j = h \cdot g^{-im}$，则 $x = im + j$</li>
+</ol>
+<p><strong>复杂度</strong>：时间 $O(\sqrt{m})$ 次模乘，空间 $O(\sqrt{m})$。</p>
+<p>oCAS 的 <code>dlog_bsgs</code> 使用 <code>HashMap&lt;Integer, Integer&gt;</code> 存储 baby steps，用 <code>(j, g^j)</code> 键值对实现 $O(1)$ 查找。</p>
+<h4 id="pohlighellman-算法"><a class="header" href="#pohlighellman-算法">Pohlig–Hellman 算法</a></h4>
+<p><strong>场景</strong>：$p$ 为素数，$g$ 的阶为 $n = p - 1$，且 $n$ 光滑：$n = q_1^{e_1} \cdots q_k^{e_k}$（$q_i$ 为小素数）。</p>
+<p><strong>核心思想</strong>：将 $x \bmod n$ 的求解分解为 $x \bmod q_i^{e_i}$ 的子问题，然后用 CRT 合并。</p>
+<p><strong>逐素幂分解</strong>：对每个 $q = q_i$，$e = e_i$，求 $x \bmod q^e$：</p>
+<p>写 $x = x_0 + x_1 q + x_2 q^2 + \cdots + x_{e-1} q^{e-1}$（$0 \leq x_j &lt; q$，逐"位"恢复）。</p>
+<ol>
+<li>令 $g_0 = g^{n/q} \bmod p$，$h_0 = h^{n/q} \bmod p$。则 $g_0^{x_0} = h_0 \pmod{p}$。用 BSGS 求 $x_0 \bmod q$。</li>
+<li>更新 $h \leftarrow h \cdot g^{-x_0}$，计算 $h_1 = (h \cdot g^{-x_0})^{n/q^2}$。求 $x_1$。</li>
+<li>继续直到 $x_{e-1}$。</li>
+<li>$x \bmod q^e = x_0 + x_1 q + \cdots + x_{e-1} q^{e-1}$。</li>
+</ol>
+<p><strong>CRT 合并</strong>：对所有 $q_i^{e_i}$ 的结果用 <code>crt_many</code> 合并得到 $x \bmod n$。</p>
+<p><strong>复杂度</strong>：每个素幂的 BSGS 花费 $O(\sqrt{q_i})$，总计 $O(\sum e_i \sqrt{q_i})$。当所有 $q_i$ 都小时，这比直接 BSGS 的 $O(\sqrt{n})$ 快得多。</p>
+<p>oCAS 的 <code>dlog_pohlig_hellman</code> 要求 $p$ 为素数。它使用 <code>factor_integer</code> 分解 $p - 1$（复用了整数分解模块），逐素幂执行 BSGS 数字恢复，最后 <code>crt_many</code> 合并并验证结果。</p>
+<h3 id="中国剩余定理"><a class="header" href="#中国剩余定理">中国剩余定理</a></h3>
+<h4 id="经典-crt"><a class="header" href="#经典-crt">经典 CRT</a></h4>
+<p><strong>定理</strong>：设 $m_1, \ldots, m_k$ 两两互素，给定同余方程组</p>
+<p>$$x \equiv r_i \pmod{m_i}, \quad i = 1, \ldots, k$$</p>
+<p>则存在唯一解 $x \bmod M$ 其中 $M = m_1 \cdots m_k$。</p>
+<p><strong>构造</strong>：$x = \sum_i r_i \cdot M_i \cdot M_i^{-1}$，其中 $M_i = M / m_i$，$M_i^{-1} = M_i^{-1} \bmod m_i$。</p>
+<h4 id="推广模数不互素"><a class="header" href="#推广模数不互素">推广：模数不互素</a></h4>
+<p>oCAS 的 <code>crt</code>（成对合并）和 <code>crt_many</code>（多同余合并）<strong>不要求模数两两互素</strong>。</p>
+<p><strong>成对 CRT</strong>：对 $x \equiv r_1 \pmod{m_1}$ 和 $x \equiv r_2 \pmod{m_2}$：</p>
+<ol>
+<li>计算 $g = \gcd(m_1, m_2)$</li>
+<li>检查 $r_1 \equiv r_2 \pmod{g}$（一致性条件）</li>
+<li>若不一致，返回 <code>None</code></li>
+<li>否则用扩展 Euclid 算法求解，合并模为 $\text{lcm}(m_1, m_2)$</li>
+</ol>
+<p><strong>多同余合并</strong> <code>crt_many</code>：左折叠——从第一个同余开始，逐个与下一个合并：</p>
+<p>$$x \equiv r_1 \pmod{m_1} \xrightarrow{\text{合并}} x \equiv R_2 \pmod{\text{lcm}(m_1, m_2)} \xrightarrow{\text{合并}} \cdots$$</p>
+<p>最终返回 $(R, M)$ 其中 $M = \text{lcm}(m_1, \ldots, m_k)$，$0 \leq R &lt; M$。若任何一步发现不一致，整体返回 <code>None</code>。</p>
+<p><strong>复杂度</strong>：$k$ 次成对合并，每次 $O(\log M)$ 的 GCD 运算。</p>
+<h3 id="二次剩余-1"><a class="header" href="#二次剩余-1">二次剩余</a></h3>
+<h4 id="legendre-符号与-jacobi-符号"><a class="header" href="#legendre-符号与-jacobi-符号">Legendre 符号与 Jacobi 符号</a></h4>
+<p><strong>Legendre 符号</strong>：对奇素数 $p$，</p>
+<p>$$\left(\frac{a}{p}\right) = \begin{cases} 0 &amp; p \mid a \ 1 &amp; a \text{ 是模 } p \text{ 二次剩余} \ -1 &amp; a \text{ 是模 } p \text{ 二次非剩余} \end{cases}$$</p>
+<p><strong>Euler 判据</strong>：$\left(\frac{a}{p}\right) \equiv a^{(p-1)/2} \pmod{p}$。</p>
+<p><strong>Jacobi 符号</strong>：Legendre 符号对合数模的推广。若 $n = p_1^{e_1} \cdots p_k^{e_k}$，则</p>
+<p>$$\left(\frac{a}{n}\right) = \prod_i \left(\frac{a}{p_i}\right)^{e_i}$$</p>
+<p><strong>关键性质</strong>：Jacobi 符号可通过<strong>二次互反律</strong>（quadratic reciprocity）快速计算，无需分解 $n$。</p>
+<h4 id="二次互反律"><a class="header" href="#二次互反律">二次互反律</a></h4>
+<p>对奇素数 $p, q$：</p>
+<p>$$\left(\frac{p}{q}\right) \left(\frac{q}{p}\right) = (-1)^{\frac{p-1}{2} \cdot \frac{q-1}{2}}$$</p>
+<p>补充规则：</p>
+<ul>
+<li>$\left(\frac{2}{n}\right) = (-1)^{(n^2 - 1)/8}$，即 $n \equiv \pm 1 \pmod 8$ 时为 $1$，$n \equiv \pm 3 \pmod 8$ 时为 $-1$</li>
+<li>$\left(\frac{-1}{n}\right) = (-1)^{(n-1)/2}$，即 $n \equiv 1 \pmod 4$ 时为 $1$</li>
+</ul>
+<p><strong>计算算法</strong>（oCAS 的 <code>jacobi</code> 函数）：</p>
+<pre><code>jacobi(a, n):
+    若 n 为偶数或非正，返回 0
+    反复：
+      1. 2-adic 剥离：提取 a 中所有因子 2，用 mod-8 规则累积符号
+      2. 互反律翻转：交换 a ↔ n，根据 a, n 的 mod-4 值调整符号
+      3. a = a mod n
+      4. 若 a == 0，返回 0（n &gt; 1）或累积符号（n == 1）
+</code></pre>
+<p><strong>复杂度</strong>：$O(\log^2 n)$，与 Euclid 算法同阶。</p>
+<h4 id="tonellishanks-算法"><a class="header" href="#tonellishanks-算法">Tonelli–Shanks 算法</a></h4>
+<p>求 $x$ 使得 $x^2 \equiv a \pmod{p}$（$p$ 为奇素数，$\left(\frac{a}{p}\right) = 1$）。</p>
+<p><strong>快速路径</strong>：当 $p \equiv 3 \pmod{4}$ 时，</p>
+<p>$$x = a^{(p+1)/4} \bmod p$$</p>
+<p>因为 $x^2 = a^{(p+1)/2} = a \cdot a^{(p-1)/2} = a \cdot \left(\frac{a}{p}\right) = a$。</p>
+<p><strong>一般情况</strong>（$p \equiv 1 \pmod{4}$）——Tonelli–Shanks 算法：</p>
+<ol>
+<li><strong>分解</strong>：写 $p - 1 = Q \cdot 2^S$（$Q$ 为奇数）</li>
+<li><strong>找非剩余</strong>：搜索 $z$ 使得 $\left(\frac{z}{p}\right) = -1$</li>
+<li><strong>初始化</strong>：
+<ul>
+<li>$M = S$</li>
+<li>$c = z^Q \bmod p$（$2^{S-1}$ 阶元素）</li>
+<li>$t = a^Q \bmod p$</li>
+<li>$R = a^{(Q+1)/2} \bmod p$</li>
+</ul>
+</li>
+<li><strong>循环</strong>（当 $t \neq 1$）：
+<ul>
+<li>找最小 $i &gt; 0$ 使得 $t^{2^i} \equiv 1 \pmod{p}$</li>
+<li>更新 $c \leftarrow c^{2^{M-i-1}}$，$t \leftarrow t \cdot c^2$，$R \leftarrow R \cdot c$，$M \leftarrow i$</li>
+</ul>
+</li>
+<li>返回 $R$</li>
+</ol>
+<p><strong>不变量</strong>：$R^2 = a \cdot t \pmod{p}$ 且 $c$ 的阶为 $2^M$。循环终止时 $t = 1$，故 $R^2 \equiv a$。</p>
+<p><strong>复杂度</strong>：$O(S^2 \log p)$，其中 $S = v_2(p - 1)$（$p - 1$ 中 2 的幂次）。平均 $S$ 很小，算法高效。</p>
+<h3 id="有理重构"><a class="header" href="#有理重构">有理重构</a></h3>
+<p><strong>问题</strong>：给定 $a \in \mathbb{Z}$ 和模数 $m$，找到 $n, d \in \mathbb{Z}$ 使得</p>
+<p>$$a \cdot d \equiv n \pmod{m}, \quad \gcd(n, d) = 1, \quad 2|n| \cdot |d| &lt; m$$</p>
+<p><strong>应用</strong>：在模 GCD 算法中，通过 CRT 合并多个 $\mathbb{F}_p$ 上的 GCD 系数后，需要将模 $M$ 下的结果"重构"回 $\mathbb{Q}$ 上的有理数。</p>
+<p><strong>Wang/扩展 Euclid 算法</strong>：</p>
+<p>使用扩展 Euclid 算法追踪序列 $(r_i, t_i)$：</p>
+<ol>
+<li>初始化：$(r_0, r_1) = (m, a)$，$(t_0, t_1) = (0, 1)$</li>
+<li>迭代：$q = \lfloor r_0 / r_1 \rfloor$，$(r_0, r_1) \leftarrow (r_1, r_0 - q \cdot r_1)$，$(t_0, t_1) \leftarrow (t_1, t_0 - q \cdot t_1)$</li>
+<li><strong>终止条件</strong>：当 $|r_1| \leq \sqrt{m/2}$ 且 $|t_1| \leq \sqrt{m/2}$ 时停止</li>
+<li><strong>验证</strong>：令 $n = r_1$，$d = t_1$（取正值），检查 $a \cdot d \equiv n \pmod{m}$ 和 $2|n| \cdot |d| &lt; m$</li>
+<li>若验证失败或 $t_1 = 0$，返回 <code>None</code>（不存在满足条件的有理重构）</li>
+</ol>
+<p><strong>唯一性定理</strong>：当 $2|n| \cdot |d| &lt; m$ 时，满足条件的 $(n, d)$ 是唯一的。这个条件保证了重构结果是"最简"的有理表示。</p>
+<p><strong>复杂度</strong>：$O(\log m)$ 的 GCD 运算步数，与 Euclid 算法同阶。</p>
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<p>oCAS 的数论算法实现在 <code>ocas-domain</code> crate 的 <code>number_theory</code> 模块和 <code>ocas-poly</code> 的有理重构模块中。</p>
+<h3 id="模块结构"><a class="header" href="#模块结构">模块结构</a></h3>
+<pre><code>ocas-domain/src/
+├── number_theory.rs          ← 素性测试、模逆、CRT、Legendre/Jacobi、mod_sqrt
+└── number_theory/
+    ├── primes.rs             ← BPSW、Lucas 序列（lucas_uv_mod、strong_lucas_prp）
+    ├── factor.rs             ← 整数分解驱动器（factor_integer）及各方法
+    ├── dlog.rs               ← BSGS 和 Pohlig–Hellman
+    ├── crt.rs                ← 多同余 CRT（crt_many）
+    └── functions.rs          ← φ、μ、τ、σ、λ
+
+ocas-poly/src/
+└── rational_reconstruction.rs ← 有理重构（扩展 Euclid 方法）
+</code></pre>
+<h3 id="素性判定"><a class="header" href="#素性判定">素性判定</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>is_prime(n)</code></td><td><code>number_theory.rs</code></td><td>12 底数 Miller–Rabin，$n &lt; 3.317 \times 10^{24}$ 确定性</td></tr>
+<tr><td><code>is_prime_bpsw(n)</code></td><td><code>primes.rs</code></td><td>base-2 MR + 强 Lucas PRP</td></tr>
+<tr><td><code>is_prime_u64(n)</code></td><td><code>primes.rs</code></td><td><code>u64</code> 专用，委托给 <code>is_prime</code></td></tr>
+<tr><td><code>next_prime(n)</code></td><td><code>number_theory.rs</code></td><td>从 $n + 1$ 起逐个奇数测试</td></tr>
+<tr><td><code>primes_from(n)</code></td><td><code>number_theory.rs</code></td><td>素数迭代器</td></tr>
+</tbody></table>
+</div>
+<p>Lucas 序列计算由 <code>lucas_uv_mod</code> 实现，使用二进制阶梯法，返回 $(U_k, V_k, Q^k) \bmod n$。该函数同时被 BPSW 测试和 Williams $p + 1$ 分解方法共用。</p>
+<h3 id="整数分解"><a class="header" href="#整数分解">整数分解</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>factor_integer(n)</code></td><td><code>factor.rs</code></td><td>入口：试除 + 递归拆分</td></tr>
+<tr><td><code>factor_integer_with_rng(n, rng)</code></td><td><code>factor.rs</code></td><td>带显式 RNG 的版本</td></tr>
+<tr><td><code>factor_trial(n, limit)</code></td><td><code>factor.rs</code></td><td>试除法，返回 <code>(因子, 余因子)</code></td></tr>
+<tr><td><code>pollard_rho_brent(n, rng)</code></td><td><code>factor.rs</code></td><td>Brent 变体，带重试</td></tr>
+<tr><td><code>pollard_pm1(n, b1, rng)</code></td><td><code>factor.rs</code></td><td>Pollard $p - 1$，Stage 1</td></tr>
+<tr><td><code>williams_pp1(n, b1, rng)</code></td><td><code>factor.rs</code></td><td>Williams $p + 1$，Stage 1</td></tr>
+<tr><td><code>ecm(n, b1, max_curves, rng)</code></td><td><code>factor.rs</code></td><td>Lenstra ECM，Suyama 参数化</td></tr>
+</tbody></table>
+</div>
+<p>内部实现细节：</p>
+<ul>
+<li><code>primes_up_to(limit)</code>: Eratosthenes 筛，为试除法和光滑界计算生成素数表</li>
+<li><code>prime_power_le(q, bound)</code>: 计算 $q^e \leq \text{bound}$，用于构造光滑指数 $M$</li>
+<li><code>ProjPoint { x, z }</code>: Montgomery 射影坐标点</li>
+<li><code>ecm_double</code>、<code>ecm_add</code>、<code>ecm_mul</code>: Montgomery 曲线上的群运算</li>
+<li><code>suyama_curve(sigma, n)</code>: Suyama 参数化，返回 <code>Suyama</code> 枚举（<code>Curve</code>/<code>Factor</code>/<code>Degenerate</code>）</li>
+<li><code>find_factor(n, rng)</code>: 升级策略驱动器（rho → p−1 → p+1 → ECM，光滑界递增）</li>
+</ul>
+<h3 id="离散对数-1"><a class="header" href="#离散对数-1">离散对数</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>dlog_bsgs(base, target, modulus)</code></td><td><code>dlog.rs</code></td><td>Baby-step giant-step</td></tr>
+<tr><td><code>dlog_pohlig_hellman(base, target, p)</code></td><td><code>dlog.rs</code></td><td>Pohlig–Hellman（需 $p$ 为素数）</td></tr>
+</tbody></table>
+</div>
+<p>内部：</p>
+<ul>
+<li><code>bsgs_bounded(base, target, modulus, order_bound)</code>: BSGS 核心，给定阶上界搜索</li>
+<li><code>dlog_bsgs</code> 设置上界为 <code>modulus - 1</code> 并委托给 <code>bsgs_bounded</code></li>
+<li><code>dlog_pohlig_hellman</code> 使用 <code>factor_integer</code> 分解 $p - 1$，逐素幂 BSGS 恢复数字，<code>crt_many</code> 合并</li>
+</ul>
+<h3 id="中国剩余定理-1"><a class="header" href="#中国剩余定理-1">中国剩余定理</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>crt(r1, m1, r2, m2)</code></td><td><code>number_theory.rs</code></td><td>成对合并，模数无需互素</td></tr>
+<tr><td><code>crt_many(congruences)</code></td><td><code>crt.rs</code></td><td>多同余左折叠合并</td></tr>
+</tbody></table>
+</div>
+<p><code>crt_many</code> 从第一个同余开始，逐个调用 <code>crt</code> 合并。任何一步不一致则整体返回 <code>None</code>。</p>
+<h3 id="二次剩余-2"><a class="header" href="#二次剩余-2">二次剩余</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>legendre(a, p)</code></td><td><code>number_theory.rs</code></td><td>Legendre 符号，委托给 <code>jacobi</code></td></tr>
+<tr><td><code>jacobi(a, n)</code></td><td><code>number_theory.rs</code></td><td>Jacobi 符号（二次互反律 + 2-adic 剥离）</td></tr>
+<tr><td><code>mod_sqrt(a, p)</code></td><td><code>number_theory.rs</code></td><td>Tonelli–Shanks，含 $p \equiv 3 \pmod{4}$ 快速路径</td></tr>
+</tbody></table>
+</div>
+<p><code>mod_sqrt</code> 实现：</p>
+<ol>
+<li>先检查 $\left(\frac{a}{p}\right) = 1$（否则返回 <code>None</code>）</li>
+<li>若 $p \equiv 3 \pmod{4}$，走快速路径 $x = a^{(p+1)/4} \bmod p$</li>
+<li>否则执行完整 Tonelli–Shanks 算法：找非剩余 $z$，分解 $p - 1 = Q \cdot 2^S$，维护 $(c, t, r, m)$ 不变量循环</li>
+</ol>
+<h3 id="辅助数论函数"><a class="header" href="#辅助数论函数">辅助数论函数</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>euler_phi(n)</code></td><td><code>functions.rs</code></td><td>$\varphi(n) =</td></tr>
+<tr><td><code>moebius_mu(n)</code></td><td><code>functions.rs</code></td><td>$\mu(n)$，基于 <code>factor_integer</code></td></tr>
+<tr><td><code>divisor_tau(n)</code></td><td><code>functions.rs</code></td><td>$\tau(n) = \prod(e_i + 1)$</td></tr>
+<tr><td><code>divisor_sigma(n, k)</code></td><td><code>functions.rs</code></td><td>$\sigma_k(n) = \prod \frac{p^{k(e+1)} - 1}{p^k - 1}$</td></tr>
+<tr><td><code>liouville_lambda(n)</code></td><td><code>functions.rs</code></td><td>$\lambda(n) = (-1)^{\Omega(n)}$</td></tr>
+</tbody></table>
+</div>
+<p>所有积性函数都先通过 <code>factor_integer</code> 获取素因子分解，再用积性公式计算。</p>
+<h3 id="有理重构-1"><a class="header" href="#有理重构-1">有理重构</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>rational_reconstruction(a, m)</code></td><td><code>ocas-poly/src/rational_reconstruction.rs</code></td><td>Wang/扩展 Euclid 方法</td></tr>
+</tbody></table>
+</div>
+<p>内部使用 <code>integer_sqrt</code> 计算 $\lfloor\sqrt{m/2}\rfloor$ 作为终止界的阈值。</p>
+<h3 id="基础工具函数"><a class="header" href="#基础工具函数">基础工具函数</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>函数</th><th>位置</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>mod_inv(a, m)</code></td><td><code>number_theory.rs</code></td><td>扩展 Euclid 求模逆</td></tr>
+<tr><td><code>extended_gcd(a, b)</code></td><td><code>number_theory.rs</code></td><td>返回 $(g, x, y)$ 满足 $ax + by = g$</td></tr>
+<tr><td><code>symmetric_mod(a, m)</code></td><td><code>number_theory.rs</code></td><td>约化到 $(-m/2, m/2]$</td></tr>
+</tbody></table>
+</div>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ol>
+<li>
+<p><strong>Shoup, V.</strong> <em>A Computational Introduction to Number Theory and Algebra.</em> Cambridge University Press, 2nd edition, 2009.</p>
+<ul>
+<li>Ch.10: Primality testing (Miller–Rabin, randomized algorithms)</li>
+<li>Ch.11: Finding discrete logarithms (BSGS, Pohlig–Hellman)</li>
+<li>Ch.19: Factoring integers (Pollard rho, ECM)</li>
+</ul>
+</li>
+<li>
+<p><strong>Crandall, R. &amp; Pomerance, C.</strong> <em>Prime Numbers: A Computational Perspective.</em> Springer, 2nd edition, 2005.</p>
+<ul>
+<li>Ch.3: Recognizing primes and composites (BPSW, Lucas tests)</li>
+<li>Ch.5: Exponential factoring algorithms (ECM, Pollard rho)</li>
+<li>Ch.6: Subexponential factoring (Pollard $p-1$, Williams $p+1$)</li>
+<li>Ch.7: Modern discrete logarithm algorithms</li>
+</ul>
+</li>
+<li>
+<p><strong>Brent, R. P.</strong> "An improved Monte Carlo factorization algorithm." <em>BIT Numerical Mathematics</em>, 20(2):176–184, 1980.</p>
+<ul>
+<li>Brent 变体的 Pollard rho 算法</li>
+</ul>
+</li>
+<li>
+<p><strong>Williams, H. C.</strong> "A p+1 method of factoring." <em>Mathematics of Computation</em>, 39(159):225–234, 1982.</p>
+<ul>
+<li>Williams $p + 1$ 方法</li>
+</ul>
+</li>
+<li>
+<p><strong>Lenstra, H. W. Jr.</strong> "Factoring integers with elliptic curves." <em>Annals of Mathematics</em>, 126(3):649–673, 1987.</p>
+<ul>
+<li>ECM 方法</li>
+</ul>
+</li>
+<li>
+<p><strong>Montgomery, P. L.</strong> "Speeding the Pollard and elliptic curve methods of factorization." <em>Mathematics of Computation</em>, 48(177):243–264, 1987.</p>
+<ul>
+<li>Montgomery 曲线坐标与阶梯优化</li>
+</ul>
+</li>
+<li>
+<p><strong>Shanks, D. &amp; Tonelli, R.</strong> See Cohen, H. <em>A Course in Computational Algebraic Number Theory</em>, Algorithm 1.5.1.</p>
+<ul>
+<li>Tonelli–Shanks 模平方根算法</li>
+</ul>
+</li>
+<li>
+<p><strong>Baillie, R. &amp; Wagstaff, S. S.</strong> "Lucas pseudoprimes." <em>Mathematics of Computation</em>, 35(152):1391–1417, 1980.</p>
+<ul>
+<li>BPSW 测试的 Lucas 部分</li>
+</ul>
+</li>
+<li>
+<p><strong>Pohlig, S. &amp; Hellman, M.</strong> "An improved algorithm for computing logarithms over GF(p) and its cryptographic significance." <em>IEEE Transactions on Information Theory</em>, 24(1):106–110, 1978.</p>
+<ul>
+<li>Pohlig–Hellman 离散对数算法</li>
+</ul>
+</li>
+<li>
+<p><strong>Wang, P. S.</strong> "A p-adic algorithm for univariate partial fractions." <em>Proceedings of SYMSAC '81</em>, 212–217, 1981.</p>
+<ul>
+<li>有理重构的扩展 Euclid 方法</li>
+</ul>
+</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/groebner-theory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/symbolic-calculus.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/groebner-theory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/symbolic-calculus.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

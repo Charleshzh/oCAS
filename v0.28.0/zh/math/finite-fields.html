@@ -1,0 +1,482 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>基础：有限域与模算术 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html" class="active"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/finite-fields.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="基础有限域与模算术"><a class="header" href="#基础有限域与模算术">基础：有限域与模算术</a></h1>
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<ul>
+<li>集合论与基本代数结构（群、环、域的定义）</li>
+<li>整数除法与余数</li>
+<li>多项式的基本运算</li>
+</ul>
+<p>建议先阅读：<a href="./polynomial-algebra.html">多项式代数</a>、<a href="./linear-algebra.html">线性代数</a>。</p>
+<hr />
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="模算术"><a class="header" href="#模算术">模算术</a></h3>
+<p>给定正整数 $n \geq 2$，整数 $a$ 与 $b$ <strong>模 $n$ 同余</strong>（记为 $a \equiv b \pmod{n}$）当且仅当 $n \mid (a - b)$。模运算将整数划分为 $n$ 个等价类：</p>
+<p>$$
+\mathbb{Z}/n\mathbb{Z} = {\overline{0},, \overline{1},, \dots,, \overline{n-1}}
+$$</p>
+<p>其中 $\overline{a} = {a + kn \mid k \in \mathbb{Z}}$。加法和乘法按代表元运算后再取模：</p>
+<p>$$
+\overline{a} + \overline{b} = \overline{a + b}, \quad \overline{a} \cdot \overline{b} = \overline{a \cdot b}
+$$</p>
+<p>这使得 $\mathbb{Z}/n\mathbb{Z}$ 成为一个交换环。</p>
+<h3 id="模逆与扩展-euclid-算法"><a class="header" href="#模逆与扩展-euclid-算法">模逆与扩展 Euclid 算法</a></h3>
+<p>元素 $\overline{a} \in \mathbb{Z}/n\mathbb{Z}$ 有乘法逆元当且仅当 $\gcd(a, n) = 1$。此时存在整数 $x, y$ 满足 Bézout 等式：</p>
+<p>$$
+ax + ny = \gcd(a, n) = 1
+$$</p>
+<p>取模 $n$ 即得 $ax \equiv 1 \pmod{n}$，故 $\overline{x} = \overline{a}^{-1}$。</p>
+<p><strong>扩展 Euclid 算法</strong>通过迭代求解此等式：</p>
+<ol>
+<li>初始化：$(r_0, r_1) = (a, n)$，$(s_0, s_1) = (1, 0)$，$(t_0, t_1) = (0, 1)$。</li>
+<li>每步计算 $q = \lfloor r_{i-1}/r_i \rfloor$，更新：</li>
+</ol>
+<p>$$
+\begin{pmatrix} r_{i+1} \ s_{i+1} \ t_{i+1} \end{pmatrix} = \begin{pmatrix} r_{i-1} - q \cdot r_i \ s_{i-1} - q \cdot s_i \ t_{i-1} - q \cdot t_i \end{pmatrix}
+$$</p>
+<ol start="3">
+<li>当 $r_{i+1} = 0$ 时终止，此时 $r_i = \gcd(a, n)$，$s_i \cdot a + t_i \cdot n = r_i$。</li>
+</ol>
+<h3 id="素域-mathbbzpmathbbz"><a class="header" href="#素域-mathbbzpmathbbz">素域 $\mathbb{Z}/p\mathbb{Z}$</a></h3>
+<p>当 $n = p$ 为<strong>素数</strong>时，$\mathbb{Z}/p\mathbb{Z}$ 的结构发生根本变化：每个非零元素都与 $p$ 互素，因此都有逆元。这使得 $\mathbb{Z}/p\mathbb{Z}$ 成为一个<strong>域</strong>（field），记为 $\mathbb{F}_p$。</p>
+<p><strong>定理（Fermat 小定理）</strong>：设 $p$ 为素数，$a \not\equiv 0 \pmod{p}$，则</p>
+<p>$$
+a^{p-1} \equiv 1 \pmod{p}
+$$</p>
+<p>由此立即得到 $a^{p-2} \equiv a^{-1} \pmod{p}$，这为有限域求逆提供了一种<strong>无需扩展 Euclid 算法</strong>的实现方式——只需一次模幂运算。当使用 GMP 后端的 <code>pow_mod</code> 时，这比逐次除法快得多。</p>
+<p><strong>域的基本性质</strong>：</p>
+<ul>
+<li>加法群 $(\mathbb{F}_p, +)$ 是 $p$ 阶循环群，同构于 $(\mathbb{Z}/p\mathbb{Z}, +)$。</li>
+<li>乘法群 $(\mathbb{F}_p^<em>, \times)$ 是 $p-1$ 阶循环群——存在<strong>原根</strong>（primitive root）$g$ 使得 ${g^0, g^1, \dots, g^{p-2}} = \mathbb{F}_p^</em>$。</li>
+<li><strong>特征</strong>（characteristic）为 $p$：$p \cdot 1 = \underbrace{1 + \cdots + 1}_{p} = 0$，且 $p$ 是使此式成立的最小正整数。</li>
+</ul>
+<hr />
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="有限域-mathbbf_pd-的构造"><a class="header" href="#有限域-mathbbf_pd-的构造">有限域 $\mathbb{F}_{p^d}$ 的构造</a></h3>
+<p>素域 $\mathbb{F}_p$ 并非唯一的有限域。<strong>有限域分类定理</strong>指出：对每个素数幂 $q = p^d$（$d \geq 1$），存在唯一的（在同构意义下）$q$ 元有限域 $\mathbb{F}_q$，且所有有限域都是这种形式。</p>
+<p>构造 $\mathbb{F}_{p^d}$（$d &gt; 1$）的标准方法是<strong>不可约多项式扩张</strong>：</p>
+<ol>
+<li>选取 $\mathbb{F}_p[x]$ 中一个 $d$ 次<strong>不可约多项式</strong> $m(x)$。</li>
+<li>定义 $\mathbb{F}_{p^d} = \mathbb{F}_p[x] / (m(x))$——多项式环对理想 $(m(x))$ 的商环。</li>
+<li>元素是次数 $&lt; d$ 的多项式 $a_0 + a_1 \alpha + \cdots + a_{d-1}\alpha^{d-1}$，其中 $\alpha = \overline{x}$ 是 $m$ 的根。</li>
+<li>加法按系数逐项模 $p$；乘法先做多项式乘法，再对 $m(x)$ 取模。</li>
+</ol>
+<p><strong>不可约多项式的存在性</strong>：$\mathbb{F}_p[x]$ 中<strong>首一</strong>（monic）$d$ 次不可约多项式的个数为</p>
+<p>$$
+N_p(d) = \frac{1}{d}\sum_{k \mid d} \mu(k) \cdot p^{d/k}
+$$</p>
+<p>其中 $\mu$ 是 Möbius 函数。这保证了对任意 $d \geq 1$，不可约多项式都存在。</p>
+<p><strong>例</strong>：$\mathbb{F}_4 = \mathbb{F}_2[x]/(x^2 + x + 1)$。设 $\alpha$ 为 $x^2 + x + 1$ 的根，则 $\alpha^2 = \alpha + 1$（在 $\mathbb{F}_2$ 中 $-1 = 1$）。四个元素为 ${0, 1, \alpha, \alpha+1}$。</p>
+<h3 id="循环乘法群"><a class="header" href="#循环乘法群">循环乘法群</a></h3>
+<p><strong>定理</strong>：有限域的乘法群 $\mathbb{F}_{p^d}^*$ 是循环群，阶为 $p^d - 1$。</p>
+<p>这意味着存在<strong>本原元</strong>（primitive element）$g \in \mathbb{F}_{p^d}^*$ 使得</p>
+<p>$$
+\mathbb{F}_{p^d}^* = {g^0, g^1, \dots, g^{p^d - 2}}
+$$</p>
+<p>循环性在密码学和编码理论中有深远应用：离散对数问题（DLP）、伪随机数生成、纠错码的构造都依赖于此。</p>
+<h3 id="特征与素子域"><a class="header" href="#特征与素子域">特征与素子域</a></h3>
+<p>有限域 $\mathbb{F}_{p^d}$ 的<strong>特征</strong>为 $p$。由特征定义：</p>
+<ul>
+<li>$p \cdot a = 0$ 对所有 $a \in \mathbb{F}_{p^d}$ 成立。</li>
+<li>$\mathbb{F}<em>p$ 是 $\mathbb{F}</em>{p^d}$ 的<strong>素子域</strong>（prime subfield），即包含 $1$ 的最小子域。</li>
+<li>$\mathbb{F}_{p^d}$ 作为 $\mathbb{F}_p$-向量空间，维数为 $d$。</li>
+</ul>
+<p>Frobenius 自同态 $\varphi: x \mapsto x^p$ 是 $\mathbb{F}_{p^d}$ 上的重要结构映射。其 $d$ 次迭代 $\varphi^d = \mathrm{id}$，不动点恰好是 $\mathbb{F}_p$ 中的元素。</p>
+<hr />
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<p>oCAS 的有限域实现在 <code>ocas-domain/src/finite_field.rs</code> 中，支持素域 $\mathbb{Z}/p\mathbb{Z}$。扩展域 $\mathbb{F}_{p^d}$ 通过 <code>AlgebraicExtension&lt;FiniteField&gt;</code> 实现（见 <code>ocas-domain/src/algebraic.rs</code>）。</p>
+<h3 id="核心结构体"><a class="header" href="#核心结构体">核心结构体</a></h3>
+<p><strong><code>FiniteField</code></strong> 表示一个素域 $\mathbb{F}_p$：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct FiniteField {
+    prime: BigInt,
+    prime_minus_two: BigInt,  // 缓存 p-2，用于 Fermat 求逆
+    #[cfg(feature = "gmp")]
+    prime_gmp: rug::Integer,  // GMP 后端加速模运算
+    #[cfg(feature = "gmp")]
+    prime_minus_two_gmp: rug::Integer,
+}
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li><code>prime</code> 字段存储模数 $p$，使用 <code>num-bigint</code> 的任意精度整数。</li>
+<li><code>prime_minus_two</code> 在构造时预计算，避免每次求逆时重复计算。</li>
+<li>启用 <code>gmp</code> feature 时，额外缓存 GMP 表示以利用 <code>rug</code> 的原生模幂。</li>
+</ul>
+<p><strong><code>FiniteFieldElement</code></strong> 表示域中元素：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct FiniteFieldElement {
+    value: BigInt,  // 始终保持在 [0, p-1] 范围内
+}
+<span class="boring">}</span></code></pre></pre>
+<p>元素始终以<strong>规范代表元</strong>（canonical representative）存储——即 $[0, p-1]$ 范围内的非负整数。这保证了语义相等即结构相等（<code>PartialEq</code> 直接比较值），无需每次比较时取模。</p>
+<h3 id="构造与元素创建"><a class="header" href="#构造与元素创建">构造与元素创建</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 创建 F_7
+let f = FiniteField::new(BigInt::from(7));
+
+// 从任意整数创建元素（自动归约到 [0, p-1]）
+let a = f.element(10);   // a = 10 mod 7 = 3
+let b = f.element(-3);   // b = -3 mod 7 = 4
+<span class="boring">}</span></code></pre></pre>
+<p><code>element()</code> 方法使用 <code>mod_floor</code>（而非简单的 <code>%</code>），确保负数也被正确映射到 $[0, p-1]$。</p>
+<h3 id="算术运算"><a class="header" href="#算术运算">算术运算</a></h3>
+<p>所有运算通过 <code>Domain</code> trait 统一接口：</p>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>方法</th><th>实现策略</th></tr></thead><tbody>
+<tr><td>加法</td><td><code>f.add(&amp;a, &amp;b)</code></td><td>$(a + b) \bmod p$</td></tr>
+<tr><td>减法</td><td><code>f.sub(&amp;a, &amp;b)</code></td><td>$(a - b) \bmod p$（使用 <code>mod_floor</code> 处理负数）</td></tr>
+<tr><td>乘法</td><td><code>f.mul(&amp;a, &amp;b)</code></td><td>$(a \cdot b) \bmod p$</td></tr>
+<tr><td>取反</td><td><code>f.neg(&amp;a)</code></td><td>$(-a) \bmod p$</td></tr>
+<tr><td>求逆</td><td><code>f.inv(&amp;a)</code></td><td>$a^{p-2} \bmod p$（Fermat 小定理）；$a = 0$ 时返回 <code>None</code></td></tr>
+<tr><td>除法</td><td><code>f.div(&amp;a, &amp;b)</code></td><td>$a \cdot b^{-1}$；$b = 0$ 时返回 <code>None</code></td></tr>
+<tr><td>幂运算</td><td><code>f.pow(&amp;a, n)</code></td><td>快速模幂（二进制取幂）</td></tr>
+</tbody></table>
+</div>
+<p><strong>求逆实现细节</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn inv(&amp;self, a: &amp;FiniteFieldElement) -&gt; Option&lt;FiniteFieldElement&gt; {
+    if a.value.is_zero() {
+        return None;  // 零没有逆元
+    }
+    // Fermat: a^(p-2) ≡ a^{-1} (mod p)
+    Some(self.normalize(a.value.modpow(&amp;self.prime_minus_two, &amp;self.prime)))
+}
+<span class="boring">}</span></code></pre></pre>
+<p>使用 Fermat 小定理而非扩展 Euclid 算法，因为 <code>modpow</code> 的二进制取幂只需 $O(\log p)$ 次乘法，且实现简单。当启用 GMP 后端时，<code>rug::Integer::pow_mod</code> 使用底层 GMP 的高度优化实现。</p>
+<h3 id="euclideandomain-实现"><a class="header" href="#euclideandomain-实现">EuclideanDomain 实现</a></h3>
+<p>有限域同时实现了 <code>EuclideanDomain</code> trait，但域上的欧几里得除法是退化的：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 域上除法总是精确的，余数恒为零
+fn div_rem(&amp;self, a, b) -&gt; Option&lt;(Self::Element, Self::Element)&gt; {
+    self.div(a, b).map(|q| (q, self.zero()))
+}
+
+// 域上的 GCD：两者均为零时返回 0，否则返回 1
+fn gcd(&amp;self, a, b) -&gt; Self::Element {
+    if self.is_zero(a) &amp;&amp; self.is_zero(b) {
+        self.zero()
+    } else {
+        self.one()
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这是因为域中每个非零元素都是<strong>单位</strong>（unit），因此 GCD 的概念退化为平凡情况。</p>
+<h3 id="扩展域-mathbbf_pd"><a class="header" href="#扩展域-mathbbf_pd">扩展域 $\mathbb{F}_{p^d}$</a></h3>
+<p>通过 <code>AlgebraicExtension&lt;FiniteField&gt;</code> 构造：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicExtension, Domain, FiniteField};
+use num_bigint::BigInt;
+
+// 构造 F_4 = F_2[x]/(x^2 + x + 1)
+let f2 = FiniteField::new(BigInt::from(2));
+let f4 = AlgebraicExtension::new(
+    f2,
+    vec![
+        f2.element(1),  // 常数项
+        f2.element(1),  // x 系数
+        f2.element(1),  // x^2 系数（首项）
+    ],
+);
+let alpha = f4.alpha();  // α = x mod (x^2+x+1)
+// α^2 = α + 1（在 F_2 中）
+let alpha_sq = f4.mul(&amp;alpha, &amp;alpha);
+<span class="boring">}</span></code></pre></pre>
+<p><code>AlgebraicElement&lt;E&gt;</code> 内部用系数向量表示，按升幂排列、尾部零裁剪：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct AlgebraicElement&lt;E&gt; {
+    coeffs: Vec&lt;E&gt;,  // [a_0, a_1, ..., a_{d-1}] 表示 a_0 + a_1*α + ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>求逆使用<strong>扩展 Euclid 算法</strong>（在基域的稠密多项式上自包含实现），求得 $s(x) \cdot a(x) + t(x) \cdot m(x) = 1$，则 $s(x) \bmod m(x) = a(x)^{-1}$。</p>
+<hr />
+<h2 id="进阶话题"><a class="header" href="#进阶话题">进阶话题</a></h2>
+<h3 id="数论变换ntt与快速多项式乘法"><a class="header" href="#数论变换ntt与快速多项式乘法">数论变换（NTT）与快速多项式乘法</a></h3>
+<p>NTT 是 FFT 在有限域上的类比。标准 FFT 在复数域 $\mathbb{C}$ 上使用单位根 $\omega_n = e^{2\pi i/n}$，NTT 则在 $\mathbb{F}_p$ 上使用<strong>模 $p$ 的 $n$ 次单位根</strong>。</p>
+<p><strong>存在条件</strong>：$\mathbb{F}_p$ 中存在 $n$ 次本原单位根当且仅当 $n \mid (p - 1)$。这是因为 $\mathbb{F}_p^*$ 是 $p-1$ 阶循环群，$n$ 次单位根存在 $\iff$ $n$ 整除群的阶。</p>
+<p><strong>算法流程</strong>（给定多项式 $f, g \in \mathbb{F}_p[x]$，次数各 $&lt; n$）：</p>
+<ol>
+<li><strong>补零</strong>：将 $f, g$ 的系数向量补到长度 $N = 2^{\lceil \log_2(2n) \rceil}$。</li>
+<li><strong>正变换</strong>：$\hat{f} = \mathrm{NTT}(f)$，$\hat{g} = \mathrm{NTT}(g)$。</li>
+<li><strong>逐点乘</strong>：$\hat{h}_i = \hat{f}_i \cdot \hat{g}_i$（逐分量模 $p$）。</li>
+<li><strong>逆变换</strong>：$h = \mathrm{NTT}^{-1}(\hat{h})$，最后乘以 $N^{-1} \bmod p$。</li>
+</ol>
+<p>总复杂度 $O(N \log N)$，对比朴素卷积的 $O(n^2)$ 和 Karatsuba 的 $O(n^{1.585})$。</p>
+<p><strong>oCAS 中的 NTT 实现</strong>（<code>ocas-poly/src/ntt.rs</code>）：</p>
+<ul>
+<li><strong>算法</strong>：Cooley-Tukey 基 2 DIT（时间抽取），bit-reversal 置换。</li>
+<li><strong>Montgomery 算术</strong>：所有中间值以 Montgomery 形式 $x \cdot R \bmod p$（$R = 2^{64}$）存储，避免昂贵的 <code>u128 % p</code> 运算。入口和出口各做一次转换。</li>
+<li><strong>触发条件</strong>：当多项式系数个数 $\geq 256$（<code>NTT_THRESHOLD</code>，即次数 $\geq 255$）且 $p$ 为 NTT-friendly（$p-1$ 含足够大的 2-幂因子）时自动激活，否则回退到 Karatsuba。</li>
+<li><strong>限制</strong>：当前仅支持能放入 <code>u64</code> 的素数（$p &lt; 2^{64}$，<code>try_ntt_mul_fp</code> 中检查）；Montgomery 约减使用 128 位中间值，$p \leq 2^{63}$ 时可保证不溢出。</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// NTT-friendly 检查
+pub fn is_ntt_friendly(p: u64, n: usize) -&gt; bool {
+    // n 必须整除 p-1
+    if n == 0 { return true; }
+    let pm1 = p - 1;
+    pm1 % (n as u64) == 0
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>NTT-friendly 素数的构造</strong>：实践中常用形如 $p = k \cdot 2^m + 1$ 的素数（如 NTT Prime $998244353 = 119 \cdot 2^{23} + 1$），保证 $2^{23} \mid (p-1)$，从而可处理长度达 $2^{23}$ 的变换。</p>
+<p><strong>Montgomery 乘法</strong>的核心思想是用乘法和右移代替取模：</p>
+<p>$$
+\mathrm{MontMul}(a, b) = a \cdot b \cdot R^{-1} \bmod p
+$$</p>
+<p>其中 $R = 2^{64}$，$R^{-1} \bmod p$ 和 $p' = -p^{-1} \bmod R$ 预计算。乘法步骤为：</p>
+<ol>
+<li>$t = a \cdot b$（128 位中间值）</li>
+<li>$m = (t \bmod R) \cdot p' \bmod R$</li>
+<li>$u = (t + m \cdot p) / R$</li>
+<li>若 $u \geq p$ 则 $u = u - p$</li>
+</ol>
+<p>全程仅用加法、乘法和移位——无昂贵的除法。</p>
+<h3 id="ntt-在多项式-gcd-中的应用"><a class="header" href="#ntt-在多项式-gcd-中的应用">NTT 在多项式 GCD 中的应用</a></h3>
+<p>NTT 不仅加速乘法，还间接加速了多项式 GCD 和因式分解。在 Hensel 提升过程中，大量小系数多项式的乘法是瓶颈，NTT 将其从 $O(n^2)$ 降为 $O(n \log n)$。oCAS 的 <code>DenseUnivariatePolynomial&lt;FiniteField&gt;::mul_ntt</code> 在系数个数 $\geq 256$ 且素数 NTT-friendly 时自动启用 NTT（否则回退 Karatsuba/Schoolbook）；通用 <code>mul</code> 目前仍走 Karatsuba/Schoolbook 路径。</p>
+<hr />
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ol>
+<li><strong>Shoup, V.</strong> <em>A Computational Introduction to Number Theory and Algebra.</em> Cambridge University Press, 2nd edition, 2009. — 第 4–5 章涵盖有限域构造、循环群和不可约多项式。</li>
+<li><strong>Lidl, R. &amp; Niederreiter, H.</strong> <em>Introduction to Finite Fields and Their Applications.</em> Cambridge University Press, 1994. — 有限域理论的经典教材。</li>
+<li><strong>Gathen, J. von zur &amp; Gerhard, J.</strong> <em>Modern Computer Algebra.</em> Cambridge University Press, 3rd edition, 2013. — 第 8 章（快速多项式乘法与 NTT）和第 14 章（有限域算术）。</li>
+<li><strong>Menezes, A., van Oorschot, P. &amp; Vanstone, S.</strong> <em>Handbook of Applied Cryptography.</em> CRC Press, 1996. — 第 2 章涵盖模算术和扩展 Euclid 算法。</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/polynomial-algebra.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/linear-algebra.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/polynomial-algebra.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/linear-algebra.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
