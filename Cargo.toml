@@ -70,7 +70,7 @@ criterion = "0.8"
 proptest = "1.6"
 mimalloc = "0.1"
 rand = "0.9"
-rand_xoshiro = "0.7"
+rand_xoshiro = "0.8"
 
 [profile.release]
 codegen-units = 1
