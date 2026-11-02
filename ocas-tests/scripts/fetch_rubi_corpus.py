@@ -31,9 +31,35 @@ provenance (source URL, digest, seed, sample size). The corpus itself is
 cached under `ocas-tests/data/cache/` and is gitignored; it is never
 committed to the repository.
 
+Optional `--answers-out PATH` (default: off) writes a second TSV for the
+same sampled cases with the reference answer as the fourth column:
+
+    id\\tintegrand\\tvar\\tanswer
+
+`answer` is the fourth top-level comma field of the case line (the
+reference antiderivative). Some Axiom case lines carry an alternative
+answer form as a fifth top-level field; only the fourth field is used, so
+each case has exactly one canonical answer here (the alternatives are not
+merged). A missing fourth field becomes the empty string. A TSV cell
+cannot contain a raw tab or line break, so those characters are replaced
+by a space (the pinned corpus contains none; the replacement is
+defensive). The same deterministic sample is used, so the default run is
+unchanged and the `rubi_1892.tsv` rows are byte-for-byte the same as
+before this flag existed.
+
+If the corpus cache is absent the script tries to download it as before;
+if no source is reachable it prints the fetch instructions and exits 0
+(graceful skip, matching the bench's missing-corpus convention) instead
+of failing on a clean/offline checkout.
+
 Run via uv (or any Python 3.11+; standard library only):
 
     uv run python ocas-tests/scripts/fetch_rubi_corpus.py
+
+Fetch plus answers for the 0.31 attribution tooling:
+
+    uv run python ocas-tests/scripts/fetch_rubi_corpus.py \\
+        --answers-out ocas-tests/data/rubi_1892_answers.tsv
 """
 
 from __future__ import annotations
@@ -257,9 +283,46 @@ def split_top_level(s: str) -> list[str]:
     return parts
 
 
-def parse_cases(text: str, source: str) -> list[tuple[str, str, str]]:
-    """Yield (integrand, var, source) for every case line in a corpus file."""
-    cases: list[tuple[str, str, str]] = []
+def _case_body(s: str) -> str:
+    """Return the body of a case line (`s` starts with `[`).
+
+    The outer brackets are matched with a bracket scan, so the common
+    `[integrand, var, order, answer],` line form (trailing comma) and
+    answers that contain nested `[...]` lists (`HypergeometricPFQ([...])`)
+    both yield a clean body. Falls back to the historical trailing-strip
+    for a line whose brackets do not balance.
+    """
+    depth = 0
+    for i, ch in enumerate(s):
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        if depth == 0 and i > 0:
+            return s[1:i]
+    body = s[1:]
+    if s.endswith("]"):
+        return body[:-1]
+    if s.endswith("],"):
+        return body[:-2]
+    return body
+
+
+def _sanitize_answer(answer: str) -> str:
+    """Make the answer field safe for a single TSV cell.
+
+    The reference answers are single-line Axiom expressions, so this only
+    guards against tabs / carriage returns / line feeds (which would break
+    the TSV row). The pinned corpus has none; replacement is defensive.
+    """
+    for ch in ("\t", "\r", "\n"):
+        answer = answer.replace(ch, " ")
+    return answer.strip()
+
+
+def parse_cases(text: str, source: str) -> list[tuple[str, str, str, str]]:
+    """Yield (integrand, var, answer, source) for every case line."""
+    cases: list[tuple[str, str, str, str]] = []
     for line in text.splitlines():
         s = line.strip()
         if not s.startswith("["):
@@ -273,7 +336,14 @@ def parse_cases(text: str, source: str) -> list[tuple[str, str, str]]:
         integrand, var = fields[0], fields[1]
         if not IDENT_RE.fullmatch(var):
             continue
-        cases.append((integrand, var, source))
+        # The answer is the fourth top-level field of the *clean* case
+        # body. The legacy `body` above keeps a trailing `],` for the
+        # common `[..., answer],` line form, which is harmless for fields
+        # 0/1 (sample selection is unchanged) but would corrupt the last
+        # field; `_case_body` matches the outer brackets instead.
+        clean = split_top_level(_case_body(s))
+        answer = _sanitize_answer(clean[3]) if len(clean) >= 4 else ""
+        cases.append((integrand, var, answer, source))
     return cases
 
 
@@ -312,8 +382,8 @@ def sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
-def load_corpus_zip(path: Path) -> list[tuple[str, str, str]]:
-    cases: list[tuple[str, str, str]] = []
+def load_corpus_zip(path: Path) -> list[tuple[str, str, str, str]]:
+    cases: list[tuple[str, str, str, str]] = []
     with zipfile.ZipFile(path) as z:
         for name in sorted(z.namelist()):
             if not name.endswith(".input"):
@@ -323,8 +393,8 @@ def load_corpus_zip(path: Path) -> list[tuple[str, str, str]]:
     return cases
 
 
-def load_corpus_tarball(path: Path) -> list[tuple[str, str, str]]:
-    cases: list[tuple[str, str, str]] = []
+def load_corpus_tarball(path: Path) -> list[tuple[str, str, str, str]]:
+    cases: list[tuple[str, str, str, str]] = []
     with tarfile.open(path, "r:gz") as t:
         for member in sorted(t.getmembers(), key=lambda m: m.name):
             if not member.isfile() or RUBI_DIR_PREFIX not in member.name:
@@ -344,6 +414,16 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=1892)
     parser.add_argument("--sample-size", type=int, default=1892)
     parser.add_argument("--out", type=Path, default=Path("ocas-tests/data/rubi_1892.tsv"))
+    parser.add_argument(
+        "--answers-out",
+        type=Path,
+        default=None,
+        help=(
+            "also write id\\tintegrand\\tvar\\tanswer TSV using the same "
+            "deterministic sample (off by default; answer is the fourth "
+            "top-level case field, empty when absent)"
+        ),
+    )
     parser.add_argument("--cache-dir", type=Path, default=Path("ocas-tests/data/cache"))
     parser.add_argument("--ignore-digest", action="store_true")
     args = parser.parse_args()
@@ -351,13 +431,20 @@ def main() -> int:
     root = Path(__file__).resolve().parents[2]
     cache_dir = args.cache_dir if args.cache_dir.is_absolute() else root / args.cache_dir
     out_path = args.out if args.out.is_absolute() else root / args.out
+    answers_path = (
+        None
+        if args.answers_out is None
+        else (args.answers_out if args.answers_out.is_absolute() else root / args.answers_out)
+    )
     cache_dir.mkdir(parents=True, exist_ok=True)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    if answers_path is not None:
+        answers_path.parent.mkdir(parents=True, exist_ok=True)
 
     zip_path = cache_dir / "AxiomSyntaxTestFiles.zip"
     digest: str | None = None
     source_url = CORPUS_URL
-    cases: list[tuple[str, str, str]] = []
+    cases: list[tuple[str, str, str, str]] = []
     if zip_path.exists():
         digest = sha256_of(zip_path)
         print(f"using cached corpus {zip_path} (sha256 {digest[:16]}...)")
@@ -368,8 +455,17 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 2
-        cases = load_corpus_zip(zip_path)
+        try:
+            cases = load_corpus_zip(zip_path)
+        except (zipfile.BadZipFile, OSError) as e:
+            print(
+                f"error: cached corpus {zip_path} is unreadable ({e}); "
+                "delete it and rerun to fetch a fresh copy",
+                file=sys.stderr,
+            )
+            return 2
     else:
+        print(f"corpus cache missing at {zip_path}; fetching the pinned corpus")
         try:
             download(CORPUS_URL, zip_path)
         except RuntimeError as e:
@@ -378,8 +474,18 @@ def main() -> int:
             try:
                 download(GITHUB_TARBALL_URL, tar_path)
             except RuntimeError as e2:
-                print(f"error: fallback source also failed: {e2}", file=sys.stderr)
-                return 1
+                print(
+                    f"corpus unavailable: primary source failed ({e}) and "
+                    f"fallback source failed ({e2})",
+                    file=sys.stderr,
+                )
+                print(
+                    "corpus cache is missing; no files were generated. "
+                    "Re-run with network access, or place "
+                    f"{zip_path.name} under {cache_dir}",
+                    file=sys.stderr,
+                )
+                return 0
             digest = sha256_of(tar_path)
             cases = load_corpus_tarball(tar_path)
             source_url = GITHUB_TARBALL_URL
@@ -403,10 +509,11 @@ def main() -> int:
     # Deterministic sampling: shuffle the whole corpus with the fixed seed,
     # convert in order, skip failures, take the first `sample_size` cases.
     seeded_shuffle(cases, args.seed)
-    sampled: list[tuple[str, str, str, str]] = []  # (id, integrand, var, source)
+    # (id, integrand, var, answer, source)
+    sampled: list[tuple[str, str, str, str, str]] = []
     convertible = 0
     skipped = 0
-    for idx, (integrand, var, source) in enumerate(cases):
+    for idx, (integrand, var, answer, source) in enumerate(cases):
         try:
             converted = _Converter(integrand).convert()
         except ConvertError:
@@ -415,7 +522,7 @@ def main() -> int:
         convertible += 1
         if len(sampled) >= args.sample_size:
             continue
-        sampled.append((f"rubi-{idx + 1:05d}", converted, var, source))
+        sampled.append((f"rubi-{idx + 1:05d}", converted, var, answer, source))
 
     print(f"convertible {convertible}, skipped {skipped}, sampled {len(sampled)}")
     if len(sampled) < args.sample_size:
@@ -432,8 +539,18 @@ def main() -> int:
         return 1
 
     with open(out_path, "w", encoding="utf-8", newline="\n") as f:
-        for cid, integrand, var, _src in sampled:
+        for cid, integrand, var, _answer, _src in sampled:
             f.write(f"{cid}\t{integrand}\t{var}\n")
+
+    if answers_path is not None:
+        missing_answers = sum(1 for _cid, _i, _v, answer, _s in sampled if not answer)
+        with open(answers_path, "w", encoding="utf-8", newline="\n") as f:
+            for cid, integrand, var, answer, _src in sampled:
+                f.write(f"{cid}\t{integrand}\t{var}\t{answer}\n")
+        print(
+            f"wrote {answers_path} ({len(sampled)} rows, "
+            f"{missing_answers} empty answers)"
+        )
 
     meta = {
         "seed": args.seed,

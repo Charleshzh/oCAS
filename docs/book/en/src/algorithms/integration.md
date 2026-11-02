@@ -59,6 +59,13 @@ wins. This chapter explains each layer and when the unevaluated
     substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.
 12. **Bounded expansion retry** (0.27.x) — products are distributed over
     sums (64-term budget) and integrated termwise.
+12b. **Dilogarithm reduction** (0.31.0) — the `log_rational` stage just before the
+    heuristic: log-rational integrands `R(x)·log(A(x))` with an affine logarithm
+    argument are reduced through the pole entry
+    `∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)`. Integrands that already carry
+    `polylog(2, u)` are handled in the `special` stage by parts against
+    `d/du Li₂(u) = −log(1−u)/u`. Every emission passes a local numerical
+    self-check; the fragment declines honestly outside it.
 13. **Unevaluated form** — `Integral(expr, var)`.
 
 ---
@@ -178,6 +185,7 @@ are answered directly (definitions match SymPy):
 | `cosh(x)/x` | `Chi(x)` |
 | `sin(x²)` | `√(π/2)·fresnels(√(2/π)·x)` |
 | `cos(x²)` | `√(π/2)·fresnelc(√(2/π)·x)` |
+| `log(1−x)/x` | `−Li₂(x)` (head `polylog(2, ·)`, 0.31.0) |
 
 ```rust
 use ocas::prelude::*;
@@ -188,6 +196,16 @@ let ctx = AtomArena::new(&arena);
 // ∫ exp(-x^2) dx = (√π/2)·erf(x)
 let result = integrate(&ctx, parse(&ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
 ```
+
+**Dilogarithm layer (0.31.0).** `integral/polylog.rs` adds the first
+non-elementary function above the elementary special heads. The A class
+integrates integrands that already carry `polylog(2, u)` by parts against
+`d/du Li₂(u) = −log(1−u)/u`; the B class reduces log-rational integrands
+`R(x)·log(A(x))` with an affine logarithm argument through the pole entry
+`∫ log(u)/(u−β) du = log(u)·log(1−u/β) + Li₂(u/β)`. All candidates pass a
+local numerical self-check (real-domain samples, up to three parameter
+regimes) before they are emitted; shapes outside the fragment decline
+honestly.
 
 ---
 

@@ -69,6 +69,15 @@ pub(crate) fn special_integrate<'a>(
         .or_else(|| trig_integral_family(ctx, &factors, x))
         .or_else(|| fresnel_family(ctx, &factors, x))
         .or_else(|| reduction_families(ctx, &factors, x))
+        // 0.31.0 A class: an integrand that carries `polylog(2, u)` needs the
+        // dilogarithm reduction, not one of the elementary-derivative heads
+        // above (POLYLOG_SPEC_CN.md).
+        .or_else(|| {
+            let AtomNode::Var(var) = x.node() else {
+                return None;
+            };
+            super::polylog::integrate_polylog_head(ctx, expr, *var)
+        })
 }
 
 /// Collect the flat factor list of a product, descending into nested `Mul`s.

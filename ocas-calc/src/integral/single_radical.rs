@@ -1,28 +1,80 @@
-//! Single-radical atomic-layer reduction (0.30.0 Wave 6a) — **shipped
-//! unwired**.
+//! Single-radical atomic-layer reduction (0.30.0 Wave 6a, wired in 0.31.0).
 //!
-//! # Status: experiment asset, not in the pipeline
+//! # Status: in the pipeline (0.31.0)
 //!
-//! The 0.30.0 Wave 6a experiment implemented and measured this stage; the
-//! wiring was reverted because the full-corpus measurement broke hard gates,
-//! and the code is kept (the `coupled.rs` precedent: infrastructure with its
-//! own tests, deliberately not called) as the starting point for 0.31.
-//! Measured on 1892 with the stage wired after `multi_radical`:
+//! The 0.30.0 Wave 6a experiment implemented this stage and measured it with
+//! the wiring enabled; that wiring was reverted because the full-corpus run
+//! broke three gates. 0.31a fixed the branch bug (`rubi-00401`) and added a
+//! two-sheet numeric evidence gate on every emission, then wired the stage
+//! back after `multi_radical`. The 0.30.0 measurement with the stage active:
 //!
 //! - **+29 solved** (radical +18, power-binomial +9, inverse-trig-hyper +2),
 //!   0 regressions — the mechanism itself works;
 //! - **1 wrong answer**, `rubi-00401` (`sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)`):
-//!   the `x = 1/t` substitution's sign/branch handling is incomplete for a
-//!   quotient radicand that carries a branch factor — the emitted answer is
-//!   off by a global sign (oracle rel err 2.0). **Fix this first in 0.31**
-//!   (the refusal gate below is meant to cover exactly this shape and does
-//!   not yet);
+//!   the `x = 1/t` substitution's sign/branch handling was incomplete — the
+//!   emitted answer was off by a global sign (oracle rel err 2.0). **Fixed in
+//!   0.31a** (see the branch-fix section below): the shape is now produced by
+//!   the branch-safe even substitution and every emission is numerically
+//!   verified on both sheets;
 //! - **timeouts 12 → 14** (two shapes pushed past the 10 s per-case budget);
 //! - **wall clock 489 → 523 s**, over the 498 s wave gate (the
 //!   `(a+b·x²)^(4/3)/x` decline spends ~1.07 s in downstream `binomial`;
 //!   newly accepted shapes cost 6–33 ms each plus a few ~1 s declines).
 //!
-//! Re-wiring requires the branch fix plus fresh timeout/wall budgets.
+//! The 0.31.0 re-measurement gates are `solved ≥ +19`, 0 regressions,
+//! timeouts ≤ 14 and wall clock ≤ 538.5 s; the branch bug is fixed and every
+//! answer now passes the two-sheet numeric gate below before it is returned.
+//!
+//! # 0.31a: two-sheet numeric evidence gate
+//!
+//! Every answer produced by [`try_square_slice`], [`try_even_substitution`] or
+//! [`try_reciprocal`] passes [`two_sheet_verified`] before it is returned: the
+//! candidate is differentiated with the project's deterministic 5-point
+//! central stencil and compared with the integrand at real abscissae on
+//! **both** signs of the variable (`−3.1 … 2.6`, non-round so the fragment's
+//! rational factors have no pole there), with deterministic dummy values for
+//! any free parameters. A sheet on which the integrand is real must contribute
+//! a usable abscissa; a candidate needs at least two usable abscissae and
+//! `1e-6` relative agreement. Anything else — a mismatch, too few usable
+//! samples, a candidate that is undefined where the integrand is real —
+//! declines. The gate cannot *prove* an antiderivative, but it makes the
+//! "never emit an unchecked answer" contract structural: in particular it
+//! rejects the 0.30.0 `rubi-00401` failure mode (an answer correct on `x > 0`
+//! and off by a global sign on `x < 0`; the unit tests pin exactly that).
+//!
+//! # 0.31a: the `rubi-00401` branch fix
+//!
+//! `f(x) = sqrt(-1 + 1/x²)/(x·(-1 + x²)²)` has real domain `|x| < 1` and is
+//! odd. Two branch problems had to be separated:
+//!
+//! - The **reciprocal** route `x = 1/t` turns the integrand into
+//!   `−t³/(t²−1)^(3/2)`. The chain solves that with an Euler/Chebyshev
+//!   substitution that is only valid for `t > 1`: after back-substitution the
+//!   answer differentiates back to the integrand on `x > 0` and is wrong on
+//!   `x < 0`. That is the 0.30.0 wrong answer, and the two-sheet gate now
+//!   declines it (the route is kept because it is correct for its own `t > 0`
+//!   fragment; the gate decides per shape).
+//! - The **branch-safe** route is the **even** substitution: `f = x·G(x²)`
+//!   with `v = x²` turns the integrand into
+//!   `(1/2)·sqrt(-1 + v^(−1))·v^(−1)·(-1 + v)^(−2)`. After
+//!   [`clear_inverse_powers`] rewrites `sqrt(-1 + v^(−1))` as
+//!   `sqrt(1−v)·v^(−1/2)` and combines the equal bases, the chain sees the
+//!   single-radical shape `(1/2)·v^(−3/2)·(1−v)^(−3/2)`; its answer,
+//!   back-substituted `v → x²`, is **even in `x`** and therefore correct on
+//!   both sheets. The two-sheet gate confirms it numerically at negative and
+//!   positive samples, and the unit test pins the exact failure mode (the
+//!   emitted answer multiplied by the sheet factor `x·(x²)^(−1/2)` must be
+//!   rejected).
+//!
+//! The clearing pass is exact: `(poly·s^(−m))^k = poly^k·s^(−m·k)` for an
+//! integer `k` (so `(−1 + t^(−2))^(−2)` becomes `t⁴·(1−t²)^(−2)` — the form
+//! the task of §W6a-3 wanted the chain to see) and
+//! `sqrt(poly·s^(−m)) = sqrt(poly)·s^(−m/2)` (so `sqrt(-1 + v^(−1))` becomes
+//! `sqrt(1−v)·v^(−1/2)`); a final pass combines powers of equal bases, and of
+//! affine bases that differ by a numeric constant factor (`−1+v = −(1−v)`),
+//! so `sqrt(1−v)·(−1+v)^(−2)` folds into `(1−v)^(−3/2)`. Both substituted
+//! forms are cleared (the reciprocal one so the chain sees the binomial shape
+//! at all); the gate remains the only authority on what may be emitted.
 //!
 //! Scope: integrands built from **one** radical base `Q^(p/q)` whose radicand
 //! is affine or quadratic, in spellings the existing single-base engines
@@ -52,13 +104,15 @@
 //!   than rewritten through a quotient.
 //!
 //! Everything is refused outside its fragment: a substituted form that still
-//! carries a radical site (W6a-1), a fractional power of the variable alone
-//! (W6a-2/W6a-3, which would let `normalize` fold `(x²)^(3/2)` into `x³` —
-//! `|x|³ ≠ x³`, the branch error `fold_linear_squares` documents), a
-//! non-polynomial radicand, a radicand that is provably not real anywhere in
-//! the substituted domain (`a + c·v` with numeric `a, c ≤ 0`: there would be
-//! no real abscissa to verify an antiderivative at, and no complex branch is
-//! modelled here), a residue, or a budget overflow.
+//! carries a radical site (W6a-1) or whose inverse powers cannot be cleared
+//! into plain monomial factors (W6a-2/W6a-3), a fractional power of the
+//! variable alone in the **emitted** answer (W6a-2/W6a-3, which `normalize`
+//! could otherwise fold — `|x|³ ≠ x³`, the branch error
+//! `fold_linear_squares` documents), a non-polynomial radicand, a radicand
+//! that is provably not real anywhere in the substituted domain, a residue, a
+//! budget overflow, or — the 0.31a hard gate — a candidate that does not
+//! differentiate back to the integrand on both sheets at the deterministic
+//! samples (see the two-sheet gate section above).
 //!
 //! **Measured.** The stage runs after every dedicated single-radical engine
 //! (`rules`, [`sqrt_quadratic`](super::sqrt_quadratic),
@@ -77,10 +131,6 @@
 //! It declines outright inside a `chain::parts_active()` scope (the Wave-4a
 //! parts discipline) and charges a deterministic work budget so a decline
 //! stays cheap.
-
-// Deliberately unwired (see the status note above): the only callers are the
-// unit tests, so the plain-lib target reports dead code.
-#![allow(dead_code)]
 
 use ocas_atom::normalize::normalize;
 use ocas_atom::{Atom, AtomArena, AtomNode, Symbol};
@@ -102,6 +152,25 @@ const MAX_SR_WORK: u64 = 100_000;
 
 thread_local! {
     static SR_WORK: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+    /// Nesting depth of [`integrate_single_radical`] on this thread.
+    ///
+    /// The stage hands its substituted forms back to the chain, whose stages
+    /// may reach this one again. Without a guard a substitution cascade
+    /// (reciprocal -> even -> reciprocal ...) can turn a fast decline into a
+    /// multi-second grind: the 0.31a re-measurement showed exactly that on
+    /// `1/(x*(a+b*x^2)^2*(c+d*x^2)^(5/2))` and two siblings, which hit the
+    /// 10 s per-case budget. A nested entry declines immediately — the outer
+    /// call already owns the fragment.
+    static SR_ACTIVE: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+/// Decrements [`SR_ACTIVE`] when the stage entry returns (panic-safe).
+struct ActiveGuard;
+
+impl Drop for ActiveGuard {
+    fn drop(&mut self) {
+        SR_ACTIVE.with(|c| c.set(c.get().saturating_sub(1)));
+    }
 }
 
 /// Reset the work budget; called by the public stage entry point.
@@ -487,6 +556,12 @@ fn has_neg_power(expr: Atom<'_>, var: Symbol) -> bool {
 /// `(x²)^(3/2)` into `x³`, which is `|x|³` only for `x ≥ 0`, so such an answer
 /// must never be emitted. A base that is affine in `var` with a **non-zero**
 /// intercept (`a + c·var`) — or any other non-monomial shape — is safe.
+///
+/// A `sqrt` **head** is always safe here: `normalize`'s power-of-a-power fold
+/// needs a numeric integer outer exponent and a `Pow` base, so a sqrt head is
+/// never folded (`sqrt(x²)` stays `sqrt(x²)` and evaluates to `|x|`, which is
+/// exactly the branch the original radicand had). Only fractional `Pow` nodes
+/// can fold and remain gated by [`safe_power_base`].
 fn fractional_bases_safe<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> bool {
     match expr.node() {
         AtomNode::Pow(b, e) => {
@@ -499,16 +574,7 @@ fn fractional_bases_safe<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol
             }
             fractional_bases_safe(ctx, *b, var) && fractional_bases_safe(ctx, *e, var)
         }
-        AtomNode::Fun(name, args) => {
-            if name.as_str() == "sqrt"
-                && let Some(b) = args.first()
-                && !is_constant(*b, var)
-                && !safe_power_base(ctx, *b, var)
-            {
-                return false;
-            }
-            args.iter().all(|a| fractional_bases_safe(ctx, *a, var))
-        }
+        AtomNode::Fun(_, args) => args.iter().all(|a| fractional_bases_safe(ctx, *a, var)),
         AtomNode::Add(args) | AtomNode::Mul(args) => {
             args.iter().all(|a| fractional_bases_safe(ctx, *a, var))
         }
@@ -587,6 +653,406 @@ fn split_int_powers<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>) -> Atom<'a> {
     }
 }
 
+// =========================================================================
+// Inverse-power clearing for the substituted forms (0.31a W6a branch fix)
+// =========================================================================
+
+/// Largest denominator degree a substituted form may hide before the clearing
+/// pass gives up (a larger one costs more than the chain can use).
+const MAX_INVERSE_POWER: u32 = 16;
+
+/// Decompose an expression that is a polynomial in `var^(−1)` as
+/// `poly · var^(−m)` with `poly` free of negative powers of `var`.
+///
+/// `None` when the decomposition cannot be guaranteed (a non-integer power, a
+/// non-constant function head, or a denominator degree beyond
+/// [`MAX_INVERSE_POWER`]). The caller then leaves the form uncleared and the
+/// chain declines it — the pre-0.31a behaviour.
+fn split_inverse_power<'a>(
+    ctx: &'a AtomArena<'a>,
+    expr: Atom<'a>,
+    var: Symbol,
+) -> Option<(Atom<'a>, u32)> {
+    let var_atom = ctx.var(var.as_str());
+    match expr.node() {
+        AtomNode::Num(_) | AtomNode::Var(_) => Some((expr, 0)),
+        AtomNode::Pow(b, e) => {
+            let (p, q) = rat_exponent(*e)?;
+            if q != 1 {
+                return None;
+            }
+            // A bare `var^(−m)` is the inverse power itself. Handling it
+            // before the recursive call is what keeps the decomposition
+            // invariant (`poly` has no negative powers) for a base that is a
+            // monomial of the variable.
+            if let AtomNode::Var(v) = b.node()
+                && *v == var
+            {
+                if p >= 0 {
+                    return Some((expr, 0));
+                }
+                let m = u32::try_from(p.checked_neg()?).ok()?;
+                if m > MAX_INVERSE_POWER {
+                    return None;
+                }
+                return Some((ctx.num(1), m));
+            }
+            let (poly, m) = split_inverse_power(ctx, *b, var)?;
+            if m == 0 {
+                // No inverse power in the base: leave the power untouched
+                // (it may still be a positive monomial power, which the
+                // chain handles as a factor).
+                return Some((expr, 0));
+            }
+            // `(poly·var^(−m))^k = poly^k · var^(−m·k)`.
+            let moved = i64::from(m).checked_mul(p)?.checked_neg()?;
+            let powed = ctx.pow(poly, *e);
+            if moved >= 0 {
+                Some((ctx.mul(&[powed, int_pow(ctx, var_atom, moved)]), 0))
+            } else {
+                Some((powed, u32::try_from(moved.checked_neg()?).ok()?))
+            }
+        }
+        AtomNode::Mul(args) => {
+            let mut poly = ctx.num(1);
+            let mut m: u32 = 0;
+            for a in args.iter() {
+                let (p, mi) = split_inverse_power(ctx, *a, var)?;
+                poly = ctx.mul(&[poly, p]);
+                m = m.checked_add(mi)?;
+                if m > MAX_INVERSE_POWER {
+                    return None;
+                }
+            }
+            Some((poly, m))
+        }
+        AtomNode::Add(args) => {
+            let mut parts: Vec<(Atom<'a>, u32)> = Vec::with_capacity(args.len());
+            let mut m: u32 = 0;
+            for a in args.iter() {
+                let part = split_inverse_power(ctx, *a, var)?;
+                m = m.max(part.1);
+                parts.push(part);
+            }
+            if m > MAX_INVERSE_POWER {
+                return None;
+            }
+            let kids: Vec<Atom<'a>> = parts
+                .into_iter()
+                .map(|(p, mi)| {
+                    if mi == m {
+                        p
+                    } else {
+                        ctx.mul(&[p, int_pow(ctx, var_atom, i64::from(m - mi))])
+                    }
+                })
+                .collect();
+            Some((ctx.add(&kids), m))
+        }
+        AtomNode::Fun(_, _) => {
+            if is_constant(expr, var) {
+                Some((expr, 0))
+            } else {
+                None
+            }
+        }
+    }
+}
+
+/// `var^(p/q)` (`q > 0`) as a product of an integer power and one fractional
+/// power, folded for the degenerate exponents.
+fn var_rational_power<'a>(ctx: &'a AtomArena<'a>, var: Symbol, p: i64, q: i64) -> Atom<'a> {
+    let var_atom = ctx.var(var.as_str());
+    let g = gcd_i64(p, q).max(1);
+    let (p, q) = (p / g, q.abs() / g);
+    let (quo, rem) = (p.div_euclid(q), p.rem_euclid(q));
+    let fraction = if rem == 0 {
+        None
+    } else {
+        Some(ctx.pow(var_atom, rat_atom(ctx, rem, q)))
+    };
+    match (quo, fraction) {
+        (0, Some(f)) => f,
+        (0, None) => ctx.num(1),
+        (_, None) => int_pow(ctx, var_atom, quo),
+        (_, Some(f)) => ctx.mul(&[int_pow(ctx, var_atom, quo), f]),
+    }
+}
+
+/// Exact rewrite of the inverse powers a substituted form can hide:
+///
+/// - `sqrt(poly·var^(−m)) = sqrt(poly)·var^(−m/2)`,
+/// - `(poly·var^(−m))^(−k) = poly^(−k)·var^(m·k)` for `k > 0`,
+///
+/// with `poly` free of negative powers. All inverse powers leave the base and
+/// survive only as a plain monomial factor (`var^(−3/2)`, `t⁴`), which the
+/// chain's single-radical engines handle — the W6a forms the engines declined
+/// were the hidden ones (`sqrt(−1 + v^(−1))`, `(−1 + t^(−2))^(−2)`).
+fn clear_inverse_power_node<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+    match expr.node() {
+        AtomNode::Fun(name, args) if name.as_str() == "sqrt" && args.len() == 1 => {
+            let rad = args[0];
+            if has_neg_power(rad, var)
+                && let Some((poly, m)) = split_inverse_power(ctx, rad, var)
+            {
+                let root = ctx.pow(
+                    clear_inverse_power_node(ctx, poly, var),
+                    rat_atom(ctx, 1, 2),
+                );
+                let mono = var_rational_power(ctx, var, -i64::from(m), 2);
+                return ctx.mul(&[root, mono]);
+            }
+            ctx.fun("sqrt", &[clear_inverse_power_node(ctx, rad, var)])
+        }
+        AtomNode::Pow(b, e) => {
+            if has_neg_power(*b, var)
+                && let Some((p, q)) = rat_exponent(*e)
+                && q == 1
+                && p < 0
+                && let Some((poly, m)) = split_inverse_power(ctx, *b, var)
+            {
+                let powed = ctx.pow(clear_inverse_power_node(ctx, poly, var), *e);
+                if let Some(neg_p) = p.checked_neg()
+                    && let Some(mono_exp) = i64::from(m).checked_mul(neg_p)
+                {
+                    let mono = int_pow(ctx, ctx.var(var.as_str()), mono_exp);
+                    return ctx.mul(&[powed, mono]);
+                }
+            }
+            ctx.pow(
+                clear_inverse_power_node(ctx, *b, var),
+                clear_inverse_power_node(ctx, *e, var),
+            )
+        }
+        AtomNode::Add(args) => {
+            let kids: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| clear_inverse_power_node(ctx, *a, var))
+                .collect();
+            ctx.add(&kids)
+        }
+        AtomNode::Mul(args) => {
+            let kids: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| clear_inverse_power_node(ctx, *a, var))
+                .collect();
+            ctx.mul(&kids)
+        }
+        AtomNode::Fun(name, args) => {
+            let kids: Vec<Atom<'a>> = args
+                .iter()
+                .map(|a| clear_inverse_power_node(ctx, *a, var))
+                .collect();
+            ctx.fun(name.as_str(), &kids)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
+    }
+}
+
+/// Read a factor as `base^exp` with a rational exponent (`sqrt(u)` is
+/// `u^(1/2)`; any other head is not a power factor).
+fn power_factor(atom: Atom<'_>) -> Option<(Atom<'_>, (i64, i64))> {
+    match atom.node() {
+        AtomNode::Fun(name, args) if name.as_str() == "sqrt" && args.len() == 1 => {
+            Some((args[0], (1, 2)))
+        }
+        AtomNode::Pow(b, e) => {
+            let exp = rat_exponent(*e)?;
+            Some((*b, exp))
+        }
+        _ => None,
+    }
+}
+
+/// `e1 + e2` for reduced rational exponents (`q > 0`).
+fn add_exponents((p1, q1): (i64, i64), (p2, q2): (i64, i64)) -> Option<(i64, i64)> {
+    let p = p1.checked_mul(q2)?.checked_add(p2.checked_mul(q1)?)?;
+    let q = q1.checked_mul(q2)?;
+    let g = gcd_i64(p, q).max(1);
+    Some((p / g, q / g))
+}
+
+/// `base^e` for a reduced rational exponent, folded for the degenerate cases.
+fn pow_with_exp<'a>(ctx: &'a AtomArena<'a>, base: Atom<'a>, (p, q): (i64, i64)) -> Atom<'a> {
+    if p == 0 {
+        ctx.num(1)
+    } else if q == 1 {
+        int_pow(ctx, base, p)
+    } else {
+        ctx.pow(base, rat_atom(ctx, p, q))
+    }
+}
+
+/// Numeric affine coefficients of `atom` in `var`, or `None`.
+fn affine_rational<'a>(
+    ctx: &'a AtomArena<'a>,
+    atom: Atom<'a>,
+    var: Symbol,
+) -> Option<((i64, i64), (i64, i64))> {
+    let (slope, intercept) = linear_form(ctx, atom, var)?;
+    let slope = rat_of(normalize(ctx, slope))?;
+    let intercept = rat_of(normalize(ctx, intercept))?;
+    Some((slope, intercept))
+}
+
+/// `(c_num/c_den)^k` for an integer `k` (small caps: the cleared forms keep
+/// their coefficients tiny).
+fn rat_pow_int(c_num: i64, c_den: i64, k: i64) -> Option<(i64, i64)> {
+    if k == 0 {
+        return Some((1, 1));
+    }
+    if c_den == 0 {
+        return None;
+    }
+    let e = k.unsigned_abs();
+    if e > 8 {
+        return None;
+    }
+    let (mut num, mut den) = (1i64, 1i64);
+    for _ in 0..e {
+        num = num.checked_mul(c_num)?;
+        den = den.checked_mul(c_den)?;
+    }
+    if k < 0 {
+        std::mem::swap(&mut num, &mut den);
+    }
+    Some((num, den))
+}
+
+/// Merge `b1^e1 · b2^e2` into a single factor when `b1` and `b2` are equal or
+/// differ by a numeric constant factor (`−1+v = −(1−v)`); the latter is the
+/// bridge between the `sqrt` numerator and the rational factor of W6a-2's
+/// substituted form.
+fn merge_power_factors<'a>(
+    ctx: &'a AtomArena<'a>,
+    b1: Atom<'a>,
+    e1: (i64, i64),
+    b2: Atom<'a>,
+    e2: (i64, i64),
+    var: Symbol,
+) -> Option<Atom<'a>> {
+    if b1 == b2 {
+        return Some(pow_with_exp(ctx, b1, add_exponents(e1, e2)?));
+    }
+    let ((s1, i1), (s2, i2)) = (
+        affine_rational(ctx, b1, var)?,
+        affine_rational(ctx, b2, var)?,
+    );
+    if s1.0 == 0 || s2.0 == 0 {
+        return None;
+    }
+    // `b2 = c·b1` with `c = s2/s1`. The intercept must follow the same
+    // constant, `i2 = c·i1`; with `s = a/q` and `i = a_i/q_i` this is the
+    // integer identity `a_i2·q2·a1·q_i1 == a2·q1·a_i1·q_i2`.
+    let lhs = i128::from(i2.0)
+        .checked_mul(i128::from(s2.1))?
+        .checked_mul(i128::from(s1.0))?
+        .checked_mul(i128::from(i1.1))?;
+    let rhs = i128::from(s2.0)
+        .checked_mul(i128::from(s1.1))?
+        .checked_mul(i128::from(i1.0))?
+        .checked_mul(i128::from(i2.1))?;
+    if lhs != rhs {
+        return None;
+    }
+    // `c = (s2.0·s1.1)/(s2.1·s1.0)`, reduced to small integers.
+    let c_num = s2.0.checked_mul(s1.1)?;
+    let c_den = s2.1.checked_mul(s1.0)?;
+    let g = gcd_i64(c_num, c_den).max(1);
+    let (c_num, c_den) = (c_num / g, c_den / g);
+    if c_num == 0 {
+        return None;
+    }
+    let (p2, q2) = e2;
+    if q2 != 1 {
+        // A fractional power of the numeric factor `c` would need `c` to be a
+        // perfect power; not modelled, so the pair stays unmerged.
+        return None;
+    }
+    let (coeff_num, coeff_den) = rat_pow_int(c_num, c_den, p2)?;
+    let merged = pow_with_exp(ctx, b1, add_exponents(e1, e2)?);
+    if coeff_num == coeff_den {
+        Some(merged)
+    } else {
+        Some(ctx.mul(&[rat_atom(ctx, coeff_num, coeff_den), merged]))
+    }
+}
+
+/// Flatten a product into its factors (a cleared radicand rewrites a factor
+/// into a product, so the merge below must see through them).
+fn push_product_factors<'a>(atom: Atom<'a>, out: &mut Vec<Atom<'a>>) {
+    match atom.node() {
+        AtomNode::Mul(args) => {
+            for a in args.iter() {
+                push_product_factors(*a, out);
+            }
+        }
+        _ => out.push(atom),
+    }
+}
+
+/// Combine powers of equal (or numeric-multiple) bases in every product, so a
+/// cleared form reads as one power per base: `v^(−1/2)·v^(−1) → v^(−3/2)`,
+/// `sqrt(1−v)·(−1+v)^(−2) → (1−v)^(−3/2)`.
+fn combine_powers<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+    match expr.node() {
+        AtomNode::Mul(args) => {
+            let mut factors: Vec<Atom<'a>> = Vec::new();
+            for a in args.iter() {
+                push_product_factors(combine_powers(ctx, *a, var), &mut factors);
+            }
+            // A merge can expose a new pair (`c·b^e1` next to `b^e2`), so
+            // repeat until the list is stable; the node budget bounds the list.
+            for _ in 0..8 {
+                let mut merged = false;
+                let mut i = 0;
+                while i < factors.len() {
+                    let mut j = i + 1;
+                    while j < factors.len() {
+                        if let (Some((b1, e1)), Some((b2, e2))) =
+                            (power_factor(factors[i]), power_factor(factors[j]))
+                            && let Some(m) = merge_power_factors(ctx, b1, e1, b2, e2, var)
+                        {
+                            factors[i] = m;
+                            factors.remove(j);
+                            merged = true;
+                            continue;
+                        }
+                        j += 1;
+                    }
+                    i += 1;
+                }
+                if !merged {
+                    break;
+                }
+            }
+            match factors.len() {
+                0 => ctx.num(1),
+                1 => factors[0],
+                _ => ctx.mul(&factors),
+            }
+        }
+        AtomNode::Add(args) => {
+            let kids: Vec<Atom<'a>> = args.iter().map(|a| combine_powers(ctx, *a, var)).collect();
+            ctx.add(&kids)
+        }
+        AtomNode::Pow(b, e) => ctx.pow(combine_powers(ctx, *b, var), combine_powers(ctx, *e, var)),
+        AtomNode::Fun(name, args) => {
+            let kids: Vec<Atom<'a>> = args.iter().map(|a| combine_powers(ctx, *a, var)).collect();
+            ctx.fun(name.as_str(), &kids)
+        }
+        AtomNode::Num(_) | AtomNode::Var(_) => expr,
+    }
+}
+
+/// Clear the inverse powers of the substitution variable from a W6a-2/W6a-3
+/// substituted form, then combine equal-base powers (see
+/// [`clear_inverse_power_node`] and [`combine_powers`]).
+fn clear_inverse_powers<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Atom<'a> {
+    let cleared = clear_inverse_power_node(ctx, expr, var);
+    normalize(ctx, combine_powers(ctx, cleared, var))
+}
+
 /// W6a-2: `f(x) = x·G(x²)` → `G(v)/2` with `v = x²`.
 fn try_even_substitution<'a>(
     ctx: &'a AtomArena<'a>,
@@ -603,6 +1069,12 @@ fn try_even_substitution<'a>(
     let expr = normalize(ctx, fold_pow_pow(ctx, split_int_powers(ctx, expr)));
     let even = odd_split(ctx, expr, var, v)?;
     let v_form = normalize(ctx, ctx.mul(&[rat_atom(ctx, 1, 2), even]));
+    // 0.31a: the substituted form can hide inverse powers of `v` inside a
+    // radicand (`sqrt(-1 + v^(−1))`) or an inverse integer power of a sum
+    // (`(−1 + v)^(−2)`); clearing them exposes the single-radical shape the
+    // chain owns (and is what solves the 0.30.0 `rubi-00401` branch case
+    // without the reciprocal route's sheet loss).
+    let v_form = clear_inverse_powers(ctx, v_form, v_sym);
     if !has_site(v_form, v_sym)
         || radicand_has_neg_power(v_form, v_sym)
         || provably_nonpositive_radicand(ctx, v_form, v_sym)
@@ -613,12 +1085,17 @@ fn try_even_substitution<'a>(
         return None;
     }
     let anti = integrate_raw(ctx, v_form, v_sym, 0, true, 0, 0);
-    if contains_integral(anti) || !fractional_bases_safe(ctx, anti, v_sym) {
+    if contains_integral(anti) {
         return None;
     }
     let back = replace_symbol(ctx, anti, v_sym, ctx.pow(ctx.var(var.as_str()), ctx.num(2)));
     let back = normalize(ctx, back);
-    if node_count(back) > MAX_REENTRY_NODES {
+    // The branch gate is applied to the **back-substituted** answer: those are
+    // the bases the emitted answer contains (`sqrt(v)` has become `sqrt(x²)`,
+    // which evaluates to `|x|` and which `normalize` does not fold), whereas
+    // checking the v-form would reject the safe `v^(1/2)` factor the even
+    // substitution legitimately produces.
+    if !fractional_bases_safe(ctx, back, var) || node_count(back) > MAX_REENTRY_NODES {
         return None;
     }
     Some(back)
@@ -701,6 +1178,12 @@ fn try_reciprocal<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol) -> Op
             ),
         ),
     );
+    // 0.31a: clear inverse powers hidden in an inverse integer power of a sum
+    // (`(−1 + t^(−2))^(−2) → t⁴·(1 − t²)^(−2)`). The chain can then see the
+    // binomial shape `−t³·(t²−1)^(−3/2)`; the two-sheet gate still decides
+    // whether the answer is correct on **both** sheets (the 0.30.0
+    // `rubi-00401` answer was not: the chain's Euler route is `t > 1` only).
+    let t_form = clear_inverse_powers(ctx, t_form, t_sym);
     if radicand_has_neg_power(t_form, t_sym)
         || !has_site(t_form, t_sym)
         || provably_nonpositive_radicand(ctx, t_form, t_sym)
@@ -780,18 +1263,248 @@ fn aux_symbol(expr: Atom<'_>, var: Symbol, candidates: &[&str]) -> Option<Symbol
 }
 
 // =========================================================================
+// Two-sheet numeric evidence gate (0.31a hard gate)
+// =========================================================================
+
+/// Deterministic dummy values for the free parameters of the integrand (the
+/// same convention as `kernel_subst`'s certainty gate: non-round positives, so
+/// a formal mismatch cannot cancel accidentally at a sample).
+const SHEET_PARAMS: [f64; 10] = [0.7, 1.3, 0.37, 0.91, 1.73, 0.53, 1.11, 0.83, 1.47, 0.61];
+
+/// Abscissae of the two-sheet gate: non-round values on **both** signs of the
+/// variable, including the larger negative magnitudes an inverse-radicand
+/// (`a + b/x`) domain needs. Deliberately not small integers, so the
+/// fragment's rational factors (`x`, `x² − 1`, `d + e·x`, …) have no pole
+/// there.
+const SHEET_SAMPLES: [f64; 12] = [
+    -3.1, -2.6, -1.7, -0.85, -0.6, -0.3, 0.3, 0.6, 0.85, 1.3, 1.7, 2.6,
+];
+
+/// Relative tolerance of the two-sheet gate. The project's numerical oracle
+/// rejects above `1e-4`; this gate is two orders stricter because a branch
+/// error is an O(1) relative error, not a rounding question.
+const SHEET_REL_TOL: f64 = 1e-6;
+/// Usable abscissae a candidate needs before it may be emitted.
+const SHEET_MIN_SAMPLES: usize = 2;
+/// Half-width of the 5-point central stencil, relative to `max(1, |x|)` (the
+/// project's numerical-oracle convention).
+const SHEET_STEP: f64 = 1e-4;
+
+/// `f64` evaluator shared by the two-sheet gate and the unit tests.
+///
+/// Models every head an emitted answer can contain: `log` as `ln|v|` (the real
+/// antiderivative convention), `sqrt`, `atan`, `asin`, `atanh`, `asinh` (plus
+/// the other elementary heads the chain can hand back), and integer/rational
+/// powers. A negative base with a non-integer exponent is not real, so the
+/// sample is reported unusable rather than mis-checked.
+fn eval_f64(expr: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
+    match expr.node() {
+        AtomNode::Num(n) => Some(*n as f64),
+        AtomNode::Var(v) => env.iter().find(|(s, _)| s == v).map(|(_, val)| *val),
+        AtomNode::Add(args) => args
+            .iter()
+            .try_fold(0.0, |acc, a| Some(acc + eval_f64(*a, env)?)),
+        AtomNode::Mul(args) => args
+            .iter()
+            .try_fold(1.0, |acc, a| Some(acc * eval_f64(*a, env)?)),
+        AtomNode::Pow(b, e) => {
+            let base = eval_f64(*b, env)?;
+            let exp = eval_f64(*e, env)?;
+            if !base.is_finite() || !exp.is_finite() {
+                return None;
+            }
+            if exp.fract() == 0.0 && exp.abs() <= 4096.0 {
+                Some(base.powi(exp as i32))
+            } else if base >= 0.0 {
+                Some(base.powf(exp))
+            } else {
+                // Principal branch of a negative base is complex; the real
+                // gate has no evidence at this abscissa.
+                None
+            }
+        }
+        AtomNode::Fun(name, args) => {
+            if args.len() != 1 {
+                return None;
+            }
+            let v = eval_f64(args[0], env)?;
+            Some(match name.as_str() {
+                "log" | "ln" => v.abs().ln(),
+                "sqrt" => v.sqrt(),
+                "exp" => v.exp(),
+                "atan" => v.atan(),
+                "asin" => v.asin(),
+                "acos" => v.acos(),
+                "atanh" => v.atanh(),
+                "asinh" => v.asinh(),
+                "acosh" => v.acosh(),
+                "sin" => v.sin(),
+                "cos" => v.cos(),
+                "tan" => v.tan(),
+                "sinh" => v.sinh(),
+                "cosh" => v.cosh(),
+                "tanh" => v.tanh(),
+                _ => return None,
+            })
+        }
+    }
+}
+
+/// Collect the free symbols of `expr` (excluding the integration variable).
+///
+/// `pi` is deliberately **not** collected: the pipeline emits it as the
+/// mathematical constant, so substituting a dummy for it would scale a correct
+/// answer and reject it. (`e`/`E` stay parameters: the corpus uses `e` as a
+/// free symbol and the parser never turns it into Euler's number. The
+/// imaginary unit `i`/`I` is handled separately by the gate, which declines
+/// shapes carrying it because its evaluator is real-valued only.)
+fn collect_free_symbols(expr: Atom<'_>, var: Symbol, out: &mut Vec<Symbol>) {
+    match expr.node() {
+        AtomNode::Num(_) => {}
+        AtomNode::Var(v) => {
+            if *v != var && v.as_str() != "pi" {
+                out.push(*v);
+            }
+        }
+        AtomNode::Add(args) | AtomNode::Mul(args) | AtomNode::Fun(_, args) => {
+            for a in args.iter() {
+                collect_free_symbols(*a, var, out);
+            }
+        }
+        AtomNode::Pow(b, e) => {
+            collect_free_symbols(*b, var, out);
+            collect_free_symbols(*e, var, out);
+        }
+    }
+}
+
+/// The hard emission gate: differentiate `candidate` numerically and compare
+/// it with `integrand` at deterministic real abscissae on **both** signs of
+/// the variable.
+///
+/// The derivative is the project's 5-point central stencil
+/// (`h = 1e-4·max(1, |x|)`), the same one the numerical oracle and the
+/// `kernel_subst` certainty gate use. Free parameters take the deterministic
+/// [`SHEET_PARAMS`] values.
+///
+/// The gate is conservative in one direction only. It accepts when
+/// - at least [`SHEET_MIN_SAMPLES`] abscissae are usable (the integrand and
+///   every stencil evaluation are finite), and
+/// - every usable abscissa agrees within [`SHEET_REL_TOL`] relative, and
+/// - every sheet on which the integrand is real contributes a usable
+///   abscissa, so a branch error on the negative sheet cannot be hidden by
+///   positive-only samples.
+///
+/// Anything else — a mismatch, too few usable abscissae, a candidate that is
+/// undefined next to an abscissa where the integrand is real — declines. The
+/// gate cannot *prove* an antiderivative, but it guarantees the stage never
+/// emits an unchecked answer; in particular it catches the 0.30.0
+/// `rubi-00401` failure mode (an answer correct on `x > 0` and off by a
+/// global sign on `x < 0`).
+///
+/// Constants: `pi` stays the mathematical constant (substituting a dummy would
+/// scale a correct answer and wrongly reject it); `e`/`E` are sampled as free
+/// parameters (the corpus uses `e` as a symbol); a shape carrying the imaginary
+/// unit (`i`/`I`) declines, because the evaluator is real-valued.
+fn two_sheet_verified(integrand: Atom<'_>, candidate: Atom<'_>, var: Symbol) -> bool {
+    // The gate's evaluator is real-valued: a shape carrying the imaginary unit
+    // cannot be checked by substituting a real dummy for `i`, so it declines
+    // here (the corpus oracle reports such answers as `Indeterminate`, never as
+    // verified).
+    if [integrand, candidate].iter().any(|atom| {
+        contains_symbol(*atom, Symbol::new("i")) || contains_symbol(*atom, Symbol::new("I"))
+    }) {
+        return false;
+    }
+    let mut symbols: Vec<Symbol> = Vec::new();
+    collect_free_symbols(integrand, var, &mut symbols);
+    collect_free_symbols(candidate, var, &mut symbols);
+    symbols.sort_by_key(|s| s.as_str().to_string());
+    symbols.dedup();
+    if symbols.len() > SHEET_PARAMS.len() {
+        // No deterministic dummy assignment left: unverifiable, so declined.
+        return false;
+    }
+    let params: Vec<(Symbol, f64)> = symbols
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (*s, SHEET_PARAMS[i]))
+        .collect();
+    let mut usable = 0usize;
+    let mut usable_neg = 0usize;
+    let mut usable_pos = 0usize;
+    let mut real_neg = 0usize;
+    let mut real_pos = 0usize;
+    for &xv in SHEET_SAMPLES.iter() {
+        let mut env = params.clone();
+        env.push((var, xv));
+        let Some(rhs) = eval_f64(integrand, &env) else {
+            continue;
+        };
+        if !rhs.is_finite() {
+            continue;
+        }
+        if xv < 0.0 {
+            real_neg += 1;
+        } else {
+            real_pos += 1;
+        }
+        let h = SHEET_STEP * xv.abs().max(1.0);
+        let mut stencil = [0.0f64; 4];
+        for (slot, factor) in stencil.iter_mut().zip([-2.0f64, -1.0, 1.0, 2.0]) {
+            if let Some((_, last)) = env.last_mut() {
+                *last = xv + factor * h;
+            }
+            let Some(v) = eval_f64(candidate, &env) else {
+                // The candidate is undefined next to an abscissa where the
+                // integrand is real: it cannot be the antiderivative there.
+                return false;
+            };
+            if !v.is_finite() {
+                return false;
+            }
+            *slot = v;
+        }
+        // (f(x−2h) − 8f(x−h) + 8f(x+h) − f(x+2h)) / (12h).
+        let lhs = (stencil[0] - 8.0 * stencil[1] + 8.0 * stencil[2] - stencil[3]) / (12.0 * h);
+        if !lhs.is_finite() {
+            return false;
+        }
+        usable += 1;
+        if xv < 0.0 {
+            usable_neg += 1;
+        } else {
+            usable_pos += 1;
+        }
+        // `1e-6` relative at unit scale; the absolute floor below unit scale
+        // only absorbs a sub-unit integrand's rounding noise (a branch error
+        // is O(1) relative, so the floor cannot hide one).
+        let tol = SHEET_REL_TOL * rhs.abs().max(1.0);
+        if (lhs - rhs).abs() > tol {
+            return false;
+        }
+    }
+    usable >= SHEET_MIN_SAMPLES
+        && (real_neg == 0 || usable_neg > 0)
+        && (real_pos == 0 || usable_pos > 0)
+}
+
+// =========================================================================
 // Entry point
 // =========================================================================
 
 /// Integrate `expr` via the single-radical atomic-layer reductions (see the
 /// module docs). Returns `None` outside the fragment, inside a
-/// `chain::parts_active()` scope, or when a budget is exhausted.
+/// `chain::parts_active()` scope, when a budget is exhausted, or when the
+/// candidate answer fails the two-sheet numeric gate.
 pub(crate) fn integrate_single_radical<'a>(
     ctx: &'a AtomArena<'a>,
     expr: Atom<'a>,
     var: Symbol,
 ) -> Option<Atom<'a>> {
-    if chain::parts_active() {
+    // A nested entry (the substituted form was handed back to the chain, which
+    // re-reached this stage) declines: the outer call owns the fragment.
+    if chain::parts_active() || SR_ACTIVE.with(|c| c.get() > 0) {
         return None;
     }
     if is_constant(expr, var) || node_count(expr) > MAX_NODES {
@@ -801,17 +1514,32 @@ pub(crate) fn integrate_single_radical<'a>(
     if !has_site(expr, var) {
         return None;
     }
+    SR_ACTIVE.with(|c| c.set(c.get().saturating_add(1)));
+    let _active = ActiveGuard;
     reset_sr_budget();
     if charge_sr_work(node_count(expr) as u64) {
         return None;
     }
-    if let Some(r) = try_square_slice(ctx, expr, var) {
+    // 0.31a hard gate: no candidate leaves the stage without two-sheet
+    // numeric evidence (see `two_sheet_verified`); a rejected candidate falls
+    // through to the next mechanism, so a branch-limited route cannot mask a
+    // sound one.
+    if let Some(r) = try_square_slice(ctx, expr, var)
+        && two_sheet_verified(expr, r, var)
+    {
         return Some(r);
     }
-    if let Some(r) = try_even_substitution(ctx, expr, var) {
+    if let Some(r) = try_even_substitution(ctx, expr, var)
+        && two_sheet_verified(expr, r, var)
+    {
         return Some(r);
     }
-    try_reciprocal(ctx, expr, var)
+    if let Some(r) = try_reciprocal(ctx, expr, var)
+        && two_sheet_verified(expr, r, var)
+    {
+        return Some(r);
+    }
+    None
 }
 
 #[cfg(test)]
@@ -822,33 +1550,6 @@ mod tests {
 
     fn parse<'a>(ctx: &'a AtomArena<'a>, s: &str) -> Atom<'a> {
         ocas_parse::parse(ctx, s).unwrap_or_else(|e| panic!("parse {s}: {e:?}"))
-    }
-
-    /// Numeric evaluator for test verification.
-    fn eval_f64(expr: Atom<'_>, env: &[(Symbol, f64)]) -> Option<f64> {
-        match expr.node() {
-            AtomNode::Num(n) => Some(*n as f64),
-            AtomNode::Var(v) => env.iter().find(|(s, _)| s == v).map(|(_, val)| *val),
-            AtomNode::Add(args) => args
-                .iter()
-                .try_fold(0.0, |acc, a| Some(acc + eval_f64(*a, env)?)),
-            AtomNode::Mul(args) => args
-                .iter()
-                .try_fold(1.0, |acc, a| Some(acc * eval_f64(*a, env)?)),
-            AtomNode::Pow(b, e) => Some(eval_f64(*b, env)?.powf(eval_f64(*e, env)?)),
-            AtomNode::Fun(name, args) => {
-                let v = eval_f64(*args.first()?, env)?;
-                Some(match name.as_str() {
-                    "log" => v.abs().ln(),
-                    "sqrt" => v.sqrt(),
-                    "atan" => v.atan(),
-                    "asin" => v.asin(),
-                    "atanh" => v.atanh(),
-                    "asinh" => v.asinh(),
-                    _ => return None,
-                })
-            }
-        }
     }
 
     /// Run the mechanism directly, require `Some` without residue, and check
@@ -1112,17 +1813,77 @@ mod tests {
         // fractions of `x³·√(a+b/x)`), again outside the fragment.
         assert_declined(&ctx, parse(&ctx, "x^3*sqrt(a + b/x)"), var);
         assert_declined(&ctx, parse(&ctx, "(a + b/x^2)/(x^4*sqrt(c + d/x^2))"), var);
-        // A negative power of the variable hidden inside an *integer* power of
-        // a rational factor (`(−1+x⁻²)^(−2)`) is not cleared by this fragment:
-        // the chain never sees the `t³/(t²−1)^(3/2)` shape the substitution
-        // would produce.
-        assert_declined(&ctx, parse(&ctx, "sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)"), var);
         // `1/(x³·√(−9 − 4x²))` has a radicand that is negative on the whole
         // real axis: no real abscissa to verify an antiderivative at, and the
         // fragment models no complex branch.
         assert_declined(&ctx, parse(&ctx, "1/(x^3*sqrt(-9 - 4*x^2))"), var);
         // Not a radical shape at all.
         assert_declined(&ctx, parse(&ctx, "1/(1 + x^2)"), var);
+    }
+
+    // -- 0.31a two-sheet branch fix --------------------------------------
+
+    /// `rubi-00401` (`sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)`, the 0.30.0
+    /// experiment's one wrong answer): the reciprocal route's chain answer is
+    /// a `t > 1`-only Euler/Chebyshev form, so its back-substitution is correct
+    /// on `x > 0` and off by a global sign on `x < 0`. The **even**
+    /// substitution `v = x²` is the branch-safe route: the integrand is odd,
+    /// so `f = x·G(x²)`, and after clearing the inverse powers the v-form is
+    /// the single-radical shape `(1/2)·v^(−3/2)·(1−v)^(−3/2)` that the chain
+    /// solves; the answer is even in `x`, hence correct on both sheets. The
+    /// two-sheet gate is the hard contract: the emitted answer is checked at
+    /// negative and positive samples, and the exact 0.30.0 corruption (the
+    /// answer multiplied by the sheet factor `σ = x·(x²)^(−1/2)`, i.e. its
+    /// negative-sheet sign flipped) is rejected.
+    #[test]
+    fn even_substitution_solves_the_00401_branch_case() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let integrand = parse(&ctx, "sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)");
+        // Emitted, and numerically the antiderivative on both sheets (the
+        // integrand's real domain is |x| < 1).
+        assert_antiderivative_num(
+            &ctx,
+            integrand,
+            var,
+            &[],
+            &[-0.85, -0.6, -0.3, 0.3, 0.6, 0.85],
+        );
+        let result = integrate_single_radical(&ctx, integrand, var).expect("solved");
+        assert!(
+            !result.to_string().contains("Integral"),
+            "residue: {result}"
+        );
+        let x = ctx.var("x");
+        let sigma = ctx.mul(&[x, ctx.pow(ctx.pow(x, ctx.num(2)), rat_atom(&ctx, -1, 2))]);
+        let positive_sheet_only = ctx.mul(&[result, sigma]);
+        assert!(
+            !two_sheet_verified(integrand, positive_sheet_only, var),
+            "the two-sheet gate accepted an answer whose negative sheet is \
+             sign-flipped: {positive_sheet_only}"
+        );
+        // Control: the gate accepts the emitted (unflipped) answer.
+        assert!(two_sheet_verified(integrand, result, var));
+    }
+
+    /// Regression pin for the 0.30.0 branch bug on the **reciprocal** route:
+    /// a solved `a + b/x` shape must differentiate back to the integrand on
+    /// the negative sheet too. `a > b > 0` keeps `x = −0.6` inside the real
+    /// domain (`a + b/x = 1.67 > 0`), which the 0.30.0 corpus gate did not
+    /// check.
+    #[test]
+    fn reciprocal_answers_hold_on_the_negative_sheet() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let a = Symbol::new("a");
+        let b = Symbol::new("b");
+        let consts = [(a, 5.0), (b, 2.0)];
+        let samples = [-1.7, -0.85, -0.6, 0.3, 0.6, 1.7];
+        for src in ["1/(x^5*sqrt(a + b/x))", "sqrt(a + b/x)/x^3"] {
+            assert_antiderivative_num(&ctx, parse(&ctx, src), var, &consts, &samples);
+        }
     }
 
     #[test]
@@ -1150,6 +1911,30 @@ mod tests {
         assert!(
             second.is_none(),
             "stage re-entered on its own output: {second:?}"
+        );
+    }
+
+    /// The two-sheet gate is real-valued: `pi` stays the mathematical constant
+    /// (a dummy would scale a correct answer), while a shape carrying the
+    /// imaginary unit is unverifiable here and must decline rather than be
+    /// checked at a real dummy value.
+    #[test]
+    fn sheet_gate_uses_constants_honestly() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let var = Symbol::new("x");
+        let mut symbols: Vec<Symbol> = Vec::new();
+        collect_free_symbols(parse(&ctx, "pi^2*6^-1 + log(x)"), var, &mut symbols);
+        assert!(
+            !symbols.iter().any(|symbol| symbol.as_str() == "pi"),
+            "`pi` must stay a constant in the gate; got {symbols:?}"
+        );
+        // A complex-valued shape cannot be checked by a real evaluator.
+        let complex_integrand = parse(&ctx, "i*x");
+        let complex_candidate = parse(&ctx, "i*x^2*2^-1");
+        assert!(
+            !two_sheet_verified(complex_integrand, complex_candidate, var),
+            "the gate must decline shapes carrying the imaginary unit"
         );
     }
 }

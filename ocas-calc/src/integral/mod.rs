@@ -27,6 +27,7 @@ pub(crate) mod kernel_subst;
 pub(crate) mod logpart;
 pub(crate) mod multi_radical;
 pub mod outcome;
+pub(crate) mod polylog;
 pub(crate) mod quad_power;
 pub mod rational;
 pub(crate) mod rde;
@@ -35,11 +36,9 @@ pub(crate) mod risch;
 pub(crate) mod rt_algebraic;
 pub(crate) mod rules;
 pub(crate) mod rules_ext;
-// 0.30.0 Wave 6a experiment: implemented and measured, **not wired** (its
-// wiring was reverted after the full-corpus run broke the wrong-answer,
-// timeout and wall-clock gates; see the module docs for the measurements and
-// the branch fix 0.31 needs). Declared so its tests keep running — the
-// `coupled.rs` precedent.
+// Single-radical atomic-layer reduction. Shipped unwired in 0.30.0 (the
+// `rubi-00401` branch bug); 0.31.0 fixed the branch and added the two-sheet
+// numeric gate, and the stage is wired after `multi_radical`.
 pub(crate) mod single_radical;
 pub(crate) mod special;
 pub(crate) mod sqrt_quadratic;
@@ -843,6 +842,13 @@ fn try_risch_or_fallback<'a>(
     stage!("multi_radical", || {
         multi_radical::integrate_multi_radical(ctx, expr, var)
     });
+    // Single-radical atomic-layer reduction (0.30.0 Wave 6a, wired in 0.31.0
+    // after the `rubi-00401` branch fix): affine-square slices, the even
+    // substitution and the reciprocal substitution, each handed back to the
+    // chain. Every emission must pass the stage's two-sheet numeric gate.
+    stage!("single_radical", || {
+        single_radical::integrate_single_radical(ctx, expr, var)
+    });
     // exp/log-kernel substitutions (0.27.1): rational-in-e^(ax) and
     // hyperbolic-rational forms, f(log x)/x, log-power gaps of rule B6.
     stage!("exp_log", || exp_log::integrate_exp_log(ctx, expr, var));
@@ -901,6 +907,15 @@ fn try_risch_or_fallback<'a>(
         ctx, expr, var
     ));
     stage!("elliptic", || elliptic::integrate_elliptic(ctx, expr, var));
+    // Log-rational integrals whose antiderivative needs the dilogarithm
+    // (0.31.0 B class: `∫R(x)·log(A(x)) dx` with an affine logarithm
+    // argument; POLYLOG_SPEC_CN.md). Deliberately the last functional stage
+    // before the heuristic: it only ever converts shapes every earlier stage
+    // declined, so the solved set can only grow. A candidate is emitted only
+    // after the stage's own numerical self-check passes.
+    stage!("log_rational", || polylog::integrate_log_rational(
+        ctx, expr, var
+    ));
     // Heuristic techniques: parts, trig sub, Weierstrass, Euler.
     stage!("heuristic", || heuristic::heuristic_integrate(
         ctx,

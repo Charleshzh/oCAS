@@ -18,10 +18,12 @@ use crate::{Atom, AtomArena, AtomNode};
 ///   `EllipticF(m, u)` the same atom.
 /// - `Ei` is the exponential integral; its two-argument form is Rubi's
 ///   `Ei(n, z)` (the incomplete gamma `Eₙ`), whose argument order is semantic.
+/// - `polylog(s, z)` is the polylogarithm (0.31.0 adds `polylog(2, z)`/`Li₂`);
+///   the order `s` and the argument `z` are not interchangeable.
 pub fn preserves_argument_order(name: &str) -> bool {
     matches!(
         name,
-        "Derivative" | "Integral" | "EllipticF" | "EllipticE" | "EllipticPi" | "Ei"
+        "Derivative" | "Integral" | "EllipticF" | "EllipticE" | "EllipticPi" | "Ei" | "polylog"
     )
 }
 
@@ -318,5 +320,29 @@ mod tests {
         // Ordinary heads keep sorting.
         let h = ctx.fun("sin", &[y]);
         assert_eq!(normalize(&ctx, h).to_string(), "sin(y)");
+    }
+
+    #[test]
+    fn normalize_preserves_polylog_argument_order() {
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        let x = ctx.var("x");
+        let y = ctx.var("y");
+        // Order first, argument second: `polylog(x, y)` is `Li_x(y)`, not
+        // `Li_y(x)` — the two must stay distinct atoms.
+        let p = ctx.fun("polylog", &[x, y]);
+        assert_eq!(normalize(&ctx, p).to_string(), "polylog(x, y)");
+        let q = ctx.fun("polylog", &[y, x]);
+        assert_eq!(normalize(&ctx, q).to_string(), "polylog(y, x)");
+        assert_ne!(normalize(&ctx, p), normalize(&ctx, q));
+        // The numeric order stays in front (it would anyway: `Num` sorts
+        // first, but this pins the semantic requirement).
+        let two = ctx.fun("polylog", &[ctx.num(2), x]);
+        assert_eq!(normalize(&ctx, two).to_string(), "polylog(2, x)");
+        // Round-trip is idempotent.
+        assert_eq!(
+            normalize(&ctx, normalize(&ctx, two)).to_string(),
+            "polylog(2, x)"
+        );
     }
 }

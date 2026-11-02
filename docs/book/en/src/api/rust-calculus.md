@@ -893,6 +893,7 @@ When the Risch algorithm proves that the integral has no elementary antiderivati
 | $\frac{\cosh x}{x}$ | $\text{Chi}(x)$ | hyperbolic cosine integral |
 | $\sin(x^2)$ | $\sqrt{\pi/2}\,\text{fresnels}(\sqrt{2/\pi}\,x)$ | Fresnel S integral (function name `fresnels`) |
 | $\cos(x^2)$ | $\sqrt{\pi/2}\,\text{fresnelc}(\sqrt{2/\pi}\,x)$ | Fresnel C integral (function name `fresnelc`) |
+| $\frac{\log(1-x)}{x}$ | $-\text{Li}_2(x)$ | dilogarithm (function name `polylog(2, ·)`, 0.31.0) |
 
 **Matching strategy**:
 
@@ -912,8 +913,9 @@ When the Risch algorithm proves that the integral has no elementary antiderivati
     $\text{Ei}(\pm u)$ plus elementary terms;
   - polynomial $\times F(a + bx)^2$ for the six square-capable heads, via parts plus the Gaussian
     moment recursion (`erf`/`erfi`) or the coupled $F \cdot \cos/\sin$ recursion
-    (`Si`/`Ci`/`Shi`/`Chi`).
-
+    (`Si`/`Ci`/`Shi`/`Chi`);
+- `polylog` (0.31.0, `integral/polylog.rs`): the dilogarithm wave — see
+  [Dilogarithm reduction](#dilogarithm-reduction-0310) below.
 Every reduction chain carries a hard step budget (`MAX_SPECIAL_STEPS = 16`, `MAX_SPECIAL_DEG = 8`)
 and declines rather than guessing; no family ever emits an `Integral(...)` residue.
 
@@ -924,6 +926,50 @@ and declines rather than guessing; no family ever emits an `Integral(...)` resid
 **Design notes**:
 
 The special function definitions are consistent with SymPy, and the results can be cross-validated with `sympy.integrate`. The numerical verification oracle (`ocas-tests/src/integral_eval.rs`) implements every one of these heads, so solved results in this family are checked by differentiating the emitted form rather than by the absence of a residue.
+
+### Dilogarithm reduction (0.31.0)
+
+**Source**: `ocas-calc/src/integral/polylog.rs` (specification: `docs/planning/POLYLOG_SPEC_CN.md`)
+
+The dilogarithm $\text{Li}_2(z) = \sum_{k \ge 1} z^k/k^2$ is the first non-elementary layer
+above the elementary special functions. The head is the ordinary function atom
+`polylog(2, z)` (two arguments; the order and the argument are order-sensitive in
+`normalize`), its derivative is $d/dz\,\text{Li}_2(z) = -\log(1-z)/z$ (in `derivative.rs`),
+and the numerical oracle implements it on the real branch $z \le 1$ (series, Euler
+reflection, Landen transform, inversion), reporting `Domain` outside it.
+
+Two classes are implemented:
+
+- **A class** — the integrand already carries `polylog(2, u)` with `u` affine in $x$. Parts
+  with the derivative table give
+  $\int R\,\text{Li}_2(u)\,dx = v\,\text{Li}_2(u) + \int v\,u'\,\log(1-u)/u\,dx$ with
+  $v = \int R$; the residual is a B-class integral. The weight $R$ must have a monomial
+  primitive ($x^k$, $k \in \{-2, 0, 1\}$), otherwise the residual leaves the fragment.
+- **B class** — an elementary integrand $R(x)\log(A(x))$ whose antiderivative needs the
+  dilogarithm. $\log A$ is split into a sum of $\log(\text{affine})$ terms plus a constant
+  (`log` of a product / integer power / quotient; the real `ln|·|` convention makes the
+  split differ only by an additive constant), and the substitution $u = A(x)$ reduces each
+  term to one of the table entries:
+
+| Integral | Closed form |
+|---|---|
+| $\int \log(u)/u\,du$ | $\tfrac12 \log^2 u$ |
+| $\int \log(u)/(u-\beta)\,du$ | $\log u \cdot \log(1-u/\beta) + \text{Li}_2(u/\beta)$ |
+| $\int u^m \log(u)\,du$, $m \ge 0$ | $u^{m+1}\log u/(m+1) - u^{m+1}/(m+1)^2$ |
+| $\int du/(\gamma+\delta u)$ | $\log(\gamma+\delta u)/\delta$ |
+
+The weight fragment is deliberately narrow: at most two linear denominator factors (each with
+exponent $-1$), a numerator of lower degree, and a monomial primitive for the A class. The
+`log_rational` stage runs just before the heuristic stage, so it only converts shapes every
+earlier stage declined.
+
+**Emission gate**: no candidate is returned before a local f64 self-check — the numerical
+derivative of the candidate is compared with the integrand at deterministic samples (plus
+samples chosen so each `Li₂` argument sits inside the real branch), over up to three parameter
+regimes. A shape with fewer than two usable samples, or a gross disagreement, declines; the
+test oracle in `ocas-tests` remains the independent acceptance check. Budgets are
+deterministic (`MAX_POLYLOG_STEPS = 8`, terms ≤ 16, nodes ≤ 2000); the stage declines inside
+a parts scope and never emits a residue.
 
 **See also**: [Risch algorithm](#risch-algorithm), [integrate](#integrate)
 
@@ -975,7 +1021,7 @@ fn linear_form<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol)
 - The result of `integrate` passes through two simplification stages: first the default rewrite rules `default_rules` (algebraic identities such as $0 + x = x$, $1 \cdot x = x$, $x^1 = x$) for 20 steps, then `calculus_rules` for 10 steps, and finally `normalize` to canonical form
 - `diff` and `taylor` simplify with `calculus_rules` directly, then `normalize`
 
-`calculus_rules` (`rules.rs`) builds on `default_rules` and adds calculus-specific identities: `exp(0) → 1`, `log(1) → 0`, `sin(0) → 0`, `cos(0) → 1`, `tan(0) → 0`, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, etc.
+`calculus_rules` (`rules.rs`) builds on `default_rules` and adds calculus-specific identities: `exp(0) → 1`, `log(1) → 0`, `sin(0) → 0`, `cos(0) → 1`, `tan(0) → 0`, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, plus the 0.31.0 dilogarithm entries `polylog(1, z) → -log(1-z)`, `polylog(2, 0) → 0` and `polylog(2, 1) → π²/6`.
 
 ### Depth limits
 
@@ -998,6 +1044,7 @@ ocas-calc
 │   ├── rde.rs          — Risch differential equation solver
 │   ├── trig.rs         — trig→exponential rewriting, realify
 │   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   ├── polylog.rs      — Li₂ (dilogarithm) A/B reduction + emission gate (0.31.0)
 │   └── tower/
 │       ├── build.rs    — differential field tower construction
 │       ├── elem.rs     — tower element types (KElem, KPoly, KRat)

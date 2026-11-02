@@ -1578,11 +1578,12 @@ cover the inverse-function families.
 
 ---
 
-### 0.31.0 — The Non-Elementary Layer (split into 0.31a / 0.31b)
+### 0.31.0 — The Non-Elementary Layer (split into 0.31a / 0.31b; 0.31a delivered 2026-11-02)
 
 **Goal**: cover what is **completely unreachable** today: antiderivatives needing
-dilogarithms or Meijer G (baseline: 122 cases whose reference answer contains `polylog`,
-8.0% of the unsolved).
+dilogarithms or Meijer G (baseline: the 2026-11-02 audit finds **123** cases whose reference answer contains
+`polylog` — 5 A-class + 118 B-class, about 8% of the unsolved; the earlier “122”
+figure is superseded).
 (Basis: GENERAL_MECHANISM_FEASIBILITY_EN.md §3.6, §6 P3.)
 
 **Scope split (2026-10-24 planning review)**
@@ -1593,7 +1594,8 @@ algebraic tower, and the remaining `inverse-trig-hyper` decline surface) at roug
 2–4× the size of 0.30.0. The last two estimates of this kind were high by 2–9×
 (multi-radical bases estimated at 222 cases → radical gained +33, the whole W4a wave
 +46; inverse-function substitution estimated at 30–40 → +14, i.e. 22/146), and the
-122-case `polylog` attribution has not been re-audited since 2026-09-12. The wave is
+`polylog` attribution had not been re-audited since 2026-09-12 (now 123 cases, see
+`ocas-tests/scripts/attribute_031.py`). The wave is
 therefore split:
 
 - **0.31a (the declarable cut)**: `polylog`/Li₂ heads + numerical oracle evaluation,
@@ -1605,6 +1607,26 @@ therefore split:
 - **Ordering relative to 0.32.0**: 0.31a must ship with no new timeouts and a wall clock
   ≤ 489.5×1.10 ≈ 538.5 s; 0.32.0's performance wave is the precondition for widening the
   non-elementary mechanisms in 0.31b
+
+**Delivered (0.31.0, 2026-11-02)**
+
+- The `polylog(2, z)` head, derivative table, simplifications and the real-branch oracle are
+  in place (`integral_eval.rs`; 40-digit mpmath references, grid error 4.4e-16, derivative
+  self-check 6.0e-10); the Li₂ reduction skeleton lives in `integral/polylog.rs` (A class by
+  parts, B class through the pole entry, local numerical emission gate).
+- `single_radical.rs` is wired: `rubi-00401` went from a global-sign wrong answer to a correct
+  branch-safe even-substitution answer, and its pin now requires a verified result; the
+  two-sheet numeric gate plus a re-entrancy guard also removed the substitution-cascade
+  wall-clock blow-up.
+- Measured (two same-tree runs): solved **451 → 478**, `exp-log` **8 → 10/83**, per-case
+  regressions **0**, `mismatches` **0**, timeouts 12 → **13** (≤ 14), wall clock
+  **472.6 / 471.9 s** (gate read against the slower, ≤ 538.5 s), certificate false positives
+  **0**, `certified_rate` 48.8% → **50.2%**.
+- Attribution: `polylog` +3 (`rubi-00746` / `rubi-01004` / `rubi-00050`); W6a net +24
+  (radical +16, power-binomial +8), 5 below the 0.30.0 experiment's +29 (3 untrusted shapes
+  rejected by the gate, 2 yielded to the re-entrancy guard).
+- The polylog-driven `inverse-trig-hyper` surface (40 cases) is deferred to 0.31b, per the
+  scope split recorded in the ROADMAP.
 
 **Functionality**
 

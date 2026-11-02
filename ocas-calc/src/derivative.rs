@@ -20,7 +20,10 @@
 //!   convention, matching `sympy.expint(n, z)`), with `∂/∂z Eₙ(z) = −Eₙ₋₁(z)`
 //!   and `E₀(z) = e⁻ᶻ/z` kept elementary,
 //! - `EllipticF(φ, m)`, `EllipticE(φ, m)`, `EllipticPi(n, φ, m)` with the
-//!   standard `∂/∂φ` partials.
+//!   standard `∂/∂φ` partials,
+//! - `polylog(s, z)` (0.31.0): `∂/∂z Li₂(z) = −log(1−z)/z` and
+//!   `∂/∂z Li₁(z) = 1/(1−z)`; the order slot must be constant and other
+//!   orders stay unevaluated.
 //!
 //! Only the partials the integration pipeline needs are implemented (the
 //! order/modulus/characteristic slots are treated as symbolic parameters). If
@@ -361,6 +364,32 @@ fn multi_arg_partial<'a>(
         };
         return Some(ctx.mul(&[partial, dz]));
     }
+    // `polylog(s, z)` (0.31.0). The defining identity the Li₂ reduction in
+    // `integral::polylog` inverts is `d/dz Li₂(z) = −log(1−z)/z`; `Li₁` is
+    // the elementary `−log(1−z)`, so its partial is `1/(1−z)`. Other orders
+    // (and a symbolic order) are not differentiated here: the unevaluated
+    // `Derivative` is the only honest answer.
+    if name == "polylog" && args.len() == 2 {
+        let (s, z) = (args[0], args[1]);
+        if !is_zero_derivative(diff_raw(ctx, s, var)) {
+            return Some(unevaluated(ctx, name, args, var));
+        }
+        let dz = diff_raw(ctx, z, var);
+        if is_zero_derivative(dz) {
+            return Some(ctx.num(0));
+        }
+        let one_minus_z = ctx.add(&[ctx.num(1), ctx.mul(&[ctx.num(-1), z])]);
+        let partial = match s.node() {
+            AtomNode::Num(2) => ctx.mul(&[
+                ctx.num(-1),
+                ctx.fun("log", &[one_minus_z]),
+                ctx.pow(z, ctx.num(-1)),
+            ]),
+            AtomNode::Num(1) => ctx.pow(one_minus_z, ctx.num(-1)),
+            _ => return Some(unevaluated(ctx, name, args, var)),
+        };
+        return Some(ctx.mul(&[partial, dz]));
+    }
     // Elliptic integrals: `EllipticF(φ, m)`, `EllipticE(φ, m)`,
     // `EllipticPi(n, φ, m)`. Only `∂/∂φ` is implemented; the modulus and
     // characteristic slots are symbolic parameters.
@@ -597,6 +626,36 @@ mod tests {
         let e = ctx.fun("Ei", &[x, ctx.var("y")]);
         let got = diff(&ctx, e, Symbol::new("x")).to_string();
         assert!(got.starts_with("Derivative("), "got {got}");
+    }
+
+    #[test]
+    fn diff_polylog_head() {
+        // `d/dz Li₂(z) = −log(1−z)/z` — the identity the Li₂ reduction
+        // inverts, so the derivative table and the reducer share one source.
+        let got = d("polylog(2, x)");
+        assert!(
+            got.contains("log(1 + (-1*x))") && got.contains("x^-1"),
+            "diff(polylog(2, x)) = {got:?}"
+        );
+        assert!(!got.starts_with("Derivative("), "got {got}");
+        // Chain rule: `d/dx Li₂(x²) = −log(1−x²)·2x/x²`.
+        let got = d("polylog(2, x^2)");
+        assert!(
+            got.contains("log(") && got.contains("2*x"),
+            "diff(polylog(2, x^2)) = {got:?}"
+        );
+        assert!(!got.starts_with("Derivative("), "got {got}");
+        // `Li₁(z) = −log(1−z)`, so `d/dz Li₁(z) = 1/(1−z)`.
+        let got = d("polylog(1, x)");
+        assert!(
+            got.contains("1 + (-1*x)") && got.contains("^-1"),
+            "diff(polylog(1, x)) = {got:?}"
+        );
+        // Orders beyond 2 (and symbolic orders) are not differentiated here.
+        assert!(d("polylog(3, x)").starts_with("Derivative("));
+        assert!(d("polylog(k, x)").starts_with("Derivative("));
+        // A constant argument differentiates to zero.
+        assert_eq!(d("polylog(2, 5)"), "0");
     }
 
     #[test]

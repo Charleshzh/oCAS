@@ -14,7 +14,7 @@
 记录在 [GAP_ANALYSIS_CN.md](planning/GAP_ANALYSIS_CN.md) 与
 [BENCHMARK_RESULTS_CN.md](planning/BENCHMARK_RESULTS_CN.md)。
 
-> **状态**：Beta (0.30.0)。完整的符号引擎、多项式代数、方程求解器、ODE
+> **状态**：Beta (0.31.0)。完整的符号引擎、多项式代数、方程求解器、ODE
 > 求解器（一阶/二阶 + 系统 + 级数 + Laplace 初值问题）、JIT/SIMD
 > 求值与三语言绑定（Rust、Python、C/C++）已功能完备。`pip install ocas`
 > 已在 PyPI 上线。详见
@@ -104,7 +104,7 @@ oCAS 面向需要快速、可嵌入且许可证清晰的符号计算引擎的研
 
 ```toml
 [dependencies]
-ocas = "0.30"
+ocas = "0.31"
 ```
 
 ```rust

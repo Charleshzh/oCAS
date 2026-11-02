@@ -881,6 +881,7 @@ $$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-
 | $\frac{\cosh x}{x}$ | $\text{Chi}(x)$ | 双曲余弦积分 |
 | $\sin(x^2)$ | $\sqrt{\pi/2}\,\text{fresnels}(\sqrt{2/\pi}\,x)$ | Fresnel S 积分（函数名 `fresnels`） |
 | $\cos(x^2)$ | $\sqrt{\pi/2}\,\text{fresnelc}(\sqrt{2/\pi}\,x)$ | Fresnel C 积分（函数名 `fresnelc`） |
+| $\frac{\log(1-x)}{x}$ | $-\text{Li}_2(x)$ | 二重对数（函数名 `polylog(2, ·)`，0.31.0） |
 
 **匹配策略**：
 
@@ -897,7 +898,9 @@ $$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-
   - $F(bx)/x^m$（$m \ge 2$，$F = \text{Ei}$ 或 $\text{Ei}(n, \cdot)$），递降终止于
     $\text{Ei}(\pm u)$ 加初等项；
   - 多项式 $\times F(a + bx)^2$（六个可平方的头），分部 + 高斯矩递推（`erf`/`erfi`）或
-    $F \cdot \cos/\sin$ 耦合递推（`Si`/`Ci`/`Shi`/`Chi`）。
+    $F \cdot \cos/\sin$ 耦合递推（`Si`/`Ci`/`Shi`/`Chi`）；
+- `polylog`（0.31.0，`integral/polylog.rs`）：二重对数波次，见下节
+  [二重对数归约](#二重对数归约0310)。
 
 每条归约链都带硬步数预算（`MAX_SPECIAL_STEPS = 16`、`MAX_SPECIAL_DEG = 8`），无法匹配时诚实拒绝，
 任何族都不会留下 `Integral(...)` 残项。
@@ -911,6 +914,40 @@ $$\sin(u) \to \frac{e^{iu} - e^{-iu}}{2i}, \quad \cos(u) \to \frac{e^{iu} + e^{-
 特殊函数定义与 SymPy 一致，结果可通过 `sympy.integrate` 交叉验证。数值验证 oracle
 （`ocas-tests/src/integral_eval.rs`）已实现上述全部函数头，因此本族的「已解」结果是用
 「对发射形式求导」判定的，而不是靠「结果里没有 `Integral(`」这一字符串判据。
+
+### 二重对数归约（0.31.0）
+
+**源码**：`ocas-calc/src/integral/polylog.rs`（规格：`docs/planning/POLYLOG_SPEC_CN.md`）
+
+二重对数 $\text{Li}_2(z) = \sum_{k \ge 1} z^k/k^2$ 是初等特殊函数之上的第一层非初等函数。
+函数头即普通函数原子 `polylog(2, z)`（两参数；阶与自变量在 `normalize` 中保序），导数表
+给出 $d/dz\,\text{Li}_2(z) = -\log(1-z)/z$（`derivative.rs`），数值 oracle 在实值支
+$z \le 1$ 上实现（级数 / Euler 反射 / Landen 变换 / 反演），域外返回 `Domain`。
+
+实现两类：
+
+- **A 类**：被积式本身含 `polylog(2, u)`（$u$ 仿射）。按导数表分部得
+  $\int R\,\text{Li}_2(u)\,dx = v\,\text{Li}_2(u) + \int v\,u'\,\log(1-u)/u\,dx$（$v = \int R$），
+  残项是 B 类积分。权重 $R$ 必须有单项式原函数（$x^k$，$k \in \{-2, 0, 1\}$），否则残项越界。
+- **B 类**：初等被积式 $R(x)\log(A(x))$，其原函数需二重对数。$\log A$ 拆成若干
+  $\log(\text{仿射})$ 项加常数（乘积 / 整数幂 / 商；实值 `ln|·|` 约定下只差可并入积分常数的量），
+  代入 $u = A(x)$ 后每项落到下表条目：
+
+| 积分 | 闭式 |
+|---|---|
+| $\int \log(u)/u\,du$ | $\tfrac12 \log^2 u$ |
+| $\int \log(u)/(u-\beta)\,du$ | $\log u \cdot \log(1-u/\beta) + \text{Li}_2(u/\beta)$ |
+| $\int u^m \log(u)\,du$，$m \ge 0$ | $u^{m+1}\log u/(m+1) - u^{m+1}/(m+1)^2$ |
+| $\int du/(\gamma+\delta u)$ | $\log(\gamma+\delta u)/\delta$ |
+
+片段刻意收窄：分母至多两个线性因子（指数均为 $-1$）、分子次数更低；A 类要求单项式原函数。
+`log_rational` 阶段紧接启发式阶段之前运行，因此只把更早阶段全部拒绝的形状转化为解。
+
+**发射门**：任何候选在返回前都先过本地 f64 自检——在确定性采样点（外加「让每个 `Li₂` 自变量
+落在实值支内」的采样）上把候选的数值导数与被积式比对，覆盖至多三组参数取值。可用采样点少于
+两个、或出现量级不符的偏离即拒绝；独立验收仍以 `ocas-tests` 的数值 oracle 为准。预算为确定性
+上限（`MAX_POLYLOG_STEPS = 8`、项数 ≤ 16、节点 ≤ 2000）；阶段在 parts 作用域内拒绝，且从不
+发射 `Integral` 残项。
 
 **参见**：[Risch 算法](#risch-算法)、[integrate](#integrate)
 
@@ -962,7 +999,7 @@ fn linear_form<'a>(ctx: &'a AtomArena<'a>, expr: Atom<'a>, var: Symbol)
 - `integrate` 的结果经过两级化简：先用默认重写规则 `default_rules`（$0 + x = x$、$1 \cdot x = x$、$x^1 = x$ 等代数恒等式）化简 20 步，再用 `calculus_rules` 化简 10 步，最后 `normalize` 到规范形式
 - `diff` 与 `taylor` 直接使用 `calculus_rules` 化简后 `normalize`
 
-`calculus_rules`（`rules.rs`）以 `default_rules` 为基础，追加微积分专用恒等式：`exp(0) → 1`、`log(1) → 0`、`sin(0) → 0`、`cos(0) → 1`、`tan(0) → 0`、$(-1) \cdot (-1) \to 1$、$1^x \to 1$ 等。
+`calculus_rules`（`rules.rs`）以 `default_rules` 为基础，追加微积分专用恒等式：`exp(0) → 1`、`log(1) → 0`、`sin(0) → 0`、`cos(0) → 1`、`tan(0) → 0`、$(-1) \cdot (-1) \to 1$、$1^x \to 1$，以及 0.31.0 的二重对数条目 `polylog(1, z) → -log(1-z)`、`polylog(2, 0) → 0`、`polylog(2, 1) → π²/6`。
 
 ### 深度限制
 
@@ -985,8 +1022,8 @@ ocas-calc
 │   ├── rde.rs          — Risch 微分方程求解器
 │   ├── trig.rs         — 三角→指数重写, realify
 │   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   ├── polylog.rs      — Li₂（二重对数）A/B 归约 + 发射门（0.31.0）
 │   └── tower/
-│       ├── build.rs    — 微分域塔构造
 │       ├── elem.rs     — 塔元素类型 (KElem, KPoly, KRat)
 │       └── convert.rs  — Atom ↔ 塔元素转换
 ├── series.rs           — taylor, substitute

@@ -144,14 +144,13 @@ fn mechanism_sample_has_no_wrong_answers() {
 /// error 2.0). The wiring was reverted and the branch bug is the first item
 /// on the 0.31 W6a list.
 ///
-/// So today the engine is expected to *decline* this shape (fallback is
-/// fine). The only thing this pin forbids is a wrong closed form — hence the
-/// deliberately narrow `Mismatch` assertion. **Once W6a is wired, this test
-/// is the hard gate for the fix**: `rubi-00401` must then verify (not just
-/// fall back), and the `Indeterminate` arm below must be tightened to a
-/// failure. Do not delete or loosen this assertion to make a wiring
-/// experiment green; that is exactly the class of silent wrong answer the
-/// numerical oracle exists to catch.
+/// 0.31.0 fixed it with the branch-safe even substitution plus a two-sheet
+/// numeric gate on every emission, and wired the stage back. The shape is now
+/// **solved and verified on both sheets** (`x = ±0.6` agree exactly), so this
+/// pin is the hard gate the 0.30.0 note asked for: a fallback or an
+/// unverified answer is a regression, and a wrong closed form is the failure
+/// mode the numerical oracle exists to catch. Do not delete or loosen this
+/// assertion to make a wiring experiment green.
 #[test]
 fn wave_030_w6a_branch_shape_never_wrong() {
     let input = "sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)";
@@ -164,12 +163,9 @@ fn wave_030_w6a_branch_shape_never_wrong() {
             panic!("rubi-00401 wrong-antiderivative regression: {input} -> {text}\n    {detail}")
         }
         Verify::Indeterminate { reason } => {
-            // Fallback (or an undecidable sample) is acceptable while W6a is
-            // unwired. 0.31 W6a must turn this arm into a failure.
-            eprintln!(
-                "rubi-00401: not yet wired (fallback allowed until 0.31 W6a): {reason}\n    \
-                 result: {text}"
-            );
+            panic!(
+                "rubi-00401 not verified after the 0.31.0 W6a wiring ({reason}): {input} -> {text}"
+            )
         }
     }
 }
@@ -224,4 +220,77 @@ fn wave_0273_mechanisms_have_no_wrong_answers() {
         "wrong antiderivatives in 0.27.3 mechanisms:\n{}",
         wrong.join("\n")
     );
+}
+
+/// 0.31.0 polylog/Li₂ wave (`POLYLOG_SPEC_CN.md`).
+///
+/// The two exp-log Rubi targets (`rubi-00746`, `rubi-01004`) are the
+/// quantified gate evidence for the `exp-log ≥ 10/83` line: both must be
+/// **solved** (no `Integral(` residue). Every shape of the wave must either
+/// verify numerically or be honestly undecided, never a wrong closed form —
+/// the A-class answers carry `Li₂(u)` *and* `Li₂(1−u)`, so their real domain
+/// can be narrow and an `Indeterminate` verdict is a legitimate outcome there.
+#[test]
+fn wave_031_polylog_shapes_are_solved_and_never_wrong() {
+    let shapes = [
+        // B class: log-rational integrals whose antiderivative needs Li₂.
+        "log(1 - x)/x",
+        "(a + b*log(-2 + e*x))/x",                      // rubi-00746
+        "(A + B*log(e*(a + b*x)/(c + d*x)))/(f + g*x)", // rubi-01004
+        // A class: the integrand already carries a dilogarithm.
+        "polylog(2, c*x)",
+        "x*polylog(2, c*x)",
+        "polylog(2, c*(a + b*x))/x^2", // rubi-00050
+    ];
+    let mut wrong = Vec::new();
+    let mut unsolved = Vec::new();
+    let mut verified = 0usize;
+    for input in shapes {
+        let (text, verdict) = integrate_and_verify(input);
+        if text.contains("Integral(") {
+            unsolved.push(format!("{input} -> {text}"));
+        }
+        match verdict {
+            Verify::Verified { .. } => verified += 1,
+            Verify::Mismatch { detail, .. } => {
+                wrong.push(format!("{input} -> {text}\n    {detail}"))
+            }
+            Verify::Indeterminate { .. } => {}
+        }
+    }
+    assert!(
+        wrong.is_empty(),
+        "wrong antiderivatives in the 0.31 polylog wave:\n{}",
+        wrong.join("\n")
+    );
+    assert!(
+        unsolved.is_empty(),
+        "0.31 polylog shapes that fell back:\n{}",
+        unsolved.join("\n")
+    );
+    assert!(
+        verified >= 2,
+        "the oracle verified only {verified} of the 0.31 polylog shapes"
+    );
+}
+
+/// The A/B target shapes from the audited 1892 corpus must stay solved: this
+/// is the `exp-log` gate's per-case evidence, kept next to the mechanism.
+#[test]
+fn wave_031_polylog_corpus_targets_are_solved() {
+    for input in [
+        "(a + b*log(-2 + e*x))/x",
+        "(A + B*log(e*(a + b*x)/(c + d*x)))/(f + g*x)",
+        "polylog(2, c*(a + b*x))/x^2",
+    ] {
+        let (text, verdict) = integrate_and_verify(input);
+        assert!(
+            !text.contains("Integral("),
+            "0.31 corpus target unsolved: {input} -> {text}"
+        );
+        assert!(
+            !matches!(verdict, Verify::Mismatch { .. }),
+            "0.31 corpus target is a wrong answer: {input} -> {text}"
+        );
+    }
 }

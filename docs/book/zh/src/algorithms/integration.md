@@ -42,6 +42,11 @@ oCAS 通过分层管线进行积分：快速启发式表、有理函数积分器
     Euler 替换。
 12. **有界展开重试**（0.27.x）—— 分配展开乘积为和式（项数预算 64）
     后逐项积分。
+12b. **二重对数归约**（0.31.0）——启发式之前的 `log_rational` 阶段：把对数-有理
+    被积式 `R(x)·log(A(x))`（对数自变量仿射）经极点条目
+    `∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)` 归约；被积式本身含
+    `polylog(2, u)` 的形状在 `special` 阶段按 `d/du Li₂(u) = −log(1−u)/u` 分部处理。
+    每次发射都过本地数值自检，片段外诚实拒绝。
 13. **未求值形式** —— `Integral(expr, var)`。
 
 ---
@@ -142,6 +147,7 @@ Risch 微分方程求解器目前在 `ℚ[x]` 上工作，因此系数含 `I` �
 | `cosh(x)/x` | `Chi(x)` |
 | `sin(x²)` | `√(π/2)·fresnels(√(2/π)·x)` |
 | `cos(x²)` | `√(π/2)·fresnelc(√(2/π)·x)` |
+| `log(1−x)/x` | `−Li₂(x)`（函数头 `polylog(2, ·)`，0.31.0） |
 
 ```rust
 use ocas::prelude::*;
@@ -152,6 +158,12 @@ let ctx = AtomArena::new(&arena);
 // ∫ exp(-x^2) dx = (√π/2)·erf(x)
 let result = integrate(&ctx, parse(&ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
 ```
+
+**二重对数层（0.31.0）**：`integral/polylog.rs` 在初等特殊函数头之上加入第一层非初等函数。
+A 类对被积式已含 `polylog(2, u)` 的形状按 `d/du Li₂(u) = −log(1−u)/u` 分部；B 类把对数-有理
+被积式 `R(x)·log(A(x))`（对数自变量仿射）经极点条目
+`∫ log(u)/(u−β) du = log(u)·log(1−u/β) + Li₂(u/β)` 归约。所有候选在发射前都先过本地数值自检
+（实值域采样、至多三组参数取值），片段外的形状诚实拒绝。
 
 ---
 

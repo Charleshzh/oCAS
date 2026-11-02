@@ -16,7 +16,7 @@ reference systems is tracked in
 [GAP_ANALYSIS_EN.md](docs/planning/GAP_ANALYSIS_EN.md) and
 [BENCHMARK_RESULTS_CN.md](docs/planning/BENCHMARK_RESULTS_CN.md) (Chinese).
 
-> **Status**: Beta (0.30.0). The full symbolic engine, polynomial algebra,
+> **Status**: Beta (0.31.0). The full symbolic engine, polynomial algebra,
 > equation solvers, ODE solvers (first/second-order + systems + series +
 > Laplace IVP), JIT/SIMD evaluation, and tri-language bindings (Rust,
 > Python, C/C++) are feature-complete. `pip install ocas` is available on PyPI.
@@ -123,7 +123,7 @@ See [ARCHITECTURE_EN.md](docs/planning/ARCHITECTURE_EN.md) for the full design.
 
 ```toml
 [dependencies]
-ocas = "0.30"
+ocas = "0.31"
 ```
 
 ```rust

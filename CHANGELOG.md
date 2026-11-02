@@ -9,6 +9,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.31.0] - 2026-11-02
+
+**二重对数（Li₂）层与 W6a 单根式接线 / Dilogarithm (Li₂) layer and the W6a single-radical wiring**
+
+### Added / 新增
+
+- **`polylog(2, z)` 函数头**：`normalize` 的参数保序表登记 `polylog`（阶与自变量不可交换）；`derivative.rs` 增加 `d/dz Li₂(z) = −log(1−z)/z`（含链式；`Li₁(z) = −log(1−z)`；其余阶/符号阶返回未求值 `Derivative`，诚实拒绝）；`rules.rs` 增加 `polylog(1, z) → −log(1−z)`、`polylog(2, 0) → 0`、`polylog(2, 1) → π²/6` 三条最小化简。
+  / The `polylog(2, z)` head: order-preserving normalization, the derivative-table entry `d/dz Li₂(z) = −log(1−z)/z` (with chain rule; `Li₁` elementary; other/symbolic orders stay unevaluated), and three minimal simplification rules.
+
+- **独立数值 oracle**（`ocas-tests/src/integral_eval.rs`）：实值支上实现 Li₂——`|z| ≤ ½` 级数、`½ < z < 1` Euler 反射、`−2 ≤ z < −½` Landen 变换、`z < −2` 反演、`z = 1` 常量；`z > 1` 返回 `Eval::Domain`（跳过该采样点）而不是 `Unsupported`（后者会中止整轮核验）。参考值由 mpmath 40 位生成并以常量入库，网格相对误差 **4.4e-16**、导数自检 **6.0e-10**。
+  / The independent Li₂ oracle on the real branch (series / Euler reflection / Landen / inversion), with 40-digit mpmath reference values pinned as test constants.
+
+- **Li₂ 归约骨架**（新模块 `integral/polylog.rs`，规格 `POLYLOG_SPEC_CN.md`）：A 类（被积式含 `polylog(2, u)`，`u` 仿射）按导数表分部，残项交 B 类；B 类把 `R(x)·log(A(x))`（对数自变量为仿射因子之积/幂/商）拆成仿射对数项，经极点条目 `∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)` 归约；权重片段为「至多两个线性分母因子（指数 −1）+ 分子次数更低」。**每个候选发射前都过本地 f64 自检门**：确定性采样 + 让每个 Li₂ 自变量落在实值支的附加采样、至多三组参数取值，可用点少于 2 或出现量级不符即拒绝——不通过门绝不发射。
+  / The Li₂ reduction skeleton: the A class by parts against the derivative table, the B class through the pole entry, with a local numerical emission gate no candidate can bypass.
+
+- **W6a 单根式阶段接线**（`integral/single_radical.rs`，0.30.0 的未接线资产）：修复 `rubi-00401` 分支符号错案（分支安全的偶代换路线 + 精确的清除负幂 pass），并新增**双片层数值证据门**（12 个确定性采样点覆盖正负两片层，相对误差 ≤ 1e-6，两片层都必须给出可用证据）与**重入护栏**（替代形式回链后再次进入本阶段时直接拒绝，消除代换级联造成的墙钟爆炸）。
+  / Wave 6a is wired: the `rubi-00401` branch-sign bug is fixed by the branch-safe even substitution plus exact inverse-power clearing, every emission passes a two-sheet numeric gate, and a re-entrancy guard removes the substitution-cascade wall-clock blow-up.
+
+### Fixed / 修复
+
+- **`rubi-00401` 分支符号错案**（`sqrt(-1 + 1/x^2)/(x*(-1 + x^2)^2)`）：0.30.0 W6a 试验中该形被发射为**全局负号**的答案（oracle 相对误差 2.0）。现由偶代换 `v = x²` 得到偶函数原函数，正负两片层均通过数值核验（x = ±0.6 完全一致）；pinned 测试 `wave_030_w6a_branch_shape_never_wrong` 由「fallback 允许」收紧为「必须 Verified」。
+  / The W6a branch-sign wrong answer is fixed and pinned: the shape verifies on both sheets and the pin now requires a verified answer.
+
+### Changed / 变更
+
+- **链序**：`single_radical` 接在 `multi_radical` 之后；新增 `log_rational` 阶段（`elliptic` 之后、`heuristic` 之前），只把更早阶段全部拒绝的形状转成解。
+  / Chain order: `single_radical` after `multi_radical`, and the new `log_rational` stage just before `heuristic`.
+
+- **`normalize` 保序表 / 导数表 / `calculus_rules`** 同步登记 `polylog`；发射门的 Li₂ 求值与测试 oracle 各自独立实现（oracle 参考值来自 mpmath，符合规格「不得自证自」）。
+  / The normalize order table, derivative table and calculus rules register the new head; the emission gate's evaluator is independent of the test oracle.
+
+- **审阅补强（发布前）**：发射门与双片层门的常量/参数口径统一并加严——`polylog` 门把 `e`/`E` 作为自由参数采样（`pi` 仍为常量），W6a 双片层门把 `pi` 当常量、含 `i`/`I` 的形状直接拒绝；新增发射门**负向测试**（错误符号/常数倍缩放/零候选必须被拒）、门外采样复核与两条参数口径测试。行为无变化：复评后两次同树复跑的 solved id 集与改前完全相同（0 新解、0 回归），墙钟 472.6/471.9 s。
+  / Pre-release review strengthening: both emission gates get pinned constant/parameter conventions, and the dilogarithm gate gains negative tests plus off-gate-sample re-verification. No behavioural change: the solved id set is identical to the pre-review final runs (0 new solves, 0 regressions).
+
+### 实测（1892 题库，与 0.30.0 基线对照）
+
+- **solved 451 → 478（+27，coverage 23.84% → 25.26%）、逐题回归 0、`verify_mismatches` 0、崩溃 0、超时 12 → 13（≤ 14 硬门；新增 `rubi-01075`/`rubi-01847` 两个慢形、`rubi-00260` 由超时转为 7.8–9.4 s 的慢速拒绝（逐次复跑浮动，距 10 s 预算余量很小））、证书假阳性 0**
+- 墙钟 **472.6 s / 471.9 s**（两次同树复跑，差 0.7 s < 8 s，按更慢一次 **472.6 s** 计；门 ≤ 538.5 s）
+- `certified_rate` 48.8% → **50.2%**（240/478）；verified 436/478（unverified 42）
+- 桶变化（0.30.0 → 0.31.0）：`exp-log` 8 → **10/83**、radical 84 → 100、power-binomial 174 → 182、mixed-other 83 → 84；其余不变
+- 机制归因：`polylog` **+3**（`rubi-00746` / `rubi-01004` 两个 exp-log 目标 + `rubi-00050` A 类）；W6a 接线净 **+24**（radical +16、power-binomial +8）。较 0.30.0 试验的 +29 少 5：分支修复与双片层门拒绝 3 个原本「解出但不可信」的形状，重入护栏再让出 2 个（`rubi-00791`/`rubi-01095`），换取墙钟 561.6 → 489.1 s（同会话；复评后终态复跑 472.6 s）与超时 14 → 13
+- 归因口径更正：参考答案含 `polylog` 的案例为 **123 例 = 5 A + 118 B**（2026-11-02 审计；`ocas-tests/scripts/attribute_031.py`。旧文档「122」作废）。B 类桶分布：mixed-other 41、inverse-trig-hyper 40、exp-log 26、trig 6、hyperbolic 4、power-binomial 1
+
+### 未达与后移（如实记录）
+
+- **`exp-log` 门恰好 10/83**：`rubi-00746`/`rubi-01004` 全部命中，但无余量；第三候选（`rubi-00067`/`rubi-01118`/`rubi-01074` 等需 Möbius 恒等式族）未纳入本版。
+- **`inverse-trig-hyper` 中由 polylog 需求导致的拒绝面后移 0.31b**：审计显示该桶有 40 例答案为 Li₂，绝大多数需要 M4 反函数代换向 Li₂ 归约器「交棒」以及更高阶核幂/平方头归约；本版不承诺。
+- **超时未回到 12**：`rubi-01075`/`rubi-01847` 在 W6a 的替代形式回链时进入 `multi_radical` 的慢路径；本版按 ≤14 硬门接受并逐 id 记录。
+- **A 类仅 `rubi-00050` 可及**：`rubi-00009`/`rubi-00940` 的参考解含 polylog(3)、`rubi-00824` 为 3 阶、`rubi-00043` 为符号阶，均超出 0.31a 的 `s = 2` 范围。
+
+### 文档 / Docs
+
+- `POLYLOG_SPEC_CN.md` 由骨架转为已交付（§6/§8 勾选、§7 实现偏差记录、122 → 123 归因更正、`z > 1` 返回 `Domain` 的偏差）；`ROADMAP_*`/`EVOLUTION_PLAN_*`/`GAP_ANALYSIS_*` 写入实测与后移；书籍（en/zh）特殊函数表、阶段表与模块树加入 `polylog(2, ·)` 与 `integral/polylog.rs`；新增 `ocas-tests/scripts/attribute_031.py` 与 `fetch_rubi_corpus.py --answers-out`。
+  / The SPEC moves from skeleton to delivered with its deviation record; the planning docs and both book editions record the measured results and deferrals; the answer-aware attribution tooling is added.
+
+---
+
 ## [0.30.0] - 2026-10-25
 
 **代数扩张（RT 代数数根 + 多根式基归约）与反函数代换 / Algebraic extensions (RT algebraic roots + multi-radical reduction) and inverse-function substitution**

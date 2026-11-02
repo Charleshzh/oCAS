@@ -378,6 +378,7 @@ When the Risch algorithm proves that an integral has **no elementary antiderivat
 | $\cosh(x)/x$ | $\text{Chi}(x)$ | Hyperbolic cosine integral |
 | $\sin(x^2)$ | $\sqrt{\frac{\pi}{2}}\,S\!\left(\sqrt{\frac{2}{\pi}}\,x\right)$ | Fresnel $S$ |
 | $\cos(x^2)$ | $\sqrt{\frac{\pi}{2}}\,C\!\left(\sqrt{\frac{2}{\pi}}\,x\right)$ | Fresnel $C$ |
+| $\log(1-x)/x$ | $-\text{Li}_2(x)$ | Dilogarithm (`polylog(2, ·)`, 0.31.0) |
 
 **Matching logic**: `special_integrate` decomposes the integrand into product factors and tries to match the following pattern families:
 
@@ -385,6 +386,12 @@ When the Risch algorithm proves that an integral has **no elementary antiderivat
 - **Ei family**: $e^x / x$, including the generalization $e^{cx}/x$
 - **Si/Ci/Shi/Chi family**: trigonometric or hyperbolic functions divided by $x$
 - **Fresnel family**: $\sin(x^2)$, $\cos(x^2)$
+- **Dilogarithm** (0.31.0, `integral/polylog.rs`): the A class (integrands carrying
+  `polylog(2, u)`, $u$ affine) is integrated by parts against
+  $d/du\,\text{Li}_2(u) = -\log(1-u)/u$; the B class reduces log-rational integrands
+  $R(x)\log(A(x))$ with affine logarithm arguments through the pole entry
+  $\int \log(u)/(u-\beta)\,du = \log u\log(1-u/\beta) + \text{Li}_2(u/\beta)$. Emission is gated by a
+  local numeric self-check.
 
 Note: these are **not** part of the Risch algorithm. After Risch proves "no elementary antiderivative exists", the special-function table provides a "suboptimal" answer.
 
@@ -432,6 +439,7 @@ ocas-calc/src/integral/
 │                    base_rde (Q[x]) + recursive tower
 ├── trig.rs        ← trigonometric ↔ complex-exponential rewrite (trig_to_exp / realify)
 ├── heuristic.rs   ← heuristics: parts / trig substitution / Weierstrass / Euler
+├── polylog.rs     ← dilogarithm (Li₂) A/B reduction + emission gate (0.31.0)
 └── special.rs     ← special-function table (erf, Ei, Si, Ci, Fresnel, etc.)
 ```
 

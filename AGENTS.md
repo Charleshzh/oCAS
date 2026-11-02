@@ -12,7 +12,7 @@ oCAS (open Computer Algebra System) is a Rust computer algebra system under
 **LGPL-3.0-or-later**. Default builds are portable (pure Rust); all GPL-only code
 must stay in the `ocas-gpl` placeholder crate (currently no implementation).
 - Edition 2024, MSRV 1.97 (pinned via `rust-toolchain.toml` to 1.97.1).
-- Current version: **0.30.0** (see `Cargo.toml` / `CHANGELOG.md`).
+- Current version: **0.31.0** (see `Cargo.toml` / `CHANGELOG.md`).
 - Repository: https://github.com/Charleshzh/oCAS · Docs: https://charleshzh.github.io/oCAS/latest/en/
 
 ## Layout and layers
@@ -124,10 +124,17 @@ Automated, CI-gated; the root `vX.Y.Z` tag is the release switch. One root
   `CLAUDE.md`, or generated benchmark data (`ocas-tests/data/`).
 - Prefer evidence over assumption: check source, docs, or official references;
   cite file paths/line numbers when reporting findings.
-- Current release state: 0.30.0 published on crates.io / PyPI / GitHub Releases /
-  docs (2026-10-25); 0.28.0/0.29.0 backfilled. Next line: 0.31a (polylog/Li2
-  head + oracle + Li2 skeleton + W6a branch fix) and 0.31b (SPEC-first Meijer G /
-  ProvedNonElementary / algebraic tower, deferred to 0.32/0.33).
+- Current release state: **0.31.0 prepared on `main`** (`Cargo.toml` + `CHANGELOG.md`
+  bumped; fast gate, clippy, fmt, `cargo deny`, consistency and the 198-case
+  correctness suite green; the 1892 corpus measured twice) and awaiting the
+  `release-plz` publish/tag run; 0.30.0 is the last fully published version
+  (crates.io / PyPI / GitHub Releases / docs, 2026-10-25); 0.28.0/0.29.0
+  backfilled. The pre-existing slow Gröbner proptest
+  `groebner::multi_modular_matches_f5_random` is excluded from local full-gate
+  runs and belongs to the issue #55 triage (it is untouched by 0.31.0). Next
+  line: 0.31b (SPEC-first Meijer G / ProvedNonElementary / algebraic tower / the
+  polylog-driven `inverse-trig-hyper` surface, deferred to 0.32/0.33) and 0.32.0
+  (complexity/performance wave).
 - Open issues: #55 = `full-tests` triage / known gaps; #21 = `paste` RUSTSEC
   advisory tracking.
 
@@ -143,7 +150,7 @@ Automated, CI-gated; the root `vX.Y.Z` tag is the release switch. One root
 oCAS 是 Rust 编写的计算机代数系统，许可证 **LGPL-3.0-or-later**。默认构建可移植
 （纯 Rust）；GPL 专属代码只能放在 `ocas-gpl` 占位 crate（当前无实现）。
 - Edition 2024，MSRV 1.97（`rust-toolchain.toml` 固定 1.97.1）。
-- 当前版本：**0.30.0**（见 `Cargo.toml` / `CHANGELOG.md`）。
+- 当前版本：**0.31.0**（见 `Cargo.toml` / `CHANGELOG.md`）。
 - 仓库：https://github.com/Charleshzh/oCAS · 文档：https://charleshzh.github.io/oCAS/latest/zh/
 
 ## 结构与分层
@@ -236,8 +243,12 @@ LGPL 后端测试、maturin wheel + pytest + C 示例、严格 rustdoc、Miri；
 - 不要提交密钥、凭据、本地环境文件（`.cargo/config.toml`）、`CLAUDE.md` 或生成的
   基准数据（`ocas-tests/data/`）。
 - 以证据说话：查源码、文档或官方资料；汇报时给文件路径/行号。
-- 当前发布状态：0.30.0 已于 2026-10-25 全渠道发布（crates.io/PyPI/GitHub Releases/
-  文档），0.28.0/0.29.0 已回填。下一条线：0.31a（polylog/Li₂ 头 + oracle + Li₂
-  骨架 + W6a 分支修复）与 0.31b（SPEC 先行；Meijer G / ProvedNonElementary / 代数塔
-  移到 0.32/0.33）。
+- 当前发布状态：**0.31.0 已在 `main` 上备妥**（`Cargo.toml` + `CHANGELOG.md` 已 bump；
+  fast gate、clippy、fmt、`cargo deny`、consistency 与 198 项 correctness 套件全绿；
+  1892 题库两次同树复跑已记录），等待 `release-plz` 发布/打 tag；最近一次全渠道发布版本为
+  0.30.0（crates.io/PyPI/GitHub Releases/文档，2026-10-25），0.28.0/0.29.0 已回填。
+  既有且与本版无关的慢测试 `groebner::multi_modular_matches_f5_random` 从本地 full gate
+  排除，归 issue #55 triage。下一条线：0.31b（SPEC 先行；Meijer G / ProvedNonElementary /
+  代数塔 / `inverse-trig-hyper` 中由 polylog 需求导致的拒绝面，移到 0.32/0.33）与
+  0.32.0（复杂度/性能波）。
 - open issue：#55（`full-tests` 已知缺口跟踪）、#21（`paste` RUSTSEC 跟踪）。

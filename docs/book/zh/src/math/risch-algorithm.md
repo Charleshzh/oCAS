@@ -373,6 +373,7 @@ $$\sin u = \frac{2t}{1+t^2}, \qquad \cos u = \frac{1-t^2}{1+t^2}, \qquad du = \f
 | $\cosh(x)/x$ | $\text{Chi}(x)$ | 双曲余弦积分 |
 | $\sin(x^2)$ | $\sqrt{\frac{\pi}{2}}\,S\!\left(\sqrt{\frac{2}{\pi}}\,x\right)$ | Fresnel $S$ |
 | $\cos(x^2)$ | $\sqrt{\frac{\pi}{2}}\,C\!\left(\sqrt{\frac{2}{\pi}}\,x\right)$ | Fresnel $C$ |
+| $\log(1-x)/x$ | $-\text{Li}_2(x)$ | 二重对数（`polylog(2, ·)`，0.31.0） |
 
 **匹配逻辑**：`special_integrate` 将被积函数分解为乘积因子，尝试匹配以下模式族：
 
@@ -380,6 +381,11 @@ $$\sin u = \frac{2t}{1+t^2}, \qquad \cos u = \frac{1-t^2}{1+t^2}, \qquad du = \f
 - **Ei 族**：$e^x / x$，含 $e^{cx}/x$ 推广
 - **Si/Ci/Shi/Chi 族**：三角或双曲函数除以 $x$
 - **Fresnel 族**：$\sin(x^2)$、$\cos(x^2)$
+- **二重对数**（0.31.0，`integral/polylog.rs`）：A 类（被积式含 `polylog(2, u)`，$u$ 仿射）
+  按 $d/du\,\text{Li}_2(u) = -\log(1-u)/u$ 分部；B 类把对数-有理被积式
+  $R(x)\log(A(x))$（对数自变量仿射）经极点条目
+  $\int \log(u)/(u-\beta)\,du = \log u\log(1-u/\beta) + \text{Li}_2(u/\beta)$ 归约。发射前有本地
+  数值自检门。
 
 注意：这些**不是** Risch 算法的一部分。Risch 证明"不存在初等原函数"后，特殊函数表提供"次优"答案。
 
@@ -427,8 +433,8 @@ ocas-calc/src/integral/
 │                    base_rde (Q[x]) + 递归塔
 ├── trig.rs        ← 三角↔复指数重写（trig_to_exp / realify）
 ├── heuristic.rs   ← 启发式：分部积分 / 三角替换 / Weierstrass / Euler
+├── polylog.rs     ← 二重对数（Li₂）A/B 归约 + 发射门（0.31.0）
 └── special.rs     ← 特殊函数表（erf, Ei, Si, Ci, Fresnel 等）
-```
 
 ### Risch 算法的执行流程
 

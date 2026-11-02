@@ -19,11 +19,14 @@
 //! The special-function table (0.27.3) covers `erf`/`erfc`/`erfi`, the
 //! exponential-integral family (`Ei`, `Ei(n, z)` = `Eₙ(z)`), the trigonometric
 //! integrals (`Si`, `Ci`, `Shi`, `Chi`) and the Fresnel integrals
-//! (`fresnels`, `fresnelc`). Every algorithm here was checked against
-//! `mpmath`/SymPy at 40 digits before being written down; the crossovers and
-//! the branch conventions are documented at their definitions. Heads that are
-//! *not* implemented stay `Unsupported`, which is an honest "cannot decide"
-//! rather than a guess.
+//! (`fresnels`, `fresnelc`). 0.31a added the dilogarithm head
+//! `polylog(2, z)` = `Li₂(z)`, real-valued on `z ≤ 1`; `z > 1` is outside the
+//! real domain and is reported as `Domain` (the sample is skipped) instead of
+//! `Unsupported` (which would abort the whole verification round). Every
+//! algorithm here was checked against `mpmath`/SymPy at 40 digits before being
+//! written down; the crossovers and the branch conventions are documented at
+//! their definitions. Heads that are *not* implemented stay `Unsupported`,
+//! which is an honest "cannot decide" rather than a guess.
 
 use ocas_atom::{Atom, AtomNode, Symbol};
 
@@ -280,6 +283,7 @@ fn eval_fun(name: &str, args: &[Atom<'_>], env: &[(Symbol, f64)]) -> Eval {
     match name {
         "EllipticF" | "EllipticE" | "EllipticPi" => elliptic(name, args, env),
         "Ei" if args.len() == 2 => ei_order(args, env),
+        "polylog" => polylog(args, env),
         _ => {
             if args.len() != 1 {
                 return Eval::Unsupported;
@@ -704,6 +708,120 @@ fn ei_order(args: &[Atom<'_>], env: &[(Symbol, f64)]) -> Eval {
     } else {
         Eval::Domain
     }
+}
+
+// ------------------------------------------------------------------
+//  Dilogarithm (`polylog(2, z)` = Li₂)
+// ------------------------------------------------------------------
+
+/// `ζ(2) = π²/6 = Li₂(1)`.
+const LI2_AT_ONE: f64 = std::f64::consts::PI * std::f64::consts::PI / 6.0;
+
+/// `Li₂(−1) = −π²/12`.
+const LI2_AT_MINUS_ONE: f64 = -std::f64::consts::PI * std::f64::consts::PI / 12.0;
+
+/// Maximum number of terms of the Maclaurin series used for `|z| ≤ 0.5`
+/// (SPEC §5's head-evaluation cap of 4096 terms). At `|z| = 0.5` the series
+/// already converges to ~1e-16 in 50 terms, so the cap is a safety net rather
+/// than the working regime.
+const LI2_SERIES_MAX_TERMS: u32 = 4096;
+
+/// Maclaurin series `Li₂(z) = Σ_{k≥1} z^k/k²`.
+///
+/// Fast and cancellation-free for `|z| ≤ 0.5` (including the alternating
+/// negative half-line: the worst grid point `z = −0.9` needs 289 terms and is
+/// accurate to ~4e-16). The `k²` denominator makes the series converge only
+/// like `1/k` as `|z| → 1`, hence the [`LI2_SERIES_MAX_TERMS`] cap on the
+/// branches that can reach that region.
+fn li2_series(z: f64) -> f64 {
+    let mut term = z;
+    let mut sum = z;
+    for k in 2..=LI2_SERIES_MAX_TERMS {
+        let kf = f64::from(k);
+        term *= z;
+        let add = term / (kf * kf);
+        sum += add;
+        // 1e-18 relative is far below the oracle's 1e-12 accuracy target.
+        if add.abs() <= 1e-18 * sum.abs() {
+            break;
+        }
+    }
+    sum
+}
+
+/// `polylog(s, z)`: real-valued dilogarithm `Li₂(z)`, order `s = 2` only.
+///
+/// The order argument is evaluated (not pattern-matched on the atom) and must
+/// be exactly 2; every other order — and every arity other than two — is an
+/// honest [`Eval::Unsupported`], matching SPEC §5 ("order rejected at the
+/// head").
+fn polylog(args: &[Atom<'_>], env: &[(Symbol, f64)]) -> Eval {
+    if args.len() != 2 {
+        return Eval::Unsupported;
+    }
+    let order = match eval_f64(args[0], env) {
+        Eval::Value(v) => v,
+        other => return other,
+    };
+    if order != 2.0 {
+        return Eval::Unsupported;
+    }
+    match eval_f64(args[1], env) {
+        Eval::Value(z) => li2(z),
+        other => other,
+    }
+}
+
+/// Real-valued dilogarithm `Li₂(z)` on its real domain `z ≤ 1`.
+///
+/// Branch selection (each formula was checked against `mpmath` at 40 digits
+/// before being written down, per SPEC §3):
+///
+/// - `|z| ≤ 0.5`: direct Maclaurin series ([`li2_series`]).
+/// - `0.5 < z < 1`: Euler's reflection
+///   `Li₂(z) = π²/6 − ln z·ln(1−z) − Li₂(1−z)`; the argument `1−z ∈ (0, 0.5)`
+///   goes back to the series.
+/// - `−1 < z ≤ −0.5`: the series itself (SPEC §3: "−1 < z < 0: the series
+///   converges directly, no branch problem"). Its `1/k` tail limits accuracy
+///   only in a sliver next to `z = −1` (≈6e-10 at `z = −0.999`, worse closer
+///   in); exact `z = −1` is the constant branch below.
+/// - `z < −1`: inversion `Li₂(z) = −π²/6 − ½·ln²(−z) − Li₂(1/z)`, where
+///   `1/z ∈ (−1, 0)` is handled by the previous two bullets. One recursive
+///   call, so the depth is at most two.
+/// - `z = −1` is the exact constant `−π²/12` (the inversion identity is
+///   self-referential there, and this is also required to terminate the
+///   recursion).
+/// - `z = 1` is the exact constant `π²/6`; `z > 1` is **outside the real
+///   domain** (Li₂ acquires an imaginary part) and is reported as
+///   [`Eval::Domain`], so [`verify_antiderivative`] skips that sample instead
+///   of aborting the whole round the way [`Eval::Unsupported`] would.
+///
+/// Non-finite arguments are [`Eval::NonFinite`].
+fn li2(z: f64) -> Eval {
+    if !z.is_finite() {
+        return Eval::NonFinite;
+    }
+    let v = if z == 1.0 {
+        LI2_AT_ONE
+    } else if z > 1.0 {
+        return Eval::Domain;
+    } else if z == -1.0 {
+        LI2_AT_MINUS_ONE
+    } else if z.abs() <= 0.5 {
+        li2_series(z)
+    } else if z > 0.5 {
+        LI2_AT_ONE - z.ln() * (1.0 - z).ln() - li2_series(1.0 - z)
+    } else if z < -1.0 {
+        let inner = match li2(1.0 / z) {
+            Eval::Value(v) => v,
+            other => return other,
+        };
+        -LI2_AT_ONE - 0.5 * (-z).ln().powi(2) - inner
+    } else {
+        // −1 < z < −0.5: the series converges directly.
+        li2_series(z)
+    };
+    finite(v)
 }
 
 // ------------------------------------------------------------------
@@ -1274,5 +1392,173 @@ mod tests {
         let (a, b) = (eval_f64(f1, &env), eval_f64(f2, &env));
         assert!(matches!((a, b), (Eval::Value(_), Eval::Value(_))));
         assert_ne!(a, b);
+    }
+
+    #[test]
+    fn dilogarithm_matches_mpmath_reference_grid() {
+        // 40-digit references generated with mpmath (2026-11-02) from the
+        // project venv, one value per grid point, e.g.
+        //   ocas-tests/.venv/Scripts/python.exe -c "import mpmath; \
+        //     mpmath.mp.dps=40; \
+        //     print(mpmath.nstr(mpmath.polylog(2, mpmath.mpf('-0.9')), 40))"
+        // These literals are deliberately NOT produced by the crate's own
+        // series: the oracle must stay an independent reference (SPEC §3.4).
+        const GRID: [(f64, f64); 8] = [
+            (-0.9, -0.752_163_179_217_261_6),
+            (-0.5, -0.448_414_206_923_646_2),
+            (-0.1, -0.097_605_235_229_321_59),
+            (0.1, 0.102_617_791_099_391_13),
+            (0.3, 0.326_129_510_075_476_1),
+            (0.5, 0.582_240_526_465_012_5),
+            (0.7, 0.889_377_624_286_038_6),
+            (0.9, 1.299_714_723_004_958_8),
+        ];
+        for (z, want) in GRID {
+            match li2(z) {
+                Eval::Value(v) => {
+                    let rel = (v - want).abs() / want.abs();
+                    assert!(
+                        rel <= 1e-12,
+                        "Li2({z}) = {v}, want {want}, relative error {rel:.3e}"
+                    );
+                }
+                other => panic!("Li2({z}): expected a value, got {other:?}"),
+            }
+        }
+        // The inversion branch (`z < −1`) needs its own independent probes;
+        // same mpmath generation command, values at 40 digits:
+        //   Li2(−1.2) = −0.9574053085587812190...
+        //   Li2(−2)   = −1.4367463668836809463...
+        //   Li2(−3)   = −1.9393754207667089530...
+        const INVERTED: [(f64, f64); 3] = [
+            (-1.2, -0.957_405_308_558_781_3),
+            (-2.0, -1.436_746_366_883_680_8),
+            (-3.0, -1.939_375_420_766_708_9),
+        ];
+        for (z, want) in INVERTED {
+            match li2(z) {
+                Eval::Value(v) => {
+                    let rel = (v - want).abs() / want.abs();
+                    assert!(
+                        rel <= 1e-12,
+                        "Li2({z}) = {v}, want {want}, relative error {rel:.3e}"
+                    );
+                }
+                other => panic!("Li2({z}): expected a value, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn dilogarithm_special_values() {
+        // Li2(1) = pi^2/6 = 1.644934066848226436472415166646025189219,
+        // Li2(0) = 0 and Li2(-1) = -pi^2/12
+        // = -0.8224670334241132182362075833230125946095 (mpmath, 40 digits).
+        // Evaluated through the atom path, so the dispatch is exercised too.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        for (src, want) in [
+            ("polylog(2, 1)", LI2_AT_ONE),
+            ("polylog(2, 0)", 0.0),
+            ("polylog(2, -1)", LI2_AT_MINUS_ONE),
+        ] {
+            match eval_f64(parse(&ctx, src), &[]) {
+                Eval::Value(v) => assert!(
+                    (v - want).abs() <= 1e-15 * want.abs().max(1.0),
+                    "{src}: got {v}, want {want}"
+                ),
+                other => panic!("{src}: expected a value, got {other:?}"),
+            }
+        }
+        // z = 1 and z = -1 hit the exact-constant branches, not a series sum:
+        // pin the returned bits so a branch regression cannot hide behind the
+        // tolerance above.
+        assert_eq!(li2(1.0), Eval::Value(LI2_AT_ONE));
+        assert_eq!(li2(0.0), Eval::Value(0.0));
+        assert_eq!(li2(-1.0), Eval::Value(LI2_AT_MINUS_ONE));
+        // The constants themselves agree with the 40-digit references.
+        assert!((LI2_AT_ONE - 1.644_934_066_848_226_4).abs() < 1e-15);
+        assert!((LI2_AT_MINUS_ONE + 0.822_467_033_424_113_2).abs() < 1e-15);
+    }
+
+    #[test]
+    fn dilogarithm_domain_and_non_finite_inputs() {
+        // z > 1 is outside the real domain (Li2 acquires an imaginary part).
+        // It must be Domain, not Unsupported: Unsupported aborts the whole
+        // verification round, while Domain only skips this sample.
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        // The parser has no decimal literals, so the out-of-domain probe is
+        // written as the integer fraction 3/2 = 1.5.
+        for src in ["polylog(2, 2)", "polylog(2, 3*(2^-1))"] {
+            assert_eq!(
+                eval_f64(parse(&ctx, src), &[]),
+                Eval::Domain,
+                "{src} should be out of the real domain"
+            );
+        }
+        assert_eq!(li2(2.0), Eval::Domain);
+        assert_eq!(li2(1.5), Eval::Domain);
+        // Non-finite arguments are reported as non-finite values, not as a
+        // domain error.
+        for z in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(li2(z), Eval::NonFinite, "Li2({z}) should be NonFinite");
+        }
+    }
+
+    #[test]
+    fn dilogarithm_rejects_other_orders_and_arities() {
+        // Only the real-valued order s = 2 is implemented in 0.31a; every
+        // other order (and every arity except two) is an honest Unsupported
+        // (SPEC §5: s ∉ {1, 2} is rejected at the head).
+        let arena = Arena::new();
+        let ctx = AtomArena::new(&arena);
+        for src in [
+            "polylog(1, (2^-1))",
+            "polylog(3, (2^-1))",
+            "polylog((2^-1))",
+            "polylog(2)",
+            "polylog(2, (2^-1), 1)",
+        ] {
+            assert_eq!(
+                eval_f64(parse(&ctx, src), &[]),
+                Eval::Unsupported,
+                "{src} should be Unsupported"
+            );
+        }
+        // The order argument is evaluated rather than pattern-matched on the
+        // atom: a symbolic order that evaluates to exactly 2 is accepted, one
+        // that evaluates to any other value is not.
+        let ok = parse(&ctx, "polylog(s, (2^-1))");
+        assert!(matches!(
+            eval_f64(ok, &[(Symbol::new("s"), 2.0)]),
+            Eval::Value(_)
+        ));
+        assert_eq!(eval_f64(ok, &[(Symbol::new("s"), 3.0)]), Eval::Unsupported);
+    }
+
+    #[test]
+    fn dilogarithm_derivative_matches_closed_form() {
+        // d/dz Li2(z) = -ln(1-z)/z (SPEC §3.2). Central difference with
+        // h = 1e-5: the truncation error is O(h^2), while the oracle's own
+        // 5-point rule runs at h = 1e-4, too coarse for a 1e-9 target. z = 0
+        // is excluded because the closed form divides by z; the grid's
+        // closest point to z = 1 is 0.9, where the difference is still well
+        // conditioned.
+        const H: f64 = 1e-5;
+        const GRID: [f64; 8] = [-0.9, -0.5, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9];
+        for z in GRID {
+            let at = |t: f64| match li2(t) {
+                Eval::Value(v) => v,
+                other => panic!("Li2({t}) did not evaluate: {other:?}"),
+            };
+            let numeric = (at(z + H) - at(z - H)) / (2.0 * H);
+            let exact = -(1.0 - z).ln() / z;
+            let rel = (numeric - exact).abs() / exact.abs();
+            assert!(
+                rel <= 1e-9,
+                "d/dz Li2({z}) = {numeric}, want {exact}, relative error {rel:.3e}"
+            );
+        }
     }
 }
