@@ -1,0 +1,1178 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Rewriting &amp; Simplification - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html" class="active"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-rewrite.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-rewrite--simplification"><a class="header" href="#rust-api-reference-rewrite--simplification">Rust API Reference: Rewrite &amp; Simplification</a></h1>
+<p>This chapter documents the full public API of the <code>ocas-rewrite</code> crate. Built on top of <code>ocas-atom</code>, it provides:</p>
+<ul>
+<li><strong>Pattern matching</strong>: wildcards (<code>_</code>, <code>__</code>, <code>___</code>) with AC (associative-commutative) backtracking matching</li>
+<li><strong>Rewrite rules</strong>: the <code>Rule</code> abstraction pairing a pattern with a replacement closure</li>
+<li><strong>Simplification engine</strong>: <code>simplify</code> / <code>simplify_with_fuel</code> apply rules iteratively until a fixed point</li>
+<li><strong>Replacement</strong>: <code>replace_once</code> / <code>replace_all</code> / <code>replace_all_multiple</code> controlled replacement</li>
+<li><strong>Transformation</strong>: <code>transform</code> bottom-up traversal, <code>partition_expr</code> combinatorial partitioning</li>
+<li><strong>E-graphs</strong>: equality saturation simplification based on the <code>egg</code> crate (requires the <code>egg</code> feature)</li>
+</ul>
+<p>Module layout:</p>
+<pre><code>ocas_rewrite
+├── pattern      — Pattern, WildcardLevel, PatternAlloc
+├── matcher      — match_pattern, Bindings, MatchValue, MatchError
+├── rules        — Rule, default_rules, 9 built-in rules
+├── simplify     — simplify, simplify_with_fuel
+├── replace      — replace_once, replace_all, replace_all_multiple, Replacement, Condition
+├── transformer  — transform, partition_expr
+├── combinatorics — partitions, PartitionSolution
+└── egraph       — AtomLanguage, simplify_with_egraph (feature = "egg")
+</code></pre>
+<hr />
+<h2 id="pattern-system"><a class="header" href="#pattern-system">Pattern System</a></h2>
+<h3 id="wildcardlevel"><a class="header" href="#wildcardlevel">WildcardLevel</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum WildcardLevel {
+    Single,       // x_  — matches a single atom
+    Sequence,     // __x — matches 1 or more atoms (in an Add/Mul/Fun argument list)
+    NullSequence, // ___x — matches 0 or more atoms
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Defines the matching scope of a wildcard.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th><th>Naming convention</th></tr></thead><tbody>
+<tr><td><code>Single</code></td><td>Matches exactly one atom</td><td>Variable name ends with <code>_</code>, e.g. <code>x_</code></td></tr>
+<tr><td><code>Sequence</code></td><td>Matches one or more atoms (non-empty sequence)</td><td>Variable name starts with <code>__</code>, e.g. <code>__x</code></td></tr>
+<tr><td><code>NullSequence</code></td><td>Matches zero or more atoms (nullable sequence)</td><td>Variable name ends with <code>___</code>, e.g. <code>x___</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <code>Pattern</code>, <code>match_pattern</code></p>
+<hr />
+<h3 id="pattern"><a class="header" href="#pattern">Pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Pattern&lt;'a&gt; {
+    Literal(Atom&lt;'a&gt;),
+    Wildcard(Symbol, WildcardLevel),
+    Add(Vec&lt;Pattern&lt;'a&gt;&gt;),
+    Mul(Vec&lt;Pattern&lt;'a&gt;&gt;),
+    Pow(Box&lt;(Pattern&lt;'a&gt;, Pattern&lt;'a&gt;)&gt;),
+    Fun(Symbol, Vec&lt;Pattern&lt;'a&gt;&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: A pattern AST that mirrors the <code>Atom</code> structure but adds wildcard nodes.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Literal(Atom)</code></td><td>Matches the given atom exactly</td></tr>
+<tr><td><code>Wildcard(name, level)</code></td><td>Wildcard, matched per <code>WildcardLevel</code> and bound to <code>name</code></td></tr>
+<tr><td><code>Add(pats)</code></td><td>Matches an addition node; arguments matched by <code>pats</code> (AC matching)</td></tr>
+<tr><td><code>Mul(pats)</code></td><td>Matches a multiplication node; arguments matched by <code>pats</code> (AC matching)</td></tr>
+<tr><td><code>Pow(Box&lt;(base, exp)&gt;)</code></td><td>Matches an exponentiation node</td></tr>
+<tr><td><code>Fun(head, pats)</code></td><td>Matches a function application; <code>head</code> is the function name, arguments matched in order</td></tr>
+</tbody></table>
+</div>
+<h4 id="patternfrom_atom"><a class="header" href="#patternfrom_atom">Pattern::from_atom</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_atom(_ctx: &amp;'a impl PatternAlloc&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Pattern&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Converts an <code>Atom</code> into a <code>Pattern</code>. Variable names ending or starting with <code>_</code>, <code>__</code>, or <code>___</code> are automatically recognized as wildcards of the corresponding level (e.g. <code>x_</code>, <code>__x</code>, <code>x___</code>).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;impl PatternAlloc&lt;'a&gt;</code></td><td>The pattern allocator (pass <code>&amp;()</code>)</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to convert</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Pattern&lt;'a&gt;</code> — the corresponding pattern.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let atom = ctx.var("x_");
+let pat = Pattern::from_atom(&amp;(), atom);
+// pat == Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>WildcardLevel</code>, <code>match_pattern</code></p>
+<hr />
+<h3 id="patternalloc"><a class="header" href="#patternalloc">PatternAlloc</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait PatternAlloc&lt;'a&gt; {
+    fn alloc_slice(&amp;self, items: &amp;[Pattern&lt;'a&gt;]) -&gt; &amp;'a [Pattern&lt;'a&gt;];
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Helper trait for allocating pattern slices in a caller-owned scratch arena, avoiding leaks into the global arena. The <code>()</code> implementation simply returns the slice via <code>Box::leak</code> (fine for one-off examples).</p>
+<p><strong>See also</strong>: <code>Rule</code>, <code>default_rules</code></p>
+<hr />
+<h2 id="pattern-matching"><a class="header" href="#pattern-matching">Pattern Matching</a></h2>
+<h3 id="matchvalue"><a class="header" href="#matchvalue">MatchValue</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum MatchValue&lt;'a&gt; {
+    Single(Atom&lt;'a&gt;),
+    Sequence(&amp;'a [Atom&lt;'a&gt;]),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: The value of a wildcard binding.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Single(Atom)</code></td><td>A single wildcard (<code>_</code>) bound to one atom</td></tr>
+<tr><td><code>Sequence(&amp;[Atom])</code></td><td>A sequence wildcard (<code>__</code> or <code>___</code>) bound to a slice of atoms</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <code>Bindings</code></p>
+<hr />
+<h3 id="bindings"><a class="header" href="#bindings">Bindings</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Bindings&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: The set of wildcard bindings produced by a successful pattern match.</p>
+<h4 id="bindingsnew"><a class="header" href="#bindingsnew">Bindings::new</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new() -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates an empty binding set.</p>
+<h4 id="bindingsget"><a class="header" href="#bindingsget">Bindings::get</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn get(&amp;self, name: Symbol) -&gt; Option&lt;&amp;MatchValue&lt;'a&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Looks up a bound value by name.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>The wildcard name (without trailing underscores)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;&amp;MatchValue&lt;'a&gt;&gt;</code> — a reference to the bound value if present.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::Bindings;
+
+let bindings = Bindings::new();
+// Usually produced by match_pattern
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>match_pattern</code>, <code>MatchValue</code></p>
+<hr />
+<h3 id="matcherror"><a class="header" href="#matcherror">MatchError</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum MatchError {
+    NoMatch,
+    InconsistentBinding,
+    BudgetExhausted,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: The reason a pattern match failed.</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>NoMatch</code></td><td>The pattern structure does not match</td></tr>
+<tr><td><code>InconsistentBinding</code></td><td>The same-named wildcard is bound to different values</td></tr>
+<tr><td><code>BudgetExhausted</code></td><td>AC backtracking exceeded the budget (10,000 by default)</td></tr>
+</tbody></table>
+</div>
+<p>Implements the <code>Display</code> and <code>Error</code> traits.</p>
+<p><strong>See also</strong>: <code>match_pattern_with_budget</code></p>
+<hr />
+<h3 id="match_pattern"><a class="header" href="#match_pattern">match_pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn match_pattern&lt;'a&gt;(
+    pattern: Pattern&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+) -&gt; Result&lt;Bindings&lt;'a&gt;, MatchError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Matches a pattern against an atom and returns the binding set. Uses the default backtracking budget (10,000 backtracks).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The pattern to match</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The target expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>:</p>
+<ul>
+<li><code>Ok(Bindings)</code> — match succeeded, containing all wildcard bindings</li>
+<li><code>Err(MatchError)</code> — match failed</li>
+</ul>
+<p><strong>Matching semantics</strong>:</p>
+<ul>
+<li><code>Add</code>/<code>Mul</code> nodes use AC (associative-commutative) matching: argument order does not matter, associativity is handled automatically</li>
+<li><code>Fun</code> nodes match arguments in order, with sequence wildcard support</li>
+<li>Same-named wildcards must bind to the same value</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_atom::Symbol;
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::matcher::{match_pattern, MatchValue};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single),
+    Pattern::Literal(ctx.num(0)),
+]);
+
+let expr = ctx.add(&amp;[ctx.var("y"), ctx.num(0)]);
+let bindings = match_pattern(pat, expr).unwrap();
+let x = bindings.get(Symbol::new("x")).unwrap();
+// MatchValue::Single(Atom("y"))
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>match_pattern_with_budget</code>, <code>Pattern</code>, <code>Bindings</code></p>
+<hr />
+<h3 id="match_pattern_with_budget"><a class="header" href="#match_pattern_with_budget">match_pattern_with_budget</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn match_pattern_with_budget&lt;'a&gt;(
+    pattern: Pattern&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    max_backtracks: usize,
+) -&gt; Result&lt;Bindings&lt;'a&gt;, MatchError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Pattern matching with a custom backtracking budget. Suitable for patterns with higher complexity that need a larger search space.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The pattern to match</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The target expression</td></tr>
+<tr><td><code>max_backtracks</code></td><td><code>usize</code></td><td>The maximum number of backtracks</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: Same as <code>match_pattern</code>.</p>
+<p><strong>Errors</strong>: Returns <code>MatchError::BudgetExhausted</code> when the budget is exhausted.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_atom::Symbol;
+use ocas_core::arena::Arena;
+use ocas_rewrite::matcher::match_pattern_with_budget;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+let atom = ctx.var("y");
+
+// Use a larger budget for complex patterns
+let bindings = match_pattern_with_budget(pat, atom, 100_000).unwrap();
+assert!(bindings.get(Symbol::new("x")).is_some());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>match_pattern</code>, <code>DEFAULT_MAX_BACKTRACKS</code></p>
+<hr />
+<h3 id="default_max_backtracks"><a class="header" href="#default_max_backtracks">DEFAULT_MAX_BACKTRACKS</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub const DEFAULT_MAX_BACKTRACKS: usize = 10_000;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: The default backtracking budget constant used by <code>match_pattern</code>.</p>
+<hr />
+<h2 id="rewrite-rules"><a class="header" href="#rewrite-rules">Rewrite Rules</a></h2>
+<h3 id="rule"><a class="header" href="#rule">Rule</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Rule&lt;'a&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: A rewrite rule pairing a pattern with a replacement closure. When the pattern matches a subexpression, the replacement closure receives the bindings and produces a new atom.</p>
+<h4 id="rulenew"><a class="header" href="#rulenew">Rule::new</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new&lt;F&gt;(pattern: Pattern&lt;'a&gt;, replacement: F) -&gt; Self
+where
+    F: Fn(&amp;Bindings&lt;'a&gt;, &amp;AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt; + 'a,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates a rule from a pattern and a replacement closure.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The matching pattern</td></tr>
+<tr><td><code>replacement</code></td><td><code>Fn(&amp;Bindings, &amp;AtomArena) -&gt; Atom</code></td><td>The replacement closure, receiving bindings and the arena context</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Rule&lt;'a&gt;</code> — an unconditional rule.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_atom::Symbol;
+use ocas_core::arena::Arena;
+use ocas_rewrite::matcher::{Bindings, MatchValue};
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::rules::Rule;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+let rule = Rule::new(pat, |bindings: &amp;Bindings, _ctx: &amp;AtomArena| {
+    let x = bindings.get(Symbol::new("x")).unwrap();
+    let MatchValue::Single(v) = x else { panic!("expected single"); };
+    _ctx.mul(&amp;[_ctx.num(2), *v])
+});
+
+let y = ctx.var("y");
+let result = rule.apply(&amp;ctx, y).unwrap();
+assert_eq!(result.to_string(), "2*y");
+<span class="boring">}</span></code></pre></pre>
+<h4 id="rulewith_condition"><a class="header" href="#rulewith_condition">Rule::with_condition</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn with_condition&lt;F&gt;(self, condition: F) -&gt; Self
+where
+    F: Fn(&amp;Bindings&lt;'a&gt;) -&gt; bool + 'a,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Adds a precondition to the rule. The condition is evaluated after a successful match, before the replacement.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>condition</code></td><td><code>Fn(&amp;Bindings) -&gt; bool</code></td><td>The condition closure; the replacement runs only when it returns <code>true</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Rule&lt;'a&gt;</code> — a rule with a condition.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_atom::Symbol;
+use ocas_core::arena::Arena;
+use ocas_rewrite::matcher::{Bindings, MatchValue};
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::rules::Rule;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+let rule = Rule::new(pat, |_bindings: &amp;Bindings, ctx: &amp;AtomArena| {
+    ctx.num(99)
+}).with_condition(|bindings: &amp;Bindings| {
+    let x = bindings.get(Symbol::new("x")).unwrap();
+    let MatchValue::Single(v) = x else { return false; };
+    v.to_string() == "y"
+});
+
+let y = ctx.var("y");
+let z = ctx.var("z");
+assert_eq!(rule.apply(&amp;ctx, y).unwrap().to_string(), "99");
+assert!(rule.apply(&amp;ctx, z).is_none());
+<span class="boring">}</span></code></pre></pre>
+<h4 id="ruleapply"><a class="header" href="#ruleapply">Rule::apply</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn apply(&amp;self, ctx: &amp;AtomArena&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Option&lt;Atom&lt;'a&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Attempts to apply the rule to an atom. Returns <code>Some(replacement result)</code> when the pattern matches and the condition holds, otherwise <code>None</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The target expression</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Atom&lt;'a&gt;&gt;</code> — <code>Some</code> means the rule was applied, <code>None</code> means no match or the condition failed.</p>
+<p><strong>See also</strong>: <code>match_pattern</code>, <code>simplify</code></p>
+<hr />
+<h3 id="default_rules"><a class="header" href="#default_rules">default_rules</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn default_rules&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    alloc: &amp;'a impl PatternAlloc&lt;'a&gt;,
+) -&gt; Vec&lt;Rule&lt;'a&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Returns the built-in set of algebraic simplification rules (9 rules in total).</p>
+<p><strong>Built-in rule list</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Rule</th><th>Rewrite</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>add_zero</code></td><td><code>x + 0 → x</code></td><td>Additive identity</td></tr>
+<tr><td><code>add_zero_left</code></td><td><code>0 + x → x</code></td><td>Additive identity (left)</td></tr>
+<tr><td><code>mul_zero</code></td><td><code>x × 0 → 0</code></td><td>Multiplicative zero</td></tr>
+<tr><td><code>mul_zero_left</code></td><td><code>0 × x → 0</code></td><td>Multiplicative zero (left)</td></tr>
+<tr><td><code>mul_one</code></td><td><code>x × 1 → x</code></td><td>Multiplicative identity</td></tr>
+<tr><td><code>mul_one_left</code></td><td><code>1 × x → x</code></td><td>Multiplicative identity (left)</td></tr>
+<tr><td><code>add_same</code></td><td><code>x + x → 2x</code></td><td>Combine like terms</td></tr>
+<tr><td><code>pow_zero</code></td><td><code>x⁰ → 1</code></td><td>Zero-th power</td></tr>
+<tr><td><code>pow_one</code></td><td><code>x¹ → x</code></td><td>First power</td></tr>
+</tbody></table>
+</div>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>alloc</code></td><td><code>&amp;impl PatternAlloc&lt;'a&gt;</code></td><td>The pattern allocator (pass <code>&amp;()</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Vec&lt;Rule&lt;'a&gt;&gt;</code> — the rule list.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::rules::default_rules;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let rules = default_rules(&amp;ctx, &amp;());
+// rules.len() == 9
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>simplify</code>, <code>Rule</code></p>
+<hr />
+<h3 id="built-in-rule-functions"><a class="header" href="#built-in-rule-functions">Built-in rule functions</a></h3>
+<p>Each of the following functions returns a single built-in rule and can be used individually or combined into custom rule sets:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn add_zero&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn add_zero_left&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn mul_zero&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn mul_zero_left&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn mul_one&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn mul_one_left&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn add_same&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn pow_zero&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+pub fn pow_one&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, alloc: &amp;'a impl PatternAlloc&lt;'a&gt;) -&gt; Rule&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Each rule has the same signature and usage: pass <code>ctx</code> and <code>alloc</code>, get back a <code>Rule&lt;'a&gt;</code>.</p>
+<p><strong>Example</strong> (using <code>add_same</code> alone):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::rules::add_same;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let expr = ctx.add(&amp;[x, x]);
+let rule = add_same(&amp;ctx, &amp;());
+let result = rule.apply(&amp;ctx, expr).unwrap();
+assert_eq!(result.to_string(), "2*x");
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="simplification-engine"><a class="header" href="#simplification-engine">Simplification Engine</a></h2>
+<h3 id="simplify"><a class="header" href="#simplify">simplify</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn simplify&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    rules: &amp;[Rule&lt;'a&gt;],
+    iter_limit: usize,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Applies the rewrite rules to the expression repeatedly, traversing bottom-up, until a fixed point or the iteration limit is reached. This is the core entry point of the oCAS simplification engine.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to simplify</td></tr>
+<tr><td><code>rules</code></td><td><code>&amp;[Rule&lt;'a&gt;]</code></td><td>The list of rewrite rules</td></tr>
+<tr><td><code>iter_limit</code></td><td><code>usize</code></td><td>The maximum number of iterations (10–20 recommended)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the simplified expression (registered in the arena).</p>
+<p><strong>Behavior</strong>:</p>
+<ol>
+<li>Each iteration traverses the expression tree bottom-up</li>
+<li>All rules are tried in turn on each node</li>
+<li>If any rule fires, the round produced a change and the next round runs</li>
+<li>Stops when no rule fires or when <code>iter_limit</code> is reached</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::rules::default_rules;
+use ocas_rewrite::simplify::simplify;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let rules = default_rules(&amp;ctx, &amp;());
+
+let x = ctx.var("x");
+let expr = ctx.mul(&amp;[x, ctx.num(0)]);
+let result = simplify(&amp;ctx, expr, &amp;rules, 10);
+assert_eq!(result.to_string(), "0");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>simplify_with_fuel</code>, <code>default_rules</code>, <code>Rule</code></p>
+<hr />
+<h3 id="simplify_with_fuel"><a class="header" href="#simplify_with_fuel">simplify_with_fuel</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn simplify_with_fuel&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    rules: &amp;[Rule&lt;'a&gt;],
+    iter_limit: usize,
+    fuel: &amp;Fuel,
+) -&gt; Result&lt;Atom&lt;'a&gt;, OcasError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Simplification with a fuel budget. Each bottom-up traversal round consumes one fuel unit; when the fuel runs out, the operation stops early.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to simplify</td></tr>
+<tr><td><code>rules</code></td><td><code>&amp;[Rule&lt;'a&gt;]</code></td><td>The list of rewrite rules</td></tr>
+<tr><td><code>iter_limit</code></td><td><code>usize</code></td><td>The maximum number of iterations</td></tr>
+<tr><td><code>fuel</code></td><td><code>&amp;Fuel</code></td><td>The fuel budget (<code>Fuel::default()</code> is effectively unlimited)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>:</p>
+<ul>
+<li><code>Ok(Atom)</code> — simplification complete (fixed point reached)</li>
+<li><code>Err(OcasError::OutOfFuel)</code> — fuel exhausted (no expression is returned in this case; callers must save intermediate results themselves)</li>
+</ul>
+<p><strong>Purpose</strong>: Prevents pathological inputs from making the simplification engine loop forever. Participates in fuel accounting within nested call chains.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_core::fuel::Fuel;
+use ocas_rewrite::rules::default_rules;
+use ocas_rewrite::simplify::simplify_with_fuel;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = ctx.var("x");
+let rules = default_rules(&amp;ctx, &amp;());
+let fuel = Fuel::new(100);
+let result = simplify_with_fuel(&amp;ctx, expr, &amp;rules, 20, &amp;fuel);
+match result {
+    Ok(e) =&gt; println!("simplified: {}", e),
+    Err(_) =&gt; println!("fuel exhausted"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>simplify</code>, <code>Fuel</code> (from the <code>ocas-core</code> crate)</p>
+<hr />
+<h2 id="replacement"><a class="header" href="#replacement">Replacement</a></h2>
+<h3 id="replace_once"><a class="header" href="#replace_once">replace_once</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn replace_once&lt;'a, F&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    pattern: Pattern&lt;'a&gt;,
+    replacement: F,
+) -&gt; Atom&lt;'a&gt;
+where
+    F: Fn(&amp;Bindings&lt;'a&gt;, &amp;AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Traverses top-down and replaces the first matching subexpression, then stops.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The target expression</td></tr>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The matching pattern</td></tr>
+<tr><td><code>replacement</code></td><td><code>Fn(&amp;Bindings, &amp;AtomArena) -&gt; Atom</code></td><td>The replacement closure</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the replaced expression (returned unchanged if nothing matches).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_atom::Symbol;
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::replace::replace_once;
+use ocas_rewrite::matcher::MatchValue;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let pat = Pattern::Wildcard(Symbol::new("x"), WildcardLevel::Single);
+let expr = ctx.add(&amp;[ctx.var("a"), ctx.var("b")]);
+
+let result = replace_once(&amp;ctx, expr, pat, |bindings, ctx| {
+    let x = bindings.get(Symbol::new("x")).unwrap();
+    let MatchValue::Single(v) = x else { panic!() };
+    ctx.mul(&amp;[ctx.num(2), *v])
+});
+// The first matching subexpression is replaced by 2*a
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>replace_all</code>, <code>replace_all_multiple</code></p>
+<hr />
+<h3 id="replace_all"><a class="header" href="#replace_all">replace_all</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn replace_all&lt;'a, F&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    pattern: Pattern&lt;'a&gt;,
+    replacement: F,
+) -&gt; Atom&lt;'a&gt;
+where
+    F: Fn(&amp;Bindings&lt;'a&gt;, &amp;AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Traverses top-down and replaces all matching subexpressions. Does not perform nested replacement (i.e., replacement results do not participate in further matching).</p>
+<p><strong>Parameters</strong>: Same as <code>replace_once</code>.</p>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the expression with all matches replaced.</p>
+<p><strong>See also</strong>: <code>replace_once</code>, <code>replace_all_multiple</code></p>
+<hr />
+<h3 id="replace_all_multiple"><a class="header" href="#replace_all_multiple">replace_all_multiple</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn replace_all_multiple&lt;'a, F&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    replacements: &amp;[Replacement&lt;'a, F&gt;],
+) -&gt; Atom&lt;'a&gt;
+where
+    F: Fn(&amp;Bindings&lt;'a&gt;, &amp;AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Uses multiple replacement rules, tried in order; the first matching rule takes effect. Traverses all nodes top-down.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The target expression</td></tr>
+<tr><td><code>replacements</code></td><td><code>&amp;[Replacement&lt;'a, F&gt;]</code></td><td>The list of replacement rules (ordered by priority)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the replaced expression.</p>
+<p><strong>See also</strong>: <code>Replacement</code>, <code>replace_all</code></p>
+<hr />
+<h3 id="replacement-1"><a class="header" href="#replacement-1">Replacement</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Replacement&lt;'a, F&gt;
+where
+    F: Fn(&amp;Bindings&lt;'a&gt;, &amp;AtomArena&lt;'a&gt;) -&gt; Atom&lt;'a&gt;,
+{
+    pub pattern: Pattern&lt;'a&gt;,
+    pub replacement: F,
+    pub condition: Option&lt;Condition&lt;'a&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: A single replacement rule, containing a pattern, a replacement closure, and an optional condition.</p>
+<p><strong>Fields</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>The matching pattern</td></tr>
+<tr><td><code>replacement</code></td><td><code>F</code></td><td>The replacement closure</td></tr>
+<tr><td><code>condition</code></td><td><code>Option&lt;Condition&lt;'a&gt;&gt;</code></td><td>The optional precondition</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <code>replace_all_multiple</code>, <code>Condition</code></p>
+<hr />
+<h3 id="condition"><a class="header" href="#condition">Condition</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Condition&lt;'a&gt; {
+    Predicate(Arc&lt;dyn Fn(&amp;Bindings&lt;'a&gt;) -&gt; bool + 'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: A replacement condition; currently only a predicate form is supported.</p>
+<h4 id="conditionnew"><a class="header" href="#conditionnew">Condition::new</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new&lt;F: Fn(&amp;Bindings&lt;'a&gt;) -&gt; bool + 'a&gt;(f: F) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Creates a condition from a closure.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::replace::Condition;
+
+let cond = Condition::new(|bindings| {
+    // Replace only when the bound variable x is positive
+    true
+});
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>Replacement</code>, <code>Rule::with_condition</code></p>
+<hr />
+<h3 id="replacesettings"><a class="header" href="#replacesettings">ReplaceSettings</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct ReplaceSettings {
+    pub once: bool,
+    pub bottom_up: bool,
+    pub nested: bool,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Replacement traversal settings.</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>once</code></td><td><code>bool</code></td><td><code>false</code></td><td>Whether to replace only the first match</td></tr>
+<tr><td><code>bottom_up</code></td><td><code>bool</code></td><td><code>false</code></td><td>Whether to traverse bottom-up (default is top-down)</td></tr>
+<tr><td><code>nested</code></td><td><code>bool</code></td><td><code>false</code></td><td>Whether to continue replacing inside already-replaced subexpressions</td></tr>
+</tbody></table>
+</div>
+<p><strong>See also</strong>: <code>replace_all</code></p>
+<hr />
+<h2 id="transformation"><a class="header" href="#transformation">Transformation</a></h2>
+<h3 id="transform"><a class="header" href="#transform">transform</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn transform&lt;'a, F&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    f: F,
+) -&gt; Atom&lt;'a&gt;
+where
+    F: FnMut(Atom&lt;'a&gt;) -&gt; Option&lt;Atom&lt;'a&gt;&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Traverses the expression tree bottom-up and calls the closure <code>f</code> on each node. When the closure returns <code>Some(atom)</code>, the node is replaced; when it returns <code>None</code>, the original node is kept (with transformed subexpressions).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The target expression</td></tr>
+<tr><td><code>f</code></td><td><code>FnMut(Atom) -&gt; Option&lt;Atom&gt;</code></td><td>The transformation closure</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the transformed expression.</p>
+<p><strong>Behavior</strong>:</p>
+<ol>
+<li>Recursively traverses the subexpressions (leaf nodes are returned directly)</li>
+<li>Rebuilds the current node with the transformed subexpressions</li>
+<li>Calls <code>f</code> on the rebuilt node</li>
+<li>If <code>f</code> returns <code>Some</code>, the new node is used; if <code>None</code>, the rebuilt node is used</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{Atom, AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+use ocas_rewrite::transformer::transform;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+
+let result = transform(&amp;ctx, sum, |a| {
+    if let AtomNode::Add(args) = a.node() {
+        if args.len() == 2 &amp;&amp; args[0] == x &amp;&amp; args[1] == y {
+            return Some(ctx.add(&amp;[y, x]));
+        }
+    }
+    None
+});
+
+assert_eq!(result.to_string(), "y + x");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>simplify</code>, <code>partition_expr</code></p>
+<hr />
+<h3 id="partition_expr"><a class="header" href="#partition_expr">partition_expr</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn partition_expr&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    bins: &amp;[(Symbol, usize)],
+    fill_last: bool,
+    repeat: bool,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Partitions an <code>arg(a₁, a₂, …, aₙ)</code> expression into named bins, returning the sum of products $\sum \text{coeff} \cdot f_1(\cdots) \cdot f_2(\cdots) \cdots$. The parameter design mirrors Symbolica's <code>Transformer::Partition</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The expression arena context</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The input expression (must be of the form <code>arg(...)</code>)</td></tr>
+<tr><td><code>bins</code></td><td><code>&amp;[(Symbol, usize)]</code></td><td>The bin list, each element <code>(function name, capacity)</code></td></tr>
+<tr><td><code>fill_last</code></td><td><code>bool</code></td><td>Whether surplus elements are absorbed into the last bin</td></tr>
+<tr><td><code>repeat</code></td><td><code>bool</code></td><td>Whether the bin pattern repeats until all elements are consumed</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the sum of partition results; <code>ctx.num(0)</code> when no valid partition exists; the input <code>expr</code> is returned unchanged when it is not an <code>arg(...)</code> application or an argument is not numeric.</p>
+<p><strong>Behavior</strong>:</p>
+<ul>
+<li>The input must be an <code>arg(...)</code> function application with numeric arguments</li>
+<li>Enumerates all legal assignment ways</li>
+<li>The coefficient of each assignment is the multinomial coefficient $\binom{n}{k_1, k_2, \dots}$</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_rewrite::transformer::partition_expr;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let args = ctx.fun("arg", &amp;[ctx.num(1), ctx.num(2), ctx.num(3)]);
+let bins = &amp;[(Symbol::new("f"), 2), (Symbol::new("g"), 1)];
+let result = partition_expr(&amp;ctx, args, bins, false, false);
+// Returns Σ coeff · f(…, …) · g(…)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>transform</code>, <code>combinatorics::partitions</code></p>
+<hr />
+<h2 id="combinatorics-helpers"><a class="header" href="#combinatorics-helpers">Combinatorics Helpers</a></h2>
+<h3 id="partitions"><a class="header" href="#partitions">partitions</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn partitions&lt;T, B&gt;(
+    elements: &amp;[T],
+    bins: &amp;[(B, usize)],
+    fill_last: bool,
+    repeat: bool,
+) -&gt; Vec&lt;PartitionSolution&lt;T, B&gt;&gt;
+where
+    T: Clone + Ord + Hash,
+    B: Clone + Ord + Hash,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Enumerates all ways to partition <code>elements</code> into <code>bins</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>elements</code></td><td><code>&amp;[T]</code></td><td>The elements to distribute</td></tr>
+<tr><td><code>bins</code></td><td><code>&amp;[(B, usize)]</code></td><td>The bin list <code>(name, capacity)</code></td></tr>
+<tr><td><code>fill_last</code></td><td><code>bool</code></td><td>Whether surplus elements are absorbed into the last bin</td></tr>
+<tr><td><code>repeat</code></td><td><code>bool</code></td><td>Whether the bin pattern repeats until the elements are exhausted</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Vec&lt;PartitionSolution&lt;T, B&gt;&gt;</code> — all legal partitions.</p>
+<p><strong>See also</strong>: <code>partition_expr</code>, <code>PartitionSolution</code></p>
+<hr />
+<h3 id="partitionsolution"><a class="header" href="#partitionsolution">PartitionSolution</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PartitionSolution&lt;T, B&gt; {
+    pub coefficient: usize,
+    pub bins: Vec&lt;(B, Vec&lt;T&gt;)&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: A single partition solution.</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>coefficient</code></td><td><code>usize</code></td><td>The multinomial coefficient</td></tr>
+<tr><td><code>bins</code></td><td><code>Vec&lt;(B, Vec&lt;T&gt;)&gt;</code></td><td>The name and contents of each bin</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="e-graph-simplification"><a class="header" href="#e-graph-simplification">E-Graph Simplification</a></h2>
+<blockquote>
+<p><strong>Feature Gate</strong>: requires the <code>egg</code> feature. Add to <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+ocas-rewrite = { version = "0.23", features = ["egg"] }
+</code></pre>
+</blockquote>
+<h3 id="simplify_with_egraph"><a class="header" href="#simplify_with_egraph">simplify_with_egraph</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn simplify_with_egraph&lt;'a&gt;(
+    atom: Atom&lt;'a&gt;,
+    ocas_arena: &amp;'a AtomArena&lt;'a&gt;,
+    iter_limit: usize,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Simplifies an expression using the <code>egg</code> equality saturation engine. Converts the oCAS expression into an <code>egg</code> E-graph, runs the built-in rule set, and extracts the optimal expression using the AST size as the cost function.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>The expression to simplify</td></tr>
+<tr><td><code>ocas_arena</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>The oCAS expression arena</td></tr>
+<tr><td><code>iter_limit</code></td><td><code>usize</code></td><td>The equality saturation iteration limit</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Atom&lt;'a&gt;</code> — the simplified expression.</p>
+<p><strong>Built-in E-graph rules</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Rule name</th><th>Rewrite</th></tr></thead><tbody>
+<tr><td><code>add-zero</code></td><td><code>(add 0 ?a) → ?a</code></td></tr>
+<tr><td><code>mul-zero</code></td><td><code>(mul ?a 0) → 0</code></td></tr>
+<tr><td><code>mul-one</code></td><td><code>(mul 1 ?a) → ?a</code></td></tr>
+<tr><td><code>pow-zero</code></td><td><code>(pow ?a 0) → 1</code></td></tr>
+<tr><td><code>pow-one</code></td><td><code>(pow ?a 1) → ?a</code></td></tr>
+<tr><td><code>pythagorean</code></td><td>$\sin^2 x + \cos^2 x \to 1$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::egraph::simplify_with_egraph;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+
+let x = ctx.var("x");
+let two = ctx.num(2);
+let sin_x = ctx.fun("sin", &amp;[x]);
+let cos_x = ctx.fun("cos", &amp;[x]);
+let sum = ctx.add(&amp;[ctx.pow(sin_x, two), ctx.pow(cos_x, two)]);
+
+let result = simplify_with_egraph(sum, &amp;ctx, 5);
+assert_eq!(result.to_string(), "1");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <code>AtomLanguage</code> (<code>ocas-rewrite::egraph</code>)</p>
+<hr />
+<h3 id="atomlanguage"><a class="header" href="#atomlanguage">AtomLanguage</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum AtomLanguage {
+    Num(i64),
+    Var(Symbol),
+    Fun(Vec&lt;Id&gt;),
+    Add(Vec&lt;Id&gt;),
+    Mul(Vec&lt;Id&gt;),
+    Pow([Id; 2]),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: The oCAS implementation of the <code>egg::Language</code> trait, used for E-graph node representation.</p>
+<p><strong>Note</strong>: The <code>Language</code> trait is implemented manually because <code>egg</code>'s <code>define_language!</code> macro does not support <code>i64</code> and <code>Symbol</code> as leaf types.</p>
+<h4 id="atomlanguageto_recexpr"><a class="header" href="#atomlanguageto_recexpr">AtomLanguage::to_recexpr</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn to_recexpr&lt;'b&gt;(
+    atom: Atom&lt;'b&gt;,
+    egraph: &amp;mut egg::EGraph&lt;Self, ()&gt;,
+    cache: &amp;mut Vec&lt;(Atom&lt;'b&gt;, Id)&gt;,
+) -&gt; Id
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Converts an oCAS <code>Atom</code> into an <code>egg</code> <code>RecExpr</code>. Shared subexpressions are deduplicated via <code>cache</code>.</p>
+<h4 id="atomlanguagefrom_recexpr"><a class="header" href="#atomlanguagefrom_recexpr">AtomLanguage::from_recexpr</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_recexpr&lt;'a&gt;(
+    expr: &amp;RecExpr&lt;Self&gt;,
+    id: Id,
+    ocas_arena: &amp;'a AtomArena&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Function</strong>: Converts an <code>egg</code> <code>RecExpr</code> back into an oCAS <code>Atom</code>.</p>
+<p><strong>See also</strong>: <code>simplify_with_egraph</code>, <code>egg::Language</code></p>
+<hr />
+<h2 id="module-dependencies"><a class="header" href="#module-dependencies">Module Dependencies</a></h2>
+<pre><code class="language-mermaid">graph TD
+    A[ocas-atom] --&gt; B[ocas-rewrite]
+    C[ocas-core] --&gt; B
+    B --&gt; D[pattern]
+    B --&gt; E[matcher]
+    B --&gt; F[rules]
+    B --&gt; G[simplify]
+    B --&gt; H[replace]
+    B --&gt; I[transformer]
+    B --&gt; J[combinatorics]
+    B --&gt; K[egraph]
+    D --&gt; E
+    D --&gt; F
+    E --&gt; F
+    E --&gt; G
+    E --&gt; H
+    F --&gt; G
+    I --&gt; G
+    J --&gt; I
+    K -.-&gt;|feature = "egg"| B
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-solvers.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-evaluation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-solvers.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-evaluation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

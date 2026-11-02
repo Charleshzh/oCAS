@@ -1,0 +1,794 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>高阶：FGLM 与消元理论 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html" class="active"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/math/fglm-elimination.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="高阶fglm-与消元理论"><a class="header" href="#高阶fglm-与消元理论">高阶：FGLM 与消元理论</a></h1>
+<p>本章系统讲解零维理想的 Gröbner 基换序算法（FGLM）、消元定理，以及基于 Gröbner 基的理想运算（商、饱和、交集、准素分解、根式）。这些工具构成了 oCAS 多项式系统求解和代数几何计算的核心基础设施。</p>
+<hr />
+<h2 id="前提知识"><a class="header" href="#前提知识">前提知识</a></h2>
+<p>阅读本章前，建议具备以下基础：</p>
+<ul>
+<li><strong>Gröbner 基理论</strong>：Buchberger 算法、F4/F5 算法、S-多项式、约化 Gröbner 基——参见 <a href="./groebner-theory.html">Gröbner 基理论</a></li>
+<li><strong>多项式代数</strong>：多元多项式环 $\mathbb{F}[x_1, \ldots, x_n]$、单项式序（Lex / Grlex / Grevlex）——参见 <a href="./polynomial-algebra.html">多项式代数</a></li>
+<li><strong>线性代数</strong>：高斯消元、向量空间维数、线性相关性——参见 <a href="./linear-algebra.html">线性代数</a></li>
+<li><strong>多项式因式分解</strong>：无平方分解、一元多项式因式分解——参见 <a href="./poly-gcd-factoring.html">多项式 GCD 与因式分解</a></li>
+</ul>
+<p>如需系统学习路径，请参考 <a href="./overview.html">数学基础总览</a>。</p>
+<hr />
+<h2 id="基础概念"><a class="header" href="#基础概念">基础概念</a></h2>
+<h3 id="零维理想"><a class="header" href="#零维理想">零维理想</a></h3>
+<p><strong>定义</strong>。设 $I \subseteq R = \mathbb{F}[x_1, \ldots, x_n]$ 是一个理想。$I$ 称为<strong>零维的</strong>（zero-dimensional），如果商环 $R/I$ 作为 $\mathbb{F}$-向量空间是<strong>有限维</strong>的。</p>
+<p>等价条件（以下任一成立即为零维）：</p>
+<ol>
+<li><strong>代数几何</strong>：仿射簇 $V(I) \subseteq \overline{\mathbb{F}}^n$ 是有限集</li>
+<li><strong>Gröbner 基刻画</strong>：对每个变量 $x_i$（$1 \leq i \leq n$），Gröbner 基中存在某个多项式 $g$ 使得 $\text{lm}(g) = x_i^{N_i}$（纯幂）</li>
+<li><strong>阶梯有限性</strong>：标准单项式（不被任何首项单项式整除的单项式）集合有限</li>
+</ol>
+<p><strong>例</strong>。$I = \langle x^2 - 1, y - x \rangle \subseteq \mathbb{Q}[x, y]$。其 Lex Gröbner 基为 ${x^2 - 1, y - x}$，首项为 ${x^2, y}$。对 $x$ 有 $x^2$，对 $y$ 有 $y$——纯幂条件满足，故 $I$ 是零维的。实际上 $V(I) = {(1, 1), (-1, -1)}$，有限。</p>
+<p><strong>反例</strong>。$J = \langle x - y \rangle \subseteq \mathbb{Q}[x, y]$。首项为 ${x}$，对 $y$ 无纯幂首项。$V(J) = {(t, t) : t \in \overline{\mathbb{Q}}}$ 是无穷集，故 $J$ 是正维的。</p>
+<h3 id="阶梯与标准单项式"><a class="header" href="#阶梯与标准单项式">阶梯与标准单项式</a></h3>
+<p><strong>定义</strong>。设 $G = {g_1, \ldots, g_t}$ 是理想 $I$ 关于某个单项式序 $\succ$ 的 Gröbner 基。令 $\text{LT}(I) = \langle \text{lm}(g_1), \ldots, \text{lm}(g_t) \rangle$ 为首项理想。</p>
+<p><strong>标准单项式</strong>（standard monomials）集合定义为</p>
+<p>$$\text{Std}(I) = {x^\alpha \in \mathbb{F}[x_1, \ldots, x_n] : x^\alpha \notin \text{LT}(I)}$$</p>
+<p>即不被任何 $\text{lm}(g_i)$ 整除的单项式。标准单项式的集合也称为<strong>阶梯</strong>（staircase），因为其形状在二维时像一个阶梯。</p>
+<p><strong>核心性质</strong>。标准单项式构成 $R/I$ 的一组 $\mathbb{F}$-向量空间基。即每个陪集 $f + I \in R/I$ 都有<strong>唯一</strong>的表示</p>
+<p>$$f + I = \sum_{x^\alpha \in \text{Std}(I)} c_\alpha \cdot x^\alpha + I$$</p>
+<p>其中 $c_\alpha \in \mathbb{F}$。这等价于说 $f$ 对 Gröbner 基的正规形是标准单项式的唯一线性组合。</p>
+<p><strong>例</strong>。$I = \langle x^2, xy \rangle \subseteq \mathbb{F}[x, y]$（Grevlex 序）。首项为 ${x^2, xy}$。</p>
+<ul>
+<li>$1$：不被 $x^2$ 或 $xy$ 整除 → 标准单项式 ✓</li>
+<li>$y$：不被整除 → ✓</li>
+<li>$y^2$：不被整除 → ✓</li>
+<li>$y^k$（$k \geq 0$）：不被整除 → ✓</li>
+<li>$x$：不被整除 → ✓</li>
+<li>$x^2$：被 $x^2$ 整除 → ✗</li>
+<li>$xy$：被 $xy$ 整除 → ✗</li>
+</ul>
+<p>阶梯为 ${1, x, y, y^2, y^3, \ldots}$——无穷集！这反映了 $I$ 是正维理想（$V(I) = {(0, t) : t \in \overline{\mathbb{F}}}$）。</p>
+<p><strong>维数</strong>。对零维理想，阶梯的大小</p>
+<p>$$D = \dim_{\mathbb{F}}(R/I) = |\text{Std}(I)|$$</p>
+<p>是一个有限正整数，称为理想 $I$ 的<strong>向量空间维数</strong>或 <strong>Hilbert 函数的稳定值</strong>。这个维数 $D$ 在 FGLM 算法的复杂度分析中扮演核心角色。</p>
+<h3 id="正规形"><a class="header" href="#正规形">正规形</a></h3>
+<p><strong>定义</strong>。多项式 $f$ 关于 Gröbner 基 $G$ 的<strong>正规形</strong>（normal form）$\text{NF}(f, G)$ 是 $f$ 对 $G$ 做带余除法后的余数。它满足：</p>
+<ol>
+<li>$\text{NF}(f, G) \in f + I$（与 $f$ 同余模 $I$）</li>
+<li>$\text{NF}(f, G)$ 的每一项都是标准单项式</li>
+<li>表示唯一（对约化 Gröbner 基）</li>
+</ol>
+<p>对零维理想，正规形可以表示为长度为 $D$ 的系数向量——每个分量对应一个标准单项式。这正是 FGLM 算法将正规形计算转化为线性代数操作的关键。</p>
+<hr />
+<h2 id="核心理论"><a class="header" href="#核心理论">核心理论</a></h2>
+<h3 id="消元定理"><a class="header" href="#消元定理">消元定理</a></h3>
+<p><strong>消元理想</strong>。设 $I \subseteq \mathbb{F}[x_1, \ldots, x_n]$，固定 $1 \leq \ell \leq n$。第 $\ell$ 个<strong>消元理想</strong>为</p>
+<p>$$I_\ell = I \cap \mathbb{F}[x_{\ell+1}, \ldots, x_n]$$</p>
+<p>即 $I$ 中不涉及前 $\ell$ 个变量的多项式构成的理想。</p>
+<p><strong>消元定理</strong>（Elimination Theorem）。设 $G$ 是 $I$ 关于 <strong>Lex 序</strong>的 Gröbner 基（$x_1 \succ x_2 \succ \cdots \succ x_n$）。则</p>
+<p>$$G_\ell = G \cap \mathbb{F}[x_{\ell+1}, \ldots, x_n]$$</p>
+<p>是 $I_\ell$ 的 Gröbner 基。</p>
+<p>换言之，Lex Gröbner 基中不涉及 $x_1, \ldots, x_\ell$ 的那些多项式恰好生成了消元理想 $I_\ell$。</p>
+<p><strong>证明思路</strong>。Lex 序的关键性质是：若 $x^\alpha \succ x^\beta$ 且 $\alpha_1 = \cdots = \alpha_\ell = 0$，则 $\beta_1 = \cdots = \beta_\ell = 0$。因此首项理想 $\langle \text{lt}(g) : g \in G \rangle$ 与 $\mathbb{F}[x_{\ell+1}, \ldots, x_n]$ 的交集恰好由 $G_\ell$ 的首项生成。$\square$</p>
+<p><strong>应用</strong>。消元定理是以下所有构造的理论基础：</p>
+<ul>
+<li><strong>隐函数消元</strong>：从方程组中消去变量，得到仅含剩余变量的关系</li>
+<li><strong>理想商的 Rabinowitsch 技巧</strong>：引入辅助变量后消元</li>
+<li><strong>理想交集</strong>：引入辅助变量 $t$ 后消元</li>
+<li><strong>多项式系统求解</strong>：从 Lex GB 中逐变量提取约束</li>
+</ul>
+<p><strong>注意</strong>。Grevlex 序下的 Gröbner 基<strong>不</strong>具有消元性质。因此所有需要消元的操作都必须在 Lex 序下进行。这正是 FGLM 换序算法的核心价值：先用 Grevlex 快速计算基，再用 FGLM 转为 Lex 用于消元。</p>
+<h3 id="fglm-算法"><a class="header" href="#fglm-算法">FGLM 算法</a></h3>
+<p>FGLM 算法（Faugère–Gianni–Lazard–Mora, 1993）对<strong>零维理想</strong>提供高效的 Gröbner 基换序。其核心思想是：利用源序下的正规形计算，按目标序遍历单项式，通过线性代数方法直接构造目标序下的 Gröbner 基——完全避免在目标序下重新运行 F4。</p>
+<h4 id="动机"><a class="header" href="#动机">动机</a></h4>
+<p>假设我们已经用 Grevlex 序（最高效的计算序）得到了理想 $I$ 的 Gröbner 基 $G_{\text{grevlex}}$。为了做消元或求解，需要 Lex 序下的基 $G_{\text{lex}}$。</p>
+<p>两种方法的对比：</p>
+<div class="table-wrapper"><table><thead><tr><th>方法</th><th>复杂度</th><th>说明</th></tr></thead><tbody>
+<tr><td>重跑 F4（Lex）</td><td>指数级（最坏）</td><td>完全重新计算，中间多项式可能膨胀</td></tr>
+<tr><td>FGLM</td><td>$O(n \cdot D^3)$</td><td>$D = \dim(R/I)$，纯线性代数</td></tr>
+</tbody></table>
+</div>
+<p>对零维理想，FGLM 几乎总是更快——尤其是当 $D$ 适中但 Lex 基的中间多项式很庞大时。</p>
+<h4 id="算法描述"><a class="header" href="#算法描述">算法描述</a></h4>
+<p><strong>输入</strong>：零维理想 $I$ 在源序 $O_1$ 下的约化 Gröbner 基 $G_{\text{src}}$，目标序 $O_2$。</p>
+<p><strong>输出</strong>：$I$ 在目标序 $O_2$ 下的约化 Gröbner 基 $G_{\text{tgt}}$。</p>
+<p><strong>初始化</strong>：</p>
+<ol>
+<li>从 $G_{\text{src}}$ 提取所有首项单项式 $\text{lm}(g_1), \ldots, \text{lm}(g_t)$</li>
+<li>计算阶梯 $\text{Std}(I)$（BFS：从 $1$ 开始，逐变量扩展，跳过被首项整除者，直到不再有新标准单项式——零维保证终止）</li>
+<li>令 $D = |\text{Std}(I)|$，将标准单项式编号为 $s_1, s_2, \ldots, s_D$</li>
+<li>对每个变量 $x_i$，构造<strong>乘法矩阵</strong> $M_i$：对每个标准单项式 $s_j$，计算 $x_i \cdot s_j$ 的正规形（在 $G_{\text{src}}$ 下），得到 $D \times D$ 矩阵</li>
+</ol>
+<p><strong>主循环</strong>：按目标序 $O_2$ 递增遍历单项式：</p>
+<pre><code>seen_nfs ← []     // 已见正规形（D 维向量）
+seen_mons ← []    // 对应的单项式
+boundary ← {1}    // 边界集合
+visited ← ∅       // 已访问单项式
+GB_tgt ← ∅
+
+while boundary ≠ ∅:
+    m ← boundary 中 O2-最小的单项式
+    visited ← visited ∪ {m}
+
+    // 计算 m 在源序基下的正规形（D 维坐标向量）
+    nf ← normal_form(m, G_src, staircase)
+
+    if nf ∈ span(seen_nfs):      // 线性相关？
+        // 找到关系 nf = Σ c_i · seen_nfs[i]
+        coeffs ← Gaussian_solve(seen_nfs, nf)
+        // 构造新多项式：m - Σ c_i · seen_mons[i]
+        new_poly ← (m, 1) + Σ (-c_i, seen_mons[i])
+        GB_tgt ← GB_tgt ∪ {new_poly}
+        // m 的所有倍都在理想中，标记为已访问
+        mark_multiples(visited, m)
+    else:
+        // 线性无关：m 是目标序下的新标准单项式
+        seen_nfs.append(nf)
+        seen_mons.append(m)
+        // 将 m 的邻居加入边界
+        for i = 1 to n:
+            if m · x_i ∉ visited:
+                boundary ← boundary ∪ {m · x_i}
+
+return minimize(GB_tgt).auto_reduce()
+</code></pre>
+<h4 id="关键子程序"><a class="header" href="#关键子程序">关键子程序</a></h4>
+<p><strong>正规形计算</strong>。单项式 $m$ 在 $G_{\text{src}}$ 下的正规形是一个 $D$ 维向量。实现上，将 $m$ 视为系数为 $1$ 的单项式多项式，对 $G_{\text{src}}$ 做带余除法，然后将余数的每个项映射到阶梯的位置索引上。</p>
+<p><strong>线性关系检测</strong>。维护一个增广矩阵 $[\text{seen_nfs} \mid \text{nf}]$（$D$ 行，$k+1$ 列，其中 $k$ 是已见正规形数）。每次加入新 nf 时做高斯消元：</p>
+<ul>
+<li>若消元后增广列全零 → 线性相关，提取系数向量</li>
+<li>若消元后增广列有非零元 → 线性无关，加入 seen_nfs</li>
+</ul>
+<p>这可以用增量式高斯消元（每次只处理一列）高效实现，避免重复消元。</p>
+<p><strong>倍标记</strong>。当发现线性关系 $\text{nf}(m) = \sum c_i \cdot \text{nf}(m_i)$ 时，构造的多项式 $m - \sum c_i m_i \in I$ 的首项为 $m$（按目标序）。$m$ 的所有倍 $m \cdot x^\alpha$ 也必然在 $I$ 中，因此不需要再考虑——将它们从边界中移除。</p>
+<h4 id="复杂度分析"><a class="header" href="#复杂度分析">复杂度分析</a></h4>
+<ul>
+<li><strong>阶梯计算</strong>：$O(D)$ 个单项式，每个需要对基中每个首项做一次整除检查（每次检查 $O(n)$ 次比较）</li>
+<li><strong>乘法矩阵</strong>：$n$ 个 $D \times D$ 矩阵，每个元素需一次正规形计算 → $O(n \cdot D^2 \cdot T_{\text{NF}})$</li>
+<li><strong>主循环</strong>：至多发现 $D$ 个线性无关的标准单项式，每发现一个线性相关就输出一个目标基元素；总迭代数 $\le D + |G_{\text{tgt}}|$，实现中以 $D(D+1) + 4n$ 为安全上限</li>
+<li><strong>每次迭代</strong>：一次正规形计算 $O(T_{\text{NF}})$ + 一次高斯消元 $O(D^2)$</li>
+<li><strong>总复杂度</strong>：$O(n \cdot D^3)$ 次域运算</li>
+</ul>
+<p>其中 $T_{\text{NF}}$ 是一次正规形计算的开销，对稀疏多项式通常与 $D$ 线性相关。</p>
+<h4 id="正确性"><a class="header" href="#正确性">正确性</a></h4>
+<p><strong>定理</strong>（Faugère–Gianni–Lazard–Mora 1993）。设 $I$ 是零维理想，$G_{\text{src}}$ 是 $I$ 在序 $O_1$ 下的约化 Gröbner 基。FGLM 算法输出 $G_{\text{tgt}}$ 是 $I$ 在序 $O_2$ 下的约化 Gröbner 基。</p>
+<p><strong>证明思路</strong>：</p>
+<ol>
+<li>正规形计算与序无关——$G_{\text{src}}$ 的正规形映射与 $G_{\text{tgt}}$ 的正规形映射是同一个线性映射在不同基下的表示</li>
+<li>主循环按目标序递增遍历单项式，恰好覆盖所有标准单项式和产生首项的单项式</li>
+<li>线性关系检测保证：输出的多项式恰好生成首项理想</li>
+<li>minimize 和 auto_reduce 保证约化性</li>
+</ol>
+<h3 id="理想运算"><a class="header" href="#理想运算">理想运算</a></h3>
+<p>Gröbner 基使得理想的基本算术运算可以算法化。本节介绍 oCAS 实现的核心理想运算，每种都依赖消元定理。</p>
+<h4 id="理想商ideal-quotient"><a class="header" href="#理想商ideal-quotient">理想商（Ideal Quotient）</a></h4>
+<p><strong>定义</strong>。两个理想 $I, J \subseteq R$ 的<strong>理想商</strong>为</p>
+<p>$$I : J = {f \in R : f \cdot g \in I, , \forall g \in J}$$</p>
+<p>对单生成元 $J = \langle g \rangle$，简记 $I : g$。</p>
+<p><strong>Rabinowitsch 技巧</strong>。计算 $I : g$ 的关键技巧是引入一个新变量 $w$。但要注意：辅助变量消元构造实际给出的是<strong>饱和理想</strong>：</p>
+<p>$$I : g^\infty = \left( I \cdot R[w] + \langle 1 - wg \rangle \right) \cap R$$</p>
+<p>即在扩展环 $R[w]$ 中，将 $I$ 的生成元提升、添加 $1 - wg$、计算 Gröbner 基，然后取不涉及 $w$ 的多项式（消元）。当 $I$ 关于 $g$ 已饱和（即 $I : g = I : g^\infty$，例如无平方、无嵌入分支的情形）时，它恰等于 $I : g$。oCAS 的 <code>ideal_quotient</code> 实现的正是这个消元构造（数学上即 $I : g^\infty$）。</p>
+<p><strong>正确性证明</strong>。局部化观点：$R[w]/\langle 1 - wg \rangle \cong R[1/g]$（$w \mapsto 1/g$）。于是 $f \in (I \cdot R[w] + \langle 1-wg\rangle) \cap R$ 当且仅当 $f \in I \cdot R[1/g]$，即存在 $N$ 使得 $g^N f \in I$，亦即 $f \in I : g^N \subseteq I : g^\infty$。反之，若 $g^N f \in I$，则</p>
+<p>$$f = f\bigl(1-(wg)^N\bigr) + w^N \cdot (g^N f)$$</p>
+<p>第一项在 $\langle 1-wg\rangle$ 中（$1-(wg)^N$ 被 $1-wg$ 整除），第二项在 $I \cdot R[w]$ 中。$\square$</p>
+<p><strong>多个生成元</strong>。对 $J = \langle g_1, \ldots, g_m \rangle$，有</p>
+<p>$$I : J^\infty = \bigcap_{j=1}^{m} (I : g_j^\infty)$$</p>
+<p>oCAS 通过逐个计算每个 $I : g_j^\infty$ 再求交集实现（这正是 <code>ideal_quotient</code> 的实际行为）。</p>
+<p><strong>例</strong>。$I = \langle x^2, xy \rangle$，$J = \langle x \rangle$。</p>
+<p>$$I : x = \langle x^2, xy \rangle : \langle x \rangle$$</p>
+<p>在 $\mathbb{Q}[x, y, w]$ 中，计算 $\text{GB}(x^2, xy, 1 - wx)$ 并消去 $w$：</p>
+<ul>
+<li>$1 - wx \implies w = 1/x$</li>
+<li>$x^2 \cdot w = x$，$xy \cdot w = y$（由 $x^2 w - x = -x(1-wx)$ 与 $xy w - y = -y(1-wx)$）</li>
+</ul>
+<p>消元后得到 $\langle x, y \rangle$，故 $\langle x^2, xy \rangle : \langle x \rangle = \langle x, y \rangle$。</p>
+<h4 id="理想交集ideal-intersection"><a class="header" href="#理想交集ideal-intersection">理想交集（Ideal Intersection）</a></h4>
+<p><strong>定义</strong>。$I \cap J$ 是同时属于 $I$ 和 $J$ 的多项式构成的理想。</p>
+<p><strong>辅助变量法</strong>。引入新变量 $t$：</p>
+<p>$$I \cap J = \langle t \cdot f_i, , (1-t) \cdot g_j \rangle_{i,j} \cap R$$</p>
+<p>其中 ${f_i}$ 和 ${g_j}$ 分别是 $I$ 和 $J$ 的生成元。</p>
+<p><strong>直觉</strong>。$t = 1$ 时约束退化为 $f_i = 0$（$I$ 的条件），$t = 0$ 时退化为 $g_j = 0$（$J$ 的条件）。消去 $t$ 后，得到同时满足两组条件的多项式。</p>
+<p><strong>正确性</strong>。$h \in I \cap J$ ⟺ $h = t \cdot h + (1-t) \cdot h$，其中 $t \cdot h \in t \cdot I$ 且 $(1-t) \cdot h \in (1-t) \cdot J$。反之，消元理想中的多项式在 $t = 0$ 和 $t = 1$ 处都为零，故同时属于 $I$ 和 $J$。$\square$</p>
+<p><strong>例</strong>。$\langle x \rangle \cap \langle y \rangle = \langle xy \rangle$。</p>
+<p>在 $\mathbb{Q}[x, y, t]$ 中，计算 $\text{GB}(tx, (1-t)y)$ 并消去 $t$：</p>
+<ul>
+<li>$tx = 0 \implies t = 0$ 或 $x = 0$</li>
+<li>$(1-t)y = 0 \implies t = 1$ 或 $y = 0$</li>
+</ul>
+<p>消元后得到 $\langle xy \rangle$。$\square$</p>
+<h4 id="理想饱和ideal-saturation"><a class="header" href="#理想饱和ideal-saturation">理想饱和（Ideal Saturation）</a></h4>
+<p><strong>定义</strong>。$I$ 关于 $J$ 的<strong>饱和</strong>为</p>
+<p>$$I : J^\infty = \bigcup_{k=1}^{\infty} (I : J^k)$$</p>
+<p>等价地，$I : J^\infty$ 是 $I$ 在 $V(J)$ 之外的"限制"——在 $J$ 的零点集之外与 $I$ 一致。</p>
+<p><strong>迭代计算</strong>。由升链条件，存在 $k_0$ 使得 $I : J^{k_0} = I : J^{k_0+1} = \cdots = I : J^\infty$。算法反复计算 $I : J$，直到稳定：</p>
+<pre><code>I_old ← I
+loop:
+    I_new ← I_old : J
+    if I_new == I_old:  // 比较 Gröbner 基
+        return I_new
+    I_old ← I_new
+</code></pre>
+<p><strong>应用</strong>。饱和在代数几何中极为重要：</p>
+<ul>
+<li><strong>根式计算</strong>：$\sqrt{I} = I : h^\infty$（正维情形，$h$ 与 Jacobian 相关）</li>
+<li><strong>准素分解</strong>：分离不同维度的分支</li>
+<li><strong>闭包计算</strong>：射影闭包、完备交</li>
+</ul>
+<p><strong>例</strong>。$\langle x^2 y, xy^2 \rangle : \langle x \rangle^\infty$。</p>
+<p>按数学定义逐轮计算商：</p>
+<p>第一轮：$\langle x^2 y, xy^2 \rangle : \langle x \rangle = \langle xy, y^2 \rangle$</p>
+<p>第二轮：$\langle xy, y^2 \rangle : \langle x \rangle = \langle y \rangle$</p>
+<p>第三轮：$\langle y \rangle : \langle x \rangle = \langle y \rangle$（稳定）</p>
+<p>故 $\langle x^2 y, xy^2 \rangle : \langle x \rangle^\infty = \langle y \rangle$。$\square$</p>
+<p>（注：oCAS 的 <code>ideal_quotient</code> 用消元构造单次计算 $I : g^\infty$——本例中一次调用即得到 $\langle y \rangle$，<code>ideal_saturate</code> 的迭代仅用于确认稳定。）</p>
+<h4 id="理想和积与成员判定"><a class="header" href="#理想和积与成员判定">理想和、积与成员判定</a></h4>
+<p>这些是最基本的理想运算，实现相对简单：</p>
+<div class="table-wrapper"><table><thead><tr><th>运算</th><th>定义</th><th>实现</th></tr></thead><tbody>
+<tr><td>$I + J$</td><td>$\langle f_1, \ldots, f_m, g_1, \ldots, g_k \rangle$</td><td>合并生成元，计算 GB</td></tr>
+<tr><td>$I \cdot J$</td><td>$\langle f_i g_j \rangle_{i,j}$</td><td>所有生成元两两乘积，计算 GB</td></tr>
+<tr><td>$f \in I$ ?</td><td>—</td><td>计算 $\text{NF}(f, G_I)$，是否为零</td></tr>
+</tbody></table>
+</div>
+<h3 id="准素分解"><a class="header" href="#准素分解">准素分解</a></h3>
+<p><strong>定义</strong>。理想 $Q \subseteq R$ 称为<strong>准素理想</strong>（primary ideal），如果 $fg \in Q$ 蕴含 $f \in Q$ 或 $g^n \in Q$（对某个 $n \geq 1$）。</p>
+<p><strong>准素分解定理</strong>（Lasker–Noether）。每个理想 $I \subseteq \mathbb{F}[x_1, \ldots, x_n]$（$\mathbb{F}$ 特征零）都有准素分解</p>
+<p>$$I = Q_1 \cap Q_2 \cap \cdots \cap Q_r$$</p>
+<p>其中每个 $Q_i$ 是准素理想。对应的<strong>关联素理想</strong>为 $\mathfrak{p}_i = \sqrt{Q_i}$。</p>
+<h4 id="零维准素分解"><a class="header" href="#零维准素分解">零维准素分解</a></h4>
+<p>对零维理想，准素分解可以通过 Lex Gröbner 基中一元多项式的因式分解来实现。</p>
+<p><strong>核心观察</strong>。零维理想的 Lex GB 包含一个仅含 $x_1$ 的多项式 $p_1(x_1)$、一个含 $x_1, x_2$ 的多项式 $p_2(x_1, x_2)$，以此类推。$p_1(x_1)$ 的因式分解对应了理想在 $x_1$ 方向上的不同分支。</p>
+<p><strong>算法</strong>（对应 oCAS 实现 <code>primary_decomp_zero_dim</code>）：</p>
+<ol>
+<li>计算 $I$ 的 Lex Gröbner 基 $G$</li>
+<li>提取仅含 $x_1$ 的多项式 $p_1(x_1)$，计算其<strong>无平方部分</strong> $\tilde{p}_1 = p_1 / \gcd(p_1, p_1')$</li>
+<li>将 $\tilde{p}_1$ 在 $\mathbb{Q}$ 上分解为互异不可约因子 $\tilde{p}_1 = q_1 \cdot q_2 \cdots q_s$</li>
+<li>对每个因子 $q_i$，用<strong>饱和</strong>分离分支：$I_i = I : \left(\prod_{j \neq i} q_j\right)^\infty$（源码逐个因子依次饱和）</li>
+<li>每个分支 $I_i$ 的关联素理想取为 $\mathfrak{p}_i = \mathrm{GB}(I + \langle q_i \rangle)$</li>
+</ol>
+<p><strong>注意</strong>。若 $\tilde{p}_1$ 只有一个不可约因子（或 $G$ 中不存在仅含 $x_1$ 的多项式），算法返回单一分支 ${\text{primary} = I,; \text{prime} = \sqrt{I}}$。当前实现只处理第一个变量 $x_1$ 的因子分解，<strong>不递归</strong>处理后续变量。</p>
+<p><strong>例</strong>。$I = \langle x^2 - 1, y - x \rangle \subseteq \mathbb{Q}[x, y]$。</p>
+<p>Lex GB：${x^2 - 1, y - x}$。$p_1(x) = x^2 - 1$ 已无平方，分解为 $q_1 = x - 1$、$q_2 = x + 1$。</p>
+<ul>
+<li>分支 1：$I_1 = I : \langle x + 1 \rangle^\infty = \langle x - 1, y - 1 \rangle$（关联素理想 $\langle x - 1, y - 1 \rangle$）</li>
+<li>分支 2：$I_2 = I : \langle x - 1 \rangle^\infty = \langle x + 1, y + 1 \rangle$（关联素理想 $\langle x + 1, y + 1 \rangle$）</li>
+</ul>
+<p>检查：$\langle x^2 - 1, y - x \rangle = \langle x - 1, y - 1 \rangle \cap \langle x + 1, y + 1 \rangle$，两个分支都是素理想。</p>
+<p>作为对照，$I = \langle x^2, xy \rangle$ 的 $p_1(x) = x^2$ 无平方部分只有 $x$ 一个因子，故算法返回单一分支 ${\text{primary} = \langle x^2, xy \rangle,; \text{prime} = \sqrt{I} = \langle x \rangle}$。不过该理想仍有更细的分解 $\langle x^2, xy \rangle = \langle x \rangle \cap \langle x^2, y \rangle$，其中 $\langle x \rangle$ 是素理想，$\langle x^2, y \rangle$ 是关联素理想为 $\langle x, y \rangle$ 的准素理想（嵌入分支）。</p>
+<h4 id="正维准素分解"><a class="header" href="#正维准素分解">正维准素分解</a></h4>
+<p>正维理想的准素分解更加复杂，oCAS 目前标记为待实现（<code>TODO</code>）。完整实现需要：</p>
+<ul>
+<li>Gianni–Trager–Zacharias 算法</li>
+<li>或 Eisenbud–Huneke–Vasconcelos 的特征方法</li>
+</ul>
+<h3 id="根式radical"><a class="header" href="#根式radical">根式（Radical）</a></h3>
+<p><strong>定义</strong>。理想 $I$ 的<strong>根式</strong>为</p>
+<p>$$\sqrt{I} = {f \in R : f^n \in I \text{ 对某个 } n \geq 1}$$</p>
+<p>等价地，$\sqrt{I}$ 是包含 $I$ 的最大理想使得 $V(\sqrt{I}) = V(I)$（相同的零点集）。</p>
+<h4 id="零维根式"><a class="header" href="#零维根式">零维根式</a></h4>
+<p>对零维理想，根式计算利用 Lex GB 中一元多项式的无平方分解。</p>
+<p><strong>算法</strong>：</p>
+<ol>
+<li>计算 Lex GB $G$</li>
+<li>对 $G$ 中每个仅含 $x_i$ 的多项式 $p_i(x_i)$，计算其无平方部分 $\tilde{p}_i = p_i / \gcd(p_i, p_i')$</li>
+<li>用 $\tilde{p}_i$ 替换 $p_i$，得到 $\sqrt{I}$ 的生成元</li>
+</ol>
+<p><strong>正确性</strong>。零维理想的根式对应于将每个关联素理想的幂次降为 $1$。无平方分解恰好实现了这一点——$p_i^{e_i}$ 的无平方部分是 $p_i$。</p>
+<p><strong>例</strong>。$\sqrt{\langle x^2, xy \rangle}$。</p>
+<p>Lex GB：${x^2, xy}$。$x^2$ 的无平方部分：$x^2 / \gcd(x^2, 2x) = x^2 / x = x$。</p>
+<p>根式：$\langle x, xy \rangle = \langle x \rangle$（因为 $x$ 已经整除 $xy$）。$\square$</p>
+<h4 id="正维根式jacobian-饱和"><a class="header" href="#正维根式jacobian-饱和">正维根式：Jacobian 饱和</a></h4>
+<p>对正维理想，oCAS 使用基于 Jacobian 的饱和方法（简化版 Kemper 算法）：</p>
+<p>$$\sqrt{I} = I : h^\infty$$</p>
+<p>其中 $h$ 与 Jacobian 行列式相关。</p>
+<p><strong>算法</strong>（特征零，对应实现 <code>radical_via_jacobian</code>）：</p>
+<ol>
+<li>对 $I$ 的每个生成元 $f_i$ 和每个变量 $x_j$，计算偏导数 $\partial f_i / \partial x_j$（跳过常值/零偏导数）</li>
+<li>启发式选取 $h$：源码<strong>并非</strong>计算真正的 $\gcd$，而是对非平凡偏导数做 <code>reduce</code> 折叠、保留<strong>总次数最小</strong>的那个。这是对经典 Jacobian 饱和公式（$\sqrt{I} = I : h^\infty$，其中 $h$ 需取合适的 Jacobian 相关元素）的<strong>启发式近似</strong>——$h$ 只是某个偏导数（Jacobian 矩阵的一个元素），既不保证整除 Jacobian 行列式，也不保证饱和结果恰好等于 $\sqrt{I}$</li>
+<li>计算 $I : h^\infty$（迭代饱和）</li>
+</ol>
+<p><strong>理论基础</strong>。在正则点处，Jacobian 矩阵的秩等于簇的维数（Jacobian 判据）；奇异点正是秩不足（小于 $n - \dim$）的点——在这些点处幂次结构非平凡。饱和 $I : h^\infty$ 的作用是去除这些幂次。</p>
+<p><strong>限制</strong>。当所有偏导数都是常数/零，或 $h$ 是常值多项式（总次数为 0）时，算法回退到返回原始 GB。由于 $h$ 是启发式选取而非真正的 Jacobian 相关元素，饱和结果只是 $\sqrt{I}$ 的近似（可能偏大，也可能偏小、漏掉分量）——对正维理想，完整根式计算需要更精细的算法（如 Gianni–Trager–Zacharias 或 Eisenbud–Huneke–Vasconcelos）。</p>
+<h3 id="素性与准素性判定"><a class="header" href="#素性与准素性判定">素性与准素性判定</a></h3>
+<p><strong>零维素性判定</strong>。零维理想 $I$ 是素理想的充要条件是：Lex GB 中每个仅含 $x_i$ 的多项式都是不可约的。</p>
+<p>oCAS 实现（<code>is_prime_zero_dim</code>）：</p>
+<ol>
+<li>计算 Lex GB</li>
+<li>提取每个一元多项式 $p_i(x_i)$</li>
+<li>对次数 $\le 3$ 的多项式用<strong>有理根定理</strong>检查可约性（$\mathbb{Q}$ 上次 $d \le 3$ 的多项式不可约 ⟺ 无有理根）；次数 $&gt; 3$ 的多项式不做完全分解检验</li>
+</ol>
+<p><strong>注意</strong>。正维理想目前保守返回 <code>false</code>——素的正维理想会被误判为非素（<strong>假阴性</strong>）。而零维情形下，次数 $&gt; 3$ 的一元多项式若可约但无有理根（如 $(x^2-2)(x^2-3)$），会被误判为不可约，从而可能产生<strong>假阳性</strong>（把非素理想报为素）。</p>
+<p><strong>准素性判定</strong>。理想 $I$ 是准素理想当且仅当它恰好有一个关联素理想。实现上通过准素分解检查分量数。</p>
+<hr />
+<h2 id="在-ocas-中的实现"><a class="header" href="#在-ocas-中的实现">在 oCAS 中的实现</a></h2>
+<h3 id="fglm-实现"><a class="header" href="#fglm-实现">FGLM 实现</a></h3>
+<p>FGLM 算法实现在 <code>ocas-poly/src/groebner/fglm.rs</code> 中。</p>
+<h4 id="入口函数"><a class="header" href="#入口函数">入口函数</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn fglm&lt;D: Domain, O2: MonomialOrder&gt;(
+    gb: &amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;,
+) -&gt; Option&lt;GroebnerBasis&lt;D, O2&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>泛型参数：</p>
+<ul>
+<li><code>D</code>：系数域（实现 <code>Domain</code> trait）</li>
+<li><code>O2</code>：目标单项式序</li>
+<li>输入基的源序由 <code>gb</code> 的类型参数 <code>impl MonomialOrder</code> 确定</li>
+</ul>
+<p>返回 <code>None</code> 当理想不是零维的（阶梯计算发现无穷多个标准单项式）。</p>
+<h4 id="阶梯计算"><a class="header" href="#阶梯计算">阶梯计算</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn compute_staircase(lms: &amp;[Vec&lt;usize&gt;], n_vars: usize) -&gt; Option&lt;Vec&lt;Vec&lt;usize&gt;&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>BFS 算法：</p>
+<ul>
+<li>从全零指数向量 $1 = x_1^0 \cdots x_n^0$ 开始</li>
+<li>对队列中每个单项式 $m$，检查是否被某个 $\text{lm}(g_i)$ 整除</li>
+<li>若不被整除 → 加入阶梯，将其 $n$ 个邻居（$m$ 的每个变量指数 $+1$）加入队列</li>
+<li>安全阈值 100,000：若 BFS 访问超过此数，判定为正维</li>
+</ul>
+<p>整除检查使用逐分量比较：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn monomial_divides_big(lm: &amp;[usize], big: &amp;[usize]) -&gt; bool {
+    lm.iter().zip(big.iter()).all(|(a, b)| a &lt;= b)
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="正规形计算"><a class="header" href="#正规形计算">正规形计算</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn normal_form_monomial&lt;D: Domain&gt;(
+    m: &amp;[usize],
+    gb: &amp;GroebnerBasis&lt;D, impl MonomialOrder&gt;,
+    staircase: &amp;[Vec&lt;usize&gt;],
+    domain: &amp;D,
+) -&gt; Vec&lt;D::Element&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>将单项式 $m$ 构造为单项式多项式 $1 \cdot x^m$，对 GB 做带余除法，然后将余数的每个项映射到阶梯的位置索引上。返回长度为 $D$ 的坐标向量。</p>
+<h4 id="线性关系检测"><a class="header" href="#线性关系检测">线性关系检测</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn find_relation&lt;D: Domain&gt;(
+    seen: &amp;[Vec&lt;D::Element&gt;],
+    nf: &amp;[D::Element],
+    domain: &amp;D,
+) -&gt; Option&lt;Vec&lt;D::Element&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>构造增广矩阵 $[\text{seen}^T \mid \text{nf}]$（$D$ 行，$k+1$ 列），执行前向消元 + 回代：</p>
+<ol>
+<li>逐列找主元（非零元素），交换行</li>
+<li>归一化主元行，消去其余行的该列</li>
+<li>检查一致性：若某行左侧全零但右侧非零 → 无解（线性无关）</li>
+<li>回代提取系数向量</li>
+</ol>
+<p>返回 <code>Some(coeffs)</code> 当线性相关，<code>None</code> 当线性无关。</p>
+<h4 id="倍标记"><a class="header" href="#倍标记">倍标记</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn mark_multiples(
+    visited: &amp;mut HashMap&lt;Vec&lt;usize&gt;, bool&gt;,
+    m: &amp;[usize],
+    n_vars: usize,
+    max_deg: usize,
+)
+<span class="boring">}</span></code></pre></pre>
+<p>BFS 标记 $m$ 的所有倍（总次数不超过 <code>max_deg</code>）为已访问。<code>max_deg</code> 设为 $2D$——足够覆盖所有可能产生新首项的单项式。</p>
+<h4 id="主循环细节"><a class="header" href="#主循环细节">主循环细节</a></h4>
+<p>主循环维护：</p>
+<ul>
+<li><code>boundary</code>：候选单项式的集合（初始为 ${1}$，即全零指数向量）</li>
+<li><code>seen_nfs</code>：已见正规形向量的列表</li>
+<li><code>seen_mons</code>：对应的单项式列表</li>
+<li><code>new_basis</code>：输出的 Gröbner 基</li>
+</ul>
+<p>每步取 boundary 中目标序最小的单项式，计算正规形，检测线性关系。若相关 → 输出新多项式并标记倍；若无关 → 加入 seen 并扩展邻居。</p>
+<p>循环终止条件：boundary 为空或步数超过 $D(D+1) + 4n$（安全上限）。</p>
+<p>最终对 <code>new_basis</code> 执行 <code>minimize()</code>（移除冗余）和 <code>auto_reduce()</code>（互相约化），得到约化 Gröbner 基。</p>
+<h3 id="理想运算实现"><a class="header" href="#理想运算实现">理想运算实现</a></h3>
+<p>理想运算实现在 <code>ocas-poly/src/ideal.rs</code> 中，统一使用 Lex 序以保证消元性质。</p>
+<h4 id="成员判定"><a class="header" href="#成员判定">成员判定</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_contains&lt;D: Domain + 'static&gt;(
+    generators: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    f: &amp;SparseMultivariatePolynomial&lt;D, Lex&gt;,
+    algo: Algorithm,
+) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p>计算 GB 后对 $f$ 求正规形，检查是否为零。</p>
+<h4 id="理想商"><a class="header" href="#理想商">理想商</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_quotient&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>内部流程：</p>
+<ol>
+<li>对 $J$ 的每个生成元 $g_j$，调用 <code>quotient_single_generator</code>（Rabinowitsch 技巧）</li>
+<li><code>quotient_single_generator</code> 实现：
+<ul>
+<li>将 $I$ 的生成元提升到 $R[w]$</li>
+<li>添加 $1 - wg$</li>
+<li>计算 Lex GB</li>
+<li>消去 $w$（取不涉及 $w$ 的多项式）</li>
+</ul>
+</li>
+<li>对所有 $I : g_j^\infty$ 的结果取交集（<code>intersect_generators</code>）</li>
+</ol>
+<h4 id="理想交集"><a class="header" href="#理想交集">理想交集</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_intersection&lt;D: Domain + 'static&gt;(
+    generators_a: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_b: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>内部调用 <code>intersect_generators</code>：</p>
+<ol>
+<li>引入辅助变量 $t$（index 0）</li>
+<li>构造生成元 ${t \cdot f_i} \cup {(1-t) \cdot g_j}$</li>
+<li>在扩展环 $R[t]$ 中计算 Lex GB</li>
+<li>消去 $t$，得到 $I \cap J$ 的生成元</li>
+</ol>
+<h4 id="理想饱和"><a class="header" href="#理想饱和">理想饱和</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_saturate&lt;D: Domain + 'static&gt;(
+    generators_i: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+    generators_j: &amp;[SparseMultivariatePolynomial&lt;D, Lex&gt;],
+) -&gt; GroebnerBasis&lt;D, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>迭代调用 <code>ideal_quotient</code> 直到 GB 稳定（双向包含判定：两边基元素互相约化为零），上限 20 轮；超限后返回当前结果。</p>
+<h4 id="准素分解-1"><a class="header" href="#准素分解-1">准素分解</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn primary_decomposition(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; Vec&lt;PrimaryComponent&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>目前仅实现零维情况（<code>primary_decomp_zero_dim</code>），且只处理第一个变量：</p>
+<ol>
+<li>计算 Lex GB</li>
+<li>提取仅含 $x_1$ 的一元多项式 $p_1(x_1)$，计算其无平方部分</li>
+<li>对无平方部分做 $\mathbb{Q}$ 上因式分解</li>
+<li>用饱和分离各分支（对每个其他因子依次 <code>ideal_saturate</code>）</li>
+<li>分支的关联素理想取 $\mathrm{GB}(I + \langle q_i \rangle)$；只有一个因子时返回单一分支（$\text{prime} = \sqrt{I}$）</li>
+</ol>
+<p><code>PrimaryComponent</code> 结构体包含：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PrimaryComponent {
+    pub primary: GroebnerBasis&lt;RationalDomain, Lex&gt;,  // 准素理想
+    pub prime: GroebnerBasis&lt;RationalDomain, Lex&gt;,     // 关联素理想
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="根式"><a class="header" href="#根式">根式</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn ideal_radical(
+    generators: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+) -&gt; GroebnerBasis&lt;RationalDomain, Lex&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>分两种情况：</p>
+<ul>
+<li><strong>零维</strong>（<code>radical_zero_dim</code>）：对 Lex GB 中的每个一元多项式做无平方分解，替换后重新生成 GB</li>
+<li><strong>正维</strong>（<code>radical_via_jacobian</code>）：计算所有生成元对所有变量的非平凡偏导数，取 $h$ 为其中<strong>总次数最小</strong>者（启发式，非真正的 $\gcd$），计算 $I : h^\infty$</li>
+</ul>
+<h4 id="其他判定"><a class="header" href="#其他判定">其他判定</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_zero_dimensional(gb: &amp;GroebnerBasis&lt;RationalDomain, Lex&gt;) -&gt; bool
+pub fn is_prime_ideal(generators: &amp;[...]) -&gt; bool
+pub fn is_primary_ideal(generators: &amp;[...]) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li><code>is_zero_dimensional</code>：检查每个变量是否有纯幂首项</li>
+<li><code>is_prime_ideal</code>：零维检查不可约性，正维保守返回 <code>false</code></li>
+<li><code>is_primary_ideal</code>：检查是否恰好有一个关联素理想</li>
+</ul>
+<h3 id="零维系统求解"><a class="header" href="#零维系统求解">零维系统求解</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn solve_polynomial_system(
+    equations: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+    algo: Algorithm,
+) -&gt; PolynomialSystemSolution
+<span class="boring">}</span></code></pre></pre>
+<p>算法流程：</p>
+<ol>
+<li>计算 Lex GB（若输入不是 GB）</li>
+<li>检查零维性</li>
+<li>三角分解求解（<code>solve_triangular</code>）——从 Lex 序中<strong>最小的变量</strong>（$x_n$）开始向前回代：
+<ul>
+<li>提取仅含 $x_n$ 的多项式 → 实根隔离 + 数值求根</li>
+<li>对每个根，代入涉及 $x_{n-1}$ 的多项式 → 求 $x_{n-1}$ 的根</li>
+<li>递归直到所有变量确定（结果按 $x_1, \ldots, x_n$ 顺序返回）</li>
+</ul>
+</li>
+</ol>
+<p>返回类型：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum PolynomialSystemSolution {
+    ZeroDimensional(ZeroDimSolutions),  // 有限个解
+    PositiveDimensional(GroebnerBasis),  // 正维（无穷多解）
+    Empty,                               // 无解
+}
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="进阶话题"><a class="header" href="#进阶话题">进阶话题</a></h2>
+<h3 id="fglm-与-f4-的选择"><a class="header" href="#fglm-与-f4-的选择">FGLM 与 F4 的选择</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>场景</th><th>推荐方法</th><th>原因</th></tr></thead><tbody>
+<tr><td>零维 + 需要 Lex GB</td><td>Grevlex F4 → FGLM</td><td>$O(n \cdot D^3)$ 远快于 Lex F4</td></tr>
+<tr><td>零维 + 需要 Grevlex GB</td><td>直接 F4</td><td>无需换序</td></tr>
+<tr><td>正维 + 需要 Lex GB</td><td>Lex F4 或 <code>reorder</code></td><td>FGLM 不适用</td></tr>
+<tr><td>消元 + 零维</td><td>FGLM → 消元</td><td>消元定理保证正确性</td></tr>
+<tr><td>消元 + 正维</td><td>Lex F4</td><td>FGLM 不适用</td></tr>
+</tbody></table>
+</div>
+<h3 id="倍域上的-fglm"><a class="header" href="#倍域上的-fglm">倍域上的 FGLM</a></h3>
+<p>oCAS 的 FGLM 实现对任意域 $D$ 泛型工作，正规形计算完全经由 <code>Domain</code> trait 的运算（有限域元素以 $[0, p)$ 的规范代表存储）。注意：F4/F5 中针对 $\mathbb{F}_p$ 的 <code>FpPoly</code> <code>i64</code> 快速路径并不用于 FGLM。</p>
+<h3 id="局限性"><a class="header" href="#局限性">局限性</a></h3>
+<ol>
+<li><strong>仅限零维</strong>：正维理想的阶梯无穷，FGLM 不适用</li>
+<li><strong>$D^3$ 瓶颈</strong>：当向量空间维数 $D$ 很大时（如 $D &gt; 10^4$），高斯消元成为瓶颈</li>
+<li><strong>内存</strong>：需要存储 $D \times D$ 乘法矩阵和增广矩阵</li>
+</ol>
+<h3 id="与文献的关系"><a class="header" href="#与文献的关系">与文献的关系</a></h3>
+<p>oCAS 的实现直接基于原始论文：</p>
+<ul>
+<li>FGLM：Faugère, Gianni, Lazard, Mora (1993), <em>Efficient Computation of Zero-dimensional Gröbner Bases by Change of Ordering</em>, JSC</li>
+<li>理想运算：Cox, Little, O'Shea, <em>Ideals, Varieties, and Algorithms</em>, Chapters 4, 8</li>
+<li>准素分解：Gianni, Trager, Zacharias (1988), <em>Gröbner Bases and Primary Decomposition of Polynomial Ideals</em></li>
+<li>根式计算：Kemper (2002), <em>A Course in Commutative Algebra</em></li>
+</ul>
+<hr />
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ol>
+<li>J.-C. Faugère, P. Gianni, D. Lazard, T. Mora. "Efficient Computation of Zero-dimensional Gröbner Bases by Change of Ordering." <em>Journal of Symbolic Computation</em>, 16(4):329–344, 1993.</li>
+<li>D. Cox, J. Little, D. O'Shea. <em>Ideals, Varieties, and Algorithms</em>. 4th ed., Springer, 2015. Chapters 3 (消元), 4 (理想商与饱和), 8 (准素分解).</li>
+<li>W. W. Adams, P. Loustaunau. <em>An Introduction to Gröbner Bases</em>. AMS, 1994.</li>
+<li>P. Gianni, B. Trager, G. Zacharias. "Gröbner Bases and Primary Decomposition of Polynomial Ideals." <em>Journal of Symbolic Computation</em>, 6(2–3):149–167, 1988.</li>
+<li>G. Kemper. <em>A Course in Commutative Algebra</em>. Springer, 2011.</li>
+<li>T. Becker, V. Weispfenning. <em>Gröbner Bases: A Computational Approach to Commutative Algebra</em>. Springer, 1993.</li>
+</ol>
+<hr />
+<p><strong>参见</strong>：</p>
+<ul>
+<li><a href="../api/rust-groebner.html">Rust API：Gröbner 基与理想</a> — 函数签名与完整示例</li>
+<li><a href="./groebner-theory.html">Gröbner 基理论</a> — Buchberger/F4/F5 算法的理论基础</li>
+<li><a href="./polynomial-algebra.html">多项式代数</a> — 单项式序与多元带余除法</li>
+<li><a href="./poly-gcd-factoring.html">多项式 GCD 与因式分解</a> — 无平方分解与因式分解算法</li>
+<li><a href="../solvers.html">求解器</a> — 多项式系统求解与 ODE</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/risch-algorithm.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/algebraic-number-fields.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/risch-algorithm.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/algebraic-number-fields.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

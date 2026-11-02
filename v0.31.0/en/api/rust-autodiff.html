@@ -1,0 +1,617 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Automatic Differentiation - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html" class="active"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-autodiff.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="automatic-differentiation"><a class="header" href="#automatic-differentiation">Automatic Differentiation</a></h1>
+<p>oCAS implements forward-mode automatic differentiation via hyper-dual numbers. A <code>HyperDual&lt;T&gt;</code> carries a scalar value and a set of derivative components. The component layout is precomputed by a shared <code>DualShape</code> (shared through an <code>Arc</code>), and arithmetic operations use a prebuilt multiplication table.</p>
+<blockquote>
+<p><strong>Source file</strong>: <code>ocas-domain/src/dual.rs</code></p>
+</blockquote>
+<h2 id="dualcoeff-trait"><a class="header" href="#dualcoeff-trait">DualCoeff trait</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait DualCoeff:
+    Clone
+    + PartialEq
+    + std::ops::Add&lt;Output = Self&gt;
+    + std::ops::Sub&lt;Output = Self&gt;
+    + std::ops::Mul&lt;Output = Self&gt;
+    + std::ops::Div&lt;Output = Self&gt;
+    + std::ops::Neg&lt;Output = Self&gt;
+    + std::ops::AddAssign
+    + std::ops::MulAssign
+{
+    fn zero() -&gt; Self;
+    fn one() -&gt; Self;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: defines the coefficient type constraints required by hyper-dual numbers. Requires the full four arithmetic operations (including multiplicative inverses) plus additive and multiplicative identities.</p>
+<p><strong>Parameters</strong>: none (trait bound).</p>
+<p><strong>Built-in implementations</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Rational</code></td><td>arbitrary-precision rational; <code>zero()</code> = <code>0/1</code>, <code>one()</code> = <code>1/1</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Limitation</strong>: currently only <code>Rational</code> implements <code>DualCoeff</code>. <code>f64</code> and other floating-point types are not supported as coefficients.</p>
+<h2 id="dualshape"><a class="header" href="#dualshape">DualShape</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct DualShape { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: describes the component layout of a hyper-dual number. Each component is identified by a multi-index — a vector of non-negative integers of length equal to the number of variables, recording the order of differentiation with respect to each variable. The layout must satisfy <strong>ancestor closure</strong>: if the multi-index $\mathbf{m}$ is present, then every multi-index that is component-wise ≤ $\mathbf{m}$ must also be present.</p>
+<p>Component 0 is always the all-zero multi-index (the scalar value component).</p>
+<h3 id="dualshapenew"><a class="header" href="#dualshapenew">DualShape::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(components: Vec&lt;Vec&lt;usize&gt;&gt;) -&gt; Option&lt;Self&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: builds a layout from an ancestor-closed list of multi-indices.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>components</code></td><td><code>Vec&lt;Vec&lt;usize&gt;&gt;</code></td><td>the list of multi-indices; each <code>Vec&lt;usize&gt;</code> must have the same length (missing entries are zero-padded automatically)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Some(DualShape)</code> if the layout is valid, otherwise <code>None</code>.</p>
+<p><strong>Error conditions</strong>:</p>
+<ul>
+<li>empty list → <code>None</code></li>
+<li>no all-zero multi-index → <code>None</code></li>
+<li>ancestor closure violated → <code>None</code></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::DualShape;
+
+// First order, two variables: value + ∂/∂x₀ + ∂/∂x₁
+let shape = DualShape::new(vec![
+    vec![0, 0],
+    vec![1, 0],
+    vec![0, 1],
+]).unwrap();
+assert_eq!(shape.n_components(), 3);
+assert_eq!(shape.n_vars(), 2);
+
+// Invalid: [1] missing (not ancestor-closed)
+assert!(DualShape::new(vec![vec![0], vec![2]]).is_none());
+<span class="boring">}</span></code></pre></pre>
+<h3 id="dualshapen_vars"><a class="header" href="#dualshapen_vars">DualShape::n_vars</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn n_vars(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns the number of differentiation variables (the length of the multi-indices).</p>
+<p><strong>Returns</strong>: <code>usize</code></p>
+<h3 id="dualshapen_components"><a class="header" href="#dualshapen_components">DualShape::n_components</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn n_components(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns the total number of components (including the scalar value component).</p>
+<p><strong>Returns</strong>: <code>usize</code></p>
+<h3 id="dualshapecomponents"><a class="header" href="#dualshapecomponents">DualShape::components</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn components(&amp;self) -&gt; &amp;[Vec&lt;usize&gt;]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns the slice of component multi-indices. Index 0 is the scalar value component.</p>
+<p><strong>Returns</strong>: <code>&amp;[Vec&lt;usize&gt;]</code></p>
+<h3 id="dualshapeindex_of"><a class="header" href="#dualshapeindex_of">DualShape::index_of</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn index_of(&amp;self, multi_index: &amp;[usize]) -&gt; Option&lt;usize&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: looks up the component index for a given multi-index.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>multi_index</code></td><td><code>&amp;[usize]</code></td><td>the multi-index to look up</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Some(index)</code> if present, otherwise <code>None</code>.</p>
+<h3 id="dualshapemult_table"><a class="header" href="#dualshapemult_table">DualShape::mult_table</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn mult_table(&amp;self) -&gt; &amp;[(usize, usize, usize)]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns the multiplication table (for debugging/testing). Each triple <code>(a, b, c)</code> means that the product of component <code>a</code> and component <code>b</code> contributes to component <code>c</code>. Pairs involving the scalar component (index 0) are not included.</p>
+<p><strong>Returns</strong>: <code>&amp;[(usize, usize, usize)]</code></p>
+<h2 id="new_first_order"><a class="header" href="#new_first_order">new_first_order</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new_first_order&lt;T: DualCoeff&gt;(nvars: usize) -&gt; Arc&lt;DualShape&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: builds a first-order shape tracking the partial derivative $\frac{\partial}{\partial x_i}$ of each variable. Does not track higher-order or mixed partials.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>nvars</code></td><td><code>usize</code></td><td>the number of differentiation variables</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Arc&lt;DualShape&gt;</code> — contains $n+1$ components: the value component $[0,\dots,0]$ plus one component $[0,\dots,\underset{i}{1},\dots,0]$ per variable.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::new_first_order;
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(3);
+assert_eq!(shape.n_components(), 4); // value + 3 partials
+assert_eq!(shape.n_vars(), 3);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="hyperdualt"><a class="header" href="#hyperdualt">HyperDual&lt;T&gt;</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct HyperDual&lt;T: DualCoeff&gt; { /* private fields */ }
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the hyper-dual number type, carrying a scalar value and derivative components laid out according to a <code>DualShape</code>. All arithmetic operations propagate derivatives automatically.</p>
+<p><strong>Type constraint</strong>: <code>T: DualCoeff</code></p>
+<h3 id="hyperdualvariable"><a class="header" href="#hyperdualvariable">HyperDual::variable</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn variable(shape: &amp;Arc&lt;DualShape&gt;, i: usize, c: T) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: constructs the $i$-th independent variable with value $c$. The derivative component $[0,\dots,\underset{i}{1},\dots,0]$ is set to 1; all others are 0.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>&amp;Arc&lt;DualShape&gt;</code></td><td>the component layout</td></tr>
+<tr><td><code>i</code></td><td><code>usize</code></td><td>the variable index (0-based), must be &lt; <code>n_vars()</code> (out-of-range indices are silently ignored, no panic)</td></tr>
+<tr><td><code>c</code></td><td><code>T</code></td><td>the variable's value at the evaluation point</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>HyperDual&lt;T&gt;</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(2);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+assert_eq!(x.value(), &amp;Rational::new(3, 1));
+assert_eq!(x.deriv(0), Some(&amp;Rational::new(1, 1)));
+assert_eq!(x.deriv(1), Some(&amp;Rational::new(0, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="hyperdualconstant"><a class="header" href="#hyperdualconstant">HyperDual::constant</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn constant(shape: &amp;Arc&lt;DualShape&gt;, c: T) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: constructs a constant — value $c$, all derivative components zero.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>&amp;Arc&lt;DualShape&gt;</code></td><td>the component layout</td></tr>
+<tr><td><code>c</code></td><td><code>T</code></td><td>the constant value</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>HyperDual&lt;T&gt;</code></p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(1);
+let c = HyperDual::constant(&amp;shape, Rational::new(7, 1));
+assert_eq!(c.value(), &amp;Rational::new(7, 1));
+assert_eq!(c.deriv(0), Some(&amp;Rational::new(0, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="hyperdualvalue"><a class="header" href="#hyperdualvalue">HyperDual::value</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn value(&amp;self) -&gt; &amp;T
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns a reference to the scalar value component (component 0).</p>
+<p><strong>Returns</strong>: <code>&amp;T</code></p>
+<h3 id="hyperdualderiv"><a class="header" href="#hyperdualderiv">HyperDual::deriv</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn deriv(&amp;self, i: usize) -&gt; Option&lt;&amp;T&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns the first-order partial derivative $\frac{\partial f}{\partial x_i}$ with respect to variable $i$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>i</code></td><td><code>usize</code></td><td>the variable index (0-based)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Some(&amp;T)</code> if the first-order component $[0,\dots,\underset{i}{1},\dots,0]$ exists in the shape (for <code>new_first_order</code> shapes this is equivalent to $i &lt; n_vars$), otherwise <code>None</code>.</p>
+<h3 id="hyperdualvalues"><a class="header" href="#hyperdualvalues">HyperDual::values</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn values(&amp;self) -&gt; &amp;[T]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns a slice of all components, in shape order.</p>
+<p><strong>Returns</strong>: <code>&amp;[T]</code></p>
+<h3 id="hyperdualshape"><a class="header" href="#hyperdualshape">HyperDual::shape</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn shape(&amp;self) -&gt; &amp;Arc&lt;DualShape&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: returns the shared shape reference.</p>
+<p><strong>Returns</strong>: <code>&amp;Arc&lt;DualShape&gt;</code></p>
+<h3 id="hyperdualfrom_values"><a class="header" href="#hyperdualfrom_values">HyperDual::from_values</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_values(shape: Arc&lt;DualShape&gt;, values: Vec&lt;T&gt;) -&gt; Option&lt;Self&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: constructs from a full component vector. The length must match the shape's component count.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shape</code></td><td><code>Arc&lt;DualShape&gt;</code></td><td>the component layout</td></tr>
+<tr><td><code>values</code></td><td><code>Vec&lt;T&gt;</code></td><td>the component values; length must be <code>shape.n_components()</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Some(HyperDual&lt;T&gt;)</code> if the length matches, otherwise <code>None</code>.</p>
+<h3 id="hyperdualzero--hyperdualone"><a class="header" href="#hyperdualzero--hyperdualone">HyperDual::zero / HyperDual::one</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn zero(shape: &amp;Arc&lt;DualShape&gt;) -&gt; Self
+pub fn one(shape: &amp;Arc&lt;DualShape&gt;) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: construct the additive identity (all components zero) and the multiplicative identity (value 1, derivative components zero).</p>
+<h3 id="hyperdualinv"><a class="header" href="#hyperdualinv">HyperDual::inv</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn inv(&amp;self) -&gt; Option&lt;Self&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: the multiplicative inverse $\frac{1}{f}$, computed by truncating the geometric series $\frac{1}{v+\varepsilon} = \frac{1}{v}\sum_{k \geq 0}\left(-\frac{\varepsilon}{v}\right)^k$.</p>
+<p><strong>Returns</strong>: <code>Some(1/self)</code> if the value component is nonzero, otherwise <code>None</code> (division by zero).</p>
+<h2 id="arithmetic-operations"><a class="header" href="#arithmetic-operations">Arithmetic operations</a></h2>
+<p><code>HyperDual&lt;T&gt;</code> implements the following standard traits; all operations propagate derivatives automatically:</p>
+<div class="table-wrapper"><table><thead><tr><th>Trait</th><th>Operation</th><th>Derivative rule</th></tr></thead><tbody>
+<tr><td><code>Add</code></td><td><code>a + b</code></td><td>$\frac{\partial}{\partial x_i}(a+b) = a'_i + b'_i$</td></tr>
+<tr><td><code>Sub</code></td><td><code>a - b</code></td><td>$\frac{\partial}{\partial x_i}(a-b) = a'_i - b'_i$</td></tr>
+<tr><td><code>Neg</code></td><td><code>-a</code></td><td>$\frac{\partial}{\partial x_i}(-a) = -a'_i$</td></tr>
+<tr><td><code>Mul</code></td><td><code>a * b</code></td><td>$\frac{\partial}{\partial x_i}(ab) = a'b + ab'$ (higher-order terms handled via the multiplication table)</td></tr>
+<tr><td><code>Div</code></td><td><code>a / b</code></td><td>equivalent to <code>a * b.inv()</code>; requires the value component of <code>b</code> to be nonzero</td></tr>
+</tbody></table>
+</div>
+<p><strong>Constraint</strong>: <code>Add</code>, <code>Sub</code>, <code>Mul</code>, <code>Div</code> require both operands to share the same <code>DualShape</code>. In debug mode the component counts are checked, and mismatches panic.</p>
+<p><strong>Division by zero</strong>: <code>Div</code> calls <code>inv()</code>, which panics if the divisor's value component is zero.</p>
+<h2 id="complete-examples"><a class="header" href="#complete-examples">Complete examples</a></h2>
+<h3 id="example-1-partial-derivatives-of-a-two-variable-function"><a class="header" href="#example-1-partial-derivatives-of-a-two-variable-function">Example 1: partial derivatives of a two-variable function</a></h3>
+<p>Compute the value and partial derivatives of $f(x, y) = x \cdot y$ at $(3, 5)$:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(2);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+let y = HyperDual::variable(&amp;shape, 1, Rational::new(5, 1));
+
+let f = x * y;
+
+assert_eq!(f.value(), &amp;Rational::new(15, 1));     // f(3,5) = 15
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(5, 1))); // ∂f/∂x = y = 5
+assert_eq!(f.deriv(1), Some(&amp;Rational::new(3, 1))); // ∂f/∂y = x = 3
+<span class="boring">}</span></code></pre></pre>
+<h3 id="example-2-derivative-of-a-power-function"><a class="header" href="#example-2-derivative-of-a-power-function">Example 2: derivative of a power function</a></h3>
+<p>Compute the derivative of $f(x) = x^3$ at $x=3$: $\frac{d}{dx}x^3 = 3x^2 = 27$:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(1);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+
+// x^3 = x * x * x
+let x2 = x.clone() * x.clone();
+let x3 = x2 * x;
+
+assert_eq!(x3.value(), &amp;Rational::new(27, 1));
+assert_eq!(x3.deriv(0), Some(&amp;Rational::new(27, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="example-3-derivative-of-a-quotient"><a class="header" href="#example-3-derivative-of-a-quotient">Example 3: derivative of a quotient</a></h3>
+<p>Compute $f(x,y) = \frac{x}{y}$ at $(6, 3)$: $\frac{\partial f}{\partial x} = \frac{1}{y} = \frac{1}{3}$, $\frac{\partial f}{\partial y} = -\frac{x}{y^2} = -\frac{2}{3}$.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(2);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(6, 1));
+let y = HyperDual::variable(&amp;shape, 1, Rational::new(3, 1));
+
+let f = x / y;
+
+assert_eq!(f.value(), &amp;Rational::new(2, 1));
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(1, 3)));
+assert_eq!(f.deriv(1), Some(&amp;Rational::new(-2, 3)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="example-4-three-variable-product"><a class="header" href="#example-4-three-variable-product">Example 4: three-variable product</a></h3>
+<p>Compute $f(x,y,z) = xyz$ at $(2, 3, 5)$: $\frac{\partial f}{\partial x} = yz = 15$, $\frac{\partial f}{\partial y} = xz = 10$, $\frac{\partial f}{\partial z} = xy = 6$.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{HyperDual, new_first_order};
+use ocas_domain::Rational;
+
+let shape = new_first_order::&lt;Rational&gt;(3);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(2, 1));
+let y = HyperDual::variable(&amp;shape, 1, Rational::new(3, 1));
+let z = HyperDual::variable(&amp;shape, 2, Rational::new(5, 1));
+
+let f = x * y * z;
+
+assert_eq!(f.value(), &amp;Rational::new(30, 1));
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(15, 1)));
+assert_eq!(f.deriv(1), Some(&amp;Rational::new(10, 1)));
+assert_eq!(f.deriv(2), Some(&amp;Rational::new(6, 1)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="example-5-second-derivative"><a class="header" href="#example-5-second-derivative">Example 5: second derivative</a></h3>
+<p>Use a custom shape to track second derivatives. For $f(x) = x^2$, $f''(x) = 2$. Note: the component with multi-index $[2]$ stores the coefficient of $\varepsilon^2$, i.e. $f''(x)/2!$, not $f''(x)$ itself.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::dual::{DualShape, HyperDual};
+use ocas_domain::Rational;
+
+// Shape: [0] (value), [1] (first order), [2] (second order)
+let shape = std::sync::Arc::new(
+    DualShape::new(vec![vec![0], vec![1], vec![2]]).unwrap()
+);
+let x = HyperDual::variable(&amp;shape, 0, Rational::new(3, 1));
+
+// f = x * x
+let f = x.clone() * x;
+
+assert_eq!(f.value(), &amp;Rational::new(9, 1));     // 3^2 = 9
+assert_eq!(f.deriv(0), Some(&amp;Rational::new(6, 1))); // 2x = 6
+// Component [2] stores the coefficient of ε² = f''(3)/2! = 2/2 = 1
+assert_eq!(f.values()[2], Rational::new(1, 1));  // f''(3)/2! = 1
+<span class="boring">}</span></code></pre></pre>
+<h2 id="implementation-details"><a class="header" href="#implementation-details">Implementation details</a></h2>
+<h3 id="multiplication-table"><a class="header" href="#multiplication-table">Multiplication table</a></h3>
+<p><code>DualShape</code> precomputes a multiplication table: for every pair of non-scalar components $(a, b)$, if the sum of their multi-indices is also present in the layout, record the triple $(a, b, c)$. During multiplication, component $k$ is computed as:</p>
+<p>$$\text{result}[k] = a[k] \cdot b[0] + a[0] \cdot b[k] + \sum_{(i,j,k) \in \text{table}} a[i] \cdot b[j]$$</p>
+<p>Higher-order terms beyond the layout are truncated.</p>
+<h3 id="geometric-series-for-the-inverse"><a class="header" href="#geometric-series-for-the-inverse">Geometric series for the inverse</a></h3>
+<p><code>inv()</code> computes via the geometric series $\frac{1}{v+\varepsilon} = \frac{1}{v}\sum_{p=0}^{\infty}\left(-\frac{\varepsilon}{v}\right)^p$, iterating until the higher-order terms vanish (automatically truncated to the shape's precision).</p>
+<h3 id="shared-shape"><a class="header" href="#shared-shape">Shared shape</a></h3>
+<p>All <code>HyperDual</code>s participating in the same expression must share the same <code>Arc&lt;DualShape&gt;</code>. Cloning the shape via <code>Arc</code> is very cheap.</p>
+<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Limitation</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Rational coefficients only</strong></td><td><code>DualCoeff</code> is currently implemented only for <code>Rational</code>; <code>f64</code> and other floating-point types are not supported</td></tr>
+<tr><td><strong>No transcendental functions</strong></td><td>transcendental functions such as <code>sin</code>, <code>cos</code>, <code>exp</code>, <code>ln</code> are not implemented — they require real-coefficient traits</td></tr>
+<tr><td><strong>Division-by-zero panic</strong></td><td><code>Div</code> calls <code>inv()</code>, which panics when the value component is zero</td></tr>
+<tr><td><strong>Shape-mismatch panic</strong></td><td><code>Add</code>/<code>Sub</code>/<code>Mul</code>/<code>Div</code> require the operands to share the same shape (component counts are checked in debug mode); mismatches panic</td></tr>
+<tr><td><strong>Higher-order derivatives need a manual layout</strong></td><td>the default <code>new_first_order</code> tracks only first-order partials; second and higher orders require building the layout manually via <code>DualShape::new</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="./rust-domains.html">Coefficient domains</a> — <code>Rational</code> and other domain types</li>
+<li><a href="./rust-evaluation.html">Evaluation and JIT</a> — numerical evaluation (floating point)</li>
+<li><a href="./rust-calculus.html">Calculus</a> — symbolic differentiation <code>diff</code>, integration <code>integrate</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-evaluation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-tensors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-evaluation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-tensors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

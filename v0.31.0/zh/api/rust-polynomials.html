@@ -1,0 +1,1388 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>多项式 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html" class="active"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-polynomials.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考多项式"><a class="header" href="#rust-api-参考多项式">Rust API 参考：多项式</a></h1>
+<p>本章记录 oCAS 的多项式系统，涵盖三类核心数据结构：</p>
+<ul>
+<li><strong><code>DenseUnivariatePolynomial&lt;D&gt;</code></strong> — 稠密一元多项式</li>
+<li><strong><code>SparseMultivariatePolynomial&lt;D, O&gt;</code></strong> — 稀疏多元多项式</li>
+<li><strong><code>RationalPolynomial&lt;D, O&gt;</code></strong> — 多项式分式域元素</li>
+</ul>
+<p>以及单项式序 trait <code>MonomialOrder</code> 和多种序的实现。</p>
+<p><strong>模块路径</strong>：<code>ocas_poly</code></p>
+<hr />
+<h2 id="目录"><a class="header" href="#目录">目录</a></h2>
+<ul>
+<li><a href="#%E5%8D%95%E9%A1%B9%E5%BC%8F%E5%BA%8F">单项式序</a>
+<ul>
+<li><a href="#monomialorder-trait">MonomialOrder trait</a></li>
+<li><a href="#lex">Lex</a></li>
+<li><a href="#grlex">Grlex</a></li>
+<li><a href="#grevlex">Grevlex</a></li>
+<li><a href="#weightorder">WeightOrder</a></li>
+<li><a href="#blockorder-%E4%B8%8E-suborder">BlockOrder 与 SubOrder</a></li>
+<li><a href="#matrixorder">MatrixOrder</a></li>
+</ul>
+</li>
+<li><a href="#denseunivariatepolynomial">DenseUnivariatePolynomial</a>
+<ul>
+<li><a href="#dense-%E6%9E%84%E9%80%A0%E4%B8%8E%E5%B1%9E%E6%80%A7">构造与属性</a></li>
+<li><a href="#dense-%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%9C%AF">基本算术</a></li>
+<li><a href="#euclideandomain-%E6%93%8D%E4%BD%9C">EuclideanDomain 操作</a></li>
+<li><a href="#%E5%9B%A0%E5%BC%8F%E5%88%86%E8%A7%A3%E4%B8%8E%E7%BB%93%E5%BC%8F">因式分解与结式</a></li>
+</ul>
+</li>
+<li><a href="#sparsemultivariatepolynomial">SparseMultivariatePolynomial</a>
+<ul>
+<li><a href="#sparse-%E6%9E%84%E9%80%A0%E4%B8%8E%E5%B1%9E%E6%80%A7">构造与属性</a></li>
+<li><a href="#sparse-%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%9C%AF">基本算术</a></li>
+<li><a href="#gr%C3%B6bner-%E5%9F%BA%E6%94%AF%E6%8C%81">Gröbner 基支持</a></li>
+<li><a href="#%E5%A4%9A%E5%85%83%E5%9B%A0%E5%BC%8F%E5%88%86%E8%A7%A3">多元因式分解</a></li>
+</ul>
+</li>
+<li><a href="#rationalpolynomial">RationalPolynomial</a></li>
+<li><a href="#%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0">辅助函数</a></li>
+</ul>
+<hr />
+<h2 id="单项式序"><a class="header" href="#单项式序">单项式序</a></h2>
+<h3 id="monomialorder-trait"><a class="header" href="#monomialorder-trait">MonomialOrder trait</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait MonomialOrder: Clone + PartialEq + Eq + std::fmt::Debug + Default {
+    fn cmp(&amp;self, lhs: &amp;[usize], rhs: &amp;[usize]) -&gt; std::cmp::Ordering;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：定义单项式之间的全序关系。多项式的首项、排序和 Gröbner 基计算都依赖于此。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>self</code></td><td><code>&amp;Self</code></td><td>序的实例（零大小类型或带参数的类型）</td></tr>
+<tr><td><code>lhs</code></td><td><code>&amp;[usize]</code></td><td>左侧单项式的指数向量 $[\alpha_1, \alpha_2, \dots]$</td></tr>
+<tr><td><code>rhs</code></td><td><code>&amp;[usize]</code></td><td>右侧单项式的指数向量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>std::cmp::Ordering</code> — <code>Less</code> 表示 <code>lhs</code> 在序中排在 <code>rhs</code> <strong>之前</strong>（即 <code>lhs</code> 更大），<code>Greater</code> 表示 <code>lhs</code> 更小。</p>
+<p><strong>设计说明</strong>：简单序（Lex、Grevlex、Grlex）是零大小类型，无运行时开销。参数化序（WeightOrder、BlockOrder、MatrixOrder）在构造时存储配置。</p>
+<p><strong>参见</strong>：<a href="#lex">Lex</a>、<a href="#grevlex">Grevlex</a>、<a href="#grlex">Grlex</a>、<a href="#weightorder">WeightOrder</a>、<a href="#blockorder-%E4%B8%8E-suborder">BlockOrder</a>、<a href="#matrixorder">MatrixOrder</a></p>
+<hr />
+<h3 id="lex"><a class="header" href="#lex">Lex</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Lex;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：字典序。从左到右逐分量比较指数向量。</p>
+<p><strong>比较规则</strong>：<code>lhs &gt; rhs</code> 当且仅当存在 $i$ 使得 $\alpha_j = \beta_j$ 对所有 $j &lt; i$ 且 $\alpha_i &gt; \beta_i$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{Lex, MonomialOrder};
+
+let a = [2, 1]; // x^2 y
+let b = [1, 1]; // x y
+assert_eq!(Lex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+// a 在 Lex 序中更大（首分量 2 &gt; 1）
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="grlex"><a class="header" href="#grlex">Grlex</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Grlex;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：分次字典序。先按总次数降序排列，同次再按字典序。</p>
+<p><strong>比较规则</strong>：</p>
+<ol>
+<li>总次数 $\sum \alpha_i$ 更大者排在前面</li>
+<li>总次数相同时，按字典序比较</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{Grlex, MonomialOrder};
+
+let a = [2, 0]; // x^2, 次数 2
+let b = [1, 1]; // xy, 次数 2
+let c = [0, 3]; // y^3, 次数 3
+// c 次数最高，排在最前
+assert_eq!(Grlex.cmp(&amp;c, &amp;a), std::cmp::Ordering::Less);
+// a 和 b 次数相同，按字典序 a &gt; b
+assert_eq!(Grlex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="grevlex"><a class="header" href="#grevlex">Grevlex</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Grevlex;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：分次反字典序。先按总次数降序排列，同次再按<strong>反向</strong>字典序比较（从最后一个分量开始，方向反转）。</p>
+<p><strong>比较规则</strong>：</p>
+<ol>
+<li>总次数更大者排在前面</li>
+<li>总次数相同时，从最后一个分量开始比较，<strong>更小</strong>者排在前面</li>
+</ol>
+<p><strong>特点</strong>：Grevlex 序在 Gröbner 基计算中通常产生最小的中间矩阵，是默认序。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{Grevlex, Lex, MonomialOrder};
+
+let a = [2, 1];
+let b = [1, 1];
+assert_eq!(Lex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+assert_eq!(Grevlex.cmp(&amp;a, &amp;b), std::cmp::Ordering::Less);
+// Grevlex 下 a &lt; b（反向字典序反转了方向）
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="weightorder"><a class="header" href="#weightorder">WeightOrder</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WeightOrder {
+    weights: SmallVec&lt;[i64; 4]&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：加权序。按 $\sum_i w_i \cdot \alpha_i$ 降序排列。适用于无法用零大小类型表达的消元序。</p>
+<p><strong>构造方法</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(weights: SmallVec&lt;[i64; 4]&gt;) -&gt; Self
+pub fn from_slice(weights: &amp;[i64]) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>weights</code></td><td><code>SmallVec&lt;[i64; 4]&gt;</code> 或 <code>&amp;[i64]</code></td><td>每个变量的权重，长度应等于变量数</td></tr>
+</tbody></table>
+</div>
+<p><strong>Default</strong>：全 1 权重（即总次数序）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{MonomialOrder, WeightOrder};
+use smallvec::smallvec;
+
+let ord = WeightOrder::new(smallvec![2, 1]);
+// [1,0] → 权重 2, [0,1] → 权重 1 → [1,0] 更大
+assert_eq!(ord.cmp(&amp;[1, 0], &amp;[0, 1]), std::cmp::Ordering::Less);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="blockorder-与-suborder"><a class="header" href="#blockorder-与-suborder">BlockOrder 与 SubOrder</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BlockOrder {
+    boundaries: SmallVec&lt;[usize; 4]&gt;,
+    orders: SmallVec&lt;[SubOrder; 4]&gt;,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SubOrder {
+    Lex,
+    Grevlex,
+    Grlex,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：分块消元序。将变量分为连续的块，每个块内使用独立的子序。</p>
+<p><strong>构造方法</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(boundaries: SmallVec&lt;[usize; 4]&gt;, orders: SmallVec&lt;[SubOrder; 4]&gt;) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>boundaries</code></td><td><code>SmallVec&lt;[usize; 4]&gt;</code></td><td>排序的分割点列表（排他上界，不含 <code>n_vars</code>）</td></tr>
+<tr><td><code>orders</code></td><td><code>SmallVec&lt;[SubOrder; 4]&gt;</code></td><td>每个块的子序，长度必须等于 <code>boundaries.len() + 1</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>说明</strong>：<code>boundaries = [2]</code> 加 <code>orders = [Lex, Grevlex]</code> 在 4 变量多项式上表示：先比较变量 0–1（Lex），相等再比较变量 2–3（Grevlex）。</p>
+<p><strong>Default</strong>：单块 Grevlex。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{BlockOrder, MonomialOrder, SubOrder};
+use smallvec::smallvec;
+
+let ord = BlockOrder::new(
+    smallvec![2],
+    smallvec![SubOrder::Lex, SubOrder::Grevlex],
+);
+let a = [1, 0, 0, 0]; // x₀
+let b = [0, 1, 0, 0]; // x₁
+// 块内 Lex：[1,0] &gt; [0,1]
+assert_eq!(ord.cmp(&amp;a, &amp;b), std::cmp::Ordering::Greater);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h3 id="matrixorder"><a class="header" href="#matrixorder">MatrixOrder</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MatrixOrder {
+    matrix: Vec&lt;Vec&lt;i64&gt;&gt;,
+    n_vars: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：矩阵序。将指数向量乘以整数矩阵后按字典序比较。给定 $n \times n$ 矩阵 $M$，单项式 $\alpha &gt; \beta$ 当且仅当 $M\alpha &gt;_{\text{lex}} M\beta$。泛化所有标准序，特别适合构造消元序。</p>
+<p><strong>构造方法</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(matrix: Vec&lt;Vec&lt;i64&gt;&gt;) -&gt; Self
+pub fn elimination_order(elim_vars: usize, n_vars: usize) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>matrix</code></td><td><code>Vec&lt;Vec&lt;i64&gt;&gt;</code></td><td>$n \times n$ 权重矩阵（行优先）</td></tr>
+<tr><td><code>elim_vars</code></td><td><code>usize</code></td><td>要消元的前几个变量数</td></tr>
+<tr><td><code>n_vars</code></td><td><code>usize</code></td><td>总变量数</td></tr>
+</tbody></table>
+</div>
+<p><strong><code>elimination_order</code></strong>：构造等价于 <code>BlockOrder([elim_vars in Lex, rest in Grevlex])</code> 的矩阵序。</p>
+<p><strong>Default</strong>：$1 \times 1$ 单位矩阵。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_poly::sparse::{MatrixOrder, MonomialOrder};
+
+// 2×2 单位矩阵 = Lex 序
+let ord = MatrixOrder::new(vec![vec![1, 0], vec![0, 1]]);
+assert_eq!(ord.cmp(&amp;[1, 0], &amp;[0, 1]), std::cmp::Ordering::Greater);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#monomialorder-trait">MonomialOrder trait</a></p>
+<hr />
+<h2 id="denseunivariatepolynomial"><a class="header" href="#denseunivariatepolynomial">DenseUnivariatePolynomial</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DenseUnivariatePolynomial&lt;D: Domain&gt; {
+    coeffs: Vec&lt;D::Element&gt;,  // 从常数项开始，已去除尾零
+    domain: D,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>稠密一元多项式。系数存储在连续向量中，从常数项 $a_0$ 到最高次项 $a_n$。零多项式用空向量表示。乘法自动在 Karatsuba（两个多项式系数个数均 $\geq 32$ 时）和学校乘法之间选择。</p>
+<hr />
+<h3 id="dense-构造与属性"><a class="header" href="#dense-构造与属性">Dense 构造与属性</a></h3>
+<h4 id="denseunivariatepolynomialnew"><a class="header" href="#denseunivariatepolynomialnew">DenseUnivariatePolynomial::new</a></h4>
+<p><strong>签名</strong>：<code>pub fn new(domain: D) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建零多项式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：零多项式（空系数向量）。</p>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialfrom_coeffs">from_coeffs</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialfrom_coeffs"><a class="header" href="#denseunivariatepolynomialfrom_coeffs">DenseUnivariatePolynomial::from_coeffs</a></h4>
+<p><strong>签名</strong>：<code>pub fn from_coeffs(domain: D, coeffs: Vec&lt;D::Element&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：从系数向量构造多项式。自动去除尾零系数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+<tr><td><code>coeffs</code></td><td><code>Vec&lt;D::Element&gt;</code></td><td>系数 $[a_0, a_1, \dots, a_n]$，常数项在前</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：多项式 $a_0 + a_1 x + \cdots + a_n x^n$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(0), Integer::from(2)],
+);
+assert_eq!(p.degree(), Some(2));
+assert_eq!(p.coeff(2), Some(&amp;Integer::from(2)));
+// p(x) = 1 + 2x^2，中间的零系数被保留（非尾零）
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialnew">new</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialdomain"><a class="header" href="#denseunivariatepolynomialdomain">DenseUnivariatePolynomial::domain</a></h4>
+<p><strong>签名</strong>：<code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>功能</strong>：返回系数域的引用。</p>
+<hr />
+<h4 id="denseunivariatepolynomialcoeffs"><a class="header" href="#denseunivariatepolynomialcoeffs">DenseUnivariatePolynomial::coeffs</a></h4>
+<p><strong>签名</strong>：<code>pub fn coeffs(&amp;self) -&gt; &amp;[D::Element]</code></p>
+<p><strong>功能</strong>：返回系数切片，从常数项开始。</p>
+<hr />
+<h4 id="denseunivariatepolynomialis_zero"><a class="header" href="#denseunivariatepolynomialis_zero">DenseUnivariatePolynomial::is_zero</a></h4>
+<p><strong>签名</strong>：<code>pub fn is_zero(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为零多项式。</p>
+<hr />
+<h4 id="denseunivariatepolynomialdegree"><a class="header" href="#denseunivariatepolynomialdegree">DenseUnivariatePolynomial::degree</a></h4>
+<p><strong>签名</strong>：<code>pub fn degree(&amp;self) -&gt; Option&lt;usize&gt;</code></p>
+<p><strong>功能</strong>：返回多项式的次数。零多项式返回 <code>None</code>。</p>
+<hr />
+<h4 id="denseunivariatepolynomialcoeff"><a class="header" href="#denseunivariatepolynomialcoeff">DenseUnivariatePolynomial::coeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn coeff(&amp;self, n: usize) -&gt; Option&lt;&amp;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回 $x^n$ 的系数，不存在则返回 <code>None</code>。</p>
+<hr />
+<h4 id="denseunivariatepolynomialleading_coeff"><a class="header" href="#denseunivariatepolynomialleading_coeff">DenseUnivariatePolynomial::leading_coeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn leading_coeff(&amp;self) -&gt; Option&lt;&amp;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回首项系数。零多项式返回 <code>None</code>。</p>
+<hr />
+<h4 id="denseunivariatepolynomiallcoeff"><a class="header" href="#denseunivariatepolynomiallcoeff">DenseUnivariatePolynomial::lcoeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn lcoeff(&amp;self) -&gt; D::Element</code></p>
+<p><strong>功能</strong>：返回首项系数的便捷别名。零多项式返回域的零元。</p>
+<p><strong>返回值</strong>：首项系数，或域的零元。</p>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialleading_coeff">leading_coeff</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialconstant"><a class="header" href="#denseunivariatepolynomialconstant">DenseUnivariatePolynomial::constant</a></h4>
+<p><strong>签名</strong>：<code>pub fn constant(&amp;self) -&gt; D::Element</code></p>
+<p><strong>功能</strong>：返回常数项（$x^0$ 的系数）。零多项式返回域的零元。</p>
+<hr />
+<h4 id="denseunivariatepolynomialzero"><a class="header" href="#denseunivariatepolynomialzero">DenseUnivariatePolynomial::zero</a></h4>
+<p><strong>签名</strong>：<code>pub fn zero(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回同域的零多项式。</p>
+<hr />
+<h4 id="denseunivariatepolynomialone"><a class="header" href="#denseunivariatepolynomialone">DenseUnivariatePolynomial::one</a></h4>
+<p><strong>签名</strong>：<code>pub fn one(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回常数多项式 $1$。</p>
+<hr />
+<h4 id="denseunivariatepolynomialis_one"><a class="header" href="#denseunivariatepolynomialis_one">DenseUnivariatePolynomial::is_one</a></h4>
+<p><strong>签名</strong>：<code>pub fn is_one(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为常数多项式 $1$。</p>
+<hr />
+<h3 id="dense-基本算术"><a class="header" href="#dense-基本算术">Dense 基本算术</a></h3>
+<p>以下方法在 <code>D: Domain</code> 上可用：</p>
+<h4 id="denseunivariatepolynomialneg"><a class="header" href="#denseunivariatepolynomialneg">DenseUnivariatePolynomial::neg</a></h4>
+<p><strong>签名</strong>：<code>pub fn neg(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回 $-p(x)$。</p>
+<hr />
+<h4 id="denseunivariatepolynomialadd"><a class="header" href="#denseunivariatepolynomialadd">DenseUnivariatePolynomial::add</a></h4>
+<p><strong>签名</strong>：<code>pub fn add(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：多项式加法。</p>
+<hr />
+<h4 id="denseunivariatepolynomialsub"><a class="header" href="#denseunivariatepolynomialsub">DenseUnivariatePolynomial::sub</a></h4>
+<p><strong>签名</strong>：<code>pub fn sub(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：多项式减法。</p>
+<hr />
+<h4 id="denseunivariatepolynomialmul_scalar"><a class="header" href="#denseunivariatepolynomialmul_scalar">DenseUnivariatePolynomial::mul_scalar</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul_scalar(&amp;self, scalar: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：标量乘法。所有系数乘以 <code>scalar</code>。</p>
+<hr />
+<h4 id="denseunivariatepolynomialmul"><a class="header" href="#denseunivariatepolynomialmul">DenseUnivariatePolynomial::mul</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：多项式乘法。根据次数自动选择学校乘法或 Karatsuba。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let a = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(1)],
+);
+let b = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(-1)],
+);
+let c = a.mul(&amp;b);
+assert_eq!(c.coeffs(), &amp;[
+    Integer::from(1),
+    Integer::from(0),
+    Integer::from(-1),
+]);
+// (1 + x)(1 - x) = 1 - x^2
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialmul_into">mul_into</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialmul_into"><a class="header" href="#denseunivariatepolynomialmul_into">DenseUnivariatePolynomial::mul_into</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul_into(&amp;self, other: &amp;Self, buf: &amp;mut Vec&lt;D::Element&gt;)</code></p>
+<p><strong>功能</strong>：乘法，将结果写入缓冲区（避免热循环中的重复堆分配）。缓冲区被清空后重用。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Self</code></td><td>另一个多项式</td></tr>
+<tr><td><code>buf</code></td><td><code>&amp;mut Vec&lt;D::Element&gt;</code></td><td>输出缓冲区，调用后包含乘积系数</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h4 id="denseunivariatepolynomialeval"><a class="header" href="#denseunivariatepolynomialeval">DenseUnivariatePolynomial::eval</a></h4>
+<p><strong>签名</strong>：<code>pub fn eval(&amp;self, x: &amp;D::Element) -&gt; D::Element</code></p>
+<p><strong>功能</strong>：用 Horner 法在 $x$ 处求值。零多项式返回域的零元。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(2), Integer::from(3)],
+);
+let value = p.eval(&amp;Integer::from(2));
+assert_eq!(value, Integer::from(17));
+// p(2) = 1 + 2·2 + 3·4 = 17
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="denseunivariatepolynomialderivative"><a class="header" href="#denseunivariatepolynomialderivative">DenseUnivariatePolynomial::derivative</a></h4>
+<p><strong>签名</strong>：<code>pub fn derivative(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回形式导数 $p'(x)$。</p>
+<hr />
+<h4 id="denseunivariatepolynomialintegral"><a class="header" href="#denseunivariatepolynomialintegral">DenseUnivariatePolynomial::integral</a></h4>
+<p><strong>签名</strong>：<code>pub fn integral(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回形式积分 $\int p(x),dx$，常数项为零。要求域支持除法（如 <code>RationalDomain</code>）。</p>
+<hr />
+<h3 id="euclideandomain-操作"><a class="header" href="#euclideandomain-操作">EuclideanDomain 操作</a></h3>
+<p>以下方法要求 <code>D: EuclideanDomain</code>：</p>
+<h4 id="denseunivariatepolynomialmul_coeff"><a class="header" href="#denseunivariatepolynomialmul_coeff">DenseUnivariatePolynomial::mul_coeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul_coeff(&amp;self, c: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：所有系数乘以常数 $c$。等价于 <code>mul_scalar</code>，但限于 <code>EuclideanDomain</code>。</p>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialmul_scalar">mul_scalar</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialdiv_coeff"><a class="header" href="#denseunivariatepolynomialdiv_coeff">DenseUnivariatePolynomial::div_coeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn div_coeff(&amp;self, c: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：所有系数除以常数 $c$（必须整除）。</p>
+<p><strong>错误</strong>：若 $c$ 在域中不可逆（例如 $\mathbb{Z}$ 上 $c$ 不是 $\pm 1$），则无条件 panic（即使所有系数都能被 $c$ 整除）。</p>
+<hr />
+<h4 id="denseunivariatepolynomialdiv_rem"><a class="header" href="#denseunivariatepolynomialdiv_rem">DenseUnivariatePolynomial::div_rem</a></h4>
+<p><strong>签名</strong>：<code>pub fn div_rem(&amp;self, divisor: &amp;Self) -&gt; Option&lt;(Self, Self)&gt;</code></p>
+<p><strong>功能</strong>：带余除法。返回 $(q, r)$ 使得 $p = q \cdot \text{divisor} + r$，其中 $\deg(r) &lt; \deg(\text{divisor})$。</p>
+<p><strong>返回值</strong>：<code>Some((quotient, remainder))</code>，除数为零时返回 <code>None</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(0), Integer::from(-1)],
+);
+let q = DenseUnivariatePolynomial::from_coeffs(
+    domain,
+    vec![Integer::from(1), Integer::from(1)],
+);
+let (quot, rem) = p.div_rem(&amp;q).unwrap();
+assert_eq!(quot.coeffs(), &amp;[Integer::from(1), Integer::from(-1)]);
+assert!(rem.is_zero());
+// (x^2 - 1) / (x + 1) = x - 1，余数为 0
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialgcd"><a class="header" href="#denseunivariatepolynomialgcd">DenseUnivariatePolynomial::gcd</a></h4>
+<p><strong>签名</strong>：<code>pub fn gcd(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：计算两个多项式的最大公因式。使用 Euclid 算法（非域时用伪余式）。结果总是本原的（content-free）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]); // x^2 - 1
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]); // (x+1)^2
+let g = a.gcd(&amp;b);
+assert_eq!(g.coeffs(), &amp;[Integer::from(1), Integer::from(1)]);
+// gcd = x + 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialextended_gcd_poly">extended_gcd_poly</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialcontent"><a class="header" href="#denseunivariatepolynomialcontent">DenseUnivariatePolynomial::content</a></h4>
+<p><strong>签名</strong>：<code>pub fn content(&amp;self) -&gt; D::Element</code></p>
+<p><strong>功能</strong>：返回所有系数的最大公因式。零多项式返回域的零元。</p>
+<p><strong>返回值</strong>：系数的 GCD。</p>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialprimitive_part">primitive_part</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialprimitive_part"><a class="header" href="#denseunivariatepolynomialprimitive_part">DenseUnivariatePolynomial::primitive_part</a></h4>
+<p><strong>签名</strong>：<code>pub fn primitive_part(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回本原部分 $p / \text{content}(p)$。结果的 content 为 1（或为零多项式）。</p>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialcontent">content</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialextended_gcd_poly"><a class="header" href="#denseunivariatepolynomialextended_gcd_poly">DenseUnivariatePolynomial::extended_gcd_poly</a></h4>
+<p><strong>签名</strong>：<code>pub fn extended_gcd_poly(&amp;self, other: &amp;Self) -&gt; (Self, Self, Self)</code></p>
+<p><strong>功能</strong>：扩展 Euclid 算法。返回 $(g, s, t)$ 使得 $s \cdot p + t \cdot q = g$，其中 $g = \gcd(p, q)$，$g$ 为首一多项式。</p>
+<p><strong>返回值</strong>：<code>(gcd, bezout_s, bezout_t)</code></p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = RationalDomain;
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(0, 1), Rational::new(1, 1),
+]); // x^2 + 1
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(1, 1), Rational::new(1, 1),
+]); // x + 1
+let (g, s, t) = a.extended_gcd_poly(&amp;b);
+// s·a + t·b = g
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialpow"><a class="header" href="#denseunivariatepolynomialpow">DenseUnivariatePolynomial::pow</a></h4>
+<p><strong>签名</strong>：<code>pub fn pow(&amp;self, n: u32) -&gt; Self</code></p>
+<p><strong>功能</strong>：快速幂（反复平方法）。$p^0 = 1$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>u32</code></td><td>非负整数指数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：$p(x)^n$。</p>
+<hr />
+<h4 id="denseunivariatepolynomialp_adic_expansion"><a class="header" href="#denseunivariatepolynomialp_adic_expansion">DenseUnivariatePolynomial::p_adic_expansion</a></h4>
+<p><strong>签名</strong>：<code>pub fn p_adic_expansion(&amp;self, p: &amp;Self) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：$p$-adic 展开。返回 $[a_0, a_1, a_2, \dots]$ 使得 $\text{self} = a_0 + a_1 \cdot p + a_2 \cdot p^2 + \cdots$，每个 $a_k$ 的次数小于 $\deg(p)$。</p>
+<p><strong>实现</strong>：通过反复带余除法。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// 对 f(x) = x^3 关于 p(x) = x + 1 做 p-adic 展开
+let f = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(0), Integer::from(0), Integer::from(0), Integer::from(1),
+]);
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(1),
+]);
+let expansion = f.p_adic_expansion(&amp;p);
+// expansion = [a0, a1, a2, ...] 使得 f = a0 + a1*p + a2*p^2 + ...
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialdiv_rem">div_rem</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialdiophantine"><a class="header" href="#denseunivariatepolynomialdiophantine">DenseUnivariatePolynomial::diophantine</a></h4>
+<p><strong>签名</strong>：<code>pub fn diophantine(polys: &amp;mut [Self], b: &amp;Self) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：多项式 CRT（丢番图求解器）。给定两两互素的多项式列表 <code>polys</code> 和目标 $b$，返回 $[s_0, \dots, s_n]$ 使得：</p>
+<p>$$\sum_i s_i \cdot \prod_{j \neq i} p_j \equiv b \pmod{\prod_i p_i}$$</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>polys</code></td><td><code>&amp;mut [Self]</code></td><td>两两互素的多项式列表</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Self</code></td><td>目标多项式</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：余式列表 $[s_0, \dots, s_n]$。</p>
+<p><strong>错误</strong>：若多项式非两两互素则 panic。</p>
+<hr />
+<h3 id="因式分解与结式"><a class="header" href="#因式分解与结式">因式分解与结式</a></h3>
+<h4 id="denseunivariatepolynomialsquare_free_factorization"><a class="header" href="#denseunivariatepolynomialsquare_free_factorization">DenseUnivariatePolynomial::square_free_factorization</a></h4>
+<p><strong>签名</strong>：<code>pub fn square_free_factorization(&amp;self) -&gt; SquareFreeFactors&lt;D&gt;</code></p>
+<p><strong>功能</strong>：无平方分解。使用 Yun 算法：$g = \gcd(f, f')$，$w = f/g$，迭代 $h = \gcd(w, g)$，$z = w/h$ 收集重数 $k$ 因子。</p>
+<p><strong>返回值</strong>：<code>Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;</code> — <code>(因子, 重数)</code> 对的列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// (x+1)^2*(x-1) = x^3 + x^2 - x - 1
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(-1), Integer::from(1), Integer::from(1),
+]);
+let factors = p.square_free_factorization();
+assert_eq!(factors.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialfactor">factor</a>、<a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialis_square_free"><a class="header" href="#denseunivariatepolynomialis_square_free">DenseUnivariatePolynomial::is_square_free</a></h4>
+<p><strong>签名</strong>：<code>pub fn is_square_free(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断多项式是否无平方（$\gcd(p, p') = 1$）。</p>
+<hr />
+<h4 id="denseunivariatepolynomialfactorintegerdomain"><a class="header" href="#denseunivariatepolynomialfactorintegerdomain">DenseUnivariatePolynomial::factor（IntegerDomain）</a></h4>
+<p><strong>签名</strong>：<code>impl DenseUnivariatePolynomial&lt;IntegerDomain&gt; { pub fn factor(&amp;self) -&gt; Factors&lt;IntegerDomain&gt; }</code></p>
+<p><strong>功能</strong>：将本原整数多项式完全分解为不可约因子。使用无平方分解 + Berlekamp–Zassenhaus + Hensel 提升算法。</p>
+<p><strong>前置条件</strong>：输入必须是本原的（content = 1）。对任意多项式先调用 <code>primitive_part()</code>。</p>
+<p><strong>返回值</strong>：<code>Vec&lt;(DenseUnivariatePolynomial&lt;IntegerDomain&gt;, usize)&gt;</code> — <code>(不可约因子, 重数)</code> 对。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// x^2 - 1 = (x-1)(x+1)
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]);
+let factors = p.factor();
+assert_eq!(factors.len(), 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialsquare_free_factorization">square_free_factorization</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialfactorfinitefield"><a class="header" href="#denseunivariatepolynomialfactorfinitefield">DenseUnivariatePolynomial::factor（FiniteField）</a></h4>
+<p><strong>签名</strong>：<code>impl DenseUnivariatePolynomial&lt;FiniteField&gt; { pub fn factor(&amp;self) -&gt; Factors&lt;FiniteField&gt; }</code></p>
+<p><strong>功能</strong>：将 $\mathbb{F}_p$ 上的多项式完全分解。使用 Berlekamp 算法（或 Cantor–Zassenhaus）。</p>
+<p><strong>返回值</strong>：<code>Vec&lt;(DenseUnivariatePolynomial&lt;FiniteField&gt;, usize)&gt;</code> — <code>(不可约因子, 重数)</code> 对。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let f = FiniteField::new(BigInt::from(5));
+// x^2 - 1 over F_5
+let p = DenseUnivariatePolynomial::from_coeffs(
+    f.clone(), vec![f.element(4), f.element(0), f.element(1)]);
+let factors = p.factor();
+assert!(!factors.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialfactorintegerdomain">factor（IntegerDomain）</a></p>
+<hr />
+<h4 id="denseunivariatepolynomialresultant"><a class="header" href="#denseunivariatepolynomialresultant">DenseUnivariatePolynomial::resultant</a></h4>
+<p><strong>签名</strong>：<code>pub fn resultant(&amp;self, other: &amp;Self) -&gt; D::Element</code></p>
+<p><strong>功能</strong>：用 Brown PRS 算法计算结式 $\operatorname{Res}(a, b)$。结式为零当且仅当 $a$ 和 $b$ 有非常数公因子。</p>
+<p><strong>实现细节</strong>：子结式 PRS，每步用 $\beta$ 精确除法（子结式定理保证整除）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// Res(x - 1, x - 2) = 1 - 2 = -1
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-2), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(-1));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>性质</strong>：$\operatorname{Res}(a, b) = (-1)^{\deg a \cdot \deg b} \operatorname{Res}(b, a)$。</p>
+<p><strong>参见</strong>：<a href="#denseunivariatepolynomialgcd">gcd</a></p>
+<hr />
+<h2 id="sparsemultivariatepolynomial"><a class="header" href="#sparsemultivariatepolynomial">SparseMultivariatePolynomial</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SparseMultivariatePolynomial&lt;D: Domain, O: MonomialOrder = Grevlex&gt; {
+    terms: HashMap&lt;SmallVec&lt;[usize; 4]&gt;, D::Element&gt;,
+    domain: D,
+    n_vars: usize,
+    pub order: O,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>稀疏多元多项式。只存储非零项，以指数向量 $\vec{e} = [e_1, e_2, \dots]$ 为键、系数为值的 HashMap。指数向量 $\vec{e}$ 表示单项式 $x_1^{e_1} x_2^{e_2} \cdots$。单项式序由类型参数 <code>O</code> 控制，默认为 <code>Grevlex</code>。</p>
+<hr />
+<h3 id="sparse-构造与属性"><a class="header" href="#sparse-构造与属性">Sparse 构造与属性</a></h3>
+<h4 id="sparsemultivariatepolynomialnew"><a class="header" href="#sparsemultivariatepolynomialnew">SparseMultivariatePolynomial::new</a></h4>
+<p><strong>签名</strong>：<code>pub fn new(domain: D, n_vars: usize) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建零多项式，使用默认单项式序。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+<tr><td><code>n_vars</code></td><td><code>usize</code></td><td>变量数</td></tr>
+</tbody></table>
+</div>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialnew_with_order">new_with_order</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialnew_with_order"><a class="header" href="#sparsemultivariatepolynomialnew_with_order">SparseMultivariatePolynomial::new_with_order</a></h4>
+<p><strong>签名</strong>：<code>pub fn new_with_order(domain: D, n_vars: usize, order: O) -&gt; Self</code></p>
+<p><strong>功能</strong>：创建零多项式，指定单项式序。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::IntegerDomain;
+use ocas_poly::sparse::{SparseMultivariatePolynomial, WeightOrder};
+
+let order = WeightOrder::from_slice(&amp;[2, 1]);
+let p = SparseMultivariatePolynomial::&lt;_, WeightOrder&gt;::new_with_order(
+    IntegerDomain, 2, order,
+);
+assert_eq!(p.n_vars(), 2);
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="sparsemultivariatepolynomialfrom_terms"><a class="header" href="#sparsemultivariatepolynomialfrom_terms">SparseMultivariatePolynomial::from_terms</a></h4>
+<p><strong>签名</strong>：<code>pub fn from_terms(domain: D, n_vars: usize, terms: Vec&lt;(Vec&lt;usize&gt;, D::Element)&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：从（指数向量, 系数）对的列表构造多项式。零系数项自动丢弃。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>domain</code></td><td><code>D</code></td><td>系数域</td></tr>
+<tr><td><code>n_vars</code></td><td><code>usize</code></td><td>变量数</td></tr>
+<tr><td><code>terms</code></td><td><code>Vec&lt;(Vec&lt;usize&gt;, D::Element)&gt;</code></td><td>(指数向量, 系数) 对</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::sparse::Grevlex;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = SparseMultivariatePolynomial::&lt;IntegerDomain, Grevlex&gt;::from_terms(
+    domain,
+    2,
+    vec![(vec![1, 0], Integer::from(2)), (vec![0, 1], Integer::from(3))],
+);
+assert_eq!(p.n_terms(), 2);
+assert_eq!(p.coeff(&amp;[1, 0]), Integer::from(2));
+// p = 2x + 3y
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialnew">new</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialdomain"><a class="header" href="#sparsemultivariatepolynomialdomain">SparseMultivariatePolynomial::domain</a></h4>
+<p><strong>签名</strong>：<code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>功能</strong>：返回系数域的引用。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialn_vars"><a class="header" href="#sparsemultivariatepolynomialn_vars">SparseMultivariatePolynomial::n_vars</a></h4>
+<p><strong>签名</strong>：<code>pub fn n_vars(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回变量数。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialn_terms"><a class="header" href="#sparsemultivariatepolynomialn_terms">SparseMultivariatePolynomial::n_terms</a></h4>
+<p><strong>签名</strong>：<code>pub fn n_terms(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回非零项数。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialis_zero"><a class="header" href="#sparsemultivariatepolynomialis_zero">SparseMultivariatePolynomial::is_zero</a></h4>
+<p><strong>签名</strong>：<code>pub fn is_zero(&amp;self) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断是否为零多项式。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialterms_ref"><a class="header" href="#sparsemultivariatepolynomialterms_ref">SparseMultivariatePolynomial::terms_ref</a></h4>
+<p><strong>签名</strong>：<code>pub fn terms_ref(&amp;self) -&gt; &amp;HashMap&lt;SmallVec&lt;[usize; 4]&gt;, D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回内部项映射的引用（指数 → 系数）。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialset_term_external"><a class="header" href="#sparsemultivariatepolynomialset_term_external">SparseMultivariatePolynomial::set_term_external</a></h4>
+<p><strong>签名</strong>：<code>pub fn set_term_external(&amp;mut self, exp: Vec&lt;usize&gt;, coeff: D::Element)</code></p>
+<p><strong>功能</strong>：设置单项式的系数。零系数会移除该项。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialtotal_degree"><a class="header" href="#sparsemultivariatepolynomialtotal_degree">SparseMultivariatePolynomial::total_degree</a></h4>
+<p><strong>签名</strong>：<code>pub fn total_degree(&amp;self) -&gt; Option&lt;usize&gt;</code></p>
+<p><strong>功能</strong>：返回总次数（所有单项式次数的最大值）。零多项式返回 <code>None</code>。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialcoeff"><a class="header" href="#sparsemultivariatepolynomialcoeff">SparseMultivariatePolynomial::coeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn coeff(&amp;self, exp: &amp;[usize]) -&gt; D::Element</code></p>
+<p><strong>功能</strong>：返回给定单项式的系数，不存在则返回域的零元。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialdegree_in"><a class="header" href="#sparsemultivariatepolynomialdegree_in">SparseMultivariatePolynomial::degree_in</a></h4>
+<p><strong>签名</strong>：<code>pub fn degree_in(&amp;self, var_index: usize) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回关于变量 <code>var_index</code> 的次数。零多项式返回 0。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var_index</code></td><td><code>usize</code></td><td>变量索引（0-based）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：该变量在所有项中的最大指数。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialzero--one"><a class="header" href="#sparsemultivariatepolynomialzero--one">SparseMultivariatePolynomial::zero / one</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn zero(&amp;self) -&gt; Self
+pub fn one(&amp;self) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回同形状的零多项式或常数 $1$。</p>
+<hr />
+<h3 id="sparse-基本算术"><a class="header" href="#sparse-基本算术">Sparse 基本算术</a></h3>
+<h4 id="sparsemultivariatepolynomialneg"><a class="header" href="#sparsemultivariatepolynomialneg">SparseMultivariatePolynomial::neg</a></h4>
+<p><strong>签名</strong>：<code>pub fn neg(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回 $-p$。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialadd"><a class="header" href="#sparsemultivariatepolynomialadd">SparseMultivariatePolynomial::add</a></h4>
+<p><strong>签名</strong>：<code>pub fn add(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：多项式加法。</p>
+<p><strong>错误</strong>：若变量数不同则 panic。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialsub"><a class="header" href="#sparsemultivariatepolynomialsub">SparseMultivariatePolynomial::sub</a></h4>
+<p><strong>签名</strong>：<code>pub fn sub(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：多项式减法。</p>
+<p><strong>错误</strong>：若变量数不同则 panic。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialmul_scalar"><a class="header" href="#sparsemultivariatepolynomialmul_scalar">SparseMultivariatePolynomial::mul_scalar</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul_scalar(&amp;self, scalar: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：标量乘法。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialmul"><a class="header" href="#sparsemultivariatepolynomialmul">SparseMultivariatePolynomial::mul</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：多项式乘法。对每对项分别相乘后合并同类项。</p>
+<p><strong>错误</strong>：若变量数不同则 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::sparse::Grevlex;
+use ocas_poly::SparseMultivariatePolynomial;
+
+let domain = IntegerDomain;
+let p = SparseMultivariatePolynomial::&lt;IntegerDomain, Grevlex&gt;::from_terms(
+    domain,
+    2,
+    vec![(vec![1, 0], Integer::from(2)), (vec![0, 1], Integer::from(3))],
+);
+let q = SparseMultivariatePolynomial::&lt;IntegerDomain, Grevlex&gt;::from_terms(
+    domain,
+    2,
+    vec![(vec![1, 0], Integer::from(1)), (vec![0, 0], Integer::from(1))],
+);
+let r = p.mul(&amp;q);
+assert_eq!(r.coeff(&amp;[1, 0]), Integer::from(2));
+assert_eq!(r.coeff(&amp;[0, 1]), Integer::from(3));
+assert_eq!(r.coeff(&amp;[2, 0]), Integer::from(2));
+// (2x + 3y)(x + 1) = 2x^2 + 2x + 3xy + 3y
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="sparsemultivariatepolynomialmul_monomial"><a class="header" href="#sparsemultivariatepolynomialmul_monomial">SparseMultivariatePolynomial::mul_monomial</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul_monomial(&amp;self, exp: &amp;[usize]) -&gt; Self</code></p>
+<p><strong>功能</strong>：每个项的指数向量逐分量加上 <code>exp</code>。用于 Gröbner 基归约。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialsorted_terms"><a class="header" href="#sparsemultivariatepolynomialsorted_terms">SparseMultivariatePolynomial::sorted_terms</a></h4>
+<p><strong>签名</strong>：<code>pub fn sorted_terms(&amp;self) -&gt; Vec&lt;(&amp;SmallVec&lt;[usize; 4]&gt;, &amp;D::Element)&gt;</code></p>
+<p><strong>功能</strong>：按单项式序返回排序后的（指数, 系数）对。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialeval"><a class="header" href="#sparsemultivariatepolynomialeval">SparseMultivariatePolynomial::eval</a></h4>
+<p><strong>签名</strong>：<code>pub fn eval(&amp;self, var_index: usize, value: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：将变量 <code>var_index</code> 替换为值 <code>value</code>，返回少一个变量的多项式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>var_index</code></td><td><code>usize</code></td><td>要替换的变量索引</td></tr>
+<tr><td><code>value</code></td><td><code>&amp;D::Element</code></td><td>替换值</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：少一个变量的多项式（剩余变量保持相对顺序）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+let p = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 2,
+    vec![
+        (vec![1, 1], Integer::from(1)), // xy
+        (vec![0, 1], Integer::from(2)), // 2y
+    ],
+);
+// 代入 x=3：结果 = 3y + 2y = 5y
+let r = p.eval(0, &amp;Integer::from(3));
+assert_eq!(r.coeff(&amp;[1]), Integer::from(5));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h4 id="sparsemultivariatepolynomialeval_keep"><a class="header" href="#sparsemultivariatepolynomialeval_keep">SparseMultivariatePolynomial::eval_keep</a></h4>
+<p><strong>签名</strong>：<code>pub fn eval_keep(&amp;self, var_index: usize, value: &amp;D::Element) -&gt; Self</code></p>
+<p><strong>功能</strong>：将变量 <code>var_index</code> 替换为值，但保持变量总数不变（被替换变量的指数置零）。用于 Hensel 提升中变量位置需保持固定的场景。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialleading_term"><a class="header" href="#sparsemultivariatepolynomialleading_term">SparseMultivariatePolynomial::leading_term</a></h4>
+<p><strong>签名</strong>：<code>pub fn leading_term(&amp;self) -&gt; Option&lt;(&amp;SmallVec&lt;[usize; 4]&gt;, &amp;D::Element)&gt;</code></p>
+<p><strong>功能</strong>：返回首项（指数向量, 系数）。零多项式返回 <code>None</code>。$O(n)$ 扫描 HashMap。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialleading_monomial"><a class="header" href="#sparsemultivariatepolynomialleading_monomial">SparseMultivariatePolynomial::leading_monomial</a></h4>
+<p><strong>签名</strong>：<code>pub fn leading_monomial(&amp;self) -&gt; Option&lt;&amp;SmallVec&lt;[usize; 4]&gt;&gt;</code></p>
+<p><strong>功能</strong>：返回首单项式的指数向量。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialleading_coeff"><a class="header" href="#sparsemultivariatepolynomialleading_coeff">SparseMultivariatePolynomial::leading_coeff</a></h4>
+<p><strong>签名</strong>：<code>pub fn leading_coeff(&amp;self) -&gt; Option&lt;&amp;D::Element&gt;</code></p>
+<p><strong>功能</strong>：返回首项系数。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialcontent"><a class="header" href="#sparsemultivariatepolynomialcontent">SparseMultivariatePolynomial::content</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn content(&amp;self) -&gt; D::Element
+where D: EuclideanDomain
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回所有系数的 GCD。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+let p = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 1,
+    vec![(vec![2], Integer::from(6)), (vec![1], Integer::from(9)), (vec![0], Integer::from(3))],
+);
+assert_eq!(p.content(), Integer::from(3));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialprimitive_part">primitive_part</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialprimitive_part"><a class="header" href="#sparsemultivariatepolynomialprimitive_part">SparseMultivariatePolynomial::primitive_part</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn primitive_part(&amp;self) -&gt; Self
+where D: EuclideanDomain
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回本原部分（多项式 / content）。</p>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialcontent">content</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialdiv_exact"><a class="header" href="#sparsemultivariatepolynomialdiv_exact">SparseMultivariatePolynomial::div_exact</a></h4>
+<p><strong>签名</strong>：<code>pub fn div_exact(&amp;self, divisor: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：精确除法（假设无余式）。用于有理函数规范化中已知 GCD 整除的场景。</p>
+<p><strong>错误</strong>：debug 模式下若除法不精确则 panic。</p>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialchecked_div_exact">checked_div_exact</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialchecked_div_exact"><a class="header" href="#sparsemultivariatepolynomialchecked_div_exact">SparseMultivariatePolynomial::checked_div_exact</a></h4>
+<p><strong>签名</strong>：<code>pub fn checked_div_exact(&amp;self, divisor: &amp;Self) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：精确除法，不精确时返回 <code>None</code>。</p>
+<p><strong>返回值</strong>：<code>Some(quotient)</code> 或 <code>None</code>。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialderivative"><a class="header" href="#sparsemultivariatepolynomialderivative">SparseMultivariatePolynomial::derivative</a></h4>
+<p><strong>签名</strong>：<code>pub fn derivative(&amp;self, var_index: usize) -&gt; Self</code></p>
+<p><strong>功能</strong>：对变量 <code>var_index</code> 求形式偏导。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialtaylor_coefficients"><a class="header" href="#sparsemultivariatepolynomialtaylor_coefficients">SparseMultivariatePolynomial::taylor_coefficients</a></h4>
+<p><strong>签名</strong>：<code>pub fn taylor_coefficients(&amp;self, var_index: usize, a: &amp;D::Element) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：计算关于变量 <code>var_index</code> 在点 $a$ 处的 Taylor 系数。返回 $[t_0, t_1, \dots, t_d]$ 使得 $f = \sum_j t_j (x_{\text{var}} - a)^j$。</p>
+<hr />
+<h3 id="gröbner-基支持"><a class="header" href="#gröbner-基支持">Gröbner 基支持</a></h3>
+<h4 id="sparsemultivariatepolynomialreduce"><a class="header" href="#sparsemultivariatepolynomialreduce">SparseMultivariatePolynomial::reduce</a></h4>
+<p><strong>签名</strong>：<code>pub fn reduce(&amp;self, basis: &amp;[Self]) -&gt; Self</code></p>
+<p><strong>功能</strong>：多元多项式除法。反复寻找能除尽当前首项的基元素，减去适当倍数；否则将首项移入余式。要求域为域（div 总是成功）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>basis</code></td><td><code>&amp;[Self]</code></td><td>除数列表</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：归约后的余式。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialspoly"><a class="header" href="#sparsemultivariatepolynomialspoly">SparseMultivariatePolynomial::spoly</a></h4>
+<p><strong>签名</strong>：<code>pub fn spoly(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：计算 S-多项式。$S(f, g) = \frac{\text{lcm}}{\text{lt}(f)} \cdot f - \frac{\text{lcm}}{\text{lt}(g)} \cdot g$。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialmake_monic_inplace"><a class="header" href="#sparsemultivariatepolynomialmake_monic_inplace">SparseMultivariatePolynomial::make_monic_inplace</a></h4>
+<p><strong>签名</strong>：<code>pub fn make_monic_inplace(&amp;mut self) -&gt; bool</code></p>
+<p><strong>功能</strong>：原地将多项式化为首一（除以首项系数）。首项系数不可逆时返回 <code>false</code>。</p>
+<hr />
+<h4 id="sparsemultivariatepolynomialexponents_iter"><a class="header" href="#sparsemultivariatepolynomialexponents_iter">SparseMultivariatePolynomial::exponents_iter</a></h4>
+<p><strong>签名</strong>：<code>pub fn exponents_iter(&amp;self) -&gt; impl Iterator&lt;Item = &amp;SmallVec&lt;[usize; 4]&gt;&gt;</code></p>
+<p><strong>功能</strong>：按单项式序（降序）迭代所有指数向量。用于 F4 算法的符号预处理。</p>
+<hr />
+<h3 id="多元因式分解"><a class="header" href="#多元因式分解">多元因式分解</a></h3>
+<h4 id="sparsemultivariatepolynomialfactorintegerdomain-lex"><a class="header" href="#sparsemultivariatepolynomialfactorintegerdomain-lex">SparseMultivariatePolynomial::factor（IntegerDomain, Lex）</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt; {
+    pub fn factor(&amp;self) -&gt; Vec&lt;(Self, usize)&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将多元整数多项式分解为不可约因子。二元且主变量首项系数为常数时使用双变量 Hensel 提升（Wang）；三元及以上、或主变量首项系数非常数的二元情形使用 EEZ 算法。</p>
+<p><strong>返回值</strong>：<code>(不可约因子, 重数)</code> 对的列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+// (x^2 + y + 1)(x + y + 2)
+let f = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 2,
+    vec![
+        (vec![3, 0], Integer::from(1)),
+        (vec![2, 1], Integer::from(1)),
+        (vec![2, 0], Integer::from(2)),
+        (vec![1, 1], Integer::from(1)),
+        (vec![1, 0], Integer::from(1)),
+        (vec![0, 2], Integer::from(1)),
+        (vec![0, 1], Integer::from(3)),
+        (vec![0, 0], Integer::from(2)),
+    ],
+);
+let factors = f.factor();
+assert!(factors.len() &gt;= 2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialfactorfinitefield-lex">factor（FiniteField）</a></p>
+<hr />
+<h4 id="sparsemultivariatepolynomialfactorfinitefield-lex"><a class="header" href="#sparsemultivariatepolynomialfactorfinitefield-lex">SparseMultivariatePolynomial::factor（FiniteField, Lex）</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl SparseMultivariatePolynomial&lt;FiniteField, Lex&gt; {
+    pub fn factor(&amp;self) -&gt; Vec&lt;(Self, usize)&gt;
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将多元 $\mathbb{F}_p$ 多项式分解。二元用求值–Hensel 路径，三元及以上用 EEZ。</p>
+<p><strong>参见</strong>：<a href="#sparsemultivariatepolynomialfactorintegerdomain-lex">factor（IntegerDomain）</a></p>
+<hr />
+<h2 id="rationalpolynomial"><a class="header" href="#rationalpolynomial">RationalPolynomial</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RationalPolynomial&lt;D: Domain, O: MonomialOrder = Grevlex&gt; {
+    pub numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    pub denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>多项式分式域元素 $\frac{\text{num}}{\text{den}}$。通过 <code>from_num_den</code> 构造时自动规范化为最简形式（分子分母互素，分母首项系数归一化）。</p>
+<hr />
+<h4 id="rationalpolynomialnew"><a class="header" href="#rationalpolynomialnew">RationalPolynomial::new</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(
+    numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：不化简地构造有理多项式。调用者须确保分母非零。</p>
+<p><strong>参见</strong>：<a href="#rationalpolynomialfrom_num_den">from_num_den</a></p>
+<hr />
+<h4 id="rationalpolynomialfrom_num_den"><a class="header" href="#rationalpolynomialfrom_num_den">RationalPolynomial::from_num_den</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;D: EuclideanDomain, O: MonomialOrder&gt; RationalPolynomial&lt;D, O&gt; {
+    pub fn from_num_den(
+        numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+        denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    ) -&gt; Self
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：从分子分母构造并规范化。结果为最简形式：分子分母互素，分母首项系数归一化（有限域下为 1，整数域下为正）。</p>
+<p><strong>前置条件</strong>：分母非零。</p>
+<p><strong>规范化步骤</strong>：</p>
+<ol>
+<li>计算 $\gcd(\text{num}, \text{den})$ 并约去</li>
+<li>一元时用稠密 Euclid 算法精确 GCD 约简</li>
+<li>归一化分母首项系数</li>
+</ol>
+<p><strong>错误</strong>：分母为零时 panic。</p>
+<p><strong>参见</strong>：<a href="#rationalpolynomialnew">new</a></p>
+<hr />
+<h4 id="rationalpolynomialfrom_polynomial"><a class="header" href="#rationalpolynomialfrom_polynomial">RationalPolynomial::from_polynomial</a></h4>
+<p><strong>签名</strong>：<code>pub fn from_polynomial(poly: SparseMultivariatePolynomial&lt;D, O&gt;) -&gt; Self</code></p>
+<p><strong>功能</strong>：从多项式构造（分母 = 1）。</p>
+<hr />
+<h4 id="rationalpolynomialzero--one"><a class="header" href="#rationalpolynomialzero--one">RationalPolynomial::zero / one</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn zero(domain: &amp;D, n_vars: usize) -&gt; Self
+pub fn one(domain: &amp;D, n_vars: usize) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回零或单位有理多项式。</p>
+<hr />
+<h4 id="rationalpolynomialis_zero--is_one"><a class="header" href="#rationalpolynomialis_zero--is_one">RationalPolynomial::is_zero / is_one</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn is_zero(&amp;self) -&gt; bool
+pub fn is_one(&amp;self) -&gt; bool
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：判断是否为零或 $1/1$。</p>
+<hr />
+<h4 id="rationalpolynomialn_vars"><a class="header" href="#rationalpolynomialn_vars">RationalPolynomial::n_vars</a></h4>
+<p><strong>签名</strong>：<code>pub fn n_vars(&amp;self) -&gt; usize</code></p>
+<p><strong>功能</strong>：返回变量数。</p>
+<hr />
+<h4 id="rationalpolynomialdomain"><a class="header" href="#rationalpolynomialdomain">RationalPolynomial::domain</a></h4>
+<p><strong>签名</strong>：<code>pub fn domain(&amp;self) -&gt; &amp;D</code></p>
+<p><strong>功能</strong>：返回系数域引用。</p>
+<hr />
+<h4 id="rationalpolynomialneg"><a class="header" href="#rationalpolynomialneg">RationalPolynomial::neg</a></h4>
+<p><strong>签名</strong>：<code>pub fn neg(&amp;self) -&gt; Self</code></p>
+<p><strong>功能</strong>：返回 $-\frac{n}{d}$。</p>
+<hr />
+<h4 id="rationalpolynomialinv"><a class="header" href="#rationalpolynomialinv">RationalPolynomial::inv</a></h4>
+<p><strong>签名</strong>：<code>pub fn inv(&amp;self) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：返回乘法逆 $\frac{d}{n}$。分子为零时返回 <code>None</code>。</p>
+<p><strong>返回值</strong>：<code>Some(逆)</code> 或 <code>None</code>（分子为零）。</p>
+<hr />
+<h4 id="rationalpolynomialpow"><a class="header" href="#rationalpolynomialpow">RationalPolynomial::pow</a></h4>
+<p><strong>签名</strong>：<code>pub fn pow(&amp;self, k: u32) -&gt; Self</code></p>
+<p><strong>功能</strong>：快速幂。$\left(\frac{n}{d}\right)^k$，分子分母分别用反复平方法。</p>
+<hr />
+<h4 id="rationalpolynomialadd"><a class="header" href="#rationalpolynomialadd">RationalPolynomial::add</a></h4>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;D: EuclideanDomain, O: MonomialOrder&gt; RationalPolynomial&lt;D, O&gt; {
+    pub fn add(&amp;self, other: &amp;Self) -&gt; Self
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：有理多项式加法。同分母时直接加分子；异分母时交叉相乘后规范化。</p>
+<hr />
+<h4 id="rationalpolynomialsub"><a class="header" href="#rationalpolynomialsub">RationalPolynomial::sub</a></h4>
+<p><strong>签名</strong>：<code>pub fn sub(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：有理多项式减法。等价于 <code>self.add(&amp;other.neg())</code>。</p>
+<hr />
+<h4 id="rationalpolynomialmul"><a class="header" href="#rationalpolynomialmul">RationalPolynomial::mul</a></h4>
+<p><strong>签名</strong>：<code>pub fn mul(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>功能</strong>：有理多项式乘法。交叉相乘后规范化。</p>
+<hr />
+<h4 id="rationalpolynomialdiv"><a class="header" href="#rationalpolynomialdiv">RationalPolynomial::div</a></h4>
+<p><strong>签名</strong>：<code>pub fn div(&amp;self, other: &amp;Self) -&gt; Option&lt;Self&gt;</code></p>
+<p><strong>功能</strong>：有理多项式除法。$\frac{a/b}{c/d} = \frac{ad}{bc}$。</p>
+<p><strong>返回值</strong>：<code>Some(商)</code> 或 <code>None</code>（除数分子为零）。</p>
+<hr />
+<h2 id="辅助函数"><a class="header" href="#辅助函数">辅助函数</a></h2>
+<p>以下函数位于 <code>ocas_poly::sparse</code> 模块中：</p>
+<h3 id="monomial_divides"><a class="header" href="#monomial_divides">monomial_divides</a></h3>
+<p><strong>签名</strong>：<code>pub fn monomial_divides(a: &amp;[usize], b: &amp;[usize]) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断单项式 $b$ 是否整除 $a$（即 $a$ 是 $b$ 的倍式）。返回 <code>true</code> 当且仅当 $a_i \geq b_i$ 对所有 $i$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;[usize]</code></td><td>被除数的指数向量（倍式）</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;[usize]</code></td><td>除数的指数向量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>true</code> 若 $b$ 整除 $a$。</p>
+<hr />
+<h3 id="monomial_lcm"><a class="header" href="#monomial_lcm">monomial_lcm</a></h3>
+<p><strong>签名</strong>：<code>pub fn monomial_lcm(a: &amp;[usize], b: &amp;[usize]) -&gt; SmallVec&lt;[usize; 4]&gt;</code></p>
+<p><strong>功能</strong>：计算两个单项式的最小公倍式：逐分量取最大值。</p>
+<p>$$\text{lcm}(x^a y^b, x^c y^d) = x^{\max(a,c)} y^{\max(b,d)}$$</p>
+<hr />
+<h3 id="monomial_are_coprime"><a class="header" href="#monomial_are_coprime">monomial_are_coprime</a></h3>
+<p><strong>签名</strong>：<code>pub fn monomial_are_coprime(a: &amp;[usize], b: &amp;[usize]) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断两个单项式是否互素（没有变量同时出现在两者中）。</p>
+<hr />
+<h2 id="类型别名"><a class="header" href="#类型别名">类型别名</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 无平方分解结果：(因子, 重数) 对的列表。
+pub type SquareFreeFactors&lt;D&gt; = Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;;
+
+/// 完全分解结果：(不可约因子, 重数) 对的列表。
+pub type Factors&lt;D&gt; = Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;;
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-domains.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-matrix.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-domains.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-matrix.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

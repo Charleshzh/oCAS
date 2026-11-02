@@ -1,0 +1,1057 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Factorization - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html" class="active"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-factoring.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="factorization"><a class="header" href="#factorization">Factorization</a></h1>
+<p>This chapter documents the complete polynomial factorization API in oCAS, covering factorization over the univariate rings $\mathbb{Z}[x]$ and $\mathbb{F}_p[x]$, the multivariate rings $\mathbb{Z}[x_1,\dots,x_n]$ and $\mathbb{F}_p[x_1,\dots,x_n]$, and algebraic number fields $\mathbb{Q}(\alpha)[x]$, as well as rational function arithmetic and resultants.</p>
+<p>Related modules:</p>
+<div class="table-wrapper"><table><thead><tr><th>Module path</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ocas_poly::factor</code></td><td>Top-level factorization entry point</td></tr>
+<tr><td><code>ocas_poly::factor::hensel</code></td><td>Hensel lifting and Zassenhaus recombination ($\mathbb{Z}[x]$)</td></tr>
+<tr><td><code>ocas_poly::factor::finite_field</code></td><td>$\mathbb{F}_p[x]$ factorization (Cantor–Zassenhaus + Berlekamp)</td></tr>
+<tr><td><code>ocas_poly::factor::multivariate</code></td><td>Bivariate Hensel lifting (Wang's algorithm)</td></tr>
+<tr><td><code>ocas_poly::factor::eez</code></td><td>Multivariate EEZ Hensel lifting (Wang + leading-coefficient reconstruction)</td></tr>
+<tr><td><code>ocas_poly::factor::algebraic</code></td><td>Algebraic number field factorization (Trager's algorithm)</td></tr>
+<tr><td><code>ocas_poly::gcd</code></td><td>GCD (pseudo-remainder + Euclidean algorithm)</td></tr>
+<tr><td><code>ocas_poly::gcd::modular</code></td><td>Modular GCD (Brown 1971)</td></tr>
+<tr><td><code>ocas_poly::resultant</code></td><td>Resultant (Brown PRS)</td></tr>
+<tr><td><code>ocas_poly::rational</code></td><td>Rational function fraction field</td></tr>
+<tr><td><code>ocas_calc::partial_fraction</code></td><td>Partial fraction decomposition</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="type-aliases"><a class="header" href="#type-aliases">Type Aliases</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Square-free factorization result: list of (factor, multiplicity) pairs.
+pub type SquareFreeFactors&lt;D&gt; = Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;;
+
+/// Complete factorization result: list of (irreducible factor, multiplicity) pairs.
+pub type Factors&lt;D&gt; = Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;;
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="1-univariate-integer-polynomial-factorization-mathbbzx"><a class="header" href="#1-univariate-integer-polynomial-factorization-mathbbzx">1. Univariate Integer Polynomial Factorization ($\mathbb{Z}[x]$)</a></h2>
+<h3 id="denseunivariatepolynomialfactor"><a class="header" href="#denseunivariatepolynomialfactor">DenseUnivariatePolynomial::factor</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor(&amp;self) -&gt; Factors&lt;IntegerDomain&gt;</code></p>
+<p><strong>Description</strong>: Factors a univariate integer polynomial into irreducible factors (primitive polynomials that are irreducible over $\mathbb{Q}$) together with their multiplicities.</p>
+<p><strong>Parameters</strong>: none (<code>self</code> is the polynomial to factor).</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(DenseUnivariatePolynomial&lt;IntegerDomain&gt;, usize)&gt;</code> — a list of irreducible factor and multiplicity pairs. Each factor is a primitive polynomial with a positive leading coefficient. The product of all factors (each raised to its multiplicity) equals <code>primitive_part(self)</code>; the input must be primitive (content = 1), otherwise the content is discarded.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>The input must be primitive (content = 1; preprocess with <code>primitive_part()</code> if needed).</li>
+<li>Square-free factorization (Yun's algorithm): use $\gcd(f, f')$ to separate multiplicities.</li>
+<li>Call <code>factor_square_free</code> on each square-free component (internally it handles non-monic inputs via the leading-coefficient transformation, then calls <code>factor_square_free_monic</code>):
+<ul>
+<li>Choose a prime $p$ ($p \nmid \mathrm{lc}(f)$ and $f \bmod p$ square-free).</li>
+<li>Factor into monic irreducible factors in $\mathbb{F}_p[x]$ (Cantor–Zassenhaus).</li>
+<li>Compute the Mignotte bound $B = 2^n |f|_2$.</li>
+<li>Linear Hensel lifting $p \to p^k$ ($p^k &gt; 2B$).</li>
+<li>Zassenhaus subset recombination: enumerate subsets of the lifted factors and verify by trial division.</li>
+</ul>
+</li>
+<li>Non-monic polynomials are handled via the leading-coefficient transformation $a^{d-1} f(x/a)$.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// x^2 - 1 = (x-1)(x+1)
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]);
+let factors = p.factor();
+assert_eq!(factors.len(), 2);
+// Each factor has degree 1 and multiplicity 1
+for (g, m) in &amp;factors {
+    assert_eq!(g.degree(), Some(1));
+    assert_eq!(*m, 1);
+}
+// Output: [(x - 1, 1), (x + 1, 1)]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#square_free_factorization"><code>square_free_factorization</code></a>, <a href="#factor_over_finite_field"><code>factor_over_finite_field</code></a>, <a href="../math/poly-gcd-factoring.html">Polynomial GCD and Factorization</a></p>
+<hr />
+<h3 id="denseunivariatepolynomialsquare_free_factorization"><a class="header" href="#denseunivariatepolynomialsquare_free_factorization">DenseUnivariatePolynomial::square_free_factorization</a></h3>
+<p><strong>Signature</strong>: <code>pub fn square_free_factorization(&amp;self) -&gt; SquareFreeFactors&lt;D&gt;</code></p>
+<p><strong>Description</strong>: Computes the square-free factorization of the polynomial. Returns the distinct square-free factors together with their multiplicities in the original polynomial.</p>
+<p><strong>Parameters</strong>: none (<code>self</code> is the polynomial to factor).</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(DenseUnivariatePolynomial&lt;D&gt;, usize)&gt;</code> — a list of square-free factor and multiplicity pairs.</p>
+<p><strong>Algorithm</strong>: Yun's algorithm (characteristic 0). Let $g = \gcd(f, f')$, $w = f/g$, then iterate $h = \gcd(w, g)$, $z = w/h$ to collect the factors of multiplicity $k$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// (x+1)^2 * (x-1) = x^3 + x^2 - x - 1
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(-1), Integer::from(1), Integer::from(1),
+]);
+let factors = p.square_free_factorization();
+assert_eq!(factors.len(), 2);
+// Output: [(x - 1, 1), (x + 1, 2)] (Yun's algorithm collects the multiplicity-1 factor first)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#is_square_free"><code>is_square_free</code></a>, <a href="#denseunivariatepolynomialfactor"><code>factor</code></a></p>
+<hr />
+<h3 id="denseunivariatepolynomialis_square_free"><a class="header" href="#denseunivariatepolynomialis_square_free">DenseUnivariatePolynomial::is_square_free</a></h3>
+<p><strong>Signature</strong>: <code>pub fn is_square_free(&amp;self) -&gt; bool</code></p>
+<p><strong>Description</strong>: Tests whether the polynomial is square-free (i.e., $\gcd(f, f') = 1$).</p>
+<p><strong>Parameters</strong>: none.</p>
+<p><strong>Returns</strong>: <code>bool</code> — <code>true</code> if the polynomial is square-free.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// x^2 - 1 is square-free
+let p = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]);
+assert!(p.is_square_free());
+
+// (x+1)^2 is not square-free
+let q = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]);
+assert!(!q.is_square_free());
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="2-univariate-finite-field-polynomial-factorization-mathbbf_px"><a class="header" href="#2-univariate-finite-field-polynomial-factorization-mathbbf_px">2. Univariate Finite Field Polynomial Factorization ($\mathbb{F}_p[x]$)</a></h2>
+<h3 id="factor_over_finite_field"><a class="header" href="#factor_over_finite_field">factor_over_finite_field</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor_over_finite_field(f: &amp;FpPoly) -&gt; Vec&lt;(FpPoly, usize)&gt;</code></p>
+<p><strong>Description</strong>: Factors a polynomial in $\mathbb{F}_p[x]$ into monic irreducible factors with multiplicities.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;FiniteField&gt;</code></td><td>The polynomial to factor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;(FpPoly, usize)&gt;</code> — a list of monic irreducible factor and multiplicity pairs. The leading coefficient is listed separately as a constant factor (multiplicity 1).</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Square-free factorization (Musser/Bernardin algorithm, handling $p$-th roots in characteristic $p$).</li>
+<li>For each square-free component:
+<ul>
+<li><strong>DDF</strong> (distinct-degree factorization): groups factors by degree using the Frobenius map $x \mapsto x^{p^d} \bmod f$.</li>
+<li><strong>EDF</strong> (equal-degree factorization): for odd characteristic $p$, pick a random $a$ and compute $\gcd(f, a^{(p^d-1)/2} - 1)$; for characteristic 2, use the trace map.</li>
+</ul>
+</li>
+<li>For small primes, Berlekamp's algorithm (the kernel of the Frobenius matrix $Q^T - I$) can also be used.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_poly::factor::finite_field::factor_over_finite_field;
+
+let f = FiniteField::new(BigInt::from(5));
+// x^2 - 1 = (x-1)(x+1) over F_5
+let p = DenseUnivariatePolynomial::from_coeffs(
+    f.clone(), vec![f.element(4), f.element(0), f.element(1)]);
+let factors = factor_over_finite_field(&amp;p);
+let linear_count = factors.iter()
+    .filter(|(g, _)| g.degree() == Some(1)).count();
+assert_eq!(linear_count, 2);
+// Output: two linear monic factors
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="../algorithms/factorization.html">Cantor–Zassenhaus algorithm details</a></p>
+<hr />
+<h3 id="denseunivariatepolynomialfactor-finitefield"><a class="header" href="#denseunivariatepolynomialfactor-finitefield">DenseUnivariatePolynomial::factor (FiniteField)</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor(&amp;self) -&gt; Factors&lt;FiniteField&gt;</code></p>
+<p><strong>Description</strong>: The <code>factor()</code> method on <code>DenseUnivariatePolynomial&lt;FiniteField&gt;</code>, equivalent to calling <code>factor_over_finite_field</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let f = FiniteField::new(BigInt::from(5));
+// x^2 - 1 over F_5
+let p = DenseUnivariatePolynomial::from_coeffs(
+    f.clone(), vec![f.element(4), f.element(0), f.element(1)]);
+let factors = p.factor();
+assert!(!factors.is_empty());
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="berlekamp"><a class="header" href="#berlekamp">berlekamp</a></h3>
+<p><strong>Signature</strong>: <code>pub fn berlekamp(f: &amp;FpPoly) -&gt; Vec&lt;FpPoly&gt;</code></p>
+<p><strong>Description</strong>: Berlekamp's factorization algorithm, suitable for small prime fields. Builds the Frobenius matrix $Q$ (where $Q[i][j]$ is the coefficient of $x^j$ in $x^{ip} \bmod f$) and computes the kernel of $Q^T - I$; every nonzero kernel vector $v$ satisfies $v^p \equiv v \pmod{f}$ and splits factors via $\gcd(f, v - a)$ for $a \in \mathbb{F}_p$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;FpPoly</code></td><td>A monic square-free polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;FpPoly&gt;</code> — a list of monic irreducible factors.</p>
+<p><strong>See also</strong>: Berlekamp (1970)</p>
+<hr />
+<h3 id="cantor_zassenhaus"><a class="header" href="#cantor_zassenhaus">cantor_zassenhaus</a></h3>
+<p><strong>Signature</strong>: <code>pub fn cantor_zassenhaus(f: &amp;FpPoly) -&gt; Vec&lt;FpPoly&gt;</code></p>
+<p><strong>Description</strong>: Cantor–Zassenhaus factorization algorithm. Runs DDF (distinct-degree factorization) first, then EDF (equal-degree factorization). Returns the list of monic irreducible factors of a monic square-free polynomial.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;FpPoly</code></td><td>A monic square-free polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;FpPoly&gt;</code> — a list of monic irreducible factors.</p>
+<p><strong>See also</strong>: Cantor &amp; Zassenhaus (1981)</p>
+<hr />
+<h3 id="poly_pow_mod"><a class="header" href="#poly_pow_mod">poly_pow_mod</a></h3>
+<p><strong>Signature</strong>: <code>pub fn poly_pow_mod(base: &amp;FpPoly, exp: &amp;BigInt, modulus: &amp;FpPoly) -&gt; FpPoly</code></p>
+<p><strong>Description</strong>: Computes $\text{base}^{\text{exp}} \bmod \text{modulus}$ using fast exponentiation (repeated squaring), reducing after each multiplication.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>&amp;FpPoly</code></td><td>The base polynomial</td></tr>
+<tr><td><code>exp</code></td><td><code>&amp;BigInt</code></td><td>The exponent (non-negative)</td></tr>
+<tr><td><code>modulus</code></td><td><code>&amp;FpPoly</code></td><td>The modulus polynomial (nonzero)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>FpPoly</code> — the result of the modular exponentiation.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_poly::factor::finite_field::poly_pow_mod;
+
+let f = FiniteField::new(BigInt::from(7));
+let m = DenseUnivariatePolynomial::from_coeffs(
+    f.clone(), vec![f.element(1), f.element(0), f.element(1)]); // x^2 + 1
+let base = DenseUnivariatePolynomial::from_coeffs(
+    f.clone(), vec![f.element(0), f.element(1)]); // x
+// x^2 mod (x^2+1) = -1 = 6 in F_7
+let r = poly_pow_mod(&amp;base, &amp;BigInt::from(2), &amp;m);
+assert_eq!(r.coeff(0).cloned(), Some(f.element(6)));
+// Output: 6 (i.e., -1 mod 7)
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="3-multivariate-integer-polynomial-factorization-mathbbzx_1dotsx_n"><a class="header" href="#3-multivariate-integer-polynomial-factorization-mathbbzx_1dotsx_n">3. Multivariate Integer Polynomial Factorization ($\mathbb{Z}[x_1,\dots,x_n]$)</a></h2>
+<h3 id="sparsemultivariatepolynomialfactor-integerdomain-lex"><a class="header" href="#sparsemultivariatepolynomialfactor-integerdomain-lex">SparseMultivariatePolynomial::factor (IntegerDomain, Lex)</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor(&amp;self) -&gt; Vec&lt;(Self, usize)&gt;</code></p>
+<p><strong>Description</strong>: Factors a sparse multivariate integer polynomial into irreducible factors with multiplicities.</p>
+<p><strong>Parameters</strong>: none (<code>self</code> is the <code>SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt;</code> to factor).</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt;, usize)&gt;</code> — a list of irreducible factor and multiplicity pairs.</p>
+<p><strong>Algorithm selection</strong>:</p>
+<ul>
+<li><strong>$n \geq 3$ variables</strong>: uses EEZ Hensel lifting (Wang leading-coefficient reconstruction + p-adic coefficient Hensel lifting + Zassenhaus recombination).</li>
+<li><strong>Bivariate with constant leading coefficient</strong>: uses bivariate Hensel lifting (evaluation–lifting path).</li>
+<li><strong>Bivariate with non-constant leading coefficient</strong>: falls back to the EEZ path.</li>
+</ul>
+<p><strong>Algorithm</strong> (EEZ path, $n \geq 3$):</p>
+<ol>
+<li>Extract the content in the main variable and compute the square-free factorization.</li>
+<li>Pick sample points $(a_1, \dots, a_n)$ such that the univariate image $f(x_0, a_1, \dots)$ keeps its degree and is square-free.</li>
+<li>Factor the univariate image over $\mathbb{Z}$.</li>
+<li>Wang leading-coefficient reconstruction: distribute the irreducible factors of the total leading coefficient among the univariate factors.</li>
+<li>EEZ variable-by-variable Hensel lifting: recover $x_1, x_2, \dots$ in turn, solving a multivariate Diophantine equation at each step.</li>
+<li>p-adic coefficient Hensel lifting: lift from modulus $p$ to a sufficiently large $p^k$.</li>
+<li>Zassenhaus subset recombination: enumerate subsets of the modular factors and verify by trial division.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{Integer, IntegerDomain};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+// (x^2 + y + 1)(x + y + 2) in Z[x,y]
+let f = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    IntegerDomain, 2,
+    vec![
+        (vec![3, 0], Integer::from(1)),   // x^3
+        (vec![2, 1], Integer::from(1)),   // x^2 y
+        (vec![2, 0], Integer::from(2)),   // 2x^2
+        (vec![1, 1], Integer::from(1)),   // xy
+        (vec![1, 0], Integer::from(1)),   // x
+        (vec![0, 2], Integer::from(1)),   // y^2
+        (vec![0, 1], Integer::from(3)),   // 3y
+        (vec![0, 0], Integer::from(2)),   // 2
+    ],
+);
+let factors = f.factor();
+assert!(factors.len() &gt;= 2);
+// Output: [(x^2 + y + 1, 1), (x + y + 2, 1)]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="../math/poly-gcd-factoring.html">Wang EEZ algorithm</a>, <a href="#bivariate_factor_z"><code>bivariate_factor_z</code></a></p>
+<hr />
+<h3 id="bivariate_factor_z"><a class="header" href="#bivariate_factor_z">bivariate_factor_z</a></h3>
+<p><strong>Signature</strong>: <code>pub fn bivariate_factor_z(f: &amp;ZMPoly, x_var: usize, y_var: usize) -&gt; Vec&lt;(ZMPoly, usize)&gt;</code></p>
+<p><strong>Description</strong>: Factors a bivariate integer polynomial into irreducible factors with multiplicities. Requires the leading coefficient in $x$ to be a nonzero integer constant.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt;</code></td><td>The polynomial to factor</td></tr>
+<tr><td><code>x_var</code></td><td><code>usize</code></td><td>Index of the main variable</td></tr>
+<tr><td><code>y_var</code></td><td><code>usize</code></td><td>Index of the secondary variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;(ZMPoly, usize)&gt;</code> — irreducible factor and multiplicity pairs.</p>
+<p><strong>Algorithm</strong>:</p>
+<ol>
+<li>Bivariate square-free factorization (heuristic bivariate GCD).</li>
+<li>Choose $y = \alpha$ so that the univariate image $f(x, \alpha)$ is square-free with the fewest factors.</li>
+<li>Hensel lifting: lift the factors of $f(x, \alpha)$ back to bivariate factors, correcting iteratively via Taylor expansion.</li>
+</ol>
+<p><strong>See also</strong>: Wang (1978)</p>
+<hr />
+<h3 id="multivariate_factor_z"><a class="header" href="#multivariate_factor_z">multivariate_factor_z</a></h3>
+<p><strong>Signature</strong>: <code>pub fn multivariate_factor_z(f: &amp;ZmPoly) -&gt; Vec&lt;(ZmPoly, usize)&gt;</code></p>
+<p><strong>Description</strong>: Entry point for multivariate factorization via EEZ Hensel lifting. Supports non-constant leading coefficients (through Wang leading-coefficient reconstruction).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;SparseMultivariatePolynomial&lt;IntegerDomain, Lex&gt;</code></td><td>The polynomial to factor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;(ZmPoly, usize)&gt;</code> — irreducible factor and multiplicity pairs.</p>
+<p><strong>See also</strong>: <a href="../math/poly-gcd-factoring.html">Wang EEZ algorithm details</a></p>
+<hr />
+<h2 id="4-multivariate-finite-field-polynomial-factorization-mathbbf_px_1dotsx_n"><a class="header" href="#4-multivariate-finite-field-polynomial-factorization-mathbbf_px_1dotsx_n">4. Multivariate Finite Field Polynomial Factorization ($\mathbb{F}_p[x_1,\dots,x_n]$)</a></h2>
+<h3 id="sparsemultivariatepolynomialfactor-finitefield-lex"><a class="header" href="#sparsemultivariatepolynomialfactor-finitefield-lex">SparseMultivariatePolynomial::factor (FiniteField, Lex)</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor(&amp;self) -&gt; Vec&lt;(Self, usize)&gt;</code></p>
+<p><strong>Description</strong>: Factors a sparse multivariate finite field polynomial into irreducible factors with multiplicities.</p>
+<p><strong>Parameters</strong>: none.</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(SparseMultivariatePolynomial&lt;FiniteField, Lex&gt;, usize)&gt;</code> — a list of irreducible factor and multiplicity pairs.</p>
+<p><strong>Algorithm selection</strong>:</p>
+<ul>
+<li><strong>$n \geq 3$ variables</strong>: EEZ Hensel lifting.</li>
+<li><strong>Bivariate</strong>: evaluation–Hensel path.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use num_bigint::BigInt;
+use ocas_domain::{Domain, FiniteField};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::Lex;
+
+let fp = FiniteField::new(BigInt::from(7));
+// x*y + 1 over F_7[x,y] — already irreducible
+let f = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(
+    fp.clone(), 2,
+    vec![
+        (vec![1, 1], fp.element(1)),  // xy
+        (vec![0, 0], fp.element(1)),  // 1
+    ],
+);
+let factors = f.factor();
+assert_eq!(factors.len(), 1);
+assert_eq!(factors[0].1, 1); // multiplicity 1
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="bivariate_factor_fp"><a class="header" href="#bivariate_factor_fp">bivariate_factor_fp</a></h3>
+<p><strong>Signature</strong>: <code>pub fn bivariate_factor_fp(f: &amp;FpMPoly, x_var: usize, y_var: usize) -&gt; Vec&lt;(FpMPoly, usize)&gt;</code></p>
+<p><strong>Description</strong>: Factors a bivariate $\mathbb{F}_p$ polynomial into irreducible factors with multiplicities.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;SparseMultivariatePolynomial&lt;FiniteField, Lex&gt;</code></td><td>The polynomial to factor</td></tr>
+<tr><td><code>x_var</code></td><td><code>usize</code></td><td>Index of the main variable</td></tr>
+<tr><td><code>y_var</code></td><td><code>usize</code></td><td>Index of the secondary variable</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;(FpMPoly, usize)&gt;</code> — irreducible factor and multiplicity pairs.</p>
+<hr />
+<h3 id="multivariate_factor_fp"><a class="header" href="#multivariate_factor_fp">multivariate_factor_fp</a></h3>
+<p><strong>Signature</strong>: <code>pub fn multivariate_factor_fp(f: &amp;FpMPoly) -&gt; Vec&lt;(FpMPoly, usize)&gt;</code></p>
+<p><strong>Description</strong>: Entry point for multivariate $\mathbb{F}_p$ factorization, supporting non-constant leading coefficients (Wang leading-coefficient reconstruction + EEZ lifting).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>f</code></td><td><code>&amp;SparseMultivariatePolynomial&lt;FiniteField, Lex&gt;</code></td><td>The polynomial to factor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Vec&lt;(FpMPoly, usize)&gt;</code> — irreducible factor and multiplicity pairs.</p>
+<hr />
+<h2 id="5-algebraic-number-field-factorization-mathbbqalphax"><a class="header" href="#5-algebraic-number-field-factorization-mathbbqalphax">5. Algebraic Number Field Factorization ($\mathbb{Q}(\alpha)[x]$)</a></h2>
+<h3 id="denseunivariatepolynomialfactor-algebraicnumberfield"><a class="header" href="#denseunivariatepolynomialfactor-algebraicnumberfield">DenseUnivariatePolynomial::factor (AlgebraicNumberField)</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor(&amp;self) -&gt; Factors&lt;AlgebraicNumberField&gt;</code></p>
+<p><strong>Description</strong>: Factors a polynomial over the algebraic number field $\mathbb{Q}(\alpha)$ into monic irreducible factors with multiplicities (Trager's algorithm).</p>
+<p><strong>Parameters</strong>: none (<code>self</code> is a <code>DenseUnivariatePolynomial&lt;AlgebraicNumberField&gt;</code>).</p>
+<p><strong>Returns</strong>: <code>Vec&lt;(DenseUnivariatePolynomial&lt;AlgebraicNumberField&gt;, usize)&gt;</code> — monic irreducible factor and multiplicity pairs. The product of all factors (each raised to its multiplicity) equals <code>self</code> divided by its leading coefficient (a unit of $K$).</p>
+<p><strong>Algorithm</strong> (Trager):</p>
+<ol>
+<li>Square-free factorization (Yun's algorithm, using the modular GCD <code>gcd_anf</code> to avoid coefficient blow-up).</li>
+<li>Call <code>factor_square_free_anf</code> on each square-free component:
+<ul>
+<li><strong>Trager shift</strong>: find $s \geq 0$ such that the norm of $f(x - s\alpha)$ is square-free.</li>
+<li><strong>Norm computation</strong>: $\operatorname{Res}_\alpha(m(\alpha), f(x, \alpha))$, via evaluation–interpolation.</li>
+<li><strong>Factor the norm over $\mathbb{Q}$</strong>: using the Hensel path.</li>
+<li><strong>Recover the factors over $K$</strong>: compute $\gcd_K(f, g_i(\alpha))$ for each norm factor $g_i$.</li>
+</ul>
+</li>
+<li>GCD uses the modular method (Encarnación): map to $\mathrm{GF}(p^d)$, combine via CRT, rational reconstruction, and trial-division verification.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{AlgebraicNumberField, Domain, Rational, RationalDomain};
+use ocas_poly::DenseUnivariatePolynomial;
+
+// Construct Q(√2) with minimal polynomial x^2 - 2
+let field = AlgebraicNumberField::new(
+    RationalDomain,
+    vec![Rational::new(-2, 1), Rational::new(0, 1), Rational::new(1, 1)],
+);
+// x^2 - 2 factors over Q(√2) as (x - √2)(x + √2)
+let f = DenseUnivariatePolynomial::from_coeffs(
+    field.clone(),
+    vec![
+        field.from_base(Rational::new(-2, 1)),
+        field.zero(),
+        field.one(),
+    ],
+);
+let factors = f.factor();
+assert_eq!(factors.len(), 2);
+assert!(factors.iter().all(|(g, m)| *m == 1 &amp;&amp; g.degree() == Some(1)));
+// Output: [(x - √2, 1), (x + √2, 1)]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="../math/algebraic-number-fields.html">Algebraic Number Fields and Galois Theory</a>, <a href="../math/poly-gcd-factoring.html">Trager's algorithm</a></p>
+<hr />
+<h3 id="norm_with_shift"><a class="header" href="#norm_with_shift">norm_with_shift</a></h3>
+<p><strong>Signature</strong>: <code>pub(crate) fn norm_with_shift(field: &amp;AlgebraicNumberField, f: &amp;UP&lt;AlgebraicNumberField&gt;) -&gt; Option&lt;(u64, UP&lt;AlgebraicNumberField&gt;, UP&lt;RationalDomain&gt;)&gt;</code></p>
+<p><strong>Description</strong>: Trager shift: find $s \geq 0$ such that the norm of $f(x - s\alpha)$ is square-free over $\mathbb{Q}$. Returns <code>(s, g, norm)</code>. Tries at most <code>MAX_TRAGER_SHIFTS</code> (100) shifts.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>field</code></td><td><code>&amp;AlgebraicNumberField</code></td><td>The algebraic number field $\mathbb{Q}(\alpha)$</td></tr>
+<tr><td><code>f</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;AlgebraicNumberField&gt;</code></td><td>The polynomial to factor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>Option&lt;(u64, UP&lt;AlgebraicNumberField&gt;, UP&lt;RationalDomain&gt;)&gt;</code> — <code>(s, f(x - s\alpha), \operatorname{Norm}(f(x - s\alpha)))</code>.</p>
+<hr />
+<h3 id="gcd_anf"><a class="header" href="#gcd_anf">gcd_anf</a></h3>
+<p><strong>Signature</strong>: <code>pub(crate) fn gcd_anf(field: &amp;AlgebraicNumberField, a: &amp;UP&lt;AlgebraicNumberField&gt;, b: &amp;UP&lt;AlgebraicNumberField&gt;) -&gt; UP&lt;AlgebraicNumberField&gt;</code></p>
+<p><strong>Description</strong>: GCD of two univariate polynomials over an algebraic number field. Uses the modular method (Encarnación): map to $\mathrm{GF}(p^d)$, combine the monic modular GCDs (CRT), rationally reconstruct the coefficients, and verify by trial division. Uses at most <code>MAX_ANF_GCD_PRIMES</code> (1000) primes, falling back to a dense Euclidean GCD beyond that.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>field</code></td><td><code>&amp;AlgebraicNumberField</code></td><td>The algebraic number field</td></tr>
+<tr><td><code>a</code></td><td><code>&amp;UP&lt;AlgebraicNumberField&gt;</code></td><td>The first polynomial</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;UP&lt;AlgebraicNumberField&gt;</code></td><td>The second polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a monic GCD polynomial.</p>
+<hr />
+<h2 id="6-polynomial-gcd"><a class="header" href="#6-polynomial-gcd">6. Polynomial GCD</a></h2>
+<h3 id="denseunivariatepolynomialgcd"><a class="header" href="#denseunivariatepolynomialgcd">DenseUnivariatePolynomial::gcd</a></h3>
+<p><strong>Signature</strong>: <code>pub fn gcd(&amp;self, other: &amp;Self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Computes the greatest common divisor of two univariate polynomials. Uses the pseudo-remainder Euclidean algorithm for non-field coefficients. The result is a primitive polynomial.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Self</code></td><td>The other polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a primitive GCD polynomial.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// x^2 - 1 = (x-1)(x+1)
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]);
+// x^2 + 2x + 1 = (x+1)^2
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(1), Integer::from(2), Integer::from(1),
+]);
+let g = a.gcd(&amp;b);
+assert_eq!(g.coeffs(), &amp;[Integer::from(1), Integer::from(1)]);
+// Output: x + 1
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="gcd_modular_z"><a class="header" href="#gcd_modular_z">gcd_modular_z</a></h3>
+<p><strong>Signature</strong>: <code>pub fn gcd_modular_z(a: &amp;ZPoly, b: &amp;ZPoly) -&gt; ZPoly</code></p>
+<p><strong>Description</strong>: Brown's modular GCD algorithm. Computes monic GCDs in $\mathbb{F}_p[x]$ for several primes $p$, combines them via CRT into a primitive GCD in $\mathbb{Z}[x]$, and verifies by trial division. It is much more efficient than pseudo-remainder GCD for large coefficients.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;IntegerDomain&gt;</code></td><td>The first polynomial</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;IntegerDomain&gt;</code></td><td>The second polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: a primitive GCD polynomial.</p>
+<p><strong>Algorithm details</strong>:</p>
+<ol>
+<li>Choose primes $p &gt; 2^{30}$ (to avoid small-prime issues).</li>
+<li>Compute the monic GCD in $\mathbb{F}_p[x]$, scaled by $\gamma = \gcd(\mathrm{lc}(a), \mathrm{lc}(b))$.</li>
+<li>Combine via CRT (symmetric representatives), discarding "unlucky primes" (where the GCD degree is higher than the true value).</li>
+<li>Verify by exact trial division. Tries at most <code>MAX_PRIMES</code> (10000) primes, falling back to pseudo-remainder GCD beyond that.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_poly::gcd::modular::gcd_modular_z;
+
+let d = IntegerDomain;
+let i = |v: i64| Integer::from(v);
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![i(-1), i(0), i(1)]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![i(1), i(2), i(1)]);
+let g = gcd_modular_z(&amp;a, &amp;b);
+assert_eq!(g.coeffs(), &amp;[i(1), i(1)]); // x + 1
+// Output: x + 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="../math/poly-gcd-factoring.html">Modular GCD algorithm (Brown 1971)</a></p>
+<hr />
+<h3 id="denseunivariatepolynomialcontent"><a class="header" href="#denseunivariatepolynomialcontent">DenseUnivariatePolynomial::content</a></h3>
+<p><strong>Signature</strong>: <code>pub fn content(&amp;self) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Computes the content of the polynomial (the GCD of all coefficients). The content of the zero polynomial is zero.</p>
+<hr />
+<h3 id="denseunivariatepolynomialprimitive_part"><a class="header" href="#denseunivariatepolynomialprimitive_part">DenseUnivariatePolynomial::primitive_part</a></h3>
+<p><strong>Signature</strong>: <code>pub fn primitive_part(&amp;self) -&gt; Self</code></p>
+<p><strong>Description</strong>: Returns the primitive part (the polynomial divided by its content).</p>
+<hr />
+<h2 id="7-resultants"><a class="header" href="#7-resultants">7. Resultants</a></h2>
+<h3 id="denseunivariatepolynomialresultant"><a class="header" href="#denseunivariatepolynomialresultant">DenseUnivariatePolynomial::resultant</a></h3>
+<p><strong>Signature</strong>: <code>pub fn resultant(&amp;self, other: &amp;Self) -&gt; D::Element</code></p>
+<p><strong>Description</strong>: Computes the resultant $\operatorname{Res}(a, b)$ of two univariate polynomials using the Brown PRS (polynomial remainder sequence) algorithm.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Self</code></td><td>The other polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>D::Element</code> — the resultant scalar. It is zero if and only if $\gcd(a, b)$ is non-constant.</p>
+<p><strong>Algorithm</strong>: subresultant PRS (Brown), with an exact division by $\beta$ at each step (the subresultant theorem guarantees exactness in a UFD).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// Res(x - 1, x - 2) = 1 - 2 = -1
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-2), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(-1));
+// Output: -1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Example (with a common root)</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::DenseUnivariatePolynomial;
+
+let d = IntegerDomain;
+// x - 1 and x^2 - 1 share the root x = 1
+let a = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(1),
+]);
+let b = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Integer::from(-1), Integer::from(0), Integer::from(1),
+]);
+assert_eq!(a.resultant(&amp;b), Integer::from(0));
+// Output: 0 (they share the factor x - 1)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="../math/poly-gcd-factoring.html">Resultants and subresultant PRS</a></p>
+<hr />
+<h2 id="8-rational-function-fraction-field"><a class="header" href="#8-rational-function-fraction-field">8. Rational Function Fraction Field</a></h2>
+<h3 id="rationalpolynomial"><a class="header" href="#rationalpolynomial">RationalPolynomial</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct RationalPolynomial&lt;D: Domain, O: MonomialOrder = Grevlex&gt; {
+    pub numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    pub denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: An element of the polynomial fraction field $\frac{n}{d}$, always kept in canonical form: coprime numerator and denominator, with the denominator's leading coefficient positive (ordered domains) or 1 (finite fields).</p>
+<h4 id="construction"><a class="header" href="#construction">Construction</a></h4>
+<h5 id="rationalpolynomialnew"><a class="header" href="#rationalpolynomialnew">RationalPolynomial::new</a></h5>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(
+    numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p>Creates a rational polynomial. Does <strong>not</strong> reduce automatically — use <code>from_num_den</code> when a canonical form is needed.</p>
+<h5 id="rationalpolynomialfrom_num_den"><a class="header" href="#rationalpolynomialfrom_num_den">RationalPolynomial::from_num_den</a></h5>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_num_den(
+    numerator: SparseMultivariatePolynomial&lt;D, O&gt;,
+    denominator: SparseMultivariatePolynomial&lt;D, O&gt;,
+) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p>Creates from numerator and denominator and reduces automatically (GCD simplification + denominator leading-coefficient normalization).</p>
+<h5 id="rationalpolynomialfrom_polynomial"><a class="header" href="#rationalpolynomialfrom_polynomial">RationalPolynomial::from_polynomial</a></h5>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_polynomial(poly: SparseMultivariatePolynomial&lt;D, O&gt;) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p>Creates from a polynomial (denominator = 1).</p>
+<h4 id="query-methods"><a class="header" href="#query-methods">Query Methods</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Signature</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>is_zero</code></td><td><code>&amp;self -&gt; bool</code></td><td>Whether the numerator is zero</td></tr>
+<tr><td><code>is_one</code></td><td><code>&amp;self -&gt; bool</code></td><td>Whether it is 1/1</td></tr>
+<tr><td><code>n_vars</code></td><td><code>&amp;self -&gt; usize</code></td><td>Number of variables</td></tr>
+<tr><td><code>domain</code></td><td><code>&amp;self -&gt; &amp;D</code></td><td>Coefficient domain reference</td></tr>
+</tbody></table>
+</div>
+<h4 id="arithmetic-operations"><a class="header" href="#arithmetic-operations">Arithmetic Operations</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Signature</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>add</code></td><td><code>(&amp;self, &amp;Self) -&gt; Self</code></td><td>Addition (denominator-GCD strategy to reduce intermediate swell)</td></tr>
+<tr><td><code>sub</code></td><td><code>(&amp;self, &amp;Self) -&gt; Self</code></td><td>Subtraction</td></tr>
+<tr><td><code>mul</code></td><td><code>(&amp;self, &amp;Self) -&gt; Self</code></td><td>Multiplication (cross-cancellation)</td></tr>
+<tr><td><code>div</code></td><td><code>(&amp;self, &amp;Self) -&gt; Option&lt;Self&gt;</code></td><td>Division (returns <code>None</code> when the divisor's numerator is zero)</td></tr>
+<tr><td><code>neg</code></td><td><code>&amp;self -&gt; Self</code></td><td>Negation $-\frac{n}{d}$</td></tr>
+<tr><td><code>inv</code></td><td><code>&amp;self -&gt; Option&lt;Self&gt;</code></td><td>Inverse (returns <code>None</code> when the numerator is zero)</td></tr>
+<tr><td><code>pow</code></td><td><code>(&amp;self, k: u32) -&gt; Self</code></td><td>Power $\left(\frac{n}{d}\right)^k$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{IntegerDomain, Integer};
+use ocas_poly::SparseMultivariatePolynomial;
+use ocas_poly::rational::RationalPolynomial;
+use ocas_poly::Grevlex;
+
+let d = IntegerDomain;
+let n_vars = 2;
+
+// x / y
+let num: SparseMultivariatePolynomial&lt;_, Grevlex&gt; = SparseMultivariatePolynomial::from_terms(d, n_vars,
+    vec![(vec![1, 0], Integer::from(1))]);
+let den: SparseMultivariatePolynomial&lt;_, Grevlex&gt; = SparseMultivariatePolynomial::from_terms(d, n_vars,
+    vec![(vec![0, 1], Integer::from(1))]);
+let f = RationalPolynomial::from_num_den(num, den);
+
+// y / x
+let num2: SparseMultivariatePolynomial&lt;_, Grevlex&gt; = SparseMultivariatePolynomial::from_terms(d, n_vars,
+    vec![(vec![0, 1], Integer::from(1))]);
+let den2: SparseMultivariatePolynomial&lt;_, Grevlex&gt; = SparseMultivariatePolynomial::from_terms(d, n_vars,
+    vec![(vec![1, 0], Integer::from(1))]);
+let g = RationalPolynomial::from_num_den(num2, den2);
+
+// (x/y) * (y/x) = 1
+let h = f.mul(&amp;g);
+assert!(h.is_one());
+// Output: 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="../api/rust-polynomials.html">RationalPolynomial definition</a></p>
+<hr />
+<h2 id="9-partial-fraction-decomposition"><a class="header" href="#9-partial-fraction-decomposition">9. Partial Fraction Decomposition</a></h2>
+<h3 id="apart"><a class="header" href="#apart">apart</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn apart&lt;D: EuclideanDomain&gt;(
+    num: &amp;DenseUnivariatePolynomial&lt;D&gt;,
+    den: &amp;DenseUnivariatePolynomial&lt;D&gt;,
+) -&gt; (
+    Option&lt;DenseUnivariatePolynomial&lt;D&gt;&gt;,
+    Vec&lt;PartialFractionTerm&lt;D&gt;&gt;,
+)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Computes the partial fraction decomposition of $\frac{\text{num}}{\text{den}}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>num</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;D&gt;</code></td><td>The numerator polynomial</td></tr>
+<tr><td><code>den</code></td><td><code>&amp;DenseUnivariatePolynomial&lt;D&gt;</code></td><td>The denominator polynomial (nonzero)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>(Option&lt;poly_part&gt;, Vec&lt;PartialFractionTerm&lt;D&gt;&gt;)</code> — an optional polynomial part and a list of partial fraction terms, satisfying:</p>
+<p>$$\frac{\text{num}}{\text{den}} = \text{poly_part} + \sum_i \frac{\text{numer}_i}{\text{denom}_i^{\text{exp}_i}}$$</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::DenseUnivariatePolynomial;
+use ocas_calc::partial_fraction::apart;
+
+let d = RationalDomain;
+// 1 / (x^2 - 1)
+let num = DenseUnivariatePolynomial::from_coeffs(d, vec![Rational::new(1, 1)]);
+let den = DenseUnivariatePolynomial::from_coeffs(d, vec![
+    Rational::new(-1, 1), Rational::new(0, 1), Rational::new(1, 1),
+]);
+let (poly_part, terms) = apart(&amp;num, &amp;den);
+assert!(poly_part.is_none()); // proper fraction, no polynomial part
+// x^2 - 1 = (x-1)(x+1) is square-free → the output groups by factor
+// Output: poly_part = None, terms = [...]
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="partialfractionterm"><a class="header" href="#partialfractionterm">PartialFractionTerm</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PartialFractionTerm&lt;D: EuclideanDomain&gt; {
+    pub numer: DenseUnivariatePolynomial&lt;D&gt;,  // numerator polynomial
+    pub denom: DenseUnivariatePolynomial&lt;D&gt;,  // irreducible (square-free) denominator factor
+    pub exp: usize,                            // multiplicity of this factor in the original denominator
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: A single term of a partial fraction decomposition, representing $\frac{\text{numer}}{\text{denom}^{\text{exp}}}$.</p>
+<hr />
+<h3 id="together"><a class="header" href="#together">together</a></h3>
+<p><strong>Signature</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn together&lt;D: EuclideanDomain&gt;(
+    poly_part: Option&lt;&amp;DenseUnivariatePolynomial&lt;D&gt;&gt;,
+    terms: &amp;[PartialFractionTerm&lt;D&gt;],
+) -&gt; (DenseUnivariatePolynomial&lt;D&gt;, DenseUnivariatePolynomial&lt;D&gt;)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Description</strong>: Combines the polynomial part and partial fraction terms into a single rational function $\frac{n}{d}$. The inverse of <code>apart</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>poly_part</code></td><td><code>Option&lt;&amp;DenseUnivariatePolynomial&lt;D&gt;&gt;</code></td><td>The polynomial part (optional)</td></tr>
+<tr><td><code>terms</code></td><td><code>&amp;[PartialFractionTerm&lt;D&gt;]</code></td><td>The list of partial fraction terms</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>(numerator, denominator)</code> — the combined numerator and denominator.</p>
+<hr />
+<h2 id="10-univariate-polynomial-helper-methods"><a class="header" href="#10-univariate-polynomial-helper-methods">10. Univariate Polynomial Helper Methods</a></h2>
+<h3 id="denseunivariatepolynomialextended_gcd_poly"><a class="header" href="#denseunivariatepolynomialextended_gcd_poly">DenseUnivariatePolynomial::extended_gcd_poly</a></h3>
+<p><strong>Signature</strong>: <code>pub fn extended_gcd_poly(&amp;self, other: &amp;Self) -&gt; (Self, Self, Self)</code></p>
+<p><strong>Description</strong>: Extended Euclidean algorithm. Returns $(g, s, t)$ such that $s \cdot a + t \cdot b = g = \gcd(a, b)$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>other</code></td><td><code>&amp;Self</code></td><td>The other polynomial</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong>: <code>(gcd, s, t)</code>.</p>
+<hr />
+<h3 id="denseunivariatepolynomialdiv_rem"><a class="header" href="#denseunivariatepolynomialdiv_rem">DenseUnivariatePolynomial::div_rem</a></h3>
+<p><strong>Signature</strong>: <code>pub fn div_rem(&amp;self, divisor: &amp;Self) -&gt; Option&lt;(Self, Self)&gt;</code></p>
+<p><strong>Description</strong>: Division with remainder. Returns <code>(quotient, remainder)</code> such that <code>self = quotient * divisor + remainder</code>. Returns <code>None</code> if the divisor is zero.</p>
+<hr />
+<h3 id="denseunivariatepolynomialpow"><a class="header" href="#denseunivariatepolynomialpow">DenseUnivariatePolynomial::pow</a></h3>
+<p><strong>Signature</strong>: <code>pub fn pow(&amp;self, n: u32) -&gt; Self</code></p>
+<p><strong>Description</strong>: Computes $\text{self}^n$ by repeated squaring.</p>
+<hr />
+<h3 id="denseunivariatepolynomialp_adic_expansion"><a class="header" href="#denseunivariatepolynomialp_adic_expansion">DenseUnivariatePolynomial::p_adic_expansion</a></h3>
+<p><strong>Signature</strong>: <code>pub fn p_adic_expansion(&amp;self, p: &amp;Self) -&gt; Vec&lt;Self&gt;</code></p>
+<p><strong>Description</strong>: Computes the $p$-adic expansion of the polynomial with respect to the base polynomial $p$. Returns the coefficient list $[c_0, c_1, \dots]$ such that $\text{self} = \sum_i c_i \cdot p^i$, where $\deg(c_i) &lt; \deg(p)$.</p>
+<hr />
+<h2 id="11-monomial-utility-functions"><a class="header" href="#11-monomial-utility-functions">11. Monomial Utility Functions</a></h2>
+<h3 id="monomial_divides"><a class="header" href="#monomial_divides">monomial_divides</a></h3>
+<p><strong>Signature</strong>: <code>pub fn monomial_divides(a: &amp;[usize], b: &amp;[usize]) -&gt; bool</code></p>
+<p><strong>Description</strong>: Checks whether the monomial $b$ divides $a$ (i.e., $a$ is a multiple of $b$: $a_i \geq b_i$ for all $i$).</p>
+<hr />
+<h3 id="monomial_lcm"><a class="header" href="#monomial_lcm">monomial_lcm</a></h3>
+<p><strong>Signature</strong>: <code>pub fn monomial_lcm(a: &amp;[usize], b: &amp;[usize]) -&gt; SmallVec&lt;[usize; 4]&gt;</code></p>
+<p><strong>Description</strong>: Computes the least common multiple of two monomials (component-wise maximum).</p>
+<hr />
+<h3 id="monomial_are_coprime"><a class="header" href="#monomial_are_coprime">monomial_are_coprime</a></h3>
+<p><strong>Signature</strong>: <code>pub fn monomial_are_coprime(a: &amp;[usize], b: &amp;[usize]) -&gt; bool</code></p>
+<p><strong>Description</strong>: Checks whether two monomials are coprime (no variable appears in both).</p>
+<hr />
+<h2 id="12-internal-algorithm-overview"><a class="header" href="#12-internal-algorithm-overview">12. Internal Algorithm Overview</a></h2>
+<h3 id="hensel-lifting-and-zassenhaus-recombination"><a class="header" href="#hensel-lifting-and-zassenhaus-recombination">Hensel Lifting and Zassenhaus Recombination</a></h3>
+<p>File: <code>ocas-poly/src/factor/hensel.rs</code></p>
+<p><strong>mignotte_bound</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub(crate) fn mignotte_bound(f: &amp;ZPoly) -&gt; Integer
+<span class="boring">}</span></code></pre></pre>
+<p>Landau–Mignotte bound: for a degree-$n$ polynomial $f$, any factor $g$ satisfies $|g|_\infty \leq 2^n |f|_2$.</p>
+<p><strong>factor_square_free_monic</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn factor_square_free_monic(f: &amp;ZPoly) -&gt; Vec&lt;ZPoly&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Factors a monic square-free $\mathbb{Z}[x]$ polynomial into monic irreducible factors.</p>
+<p><strong>factor_square_free</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn factor_square_free(f: &amp;ZPoly) -&gt; Vec&lt;ZPoly&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Factors a square-free primitive $\mathbb{Z}[x]$ polynomial into irreducible factors. Non-monic input is handled via the leading-coefficient transformation $a^{d-1} f(x/a)$.</p>
+<p><strong>factor_primitive</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn factor_primitive(f: &amp;ZPoly) -&gt; Vec&lt;(ZPoly, usize)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>Factors a primitive $\mathbb{Z}[x]$ polynomial into irreducible factors with multiplicities (Yun square-free factorization + <code>factor_square_free_monic</code>). This is the internal implementation of <code>DenseUnivariatePolynomial::factor()</code>.</p>
+<hr />
+<h3 id="eez-hensel-lifting"><a class="header" href="#eez-hensel-lifting">EEZ Hensel Lifting</a></h3>
+<p>File: <code>ocas-poly/src/factor/eez.rs</code></p>
+<p>Key internal functions:</p>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>eez_lift</code></td><td>Generic EEZ lifting (over a field, monic)</td></tr>
+<tr><td><code>eez_lift_imposed</code></td><td>Non-monic EEZ lifting (Wang leading-coefficient imposition)</td></tr>
+<tr><td><code>eez_lift_z</code></td><td>Integer EEZ lifting (solve over $\mathbb{Q}$ + integrality check)</td></tr>
+<tr><td><code>coefficient_hensel_lift_z</code></td><td>p-adic coefficient Hensel lifting</td></tr>
+<tr><td><code>diophantine</code></td><td>Recursive multivariate Diophantine equation solver</td></tr>
+<tr><td><code>sparse_diophantine_fp</code></td><td>Sparse Diophantine solver with skeleton interpolation</td></tr>
+<tr><td><code>wang_reconstruct_lcoeffs</code></td><td>Wang leading-coefficient reconstruction</td></tr>
+<tr><td><code>zassenhaus_multivariate</code></td><td>Multivariate Zassenhaus subset recombination</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="finite-field-factorization"><a class="header" href="#finite-field-factorization">Finite Field Factorization</a></h3>
+<p>File: <code>ocas-poly/src/factor/finite_field.rs</code></p>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>factor_over_finite_field</code></td><td>Top-level entry: square-free + DDF + EDF</td></tr>
+<tr><td><code>distinct_degree_factorization</code></td><td>DDF: group by the degree of the irreducible factors</td></tr>
+<tr><td><code>equal_degree_factorization</code></td><td>EDF: randomly split the product of equal-degree factors</td></tr>
+<tr><td><code>berlekamp</code></td><td>Berlekamp's algorithm (small primes)</td></tr>
+<tr><td><code>cantor_zassenhaus</code></td><td>DDF + EDF combination</td></tr>
+<tr><td><code>square_free_factorization_ff</code></td><td>Characteristic-$p$ square-free factorization (Musser/Bernardin)</td></tr>
+<tr><td><code>pth_root_prime</code></td><td>$p$-th roots over $\mathbb{F}_p$</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="algebraic-number-field-factorization"><a class="header" href="#algebraic-number-field-factorization">Algebraic Number Field Factorization</a></h3>
+<p>File: <code>ocas-poly/src/factor/algebraic.rs</code></p>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>factor_anf</code></td><td>Top-level entry: square-free + Trager</td></tr>
+<tr><td><code>factor_square_free_anf</code></td><td>Trager: norm → $\mathbb{Q}$ factorization → GCD recovery</td></tr>
+<tr><td><code>norm_with_shift</code></td><td>Trager shift to find a square-free norm</td></tr>
+<tr><td><code>norm_eval_interp</code></td><td>Norm computation by evaluation–interpolation</td></tr>
+<tr><td><code>gcd_anf</code></td><td>Modular GCD over $\mathbb{Q}(\alpha)$</td></tr>
+<tr><td><code>square_free_anf</code></td><td>Yun square-free factorization (modular GCD)</td></tr>
+<tr><td><code>factor_square_free_rationals</code></td><td>Square-free factorization over $\mathbb{Q}$ (clear denominators → $\mathbb{Z}$ Hensel)</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="see-also"><a class="header" href="#see-also">See also</a></h2>
+<ul>
+<li><a href="../math/poly-gcd-factoring.html">Polynomial GCD and Factorization</a> — mathematical theory and algorithm details</li>
+<li><a href="../math/algebraic-number-fields.html">Algebraic Number Fields and Galois Theory</a> — mathematical background of Trager's algorithm</li>
+<li><a href="./rust-polynomials.html">Polynomial API</a> — complete API of <code>DenseUnivariatePolynomial</code> and <code>SparseMultivariatePolynomial</code></li>
+<li><a href="./rust-domains.html">Coefficient Domain API</a> — definitions of <code>Integer</code>, <code>FiniteField</code>, <code>AlgebraicNumberField</code></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-groebner.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-numeric-integration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-groebner.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-numeric-integration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

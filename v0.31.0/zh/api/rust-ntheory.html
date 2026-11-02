@@ -1,0 +1,1065 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>数论 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html" class="active"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-ntheory.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考数论"><a class="header" href="#rust-api-参考数论">Rust API 参考：数论</a></h1>
+<p>本章记录 oCAS 数论模块 <code>ocas_domain::number_theory</code> 的完整 API。该模块提供素性检测、整数分解、中国剩余定理、离散对数、二次剩余符号和积性数论函数，是多项式因式分解（Berlekamp、Cantor–Zassenhaus、Hensel 提升）、有理重构和模 GCD 算法的基础设施。</p>
+<p><strong>模块路径</strong>：<code>ocas_domain::number_theory</code></p>
+<p><strong>子模块</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>子模块</th><th>功能</th></tr></thead><tbody>
+<tr><td><code>primes</code></td><td>素性检测、素数生成、模逆、扩展 Euclid、二次剩余</td></tr>
+<tr><td><code>factor</code></td><td>整数完全分解（试除、Pollard rho/p−1/p+1、ECM）</td></tr>
+<tr><td><code>crt</code></td><td>多模中国剩余定理</td></tr>
+<tr><td><code>dlog</code></td><td>离散对数（BSGS、Pohlig–Hellman）</td></tr>
+<tr><td><code>functions</code></td><td>积性数论函数（φ、μ、τ、σ_k、λ）</td></tr>
+</tbody></table>
+</div>
+<p><strong>导入方式</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::number_theory::{
+    is_prime, next_prime, primes_from, mod_inv, extended_gcd, symmetric_mod,
+    crt, legendre, jacobi, mod_sqrt,
+    factor::factor_integer,
+    functions::{euler_phi, moebius_mu, divisor_tau, divisor_sigma, liouville_lambda},
+};
+// 或从子模块精确导入
+use ocas_domain::number_theory::primes::is_prime_bpsw;
+use ocas_domain::number_theory::primes::is_prime_u64;
+use ocas_domain::number_theory::crt::crt_many;
+use ocas_domain::number_theory::dlog::{dlog_bsgs, dlog_pohlig_hellman};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="素性检测"><a class="header" href="#素性检测">素性检测</a></h2>
+<h3 id="is_prime"><a class="header" href="#is_prime">is_prime</a></h3>
+<p><strong>签名</strong>：<code>pub fn is_prime(n: &amp;Integer) -&gt; bool</code></p>
+<p><strong>功能</strong>：判断 <code>n</code> 是否为素数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>待测整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code>——<code>true</code> 表示 <code>n</code> 是（强）拟素数或确定素数。</p>
+<p><strong>实现细节</strong>：</p>
+<ul>
+<li>对 $n &lt; 3.317 \times 10^{24}$，使用固定 12 个 Miller–Rabin 证人 ${2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}$ 的<strong>确定性</strong>判定。</li>
+<li>对更大的 <code>n</code>，退化为强拟素数测试（复合数通过概率极低）。</li>
+<li>显式处理 $n \leq 3$ 和偶数情况。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::is_prime;
+
+assert!(is_prime(&amp;Integer::from(97)));
+assert!(!is_prime(&amp;Integer::from(561)));   // Carmichael 数，不是素数
+assert!(is_prime(&amp;Integer::from(2_147_483_647_i64))); // Mersenne 素数 M31
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#is_prime_bpsw"><code>is_prime_bpsw</code></a>、<a href="#is_prime_u64"><code>is_prime_u64</code></a>、<a href="#next_prime"><code>next_prime</code></a></p>
+<hr />
+<h3 id="is_prime_bpsw"><a class="header" href="#is_prime_bpsw">is_prime_bpsw</a></h3>
+<p><strong>签名</strong>：<code>pub fn is_prime_bpsw(n: &amp;Integer) -&gt; bool</code></p>
+<p><strong>功能</strong>：BPSW 拟素数判定——base-2 强 Miller–Rabin + 强 Lucas 拟素数测试（Selfridge 参数选择）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>待测整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code>——<code>true</code> 表示 <code>n</code> 通过 BPSW 测试。</p>
+<p><strong>实现细节</strong>：</p>
+<ol>
+<li>先做 base-2 强 Miller–Rabin（与 <code>is_prime</code> 共享 <code>mr_witness</code> 内核）。</li>
+<li>再做强 Lucas 测试：Selfridge 参数选择——从序列 $5, -7, 9, -11, \ldots$ 中取首个满足 $\text{jacobi}(D, n) = -1$ 的 $D$，令 $P = 1$，$Q = (1 - D)/4$。</li>
+<li>写 $n + 1 = d \cdot 2^r$（$d$ 奇），二进制 ladder 计算 Lucas 序列 $(U_k, V_k)$。$n$ 通过当 $U_d \equiv 0$ 或 $V_{d \cdot 2^i} \equiv 0 \pmod{n}$ 对某个 $0 \leq i &lt; r$。</li>
+</ol>
+<p><strong>已知性质</strong>：目前没有任何复合数通过 BPSW 测试（截至 2026 年）。对 $n &lt; 3.317 \times 10^{24}$ 结果是确定性的。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::primes::is_prime_bpsw;
+
+assert!(is_prime_bpsw(&amp;Integer::from(97)));
+assert!(!is_prime_bpsw(&amp;Integer::from(561)));    // Carmichael 数
+assert!(!is_prime_bpsw(&amp;Integer::from(2047)));   // base-2 强伪素数，但非素数
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#is_prime"><code>is_prime</code></a>、<a href="#factor_integer"><code>factor_integer</code></a>（内部使用 BPSW 作为最终素性判定）</p>
+<hr />
+<h3 id="is_prime_u64"><a class="header" href="#is_prime_u64">is_prime_u64</a></h3>
+<p><strong>签名</strong>：<code>pub fn is_prime_u64(n: u64) -&gt; bool</code></p>
+<p><strong>功能</strong>：对 <code>u64</code> 范围内的整数做确定性素性检测。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>u64</code></td><td>待测整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>bool</code>。</p>
+<p><strong>实现细节</strong>：内部将 <code>n</code> 转换为 <code>Integer</code> 后调用 <code>is_prime</code>。12 个 Miller–Rabin 证人覆盖整个 <code>u64</code> 范围（$&lt; 3.317 \times 10^{24}$），因此结果是<strong>确定性</strong>的。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::number_theory::primes::is_prime_u64;
+
+assert!(is_prime_u64(97));
+assert!(!is_prime_u64(561));
+assert!(is_prime_u64(u64::MAX - 58)); // 2^64 − 59，最大的 u64 素数
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#is_prime"><code>is_prime</code></a></p>
+<hr />
+<h2 id="素数生成"><a class="header" href="#素数生成">素数生成</a></h2>
+<h3 id="next_prime"><a class="header" href="#next_prime">next_prime</a></h3>
+<p><strong>签名</strong>：<code>pub fn next_prime(n: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>功能</strong>：返回严格大于 <code>n</code> 的最小素数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>起始整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Integer</code>——大于 <code>n</code> 的最小素数。</p>
+<p><strong>实现细节</strong>：从 $n + 1$ 开始（若 $n &lt; 2$ 则从 2 开始），依次测试奇数候选。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::next_prime;
+
+assert_eq!(next_prime(&amp;Integer::from(10)), Integer::from(11));
+assert_eq!(next_prime(&amp;Integer::from(13)), Integer::from(17));
+assert_eq!(next_prime(&amp;Integer::from(0)), Integer::from(2));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#primes_from"><code>primes_from</code></a>、<a href="#is_prime"><code>is_prime</code></a></p>
+<hr />
+<h3 id="primes_from"><a class="header" href="#primes_from">primes_from</a></h3>
+<p><strong>签名</strong>：<code>pub fn primes_from(n: &amp;Integer) -&gt; PrimesFrom</code></p>
+<p><strong>功能</strong>：创建一个从 <code>n</code> 之后开始的连续素数迭代器。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>起始整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>PrimesFrom</code>——实现 <code>Iterator&lt;Item = Integer&gt;</code> 的迭代器，依次产出严格大于 <code>n</code> 的素数。</p>
+<p><strong>使用场景</strong>：在 Hensel 提升中扫描素数（寻找不整除首项系数且保持 $f \bmod p$ 无平方的素数）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::primes_from;
+
+let mut it = primes_from(&amp;Integer::from(100));
+assert_eq!(it.next().unwrap().to_string(), "101");
+assert_eq!(it.next().unwrap().to_string(), "103");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#next_prime"><code>next_prime</code></a></p>
+<hr />
+<h2 id="模运算"><a class="header" href="#模运算">模运算</a></h2>
+<h3 id="mod_inv"><a class="header" href="#mod_inv">mod_inv</a></h3>
+<p><strong>签名</strong>：<code>pub fn mod_inv(a: &amp;Integer, m: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：计算 <code>a</code> 模 <code>m</code> 的乘法逆元，即满足 $a \cdot x \equiv 1 \pmod{m}$ 的 <code>x</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>被求逆元素</td></tr>
+<tr><td><code>m</code></td><td><code>&amp;Integer</code></td><td>模数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>——<code>Some(x)</code> 且 $0 \leq x &lt; m$，或 <code>None</code>。</p>
+<p><strong>错误条件</strong>：当 $\gcd(a, m) \neq 1$ 或 $m \leq 1$ 时返回 <code>None</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::mod_inv;
+
+assert_eq!(mod_inv(&amp;Integer::from(3), &amp;Integer::from(11)), Some(Integer::from(4)));
+// 3 × 4 = 12 ≡ 1 (mod 11)
+assert_eq!(mod_inv(&amp;Integer::from(2), &amp;Integer::from(4)), None);
+// gcd(2, 4) = 2 ≠ 1，逆元不存在
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#extended_gcd"><code>extended_gcd</code></a></p>
+<hr />
+<h3 id="extended_gcd"><a class="header" href="#extended_gcd">extended_gcd</a></h3>
+<p><strong>签名</strong>：<code>pub fn extended_gcd(a: &amp;Integer, b: &amp;Integer) -&gt; (Integer, Integer, Integer)</code></p>
+<p><strong>功能</strong>：扩展 Euclid 算法——计算 $g = \gcd(a, b)$ 以及 Bézout 系数 $x, y$ 使得 $g = a \cdot x + b \cdot y$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>第一个整数</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Integer</code></td><td>第二个整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(g, x, y)</code>——<code>g</code> 非负，满足 $g = a \cdot x + b \cdot y$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::extended_gcd;
+
+let (g, x, y) = extended_gcd(&amp;Integer::from(240), &amp;Integer::from(46));
+assert_eq!(g, Integer::from(2));
+// 验证 Bézout 等式：240·x + 46·y = 2
+assert_eq!(&amp;x * &amp;Integer::from(240) + &amp;y * &amp;Integer::from(46), g);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#mod_inv"><code>mod_inv</code></a></p>
+<hr />
+<h3 id="symmetric_mod"><a class="header" href="#symmetric_mod">symmetric_mod</a></h3>
+<p><strong>签名</strong>：<code>pub fn symmetric_mod(a: &amp;Integer, m: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>功能</strong>：将 <code>a</code> 约化到对称区间 $(-m/2, m/2]$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>被约化整数</td></tr>
+<tr><td><code>m</code></td><td><code>&amp;Integer</code></td><td>模数（正数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Integer</code>——在 $(-m/2, m/2]$ 内的代表元。</p>
+<p><strong>使用场景</strong>：Hensel 提升中从模表示恢复整数系数时使用。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::symmetric_mod;
+
+// mod 7，区间 (-3.5, 3.5]
+assert_eq!(symmetric_mod(&amp;Integer::from(3), &amp;Integer::from(7)), Integer::from(3));
+assert_eq!(symmetric_mod(&amp;Integer::from(5), &amp;Integer::from(7)), Integer::from(-2));
+assert_eq!(symmetric_mod(&amp;Integer::from(6), &amp;Integer::from(7)), Integer::from(-1));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#crt"><code>crt</code></a></p>
+<hr />
+<h2 id="中国剩余定理"><a class="header" href="#中国剩余定理">中国剩余定理</a></h2>
+<h3 id="crt"><a class="header" href="#crt">crt</a></h3>
+<p><strong>签名</strong>：<code>pub fn crt(r1: &amp;Integer, m1: &amp;Integer, r2: &amp;Integer, m2: &amp;Integer) -&gt; Option&lt;(Integer, Integer)&gt;</code></p>
+<p><strong>功能</strong>：合并两个同余方程 $x \equiv r_1 \pmod{m_1}$，$x \equiv r_2 \pmod{m_2}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>r1</code></td><td><code>&amp;Integer</code></td><td>第一个余数</td></tr>
+<tr><td><code>m1</code></td><td><code>&amp;Integer</code></td><td>第一个模数</td></tr>
+<tr><td><code>r2</code></td><td><code>&amp;Integer</code></td><td>第二个余数</td></tr>
+<tr><td><code>m2</code></td><td><code>&amp;Integer</code></td><td>第二个模数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;(Integer, Integer)&gt;</code>——<code>Some((r, m))</code> 其中 $m = \operatorname{lcm}(m_1, m_2)$，$0 \leq r &lt; m$，$r \equiv r_1 \pmod{m_1}$，$r \equiv r_2 \pmod{m_2}$。</p>
+<p><strong>错误条件</strong>：当系统不相容（$r_1 - r_2$ 不被 $\gcd(m_1, m_2)$ 整除）时返回 <code>None</code>。模数<strong>无需互素</strong>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::crt;
+
+// x ≡ 2 (mod 3), x ≡ 3 (mod 5)  =&gt;  x ≡ 8 (mod 15)
+let (r, m) = crt(&amp;Integer::from(2), &amp;Integer::from(3),
+                 &amp;Integer::from(3), &amp;Integer::from(5)).unwrap();
+assert_eq!(r, Integer::from(8));
+assert_eq!(m, Integer::from(15));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#crt_many"><code>crt_many</code></a></p>
+<hr />
+<h3 id="crt_many"><a class="header" href="#crt_many">crt_many</a></h3>
+<p><strong>签名</strong>：<code>pub fn crt_many(congruences: &amp;[(Integer, Integer)]) -&gt; Option&lt;(Integer, Integer)&gt;</code></p>
+<p><strong>功能</strong>：合并多个同余方程 $x \equiv r_i \pmod{m_i}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>congruences</code></td><td><code>&amp;[(Integer, Integer)]</code></td><td>同余方程列表，每个元素为 <code>(r_i, m_i)</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;(Integer, Integer)&gt;</code>——<code>Some((R, M))</code> 其中 $M = \operatorname{lcm}(m_1, \ldots, m_k)$，$0 \leq R &lt; M$。</p>
+<p><strong>错误条件</strong>：</p>
+<ul>
+<li>空列表返回 <code>None</code>。</li>
+<li>任意一对不相容时返回 <code>None</code>。</li>
+</ul>
+<p><strong>实现细节</strong>：逐对折叠调用 <a href="#crt"><code>crt</code></a>，模数无需两两互素。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::crt::crt_many;
+
+// 孙子算经：x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)
+let cs = [
+    (Integer::from(2), Integer::from(3)),
+    (Integer::from(3), Integer::from(5)),
+    (Integer::from(2), Integer::from(7)),
+];
+let (r, m) = crt_many(&amp;cs).unwrap();
+assert_eq!(r, Integer::from(23));
+assert_eq!(m, Integer::from(105)); // 3 × 5 × 7 = 105
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#crt"><code>crt</code></a>、<a href="#dlog_pohlig_hellman"><code>dlog_pohlig_hellman</code></a>（内部使用 CRT 合并部分结果）</p>
+<hr />
+<h2 id="二次剩余"><a class="header" href="#二次剩余">二次剩余</a></h2>
+<h3 id="legendre"><a class="header" href="#legendre">legendre</a></h3>
+<p><strong>签名</strong>：<code>pub fn legendre(a: &amp;Integer, p: &amp;Integer) -&gt; i8</code></p>
+<p><strong>功能</strong>：计算 Legendre 符号 $\left(\frac{a}{p}\right)$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>被判别整数</td></tr>
+<tr><td><code>p</code></td><td><code>&amp;Integer</code></td><td>奇素数（调用者保证素性）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>值</th><th>含义</th></tr></thead><tbody>
+<tr><td><code>1</code></td><td>$a$ 是模 $p$ 的二次剩余（QR）</td></tr>
+<tr><td><code>-1</code></td><td>$a$ 是模 $p$ 的二次非剩余（QNR）</td></tr>
+<tr><td><code>0</code></td><td>$p \mid a$</td></tr>
+</tbody></table>
+</div>
+<p><strong>注意</strong>：<code>p</code> 的素性由调用者保证；函数内部等价于 <code>jacobi(a, p)</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::legendre;
+
+assert_eq!(legendre(&amp;Integer::from(2), &amp;Integer::from(7)), 1);  // 2 是 mod 7 的 QR
+assert_eq!(legendre(&amp;Integer::from(3), &amp;Integer::from(7)), -1); // 3 是 mod 7 的 QNR
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#jacobi"><code>jacobi</code></a>、<a href="#mod_sqrt"><code>mod_sqrt</code></a></p>
+<hr />
+<h3 id="jacobi"><a class="header" href="#jacobi">jacobi</a></h3>
+<p><strong>签名</strong>：<code>pub fn jacobi(a: &amp;Integer, n: &amp;Integer) -&gt; i8</code></p>
+<p><strong>功能</strong>：计算 Jacobi 符号 $\left(\frac{a}{n}\right)$——Legendre 符号的推广，对任意正奇数 <code>n</code> 定义。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>被判别整数</td></tr>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>正奇数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>i8</code>——<code>0</code>、<code>1</code> 或 <code>-1</code>。</p>
+<p><strong>实现细节</strong>：使用二次互反律计算，包括 2-adic 剥离和 mod-8/mod-4 符号规则。</p>
+<p><strong>注意</strong>：若 <code>n</code> 为偶数或非正，结果未定义（函数返回 <code>0</code>）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::jacobi;
+
+assert_eq!(jacobi(&amp;Integer::from(2), &amp;Integer::from(15)), 1);
+assert_eq!(jacobi(&amp;Integer::from(7), &amp;Integer::from(15)), -1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#legendre"><code>legendre</code></a></p>
+<hr />
+<h3 id="mod_sqrt"><a class="header" href="#mod_sqrt">mod_sqrt</a></h3>
+<p><strong>签名</strong>：<code>pub fn mod_sqrt(a: &amp;Integer, p: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：计算 $a$ 模奇素数 $p$ 的平方根，即满足 $x^2 \equiv a \pmod{p}$ 的 $x$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>被开方数</td></tr>
+<tr><td><code>p</code></td><td><code>&amp;Integer</code></td><td>奇素数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>——<code>Some(x)</code> 且 $0 \leq x &lt; p$（另一个根为 $p - x$）。</p>
+<p><strong>错误条件</strong>：当 $p \leq 2$ 或 $a$ 是二次非剩余（<code>legendre(a, p) = -1</code>）时返回 <code>None</code>。<code>p</code> 的素性由调用者保证——函数内部不检查素性，对奇合数 <code>p</code> 行为未定义。</p>
+<p><strong>实现细节</strong>：</p>
+<ul>
+<li>当 $p \equiv 3 \pmod{4}$ 时使用快速路径 $x = a^{(p+1)/4} \bmod p$。</li>
+<li>其他情况使用完整 Tonelli–Shanks 算法：找非剩余 $z$，维护不变量 $c, t, r, m$。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::mod_sqrt;
+
+// 2 是 mod 7 的 QR：根为 3 和 4（3² = 9 ≡ 2, 4² = 16 ≡ 2 mod 7）
+let r = mod_sqrt(&amp;Integer::from(2), &amp;Integer::from(7)).unwrap();
+assert!(r == Integer::from(3) || r == Integer::from(4));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#legendre"><code>legendre</code></a></p>
+<hr />
+<h2 id="整数分解"><a class="header" href="#整数分解">整数分解</a></h2>
+<h3 id="factor_integer"><a class="header" href="#factor_integer">factor_integer</a></h3>
+<p><strong>签名</strong>：<code>pub fn factor_integer(n: &amp;Integer) -&gt; Vec&lt;(Integer, u32)&gt;</code></p>
+<p><strong>功能</strong>：将 $|n|$ 完全分解为素因子，返回按升序排列的 <code>(素数, 指数)</code> 对。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>待分解整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;(Integer, u32)&gt;</code>——素因子列表，按素数升序排列。$n \in {0, \pm 1}$ 返回空列表。</p>
+<p><strong>分解策略</strong>：</p>
+<ol>
+<li><strong>试除</strong>（<code>factor_trial</code>）：移除 $\leq 1000$ 的小因子。</li>
+<li>对剩余的复合余因子，使用<strong>递增策略</strong>逐级尝试：
+<ul>
+<li>Pollard rho–Brent 变体（批量 gcd + 回溯）</li>
+<li>Pollard $p-1$ stage 1（光滑性界倍增 $\times 4$）</li>
+<li>Williams $p+1$ stage 1（Lucas $V$ 序列，随机 $P$ 使 $\text{jacobi}(P^2-4, n) = -1$）</li>
+<li>ECM Lenstra（Suyama 参数化，Montgomery 曲线射影坐标，曲线预算 $\approx B_1/550$）</li>
+</ul>
+</li>
+<li>每个叶子通过 BPSW 素性判定。</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::factor_integer;
+
+let f = factor_integer(&amp;Integer::from(2 * 2 * 3 * 5 * 101 * 1000003));
+assert_eq!(f, vec![
+    (Integer::from(2), 2),
+    (Integer::from(3), 1),
+    (Integer::from(5), 1),
+    (Integer::from(101), 1),
+    (Integer::from(1000003), 1),
+]);
+
+// 空列表
+assert!(factor_integer(&amp;Integer::from(0)).is_empty());
+assert!(factor_integer(&amp;Integer::from(1)).is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#is_prime_bpsw"><code>is_prime_bpsw</code></a>、<a href="#euler_phi"><code>euler_phi</code></a>、<a href="#moebius_mu"><code>moebius_mu</code></a></p>
+<hr />
+<h3 id="factor_integer_with_rng"><a class="header" href="#factor_integer_with_rng">factor_integer_with_rng</a></h3>
+<p><strong>签名</strong>：<code>pub fn factor_integer_with_rng(n: &amp;Integer, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Vec&lt;(Integer, u32)&gt;</code></p>
+<p><strong>功能</strong>：与 <a href="#factor_integer"><code>factor_integer</code></a> 相同，但接受显式 RNG 以实现可重复的分解结果。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>待分解整数</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>随机数生成器（<code>rand_xoshiro</code> crate）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;(Integer, u32)&gt;</code>。</p>
+<p><strong>使用场景</strong>：测试中需要确定性结果时使用。</p>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="factor_trial"><a class="header" href="#factor_trial">factor_trial</a></h3>
+<p><strong>签名</strong>：<code>pub fn factor_trial(n: &amp;Integer, limit: u64) -&gt; (Vec&lt;(Integer, u32)&gt;, Integer)</code></p>
+<p><strong>功能</strong>：试除法移除 $\leq \text{limit}$ 的素因子。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>待分解整数</td></tr>
+<tr><td><code>limit</code></td><td><code>u64</code></td><td>试除上界</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>(factors, cofactor)</code>——<code>factors</code> 为已找到的因子列表，<code>cofactor</code> 无 $\leq \text{limit}$ 的素因子（但未必是素数）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::factor_trial;
+
+let (factors, rest) = factor_trial(&amp;Integer::from(2 * 2 * 3 * 7 * 1000003), 100);
+assert_eq!(factors, vec![
+    (Integer::from(2), 2),
+    (Integer::from(3), 1),
+    (Integer::from(7), 1),
+]);
+assert_eq!(rest, Integer::from(1000003));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="pollard_rho_brent"><a class="header" href="#pollard_rho_brent">pollard_rho_brent</a></h3>
+<p><strong>签名</strong>：<code>pub fn pollard_rho_brent(n: &amp;Integer, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：Brent 变体的 Pollard rho 算法——搜索奇复合数 <code>n</code> 的非平凡因子。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>奇复合数</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>随机数生成器</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>——<code>Some(d)</code> 为 <code>n</code> 的非平凡因子，<code>None</code> 表示多次尝试均未成功（极少出现）。</p>
+<p><strong>实现细节</strong>：批量 gcd + 回溯策略提高成功率，有界重试次数。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::pollard_rho_brent;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+let n = Integer::from(1000003) * Integer::from(1000033);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(42);
+let d = pollard_rho_brent(&amp;n, &amp;mut rng).unwrap();
+assert!(d == Integer::from(1000003) || d == Integer::from(1000033));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="pollard_pm1"><a class="header" href="#pollard_pm1">pollard_pm1</a></h3>
+<p><strong>签名</strong>：<code>pub fn pollard_pm1(n: &amp;Integer, b1: u64, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：Pollard $p-1$ 方法（stage 1）——当 $p-1$ 是 $B_1$-光滑时找到 <code>n</code> 的因子 <code>p</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>奇复合数</td></tr>
+<tr><td><code>b1</code></td><td><code>u64</code></td><td>光滑性上界</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>随机数生成器</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>。</p>
+<p><strong>实现细节</strong>：计算 $a^M \bmod n$，其中 $M = \prod q^e \leq B_1$（$q$ 取遍素数，$q^e \leq B_1$），定期测试 $\gcd(a^M - 1, n)$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::pollard_pm1;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+// 65537 是素数，65536 = 2^16 是 2^17-光滑的
+let n = Integer::from(65537) * Integer::from(1000003);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(7);
+let d = pollard_pm1(&amp;n, 1 &lt;&lt; 17, &amp;mut rng).unwrap();
+assert_eq!(n.mod_floor(&amp;d), Integer::from(0));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#williams_pp1"><code>williams_pp1</code></a>、<a href="#ecm"><code>ecm</code></a></p>
+<hr />
+<h3 id="williams_pp1"><a class="header" href="#williams_pp1">williams_pp1</a></h3>
+<p><strong>签名</strong>：<code>pub fn williams_pp1(n: &amp;Integer, b1: u64, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：Williams $p+1$ 方法（stage 1）——当 $p+1$ 是 $B_1$-光滑时找到 <code>n</code> 的因子 <code>p</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>奇复合数</td></tr>
+<tr><td><code>b1</code></td><td><code>u64</code></td><td>光滑性上界</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>随机数生成器</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>。</p>
+<p><strong>实现细节</strong>：使用 Lucas $V$ 序列（$Q = 1$），随机选择 $P$ 使 $\text{jacobi}(P^2 - 4, n) = -1$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::williams_pp1;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+// 31 是素数，31 + 1 = 2^5 是 64-光滑的
+let n = Integer::from(31) * Integer::from(1000003);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(13);
+let d = williams_pp1(&amp;n, 64, &amp;mut rng).unwrap();
+assert_eq!(n.mod_floor(&amp;d), Integer::from(0));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#pollard_pm1"><code>pollard_pm1</code></a>、<a href="#ecm"><code>ecm</code></a></p>
+<hr />
+<h3 id="ecm"><a class="header" href="#ecm">ecm</a></h3>
+<p><strong>签名</strong>：<code>pub fn ecm(n: &amp;Integer, b1: u64, max_curves: u32, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：Lenstra 椭圆曲线方法（ECM，stage 1）——当某条曲线在 $\mathbb{F}_p$ 上的群阶是 $B_1$-光滑时找到 <code>n</code> 的因子 <code>p</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>奇复合数</td></tr>
+<tr><td><code>b1</code></td><td><code>u64</code></td><td>光滑性上界</td></tr>
+<tr><td><code>max_curves</code></td><td><code>u32</code></td><td>最大尝试曲线数</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>随机数生成器</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>。</p>
+<p><strong>实现细节</strong>：</p>
+<ul>
+<li>Suyama 参数化：从 $\sigma \notin {0, 1, 5}$ 构建 Montgomery 曲线，$a24 = (A+2)/4$，$A = \frac{(v-u)^3(3u+v)}{4u^3v} - 2$，其中 $u = \sigma^2 - 5$，$v = 4\sigma$。</li>
+<li>射影坐标 $(X:Z)$ 下的 Montgomery ladder 标量乘。</li>
+<li>曲线预算 $\approx B_1 / 550$。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::ecm;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+let n = Integer::from(1000003) * Integer::from(1000033);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(99);
+let d = ecm(&amp;n, 2_000, 50, &amp;mut rng).unwrap();
+assert!(d == Integer::from(1000003) || d == Integer::from(1000033));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a>、<a href="#pollard_pm1"><code>pollard_pm1</code></a></p>
+<hr />
+<h2 id="离散对数"><a class="header" href="#离散对数">离散对数</a></h2>
+<h3 id="dlog_bsgs"><a class="header" href="#dlog_bsgs">dlog_bsgs</a></h3>
+<p><strong>签名</strong>：<code>pub fn dlog_bsgs(base: &amp;Integer, target: &amp;Integer, modulus: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：用 baby-step giant-step（BSGS）算法求解 $base^x \equiv \text{target} \pmod{\text{modulus}}$，搜索 $x &lt; \text{modulus}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>&amp;Integer</code></td><td>底数</td></tr>
+<tr><td><code>target</code></td><td><code>&amp;Integer</code></td><td>目标值</td></tr>
+<tr><td><code>modulus</code></td><td><code>&amp;Integer</code></td><td>模数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>——<code>Some(x)</code> 且 $0 \leq x &lt; \text{modulus}$，<code>None</code> 表示无解。</p>
+<p><strong>错误条件</strong>：</p>
+<ul>
+<li>$\gcd(\text{base}, \text{modulus}) \neq 1$（底数不是单位）。</li>
+<li>不存在满足条件的 $x$。</li>
+</ul>
+<p><strong>复杂度</strong>：时间和空间均为 $O(\sqrt{\text{modulus}})$。仅适用于较小的 <code>modulus</code>。</p>
+<p><strong>实现细节</strong>：HashMap 存储 baby steps，$O(\sqrt{m})$ 查找 giant steps。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::dlog::dlog_bsgs;
+
+// 2 是 mod 11 的原根；2^7 = 128 ≡ 7 (mod 11)
+let x = dlog_bsgs(&amp;Integer::from(2), &amp;Integer::from(7), &amp;Integer::from(11)).unwrap();
+assert_eq!(Integer::from(2).modpow(&amp;x, &amp;Integer::from(11)), Integer::from(7));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#dlog_pohlig_hellman"><code>dlog_pohlig_hellman</code></a></p>
+<hr />
+<h3 id="dlog_pohlig_hellman"><a class="header" href="#dlog_pohlig_hellman">dlog_pohlig_hellman</a></h3>
+<p><strong>签名</strong>：<code>pub fn dlog_pohlig_hellman(base: &amp;Integer, target: &amp;Integer, p: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>功能</strong>：用 Pohlig–Hellman 算法求解 $base^x \equiv \text{target} \pmod{p}$（$p$ 为素数）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>&amp;Integer</code></td><td>底数</td></tr>
+<tr><td><code>target</code></td><td><code>&amp;Integer</code></td><td>目标值</td></tr>
+<tr><td><code>p</code></td><td><code>&amp;Integer</code></td><td>素数模数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;Integer&gt;</code>——<code>Some(x)</code>，<code>None</code> 表示无解或输入不满足条件。</p>
+<p><strong>错误条件</strong>：</p>
+<ul>
+<li><code>p</code> 是合数。</li>
+<li><code>base</code> 不是模 <code>p</code> 的单位。</li>
+<li><code>target</code> 不在 <code>base</code> 生成的子群中。</li>
+</ul>
+<p><strong>实现细节</strong>：</p>
+<ol>
+<li>用 <code>factor_integer</code> 分解 <code>base</code> 的阶。</li>
+<li>对每个素幂 $q^e$，逐位 BSGS 恢复离散对数（数字恢复）。</li>
+<li>用 <code>crt_many</code> 合并部分结果。</li>
+<li>最终验证 $\text{base}^x \equiv \text{target} \pmod{p}$。</li>
+</ol>
+<p><strong>复杂度</strong>：由最大素因子 $q$ 支配，为 $O(\sqrt{q})$。当阶为光滑数时效率极高。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::dlog::dlog_pohlig_hellman;
+
+// p = 101, p − 1 = 2²·5²（光滑）。2 是 mod 101 的原根。
+let p = Integer::from(101);
+let base = Integer::from(2);
+let target = base.modpow(&amp;Integer::from(83), &amp;p);
+let x = dlog_pohlig_hellman(&amp;base, &amp;target, &amp;p).unwrap();
+assert_eq!(x, Integer::from(83));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#dlog_bsgs"><code>dlog_bsgs</code></a>、<a href="#factor_integer"><code>factor_integer</code></a>、<a href="#crt_many"><code>crt_many</code></a></p>
+<hr />
+<h2 id="积性数论函数"><a class="header" href="#积性数论函数">积性数论函数</a></h2>
+<p>所有积性函数基于 <a href="#factor_integer"><code>factor_integer</code></a> 分解后组合计算。</p>
+<h3 id="euler_phi"><a class="header" href="#euler_phi">euler_phi</a></h3>
+<p><strong>签名</strong>：<code>pub fn euler_phi(n: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>功能</strong>：Euler totient 函数 $\varphi(n)$——$[1, |n|]$ 中与 $n$ 互素的整数个数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>输入整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Integer</code>——$\varphi(|n|)$。</p>
+<p><strong>计算公式</strong>：$|n| \cdot \prod_{p \mid n} \left(1 - \frac{1}{p}\right)$，遍历 $n$ 的不同素因子。</p>
+<p><strong>约定</strong>：$\varphi(0) = 0$，$\varphi(\pm 1) = 1$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::euler_phi;
+
+assert_eq!(euler_phi(&amp;Integer::from(9)), Integer::from(6));
+// φ(9) = 9 × (1 − 1/3) = 6，与 9 互素的有 {1,2,4,5,7,8}
+assert_eq!(euler_phi(&amp;Integer::from(36)), Integer::from(12));
+assert_eq!(euler_phi(&amp;Integer::from(97)), Integer::from(96)); // 素数 p: φ(p) = p−1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="moebius_mu"><a class="header" href="#moebius_mu">moebius_mu</a></h3>
+<p><strong>签名</strong>：<code>pub fn moebius_mu(n: &amp;Integer) -&gt; i8</code></p>
+<p><strong>功能</strong>：Möbius 函数 $\mu(n)$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>输入整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>i8</code>。</p>
+<p><strong>定义</strong>：</p>
+<p>$$
+\mu(n) = \begin{cases} 1 &amp; n = \pm 1 \ (-1)^k &amp; n \text{ 有 } k \text{ 个不同的素因子（无平方因子）} \ 0 &amp; n \text{ 被某个素数的平方整除} \end{cases}
+$$</p>
+<p><strong>约定</strong>：$\mu(0) = 0$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::moebius_mu;
+
+assert_eq!(moebius_mu(&amp;Integer::from(1)), 1);
+assert_eq!(moebius_mu(&amp;Integer::from(6)), 1);   // 6 = 2·3，2 个素因子 → (−1)² = 1
+assert_eq!(moebius_mu(&amp;Integer::from(30)), -1); // 30 = 2·3·5，3 个素因子 → (−1)³ = −1
+assert_eq!(moebius_mu(&amp;Integer::from(12)), 0);  // 4 = 2² 整除 12
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="divisor_tau"><a class="header" href="#divisor_tau">divisor_tau</a></h3>
+<p><strong>签名</strong>：<code>pub fn divisor_tau(n: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>功能</strong>：除数函数 $\tau(n)$（也记作 $d(n)$）——$|n|$ 的正因子个数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>输入整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Integer</code>——$\tau(|n|)$。</p>
+<p><strong>计算公式</strong>：若 $n = \prod p_i^{e_i}$，则 $\tau(n) = \prod (e_i + 1)$。</p>
+<p><strong>约定</strong>：$\tau(0) = 0$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::divisor_tau;
+
+assert_eq!(divisor_tau(&amp;Integer::from(12)), Integer::from(6));
+// 12 = 2²·3¹ → (2+1)(1+1) = 6，因子为 {1,2,3,4,6,12}
+assert_eq!(divisor_tau(&amp;Integer::from(97)), Integer::from(2)); // 素数只有 1 和自身
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#divisor_sigma"><code>divisor_sigma</code></a>、<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="divisor_sigma"><a class="header" href="#divisor_sigma">divisor_sigma</a></h3>
+<p><strong>签名</strong>：<code>pub fn divisor_sigma(n: &amp;Integer, k: u32) -&gt; Integer</code></p>
+<p><strong>功能</strong>：除数函数 $\sigma_k(n)$——$|n|$ 的正因子的 $k$ 次幂之和。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>输入整数</td></tr>
+<tr><td><code>k</code></td><td><code>u32</code></td><td>幂次（非负整数）</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Integer</code>——$\sigma_k(|n|)$。</p>
+<p><strong>计算公式</strong>：$\sigma_k(n) = \prod \frac{p_i^{k(e_i+1)} - 1}{p_i^k - 1}$。</p>
+<p><strong>特殊值</strong>：</p>
+<ul>
+<li>$\sigma_0(n) = \tau(n)$（除数个数）</li>
+<li>$\sigma_1(n) = \sigma(n)$（除数之和——完美数判定：$n$ 为完全数当且仅当 $\sigma_1(n) = 2n$）</li>
+</ul>
+<p><strong>约定</strong>：$\sigma_k(0) = 0$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::divisor_sigma;
+
+assert_eq!(divisor_sigma(&amp;Integer::from(12), 1), Integer::from(28));
+// σ₁(12) = 1+2+3+4+6+12 = 28
+assert_eq!(divisor_sigma(&amp;Integer::from(12), 2), Integer::from(210));
+// σ₂(12) = 1+4+9+16+36+144 = 210
+assert_eq!(divisor_sigma(&amp;Integer::from(12), 0), Integer::from(6));
+// σ₀(12) = τ(12) = 6
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#divisor_tau"><code>divisor_tau</code></a>、<a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="liouville_lambda"><a class="header" href="#liouville_lambda">liouville_lambda</a></h3>
+<p><strong>签名</strong>：<code>pub fn liouville_lambda(n: &amp;Integer) -&gt; i8</code></p>
+<p><strong>功能</strong>：Liouville 函数 $\lambda(n) = (-1)^{\Omega(n)}$，其中 $\Omega(n)$ 为含重数的素因子总个数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>输入整数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>i8</code>——<code>1</code> 或 <code>-1</code>。</p>
+<p><strong>约定</strong>：$\lambda(0) = 0$，$\lambda(\pm 1) = 1$。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::liouville_lambda;
+
+assert_eq!(liouville_lambda(&amp;Integer::from(12)), -1);
+// 12 = 2²·3，Ω = 3 → (−1)³ = −1
+assert_eq!(liouville_lambda(&amp;Integer::from(6)), 1);
+// 6 = 2·3，Ω = 2 → (−1)² = 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#factor_integer"><code>factor_integer</code></a>、<a href="#moebius_mu"><code>moebius_mu</code></a></p>
+<hr />
+<h2 id="模块依赖关系"><a class="header" href="#模块依赖关系">模块依赖关系</a></h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph primes["primes 模块"]
+        is_prime
+        is_prime_bpsw
+        is_prime_u64
+        next_prime
+        primes_from
+        mod_inv
+        extended_gcd
+        symmetric_mod
+        crt
+        legendre
+        jacobi
+        mod_sqrt
+    end
+
+    subgraph factor["factor 模块"]
+        factor_integer
+        factor_trial
+        pollard_rho_brent
+        pollard_pm1
+        williams_pp1
+        ecm
+    end
+
+    subgraph crt_mod["crt 模块"]
+        crt_many
+    end
+
+    subgraph dlog["dlog 模块"]
+        dlog_bsgs
+        dlog_pohlig_hellman
+    end
+
+    subgraph functions["functions 模块"]
+        euler_phi
+        moebius_mu
+        divisor_tau
+        divisor_sigma
+        liouville_lambda
+    end
+
+    factor_integer --&gt; is_prime_bpsw
+    factor_integer --&gt; factor_trial
+    factor_integer --&gt; pollard_rho_brent
+    factor_integer --&gt; pollard_pm1
+    factor_integer --&gt; williams_pp1
+    factor_integer --&gt; ecm
+    is_prime --&gt; mr_witness
+    is_prime_bpsw --&gt; is_prime
+    is_prime_u64 --&gt; is_prime
+    next_prime --&gt; is_prime
+    primes_from --&gt; next_prime
+    crt_many --&gt; crt
+    dlog_pohlig_hellman --&gt; factor_integer
+    dlog_pohlig_hellman --&gt; dlog_bsgs
+    dlog_pohlig_hellman --&gt; crt_many
+    euler_phi --&gt; factor_integer
+    moebius_mu --&gt; factor_integer
+    divisor_tau --&gt; factor_integer
+    divisor_sigma --&gt; factor_integer
+    liouville_lambda --&gt; factor_integer
+    williams_pp1 --&gt; jacobi
+    legendre --&gt; jacobi
+    mod_sqrt --&gt; legendre
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-tensors.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-groebner.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-tensors.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-groebner.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

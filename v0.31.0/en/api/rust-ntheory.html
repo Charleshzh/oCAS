@@ -1,0 +1,1065 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Number Theory - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html" class="active"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/api/rust-ntheory.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-reference-number-theory"><a class="header" href="#rust-api-reference-number-theory">Rust API Reference: Number Theory</a></h1>
+<p>This chapter documents the complete API of the oCAS number theory module <code>ocas_domain::number_theory</code>. The module provides primality testing, integer factorization, the Chinese remainder theorem, discrete logarithms, quadratic-residue symbols, and multiplicative number-theoretic functions. It is the infrastructure underlying polynomial factorization (Berlekamp, Cantor–Zassenhaus, Hensel lifting), rational reconstruction, and modular GCD algorithms.</p>
+<p><strong>Module path</strong>: <code>ocas_domain::number_theory</code></p>
+<p><strong>Submodules</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Submodule</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>primes</code></td><td>Primality testing, prime generation, modular inverse, extended Euclid, quadratic residues</td></tr>
+<tr><td><code>factor</code></td><td>Complete integer factorization (trial division, Pollard rho/p−1/p+1, ECM)</td></tr>
+<tr><td><code>crt</code></td><td>Multi-modulus Chinese remainder theorem</td></tr>
+<tr><td><code>dlog</code></td><td>Discrete logarithms (BSGS, Pohlig–Hellman)</td></tr>
+<tr><td><code>functions</code></td><td>Multiplicative number-theoretic functions (φ, μ, τ, σ_k, λ)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Imports</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::number_theory::{
+    is_prime, next_prime, primes_from, mod_inv, extended_gcd, symmetric_mod,
+    crt, legendre, jacobi, mod_sqrt,
+    factor::factor_integer,
+    functions::{euler_phi, moebius_mu, divisor_tau, divisor_sigma, liouville_lambda},
+};
+// or import precisely from the submodules
+use ocas_domain::number_theory::primes::is_prime_bpsw;
+use ocas_domain::number_theory::primes::is_prime_u64;
+use ocas_domain::number_theory::crt::crt_many;
+use ocas_domain::number_theory::dlog::{dlog_bsgs, dlog_pohlig_hellman};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="primality-testing"><a class="header" href="#primality-testing">Primality testing</a></h2>
+<h3 id="is_prime"><a class="header" href="#is_prime">is_prime</a></h3>
+<p><strong>Signature</strong>: <code>pub fn is_prime(n: &amp;Integer) -&gt; bool</code></p>
+<p><strong>Description</strong>: Determines whether <code>n</code> is prime.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The integer under test</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>bool</code> — <code>true</code> if <code>n</code> is a (strong) pseudoprime or a proven prime.</p>
+<p><strong>Implementation details</strong>:</p>
+<ul>
+<li>For $n &lt; 3.317 \times 10^{24}$, a <strong>deterministic</strong> test using the fixed set of 12 Miller–Rabin witnesses ${2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}$.</li>
+<li>For larger <code>n</code>, falls back to a strong pseudoprime test (composite numbers pass with extremely low probability).</li>
+<li>Handles $n \leq 3$ and even numbers explicitly.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::is_prime;
+
+assert!(is_prime(&amp;Integer::from(97)));
+assert!(!is_prime(&amp;Integer::from(561)));   // Carmichael number, not prime
+assert!(is_prime(&amp;Integer::from(2_147_483_647_i64))); // Mersenne prime M31
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#is_prime_bpsw"><code>is_prime_bpsw</code></a>, <a href="#is_prime_u64"><code>is_prime_u64</code></a>, <a href="#next_prime"><code>next_prime</code></a></p>
+<hr />
+<h3 id="is_prime_bpsw"><a class="header" href="#is_prime_bpsw">is_prime_bpsw</a></h3>
+<p><strong>Signature</strong>: <code>pub fn is_prime_bpsw(n: &amp;Integer) -&gt; bool</code></p>
+<p><strong>Description</strong>: BPSW pseudoprime test — base-2 strong Miller–Rabin plus a strong Lucas pseudoprime test (with Selfridge parameter selection).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The integer under test</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>bool</code> — <code>true</code> if <code>n</code> passes the BPSW test.</p>
+<p><strong>Implementation details</strong>:</p>
+<ol>
+<li>First a base-2 strong Miller–Rabin test (shares the <code>mr_witness</code> core with <code>is_prime</code>).</li>
+<li>Then a strong Lucas test: Selfridge parameter selection — take the first $D$ from the sequence $5, -7, 9, -11, \ldots$ with $\text{jacobi}(D, n) = -1$, and set $P = 1$, $Q = (1 - D)/4$.</li>
+<li>Write $n + 1 = d \cdot 2^r$ ($d$ odd) and compute the Lucas sequences $(U_k, V_k)$ with a binary ladder. <code>n</code> passes when $U_d \equiv 0$ or $V_{d \cdot 2^i} \equiv 0 \pmod{n}$ for some $0 \leq i &lt; r$.</li>
+</ol>
+<p><strong>Known properties</strong>: No composite number is currently known to pass the BPSW test (as of 2026). For $n &lt; 3.317 \times 10^{24}$ the result is deterministic.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::primes::is_prime_bpsw;
+
+assert!(is_prime_bpsw(&amp;Integer::from(97)));
+assert!(!is_prime_bpsw(&amp;Integer::from(561)));    // Carmichael number
+assert!(!is_prime_bpsw(&amp;Integer::from(2047)));   // base-2 strong pseudoprime, but not prime
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#is_prime"><code>is_prime</code></a>, <a href="#factor_integer"><code>factor_integer</code></a> (uses BPSW internally as the final primality check)</p>
+<hr />
+<h3 id="is_prime_u64"><a class="header" href="#is_prime_u64">is_prime_u64</a></h3>
+<p><strong>Signature</strong>: <code>pub fn is_prime_u64(n: u64) -&gt; bool</code></p>
+<p><strong>Description</strong>: Deterministic primality test for integers in the <code>u64</code> range.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>u64</code></td><td>The integer under test</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>bool</code>.</p>
+<p><strong>Implementation details</strong>: converts <code>n</code> to an <code>Integer</code> internally and calls <code>is_prime</code>. The 12 Miller–Rabin witnesses cover the entire <code>u64</code> range ($&lt; 3.317 \times 10^{24}$), so the result is <strong>deterministic</strong>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::number_theory::primes::is_prime_u64;
+
+assert!(is_prime_u64(97));
+assert!(!is_prime_u64(561));
+assert!(is_prime_u64(u64::MAX - 58)); // 2^64 − 59, the largest u64 prime
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#is_prime"><code>is_prime</code></a></p>
+<hr />
+<h2 id="prime-generation"><a class="header" href="#prime-generation">Prime generation</a></h2>
+<h3 id="next_prime"><a class="header" href="#next_prime">next_prime</a></h3>
+<p><strong>Signature</strong>: <code>pub fn next_prime(n: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>Description</strong>: Returns the smallest prime strictly greater than <code>n</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The starting integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Integer</code> — the smallest prime greater than <code>n</code>.</p>
+<p><strong>Implementation details</strong>: starts from $n + 1$ (or from 2 if $n &lt; 2$) and tests odd candidates in turn.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::next_prime;
+
+assert_eq!(next_prime(&amp;Integer::from(10)), Integer::from(11));
+assert_eq!(next_prime(&amp;Integer::from(13)), Integer::from(17));
+assert_eq!(next_prime(&amp;Integer::from(0)), Integer::from(2));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#primes_from"><code>primes_from</code></a>, <a href="#is_prime"><code>is_prime</code></a></p>
+<hr />
+<h3 id="primes_from"><a class="header" href="#primes_from">primes_from</a></h3>
+<p><strong>Signature</strong>: <code>pub fn primes_from(n: &amp;Integer) -&gt; PrimesFrom</code></p>
+<p><strong>Description</strong>: Creates an iterator over the consecutive primes after <code>n</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The starting integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>PrimesFrom</code> — an iterator implementing <code>Iterator&lt;Item = Integer&gt;</code> that yields the primes strictly greater than <code>n</code> in order.</p>
+<p><strong>Use cases</strong>: scanning for primes in Hensel lifting (looking for a prime that does not divide the leading coefficient and keeps $f \bmod p$ square-free).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::primes_from;
+
+let mut it = primes_from(&amp;Integer::from(100));
+assert_eq!(it.next().unwrap().to_string(), "101");
+assert_eq!(it.next().unwrap().to_string(), "103");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#next_prime"><code>next_prime</code></a></p>
+<hr />
+<h2 id="modular-arithmetic"><a class="header" href="#modular-arithmetic">Modular arithmetic</a></h2>
+<h3 id="mod_inv"><a class="header" href="#mod_inv">mod_inv</a></h3>
+<p><strong>Signature</strong>: <code>pub fn mod_inv(a: &amp;Integer, m: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Computes the multiplicative inverse of <code>a</code> modulo <code>m</code>, i.e. an <code>x</code> such that $a \cdot x \equiv 1 \pmod{m}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>The element to invert</td></tr>
+<tr><td><code>m</code></td><td><code>&amp;Integer</code></td><td>The modulus</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code> — <code>Some(x)</code> with $0 \leq x &lt; m$, or <code>None</code>.</p>
+<p><strong>Error conditions</strong>: returns <code>None</code> when $\gcd(a, m) \neq 1$ or $m \leq 1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::mod_inv;
+
+assert_eq!(mod_inv(&amp;Integer::from(3), &amp;Integer::from(11)), Some(Integer::from(4)));
+// 3 × 4 = 12 ≡ 1 (mod 11)
+assert_eq!(mod_inv(&amp;Integer::from(2), &amp;Integer::from(4)), None);
+// gcd(2, 4) = 2 ≠ 1, the inverse does not exist
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#extended_gcd"><code>extended_gcd</code></a></p>
+<hr />
+<h3 id="extended_gcd"><a class="header" href="#extended_gcd">extended_gcd</a></h3>
+<p><strong>Signature</strong>: <code>pub fn extended_gcd(a: &amp;Integer, b: &amp;Integer) -&gt; (Integer, Integer, Integer)</code></p>
+<p><strong>Description</strong>: Extended Euclid algorithm — computes $g = \gcd(a, b)$ and Bézout coefficients $x, y$ such that $g = a \cdot x + b \cdot y$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>The first integer</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;Integer</code></td><td>The second integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>(g, x, y)</code> — <code>g</code> is non-negative and satisfies $g = a \cdot x + b \cdot y$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::extended_gcd;
+
+let (g, x, y) = extended_gcd(&amp;Integer::from(240), &amp;Integer::from(46));
+assert_eq!(g, Integer::from(2));
+// Verify the Bézout identity: 240·x + 46·y = 2
+assert_eq!(&amp;x * &amp;Integer::from(240) + &amp;y * &amp;Integer::from(46), g);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#mod_inv"><code>mod_inv</code></a></p>
+<hr />
+<h3 id="symmetric_mod"><a class="header" href="#symmetric_mod">symmetric_mod</a></h3>
+<p><strong>Signature</strong>: <code>pub fn symmetric_mod(a: &amp;Integer, m: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>Description</strong>: Reduces <code>a</code> to the symmetric interval $(-m/2, m/2]$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>The integer to reduce</td></tr>
+<tr><td><code>m</code></td><td><code>&amp;Integer</code></td><td>The modulus (positive)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Integer</code> — the representative in $(-m/2, m/2]$.</p>
+<p><strong>Use cases</strong>: recovering integer coefficients from modular representations in Hensel lifting.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::symmetric_mod;
+
+// mod 7, interval (-3.5, 3.5]
+assert_eq!(symmetric_mod(&amp;Integer::from(3), &amp;Integer::from(7)), Integer::from(3));
+assert_eq!(symmetric_mod(&amp;Integer::from(5), &amp;Integer::from(7)), Integer::from(-2));
+assert_eq!(symmetric_mod(&amp;Integer::from(6), &amp;Integer::from(7)), Integer::from(-1));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#crt"><code>crt</code></a></p>
+<hr />
+<h2 id="chinese-remainder-theorem"><a class="header" href="#chinese-remainder-theorem">Chinese remainder theorem</a></h2>
+<h3 id="crt"><a class="header" href="#crt">crt</a></h3>
+<p><strong>Signature</strong>: <code>pub fn crt(r1: &amp;Integer, m1: &amp;Integer, r2: &amp;Integer, m2: &amp;Integer) -&gt; Option&lt;(Integer, Integer)&gt;</code></p>
+<p><strong>Description</strong>: Combines two congruences $x \equiv r_1 \pmod{m_1}$ and $x \equiv r_2 \pmod{m_2}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>r1</code></td><td><code>&amp;Integer</code></td><td>The first remainder</td></tr>
+<tr><td><code>m1</code></td><td><code>&amp;Integer</code></td><td>The first modulus</td></tr>
+<tr><td><code>r2</code></td><td><code>&amp;Integer</code></td><td>The second remainder</td></tr>
+<tr><td><code>m2</code></td><td><code>&amp;Integer</code></td><td>The second modulus</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;(Integer, Integer)&gt;</code> — <code>Some((r, m))</code> where $m = \operatorname{lcm}(m_1, m_2)$, $0 \leq r &lt; m$, $r \equiv r_1 \pmod{m_1}$, and $r \equiv r_2 \pmod{m_2}$.</p>
+<p><strong>Error conditions</strong>: returns <code>None</code> when the system is inconsistent ($r_1 - r_2$ not divisible by $\gcd(m_1, m_2)$). The moduli <strong>need not be coprime</strong>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::crt;
+
+// x ≡ 2 (mod 3), x ≡ 3 (mod 5)  =&gt;  x ≡ 8 (mod 15)
+let (r, m) = crt(&amp;Integer::from(2), &amp;Integer::from(3),
+                 &amp;Integer::from(3), &amp;Integer::from(5)).unwrap();
+assert_eq!(r, Integer::from(8));
+assert_eq!(m, Integer::from(15));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#crt_many"><code>crt_many</code></a></p>
+<hr />
+<h3 id="crt_many"><a class="header" href="#crt_many">crt_many</a></h3>
+<p><strong>Signature</strong>: <code>pub fn crt_many(congruences: &amp;[(Integer, Integer)]) -&gt; Option&lt;(Integer, Integer)&gt;</code></p>
+<p><strong>Description</strong>: Combines multiple congruences $x \equiv r_i \pmod{m_i}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>congruences</code></td><td><code>&amp;[(Integer, Integer)]</code></td><td>The list of congruences, each an <code>(r_i, m_i)</code> pair</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;(Integer, Integer)&gt;</code> — <code>Some((R, M))</code> where $M = \operatorname{lcm}(m_1, \ldots, m_k)$ and $0 \leq R &lt; M$.</p>
+<p><strong>Error conditions</strong>:</p>
+<ul>
+<li>Returns <code>None</code> for an empty list.</li>
+<li>Returns <code>None</code> when any pair is inconsistent.</li>
+</ul>
+<p><strong>Implementation details</strong>: folds pairwise via <a href="#crt"><code>crt</code></a>; the moduli need not be pairwise coprime.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::crt::crt_many;
+
+// Sunzi Suanjing problem: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)
+let cs = [
+    (Integer::from(2), Integer::from(3)),
+    (Integer::from(3), Integer::from(5)),
+    (Integer::from(2), Integer::from(7)),
+];
+let (r, m) = crt_many(&amp;cs).unwrap();
+assert_eq!(r, Integer::from(23));
+assert_eq!(m, Integer::from(105)); // 3 × 5 × 7 = 105
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#crt"><code>crt</code></a>, <a href="#dlog_pohlig_hellman"><code>dlog_pohlig_hellman</code></a> (uses CRT internally to combine partial results)</p>
+<hr />
+<h2 id="quadratic-residues"><a class="header" href="#quadratic-residues">Quadratic residues</a></h2>
+<h3 id="legendre"><a class="header" href="#legendre">legendre</a></h3>
+<p><strong>Signature</strong>: <code>pub fn legendre(a: &amp;Integer, p: &amp;Integer) -&gt; i8</code></p>
+<p><strong>Description</strong>: Computes the Legendre symbol $\left(\frac{a}{p}\right)$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>The integer under test</td></tr>
+<tr><td><code>p</code></td><td><code>&amp;Integer</code></td><td>An odd prime (primality is guaranteed by the caller)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>1</code></td><td>$a$ is a quadratic residue (QR) modulo $p$</td></tr>
+<tr><td><code>-1</code></td><td>$a$ is a quadratic non-residue (QNR) modulo $p$</td></tr>
+<tr><td><code>0</code></td><td>$p \mid a$</td></tr>
+</tbody></table>
+</div>
+<p><strong>Note</strong>: primality of <code>p</code> is guaranteed by the caller; the function is internally equivalent to <code>jacobi(a, p)</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::legendre;
+
+assert_eq!(legendre(&amp;Integer::from(2), &amp;Integer::from(7)), 1);  // 2 is a QR mod 7
+assert_eq!(legendre(&amp;Integer::from(3), &amp;Integer::from(7)), -1); // 3 is a QNR mod 7
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#jacobi"><code>jacobi</code></a>, <a href="#mod_sqrt"><code>mod_sqrt</code></a></p>
+<hr />
+<h3 id="jacobi"><a class="header" href="#jacobi">jacobi</a></h3>
+<p><strong>Signature</strong>: <code>pub fn jacobi(a: &amp;Integer, n: &amp;Integer) -&gt; i8</code></p>
+<p><strong>Description</strong>: Computes the Jacobi symbol $\left(\frac{a}{n}\right)$ — a generalization of the Legendre symbol, defined for any positive odd <code>n</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>The integer under test</td></tr>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>A positive odd integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>i8</code> — <code>0</code>, <code>1</code>, or <code>-1</code>.</p>
+<p><strong>Implementation details</strong>: computed via quadratic reciprocity, including 2-adic stripping and the mod-8/mod-4 sign rules.</p>
+<p><strong>Note</strong>: if <code>n</code> is even or non-positive, the result is undefined (the function returns <code>0</code>).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::jacobi;
+
+assert_eq!(jacobi(&amp;Integer::from(2), &amp;Integer::from(15)), 1);
+assert_eq!(jacobi(&amp;Integer::from(7), &amp;Integer::from(15)), -1);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#legendre"><code>legendre</code></a></p>
+<hr />
+<h3 id="mod_sqrt"><a class="header" href="#mod_sqrt">mod_sqrt</a></h3>
+<p><strong>Signature</strong>: <code>pub fn mod_sqrt(a: &amp;Integer, p: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Computes a square root of $a$ modulo the odd prime $p$, i.e. an $x$ such that $x^2 \equiv a \pmod{p}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;Integer</code></td><td>The radicand</td></tr>
+<tr><td><code>p</code></td><td><code>&amp;Integer</code></td><td>An odd prime</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code> — <code>Some(x)</code> with $0 \leq x &lt; p$ (the other root is $p - x$).</p>
+<p><strong>Error conditions</strong>: returns <code>None</code> when $p \leq 2$ or when $a$ is a quadratic non-residue (<code>legendre(a, p) = -1</code>). The primality of <code>p</code> is the caller's responsibility — the function does not check it, and behavior for odd composite <code>p</code> is undefined.</p>
+<p><strong>Implementation details</strong>:</p>
+<ul>
+<li>Fast path $x = a^{(p+1)/4} \bmod p$ when $p \equiv 3 \pmod{4}$.</li>
+<li>Otherwise the full Tonelli–Shanks algorithm: find a non-residue $z$, maintaining the invariants $c, t, r, m$.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::mod_sqrt;
+
+// 2 is a QR mod 7: roots are 3 and 4 (3² = 9 ≡ 2, 4² = 16 ≡ 2 mod 7)
+let r = mod_sqrt(&amp;Integer::from(2), &amp;Integer::from(7)).unwrap();
+assert!(r == Integer::from(3) || r == Integer::from(4));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#legendre"><code>legendre</code></a></p>
+<hr />
+<h2 id="integer-factorization"><a class="header" href="#integer-factorization">Integer factorization</a></h2>
+<h3 id="factor_integer"><a class="header" href="#factor_integer">factor_integer</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor_integer(n: &amp;Integer) -&gt; Vec&lt;(Integer, u32)&gt;</code></p>
+<p><strong>Description</strong>: Completely factors $|n|$ into prime factors, returning <code>(prime, exponent)</code> pairs in ascending order.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The integer to factor</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Vec&lt;(Integer, u32)&gt;</code> — the list of prime factors, in ascending order of prime. Returns an empty list for $n \in {0, \pm 1}$.</p>
+<p><strong>Factorization strategy</strong>:</p>
+<ol>
+<li><strong>Trial division</strong> (<code>factor_trial</code>): removes small factors $\leq 1000$.</li>
+<li>For the remaining composite cofactor, an <strong>escalating strategy</strong> that tries, in stages:
+<ul>
+<li>Pollard rho–Brent variant (batched gcd + backtracking)</li>
+<li>Pollard $p-1$ stage 1 (smoothness bound doubling by $\times 4$)</li>
+<li>Williams $p+1$ stage 1 (Lucas $V$ sequences, random $P$ with $\text{jacobi}(P^2-4, n) = -1$)</li>
+<li>ECM Lenstra (Suyama parametrization, Montgomery curves in projective coordinates, curve budget $\approx B_1/550$)</li>
+</ul>
+</li>
+<li>Every leaf is verified with the BPSW primality test.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::factor_integer;
+
+let f = factor_integer(&amp;Integer::from(2 * 2 * 3 * 5 * 101 * 1000003));
+assert_eq!(f, vec![
+    (Integer::from(2), 2),
+    (Integer::from(3), 1),
+    (Integer::from(5), 1),
+    (Integer::from(101), 1),
+    (Integer::from(1000003), 1),
+]);
+
+// empty list
+assert!(factor_integer(&amp;Integer::from(0)).is_empty());
+assert!(factor_integer(&amp;Integer::from(1)).is_empty());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#is_prime_bpsw"><code>is_prime_bpsw</code></a>, <a href="#euler_phi"><code>euler_phi</code></a>, <a href="#moebius_mu"><code>moebius_mu</code></a></p>
+<hr />
+<h3 id="factor_integer_with_rng"><a class="header" href="#factor_integer_with_rng">factor_integer_with_rng</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor_integer_with_rng(n: &amp;Integer, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Vec&lt;(Integer, u32)&gt;</code></p>
+<p><strong>Description</strong>: Same as <a href="#factor_integer"><code>factor_integer</code></a>, but accepts an explicit RNG for reproducible factorization results.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The integer to factor</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>The random number generator (from the <code>rand_xoshiro</code> crate)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Vec&lt;(Integer, u32)&gt;</code>.</p>
+<p><strong>Use cases</strong>: when deterministic results are needed in tests.</p>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="factor_trial"><a class="header" href="#factor_trial">factor_trial</a></h3>
+<p><strong>Signature</strong>: <code>pub fn factor_trial(n: &amp;Integer, limit: u64) -&gt; (Vec&lt;(Integer, u32)&gt;, Integer)</code></p>
+<p><strong>Description</strong>: Trial division that removes prime factors $\leq \text{limit}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The integer to factor</td></tr>
+<tr><td><code>limit</code></td><td><code>u64</code></td><td>The trial-division bound</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>(factors, cofactor)</code> — <code>factors</code> is the list of factors found, and <code>cofactor</code> has no prime factor $\leq \text{limit}$ (but is not necessarily prime).</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::factor_trial;
+
+let (factors, rest) = factor_trial(&amp;Integer::from(2 * 2 * 3 * 7 * 1000003), 100);
+assert_eq!(factors, vec![
+    (Integer::from(2), 2),
+    (Integer::from(3), 1),
+    (Integer::from(7), 1),
+]);
+assert_eq!(rest, Integer::from(1000003));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="pollard_rho_brent"><a class="header" href="#pollard_rho_brent">pollard_rho_brent</a></h3>
+<p><strong>Signature</strong>: <code>pub fn pollard_rho_brent(n: &amp;Integer, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Pollard rho in the Brent variant — searches for a non-trivial factor of an odd composite <code>n</code>.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>An odd composite number</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>The random number generator</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code> — <code>Some(d)</code> is a non-trivial factor of <code>n</code>; <code>None</code> means all retries failed (very rare).</p>
+<p><strong>Implementation details</strong>: a batched-gcd + backtracking strategy improves the success rate, with a bounded number of retries.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::pollard_rho_brent;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+let n = Integer::from(1000003) * Integer::from(1000033);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(42);
+let d = pollard_rho_brent(&amp;n, &amp;mut rng).unwrap();
+assert!(d == Integer::from(1000003) || d == Integer::from(1000033));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="pollard_pm1"><a class="header" href="#pollard_pm1">pollard_pm1</a></h3>
+<p><strong>Signature</strong>: <code>pub fn pollard_pm1(n: &amp;Integer, b1: u64, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Pollard $p-1$ method (stage 1) — finds a factor <code>p</code> of <code>n</code> when $p-1$ is $B_1$-smooth.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>An odd composite number</td></tr>
+<tr><td><code>b1</code></td><td><code>u64</code></td><td>The smoothness bound</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>The random number generator</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code>.</p>
+<p><strong>Implementation details</strong>: computes $a^M \bmod n$ where $M = \prod q^e \leq B_1$ ($q$ ranging over primes with $q^e \leq B_1$), periodically testing $\gcd(a^M - 1, n)$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::pollard_pm1;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+// 65537 is prime, 65536 = 2^16 is 2^17-smooth
+let n = Integer::from(65537) * Integer::from(1000003);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(7);
+let d = pollard_pm1(&amp;n, 1 &lt;&lt; 17, &amp;mut rng).unwrap();
+assert_eq!(n.mod_floor(&amp;d), Integer::from(0));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#williams_pp1"><code>williams_pp1</code></a>, <a href="#ecm"><code>ecm</code></a></p>
+<hr />
+<h3 id="williams_pp1"><a class="header" href="#williams_pp1">williams_pp1</a></h3>
+<p><strong>Signature</strong>: <code>pub fn williams_pp1(n: &amp;Integer, b1: u64, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Williams $p+1$ method (stage 1) — finds a factor <code>p</code> of <code>n</code> when $p+1$ is $B_1$-smooth.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>An odd composite number</td></tr>
+<tr><td><code>b1</code></td><td><code>u64</code></td><td>The smoothness bound</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>The random number generator</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code>.</p>
+<p><strong>Implementation details</strong>: uses Lucas $V$ sequences ($Q = 1$) with a random $P$ chosen so that $\text{jacobi}(P^2 - 4, n) = -1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::williams_pp1;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+// 31 is prime, 31 + 1 = 2^5 is 64-smooth
+let n = Integer::from(31) * Integer::from(1000003);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(13);
+let d = williams_pp1(&amp;n, 64, &amp;mut rng).unwrap();
+assert_eq!(n.mod_floor(&amp;d), Integer::from(0));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#pollard_pm1"><code>pollard_pm1</code></a>, <a href="#ecm"><code>ecm</code></a></p>
+<hr />
+<h3 id="ecm"><a class="header" href="#ecm">ecm</a></h3>
+<p><strong>Signature</strong>: <code>pub fn ecm(n: &amp;Integer, b1: u64, max_curves: u32, rng: &amp;mut Xoshiro256PlusPlus) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Lenstra's elliptic curve method (ECM, stage 1) — finds a factor <code>p</code> of <code>n</code> when the group order of some curve over $\mathbb{F}_p$ is $B_1$-smooth.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>An odd composite number</td></tr>
+<tr><td><code>b1</code></td><td><code>u64</code></td><td>The smoothness bound</td></tr>
+<tr><td><code>max_curves</code></td><td><code>u32</code></td><td>The maximum number of curves to try</td></tr>
+<tr><td><code>rng</code></td><td><code>&amp;mut Xoshiro256PlusPlus</code></td><td>The random number generator</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code>.</p>
+<p><strong>Implementation details</strong>:</p>
+<ul>
+<li>Suyama parametrization: build a Montgomery curve from $\sigma \notin {0, 1, 5}$ with $a24 = (A+2)/4$ and $A = \frac{(v-u)^3(3u+v)}{4u^3v} - 2$, where $u = \sigma^2 - 5$ and $v = 4\sigma$.</li>
+<li>Montgomery ladder scalar multiplication in projective coordinates $(X:Z)$.</li>
+<li>Curve budget $\approx B_1 / 550$.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::factor::ecm;
+use rand::SeedableRng;
+use rand_xoshiro::Xoshiro256PlusPlus;
+
+let n = Integer::from(1000003) * Integer::from(1000033);
+let mut rng = Xoshiro256PlusPlus::seed_from_u64(99);
+let d = ecm(&amp;n, 2_000, 50, &amp;mut rng).unwrap();
+assert!(d == Integer::from(1000003) || d == Integer::from(1000033));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a>, <a href="#pollard_pm1"><code>pollard_pm1</code></a></p>
+<hr />
+<h2 id="discrete-logarithms"><a class="header" href="#discrete-logarithms">Discrete logarithms</a></h2>
+<h3 id="dlog_bsgs"><a class="header" href="#dlog_bsgs">dlog_bsgs</a></h3>
+<p><strong>Signature</strong>: <code>pub fn dlog_bsgs(base: &amp;Integer, target: &amp;Integer, modulus: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Solves $base^x \equiv \text{target} \pmod{\text{modulus}}$ with the baby-step giant-step (BSGS) algorithm, searching $x &lt; \text{modulus}$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>&amp;Integer</code></td><td>The base</td></tr>
+<tr><td><code>target</code></td><td><code>&amp;Integer</code></td><td>The target value</td></tr>
+<tr><td><code>modulus</code></td><td><code>&amp;Integer</code></td><td>The modulus</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code> — <code>Some(x)</code> with $0 \leq x &lt; \text{modulus}$, or <code>None</code> if no solution exists.</p>
+<p><strong>Error conditions</strong>:</p>
+<ul>
+<li>$\gcd(\text{base}, \text{modulus}) \neq 1$ (the base is not a unit).</li>
+<li>No such $x$ exists.</li>
+</ul>
+<p><strong>Complexity</strong>: $O(\sqrt{\text{modulus}})$ time and space. Only suitable for small <code>modulus</code>.</p>
+<p><strong>Implementation details</strong>: a HashMap stores the baby steps; giant-step lookups take $O(\sqrt{m})$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::dlog::dlog_bsgs;
+
+// 2 is a primitive root mod 11; 2^7 = 128 ≡ 7 (mod 11)
+let x = dlog_bsgs(&amp;Integer::from(2), &amp;Integer::from(7), &amp;Integer::from(11)).unwrap();
+assert_eq!(Integer::from(2).modpow(&amp;x, &amp;Integer::from(11)), Integer::from(7));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#dlog_pohlig_hellman"><code>dlog_pohlig_hellman</code></a></p>
+<hr />
+<h3 id="dlog_pohlig_hellman"><a class="header" href="#dlog_pohlig_hellman">dlog_pohlig_hellman</a></h3>
+<p><strong>Signature</strong>: <code>pub fn dlog_pohlig_hellman(base: &amp;Integer, target: &amp;Integer, p: &amp;Integer) -&gt; Option&lt;Integer&gt;</code></p>
+<p><strong>Description</strong>: Solves $base^x \equiv \text{target} \pmod{p}$ with the Pohlig–Hellman algorithm ($p$ prime).</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>&amp;Integer</code></td><td>The base</td></tr>
+<tr><td><code>target</code></td><td><code>&amp;Integer</code></td><td>The target value</td></tr>
+<tr><td><code>p</code></td><td><code>&amp;Integer</code></td><td>The prime modulus</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Option&lt;Integer&gt;</code> — <code>Some(x)</code>, or <code>None</code> if there is no solution or the input does not satisfy the preconditions.</p>
+<p><strong>Error conditions</strong>:</p>
+<ul>
+<li><code>p</code> is composite.</li>
+<li><code>base</code> is not a unit modulo <code>p</code>.</li>
+<li><code>target</code> is not in the subgroup generated by <code>base</code>.</li>
+</ul>
+<p><strong>Implementation details</strong>:</p>
+<ol>
+<li>Factor the order of <code>base</code> with <code>factor_integer</code>.</li>
+<li>For each prime power $q^e$, recover the discrete logarithm digit by digit with BSGS (digit recovery).</li>
+<li>Combine the partial results with <code>crt_many</code>.</li>
+<li>Finally verify $\text{base}^x \equiv \text{target} \pmod{p}$.</li>
+</ol>
+<p><strong>Complexity</strong>: dominated by the largest prime factor $q$, giving $O(\sqrt{q})$. Extremely efficient when the order is smooth.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::dlog::dlog_pohlig_hellman;
+
+// p = 101, p − 1 = 2²·5² (smooth). 2 is a primitive root mod 101.
+let p = Integer::from(101);
+let base = Integer::from(2);
+let target = base.modpow(&amp;Integer::from(83), &amp;p);
+let x = dlog_pohlig_hellman(&amp;base, &amp;target, &amp;p).unwrap();
+assert_eq!(x, Integer::from(83));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#dlog_bsgs"><code>dlog_bsgs</code></a>, <a href="#factor_integer"><code>factor_integer</code></a>, <a href="#crt_many"><code>crt_many</code></a></p>
+<hr />
+<h2 id="multiplicative-number-theoretic-functions"><a class="header" href="#multiplicative-number-theoretic-functions">Multiplicative number-theoretic functions</a></h2>
+<p>All multiplicative functions are computed by factoring via <a href="#factor_integer"><code>factor_integer</code></a> and combining the results.</p>
+<h3 id="euler_phi"><a class="header" href="#euler_phi">euler_phi</a></h3>
+<p><strong>Signature</strong>: <code>pub fn euler_phi(n: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>Description</strong>: Euler's totient function $\varphi(n)$ — the number of integers in $[1, |n|]$ coprime to $n$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The input integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Integer</code> — $\varphi(|n|)$.</p>
+<p><strong>Formula</strong>: $|n| \cdot \prod_{p \mid n} \left(1 - \frac{1}{p}\right)$, over the distinct prime factors of <code>n</code>.</p>
+<p><strong>Convention</strong>: $\varphi(0) = 0$, $\varphi(\pm 1) = 1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::euler_phi;
+
+assert_eq!(euler_phi(&amp;Integer::from(9)), Integer::from(6));
+// φ(9) = 9 × (1 − 1/3) = 6, numbers coprime to 9 are {1,2,4,5,7,8}
+assert_eq!(euler_phi(&amp;Integer::from(36)), Integer::from(12));
+assert_eq!(euler_phi(&amp;Integer::from(97)), Integer::from(96)); // prime p: φ(p) = p−1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="moebius_mu"><a class="header" href="#moebius_mu">moebius_mu</a></h3>
+<p><strong>Signature</strong>: <code>pub fn moebius_mu(n: &amp;Integer) -&gt; i8</code></p>
+<p><strong>Description</strong>: The Möbius function $\mu(n)$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The input integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>i8</code>.</p>
+<p><strong>Definition</strong>:</p>
+<p>$$
+\mu(n) = \begin{cases} 1 &amp; n = \pm 1 \ (-1)^k &amp; n \text{ has } k \text{ distinct prime factors (square-free)} \ 0 &amp; n \text{ is divisible by the square of a prime} \end{cases}
+$$</p>
+<p><strong>Convention</strong>: $\mu(0) = 0$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::moebius_mu;
+
+assert_eq!(moebius_mu(&amp;Integer::from(1)), 1);
+assert_eq!(moebius_mu(&amp;Integer::from(6)), 1);   // 6 = 2·3, 2 prime factors → (−1)² = 1
+assert_eq!(moebius_mu(&amp;Integer::from(30)), -1); // 30 = 2·3·5, 3 prime factors → (−1)³ = −1
+assert_eq!(moebius_mu(&amp;Integer::from(12)), 0);  // 4 = 2² divides 12
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="divisor_tau"><a class="header" href="#divisor_tau">divisor_tau</a></h3>
+<p><strong>Signature</strong>: <code>pub fn divisor_tau(n: &amp;Integer) -&gt; Integer</code></p>
+<p><strong>Description</strong>: The divisor function $\tau(n)$ (also written $d(n)$) — the number of positive divisors of $|n|$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The input integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Integer</code> — $\tau(|n|)$.</p>
+<p><strong>Formula</strong>: if $n = \prod p_i^{e_i}$, then $\tau(n) = \prod (e_i + 1)$.</p>
+<p><strong>Convention</strong>: $\tau(0) = 0$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::divisor_tau;
+
+assert_eq!(divisor_tau(&amp;Integer::from(12)), Integer::from(6));
+// 12 = 2²·3¹ → (2+1)(1+1) = 6, divisors are {1,2,3,4,6,12}
+assert_eq!(divisor_tau(&amp;Integer::from(97)), Integer::from(2)); // a prime has only 1 and itself
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#divisor_sigma"><code>divisor_sigma</code></a>, <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="divisor_sigma"><a class="header" href="#divisor_sigma">divisor_sigma</a></h3>
+<p><strong>Signature</strong>: <code>pub fn divisor_sigma(n: &amp;Integer, k: u32) -&gt; Integer</code></p>
+<p><strong>Description</strong>: The divisor function $\sigma_k(n)$ — the sum of the $k$-th powers of the positive divisors of $|n|$.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The input integer</td></tr>
+<tr><td><code>k</code></td><td><code>u32</code></td><td>The power (non-negative integer)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>Integer</code> — $\sigma_k(|n|)$.</p>
+<p><strong>Formula</strong>: $\sigma_k(n) = \prod \frac{p_i^{k(e_i+1)} - 1}{p_i^k - 1}$.</p>
+<p><strong>Special values</strong>:</p>
+<ul>
+<li>$\sigma_0(n) = \tau(n)$ (number of divisors)</li>
+<li>$\sigma_1(n) = \sigma(n)$ (sum of divisors — perfect-number test: $n$ is perfect if and only if $\sigma_1(n) = 2n$)</li>
+</ul>
+<p><strong>Convention</strong>: $\sigma_k(0) = 0$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::divisor_sigma;
+
+assert_eq!(divisor_sigma(&amp;Integer::from(12), 1), Integer::from(28));
+// σ₁(12) = 1+2+3+4+6+12 = 28
+assert_eq!(divisor_sigma(&amp;Integer::from(12), 2), Integer::from(210));
+// σ₂(12) = 1+4+9+16+36+144 = 210
+assert_eq!(divisor_sigma(&amp;Integer::from(12), 0), Integer::from(6));
+// σ₀(12) = τ(12) = 6
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#divisor_tau"><code>divisor_tau</code></a>, <a href="#factor_integer"><code>factor_integer</code></a></p>
+<hr />
+<h3 id="liouville_lambda"><a class="header" href="#liouville_lambda">liouville_lambda</a></h3>
+<p><strong>Signature</strong>: <code>pub fn liouville_lambda(n: &amp;Integer) -&gt; i8</code></p>
+<p><strong>Description</strong>: The Liouville function $\lambda(n) = (-1)^{\Omega(n)}$, where $\Omega(n)$ is the total number of prime factors counted with multiplicity.</p>
+<p><strong>Parameters</strong>:</p>
+<div class="table-wrapper"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>n</code></td><td><code>&amp;Integer</code></td><td>The input integer</td></tr>
+</tbody></table>
+</div>
+<p><strong>Return value</strong>: <code>i8</code> — <code>1</code> or <code>-1</code>.</p>
+<p><strong>Convention</strong>: $\lambda(0) = 0$, $\lambda(\pm 1) = 1$.</p>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::Integer;
+use ocas_domain::number_theory::functions::liouville_lambda;
+
+assert_eq!(liouville_lambda(&amp;Integer::from(12)), -1);
+// 12 = 2²·3, Ω = 3 → (−1)³ = −1
+assert_eq!(liouville_lambda(&amp;Integer::from(6)), 1);
+// 6 = 2·3, Ω = 2 → (−1)² = 1
+<span class="boring">}</span></code></pre></pre>
+<p><strong>See also</strong>: <a href="#factor_integer"><code>factor_integer</code></a>, <a href="#moebius_mu"><code>moebius_mu</code></a></p>
+<hr />
+<h2 id="module-dependency-graph"><a class="header" href="#module-dependency-graph">Module dependency graph</a></h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph primes["primes module"]
+        is_prime
+        is_prime_bpsw
+        is_prime_u64
+        next_prime
+        primes_from
+        mod_inv
+        extended_gcd
+        symmetric_mod
+        crt
+        legendre
+        jacobi
+        mod_sqrt
+    end
+
+    subgraph factor["factor module"]
+        factor_integer
+        factor_trial
+        pollard_rho_brent
+        pollard_pm1
+        williams_pp1
+        ecm
+    end
+
+    subgraph crt_mod["crt module"]
+        crt_many
+    end
+
+    subgraph dlog["dlog module"]
+        dlog_bsgs
+        dlog_pohlig_hellman
+    end
+
+    subgraph functions["functions module"]
+        euler_phi
+        moebius_mu
+        divisor_tau
+        divisor_sigma
+        liouville_lambda
+    end
+
+    factor_integer --&gt; is_prime_bpsw
+    factor_integer --&gt; factor_trial
+    factor_integer --&gt; pollard_rho_brent
+    factor_integer --&gt; pollard_pm1
+    factor_integer --&gt; williams_pp1
+    factor_integer --&gt; ecm
+    is_prime --&gt; mr_witness
+    is_prime_bpsw --&gt; is_prime
+    is_prime_u64 --&gt; is_prime
+    next_prime --&gt; is_prime
+    primes_from --&gt; next_prime
+    crt_many --&gt; crt
+    dlog_pohlig_hellman --&gt; factor_integer
+    dlog_pohlig_hellman --&gt; dlog_bsgs
+    dlog_pohlig_hellman --&gt; crt_many
+    euler_phi --&gt; factor_integer
+    moebius_mu --&gt; factor_integer
+    divisor_tau --&gt; factor_integer
+    divisor_sigma --&gt; factor_integer
+    liouville_lambda --&gt; factor_integer
+    williams_pp1 --&gt; jacobi
+    legendre --&gt; jacobi
+    mod_sqrt --&gt; legendre
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-tensors.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-groebner.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-tensors.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-groebner.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

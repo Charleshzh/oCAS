@@ -1,0 +1,641 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Advanced: Number Theory Algorithms - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html" class="active"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/number-theory-algorithms.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="advanced-number-theory-algorithms"><a class="header" href="#advanced-number-theory-algorithms">Advanced: Number Theory Algorithms</a></h1>
+<p>This chapter systematically explains the core number theory algorithms implemented in oCAS: primality testing, integer factorization, discrete logarithms, the Chinese remainder theorem, quadratic residues, and rational reconstruction. Each algorithm starts from its mathematical principle and goes into the concrete implementation details in oCAS.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before reading this chapter, the reader should be familiar with the following concepts:</p>
+<ul>
+<li><strong>Primes and divisibility</strong>: definition of primes, greatest common divisors, the Euclidean algorithm, the extended Euclidean algorithm</li>
+<li><strong>Modular arithmetic</strong>: congruences, modular inverse (computing $a^{-1} \bmod m$ with the extended Euclidean algorithm), fast modular exponentiation (binary exponentiation)</li>
+<li><strong>Euler's φ function</strong>: $\varphi(n) = n \prod_{p \mid n}(1 - 1/p)$, counting the integers in $[1, n]$ coprime to $n$</li>
+<li><strong>Multiplicative functions</strong>: $f(mn) = f(m)f(n)$ when $\gcd(m, n) = 1$; completely multiplicative when this holds for all $m, n$</li>
+<li><strong>Fermat's little theorem</strong>: $a^{p-1} \equiv 1 \pmod{p}$ for prime $p$ with $\gcd(a, p) = 1$</li>
+<li><strong>Basics of group theory</strong>: cyclic groups, the order of an element, generators (primitive roots)</li>
+</ul>
+<p><strong>Recommended reading</strong>: Shoup, <em>A Computational Introduction to Number Theory and Algebra</em>, Ch.1–9.</p>
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="the-primality-testing-problem"><a class="header" href="#the-primality-testing-problem">The Primality Testing Problem</a></h3>
+<p>Given a positive integer $n$, decide whether $n$ is prime. This is a decision problem, but deterministic algorithms (such as AKS) are far slower in practice than probabilistic ones. Modern practice uses <strong>probable prime tests</strong>: the probability that a composite passes the test can be made extremely small, but it cannot be absolutely ruled out.</p>
+<h3 id="the-integer-factorization-problem"><a class="header" href="#the-integer-factorization-problem">The Integer Factorization Problem</a></h3>
+<p>Given a composite $n$, find a nontrivial factor $d$ ($1 &lt; d &lt; n$). Repeating recursively until all factors are prime yields $n = p_1^{e_1} \cdots p_k^{e_k}$. The difficulty of factorization is the foundational assumption behind the security of public-key cryptography such as RSA.</p>
+<h3 id="the-discrete-logarithm-problem"><a class="header" href="#the-discrete-logarithm-problem">The Discrete Logarithm Problem</a></h3>
+<p>In the group $\mathbb{Z}_p^*$, given $g$ and $h$, find $x$ such that $g^x \equiv h \pmod{p}$. When $p - 1$ is smooth (has only small prime factors), the Pohlig–Hellman algorithm solves this efficiently.</p>
+<h3 id="quadratic-residues"><a class="header" href="#quadratic-residues">Quadratic Residues</a></h3>
+<p>For an odd prime $p$ and an integer $a$, if there exists $x$ with $x^2 \equiv a \pmod{p}$, then $a$ is called a <strong>quadratic residue</strong> modulo $p$. The Legendre symbol $\left(\frac{a}{p}\right)$ equals $1$ for a residue, $-1$ for a non-residue, and $0$ when $p \mid a$.</p>
+<h3 id="multiplicative-number-theoretic-functions"><a class="header" href="#multiplicative-number-theoretic-functions">Multiplicative Number-Theoretic Functions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Definition</th><th>Multiplicative</th></tr></thead><tbody>
+<tr><td>$\varphi(n)$</td><td>$#{k \in [1,n] : \gcd(k,n)=1}$</td><td>yes</td></tr>
+<tr><td>$\mu(n)$</td><td>$1$ ($n=1$), $(-1)^k$ ($n$ has exactly $k$ distinct prime factors), $0$ ($n$ has a square factor)</td><td>yes</td></tr>
+<tr><td>$\tau(n)$</td><td>number of positive divisors $= \prod(e_i + 1)$</td><td>yes</td></tr>
+<tr><td>$\sigma_k(n)$</td><td>$\sum_{d \mid n} d^k$</td><td>yes</td></tr>
+<tr><td>$\lambda(n)$</td><td>Liouville function $= (-1)^{\Omega(n)}$</td><td>yes (completely multiplicative)</td></tr>
+</tbody></table>
+</div>
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="bpsw-primality-testing"><a class="header" href="#bpsw-primality-testing">BPSW Primality Testing</a></h3>
+<p>The <strong>BPSW test</strong> (Baillie–Pomerance–Selfridge–Wagstaff) combines two independent probable prime tests: a base-2 strong Miller–Rabin test plus a strong Lucas probable prime test. Since it was proposed in 1980, <strong>no composite number is known to pass the BPSW test</strong> (it has been exhaustively verified for $n &lt; 2^{64}$).</p>
+<h4 id="the-millerrabin-test"><a class="header" href="#the-millerrabin-test">The Miller–Rabin Test</a></h4>
+<p><strong>Principle</strong>: write $n - 1 = d \cdot 2^r$ ($d$ odd). For a base $a$, compute $a^d \bmod n$. If the result is $1$, or $-1$ appears in the sequence $a^d, a^{2d}, a^{4d}, \ldots, a^{d \cdot 2^{r-1}} \pmod{n}$, then $n$ passes this round.</p>
+<p><strong>Guarantee</strong>: if $n$ is prime, it passes for every $1 &lt; a &lt; n$. If $n$ is composite, at least $3/4$ of the bases are witnesses, i.e. they expose $n$. After testing $k$ random bases, the probability that a composite passes all of them is at most $4^{-k}$.</p>
+<p><strong>Determinism</strong>: for $n &lt; 3.317 \times 10^{24}$, the Miller–Rabin test with the fixed base set ${2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}$ is <strong>deterministic</strong>. oCAS uses these 12 bases as the <code>MR_WITNESSES</code> constant.</p>
+<h4 id="the-strong-lucas-probable-prime-test"><a class="header" href="#the-strong-lucas-probable-prime-test">The Strong Lucas Probable Prime Test</a></h4>
+<p><strong>Lucas sequences</strong>: for parameters $(P, Q)$, define</p>
+<p>$$U_0 = 0,\quad U_1 = 1,\quad U_{m+1} = P \cdot U_m - Q \cdot U_{m-1}$$</p>
+<p>$$V_0 = 2,\quad V_1 = P,\quad V_{m+1} = P \cdot V_m - Q \cdot V_{m-1}$$</p>
+<p><strong>Binary ladder</strong>: compute $(U_k, V_k, Q^k) \bmod n$ efficiently. Use the doubling formulas</p>
+<p>$$U_{2m} = U_m \cdot V_m, \quad V_{2m} = V_m^2 - 2Q^m$$</p>
+<p>and the increment formulas</p>
+<p>$$2U_{m+1} = P \cdot U_m + V_m, \quad 2V_{m+1} = D \cdot U_m + P \cdot V_m$$</p>
+<p>where $D = P^2 - 4Q$. Divisions are avoided through the half-mod operation modulo $n$ (for odd $n$, $\text{half_mod}(x, n) = y$ satisfies $2y \equiv x \pmod{n}$).</p>
+<p><strong>Selfridge parameter selection</strong>: choose the first $D \in {5, -7, 9, -11, 13, \ldots}$ with Jacobi symbol $\left(\frac{D}{n}\right) = -1$, then set $P = 1$ and $Q = (1 - D)/4$.</p>
+<p><strong>The strong Lucas test</strong>: write $n + 1 = d \cdot 2^r$ ($d$ odd); $n$ passes if and only if $U_d \equiv 0 \pmod{n}$ or there exists $0 \leq i &lt; r$ with $V_{d \cdot 2^i} \equiv 0 \pmod{n}$.</p>
+<h4 id="the-bpsw-combination"><a class="header" href="#the-bpsw-combination">The BPSW Combination</a></h4>
+<pre><code>is_prime_bpsw(n):
+    1. if n &lt; 2, return false; if n equals a prime in {2,3,5,…,37}, return true
+    2. if n is divisible by some prime in 2..37, return false
+    3. if n is a perfect square, return false
+    4. strong Miller–Rabin test (base 2)
+    5. if it passes, run the strong Lucas PRP test (Selfridge parameters)
+    6. return true only if both pass
+</code></pre>
+<p>In oCAS, <code>is_prime()</code> uses the full 12-base Miller–Rabin, while <code>is_prime_bpsw()</code> uses the single-base Miller–Rabin plus the Lucas test. The two complement each other: <code>is_prime()</code> is deterministic for $n &lt; 3.317 \times 10^{24}$; <code>is_prime_bpsw()</code> is theoretically stronger (it combines two tests based on different principles).</p>
+<h3 id="the-integer-factorization-strategy"><a class="header" href="#the-integer-factorization-strategy">The Integer Factorization Strategy</a></h3>
+<p>oCAS's <code>factor_integer</code> is a <strong>layered driver</strong> that combines several factorization algorithms into an escalating strategy.</p>
+<h4 id="trial-division"><a class="header" href="#trial-division">Trial Division</a></h4>
+<p>First generate the list of primes $\leq 1000$ with the sieve of Eratosthenes and divide by each in turn. This step costs $O(\pi(1000)) = O(168)$, negligible, but it quickly strips off small factors.</p>
+<p>$$n = \prod_{p \leq 1000} p^{e_p} \cdot C$$</p>
+<p>The remaining cofactor $C$ has all prime factors $&gt; 1000$.</p>
+<h4 id="the-pollard-rhobrent-variant"><a class="header" href="#the-pollard-rhobrent-variant">The Pollard rho–Brent Variant</a></h4>
+<p><strong>Principle</strong>: random collision detection based on the birthday paradox. Define a sequence $x_0, x_1, x_2, \ldots$ with $x_{i+1} = x_i^2 + c \pmod{n}$ ($c$ a random constant). Modulo $n$ the sequence eventually enters a cycle, while modulo a true factor $p$ a collision occurs earlier.</p>
+<p>The core optimizations of the <strong>Brent variant</strong>:</p>
+<ol>
+<li><strong>Exponential search</strong>: detect collisions at $2^k$-step intervals (Floyd's tortoise-and-hare checks at every step; Brent only checks at powers of two)</li>
+<li><strong>Batched GCD</strong>: accumulate the product of several $(x_i - y_i)$ values and take a single $\gcd$, amortizing the expensive GCD</li>
+<li><strong>Backtracking</strong>: when a batched GCD returns $n$ itself, retry the individual differences within that batch</li>
+</ol>
+<p><strong>Time complexity</strong>: expected $O(n^{1/4})$ modular multiplications. In practice it is very efficient for factors of moderate size (&lt; 20 digits).</p>
+<h4 id="pollards-p---1-method-stage-1"><a class="header" href="#pollards-p---1-method-stage-1">Pollard's $p - 1$ Method (Stage 1)</a></h4>
+<p><strong>Principle</strong>: if $n$ has a factor $p$ and $p - 1$ is $B_1$-smooth (i.e. all prime power factors of $p - 1$ are $\leq B_1$), then $p - 1 \mid M$ where $M = \prod_{q \leq B_1} q^{\lfloor \log_q B_1 \rfloor}$. By Fermat's little theorem, for any $\gcd(a, p) = 1$:</p>
+<p>$$a^M \equiv 1 \pmod{p} \implies p \mid \gcd(a^M - 1, n)$$</p>
+<p><strong>Implementation details</strong>:</p>
+<ul>
+<li>Generate the primes $q \leq B_1$ with the sieve of Eratosthenes</li>
+<li>Modular exponentiation per prime: $a \leftarrow a^{q^e} \bmod n$ ($q^e \leq B_1 &lt; q^{e+1}$)</li>
+<li>Check $\gcd(a - 1, n)$ after accumulating a certain number of steps</li>
+<li>If $\gcd = n$ (all factors are $p-1$-smooth), the method fails</li>
+<li>If $1 &lt; \gcd &lt; n$, a nontrivial factor is found</li>
+</ul>
+<p><strong>Limitation</strong>: requires $p - 1$ to be smooth. If $p - 1$ has a large prime factor, the method does not work.</p>
+<h4 id="williamss-p--1-method-stage-1"><a class="header" href="#williamss-p--1-method-stage-1">Williams's $p + 1$ Method (Stage 1)</a></h4>
+<p><strong>Principle</strong>: complementary to the $p - 1$ method. If $p + 1$ is $B_1$-smooth, use the Lucas $V$ sequence instead of modular exponentiation.</p>
+<p><strong>The Lucas $V$ sequence</strong>: take $Q = 1$ and choose $P$ randomly with $\left(\frac{P^2 - 4}{n}\right) = -1$ (Jacobi symbol). Compute $V_M \bmod n$, where $M = \prod_{q \leq B_1} q^{\lfloor \log_q B_1 \rfloor}$. If $p + 1$ is $B_1$-smooth, then $V_M \equiv V_0 = 2 \pmod{p}$, i.e. $p \mid \gcd(V_M - 2, n)$.</p>
+<p><strong>Parameter selection</strong>: choose $P$ at random and check $\text{jacobi}(P^2 - 4, n) = -1$. The oCAS implementation uses <code>lucas_uv_mod</code> (the Lucas chain code shared with BPSW).</p>
+<p><strong>Limitation</strong>: requires $p + 1$ to be smooth. It complements the $p - 1$ method (some $p$ satisfy one but not the other).</p>
+<h4 id="lenstras-elliptic-curve-method-ecm"><a class="header" href="#lenstras-elliptic-curve-method-ecm">Lenstra's Elliptic Curve Method (ECM)</a></h4>
+<p><strong>Principle</strong>: reduce integer factorization to a smoothness question about the order of an elliptic curve group. For a random elliptic curve $E/\mathbb{F}_p$, the group order $|E(\mathbb{F}_p)|$ is distributed roughly uniformly in the Hasse interval $[p + 1 - 2\sqrt{p}, p + 1 + 2\sqrt{p}]$ (Sato–Tate). ECM succeeds when the group order of some curve is $B_1$-smooth.</p>
+<p><strong>Key advantage</strong>: unlike rho and the $p \pm 1$ methods, ECM does not fix the group order range — each new curve gives a new group order. This makes ECM succeed with positive probability for <strong>factors of any size</strong>, with complexity depending on the smoothness of the smallest factor $p$ rather than on $n$ itself.</p>
+<p><strong>Suyama parameterization</strong>: construct a Montgomery curve from a random $\sigma \notin {0, 1, 5}$:</p>
+<p>$$u = \sigma^2 - 5, \quad v = 4\sigma$$</p>
+<p>$$A = \frac{(v - u)^3(3u + v)}{4u^3 v} - 2$$</p>
+<p>The curve is $B y^2 = x^3 + A x^2 + x$ with base point $(u^3, v^3)$. The Suyama parameterization guarantees that the base point is always rational, and if during the construction a GCD of a denominator exposes a factor of $n$, it is returned immediately.</p>
+<p><strong>Montgomery coordinates</strong>: use projective coordinates $(X : Z)$ (omitting the $Y$ coordinate), with curve equation $By^2 = x^3 + Ax^2 + x$ and $x = X/Z$.</p>
+<ul>
+<li><strong>Doubling</strong> $[2](X : Z)$: computed with the constant $a_{24} = (A + 2)/4$, needing only 4 modular multiplications and 4 modular additions/subtractions</li>
+<li><strong>Differential addition</strong> $P + Q$ given $P - Q$: only 6 modular multiplications</li>
+<li><strong>Montgomery ladder</strong>: scalar multiplication $[k]P$ via alternating doublings and additions, <strong>always using the base point as the fixed difference</strong></li>
+</ul>
+<p><strong>Stage 1 algorithm</strong>: compute $[M]P$ where $M = \prod_{q \leq B_1} q^{\lfloor \log_q B_1 \rfloor}$. Take GCDs during the computation; return as soon as a nontrivial factor is found.</p>
+<h4 id="the-factor_integer-driver"><a class="header" href="#the-factor_integer-driver">The <code>factor_integer</code> Driver</a></h4>
+<p><code>factor_integer</code> combines the above algorithms into an escalating strategy:</p>
+<pre><code>factor_integer(n):
+    1. Trial division: strip off all factors p ≤ 1000
+    2. For the cofactor C (if C &gt; 1):
+       a. if is_prime_bpsw(C), record it as a prime factor
+       b. otherwise call find_factor(C) to split it, and recurse
+</code></pre>
+<p>The escalation strategy of <code>find_factor(n)</code>:</p>
+<ol>
+<li>One Pollard rho–Brent attempt first (cheapest for small factors; no smoothness requirement)</li>
+<li>Loop (starting with $B_1 = 2000$):
+<ul>
+<li>Pollard $p - 1$ (stage 1, requires some factor with $p - 1$ $B_1$-smooth)</li>
+<li>Williams $p + 1$ (stage 1, requires some factor with $p + 1$ $B_1$-smooth; complements $p - 1$)</li>
+<li>ECM: number of curves $\approx B_1 / 550$ (clamped to 10–300)</li>
+<li>if all fail, $B_1 \leftarrow B_1 \times 4$ and continue the loop</li>
+</ul>
+</li>
+</ol>
+<p>The curve budget of about $B_1 / 550$ is the standard empirical ratio for ECM smoothness search, ensuring enough random curves per $B_1$ level to cover the group orders in the Hasse interval.</p>
+<h3 id="discrete-logarithms"><a class="header" href="#discrete-logarithms">Discrete Logarithms</a></h3>
+<h4 id="baby-step-giant-step-bsgs"><a class="header" href="#baby-step-giant-step-bsgs">Baby-Step Giant-Step (BSGS)</a></h4>
+<p><strong>Problem</strong>: given $g, h, p$, find $x$ such that $g^x \equiv h \pmod{p}$ ($0 \leq x &lt; m$, where $m$ is an upper bound on the order of $g$).</p>
+<p><strong>Algorithm</strong>: let $m = \lfloor \sqrt{\text{bound}} \rfloor + 1$.</p>
+<ol>
+<li><strong>Baby steps</strong>: compute and store ${(j, g^j \bmod p) : 0 \leq j &lt; m}$ in a HashMap</li>
+<li><strong>Giant steps</strong>: compute $g^{-m} \bmod p$; for $i = 0, 1, \ldots, m-1$, check whether $h \cdot (g^{-m})^i \bmod p$ is in the table</li>
+<li>If a match $g^j = h \cdot g^{-im}$ is found, then $x = im + j$</li>
+</ol>
+<p><strong>Complexity</strong>: $O(\sqrt{m})$ modular multiplications in time, $O(\sqrt{m})$ in space.</p>
+<p>oCAS's <code>dlog_bsgs</code> stores the baby steps in a <code>HashMap&lt;Integer, Integer&gt;</code> with $(j, g^j)$ key-value pairs, giving $O(1)$ lookups.</p>
+<h4 id="the-pohlighellman-algorithm"><a class="header" href="#the-pohlighellman-algorithm">The Pohlig–Hellman Algorithm</a></h4>
+<p><strong>Scenario</strong>: $p$ prime, $g$ of order $n = p - 1$, with $n$ smooth: $n = q_1^{e_1} \cdots q_k^{e_k}$ ($q_i$ small primes).</p>
+<p><strong>Core idea</strong>: decompose the problem of finding $x \bmod n$ into the subproblems of finding $x \bmod q_i^{e_i}$, then combine with CRT.</p>
+<p><strong>Prime-power decomposition</strong>: for each $q = q_i$, $e = e_i$, find $x \bmod q^e$:</p>
+<p>Write $x = x_0 + x_1 q + x_2 q^2 + \cdots + x_{e-1} q^{e-1}$ ($0 \leq x_j &lt; q$; recover one "digit" at a time).</p>
+<ol>
+<li>Let $g_0 = g^{n/q} \bmod p$, $h_0 = h^{n/q} \bmod p$. Then $g_0^{x_0} = h_0 \pmod{p}$. Use BSGS to find $x_0 \bmod q$.</li>
+<li>Update $h \leftarrow h \cdot g^{-x_0}$, and compute $h_1 = (h \cdot g^{-x_0})^{n/q^2}$. Find $x_1$.</li>
+<li>Continue until $x_{e-1}$.</li>
+<li>$x \bmod q^e = x_0 + x_1 q + \cdots + x_{e-1} q^{e-1}$.</li>
+</ol>
+<p><strong>CRT combination</strong>: combine the results for all $q_i^{e_i}$ with <code>crt_many</code> to obtain $x \bmod n$.</p>
+<p><strong>Complexity</strong>: BSGS per prime power costs $O(\sqrt{q_i})$, for a total of $O(\sum e_i \sqrt{q_i})$. When all $q_i$ are small, this is much faster than the direct BSGS cost of $O(\sqrt{n})$.</p>
+<p>oCAS's <code>dlog_pohlig_hellman</code> requires $p$ to be prime. It uses <code>factor_integer</code> to factor $p - 1$ (reusing the integer factorization module), recovers the digits prime power by prime power with BSGS, and finally combines and verifies the result with <code>crt_many</code>.</p>
+<h3 id="the-chinese-remainder-theorem"><a class="header" href="#the-chinese-remainder-theorem">The Chinese Remainder Theorem</a></h3>
+<h4 id="the-classical-crt"><a class="header" href="#the-classical-crt">The Classical CRT</a></h4>
+<p><strong>Theorem</strong>: let $m_1, \ldots, m_k$ be pairwise coprime. Given the system of congruences</p>
+<p>$$x \equiv r_i \pmod{m_i}, \quad i = 1, \ldots, k$$</p>
+<p>there exists a unique solution $x \bmod M$ where $M = m_1 \cdots m_k$.</p>
+<p><strong>Construction</strong>: $x = \sum_i r_i \cdot M_i \cdot M_i^{-1}$, where $M_i = M / m_i$ and $M_i^{-1} = M_i^{-1} \bmod m_i$.</p>
+<h4 id="generalization-non-coprime-moduli"><a class="header" href="#generalization-non-coprime-moduli">Generalization: Non-Coprime Moduli</a></h4>
+<p>oCAS's <code>crt</code> (pairwise combination) and <code>crt_many</code> (combining many congruences) <strong>do not require the moduli to be pairwise coprime</strong>.</p>
+<p><strong>Pairwise CRT</strong>: for $x \equiv r_1 \pmod{m_1}$ and $x \equiv r_2 \pmod{m_2}$:</p>
+<ol>
+<li>Compute $g = \gcd(m_1, m_2)$</li>
+<li>Check $r_1 \equiv r_2 \pmod{g}$ (the consistency condition)</li>
+<li>If inconsistent, return <code>None</code></li>
+<li>Otherwise solve with the extended Euclidean algorithm; the combined modulus is $\text{lcm}(m_1, m_2)$</li>
+</ol>
+<p><strong>Combining many congruences</strong> <code>crt_many</code>: a left fold — start from the first congruence and combine with the next one at a time:</p>
+<p>$$x \equiv r_1 \pmod{m_1} \xrightarrow{\text{combine}} x \equiv R_2 \pmod{\text{lcm}(m_1, m_2)} \xrightarrow{\text{combine}} \cdots$$</p>
+<p>The final result is $(R, M)$ where $M = \text{lcm}(m_1, \ldots, m_k)$ and $0 \leq R &lt; M$. If any step detects an inconsistency, the whole computation returns <code>None</code>.</p>
+<p><strong>Complexity</strong>: $k$ pairwise combinations, each involving a GCD computation of cost $O(\log M)$.</p>
+<h3 id="quadratic-residues-1"><a class="header" href="#quadratic-residues-1">Quadratic Residues</a></h3>
+<h4 id="the-legendre-symbol-and-the-jacobi-symbol"><a class="header" href="#the-legendre-symbol-and-the-jacobi-symbol">The Legendre Symbol and the Jacobi Symbol</a></h4>
+<p><strong>Legendre symbol</strong>: for an odd prime $p$,</p>
+<p>$$\left(\frac{a}{p}\right) = \begin{cases} 0 &amp; p \mid a \ 1 &amp; a \text{ is a quadratic residue mod } p \ -1 &amp; a \text{ is a quadratic non-residue mod } p \end{cases}$$</p>
+<p><strong>Euler's criterion</strong>: $\left(\frac{a}{p}\right) \equiv a^{(p-1)/2} \pmod{p}$.</p>
+<p><strong>Jacobi symbol</strong>: the generalization of the Legendre symbol to composite moduli. If $n = p_1^{e_1} \cdots p_k^{e_k}$, then</p>
+<p>$$\left(\frac{a}{n}\right) = \prod_i \left(\frac{a}{p_i}\right)^{e_i}$$</p>
+<p><strong>Key property</strong>: the Jacobi symbol can be computed quickly via the <strong>law of quadratic reciprocity</strong>, without factoring $n$.</p>
+<h4 id="the-law-of-quadratic-reciprocity"><a class="header" href="#the-law-of-quadratic-reciprocity">The Law of Quadratic Reciprocity</a></h4>
+<p>For odd primes $p, q$:</p>
+<p>$$\left(\frac{p}{q}\right) \left(\frac{q}{p}\right) = (-1)^{\frac{p-1}{2} \cdot \frac{q-1}{2}}$$</p>
+<p>Supplementary rules:</p>
+<ul>
+<li>$\left(\frac{2}{n}\right) = (-1)^{(n^2 - 1)/8}$, i.e. $1$ when $n \equiv \pm 1 \pmod 8$, and $-1$ when $n \equiv \pm 3 \pmod 8$</li>
+<li>$\left(\frac{-1}{n}\right) = (-1)^{(n-1)/2}$, i.e. $1$ when $n \equiv 1 \pmod 4$</li>
+</ul>
+<p><strong>Computational algorithm</strong> (oCAS's <code>jacobi</code> function):</p>
+<pre><code>jacobi(a, n):
+    if n is even or non-positive, return 0
+    repeat:
+      1. 2-adic stripping: extract all factors of 2 from a, accumulating the sign with the mod-8 rule
+      2. reciprocity flip: swap a ↔ n, adjusting the sign according to the mod-4 values of a and n
+      3. a = a mod n
+      4. if a == 0, return 0 (n &gt; 1) or the accumulated sign (n == 1)
+</code></pre>
+<p><strong>Complexity</strong>: $O(\log^2 n)$, the same order as the Euclidean algorithm.</p>
+<h4 id="the-tonellishanks-algorithm"><a class="header" href="#the-tonellishanks-algorithm">The Tonelli–Shanks Algorithm</a></h4>
+<p>Find $x$ such that $x^2 \equiv a \pmod{p}$ ($p$ an odd prime, $\left(\frac{a}{p}\right) = 1$).</p>
+<p><strong>Fast path</strong>: when $p \equiv 3 \pmod{4}$,</p>
+<p>$$x = a^{(p+1)/4} \bmod p$$</p>
+<p>because $x^2 = a^{(p+1)/2} = a \cdot a^{(p-1)/2} = a \cdot \left(\frac{a}{p}\right) = a$.</p>
+<p><strong>The general case</strong> ($p \equiv 1 \pmod{4}$) — the Tonelli–Shanks algorithm:</p>
+<ol>
+<li><strong>Decompose</strong>: write $p - 1 = Q \cdot 2^S$ ($Q$ odd)</li>
+<li><strong>Find a non-residue</strong>: search for $z$ with $\left(\frac{z}{p}\right) = -1$</li>
+<li><strong>Initialize</strong>:
+<ul>
+<li>$M = S$</li>
+<li>$c = z^Q \bmod p$ (an element of order $2^{S-1}$)</li>
+<li>$t = a^Q \bmod p$</li>
+<li>$R = a^{(Q+1)/2} \bmod p$</li>
+</ul>
+</li>
+<li><strong>Loop</strong> (while $t \neq 1$):
+<ul>
+<li>find the smallest $i &gt; 0$ such that $t^{2^i} \equiv 1 \pmod{p}$</li>
+<li>update $c \leftarrow c^{2^{M-i-1}}$, $t \leftarrow t \cdot c^2$, $R \leftarrow R \cdot c$, $M \leftarrow i$</li>
+</ul>
+</li>
+<li>Return $R$</li>
+</ol>
+<p><strong>Invariant</strong>: $R^2 = a \cdot t \pmod{p}$ and $c$ has order $2^M$. When the loop terminates $t = 1$, hence $R^2 \equiv a$.</p>
+<p><strong>Complexity</strong>: $O(S^2 \log p)$, where $S = v_2(p - 1)$ (the power of 2 dividing $p - 1$). On average $S$ is small, so the algorithm is efficient.</p>
+<h3 id="rational-reconstruction"><a class="header" href="#rational-reconstruction">Rational Reconstruction</a></h3>
+<p><strong>Problem</strong>: given $a \in \mathbb{Z}$ and a modulus $m$, find $n, d \in \mathbb{Z}$ such that</p>
+<p>$$a \cdot d \equiv n \pmod{m}, \quad \gcd(n, d) = 1, \quad 2|n| \cdot |d| &lt; m$$</p>
+<p><strong>Application</strong>: in the modular GCD algorithm, after combining the GCD coefficients from several $\mathbb{F}_p$'s with CRT, the result modulo $M$ must be "reconstructed" back to rational numbers over $\mathbb{Q}$.</p>
+<p><strong>The Wang/extended Euclidean algorithm</strong>:</p>
+<p>Use the extended Euclidean algorithm tracking the sequence $(r_i, t_i)$:</p>
+<ol>
+<li>Initialize: $(r_0, r_1) = (m, a)$, $(t_0, t_1) = (0, 1)$</li>
+<li>Iterate: $q = \lfloor r_0 / r_1 \rfloor$, $(r_0, r_1) \leftarrow (r_1, r_0 - q \cdot r_1)$, $(t_0, t_1) \leftarrow (t_1, t_0 - q \cdot t_1)$</li>
+<li><strong>Termination condition</strong>: stop when $|r_1| \leq \sqrt{m/2}$ <strong>and</strong> $|t_1| \leq \sqrt{m/2}$</li>
+<li><strong>Verification</strong>: let $n = r_1$ and $d = t_1$ (take positive values); check $a \cdot d \equiv n \pmod{m}$ and $2|n| \cdot |d| &lt; m$</li>
+<li>If verification fails or $t_1 = 0$, return <code>None</code> (no rational reconstruction satisfies the conditions)</li>
+</ol>
+<p><strong>Uniqueness theorem</strong>: when $2|n| \cdot |d| &lt; m$, the pair $(n, d)$ satisfying the conditions is unique. This condition guarantees that the reconstructed result is the "simplest" rational representation.</p>
+<p><strong>Complexity</strong>: $O(\log m)$ GCD steps, the same order as the Euclidean algorithm.</p>
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<p>oCAS's number theory algorithms live in the <code>number_theory</code> module of the <code>ocas-domain</code> crate and in the rational reconstruction module of <code>ocas-poly</code>.</p>
+<h3 id="module-structure"><a class="header" href="#module-structure">Module Structure</a></h3>
+<pre><code>ocas-domain/src/
+├── number_theory.rs          ← primality tests, modular inverse, CRT, Legendre/Jacobi, mod_sqrt
+└── number_theory/
+    ├── primes.rs             ← BPSW, Lucas sequences (lucas_uv_mod, strong_lucas_prp)
+    ├── factor.rs             ← the integer factorization driver (factor_integer) and its methods
+    ├── dlog.rs               ← BSGS and Pohlig–Hellman
+    ├── crt.rs                ← multi-congruence CRT (crt_many)
+    └── functions.rs          ← φ, μ, τ, σ, λ
+
+ocas-poly/src/
+└── rational_reconstruction.rs ← rational reconstruction (extended Euclidean method)
+</code></pre>
+<h3 id="primality-testing"><a class="header" href="#primality-testing">Primality Testing</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>is_prime(n)</code></td><td><code>number_theory.rs</code></td><td>12-base Miller–Rabin; deterministic for $n &lt; 3.317 \times 10^{24}$</td></tr>
+<tr><td><code>is_prime_bpsw(n)</code></td><td><code>primes.rs</code></td><td>base-2 MR + strong Lucas PRP</td></tr>
+<tr><td><code>is_prime_u64(n)</code></td><td><code>primes.rs</code></td><td><code>u64</code>-specific; delegates to <code>is_prime</code></td></tr>
+<tr><td><code>next_prime(n)</code></td><td><code>number_theory.rs</code></td><td>test odd numbers one by one starting from $n + 1$</td></tr>
+<tr><td><code>primes_from(n)</code></td><td><code>number_theory.rs</code></td><td>a prime iterator</td></tr>
+</tbody></table>
+</div>
+<p>Lucas sequence computation is implemented by <code>lucas_uv_mod</code> using the binary ladder, returning $(U_k, V_k, Q^k) \bmod n$. This function is shared by the BPSW test and Williams's $p + 1$ factorization method.</p>
+<h3 id="integer-factorization"><a class="header" href="#integer-factorization">Integer Factorization</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>factor_integer(n)</code></td><td><code>factor.rs</code></td><td>entry point: trial division + recursive splitting</td></tr>
+<tr><td><code>factor_integer_with_rng(n, rng)</code></td><td><code>factor.rs</code></td><td>version with an explicit RNG</td></tr>
+<tr><td><code>factor_trial(n, limit)</code></td><td><code>factor.rs</code></td><td>trial division, returns <code>(factor, cofactor)</code></td></tr>
+<tr><td><code>pollard_rho_brent(n, rng)</code></td><td><code>factor.rs</code></td><td>Brent variant, with retries</td></tr>
+<tr><td><code>pollard_pm1(n, b1, rng)</code></td><td><code>factor.rs</code></td><td>Pollard $p - 1$, Stage 1</td></tr>
+<tr><td><code>williams_pp1(n, b1, rng)</code></td><td><code>factor.rs</code></td><td>Williams $p + 1$, Stage 1</td></tr>
+<tr><td><code>ecm(n, b1, max_curves, rng)</code></td><td><code>factor.rs</code></td><td>Lenstra ECM, Suyama parameterization</td></tr>
+</tbody></table>
+</div>
+<p>Internal implementation details:</p>
+<ul>
+<li><code>primes_up_to(limit)</code>: the sieve of Eratosthenes, generating prime tables for trial division and smoothness bounds</li>
+<li><code>prime_power_le(q, bound)</code>: computes $q^e \leq \text{bound}$, used to construct the smooth exponent $M$</li>
+<li><code>ProjPoint { x, z }</code>: a Montgomery projective-coordinate point</li>
+<li><code>ecm_double</code>, <code>ecm_add</code>, <code>ecm_mul</code>: group operations on the Montgomery curve</li>
+<li><code>suyama_curve(sigma, n)</code>: the Suyama parameterization, returning the <code>Suyama</code> enum (<code>Curve</code>/<code>Factor</code>/<code>Degenerate</code>)</li>
+<li><code>find_factor(n, rng)</code>: the escalation driver (rho → p−1 → p+1 → ECM, with increasing smoothness bounds)</li>
+</ul>
+<h3 id="discrete-logarithms-1"><a class="header" href="#discrete-logarithms-1">Discrete Logarithms</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>dlog_bsgs(base, target, modulus)</code></td><td><code>dlog.rs</code></td><td>baby-step giant-step</td></tr>
+<tr><td><code>dlog_pohlig_hellman(base, target, p)</code></td><td><code>dlog.rs</code></td><td>Pohlig–Hellman (requires $p$ prime)</td></tr>
+</tbody></table>
+</div>
+<p>Internals:</p>
+<ul>
+<li><code>bsgs_bounded(base, target, modulus, order_bound)</code>: the BSGS core, searching with a given order bound</li>
+<li><code>dlog_bsgs</code> sets the bound to <code>modulus - 1</code> and delegates to <code>bsgs_bounded</code></li>
+<li><code>dlog_pohlig_hellman</code> factors $p - 1$ with <code>factor_integer</code>, recovers the digits prime power by prime power with BSGS, and combines them with <code>crt_many</code></li>
+</ul>
+<h3 id="the-chinese-remainder-theorem-1"><a class="header" href="#the-chinese-remainder-theorem-1">The Chinese Remainder Theorem</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>crt(r1, m1, r2, m2)</code></td><td><code>number_theory.rs</code></td><td>pairwise combination; the moduli need not be coprime</td></tr>
+<tr><td><code>crt_many(congruences)</code></td><td><code>crt.rs</code></td><td>left-fold combination of many congruences</td></tr>
+</tbody></table>
+</div>
+<p><code>crt_many</code> starts from the first congruence and combines with the next one at a time via <code>crt</code>. If any step is inconsistent, the whole computation returns <code>None</code>.</p>
+<h3 id="quadratic-residues-2"><a class="header" href="#quadratic-residues-2">Quadratic Residues</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>legendre(a, p)</code></td><td><code>number_theory.rs</code></td><td>the Legendre symbol, delegating to <code>jacobi</code></td></tr>
+<tr><td><code>jacobi(a, n)</code></td><td><code>number_theory.rs</code></td><td>the Jacobi symbol (quadratic reciprocity + 2-adic stripping)</td></tr>
+<tr><td><code>mod_sqrt(a, p)</code></td><td><code>number_theory.rs</code></td><td>Tonelli–Shanks, including the $p \equiv 3 \pmod{4}$ fast path</td></tr>
+</tbody></table>
+</div>
+<p>The <code>mod_sqrt</code> implementation:</p>
+<ol>
+<li>First check $\left(\frac{a}{p}\right) = 1$ (otherwise return <code>None</code>)</li>
+<li>If $p \equiv 3 \pmod{4}$, take the fast path $x = a^{(p+1)/4} \bmod p$</li>
+<li>Otherwise run the full Tonelli–Shanks algorithm: find a non-residue $z$, decompose $p - 1 = Q \cdot 2^S$, and loop maintaining the $(c, t, r, m)$ invariants</li>
+</ol>
+<h3 id="auxiliary-number-theoretic-functions"><a class="header" href="#auxiliary-number-theoretic-functions">Auxiliary Number-Theoretic Functions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>euler_phi(n)</code></td><td><code>functions.rs</code></td><td>$\varphi(n) =</td></tr>
+<tr><td><code>moebius_mu(n)</code></td><td><code>functions.rs</code></td><td>$\mu(n)$, based on <code>factor_integer</code></td></tr>
+<tr><td><code>divisor_tau(n)</code></td><td><code>functions.rs</code></td><td>$\tau(n) = \prod(e_i + 1)$</td></tr>
+<tr><td><code>divisor_sigma(n, k)</code></td><td><code>functions.rs</code></td><td>$\sigma_k(n) = \prod \frac{p^{k(e+1)} - 1}{p^k - 1}$</td></tr>
+<tr><td><code>liouville_lambda(n)</code></td><td><code>functions.rs</code></td><td>$\lambda(n) = (-1)^{\Omega(n)}$</td></tr>
+</tbody></table>
+</div>
+<p>All multiplicative functions first obtain the prime factorization via <code>factor_integer</code> and then evaluate the multiplicative formula.</p>
+<h3 id="rational-reconstruction-1"><a class="header" href="#rational-reconstruction-1">Rational Reconstruction</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rational_reconstruction(a, m)</code></td><td><code>ocas-poly/src/rational_reconstruction.rs</code></td><td>the Wang/extended Euclidean method</td></tr>
+</tbody></table>
+</div>
+<p>Internally it uses <code>integer_sqrt</code> to compute $\lfloor\sqrt{m/2}\rfloor$ as the threshold for the termination bound.</p>
+<h3 id="basic-utility-functions"><a class="header" href="#basic-utility-functions">Basic Utility Functions</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Location</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>mod_inv(a, m)</code></td><td><code>number_theory.rs</code></td><td>modular inverse via the extended Euclidean algorithm</td></tr>
+<tr><td><code>extended_gcd(a, b)</code></td><td><code>number_theory.rs</code></td><td>returns $(g, x, y)$ with $ax + by = g$</td></tr>
+<tr><td><code>symmetric_mod(a, m)</code></td><td><code>number_theory.rs</code></td><td>reduce into $(-m/2, m/2]$</td></tr>
+</tbody></table>
+</div>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li>
+<p><strong>Shoup, V.</strong> <em>A Computational Introduction to Number Theory and Algebra.</em> Cambridge University Press, 2nd edition, 2009.</p>
+<ul>
+<li>Ch.10: Primality testing (Miller–Rabin, randomized algorithms)</li>
+<li>Ch.11: Finding discrete logarithms (BSGS, Pohlig–Hellman)</li>
+<li>Ch.19: Factoring integers (Pollard rho, ECM)</li>
+</ul>
+</li>
+<li>
+<p><strong>Crandall, R. &amp; Pomerance, C.</strong> <em>Prime Numbers: A Computational Perspective.</em> Springer, 2nd edition, 2005.</p>
+<ul>
+<li>Ch.3: Recognizing primes and composites (BPSW, Lucas tests)</li>
+<li>Ch.5: Exponential factoring algorithms (ECM, Pollard rho)</li>
+<li>Ch.6: Subexponential factoring (Pollard $p-1$, Williams $p+1$)</li>
+<li>Ch.7: Modern discrete logarithm algorithms</li>
+</ul>
+</li>
+<li>
+<p><strong>Brent, R. P.</strong> "An improved Monte Carlo factorization algorithm." <em>BIT Numerical Mathematics</em>, 20(2):176–184, 1980.</p>
+<ul>
+<li>The Brent variant of the Pollard rho algorithm</li>
+</ul>
+</li>
+<li>
+<p><strong>Williams, H. C.</strong> "A p+1 method of factoring." <em>Mathematics of Computation</em>, 39(159):225–234, 1982.</p>
+<ul>
+<li>Williams's $p + 1$ method</li>
+</ul>
+</li>
+<li>
+<p><strong>Lenstra, H. W. Jr.</strong> "Factoring integers with elliptic curves." <em>Annals of Mathematics</em>, 126(3):649–673, 1987.</p>
+<ul>
+<li>The ECM method</li>
+</ul>
+</li>
+<li>
+<p><strong>Montgomery, P. L.</strong> "Speeding the Pollard and elliptic curve methods of factorization." <em>Mathematics of Computation</em>, 48(177):243–264, 1987.</p>
+<ul>
+<li>Montgomery curve coordinates and ladder optimizations</li>
+</ul>
+</li>
+<li>
+<p><strong>Shanks, D. &amp; Tonelli, R.</strong> See Cohen, H. <em>A Course in Computational Algebraic Number Theory</em>, Algorithm 1.5.1.</p>
+<ul>
+<li>The Tonelli–Shanks modular square root algorithm</li>
+</ul>
+</li>
+<li>
+<p><strong>Baillie, R. &amp; Wagstaff, S. S.</strong> "Lucas pseudoprimes." <em>Mathematics of Computation</em>, 35(152):1391–1417, 1980.</p>
+<ul>
+<li>The Lucas part of the BPSW test</li>
+</ul>
+</li>
+<li>
+<p><strong>Pohlig, S. &amp; Hellman, M.</strong> "An improved algorithm for computing logarithms over GF(p) and its cryptographic significance." <em>IEEE Transactions on Information Theory</em>, 24(1):106–110, 1978.</p>
+<ul>
+<li>The Pohlig–Hellman discrete logarithm algorithm</li>
+</ul>
+</li>
+<li>
+<p><strong>Wang, P. S.</strong> "A p-adic algorithm for univariate partial fractions." <em>Proceedings of SYMSAC '81</em>, 212–217, 1981.</p>
+<ul>
+<li>The extended Euclidean method for rational reconstruction</li>
+</ul>
+</li>
+</ol>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/groebner-theory.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/symbolic-calculus.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/groebner-theory.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/symbolic-calculus.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Advanced: Gröbner Basis Theory - oCAS — open Computer Algebra System</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS Documentation</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> Expression System</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> Coefficient Domains</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> Polynomials</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> Matrices</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> Calculus</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner Bases & Ideals</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> Factorization</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> Numerical Integration</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API Reference</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API Reference</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> Mathematics Overview</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> Foundations: Polynomial Algebra</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> Foundations: Finite Fields & Modular Arithmetic</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> Foundations: Linear Algebra</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> Advanced: Polynomial GCD & Factorization</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html" class="active"><strong aria-hidden="true">12.</strong> Advanced: Gröbner Basis Theory</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> Advanced: Number Theory Algorithms</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> Advanced: Symbolic Calculus</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> Advanced: ODE Solving Theory</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> Higher: The Risch Integration Algorithm</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> Higher: FGLM & Elimination Theory</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> Higher: Algebraic Number Fields & Galois Theory</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> Higher: Tensor Algebra & Canonicalization</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> Higher: Monte Carlo Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner Basis Implementation</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> Polynomial Factorization</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> Number Theory</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> Symbolic Integration</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> Rational Functions & Resultants</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE Solving</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> Solvers</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> Rewriting & Simplification</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> Evaluation & JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> Numerical Integration</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> Automatic Differentiation</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> Tensors</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> Benchmarks & Performance</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> Correctness</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> Numerical Backends</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> Building on Windows</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> External References</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — open Computer Algebra System</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/en/src/math/groebner-theory.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="advanced-gröbner-basis-theory"><a class="header" href="#advanced-gröbner-basis-theory">Advanced: Gröbner Basis Theory</a></h1>
+<p>Gröbner bases are the core tool of the theory of ideals in multivariate polynomial rings. This chapter starts from the basic definitions of monomial ideals and S-polynomials, systematically explains the theoretical foundations of Buchberger's algorithm, the F4 matrix method, and the F5 signature method, and describes how oCAS implements these algorithms in Rust.</p>
+<hr />
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before reading this chapter, we recommend familiarity with the following:</p>
+<ul>
+<li><strong>Polynomial algebra</strong>: the multivariate polynomial ring $\mathbb{F}[x_1, \ldots, x_n]$, monomial orders (Lex / Grlex / Grevlex), multivariate division with remainder — see <a href="./polynomial-algebra.html">Polynomial Algebra</a></li>
+<li><strong>Linear algebra</strong>: matrix operations, Gaussian elimination, row echelon form — see <a href="./linear-algebra.html">Linear Algebra</a></li>
+<li><strong>Finite fields</strong>: construction and basic operations of $\mathbb{F}_p$ — see <a href="./finite-fields.html">Finite Fields and Modular Arithmetic</a></li>
+<li><strong>Ideals and quotient rings</strong>: basic notions of ideals $I \subseteq \mathbb{F}[x_1, \ldots, x_n]$ and quotient rings $R/I$</li>
+</ul>
+<p>For a systematic learning path, see path A in the <a href="./overview.html">Mathematical Foundations Overview</a>.</p>
+<hr />
+<h2 id="basic-concepts"><a class="header" href="#basic-concepts">Basic Concepts</a></h2>
+<h3 id="monomial-ideals"><a class="header" href="#monomial-ideals">Monomial Ideals</a></h3>
+<p><strong>Definition.</strong> Let $R = \mathbb{F}[x_1, \ldots, x_n]$. An ideal generated by monomials</p>
+<p>$$M = \langle x^{\alpha^{(1)}}, x^{\alpha^{(2)}}, \ldots, x^{\alpha^{(s)}} \rangle$$</p>
+<p>is called a <strong>monomial ideal</strong>. We have $f \in M$ if and only if the monomial of every nonzero term of $f$ is divisible by some $x^{\alpha^{(i)}}$.</p>
+<p><strong>Example.</strong> $M = \langle x^2, xy \rangle \subseteq \mathbb{F}[x, y]$. The terms of $f = x^2 y + x y^2$: $x^2 y$ is divisible by $x^2$, and $xy^2$ is divisible by $xy$, so $f \in M$. But the monomial $y^3$ of $g = y^3$ is divisible by neither $x^2$ nor $xy$, so $g \notin M$.</p>
+<h3 id="dicksons-lemma"><a class="header" href="#dicksons-lemma">Dickson's Lemma</a></h3>
+<p><strong>Lemma (Dickson)</strong>. Every subset $S$ of $\mathbb{N}^n$ has a finite set $M \subseteq S$ of <strong>minimal elements</strong> such that for every $\alpha \in S$ there exists $\beta \in M$ with $\beta \leq \alpha$ (componentwise comparison).</p>
+<p>Equivalent formulation: every monomial ideal in $\mathbb{F}[x_1, \ldots, x_n]$ is generated by finitely many monomials.</p>
+<p><strong>Proof sketch</strong> (induction on $n$).</p>
+<ul>
+<li>$n = 1$: every nonempty subset of $\mathbb{N}$ has a least element; take it as $M$.</li>
+<li>$n \to n+1$: for $S \subseteq \mathbb{N}^{n+1}$, consider the sections $S_a = {(\alpha_2, \ldots, \alpha_{n+1}) : (a, \alpha_2, \ldots, \alpha_{n+1}) \in S}$ for each $a \in \mathbb{N}$. By the induction hypothesis each $S_a$ has finitely many minimal elements. Further analyzing the elements "dominated by smaller first components" allows the construction of a finite minimal set for $S$.</li>
+</ul>
+<blockquote>
+<p><strong>Significance</strong>: Dickson's lemma guarantees the finite generation of monomial ideals, which directly implies the Hilbert basis theorem — every polynomial ideal is finitely generated. Gröbner basis theory builds a systematic method for "finding suitable generators" on this foundation.</p>
+</blockquote>
+<h3 id="s-polynomials"><a class="header" href="#s-polynomials">S-polynomials</a></h3>
+<p><strong>Definition.</strong> Let $f, g \in R$ be nonzero polynomials. Let $\gamma = \text{lcm}(\text{lm}(f), \text{lm}(g))$ — the componentwise maximum of the exponent vectors. The <strong>S-polynomial</strong> of $f$ and $g$ is</p>
+<p>$$S(f, g) = \frac{x^\gamma}{\text{lt}(f)} \cdot f - \frac{x^\gamma}{\text{lt}(g)} \cdot g = \frac{x^\gamma}{\text{lm}(f)} \cdot f - \frac{x^\gamma}{\text{lm}(g)} \cdot g$$</p>
+<p>The key property of the S-polynomial is that its leading term is <strong>canceled</strong>. Intuitively, $S(f,g)$ measures the "inconsistency" of $f$ and $g$ beyond their leading terms. When the leading monomials of $f$ and $g$ are coprime (i.e. $\text{lcm} = \text{lm}(f) \cdot \text{lm}(g)$), $S(f,g)$ can usually be reduced directly to zero — this is Buchberger's first optimization criterion.</p>
+<p><strong>Example.</strong> In $\mathbb{F}[x, y]$, take $f = x^2 - y$ and $g = xy - 1$ (Grevlex order).</p>
+<p>$$\gamma = \text{lcm}(x^2, xy) = x^2 y$$</p>
+<p>$$S(f, g) = \frac{x^2 y}{x^2} \cdot (x^2 - y) - \frac{x^2 y}{xy} \cdot (xy - 1) = y(x^2 - y) - x(xy - 1) = -y^2 + x$$</p>
+<h3 id="definition-of-a-gröbner-basis"><a class="header" href="#definition-of-a-gröbner-basis">Definition of a Gröbner Basis</a></h3>
+<p><strong>Definition.</strong> Fix a monomial order $\succ$. A generating set ${g_1, \ldots, g_t}$ of an ideal $I$ is called a <strong>Gröbner basis</strong> of $I$ with respect to $\succ$ if</p>
+<p>$$\langle \text{lt}(g_1), \ldots, \text{lt}(g_t) \rangle = \langle \text{lt}(f) : f \in I \rangle$$</p>
+<p>i.e. the ideal generated by the leading terms of the generators equals exactly the ideal generated by the leading terms of all polynomials in $I$ (the <strong>leading term ideal</strong> $L(I)$ of $I$).</p>
+<p><strong>Equivalent characterization</strong> (Buchberger's criterion). ${g_1, \ldots, g_t}$ is a Gröbner basis of $I$ if and only if for every pair $i \neq j$, the remainder of $S(g_i, g_j)$ on division by ${g_1, \ldots, g_t}$ is zero.</p>
+<p><strong>The core value of Gröbner bases</strong>:</p>
+<ol>
+<li><strong>Membership testing</strong>: $f \in I$ if and only if the remainder of $f$ on division by the Gröbner basis is zero (uniqueness of the normal form)</li>
+<li><strong>Equality testing of ideals</strong>: two ideals satisfy $I = J$ if and only if their (reduced) Gröbner bases coincide</li>
+<li><strong>Elimination</strong>: a Gröbner basis under the Lex order naturally has the elimination property (generators of the elimination ideal appear in the basis)</li>
+<li><strong>Structure of the quotient ring</strong>: a $k$-vector space basis of $R/I$ is given by the monomials not divisible by any leading monomial of the ideal (the staircase)</li>
+</ol>
+<p><strong>Reduced Gröbner bases</strong>. A Gröbner basis ${g_1, \ldots, g_t}$ is <strong>reduced</strong> if:</p>
+<ol>
+<li>each $g_i$ is monic ($\text{lc}(g_i) = 1$)</li>
+<li>for $i \neq j$, no nonzero term of $g_i$ is divisible by $\text{lm}(g_j)$</li>
+</ol>
+<p>The reduced Gröbner basis is unique (for a fixed order and field). All of oCAS's algorithms output reduced Gröbner bases.</p>
+<hr />
+<h2 id="core-theory"><a class="header" href="#core-theory">Core Theory</a></h2>
+<h3 id="buchbergers-algorithm"><a class="header" href="#buchbergers-algorithm">Buchberger's Algorithm</a></h3>
+<p>Buchberger's algorithm (1965) is the classical method for computing Gröbner bases. Its idea is simple and direct: repeatedly construct S-polynomials and reduce them until all S-polynomials reduce to zero.</p>
+<pre><code>Input: F = {f1, ..., fs} (generators of the ideal)
+Output: G (Gröbner basis)
+
+G ← F
+P ← {(fi, fj) | i &lt; j}  // initial set of critical pairs
+while P ≠ ∅:
+    take a pair (f, g) from P
+    h ← NF(S(f, g), G)   // remainder of the S-polynomial on division by G
+    if h ≠ 0:
+        P ← P ∪ {(h, g') | g' ∈ G}  // add new critical pairs
+        G ← G ∪ {h}
+return G
+</code></pre>
+<p><strong>Termination</strong>: guaranteed by Buchberger's criterion — each new element strictly enlarges the leading term ideal, and the Hilbert basis theorem guarantees the chain terminates. In practice the implementation also needs <code>minimize</code> (removing redundant elements) and <code>auto_reduce</code> (mutual reduction) to obtain the reduced basis.</p>
+<p><strong>Efficiency issues</strong>: the main bottlenecks of the naive Buchberger algorithm are —</p>
+<ol>
+<li><strong>Number of critical pairs</strong>: $O(|G|^2)$ critical pairs, most of which are redundant</li>
+<li><strong>One at a time</strong>: only one S-polynomial is reduced per step; no batching is exploited</li>
+<li><strong>Repeated scanning</strong>: finding a reducer requires a linear scan of the whole basis</li>
+</ol>
+<p>The following three sections introduce the methods that address these problems: Gebauer–Moeller filtering (Buchberger speedup), F4 (batching), and F5 (avoiding reductions to zero).</p>
+<h3 id="buchbergers-criteria-and-optimizations"><a class="header" href="#buchbergers-criteria-and-optimizations">Buchberger's Criteria and Optimizations</a></h3>
+<p>Buchberger's two criteria can drastically reduce the number of critical pairs that must be processed.</p>
+<p><strong>First criterion (coprime leading monomials)</strong>. If $\text{lm}(f_i)$ and $\text{lm}(f_j)$ are coprime (i.e. $\gcd = 1$), then</p>
+<p>$$S(f_i, f_j) \xrightarrow{G} 0$$</p>
+<p>i.e. this S-polynomial reduces directly to zero, and the critical pair can be removed from the set.</p>
+<p><strong>Proof</strong>: let $\text{lm}(f_i) = m_i$ and $\text{lm}(f_j) = m_j$ with $\gcd(m_i, m_j) = 1$. Then $\text{lcm}(m_i, m_j) = m_i m_j$ and $S(f_i, f_j) = m_j f_i - m_i f_j$. When reducing term by term, every nonzero term $c \cdot x^\alpha$ satisfies that $x^\alpha$ is divisible by either $m_i$ or $m_j$, so it can be reduced by the corresponding $f_i$ or $f_j$; the final remainder is zero. $\square$</p>
+<p><strong>Second criterion (chain criterion / generalization of Buchberger's criterion)</strong>. Let $f_k \in G$. If $\text{lm}(f_k)$ divides $\text{lcm}(\text{lm}(f_i), \text{lm}(f_j))$, and both $\text{lcm}(\text{lm}(f_i), \text{lm}(f_k))$ and $\text{lcm}(\text{lm}(f_j), \text{lm}(f_k))$ <strong>strictly</strong> divide $\text{lcm}(\text{lm}(f_i), \text{lm}(f_j))$, then</p>
+<p>$$S(f_i, f_j) \xrightarrow{G} 0$$</p>
+<p>and the critical pair $(f_i, f_j)$ need not be processed.</p>
+<blockquote>
+<p><strong>Redundant pairs</strong>: more generally, if the $\text{lcm}$ of a critical pair $(f_i, f_j)$ is divisible by the $\text{lcm}$ of another existing critical pair, then $(f_i, f_j)$ is redundant — processing the other pair already subsumes this one.</p>
+</blockquote>
+<h3 id="gebauermoeller-critical-pair-management"><a class="header" href="#gebauermoeller-critical-pair-management">Gebauer–Moeller Critical Pair Management</a></h3>
+<p>Gebauer and Moeller (1988) systematized Buchberger's criteria into an efficient framework for managing critical pairs. When a new polynomial $f_{\text{new}}$ is added to the basis $G = {f_1, \ldots, f_m}$:</p>
+<ol>
+<li><strong>Generate candidate pairs</strong>: $P_{\text{new}} = {(f_{\text{new}}, f_i) \mid 1 \leq i \leq m}$</li>
+<li><strong>First-criterion filtering</strong>: delete the pairs where $\text{lm}(f_{\text{new}})$ and $\text{lm}(f_i)$ are coprime</li>
+<li><strong>Second-criterion filtering</strong>: delete the pairs whose $\text{lcm}$ is divided by the $\text{lcm}$ of another (still live) pair (divisibility includes equality; duplicate pairs are dropped)</li>
+<li><strong>Redundant pair cleanup</strong>: mark old pairs whose $\text{lcm}$ is divisible by the $\text{lcm}$ of a new pair as redundant</li>
+<li><strong>Merge</strong>: merge the filtered $P_{\text{new}}$ into the main critical pair set</li>
+</ol>
+<p>Key optimization: sort the critical pairs by the size of their $\text{lcm}$ (compared with the monomial order) and process the small ones first — this makes the larger pairs more likely to be filtered out by the second criterion.</p>
+<h3 id="the-f4-algorithm-batched-matrix-row-echelon"><a class="header" href="#the-f4-algorithm-batched-matrix-row-echelon">The F4 Algorithm: Batched Matrix Row Echelon</a></h3>
+<p>The core idea of the F4 algorithm (Faugère 1999) is: <strong>batch the reduction of many S-polynomials into a single sparse-matrix row-echelon computation</strong>.</p>
+<h4 id="symbolic-preprocessing"><a class="header" href="#symbolic-preprocessing">Symbolic Preprocessing</a></h4>
+<p>F4 does not divide S-polynomials directly; instead it first performs <strong>symbolic preprocessing</strong>: for the selected set of critical pairs, find all the reducers needed (monomial multiples of basis elements), expand their nonzero terms, and map them to column indices.</p>
+<p>Concrete steps:</p>
+<ol>
+<li><strong>Select critical pairs</strong>: take a batch of critical pairs from the queue (sorted by $\text{lcm}$)</li>
+<li><strong>Collect monomials</strong>: for each selected critical pair, compute the monomials appearing in the S-polynomial; for each monomial that needs reduction, find a reducer in the basis and expand it multiplied by the corresponding monomial</li>
+<li><strong>Build the column map</strong>: order all monomials that occur and number them $0, 1, \ldots, N-1$</li>
+<li><strong>Construct the matrix</strong>: each row corresponds to a polynomial (an S-polynomial or a multiple of a reducer), each column to a monomial, and the matrix entries are coefficients</li>
+</ol>
+<p>This produces a <strong>sparse matrix</strong> $M$ in which the nonzero entries of each row correspond to the nonzero terms of a polynomial.</p>
+<h4 id="row-echelon-computation"><a class="header" href="#row-echelon-computation">Row Echelon Computation</a></h4>
+<p>Perform Gaussian elimination (row echelonization) on the matrix $M$:</p>
+<ol>
+<li>Sort the rows by their first nonzero column</li>
+<li>Eliminate column by column: find a row whose first nonzero entry is in the current column to serve as the pivot, and eliminate that column in the remaining rows</li>
+<li>Among the rows after elimination, the polynomials corresponding to the nonzero rows are the new basis elements</li>
+</ol>
+<p><strong>ℤ_p native fast path</strong>. When the coefficient domain is the finite field $\mathbb{F}_p$ ($p &lt; 2^{31}$), all matrix operations use <code>i64</code> modular arithmetic — no BigInt overhead. This includes:</p>
+<ul>
+<li>the sparse row subtraction <code>sub_scaled_fp</code>: merge two rows in ascending column order, skip the first column (already eliminated), compute $(row_j - c \cdot pivot_j) \bmod p$ term by term, and drop zero entries</li>
+<li>the modular inverse lookup <code>mod_inv</code>: extended Euclid</li>
+<li>the modular reduction <code>norm_mod</code>: keep coefficients in $[0, p)$</li>
+</ul>
+<h4 id="extracting-new-basis-elements"><a class="header" href="#extracting-new-basis-elements">Extracting New Basis Elements</a></h4>
+<p>After elimination, every nonzero row $r$ of the matrix corresponds to a polynomial $h_r$. For $h_r$:</p>
+<ol>
+<li>if the leading term of $h_r$ is "new" (not in the set of leading terms collected so far), add it to the basis</li>
+<li>further simplify with tail reduction: reduce the tail terms of $h_r$ using the existing basis elements</li>
+</ol>
+<h4 id="complexity-of-f4"><a class="header" href="#complexity-of-f4">Complexity of F4</a></h4>
+<p>The main cost of F4 is the row-echelon computation — for a matrix with $m$ rows and $N$ columns, Gaussian elimination requires $O(m \cdot N \cdot \text{nnz_per_row})$ field operations. In practice the matrices are sparse ($\text{nnz_per_row} \ll N$), and since Gebauer–Moeller filtering reduces the number of critical pairs, F4 is one to two orders of magnitude faster than the naive Buchberger algorithm.</p>
+<h3 id="the-f5-algorithm-signature-based-gröbner-bases"><a class="header" href="#the-f5-algorithm-signature-based-gröbner-bases">The F5 Algorithm: Signature-Based Gröbner Bases</a></h3>
+<p>The revolutionary contribution of the F5 algorithm (Faugère 2002) is that it <strong>identifies and rejects S-polynomials that would reduce to zero before the matrix is even constructed</strong>. This is achieved by attaching a <strong>signature</strong> to every polynomial.</p>
+<h4 id="signatures-and-module-representations"><a class="header" href="#signatures-and-module-representations">Signatures and Module Representations</a></h4>
+<p>The ideal generation problem is turned into a <strong>module element</strong> problem. Let $I = \langle f_1, \ldots, f_s \rangle$ and consider the standard basis $e_1, \ldots, e_s$ of the free module $R^s$. Every polynomial $h = \sum q_i f_i$ corresponds to a module element</p>
+<p>$$\vec{h} = (q_1, \ldots, q_s) = \sum q_i e_i$$</p>
+<p>The <strong>signature</strong> of $h$ is defined as the "highest" monomial multiple in the module element:</p>
+<p>$$\text{sig}(h) = \max_\succ {x^{\alpha_i} e_i : q_i \neq 0}$$</p>
+<p>where the comparison uses the <strong>pot</strong> (position-over-term) order: first compare the module positions (the indices $i$ of the $e_i$; a smaller index gives a smaller signature, processed earlier), then the monomials. That is, $x^\alpha e_i \succ x^\beta e_j$ if and only if $i &gt; j$, or $i = j$ and $\alpha \succ \beta$.</p>
+<p><strong>Intuition</strong>: the signature records the "origin" of the polynomial $h$ — which multiple ($x^\alpha$) of which generator ($f_i$) it was derived from. The signature of a polynomial is the minimal representation of its derivation history.</p>
+<h4 id="the-f5-criterion"><a class="header" href="#the-f5-criterion">The F5 Criterion</a></h4>
+<p><strong>Signature criterion</strong>. If the signature of a candidate S-polynomial is a monomial multiple of some <strong>known syzygy</strong>, then this S-polynomial necessarily reduces to zero — it can be rejected directly, without entering the matrix.</p>
+<p><strong>Meaning of a syzygy</strong>: when a row of the matrix reduces to zero, the corresponding polynomial satisfies $h = 0$, but its module representation is $(q_1, \ldots, q_s) \neq 0$. This yields a syzygy (relation) $\sum q_i f_i = 0$. The signature $\text{sig}(h)$ of that row records this syzygy.</p>
+<p><strong>The SyzygySet data structure</strong>: for each module position $k$, maintain the set of leading monomials of the known syzygies. To test whether a signature $(k, t)$ is a syzygy, check whether some stored leading monomial of a $k$-position syzygy divides $t$.</p>
+<h4 id="regular-sequences-and-complete-avoidance-of-reductions-to-zero"><a class="header" href="#regular-sequences-and-complete-avoidance-of-reductions-to-zero">Regular Sequences and Complete Avoidance of Reductions to Zero</a></h4>
+<p><strong>Theorem (Faugère 2002)</strong>. If the input generators $f_1, \ldots, f_s$ form a <strong>regular sequence</strong>, then the F5 signature criterion suffices to reject <strong>all</strong> reductions to zero — i.e. no row of the matrix ever reduces to zero.</p>
+<p>Definition of a regular sequence: $f_1, \ldots, f_s$ form a regular sequence if $f_1$ is not a zero divisor and, for $i &gt; 1$, $f_i$ is not a zero divisor in $R/\langle f_1, \ldots, f_{i-1} \rangle$.</p>
+<p>In practice, even when the generators do not form a regular sequence, the F5 signature criterion still filters out a large number of reductions to zero. In the literature, F5 achieves order-of-magnitude speedups over F4 on hard benchmark ideals (the oCAS F5 implementation is still being optimized).</p>
+<h4 id="matrix-construction-in-f5"><a class="header" href="#matrix-construction-in-f5">Matrix Construction in F5</a></h4>
+<p>F5's matrix construction is similar to F4's, but every row additionally carries signature information:</p>
+<ol>
+<li><strong>Incremental processing</strong>: add the generators $f_1, f_2, \ldots, f_s$ one at a time</li>
+<li><strong>Labeled S-polynomials</strong>: every S-polynomial enters the matrix carrying its signature</li>
+<li><strong>Symbolic preprocessing</strong>: the same as in F4, but the signatures of reducers must also propagate — when reducing with a multiple $x^\delta g$ of a basis element $g$, the new row's signature is $x^\delta \cdot \text{sig}(g)$</li>
+<li><strong>Syzygy updates</strong>: the signature of a row that reduces to zero is added to the SyzygySet</li>
+</ol>
+<p><strong>Labeled rows</strong>: each row in the matrix is stored as <code>(Signature, Vec&lt;(coefficient, column)&gt;)</code> — a pairing of the signature with the sparse row data. During row-echelon computation the signature is preserved (row operations are linear combinations of rows, and the signature of the result is the maximum of the signatures of the participating rows).</p>
+<h4 id="complexity-advantages-of-f5"><a class="header" href="#complexity-advantages-of-f5">Complexity Advantages of F5</a></h4>
+<p>In theory, the F5 signature criterion guarantees:</p>
+<ul>
+<li>for regular sequences: no zero rows in the matrix, so the matrix size is minimized</li>
+<li>for general ideals: a large reduction in zero rows, saving row-echelon cost</li>
+</ul>
+<p>In practice the main bottlenecks are signature comparison and SyzygySet lookups. The oCAS implementation optimizes these operations with SmallVec and HashMap.</p>
+<h3 id="equivalence-of-monomial-orders-and-change-of-ordering"><a class="header" href="#equivalence-of-monomial-orders-and-change-of-ordering">Equivalence of Monomial Orders and Change of Ordering</a></h3>
+<p>Different computational tasks require different monomial orders:</p>
+<div class="table-wrapper"><table><thead><tr><th>Task</th><th>Order needed</th></tr></thead><tbody>
+<tr><td>Elimination</td><td>Lex</td></tr>
+<tr><td>Solving polynomial systems</td><td>Lex (combined with Sturm root isolation)</td></tr>
+<tr><td>Ideal membership testing</td><td>Any order works</td></tr>
+<tr><td>Efficient computation</td><td>Grevlex (smallest intermediate polynomials)</td></tr>
+</tbody></table>
+</div>
+<p>The standard strategy is "compute fast, then convert":</p>
+<ol>
+<li>Compute the basis with <strong>Grevlex</strong> (fastest — the intermediate polynomials have the lowest degrees)</li>
+<li>Convert to <strong>Lex</strong> (needed for elimination and solving)</li>
+</ol>
+<p>Two conversion methods:</p>
+<p><strong>Method 1: recomputation</strong> (<code>reorder</code>). Reinterpret the polynomials of the Grevlex basis under the Lex order, then rerun F4 under Lex. For general ideals this is the default method — the basis elements may need additional reduction under the new order.</p>
+<p><strong>Method 2: FGLM</strong> (for zero-dimensional ideals only). The FGLM algorithm (detailed in the next subsection) performs the change of ordering for zero-dimensional ideals in $O(n \cdot D^3)$, far faster than recomputation.</p>
+<h3 id="the-fglm-algorithm"><a class="header" href="#the-fglm-algorithm">The FGLM Algorithm</a></h3>
+<p>FGLM (Faugère–Gianni–Lazard–Mora 1993) provides an efficient change-of-ordering algorithm for <strong>zero-dimensional ideals</strong>.</p>
+<p><strong>Prerequisite</strong>: the ideal $I$ is zero-dimensional, i.e. $R/I$ is finite-dimensional as a $k$-vector space.</p>
+<h4 id="the-staircase-and-normal-forms"><a class="header" href="#the-staircase-and-normal-forms">The Staircase and Normal Forms</a></h4>
+<p><strong>Staircase</strong>: the set of monomials not divisible by any leading monomial $\text{lm}(g_i)$. For a zero-dimensional ideal the staircase is finite, of size $D = \dim_k(R/I)$.</p>
+<p>The monomials of the staircase form a $k$-vector space basis of $R/I$. The <strong>normal form</strong> $f \bmod I$ of any polynomial $f$ can be represented uniquely as a $k$-linear combination of staircase monomials.</p>
+<h4 id="algorithm-idea"><a class="header" href="#algorithm-idea">Algorithm Idea</a></h4>
+<p>FGLM enumerates monomials in increasing target order, computes their normal forms, and detects linear relations:</p>
+<pre><code>Input: GB_src (reduced Gröbner basis in the source order)
+Output: GB_tgt (reduced Gröbner basis in the target order)
+
+S ← {1}                    // processed monomials (in the staircase)
+B ← {x1, x2, ..., xn}     // the border: "neighbors" of the processed monomials
+GB_tgt ← ∅
+seen_nf ← {}               // normal forms already seen
+
+for m in increasing target order:
+    nf ← normal_form(m, GB_src)  // compute the normal form under the source-order basis
+    if nf ∈ span(seen_nf):        // linearly dependent?
+        coeffs ← find_relation(seen_nf, nf)
+        new_poly ← m - Σ coeffs_i · m_i
+        GB_tgt ← GB_tgt ∪ {new_poly}
+    else:
+        S ← S ∪ {m}
+        seen_nf ← seen_nf ∪ {nf}
+        B ← B ∪ {m · xi : i = 1..n}  // expand the border
+    if |S| = D:                     // the staircase is full
+        break
+return minimize(GB_tgt)
+</code></pre>
+<p><strong>Key properties</strong>:</p>
+<ul>
+<li>every linear dependence produces one polynomial of the target-order basis</li>
+<li>every linear independence step extends the staircase, until its size reaches $D$</li>
+<li>the total number of operations is $O(n \cdot D^3)$ — $D$ normal-form computations (each $O(D^2)$), plus $D$ Gaussian eliminations (each $O(D^2)$)</li>
+</ul>
+<p><strong>The non-zero-dimensional case</strong>: when the staircase is infinite, FGLM cannot terminate — <code>fglm</code> returns <code>None</code>, and <code>reorder</code> must be used instead.</p>
+<h3 id="hilbert-functions-and-regularity"><a class="header" href="#hilbert-functions-and-regularity">Hilbert Functions and Regularity</a></h3>
+<p>The Hilbert function is a powerful tool for describing the structure of graded rings; in Gröbner basis computation it provides early-termination bounds.</p>
+<h4 id="hilbert-functions-and-hilbert-series"><a class="header" href="#hilbert-functions-and-hilbert-series">Hilbert Functions and Hilbert Series</a></h4>
+<p><strong>Definition.</strong> Let $I \subseteq R = \mathbb{F}[x_1, \ldots, x_n]$ be a homogeneous ideal. The <strong>Hilbert function</strong></p>
+<p>$$H_{R/I}(d) = \dim_\mathbb{F} (R/I)_d$$</p>
+<p>measures the vector-space dimension of the degree-$d$ homogeneous component of the quotient ring.</p>
+<p>The <strong>Hilbert series</strong> is the generating function of the Hilbert function:</p>
+<p>$$\text{HS}<em>{R/I}(t) = \sum</em>{d=0}^{\infty} H_{R/I}(d) \cdot t^d$$</p>
+<p><strong>Theorem (Macaulay)</strong>. The Hilbert series of $R/I$ depends only on the leading term ideal $\langle \text{lm}(g) : g \in \text{GB}(I) \rangle$, i.e.</p>
+<p>$$\text{HS}<em>{R/I}(t) = \text{HS}</em>{R/\langle\text{LM}(I)\rangle}(t)$$</p>
+<p>This means we can compute the Hilbert series from the leading terms of the Gröbner basis alone, without knowing any other information about the ideal.</p>
+<h4 id="hilbert-series-of-monomial-ideals"><a class="header" href="#hilbert-series-of-monomial-ideals">Hilbert Series of Monomial Ideals</a></h4>
+<p>For an ideal $M$ generated by monomials $m_1, \ldots, m_s$, the inclusion–exclusion principle gives:</p>
+<p>$$\text{HS}_{R/M}(t) = \frac{N(t)}{(1-t)^n}$$</p>
+<p>where the numerator $N(t)$ is</p>
+<p>$$N(t) = \sum_{k=0}^{s} (-1)^k \sum_{\substack{S \subseteq {1,\ldots,s} \ |S| = k}} t^{\deg \text{lcm}(S)}$$</p>
+<p>Here $\text{lcm}(\emptyset) = 1$ (degree 0) and $\text{lcm}({m_i}) = m_i$.</p>
+<p><strong>Expansion</strong>:</p>
+<p>$$N(t) = 1 - \sum_{i} t^{\deg m_i} + \sum_{i &lt; j} t^{\deg \text{lcm}(m_i, m_j)} - \sum_{i &lt; j &lt; k} t^{\deg \text{lcm}(m_i, m_j, m_k)} + \cdots$$</p>
+<p><strong>Example</strong>. $M = \langle x^2, xy \rangle \subseteq \mathbb{F}[x, y]$ ($n = 2$).</p>
+<ul>
+<li>$|S| = 0$: $t^0 = 1$</li>
+<li>$|S| = 1$: $-t^2 - t^2 = -2t^2$ ($\deg(x^2) = \deg(xy) = 2$)</li>
+<li>$|S| = 2$: $+t^{\deg \text{lcm}(x^2, xy)} = +t^{\deg(x^2 y)} = +t^3$</li>
+</ul>
+<p>$$N(t) = 1 - 2t^2 + t^3$$</p>
+<p>$$\text{HS}_{R/M}(t) = \frac{1 - 2t^2 + t^3}{(1-t)^2}$$</p>
+<h4 id="regularity-and-early-termination"><a class="header" href="#regularity-and-early-termination">Regularity and Early Termination</a></h4>
+<p><strong>Regularity</strong> is defined as the degree of the highest-degree nonzero term of the Hilbert numerator $N(t)$:</p>
+<p>$$\text{reg}(M) = \max{d : [t^d] N(t) \neq 0}$$</p>
+<p><strong>Theorem (Bayer–Stillman)</strong>. For a zero-dimensional ideal, the degrees of all polynomials in the Gröbner basis do not exceed $\text{reg}(M)$.</p>
+<p>This means F4 can safely <strong>ignore</strong> critical pairs whose degree exceeds the regularity bound — they necessarily reduce to zero. The <code>hilbert</code> module of oCAS computes this bound via <code>regularity_bound</code> and uses it as an early-termination hint for F4 (an advisory bound; it does not affect correctness).</p>
+<h4 id="complete-hilbert-series"><a class="header" href="#complete-hilbert-series">Complete Hilbert Series</a></h4>
+<p>The Hilbert series can also be computed for Gröbner bases of general (non-homogeneous) ideals:</p>
+<p>$$\text{HS}_{R/I}(t) = \frac{N(t)}{(1-t)^n}$$</p>
+<p>where $N(t)$ is given by the inclusion–exclusion formula for the leading term ideal. oCAS provides the <code>HilbertSeries</code> struct, supporting:</p>
+<ul>
+<li><code>hilbert_function(d)</code>: $\dim_k (R/I)_d$ (by expanding the coefficient of $t^d$ in $\frac{N(t)}{(1-t)^n}$)</li>
+<li><code>dimension()</code>: when $N(1) \neq 0$ the dimension is $n - \text{ord}_{t=1}(N(t))$, i.e. the order of vanishing of $(1-t)$</li>
+<li><code>degree()</code>: the degree of the projective variety equals $h(1)$, where $h(t) = N(t)/(1-t)^{n-\dim}$ is the numerator after removing the factor $(1-t)^{n-\dim}$; for zero-dimensional ideals ($\dim = 0$) this equals $\dim_k(R/I)$ (the number of points)</li>
+<li><code>hilbert_polynomial()</code>: for sufficiently large $d$, $H_{R/I}(d)$ is a polynomial in $d$, computed by Lagrange interpolation</li>
+</ul>
+<hr />
+<h2 id="implementation-in-ocas"><a class="header" href="#implementation-in-ocas">Implementation in oCAS</a></h2>
+<p>oCAS implements the three Gröbner basis algorithms and the Hilbert series computation in <code>ocas-poly/src/groebner/</code>. The unified entry point <code>groebner_basis(ideal, Algorithm::Auto)</code> currently routes to F4 by default.</p>
+<h3 id="f4rs-the-f4-matrix-row-echelon-algorithm"><a class="header" href="#f4rs-the-f4-matrix-row-echelon-algorithm">f4.rs: The F4 Matrix Row-Echelon Algorithm</a></h3>
+<h4 id="gebauermoeller-critical-pair-management-1"><a class="header" href="#gebauermoeller-critical-pair-management-1">Gebauer–Moeller Critical Pair Management</a></h4>
+<p>The <code>update_pairs</code> function performs Gebauer–Moeller filtering each time a new polynomial is added to the basis:</p>
+<ol>
+<li><strong>Generate candidates</strong>: pair the new polynomial with every existing element of the basis</li>
+<li><strong>First criterion</strong> (<code>monomial_are_coprime</code>): if the leading monomials are coprime, skip directly (the product criterion)</li>
+<li><strong>Second criterion</strong> (chain criterion, sequential elimination): if the $\text{lcm}$ of another (still live) candidate pair divides the current pair's $\text{lcm}$ (divisibility includes equality; duplicate pairs are dropped), the current pair is redundant and not kept</li>
+<li><strong>Update criterion</strong> (for old pairs): an old pair is removed only when the new leading monomial divides its $\text{lcm}$ and both $\text{lcm}(i, \text{new})$ and $\text{lcm}(j, \text{new})$ are <strong>strictly smaller</strong> than $\text{lcm}(i,j)$; equality must be kept (otherwise S-polynomials required for completeness would be dropped)</li>
+</ol>
+<p>The <code>CriticalPair</code> struct precomputes the $\text{lcm}$ and the monomial differences (the information needed to construct S-polynomials), avoiding repeated computation in later steps.</p>
+<h4 id="divisorindex-o1-ish-reducer-lookup"><a class="header" href="#divisorindex-o1-ish-reducer-lookup">DivisorIndex: O(1)-ish Reducer Lookup</a></h4>
+<p>The core operation of symbolic preprocessing is "find the element of the basis whose leading monomial divides a given monomial". A naive implementation requires a linear scan costing $O(\text{monomials} \times |\text{basis}|)$. oCAS accelerates this operation with a <strong>support bitmask</strong> index.</p>
+<p><strong>support_mask</strong>: for an exponent vector $\alpha = (\alpha_1, \ldots, \alpha_n)$, define the bitmask</p>
+<p>$$\text{mask}(\alpha) = \sum_{v : \alpha_v &gt; 0} 2^v$$</p>
+<p>i.e. bit $v$ is set if and only if the variable $x_v$ occurs in the monomial (variable indices up to 63).</p>
+<p><strong>Key observation</strong>: if $\text{lm}(g)$ divides $x^\alpha$, then $\text{support}(\text{lm}(g)) \subseteq \text{support}(x^\alpha)$. Hence a query only needs to enumerate the <strong>submasks</strong> of $\text{mask}(x^\alpha)$ and inspect the basis elements in the corresponding buckets.</p>
+<p><strong>The DivisorIndex structure</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct DivisorIndex {
+    // support_mask → list of basis element indices having this mask
+    buckets: HashMap&lt;u64, Vec&lt;usize&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The query <code>find_reducer(index, basis, exp)</code>:</p>
+<ol>
+<li>compute $m = \text{mask}(\text{exp})$</li>
+<li>enumerate all submasks $s \subseteq m$ of $m$</li>
+<li>for each basis element $g$ in <code>buckets[s]</code>, check exactly whether $\text{lm}(g) \mid x^\text{exp}$</li>
+<li>among all reducers satisfying the condition, choose the one with the <strong>fewest terms</strong> (to speed up reduction)</li>
+</ol>
+<p>Enumerating submasks costs $O(3^v)$ ($v$ = the number of variables), but in practice $v$ is usually small ($\leq 10$) and the buckets contain very few elements.</p>
+<h4 id="simpcache-a-cache-for-multiples-of-reducers"><a class="header" href="#simpcache-a-cache-for-multiples-of-reducers">SimpCache: A Cache for Multiples of Reducers</a></h4>
+<p>During symbolic preprocessing, the same basis element may be used to reduce several different monomials with different differences. <code>SimpCache&lt;P&gt;</code> caches the computed polynomial multiples:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>type SimpCache&lt;P&gt; = Vec&lt;(SmallVec&lt;[usize; 4]&gt;, P)&gt;;
+<span class="boring">}</span></code></pre></pre>
+<p><code>get_simplified(cache, diff, basis_poly)</code> checks the cache first and returns the cached value on a hit; otherwise it computes $x^{\text{diff}} \cdot \text{basis_poly}$ and stores it in the cache. The cache persists across rounds.</p>
+<h4 id="the-ℤ_p-native-fast-path"><a class="header" href="#the-ℤ_p-native-fast-path">The ℤ_p Native Fast Path</a></h4>
+<p>When the coefficient domain is <code>FiniteField(p)</code> ($p &lt; 2^{31}$), F4 uses <code>FpPoly</code> instead of the generic polynomial type:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct FpPoly {
+    terms: Vec&lt;(i64, SmallVec&lt;[usize; 4]&gt;)&gt;,  // (coeff, exponent)
+    // coeff ∈ [0, p), sorted in descending order
+}
+<span class="boring">}</span></code></pre></pre>
+<p>All matrix operations run on <code>i64</code> — no BigInt overhead. <code>sub_scaled_fp</code> implements O(nnz) sparse row subtraction with a <strong>two-pointer merge</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn sub_scaled_fp(
+    row: &amp;mut Vec&lt;(i64, usize)&gt;,     // ascending column order
+    pivot: &amp;[(i64, usize)],           // ascending column order
+    c: i64,                           // multiplier
+    p: i64,                           // modulus
+    scratch: &amp;mut Vec&lt;(i64, usize)&gt;,  // scratch buffer
+) {
+    // two-pointer merge: row -= c * pivot
+    // the first column (pivot column) is eliminated automatically (c = row[head_col] / pivot[head_col])
+    // all results taken mod p; zero coefficients dropped
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>register_row_fp</code> additionally caches the <code>FpPoly</code> representations of S-polynomials and reducer multiples for reuse across rounds.</p>
+<h4 id="the-matrix-elimination-flow"><a class="header" href="#the-matrix-elimination-flow">The Matrix Elimination Flow</a></h4>
+<p>The complete F4 flow:</p>
+<ol>
+<li><strong>Select critical pairs</strong>: take pairs from the queue sorted by $\text{lcm}$ size</li>
+<li><strong>Symbolic preprocessing</strong>: expand the S-polynomial of each pair and all reducers, and build the column map</li>
+<li><strong>Row echelonization</strong>: <code>echelonize_fp</code> (ℤ_p fast path) or <code>echelonize_generic</code> (generic)</li>
+<li><strong>Extract new elements</strong>: convert the nonzero rows back to polynomials and check whether the leading term is "new"</li>
+<li><strong>Update basis and pairs</strong>: add the new elements to the basis, and let <code>update_pairs</code> update the critical pair queue</li>
+</ol>
+<h3 id="f5rs-the-f5-signature-algorithm"><a class="header" href="#f5rs-the-f5-signature-algorithm">f5.rs: The F5 Signature Algorithm</a></h3>
+<h4 id="the-signature-structure"><a class="header" href="#the-signature-structure">The Signature Structure</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Signature {
+    module_pos: usize,              // generator index k
+    monomial: SmallVec&lt;[usize; 4]&gt;, // monomial exponents
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Signatures are compared with the <strong>pot</strong> (position-over-term) order: first compare <code>module_pos</code> (smaller first), then compare <code>monomial</code> with the monomial order <code>O</code>.</p>
+<h4 id="labeledpoly-basis-elements-with-signatures"><a class="header" href="#labeledpoly-basis-elements-with-signatures">LabeledPoly: Basis Elements with Signatures</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct LabeledPoly&lt;D: Domain, O: MonomialOrder&gt; {
+    poly: SparseMultivariatePolynomial&lt;D, O&gt;,
+    sig: Signature,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Every basis element carries a signature. When reducing with a multiple $x^\delta g$ of $g$, the signature of the new polynomial is $x^\delta \cdot \text{sig}(g)$.</p>
+<h4 id="syzygyset-tracking-reductions-to-zero"><a class="header" href="#syzygyset-tracking-reductions-to-zero">SyzygySet: Tracking Reductions to Zero</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct SyzygySet {
+    // module_pos → list of leading monomials of the known syzygies at that position
+    lms: HashMap&lt;usize, Vec&lt;SmallVec&lt;[usize; 4]&gt;&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>insert(sig)</code>: when a matrix row reduces to zero, its signature $(k, t)$ is recorded — $t$ is stored in <code>lms[k]</code>.</p>
+<p><code>contains(sig)</code>: test a signature $(k, t)$ — if there exists $s$ in <code>lms[k]</code> with $s \mid t$, it is a syzygy. <code>monomial_divides(t, s)</code> performs the componentwise comparison ($t_i \geq s_i$ for all $i$).</p>
+<h4 id="matrix-construction-and-elimination"><a class="header" href="#matrix-construction-and-elimination">Matrix Construction and Elimination</a></h4>
+<p>The <code>build_and_reduce</code> flow of F5:</p>
+<ol>
+<li><strong>Select pairs</strong>: critical pair selection similar to F4 (shares the <code>update_pairs</code> implementation)</li>
+<li><strong>Syzygy filtering</strong>: before a pair enters the matrix, check its signature — if it is a syzygy, <strong>skip</strong> it</li>
+<li><strong>Labeled rows</strong>: each row carries <code>(Signature, Vec&lt;(coefficient, column)&gt;)</code></li>
+<li><strong>Symbolic preprocessing</strong>: the same column-map construction as in F4, but the signatures of reducers must propagate</li>
+<li><strong>Row echelonization</strong>: sort the rows in ascending signature order and run Gaussian elimination</li>
+<li><strong>Extract new elements</strong>: nonzero rows are extracted as <code>LabeledPoly</code>, keeping their signatures</li>
+<li><strong>Syzygy updates</strong>: the signatures of zero rows are added to <code>SyzygySet</code></li>
+</ol>
+<h4 id="the-ℤ_p-fast-path"><a class="header" href="#the-ℤ_p-fast-path">The ℤ_p Fast Path</a></h4>
+<p>F5 reuses F4's infrastructure — <code>FpPoly</code>, <code>CriticalPair</code>, <code>update_pairs</code> — and adds signature labels via <code>LabeledFpPoly</code> and <code>LabeledFpRow</code>. The structure of <code>f5_fp</code> is completely symmetric to the generic <code>f5</code> — only the polynomial representation switches from a generic domain to <code>i64</code> modular arithmetic.</p>
+<h3 id="hilbertrs-hilbert-series-computation"><a class="header" href="#hilbertrs-hilbert-series-computation">hilbert.rs: Hilbert Series Computation</a></h3>
+<h4 id="implementing-inclusionexclusion"><a class="header" href="#implementing-inclusionexclusion">Implementing Inclusion–Exclusion</a></h4>
+<p><code>hilbert_numerator(generators)</code> computes the Hilbert numerator of the monomial ideal $\langle m_1, \ldots, m_s \rangle$:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn hilbert_numerator(generators: &amp;[Vec&lt;usize&gt;]) -&gt; Vec&lt;(usize, i64)&gt; {
+    // iterate over all subsets S ⊆ {0, ..., s-1}
+    // |S| = k contributes (-1)^k · t^{deg lcm(S)}
+    // returns a sparse representation as (degree, coefficient) pairs
+}
+<span class="boring">}</span></code></pre></pre>
+<p>All $2^s$ subsets are enumerated (practical limit around $s \leq 20$); for each subset the degree of the $\text{lcm}$ is computed (componentwise maximum, then summed) and accumulated with its sign at the corresponding degree.</p>
+<h4 id="the-regularity-bound"><a class="header" href="#the-regularity-bound">The Regularity Bound</a></h4>
+<p><code>regularity_bound(generators)</code> returns the degree of the highest-degree nonzero term of the Hilbert numerator:</p>
+<p>$$\text{reg} = \max{d : [t^d] N(t) \neq 0}$$</p>
+<p>F4 uses this bound as an <strong>early-termination hint</strong> — when selecting critical pairs, a pair with $\deg(\text{lcm}) &gt; \text{reg}$ can be safely skipped. This does not affect correctness (only efficiency) and is only valid for zero-dimensional ideals.</p>
+<h4 id="complete-hilbert-series-1"><a class="header" href="#complete-hilbert-series-1">Complete Hilbert Series</a></h4>
+<p><code>hilbert_series(gb)</code> computes the complete Hilbert series $\frac{N(t)}{(1-t)^n}$ of $R/I$ from a Gröbner basis:</p>
+<ol>
+<li><strong>Extract leading terms</strong>: take the leading exponent vector of each polynomial in the basis</li>
+<li><strong>Inclusion–exclusion</strong>: call <code>hilbert_numerator</code> to obtain $N(t)$</li>
+<li><strong>Expand the series</strong>: $\frac{N(t)}{(1-t)^n} = N(t) \cdot \sum_{k \geq 0} \binom{n+k-1}{k} t^k$</li>
+</ol>
+<p>Methods of the <code>HilbertSeries</code> struct:</p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Computation</th></tr></thead><tbody>
+<tr><td><code>hilbert_function(d)</code></td><td>expand the coefficient of $t^d$ in $\frac{N(t)}{(1-t)^n}$</td></tr>
+<tr><td><code>dimension()</code></td><td>$n$ when $N(1) \neq 0$; otherwise check the order of vanishing of $(1-t)$ recursively</td></tr>
+<tr><td><code>degree()</code></td><td>differentiate $N(t)$ $(n-\dim)$ times, evaluate at $t=1$, and divide by $(n-\dim)!$; for zero dimension ($\dim=0$) this equals $\dim_k(R/I) = \text{HS}(1)$ (the number of points)</td></tr>
+<tr><td><code>hilbert_polynomial()</code></td><td>Lagrange interpolation: evaluate $H(d)$ at sufficiently many $d$ and fit a polynomial</td></tr>
+</tbody></table>
+</div>
+<p><code>binomial_general(n, k)</code> computes the generalized binomial coefficient $\binom{n+k-1}{k}$ ($n$ may be negative or zero), used to expand $(1-t)^{-n}$.</p>
+<h3 id="fglmrs-the-zero-dimensional-change-of-ordering-algorithm"><a class="header" href="#fglmrs-the-zero-dimensional-change-of-ordering-algorithm">fglm.rs: The Zero-Dimensional Change-of-Ordering Algorithm</a></h3>
+<h4 id="computing-the-staircase"><a class="header" href="#computing-the-staircase">Computing the Staircase</a></h4>
+<p><code>compute_staircase(lms, n_vars)</code> enumerates the monomials not divisible by any leading monomial:</p>
+<ol>
+<li>start a BFS at $1 = x_1^0 \cdots x_n^0$</li>
+<li>for each monomial $m$, check whether it is divisible by some $\text{lm}(g_i)$</li>
+<li>monomials that are not divisible are added to the staircase, and all their "neighbors" ($m \cdot x_i$) enter the queue</li>
+<li>if the staircase has not stopped growing after exceeding a threshold, return <code>None</code> (positive-dimensional ideal)</li>
+</ol>
+<h4 id="computing-normal-forms"><a class="header" href="#computing-normal-forms">Computing Normal Forms</a></h4>
+<p><code>normal_form_monomial(m, gb, staircase, domain)</code> computes the normal form of a monomial $m$ under the source-order basis, represented as a $k$-vector in staircase coordinates:</p>
+<p>$$m \bmod I = \sum_{i=1}^{D} c_i \cdot s_i$$</p>
+<p>where $s_1, \ldots, s_D$ are the staircase monomials. The computation is the standard multivariate division algorithm.</p>
+<h4 id="detecting-linear-dependences"><a class="header" href="#detecting-linear-dependences">Detecting Linear Dependences</a></h4>
+<p><code>find_relation(seen, nf, domain)</code> tests whether the new normal form <code>nf</code> lies in the span of the normal forms already seen. It uses <strong>incremental Gaussian elimination</strong>: maintain a matrix in row-echelon form and try to reduce each new vector — if it reduces to zero, a relation has been found.</p>
+<h4 id="border-management"><a class="header" href="#border-management">Border Management</a></h4>
+<p><code>mark_multiples(visited, m, n_vars, max_deg)</code> marks all multiples of a monomial $m$ (up to total degree <code>max_deg</code>) as visited, avoiding duplicate insertion into the border. It uses recursive enumeration.</p>
+<h3 id="the-unified-entry-point-and-algorithm-selection"><a class="header" href="#the-unified-entry-point-and-algorithm-selection">The Unified Entry Point and Algorithm Selection</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn groebner_basis&lt;D: Domain + 'static, O: MonomialOrder&gt;(
+    ideal: &amp;[SparseMultivariatePolynomial&lt;D, O&gt;],
+    algo: Algorithm,
+) -&gt; GroebnerBasis&lt;D, O&gt;
+<span class="boring">}</span></code></pre></pre>
+<p>The <code>Algorithm</code> enum:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Behavior</th></tr></thead><tbody>
+<tr><td><code>Auto</code></td><td>currently routes to F4; in the future the F5 crossover point will be calibrated on cyclic-n benchmarks</td></tr>
+<tr><td><code>Buchberger</code></td><td>classical S-polynomial iteration (for teaching)</td></tr>
+<tr><td><code>F4</code></td><td>batched matrix row echelon</td></tr>
+<tr><td><code>F5</code></td><td>signature criterion + matrix construction</td></tr>
+</tbody></table>
+</div>
+<p>All paths ultimately output a <strong>reduced Gröbner basis</strong>: first <code>minimize</code> (remove redundant elements whose leading terms are divisible by the leading term of another element), then <code>auto_reduce</code> (mutually reduce the tail terms).</p>
+<hr />
+<h2 id="advanced-topics"><a class="header" href="#advanced-topics">Advanced Topics</a></h2>
+<h3 id="practical-performance-f4-vs-buchberger"><a class="header" href="#practical-performance-f4-vs-buchberger">Practical Performance: F4 vs Buchberger</a></h3>
+<p>oCAS's benchmarks (<code>ocas-tests/benches/groebner.rs</code>) compare Buchberger and F4 on the cyclic-n ideals:</p>
+<div class="table-wrapper"><table><thead><tr><th>Benchmark</th><th>Buchberger</th><th>F4</th><th>Notes</th></tr></thead><tbody>
+<tr><td>cyclic-3 ($\mathbb{Q}$)</td><td>feasible</td><td>fast</td><td>Buchberger is already slow at this size</td></tr>
+<tr><td>cyclic-4 ($\mathbb{Q}$)</td><td>too slow</td><td>feasible</td><td>only F4 is practical</td></tr>
+<tr><td>cyclic-3/4/5 ($\mathbb{Z}<em>{13}$, $\mathbb{Z}</em>{101}$)</td><td>—</td><td>fast</td><td>the i64 fast path extends to cyclic-5</td></tr>
+</tbody></table>
+</div>
+<p>F5's signature criterion can in principle avoid reductions to zero and has the potential for order-of-magnitude speedups on hard ideals, but the oCAS F5 implementation is recent and has no official benchmark data yet.</p>
+<p><strong>Practical advice</strong>: use <code>Algorithm::Auto</code> (currently = F4) for general ideals; for systems known to be regular sequences, explicitly specifying <code>Algorithm::F5</code> may be faster.</p>
+<h3 id="theoretical-guarantees-of-f5"><a class="header" href="#theoretical-guarantees-of-f5">Theoretical Guarantees of F5</a></h3>
+<p><strong>Theorem</strong>. The F5 algorithm is "optimal" in the following sense:</p>
+<ol>
+<li><strong>No redundant reductions</strong>: for regular sequences, no row of the matrix reduces to zero</li>
+<li><strong>Completeness</strong>: it produces exactly the same reduced Gröbner basis as F4</li>
+<li><strong>Signature uniqueness</strong>: the signature of each polynomial uniquely determines its origin</li>
+</ol>
+<p>These guarantees make F5 the theoretical first choice for hard ideals, although in practice F4's simpler implementation is often faster on small and medium problems.</p>
+<h3 id="applications-of-the-hilbert-series"><a class="header" href="#applications-of-the-hilbert-series">Applications of the Hilbert Series</a></h3>
+<p>The Hilbert series is not merely a theoretical tool; it has the following practical applications in oCAS:</p>
+<ol>
+<li><strong>Early termination</strong>: the regularity bound $\text{reg}(M)$ provides a reliable degree bound for F4</li>
+<li><strong>Dimension testing</strong>: the Krull dimension of $R/I$ equals the order of the pole of $\text{HS}(t)$ at $t=1$</li>
+<li><strong>Degree computation</strong>: the degree of the projective variety equals $N(1)$ (for zero-dimensional ideals, the staircase size)</li>
+<li><strong>Zero-dimensionality test</strong>: $N(1) \neq 0$ if and only if the ideal is zero-dimensional</li>
+</ol>
+<h3 id="gröbner-bases-in-computational-algebraic-geometry"><a class="header" href="#gröbner-bases-in-computational-algebraic-geometry">Gröbner Bases in Computational Algebraic Geometry</a></h3>
+<p>Gröbner bases are the universal tool of computational algebraic geometry. In oCAS they support the following applications (see <a href="./fglm-elimination.html">FGLM and Elimination Theory</a> and <a href="../algorithms/groebner.html">Gröbner Basis Implementation</a> for details):</p>
+<ul>
+<li><strong>Solving polynomial systems</strong>: Gröbner basis → elimination → univariate equation → root isolation</li>
+<li><strong>Ideal operations</strong>: membership testing, sum, product, quotient, saturation, intersection, elimination, radical, primary decomposition</li>
+<li><strong>Geometric properties of varieties</strong>: dimension, degree, irreducible components</li>
+</ul>
+<hr />
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ol>
+<li>
+<p><strong>Cox, D., Little, J. &amp; O'Shea, D.</strong> <em>Ideals, Varieties, and Algorithms.</em> 4th ed., Springer, 2015.</p>
+<ul>
+<li>Chapter 2: definition of Gröbner bases, Buchberger's algorithm, Buchberger's criteria</li>
+<li>Chapter 3: the elimination theorem and ideal operations</li>
+<li>Chapter 8: FGLM and change of ordering</li>
+</ul>
+</li>
+<li>
+<p><strong>Adams, W.W. &amp; Loustaunau, P.</strong> <em>An Introduction to Gröbner Bases.</em> AMS, 1994.</p>
+<ul>
+<li>Chapters 4–5: detailed analysis of Buchberger's algorithm, Gebauer–Moeller optimizations</li>
+</ul>
+</li>
+<li>
+<p><strong>Faugère, J.-C.</strong> "A New Efficient Algorithm for Computing Gröbner Bases (F4)." <em>Journal of Pure and Applied Algebra</em>, 139(1–3):61–88, 1999.</p>
+<ul>
+<li>The original F4 paper: batched matrix row echelon</li>
+</ul>
+</li>
+<li>
+<p><strong>Faugère, J.-C.</strong> "A New Efficient Algorithm for Computing Gröbner Bases without Reduction to Zero (F5)." <em>ISSAC 2002</em>, pp. 75–83.</p>
+<ul>
+<li>The original F5 paper: the signature criterion and regular sequences</li>
+</ul>
+</li>
+<li>
+<p><strong>Faugère, J.-C., Gianni, P., Lazard, D. &amp; Mora, T.</strong> "Efficient Computation of Zero-dimensional Gröbner Bases by Change of Ordering." <em>Journal of Symbolic Computation</em>, 16(4):329–344, 1993.</p>
+<ul>
+<li>The original FGLM paper</li>
+</ul>
+</li>
+<li>
+<p><strong>Gebauer, R. &amp; Möller, H.M.</strong> "On an Installation of Buchberger's Algorithm." <em>Journal of Symbolic Computation</em>, 6(2–3):275–286, 1988.</p>
+<ul>
+<li>The Gebauer–Moeller critical pair filtering criteria</li>
+</ul>
+</li>
+<li>
+<p><strong>Eder, C. &amp; Perry, J.</strong> "Signature-based Algorithms to Compute Gröbner Bases." <em>ISSAC 2009</em>, pp. 139–146.</p>
+<ul>
+<li>Eder–Perry's formalization of F5</li>
+</ul>
+</li>
+<li>
+<p><strong>Bayer, D. &amp; Stillman, M.</strong> "A Criterion for Detecting m-Regularity." <em>Inventiones Mathematicae</em>, 87(1):1–11, 1987.</p>
+<ul>
+<li>The relation between regularity bounds and Hilbert functions</li>
+</ul>
+</li>
+<li>
+<p><strong>Gathen, J. von zur &amp; Gerhard, J.</strong> <em>Modern Computer Algebra.</em> 3rd ed., Cambridge University Press, 2013.</p>
+<ul>
+<li>Chapter 21: a comprehensive survey of Gröbner bases</li>
+</ul>
+</li>
+</ol>
+<p><strong>See also</strong>:</p>
+<ul>
+<li><a href="./polynomial-algebra.html">Polynomial Algebra</a> — monomial orders, the foundations of the multivariate division algorithm</li>
+<li><a href="./linear-algebra.html">Linear Algebra</a> — the Bareiss algorithm and Gaussian elimination</li>
+<li><a href="./fglm-elimination.html">FGLM and Elimination Theory</a> — detailed analysis of FGLM and ideal operations</li>
+<li><a href="../algorithms/groebner.html">Gröbner Basis Implementation</a> — usage guide, benchmarks, and the ideal operations API</li>
+<li><a href="../api/rust-groebner.html">Rust API: Gröbner Bases and Ideals</a> — function signatures and complete examples</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../math/poly-gcd-factoring.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../math/number-theory-algorithms.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../math/poly-gcd-factoring.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../math/number-theory-algorithms.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

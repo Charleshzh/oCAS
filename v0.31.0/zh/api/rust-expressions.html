@@ -1,0 +1,1208 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>表达式系统 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html" class="active"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-expressions.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考表达式系统"><a class="header" href="#rust-api-参考表达式系统">Rust API 参考：表达式系统</a></h1>
+<p>本章记录 oCAS 表达式系统的核心类型与函数，涵盖 Arena 分配器、符号、表达式节点、构造上下文、解析、规范化以及模式匹配。</p>
+<hr />
+<h2 id="核心类型概览"><a class="header" href="#核心类型概览">核心类型概览</a></h2>
+<p>表达式系统的核心类型层次如下：</p>
+<pre><code>Arena (bump 分配器)
+ └── AtomArena (hash-consing 构造器)
+      └── Atom (Copy 句柄)
+           └── AtomNode (enum: Num/Var/Fun/Add/Mul/Pow)
+                └── Symbol (interned 字符串)
+</code></pre>
+<p><strong>设计不变量</strong>：<code>Atom</code> 是一个 <code>Copy</code> 的 Arena 句柄，指向 <code>Arena</code> 中分配的 <code>AtomNode</code>。由于 <code>AtomArena</code> 使用 hash-consing（相同结构的子表达式在同一个 <code>AtomArena</code> 中返回同一个指针），<strong>结构相等等价于指针相等</strong>——<code>==</code> 的结果与指针比较一致。注意实现细节：<code>Atom</code> 的 <code>PartialEq</code> 是派生的结构比较（递归比较 <code>AtomNode</code>），hash-consing 保证其真值与指针相等一致，而非直接比较指针。减法和除法在解析时脱糖：$x - y$ 变为 <code>Add([x, Mul([Num(-1), y])])</code>，$x / y$ 变为 <code>Mul([x, Pow(y, Num(-1))])</code>。</p>
+<hr />
+<h2 id="arena"><a class="header" href="#arena">Arena</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+<span class="boring">}</span></code></pre></pre>
+<p><code>Arena</code> 是 bump 分配器，为表达式节点提供批量内存管理。所有表达式节点分配在 Arena 中，Arena 销毁时一次性释放全部内存。当前版本不运行析构函数，因此仅安全存储 <code>Copy</code> 类型。</p>
+<h3 id="arenanew"><a class="header" href="#arenanew">Arena::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new() -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建使用默认块大小（64 KiB）的 Arena。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：<code>Arena</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let value = arena.allocate_with(|| 42);
+assert_eq!(*value, 42);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenawith_capacity"><a class="header" href="#arenawith_capacity">Arena::with_capacity</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn with_capacity(block_size: usize) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建使用指定块大小的 Arena。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>block_size</code></td><td><code>usize</code></td><td>每个内存块的字节数。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Arena</code>。</p>
+<h3 id="arenaallocate_with"><a class="header" href="#arenaallocate_with">Arena::allocate_with</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn allocate_with&lt;T&gt;(&amp;self, init: impl FnOnce() -&gt; T) -&gt; &amp;mut T
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：在 Arena 中分配一个值，通过闭包构造，返回与 Arena 生命周期绑定的可变引用。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>init</code></td><td><code>impl FnOnce() -&gt; T</code></td><td>构造值的闭包。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>&amp;mut T</code>。</p>
+<p><strong>错误</strong>：若 <code>T</code> 的大小为零则 panic。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let value = arena.allocate_with(|| "hello");
+assert_eq!(*value, "hello");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenaallocate_slice"><a class="header" href="#arenaallocate_slice">Arena::allocate_slice</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn allocate_slice&lt;T: Copy&gt;(&amp;self, values: &amp;[T]) -&gt; &amp;[T]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将一个切片复制到 Arena 中，返回与 Arena 生命周期绑定的切片引用。空切片返回 <code>&amp;[]</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>&amp;[T]</code></td><td>待分配的切片，<code>T: Copy</code>。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>&amp;[T]</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let data = [1, 2, 3];
+let slice = arena.allocate_slice(&amp;data);
+assert_eq!(slice, &amp;[1, 2, 3]);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenareset"><a class="header" href="#arenareset">Arena::reset</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn reset(&amp;self)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：重置 Arena——保留第一个内存块并重置偏移量，释放其余块。重置后，之前分配的任何引用<strong>不得继续使用</strong>。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：无。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let _ = arena.allocate_with(|| 1);
+arena.reset();
+let value = arena.allocate_with(|| 2);
+assert_eq!(*value, 2);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="arenachunk_count"><a class="header" href="#arenachunk_count">Arena::chunk_count</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn chunk_count(&amp;self) -&gt; usize
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回 Arena 当前持有的内存块数量。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：<code>usize</code>。</p>
+<hr />
+<h2 id="symbol"><a class="header" href="#symbol">Symbol</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::Symbol;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Symbol(&amp;'static str);
+<span class="boring">}</span></code></pre></pre>
+<p><code>Symbol</code> 是全局 interned 的符号名称，用于变量名、函数名和常量名。相同内容的 <code>Symbol</code> 在进程中指向同一块静态内存，比较为 $O(1)$ 指针比较。<code>Symbol</code> 实现了 <code>Copy</code>。</p>
+<h3 id="symbolnew"><a class="header" href="#symbolnew">Symbol::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(name: &amp;str) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建或查找一个已存在的 <code>Symbol</code>。首次调用时 intern 字符串，后续调用返回已有的 <code>Symbol</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>符号名称。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Symbol</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::Symbol;
+
+let x = Symbol::new("x");
+let also_x = Symbol::new("x");
+assert_eq!(x, also_x);
+assert_eq!(x.as_str(), "x");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symbolas_str"><a class="header" href="#symbolas_str">Symbol::as_str</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn as_str(&amp;self) -&gt; &amp;str
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回符号的字符串切片。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：<code>&amp;str</code>。</p>
+<p><strong>参见</strong>：<a href="#atom">Atom</a>、<a href="#atomarena">AtomArena</a></p>
+<hr />
+<h2 id="atom"><a class="header" href="#atom">Atom</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::Atom;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Atom&lt;'a&gt;(&amp;'a AtomNode&lt;'a&gt;);
+<span class="boring">}</span></code></pre></pre>
+<p><code>Atom</code> 是指向 Arena 中 <code>AtomNode</code> 的轻量 <code>Copy</code> 句柄。复制 <code>Atom</code> 仅复制一个指针，不复制底层数据。由于 hash-consing，<code>a == b</code> 的真值与指针比较一致（同一 <code>AtomArena</code> 内）；其实现是派生的结构比较。</p>
+<p><code>Atom</code> 实现了 <code>Display</code>，输出格式为：</p>
+<ul>
+<li><code>Num(42)</code> → <code>42</code></li>
+<li><code>Var("x")</code> → <code>x</code></li>
+<li><code>Fun("sin", [x])</code> → <code>sin(x)</code></li>
+<li><code>Add([x, y])</code> → <code>x + y</code>（子表达式若非叶子节点则加括号）</li>
+<li><code>Mul([x, y])</code> → <code>x*y</code></li>
+<li><code>Pow(x, n)</code> → <code>x^n</code>（底数/指数若非叶子则加括号）</li>
+</ul>
+<h3 id="atomnode"><a class="header" href="#atomnode">Atom::node</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn node(&amp;self) -&gt; &amp;'a AtomNode&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：获取底层节点数据的引用。用于模式匹配表达式结构。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：<code>&amp;'a AtomNode&lt;'a&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+assert!(matches!(x.node(), AtomNode::Var(_)));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomchildren"><a class="header" href="#atomchildren">Atom::children</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn children(&amp;self) -&gt; &amp;'a [Atom&lt;'a&gt;]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：返回直接子表达式的切片（从左到右）。<code>Num</code> 和 <code>Var</code> 返回空切片；<code>Fun</code>、<code>Add</code>、<code>Mul</code> 返回参数切片；<code>Pow</code> 返回空切片（需使用 <code>binary_children</code> 获取两个操作数）。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：<code>&amp;'a [Atom&lt;'a&gt;]</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y, ctx.num(1)]);
+assert_eq!(sum.children().len(), 3);
+assert_eq!(x.children().len(), 0);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atombinary_children"><a class="header" href="#atombinary_children">Atom::binary_children</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn binary_children(&amp;self) -&gt; Option&lt;(Atom&lt;'a&gt;, Atom&lt;'a&gt;)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：若此 Atom 是 <code>Pow</code> 节点，返回 <code>(base, exp)</code>；否则返回 <code>None</code>。</p>
+<p><strong>参数</strong>：无。</p>
+<p><strong>返回值</strong>：<code>Option&lt;(Atom&lt;'a&gt;, Atom&lt;'a&gt;)&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let power = ctx.pow(x, y);
+let (base, exp) = power.binary_children().unwrap();
+assert_eq!(base.to_string(), "x");
+assert_eq!(exp.to_string(), "y");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#atomchildren">Atom::children</a>、<a href="#atomnode">AtomNode</a></p>
+<hr />
+<h2 id="atomnode-1"><a class="header" href="#atomnode-1">AtomNode</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomNode;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum AtomNode&lt;'a&gt; {
+    Num(i64),
+    Var(Symbol),
+    Fun(Symbol, &amp;'a [Atom&lt;'a&gt;]),
+    Add(&amp;'a [Atom&lt;'a&gt;]),
+    Mul(&amp;'a [Atom&lt;'a&gt;]),
+    Pow(Atom&lt;'a&gt;, Atom&lt;'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>表达式树中每个节点的具化数据。<code>Atom</code> 句柄通过 <code>node()</code> 方法获取 <code>AtomNode</code> 引用。</p>
+<h3 id="变体说明"><a class="header" href="#变体说明">变体说明</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Num(i64)</code></td><td>64 位有符号整数字面量。</td></tr>
+<tr><td><code>Var(Symbol)</code></td><td>命名变量或常量。</td></tr>
+<tr><td><code>Fun(Symbol, &amp;'a [Atom&lt;'a&gt;])</code></td><td>函数应用。第一个参数是函数名，第二个是参数列表（至少一个元素）。</td></tr>
+<tr><td><code>Add(&amp;'a [Atom&lt;'a&gt;])</code></td><td>加法。参数列表至少一个元素。</td></tr>
+<tr><td><code>Mul(&amp;'a [Atom&lt;'a&gt;])</code></td><td>乘法。参数列表至少一个元素。</td></tr>
+<tr><td><code>Pow(Atom&lt;'a&gt;, Atom&lt;'a&gt;)</code></td><td>幂运算。第一个参数是底数，第二个是指数。</td></tr>
+</tbody></table>
+</div>
+<p><strong>设计说明</strong>：</p>
+<ul>
+<li>减法/除法在<strong>解析时</strong>脱糖：$x - y$ 变为 <code>Add([x, Mul([Num(-1), y])])</code>，$x / y$ 变为 <code>Mul([x, Pow(y, Num(-1))])</code>。AST 中不存在独立的减法/除法节点。</li>
+<li><code>Add</code> 和 <code>Mul</code> 的参数列表通过 <code>normalize</code> 后是排序的，确保结构相等的表达式产生相同的 AST。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+match x.node() {
+    AtomNode::Var(s) =&gt; assert_eq!(s.as_str(), "x"),
+    _ =&gt; panic!("expected variable"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#atom">Atom</a>、<a href="#symbol">Symbol</a></p>
+<hr />
+<h2 id="atomarena"><a class="header" href="#atomarena">AtomArena</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct AtomArena&lt;'a&gt; {
+    arena: &amp;'a Arena,
+    cons_table: RefCell&lt;FastHashMap&lt;AtomNode&lt;'a&gt;, Atom&lt;'a&gt;&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>AtomArena</code> 是构造 <code>Atom</code> 的唯一入口。它封装了一个 <code>Arena</code> 引用和一个 hash-consing 表（内部可变性通过 <code>RefCell</code> 实现）。所有构造方法从调用者角度看是不可变的。相同结构的子表达式在同一个 <code>AtomArena</code> 中始终返回同一个 <code>Atom</code> 句柄——这使得结构相等等价于指针相等。</p>
+<h3 id="atomarenanew"><a class="header" href="#atomarenanew">AtomArena::new</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new(arena: &amp;'a Arena) -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建以给定 Arena 为后端的 <code>AtomArena</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>arena</code></td><td><code>&amp;'a Arena</code></td><td>bump 分配器引用。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>AtomArena&lt;'a&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let n = ctx.num(42);
+assert_eq!(n.to_string(), "42");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenanum"><a class="header" href="#atomarenanum">AtomArena::num</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn num(&amp;self, value: i64) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建整数字面量 <code>Atom</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>value</code></td><td><code>i64</code></td><td>整数值。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——<code>Num(value)</code> 节点。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let n = ctx.num(7);
+assert_eq!(n.to_string(), "7");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenavar"><a class="header" href="#atomarenavar">AtomArena::var</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn var(&amp;self, name: &amp;str) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建变量 <code>Atom</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>变量名称。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——<code>Var(Symbol)</code> 节点。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+assert_eq!(x.to_string(), "x");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenafun"><a class="header" href="#atomarenafun">AtomArena::fun</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn fun(&amp;self, name: &amp;str, args: &amp;[Atom&lt;'a&gt;]) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建函数应用 <code>Atom</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>&amp;str</code></td><td>函数名。</td></tr>
+<tr><td><code>args</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>参数列表。debug 模式下为空会 panic。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——<code>Fun(Symbol, &amp;[Atom])</code> 节点。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let f = ctx.fun("sin", &amp;[x]);
+assert_eq!(f.to_string(), "sin(x)");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenaadd"><a class="header" href="#atomarenaadd">AtomArena::add</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn add(&amp;self, args: &amp;[Atom&lt;'a&gt;]) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建加法 <code>Atom</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>args</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>操作数列表。debug 模式下为空会 panic。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——<code>Add(&amp;[Atom])</code> 节点。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+assert_eq!(sum.to_string(), "x + y");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenamul"><a class="header" href="#atomarenamul">AtomArena::mul</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn mul(&amp;self, args: &amp;[Atom&lt;'a&gt;]) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建乘法 <code>Atom</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>args</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>操作数列表。debug 模式下为空会 panic。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——<code>Mul(&amp;[Atom])</code> 节点。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let product = ctx.mul(&amp;[x, y]);
+assert_eq!(product.to_string(), "x*y");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenapow"><a class="header" href="#atomarenapow">AtomArena::pow</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn pow(&amp;self, base: Atom&lt;'a&gt;, exp: Atom&lt;'a&gt;) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建幂运算 <code>Atom</code>。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>base</code></td><td><code>Atom&lt;'a&gt;</code></td><td>底数。</td></tr>
+<tr><td><code>exp</code></td><td><code>Atom&lt;'a&gt;</code></td><td>指数。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——<code>Pow(base, exp)</code> 节点。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let p = ctx.pow(x, ctx.num(3));
+assert_eq!(p.to_string(), "x^3");
+<span class="boring">}</span></code></pre></pre>
+<h3 id="atomarenaslice"><a class="header" href="#atomarenaslice">AtomArena::slice</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn slice(&amp;self, atoms: &amp;[Atom&lt;'a&gt;]) -&gt; &amp;'a [Atom&lt;'a&gt;]
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将 Atom 切片分配到 Arena 中并返回引用。用于需要共享 Arena 生命周期的多结果场景（如 ODE 系统的分量解）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atoms</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>待分配的 Atom 切片。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>&amp;'a [Atom&lt;'a&gt;]</code>。</p>
+<p><strong>参见</strong>：<a href="#arena">Arena</a>、<a href="#atom">Atom</a></p>
+<hr />
+<h2 id="函数"><a class="header" href="#函数">函数</a></h2>
+<h3 id="parse"><a class="header" href="#parse">parse</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_parse::parse;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn parse&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, input: &amp;str) -&gt; Result&lt;Atom&lt;'a&gt;, ParseError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将数学表达式字符串解析为 <code>Atom</code> 树。支持整数、变量、函数调用（<code>f(x)</code>）、加减乘除幂运算和括号。减法脱糖为加法+负系数，除法脱糖为乘法+负指数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>用于分配节点的 arena 上下文。</td></tr>
+<tr><td><code>input</code></td><td><code>&amp;str</code></td><td>待解析的表达式字符串。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;Atom&lt;'a&gt;, ParseError&gt;</code>。</p>
+<p><strong>错误</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ParseError::Lex(LexError)</code></td><td>输入包含非法字符。</td></tr>
+<tr><td><code>ParseError::UnexpectedEof</code></td><td>输入意外结束（如 <code>"x +"</code>）。</td></tr>
+<tr><td><code>ParseError::UnexpectedToken</code></td><td>遇到意外的 token（如 <code>"*x"</code>）。</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_parse::parse;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let expr = parse(&amp;ctx, "x^2 + 2*x + 1").unwrap();
+assert_eq!(expr.to_string(), "((x^2) + (2*x)) + 1");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#normalize">normalize</a></p>
+<h3 id="normalize"><a class="header" href="#normalize">normalize</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::normalize::normalize;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn normalize&lt;'a&gt;(ctx: &amp;AtomArena&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将表达式规范化为确定性标准形式。具体操作：</p>
+<ul>
+<li>展平嵌套的 <code>Add</code> 和 <code>Mul</code>（如 <code>Add([Add([x, y]), z])</code> → <code>Add([x, y, z])</code>）</li>
+<li>对操作数排序</li>
+<li>合并数值系数（如 <code>Add([x, Num(2), Num(3)])</code> → <code>Add([Num(5), x])</code>）</li>
+</ul>
+<p>结果分配在与输入相同的 arena 中。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;AtomArena&lt;'a&gt;</code></td><td>用于分配结果的 arena 上下文。</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待规范化的表达式。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——规范化后的表达式。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::normalize::normalize;
+use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let z = ctx.var("z");
+let inner = ctx.add(&amp;[x, y]);
+let outer = ctx.add(&amp;[inner, z, ctx.num(2), ctx.num(3)]);
+let result = normalize(&amp;ctx, outer);
+assert_eq!(result.to_string(), "5 + x + y + z");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#parse">parse</a>、<a href="#transform">transform</a></p>
+<h3 id="substitute"><a class="header" href="#substitute">substitute</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::series::substitute;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    expr: Atom&lt;'a&gt;,
+    var: Symbol,
+    replacement: Atom&lt;'a&gt;,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将表达式中所有出现的变量 <code>var</code> 替换为 <code>replacement</code>。基于 <code>transform</code> 实现的便捷函数。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>arena 上下文。</td></tr>
+<tr><td><code>expr</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待替换的表达式。</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>被替换的变量名。</td></tr>
+<tr><td><code>replacement</code></td><td><code>Atom&lt;'a&gt;</code></td><td>替换表达式。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——替换后的表达式。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::series::substitute;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.pow(x, ctx.num(2)), ctx.num(1)]);
+let result = substitute(&amp;ctx, expr, Symbol::new("x"), y);
+assert_eq!(result.to_string(), "(y^2) + 1");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#transform">transform</a></p>
+<h3 id="transform"><a class="header" href="#transform">transform</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::transform;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn transform&lt;'a, F&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, atom: Atom&lt;'a&gt;, mut f: F) -&gt; Atom&lt;'a&gt;
+where
+    F: FnMut(Atom&lt;'a&gt;) -&gt; Option&lt;Atom&lt;'a&gt;&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：自底向上遍历表达式树并对每个节点应用变换函数 <code>f</code>。<code>f</code> 在子节点已被变换之后调用。返回 <code>Some(atom)</code> 替换原节点，返回 <code>None</code> 保留原节点（已变换子节点的版本）。这是 oCAS 规则引擎和化简器使用的标准重写遍历模式。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>arena 上下文。</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待变换的表达式。</td></tr>
+<tr><td><code>f</code></td><td><code>FnMut(Atom&lt;'a&gt;) -&gt; Option&lt;Atom&lt;'a&gt;&gt;</code></td><td>变换函数。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code>——变换后的表达式。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{Atom, AtomArena, AtomNode};
+use ocas_core::arena::Arena;
+use ocas_rewrite::transform;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+
+let result = transform(&amp;ctx, sum, |a| {
+    if let AtomNode::Add(args) = a.node() {
+        if args.len() == 2 &amp;&amp; args[0] == x &amp;&amp; args[1] == y {
+            return Some(ctx.add(&amp;[y, x]));
+        }
+    }
+    None
+});
+
+assert_eq!(result.to_string(), "y + x");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#substitute">substitute</a>、<a href="#normalize">normalize</a></p>
+<h3 id="collect_funs"><a class="header" href="#collect_funs">collect_funs</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::walk::collect_funs;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn collect_funs&lt;'a&gt;(atom: Atom&lt;'a&gt;) -&gt; Vec&lt;(Symbol, Atom&lt;'a&gt;)&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：收集表达式中所有函数应用，按后序（最内层优先）返回，去重（hash-consing 保证结构相同的应用只出现一次）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待遍历的表达式。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;(Symbol, Atom&lt;'a&gt;)&gt;</code>——<code>(函数名, 函数应用节点)</code> 列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, walk::collect_funs};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let sin_x = ctx.fun("sin", &amp;[x]);
+let expr = ctx.fun("cos", &amp;[sin_x]);
+let funs = collect_funs(expr);
+assert_eq!(funs.len(), 2);
+assert_eq!(funs[0].0.as_str(), "sin");
+assert_eq!(funs[1].0.as_str(), "cos");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#collect_vars">collect_vars</a></p>
+<h3 id="collect_vars"><a class="header" href="#collect_vars">collect_vars</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::walk::collect_vars;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn collect_vars(atom: Atom) -&gt; Vec&lt;Symbol&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：收集表达式中所有不同的变量名，按首次出现顺序（深度优先、从左到右）返回。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>atom</code></td><td><code>Atom</code></td><td>待遍历的表达式。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;Symbol&gt;</code>——变量名列表。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, walk::collect_vars};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let expr = ctx.add(&amp;[ctx.mul(&amp;[x, y]), x]);
+let vars = collect_vars(expr);
+assert_eq!(vars.len(), 2);
+assert_eq!(vars[0].as_str(), "x");
+assert_eq!(vars[1].as_str(), "y");
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#collect_funs">collect_funs</a></p>
+<hr />
+<h2 id="模式匹配"><a class="header" href="#模式匹配">模式匹配</a></h2>
+<p>模式匹配系统允许用带通配符的模式（<code>Pattern</code>）匹配 <code>Atom</code> 表达式树，支持结合律/交换律（AC）匹配和回溯预算控制。</p>
+<h3 id="pattern"><a class="header" href="#pattern">Pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::pattern::Pattern;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Pattern&lt;'a&gt; {
+    Literal(Atom&lt;'a&gt;),
+    Wildcard(Symbol, WildcardLevel),
+    Add(Vec&lt;Pattern&lt;'a&gt;&gt;),
+    Mul(Vec&lt;Pattern&lt;'a&gt;&gt;),
+    Pow(Box&lt;(Pattern&lt;'a&gt;, Pattern&lt;'a&gt;)&gt;),
+    Fun(Symbol, Vec&lt;Pattern&lt;'a&gt;&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>模式镜像了 <code>AtomNode</code> 的结构，但增加通配符节点。<code>Add</code> 和 <code>Mul</code> 的匹配支持结合律-交换律（AC）：模式中的子模式可以匹配参数列表的任意子集。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Literal(Atom)</code></td><td>精确匹配给定的 Atom。</td></tr>
+<tr><td><code>Wildcard(Symbol, WildcardLevel)</code></td><td>通配符匹配，名称和级别决定绑定行为。</td></tr>
+<tr><td><code>Add(Vec&lt;Pattern&gt;)</code></td><td>匹配 <code>Add</code> 节点，参数列表 AC 匹配。</td></tr>
+<tr><td><code>Mul(Vec&lt;Pattern&gt;)</code></td><td>匹配 <code>Mul</code> 节点，参数列表 AC 匹配。</td></tr>
+<tr><td><code>Pow(Box&lt;(Pattern, Pattern)&gt;)</code></td><td>匹配 <code>Pow</code> 节点，底数和指数分别匹配。</td></tr>
+<tr><td><code>Fun(Symbol, Vec&lt;Pattern&gt;)</code></td><td>匹配 <code>Fun</code> 节点，函数名和参数列表分别匹配。</td></tr>
+</tbody></table>
+</div>
+<h4 id="patternfrom_atom"><a class="header" href="#patternfrom_atom">Pattern::from_atom</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn from_atom(_ctx: &amp;'a impl PatternAlloc&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Pattern&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将 <code>Atom</code> 转换为 <code>Pattern</code>。名称以 <code>_</code> 结尾（或以 <code>_</code> 开头）的变量被视为通配符：</p>
+<ul>
+<li><code>x_</code> → <code>Wildcard(Symbol("x"), Single)</code></li>
+<li><code>x__</code> → <code>Wildcard(Symbol("x"), Sequence)</code></li>
+<li><code>x___</code> → <code>Wildcard(Symbol("x"), NullSequence)</code></li>
+</ul>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>_ctx</code></td><td><code>&amp;'a impl PatternAlloc&lt;'a&gt;</code></td><td>模式分配器（通常传 <code>&amp;()</code>）。</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>待转换的表达式。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Pattern&lt;'a&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::AtomArena;
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x_");
+let pat = Pattern::from_atom(&amp;(), x);
+assert!(matches!(pat, Pattern::Wildcard(s, WildcardLevel::Single) if s.as_str() == "x"));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#wildcardlevel">WildcardLevel</a>、<a href="#match_pattern">match_pattern</a></p>
+<h3 id="wildcardlevel"><a class="header" href="#wildcardlevel">WildcardLevel</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::pattern::WildcardLevel;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WildcardLevel {
+    Single,
+    Sequence,
+    NullSequence,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>通配符的匹配范围。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>命名约定</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Single</code></td><td>名称以单个 <code>_</code> 结尾（如 <code>x_</code>；以 <code>_</code> 开头亦可，如 <code>_x</code>）</td><td>匹配恰好一个 Atom。</td></tr>
+<tr><td><code>Sequence</code></td><td>名称以 <code>__</code> 结尾（如 <code>x__</code>；以 <code>__</code> 开头亦可，如 <code>__x</code>）</td><td>匹配 <code>Add</code>/<code>Mul</code>/<code>Fun</code> 参数列表中的一个或多个 Atom。</td></tr>
+<tr><td><code>NullSequence</code></td><td>名称以 <code>___</code> 结尾（如 <code>x___</code>；以 <code>___</code> 开头亦可，如 <code>___x</code>）</td><td>匹配零个或多个 Atom。</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::pattern::WildcardLevel;
+
+assert!(matches!(WildcardLevel::Single, WildcardLevel::Single));
+assert!(matches!(WildcardLevel::Sequence, WildcardLevel::Sequence));
+assert!(matches!(WildcardLevel::NullSequence, WildcardLevel::NullSequence));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="match_pattern"><a class="header" href="#match_pattern">match_pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::match_pattern;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn match_pattern&lt;'a&gt;(pattern: Pattern&lt;'a&gt;, atom: Atom&lt;'a&gt;) -&gt; Result&lt;Bindings&lt;'a&gt;, MatchError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：尝试将 <code>pattern</code> 与 <code>atom</code> 匹配，成功时返回绑定集合。使用默认回溯预算（<code>DEFAULT_MAX_BACKTRACKS = 10_000</code>）。<code>Add</code>/<code>Mul</code> 使用 AC 匹配（全回溯搜索），<code>Fun</code> 使用有序匹配（支持序列通配符）。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>匹配模式。</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被匹配的表达式。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;Bindings&lt;'a&gt;, MatchError&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::matcher::match_pattern;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let sum = ctx.add(&amp;[x, ctx.num(1)]);
+
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+    Pattern::Literal(ctx.num(1)),
+]);
+let bindings = match_pattern(pat, sum).unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="match_pattern_with_budget"><a class="header" href="#match_pattern_with_budget">match_pattern_with_budget</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::match_pattern_with_budget;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn match_pattern_with_budget&lt;'a&gt;(
+    pattern: Pattern&lt;'a&gt;,
+    atom: Atom&lt;'a&gt;,
+    max_backtracks: usize,
+) -&gt; Result&lt;Bindings&lt;'a&gt;, MatchError&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：与 <code>match_pattern</code> 相同，但允许自定义回溯预算，防止病态输入导致指数时间爆炸。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>pattern</code></td><td><code>Pattern&lt;'a&gt;</code></td><td>匹配模式。</td></tr>
+<tr><td><code>atom</code></td><td><code>Atom&lt;'a&gt;</code></td><td>被匹配的表达式。</td></tr>
+<tr><td><code>max_backtracks</code></td><td><code>usize</code></td><td>最大回溯次数。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;Bindings&lt;'a&gt;, MatchError&gt;</code>。</p>
+<p><strong>错误</strong>：若回溯次数超限，返回 <code>MatchError::BudgetExhausted</code>。</p>
+<p><strong>参见</strong>：<a href="#match_pattern">match_pattern</a></p>
+<h3 id="bindings"><a class="header" href="#bindings">Bindings</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::Bindings;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Default)]
+pub struct Bindings&lt;'a&gt; { /* 私有字段 */ }
+<span class="boring">}</span></code></pre></pre>
+<p>成功匹配后返回的通配符绑定集合。</p>
+<h4 id="bindingsnew"><a class="header" href="#bindingsnew">Bindings::new</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn new() -&gt; Self
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：创建空的绑定集合。</p>
+<h4 id="bindingsget"><a class="header" href="#bindingsget">Bindings::get</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn get(&amp;self, name: Symbol) -&gt; Option&lt;&amp;MatchValue&lt;'a&gt;&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：按通配符名称查找绑定值。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>Symbol</code></td><td>通配符名称（不含尾部下划线）。</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;&amp;MatchValue&lt;'a&gt;&gt;</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_rewrite::pattern::{Pattern, WildcardLevel};
+use ocas_rewrite::matcher::match_pattern;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.var("y");
+let sum = ctx.add(&amp;[x, y]);
+
+let pat = Pattern::Add(vec![
+    Pattern::Wildcard(Symbol::new("a"), WildcardLevel::Single),
+    Pattern::Wildcard(Symbol::new("b"), WildcardLevel::Single),
+]);
+let bindings = match_pattern(pat, sum).unwrap();
+let val = bindings.get(Symbol::new("a")).unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matchvalue"><a class="header" href="#matchvalue">MatchValue</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::MatchValue;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MatchValue&lt;'a&gt; {
+    Single(Atom&lt;'a&gt;),
+    Sequence(&amp;'a [Atom&lt;'a&gt;]),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>通配符绑定的值类型。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Single(Atom&lt;'a&gt;)</code></td><td><code>Single</code> 级别通配符绑定到单个 Atom。</td></tr>
+<tr><td><code>Sequence(&amp;'a [Atom&lt;'a&gt;])</code></td><td><code>Sequence</code> 或 <code>NullSequence</code> 级别通配符绑定到一个 Atom 切片。</td></tr>
+</tbody></table>
+</div>
+<h3 id="matcherror"><a class="header" href="#matcherror">MatchError</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_rewrite::matcher::MatchError;
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MatchError {
+    NoMatch,
+    InconsistentBinding,
+    BudgetExhausted,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>模式匹配错误。</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>Display</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>NoMatch</code></td><td><code>"pattern did not match"</code></td><td>模式不匹配目标表达式。</td></tr>
+<tr><td><code>InconsistentBinding</code></td><td><code>"inconsistent wildcard binding"</code></td><td>同一通配符名称在不同位置绑定到不同值。</td></tr>
+<tr><td><code>BudgetExhausted</code></td><td><code>"backtrack budget exhausted"</code></td><td>AC 匹配的回溯预算耗尽。表示输入可能导致指数时间匹配，应增大预算或简化模式。</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h2 id="参见"><a class="header" href="#参见">参见</a></h2>
+<ul>
+<li><a href="./rust-rewrite.html">重写与化简</a>——<code>Rule</code>、<code>simplify</code>、<code>replace_all</code> 等完整重写引擎</li>
+<li><a href="./rust-calculus.html">微积分</a>——<code>diff</code>、<code>integrate</code>、<code>taylor</code> 等基于表达式系统的运算</li>
+<li><a href="./rust-domains.html">系数域</a>——<code>Domain</code> trait 和各种域类型</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-domains.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-domains.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>

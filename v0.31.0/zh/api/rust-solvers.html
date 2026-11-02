@@ -1,0 +1,893 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>求解器 - oCAS — 开源计算机代数系统</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../language-switcher.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><li class="part-title">oCAS 文档</li><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> 简介</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">2.</strong> 快速上手</a></li><li class="chapter-item expanded "><a href="../architecture.html"><strong aria-hidden="true">3.</strong> 架构</a></li><li class="chapter-item expanded "><a href="../api/rust.html"><strong aria-hidden="true">4.</strong> Rust API 参考</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../api/rust-expressions.html"><strong aria-hidden="true">4.1.</strong> 表达式系统</a></li><li class="chapter-item expanded "><a href="../api/rust-domains.html"><strong aria-hidden="true">4.2.</strong> 系数域</a></li><li class="chapter-item expanded "><a href="../api/rust-polynomials.html"><strong aria-hidden="true">4.3.</strong> 多项式</a></li><li class="chapter-item expanded "><a href="../api/rust-matrix.html"><strong aria-hidden="true">4.4.</strong> 矩阵</a></li><li class="chapter-item expanded "><a href="../api/rust-calculus.html"><strong aria-hidden="true">4.5.</strong> 微积分</a></li><li class="chapter-item expanded "><a href="../api/rust-solvers.html" class="active"><strong aria-hidden="true">4.6.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../api/rust-rewrite.html"><strong aria-hidden="true">4.7.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../api/rust-evaluation.html"><strong aria-hidden="true">4.8.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../api/rust-autodiff.html"><strong aria-hidden="true">4.9.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../api/rust-tensors.html"><strong aria-hidden="true">4.10.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../api/rust-ntheory.html"><strong aria-hidden="true">4.11.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../api/rust-groebner.html"><strong aria-hidden="true">4.12.</strong> Gröbner 基与理想</a></li><li class="chapter-item expanded "><a href="../api/rust-factoring.html"><strong aria-hidden="true">4.13.</strong> 因式分解</a></li><li class="chapter-item expanded "><a href="../api/rust-numeric-integration.html"><strong aria-hidden="true">4.14.</strong> 数值积分</a></li></ol></li><li class="chapter-item expanded "><a href="../api/python.html"><strong aria-hidden="true">5.</strong> Python API 参考</a></li><li class="chapter-item expanded "><a href="../api/c.html"><strong aria-hidden="true">6.</strong> C/C++ API 参考</a></li><li class="chapter-item expanded "><a href="../math/overview.html"><strong aria-hidden="true">7.</strong> 数学基础总览</a></li><li class="chapter-item expanded "><a href="../math/polynomial-algebra.html"><strong aria-hidden="true">8.</strong> 基础：多项式代数</a></li><li class="chapter-item expanded "><a href="../math/finite-fields.html"><strong aria-hidden="true">9.</strong> 基础：有限域与模算术</a></li><li class="chapter-item expanded "><a href="../math/linear-algebra.html"><strong aria-hidden="true">10.</strong> 基础：线性代数</a></li><li class="chapter-item expanded "><a href="../math/poly-gcd-factoring.html"><strong aria-hidden="true">11.</strong> 进阶：多项式 GCD 与因式分解</a></li><li class="chapter-item expanded "><a href="../math/groebner-theory.html"><strong aria-hidden="true">12.</strong> 进阶：Gröbner 基理论</a></li><li class="chapter-item expanded "><a href="../math/number-theory-algorithms.html"><strong aria-hidden="true">13.</strong> 进阶：数论算法</a></li><li class="chapter-item expanded "><a href="../math/symbolic-calculus.html"><strong aria-hidden="true">14.</strong> 进阶：符号微积分</a></li><li class="chapter-item expanded "><a href="../math/ode-theory.html"><strong aria-hidden="true">15.</strong> 进阶：ODE 求解理论</a></li><li class="chapter-item expanded "><a href="../math/risch-algorithm.html"><strong aria-hidden="true">16.</strong> 高阶：Risch 积分算法</a></li><li class="chapter-item expanded "><a href="../math/fglm-elimination.html"><strong aria-hidden="true">17.</strong> 高阶：FGLM 与消元理论</a></li><li class="chapter-item expanded "><a href="../math/algebraic-number-fields.html"><strong aria-hidden="true">18.</strong> 高阶：代数数域与 Galois 理论</a></li><li class="chapter-item expanded "><a href="../math/tensor-canonicalization.html"><strong aria-hidden="true">19.</strong> 高阶：张量代数与规范化</a></li><li class="chapter-item expanded "><a href="../math/monte-carlo-integration.html"><strong aria-hidden="true">20.</strong> 高阶：蒙特卡洛积分</a></li><li class="chapter-item expanded "><a href="../algorithms/groebner.html"><strong aria-hidden="true">21.</strong> Gröbner 基实现</a></li><li class="chapter-item expanded "><a href="../algorithms/factorization.html"><strong aria-hidden="true">22.</strong> 多项式因式分解</a></li><li class="chapter-item expanded "><a href="../algorithms/number-theory.html"><strong aria-hidden="true">23.</strong> 数论</a></li><li class="chapter-item expanded "><a href="../algorithms/integration.html"><strong aria-hidden="true">24.</strong> 符号积分</a></li><li class="chapter-item expanded "><a href="../algorithms/rational-functions.html"><strong aria-hidden="true">25.</strong> 有理函数与结式</a></li><li class="chapter-item expanded "><a href="../algorithms/ode-solving.html"><strong aria-hidden="true">26.</strong> ODE 求解</a></li><li class="chapter-item expanded "><a href="../solvers.html"><strong aria-hidden="true">27.</strong> 求解器</a></li><li class="chapter-item expanded "><a href="../rewrite.html"><strong aria-hidden="true">28.</strong> 重写与化简</a></li><li class="chapter-item expanded "><a href="../evaluation.html"><strong aria-hidden="true">29.</strong> 求值与 JIT</a></li><li class="chapter-item expanded "><a href="../numeric-integration.html"><strong aria-hidden="true">30.</strong> 数值积分</a></li><li class="chapter-item expanded "><a href="../autodiff.html"><strong aria-hidden="true">31.</strong> 自动微分</a></li><li class="chapter-item expanded "><a href="../tensors.html"><strong aria-hidden="true">32.</strong> 张量</a></li><li class="chapter-item expanded "><a href="../performance.html"><strong aria-hidden="true">33.</strong> 基准与性能对比</a></li><li class="chapter-item expanded "><a href="../correctness.html"><strong aria-hidden="true">34.</strong> 正确性</a></li><li class="chapter-item expanded "><a href="../backends.html"><strong aria-hidden="true">35.</strong> 数值后端</a></li><li class="chapter-item expanded "><a href="../build-windows.html"><strong aria-hidden="true">36.</strong> 在 Windows 上构建</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">37.</strong> 贡献</a></li><li class="chapter-item expanded "><a href="../external-references.html"><strong aria-hidden="true">38.</strong> 外部参考</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">oCAS — 开源计算机代数系统</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/charleshzh/ocas/edit/main/docs/book/zh/src/api/rust-solvers.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust-api-参考求解器"><a class="header" href="#rust-api-参考求解器">Rust API 参考：求解器</a></h1>
+<p>本章涵盖 oCAS 中的方程求解功能，分为三大模块：线性方程组与丢番图方程（<code>ocas-calc::solve</code>）、多项式系统求解（<code>ocas-poly::ideal</code>）、以及常微分方程求解（<code>ocas-calc::ode</code>）。</p>
+<hr />
+<h2 id="线性方程组"><a class="header" href="#线性方程组">线性方程组</a></h2>
+<h3 id="solve_linear_rational"><a class="header" href="#solve_linear_rational">solve_linear_rational</a></h3>
+<p><strong>签名</strong>：<code>pub fn solve_linear_rational(a: &amp;[Vec&lt;i64&gt;], b: &amp;[i64]) -&gt; Result&lt;Vec&lt;(i64, i64)&gt;, SolveError&gt;</code></p>
+<p><strong>功能</strong>：在有理数域 $\mathbb{Q}$ 上求解线性方程组 $A\mathbf{x} = \mathbf{b}$。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;[Vec&lt;i64&gt;]</code></td><td>$n \times n$ 系数矩阵，行优先存储，每个 <code>Vec&lt;i64&gt;</code> 为一行</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;[i64]</code></td><td>长度为 $n$ 的右端向量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;Vec&lt;(i64, i64)&gt;, SolveError&gt;</code></p>
+<ul>
+<li><code>Ok(vec)</code>：解向量，每个元素 <code>(num, den)</code> 表示有理数 $\frac{\text{num}}{\text{den}}$，保证 $\text{den} &gt; 0$ 且 $\gcd(|\text{num}|, \text{den}) = 1$</li>
+<li><code>Err(SolveError)</code>：见下方错误列表</li>
+</ul>
+<p><strong>错误</strong>：</p>
+<ul>
+<li><code>SolveError::EmptySystem</code> — $A$ 或 $\mathbf{b}$ 为空</li>
+<li><code>SolveError::NonSquare</code> — $A$ 不是方阵（或 $\mathbf{b}$ 长度 ≠ 行数）</li>
+<li><code>SolveError::Inconsistent</code> — 方程组无解（增广矩阵秩 &gt; 系数矩阵秩）</li>
+<li><code>SolveError::Underdetermined { rank }</code> — 方程组有无穷多解（秩不足）</li>
+<li><code>SolveError::ResultNotInDomain</code> — 解不在目标数域中</li>
+<li><code>SolveError::Matrix(_)</code> — 内部矩阵运算失败（经 <code>From&lt;MatrixError&gt;</code> 转换）</li>
+<li><code>SolveError::Other(_)</code> — 其他错误</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::solve_linear_rational;
+
+// 求解：
+//   2x + y = 5
+//   x - y = 1
+// → x = 2, y = 1
+let a = vec![vec![2, 1], vec![1, -1]];
+let b = vec![5, 1];
+let x = solve_linear_rational(&amp;a, &amp;b).unwrap();
+assert_eq!(x, vec![(2, 1), (1, 1)]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve_linear_integer"><code>solve_linear_integer</code></a>、<a href="./rust-matrix.html#solve"><code>Matrix::solve</code></a></p>
+<hr />
+<h3 id="solve_linear_integer"><a class="header" href="#solve_linear_integer">solve_linear_integer</a></h3>
+<p><strong>签名</strong>：<code>pub fn solve_linear_integer(a: &amp;[Vec&lt;i64&gt;], b: &amp;[i64]) -&gt; Result&lt;Vec&lt;i64&gt;, SolveError&gt;</code></p>
+<p><strong>功能</strong>：在整数环 $\mathbb{Z}$ 上求解线性方程组 $A\mathbf{x} = \mathbf{b}$。要求解恰好为整数，否则返回错误。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>&amp;[Vec&lt;i64&gt;]</code></td><td>$n \times n$ 系数矩阵，行优先存储</td></tr>
+<tr><td><code>b</code></td><td><code>&amp;[i64]</code></td><td>长度为 $n$ 的右端向量</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Result&lt;Vec&lt;i64&gt;, SolveError&gt;</code></p>
+<ul>
+<li><code>Ok(vec)</code>：整数解向量</li>
+<li><code>Err(SolveError)</code>：错误类型同 <a href="#solve_linear_rational"><code>solve_linear_rational</code></a>，额外可能返回 <code>ResultNotInDomain</code>（解含分数）</li>
+</ul>
+<p><strong>错误</strong>：同 <a href="#solve_linear_rational"><code>solve_linear_rational</code></a>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::solve_linear_integer;
+
+// 求解：
+//   x + y = 3
+//   x - y = 1
+// → x = 2, y = 1
+let a = vec![vec![1, 1], vec![1, -1]];
+let b = vec![3, 1];
+let x = solve_linear_integer(&amp;a, &amp;b).unwrap();
+assert_eq!(x, vec![2, 1]);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve_linear_rational"><code>solve_linear_rational</code></a></p>
+<hr />
+<h2 id="丢番图方程"><a class="header" href="#丢番图方程">丢番图方程</a></h2>
+<h3 id="diophantinesolution"><a class="header" href="#diophantinesolution">DiophantineSolution</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiophantineSolution {
+    /// 特解 (x0, y0)
+    pub particular: (i64, i64),
+    /// 齐次解步长 (x_step, y_step)
+    pub general: (i64, i64),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：线性丢番图方程 $ax + by = c$ 的解的表示。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>particular</code></td><td><code>(i64, i64)</code></td><td>一组特解 $(x_0, y_0)$</td></tr>
+<tr><td><code>general</code></td><td><code>(i64, i64)</code></td><td>齐次方程 $ax + by = 0$ 的基解 $(x_{\text{step}}, y_{\text{step}})$，通解为 $(x_0 + k \cdot x_{\text{step}},; y_0 + k \cdot y_{\text{step}})$，$k \in \mathbb{Z}$</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="solve_diophantine"><a class="header" href="#solve_diophantine">solve_diophantine</a></h3>
+<p><strong>签名</strong>：<code>pub fn solve_diophantine(a: i64, b: i64, c: i64) -&gt; Option&lt;DiophantineSolution&gt;</code></p>
+<p><strong>功能</strong>：求解线性丢番图方程 $ax + by = c$。使用扩展 Euclid 算法，当且仅当 $\gcd(a, b) \mid c$ 时有解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>a</code></td><td><code>i64</code></td><td>$x$ 的系数</td></tr>
+<tr><td><code>b</code></td><td><code>i64</code></td><td>$y$ 的系数</td></tr>
+<tr><td><code>c</code></td><td><code>i64</code></td><td>右端常数</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Option&lt;DiophantineSolution&gt;</code></p>
+<ul>
+<li><code>Some(sol)</code>：解存在时返回特解和通解结构</li>
+<li><code>None</code>：$\gcd(a, b) \nmid c$，方程无整数解</li>
+</ul>
+<p><strong>错误</strong>：无返回 <code>Result</code>；不可解时返回 <code>None</code>。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::solve_diophantine;
+
+// 求解 3x + 5y = 1
+// 特解：x = 2, y = -1（因为 3×2 + 5×(-1) = 1）
+// 通解：x = 2 + 5k, y = -1 - 3k
+let sol = solve_diophantine(3, 5, 1).unwrap();
+assert_eq!(sol.particular, (2, -1));
+assert_eq!(sol.general, (5, -3));
+
+// 无解的情况：2x + 4y = 3（gcd(2,4)=2 不整除 3）
+assert!(solve_diophantine(2, 4, 3).is_none());
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#solve_linear_integer"><code>solve_linear_integer</code></a></p>
+<hr />
+<h2 id="多项式系统求解"><a class="header" href="#多项式系统求解">多项式系统求解</a></h2>
+<h3 id="realsolution"><a class="header" href="#realsolution">RealSolution</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct RealSolution {
+    /// 每个变量的值（按变量顺序）
+    pub values: Vec&lt;f64&gt;,
+    /// 代数重数
+    pub multiplicity: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：多项式方程组的一个实数解（数值近似）。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>values</code></td><td><code>Vec&lt;f64&gt;</code></td><td>变量值 $[x_1, x_2, \dots, x_n]$，按原方程组中的变量顺序排列</td></tr>
+<tr><td><code>multiplicity</code></td><td><code>usize</code></td><td>解的代数重数（当前实现中固定为 1，尚未计算实际重数）</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="zerodimsolutions"><a class="header" href="#zerodimsolutions">ZeroDimSolutions</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct ZeroDimSolutions {
+    /// 所有实数解
+    pub solutions: Vec&lt;RealSolution&gt;,
+    /// 商环 k[x₁,...,xₙ]/I 的向量空间维数
+    pub vector_space_dimension: usize,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：零维多项式方程组的求解结果。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>solutions</code></td><td><code>Vec&lt;RealSolution&gt;</code></td><td>所有实数解（可能包含近似值）</td></tr>
+<tr><td><code>vector_space_dimension</code></td><td><code>usize</code></td><td>商环 $k[x_1, \dots, x_n]/I$ 的向量空间维数，等于 Lex GB 中各变量一元多项式次数之积</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="polynomialsystemsolution"><a class="header" href="#polynomialsystemsolution">PolynomialSystemSolution</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub enum PolynomialSystemSolution {
+    /// 零维系统：有限个解
+    ZeroDimensional(ZeroDimSolutions),
+    /// 正维系统：解集有正维数分量，返回 Gröbner 基
+    PositiveDimensional(GroebnerBasis&lt;RationalDomain, Lex&gt;),
+    /// 矛盾系统（理想为 ⟨1⟩），无解
+    Empty,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：多项式方程组求解结果的枚举类型。系统自动判定维数并选择合适的求解策略。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ZeroDimensional(z)</code></td><td>系统有有限个解，<code>z</code> 包含所有实数解和向量空间维数</td></tr>
+<tr><td><code>PositiveDimensional(gb)</code></td><td>系统的解集有正维分量（无穷多解），返回 Lex 序下的 Gröbner 基</td></tr>
+<tr><td><code>Empty</code></td><td>方程组矛盾（Gröbner 基为 {1}），无解。注意：传入空方程组时返回的是 <code>PositiveDimensional</code>（空基），而非 <code>Empty</code></td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="solve_polynomial_system"><a class="header" href="#solve_polynomial_system">solve_polynomial_system</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn solve_polynomial_system(
+    equations: &amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;],
+    algo: Algorithm,
+) -&gt; PolynomialSystemSolution
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：求解多项式方程组 $f_1 = f_2 = \cdots = f_m = 0$。自动计算 Lex 序 Gröbner 基，判定系统维数，并对零维系统通过三角分解回代求出所有实数解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equations</code></td><td><code>&amp;[SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;]</code></td><td>多项式方程组，每个多项式表示一个方程 $f_i = 0$</td></tr>
+<tr><td><code>algo</code></td><td><code>Algorithm</code></td><td>Gröbner 基算法选择：<code>Algorithm::Auto</code>（自动）、<code>Algorithm::Buchberger</code>、<code>Algorithm::F4</code>、<code>Algorithm::F5</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<a href="#polynomialsystemsolution"><code>PolynomialSystemSolution</code></a></p>
+<p><strong>错误</strong>：不返回 <code>Result</code>；通过枚举变体表达所有可能结果（零维解、正维基、空系统）。</p>
+<p><strong>算法说明</strong>：</p>
+<ol>
+<li>计算方程组生成理想的 Gröbner 基（使用指定算法）。输入多项式本身已按 Lex 序类型化（<code>SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;</code>），因此 GB 直接在 Lex 序下计算，无需换序</li>
+<li>若 GB = {1}，返回 <code>Empty</code>（方程组矛盾、无解）</li>
+<li>判定是否零维：每个变量 $x_i$ 在 GB 中是否有纯幂首单项式 $x_i^{N_i}$</li>
+<li><strong>零维</strong>：提取 Lex GB 的三角结构，从最后一个变量开始逐个回代（Sturm 实根隔离 + 二分精化），对每个变量求解一元多项式的实根；商环维数按各变量一元多项式次数之积估计</li>
+<li><strong>正维</strong>：返回 Lex GB 供进一步分析</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_domain::{RationalDomain, Rational};
+use ocas_poly::sparse::Lex;
+use ocas_poly::{Algorithm, SparseMultivariatePolynomial};
+use ocas_poly::ideal::{solve_polynomial_system, PolynomialSystemSolution};
+
+let d = RationalDomain;
+
+// 方程组：
+//   x² + y² - 1 = 0  （单位圆）
+//   x - y = 0         （直线 y = x）
+// 解：(±1/√2, ±1/√2)
+let f1 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![2, 0], Rational::new(1, 1)),   // x²
+    (vec![0, 2], Rational::new(1, 1)),   // y²
+    (vec![0, 0], Rational::new(-1, 1)),  // -1
+]);
+let f2 = SparseMultivariatePolynomial::&lt;_, Lex&gt;::from_terms(d, 2, vec![
+    (vec![1, 0], Rational::new(1, 1)),   // x
+    (vec![0, 1], Rational::new(-1, 1)),  // -y
+]);
+
+let sol = solve_polynomial_system(&amp;[f1, f2], Algorithm::Auto);
+match sol {
+    PolynomialSystemSolution::ZeroDimensional(z) =&gt; {
+        assert_eq!(z.solutions.len(), 2);
+        // 两个解：约 (0.707, 0.707) 和 (-0.707, -0.707)
+    }
+    _ =&gt; panic!("期望零维系统"),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="./rust-groebner.html"><code>GroebnerBasis</code></a>、<a href="./rust-groebner.html#algorithm"><code>Algorithm</code></a>、<a href="./rust-groebner.html#is_zero_dimensional"><code>is_zero_dimensional</code></a></p>
+<hr />
+<h2 id="常微分方程ode求解"><a class="header" href="#常微分方程ode求解">常微分方程（ODE）求解</a></h2>
+<h3 id="ode"><a class="header" href="#ode">ODE</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub struct ODE&lt;'a&gt; {
+    /// 方程，标准形式 lhs - rhs = 0
+    pub equation: Atom&lt;'a&gt;,
+    /// 未知函数，例如 y(x)
+    pub func: Atom&lt;'a&gt;,
+    /// 自变量，例如 x
+    pub var: Symbol,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：描述一个常微分方程。方程以 <code>equation = 0</code> 的标准形式存储，其中 <code>func</code> 是未知函数（如 $y(x)$），<code>var</code> 是自变量（如 $x$）。</p>
+<p><strong>字段</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>equation</code></td><td><code>Atom&lt;'a&gt;</code></td><td>方程的规范化形式（<code>lhs - rhs</code>），已归一化</td></tr>
+<tr><td><code>func</code></td><td><code>Atom&lt;'a&gt;</code></td><td>未知函数，例如 <code>y(x)</code></td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>自变量符号，例如 <code>"x"</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>构造示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::ODE;
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+
+// 表示 y' - y = 0
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h3 id="odesolution"><a class="header" href="#odesolution">ODESolution</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub enum ODESolution&lt;'a&gt; {
+    /// 显式解 y = expr
+    Explicit(Atom&lt;'a&gt;),
+    /// 隐式解 F(x, y) = 0
+    Implicit(Atom&lt;'a&gt;),
+    /// 参数解 (x(t), y(t))
+    Parametric(Atom&lt;'a&gt;, Atom&lt;'a&gt;),
+    /// 级数解（截断表达式 + 项数）
+    Series(Atom&lt;'a&gt;, usize),
+    /// 系统解（各分量）
+    System(&amp;'a [Atom&lt;'a&gt;]),
+    /// 未能求解，返回原 ODE
+    Unsolved(ODE&lt;'a&gt;),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：ODE 求解结果的枚举类型。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Explicit(expr)</code></td><td>显式解 $y = \text{expr}$，含自由常数 C1, C2, ...</td></tr>
+<tr><td><code>Implicit(expr)</code></td><td>隐式解 $F(x, y) = 0$（存储表达式 $F$）</td></tr>
+<tr><td><code>Parametric(x(t), y(t))</code></td><td>参数解：两个表达式分别给出 $x(t)$ 和 $y(t)$</td></tr>
+<tr><td><code>Series(expr, n)</code></td><td>级数解，<code>expr</code> 为截断后的级数表达式，<code>n</code> 为项数</td></tr>
+<tr><td><code>System(components)</code></td><td>系统解，<code>components[i]</code> 为第 $i$ 个未知函数的解</td></tr>
+<tr><td><code>Unsolved(ode)</code></td><td>未能找到解析解，返回原 ODE</td></tr>
+</tbody></table>
+</div>
+<hr />
+<h3 id="odetype"><a class="header" href="#odetype">ODEType</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ODEType {
+    Separable,
+    LinearFirst,
+    Bernoulli,
+    Exact,
+    Homogeneous,
+    LinearConstantCoeff,
+    CauchyEuler,
+    ReductionOfOrder,
+    PowerSeries,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：ODE 类型枚举，决定使用哪种求解方法。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>方程形式</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>Separable</code></td><td>$g(y),y' = f(x)$</td><td>可分离变量：$\int g(y),dy = \int f(x),dx + C$</td></tr>
+<tr><td><code>LinearFirst</code></td><td>$y' + p(x),y = q(x)$</td><td>一阶线性：积分因子 $\mu = e^{\int p,dx}$</td></tr>
+<tr><td><code>Bernoulli</code></td><td>$y' + p(x),y = q(x),y^n$</td><td>Bernoulli 方程：替换 $v = y^{1-n}$ 化为线性</td></tr>
+<tr><td><code>Exact</code></td><td>$M,dx + N,dy = 0$，$\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x}$</td><td>恰当方程：势函数 $F(x,y) = C$</td></tr>
+<tr><td><code>Homogeneous</code></td><td>$y' = f(y/x)$</td><td>齐次方程：替换 $v = y/x$ 化为可分离</td></tr>
+<tr><td><code>LinearConstantCoeff</code></td><td>$a,y'' + b,y' + c,y = f(x)$</td><td>常系数线性：特征方程 + 待定系数法（多项式/指数/三角强迫项）</td></tr>
+<tr><td><code>CauchyEuler</code></td><td>$a,x^2,y'' + b,x,y' + c,y = f(x)$</td><td>Cauchy-Euler：替换 $x = e^t$ 化为常系数</td></tr>
+<tr><td><code>ReductionOfOrder</code></td><td>$a(x),y'' + b(x),y' + c(x),y = f(x)$</td><td>降阶法：尝试简单候选解 $y_1$，$y_2 = y_1 \int \frac{e^{-\int p,dx}}{y_1^2},dx$，非零强迫项用参数变易求特解</td></tr>
+<tr><td><code>PowerSeries</code></td><td>线性 ODE，常点 $x_0 = 0$</td><td>幂级数法：$y = \sum_{n=0}^{N-1} a_n x^n$；失败后自动回退到 Frobenius 方法</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>注：变易常数（variation of parameters）与 Frobenius 方法在内部作为求解例程使用（前者用于降阶法的特解，后者作为幂级数失败后的回退），但它们<strong>不是</strong> <code>ODEType</code> 的独立变体。</p>
+</blockquote>
+<hr />
+<h3 id="classify_ode"><a class="header" href="#classify_ode">classify_ode</a></h3>
+<p><strong>签名</strong>：<code>pub fn classify_ode&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, ode: ODE&lt;'a&gt;) -&gt; Vec&lt;ODEType&gt;</code></p>
+<p><strong>功能</strong>：分析 ODE 并返回所有适用的求解方法，按优先级排列。实际返回顺序（实现于 <code>classify.rs</code>）：一阶方程依次检查 <code>LinearFirst</code> → <code>Bernoulli</code> → <code>Separable</code> → <code>Exact</code> → <code>Homogeneous</code>；二阶（及以上）线性方程依次检查 <code>LinearConstantCoeff</code> → <code>CauchyEuler</code> → <code>ReductionOfOrder</code>（仅二阶）；最后，任何线性方程（阶 ≥ 1）都会追加 <code>PowerSeries</code> 作为兜底。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>ode</code></td><td><code>ODE&lt;'a&gt;</code></td><td>待分类的 ODE</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Vec&lt;ODEType&gt;</code> — 所有适用的求解方法列表（可能为空）。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_core::arena::Arena;
+use ocas_calc::ode::{classify_ode, ODE, ODEType};
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+
+// y' - y = 0 是一阶线性
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+let eq = ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]);
+let ode = ODE { equation: eq, func: y, var: Symbol::new("x") };
+let methods = classify_ode(&amp;ctx, ode);
+assert!(methods.contains(&amp;ODEType::LinearFirst));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#dsolve"><code>dsolve</code></a>、<a href="#odetype"><code>ODEType</code></a></p>
+<hr />
+<h3 id="dsolve"><a class="header" href="#dsolve">dsolve</a></h3>
+<p><strong>签名</strong>：<code>pub fn dsolve&lt;'a&gt;(ctx: &amp;'a AtomArena&lt;'a&gt;, ode: ODE&lt;'a&gt;, hint: Option&lt;ODEType&gt;) -&gt; ODESolution&lt;'a&gt;</code></p>
+<p><strong>功能</strong>：求解常微分方程。自动分类 ODE 类型并按优先级尝试各种方法；也可通过 <code>hint</code> 指定特定方法。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>ode</code></td><td><code>ODE&lt;'a&gt;</code></td><td>待求解的 ODE</td></tr>
+<tr><td><code>hint</code></td><td><code>Option&lt;ODEType&gt;</code></td><td>可选：指定求解方法。<code>None</code> 时自动分类并按优先级尝试</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<a href="#odesolution"><code>ODESolution&lt;'a&gt;</code></a></p>
+<p><strong>求解策略</strong>（<code>hint = None</code> 时）：</p>
+<ol>
+<li>调用 <a href="#classify_ode"><code>classify_ode</code></a> 获取候选方法列表</li>
+<li>按优先级依次尝试每种方法</li>
+<li>第一个成功的方法的解被返回</li>
+<li>所有方法均失败时返回 <code>ODESolution::Unsolved</code></li>
+</ol>
+<p><strong>一阶求解器</strong>：</p>
+<ul>
+<li><strong>可分离</strong>：$\int g(y),dy = \int f(x),dx + C$</li>
+<li><strong>一阶线性</strong>：积分因子 $\mu(x) = e^{\int p(x),dx}$，通解 $y = \frac{1}{\mu}\left(\int \mu,q,dx + C\right)$</li>
+<li><strong>Bernoulli</strong>：替换 $v = y^{1-n}$ 化为一阶线性</li>
+<li><strong>恰当方程</strong>：求势函数 $F$ 使 $\frac{\partial F}{\partial x} = M$，$\frac{\partial F}{\partial y} = N$；非恰当时尝试积分因子 $\mu(x)$ 或 $\mu(y)$</li>
+<li><strong>齐次</strong>：替换 $v = y/x$ 化为可分离</li>
+</ul>
+<p><strong>二阶求解器</strong>：</p>
+<ul>
+<li><strong>常系数</strong>：特征方程 $ar^2 + br + c = 0$，根据判别式 $\Delta = b^2 - 4ac$ 构造基本解集，待定系数法求特解</li>
+<li><strong>Cauchy-Euler</strong>：替换 $x = e^t$ 转化为常系数方程，指标方程 $ar^2 + (b-a)r + c = 0$</li>
+<li><strong>降阶法</strong>：尝试简单候选解（$1, x, x^2, e^x, e^{-x}, e^{2x}$），找到后用 $y_2 = y_1 \int \frac{e^{-\int p,dx}}{y_1^2},dx$ 构造第二解</li>
+<li><strong>参数变易</strong>：已知齐次基本解 $y_1, y_2$ 时，用 Wronskian $W = y_1 y_2' - y_1' y_2$ 求特解</li>
+</ul>
+<p><strong>级数求解器</strong>（<code>PowerSeries</code> 分派，固定展开点 $x_0 = 0$，8 项）：</p>
+<ul>
+<li><strong>幂级数</strong>：在常点 $x_0 = 0$ 展开 $y = \sum_{n=0}^{N-1} a_n x^n$，代入 ODE 递推求系数</li>
+<li><strong>Frobenius</strong>（内部回退）：若幂级数在常点不适用，自动回退到正则奇点方法，展开 $y = x^r \sum_{n=0}^{N-1} a_n x^n$，指标方程确定 $r$</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::{dsolve, ODE, ODESolution};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+
+// 求解 y' - y = 0 → C1*exp(x)
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+let sol = dsolve(&amp;ctx, ode, None);
+assert!(matches!(sol, ODESolution::Explicit(_)));
+
+// 指定方法
+let sol_hint = dsolve(&amp;ctx, ode, Some(ODEType::LinearFirst));
+assert!(matches!(sol_hint, ODESolution::Explicit(_)));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#classify_ode"><code>classify_ode</code></a>、<a href="#dsolve_ivp"><code>dsolve_ivp</code></a>、<a href="#dsolve_system"><code>dsolve_system</code></a></p>
+<hr />
+<h3 id="dsolve_ivp"><a class="header" href="#dsolve_ivp">dsolve_ivp</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn dsolve_ivp&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    ode: ODE&lt;'a&gt;,
+    y0: Atom&lt;'a&gt;,
+    y1: Option&lt;Atom&lt;'a&gt;&gt;,
+) -&gt; ODESolution&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：用 Laplace 变换求解一阶或二阶线性常系数 ODE 的初值问题（IVP）。结果为不含自由常数的显式解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>ode</code></td><td><code>ODE&lt;'a&gt;</code></td><td>ODE（须为线性常系数）</td></tr>
+<tr><td><code>y0</code></td><td><code>Atom&lt;'a&gt;</code></td><td>初始条件 $y(0)$</td></tr>
+<tr><td><code>y1</code></td><td><code>Option&lt;Atom&lt;'a&gt;&gt;</code></td><td>二阶问题时为 $y'(0)$；一阶时忽略</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<a href="#odesolution"><code>ODESolution&lt;'a&gt;</code></a></p>
+<ul>
+<li><code>Explicit(expr)</code>：不含自由常数的显式解</li>
+<li><code>Unsolved</code>：Laplace 变换法不适用或无法求逆</li>
+</ul>
+<p><strong>方法说明</strong>：</p>
+<ol>
+<li>对 ODE 两端取 Laplace 变换，利用 $\mathcal{L}{y'} = sY - y(0)$ 和 $\mathcal{L}{y''} = s^2 Y - sy(0) - y'(0)$</li>
+<li>代入初始条件，得到 $Y(s)$ 的代数方程</li>
+<li>解出 $Y(s)$</li>
+<li>通过部分分式分解 + 标准对查表进行逆 Laplace 变换</li>
+</ol>
+<p><strong>支持的强迫项</strong>：多项式、指数 $e^{kx}$、正弦/余弦 $\sin(\omega x)$/$\cos(\omega x)$，以及 $e^{kx}\sin(\omega x)$/$e^{kx}\cos(\omega x)$ 的线性组合。</p>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::{dsolve_ivp, ODE, ODESolution};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y = ctx.fun("y", &amp;[x]);
+let dy = ctx.fun("Derivative", &amp;[y, x]);
+
+// y' - y = 0, y(0) = 1  →  y = exp(x)
+let ode = ODE {
+    equation: ctx.add(&amp;[dy, ctx.mul(&amp;[ctx.num(-1), y])]),
+    func: y,
+    var: Symbol::new("x"),
+};
+let sol = dsolve_ivp(&amp;ctx, ode, ctx.num(1), None);
+assert!(matches!(sol, ODESolution::Explicit(_)));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#dsolve"><code>dsolve</code></a></p>
+<hr />
+<h3 id="dsolve_system"><a class="header" href="#dsolve_system">dsolve_system</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn dsolve_system&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    equations: &amp;[Atom&lt;'a&gt;],
+    funcs: &amp;[Atom&lt;'a&gt;],
+    var: Symbol,
+) -&gt; ODESolution&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：求解 $2 \times 2$ 常系数线性 ODE 系统 $\mathbf{Y}' = A\mathbf{Y}$。通过特征值分解得到通解。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>equations</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>方程列表，每个方程形式为 <code>Derivative(y_i, x) - (a_i1*y1 + a_i2*y2) = 0</code></td></tr>
+<tr><td><code>funcs</code></td><td><code>&amp;[Atom&lt;'a&gt;]</code></td><td>未知函数列表，如 <code>[y1(x), y2(x)]</code></td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>自变量符号</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<a href="#odesolution"><code>ODESolution&lt;'a&gt;</code></a></p>
+<ul>
+<li><code>System(&amp;[Atom])</code>：各分量的通解（含自由常数 C1, C2）</li>
+<li><code>Unsolved</code>：系统不支持（非 2×2 或特征值无闭式解）</li>
+</ul>
+<p><strong>支持情况</strong>：</p>
+<ul>
+<li>不同实特征值 $\lambda_1 \neq \lambda_2$：$\mathbf{Y} = C_1 \mathbf{v}_1 e^{\lambda_1 x} + C_2 \mathbf{v}_2 e^{\lambda_2 x}$</li>
+<li>重复实特征值（含广义特征向量）：$\mathbf{Y} = (C_1 \mathbf{v} + C_2(\mathbf{w} + x\mathbf{v}))e^{\lambda x}$</li>
+<li>共轭复特征值 $\alpha \pm \beta i$：实值基本解 $e^{\alpha x}(\mathbf{p}\cos\beta x - \mathbf{q}\sin\beta x)$ 等</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_atom::{AtomArena, Symbol};
+use ocas_calc::ode::{dsolve_system, ODESolution};
+use ocas_core::arena::Arena;
+
+let arena = Arena::new();
+let ctx = AtomArena::new(&amp;arena);
+let x = ctx.var("x");
+let y1 = ctx.fun("y1", &amp;[x]);
+let y2 = ctx.fun("y2", &amp;[x]);
+let dy1 = ctx.fun("Derivative", &amp;[y1, x]);
+let dy2 = ctx.fun("Derivative", &amp;[y2, x]);
+
+// 谐振子：y1' = y2, y2' = -y1
+let eq1 = ctx.add(&amp;[dy1, ctx.mul(&amp;[ctx.num(-1), y2])]);
+let eq2 = ctx.add(&amp;[dy2, y1]);
+let sol = dsolve_system(&amp;ctx, &amp;[eq1, eq2], &amp;[y1, y2], Symbol::new("x"));
+assert!(matches!(sol, ODESolution::System(_)));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>参见</strong>：<a href="#dsolve"><code>dsolve</code></a></p>
+<hr />
+<h2 id="solveerror"><a class="header" href="#solveerror">SolveError</a></h2>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SolveError {
+    /// 方程组为空
+    EmptySystem,
+    /// 方程组非线性
+    NonLinear,
+    /// 系数矩阵不是方阵（或方程数 ≠ 未知数个数）
+    NonSquare,
+    /// 方程组矛盾（无解）
+    Inconsistent,
+    /// 方程组欠定（无穷多解）
+    Underdetermined { rank: usize },
+    /// 结果不在目标域中
+    ResultNotInDomain,
+    /// 内部矩阵运算失败
+    Matrix(MatrixError),
+    /// 带描述的其他错误
+    Other(String),
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：方程求解过程中可能出现的错误。实现 <code>Display</code> 和 <code>Error</code> trait。实现 <code>From&lt;MatrixError&gt;</code>：<code>ShapeMismatch</code> → <code>NonSquare</code>、<code>Inconsistent</code> → <code>Inconsistent</code>、<code>Underdetermined { rank }</code> → <code>Underdetermined { rank }</code>、<code>ResultNotInDomain</code> → <code>ResultNotInDomain</code>、<code>RightHandSideIsNotVector</code> → <code>Other("right-hand side is not a vector")</code>。</p>
+<p><strong>变体</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>变体</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>EmptySystem</code></td><td>输入方程组为空</td></tr>
+<tr><td><code>NonLinear</code></td><td>方程组在目标变量中非线性</td></tr>
+<tr><td><code>NonSquare</code></td><td>系数矩阵不是方阵（方程数 ≠ 未知数个数）</td></tr>
+<tr><td><code>Inconsistent</code></td><td>增广矩阵的秩大于系数矩阵的秩</td></tr>
+<tr><td><code>Underdetermined { rank }</code></td><td>系数矩阵的秩小于变量数，<code>rank</code> 为实际秩</td></tr>
+<tr><td><code>ResultNotInDomain</code></td><td>解不在目标数域中（如要求整数解但解为分数）</td></tr>
+<tr><td><code>Matrix(MatrixError)</code></td><td>内部矩阵运算失败（由 <code>From&lt;MatrixError&gt;</code> 自动转换）</td></tr>
+<tr><td><code>Other(String)</code></td><td>其他带描述的错误</td></tr>
+</tbody></table>
+</div>
+<p><strong>示例</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use ocas_calc::solve::{solve_linear_rational, SolveError};
+
+// 矛盾系统：x + y = 1, x + y = 2
+let a = vec![vec![1, 1], vec![1, 1]];
+let b = vec![1, 2];
+let result = solve_linear_rational(&amp;a, &amp;b);
+assert_eq!(result, Err(SolveError::Inconsistent));
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h2 id="辅助函数"><a class="header" href="#辅助函数">辅助函数</a></h2>
+<h3 id="substitute_solution_collected"><a class="header" href="#substitute_solution_collected">substitute_solution_collected</a></h3>
+<p><strong>签名</strong>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn substitute_solution_collected&lt;'a&gt;(
+    ctx: &amp;'a AtomArena&lt;'a&gt;,
+    equation: Atom&lt;'a&gt;,
+    func: Atom&lt;'a&gt;,
+    sol: Atom&lt;'a&gt;,
+    var: Symbol,
+) -&gt; Atom&lt;'a&gt;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>功能</strong>：将候选解代入 ODE 方程，合并同类项后返回残差。残差为零说明候选解满足 ODE。主要用于验证。</p>
+<p><strong>参数</strong>：</p>
+<div class="table-wrapper"><table><thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>ctx</code></td><td><code>&amp;'a AtomArena&lt;'a&gt;</code></td><td>表达式 arena</td></tr>
+<tr><td><code>equation</code></td><td><code>Atom&lt;'a&gt;</code></td><td>ODE 方程（<code>lhs - rhs</code> 形式）</td></tr>
+<tr><td><code>func</code></td><td><code>Atom&lt;'a&gt;</code></td><td>未知函数（如 <code>y(x)</code>）</td></tr>
+<tr><td><code>sol</code></td><td><code>Atom&lt;'a&gt;</code></td><td>候选解表达式</td></tr>
+<tr><td><code>var</code></td><td><code>Symbol</code></td><td>自变量符号</td></tr>
+</tbody></table>
+</div>
+<p><strong>返回值</strong>：<code>Atom&lt;'a&gt;</code> — 代入并化简后的残差表达式。为零则候选解正确。</p>
+<hr />
+<h2 id="来源模块"><a class="header" href="#来源模块">来源模块</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>模块</th><th>路径</th><th>内容</th></tr></thead><tbody>
+<tr><td>线性求解</td><td><code>ocas-calc/src/solve.rs</code></td><td><code>solve_linear_rational</code>、<code>solve_linear_integer</code>、<code>solve_diophantine</code>、<code>SolveError</code></td></tr>
+<tr><td>多项式系统</td><td><code>ocas-poly/src/ideal.rs</code></td><td><code>solve_polynomial_system</code>、<code>PolynomialSystemSolution</code>、<code>RealSolution</code>、<code>ZeroDimSolutions</code></td></tr>
+<tr><td>ODE 分类</td><td><code>ocas-calc/src/ode/classify.rs</code></td><td><code>classify_ode</code>、<code>ODEType</code></td></tr>
+<tr><td>ODE 一阶</td><td><code>ocas-calc/src/ode/first_order.rs</code></td><td>可分离、线性、Bernoulli、恰当、齐次求解器</td></tr>
+<tr><td>ODE 二阶</td><td><code>ocas-calc/src/ode/second_order.rs</code></td><td>常系数、Cauchy-Euler、降阶、参数变易求解器</td></tr>
+<tr><td>ODE 级数</td><td><code>ocas-calc/src/ode/series.rs</code></td><td>幂级数、Frobenius 求解器</td></tr>
+<tr><td>ODE Laplace</td><td><code>ocas-calc/src/ode/laplace.rs</code></td><td><code>dsolve_ivp</code> 的 Laplace 变换实现</td></tr>
+<tr><td>ODE 系统</td><td><code>ocas-calc/src/ode/systems.rs</code></td><td><code>dsolve_system</code> 的特征值分解实现</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../api/rust-calculus.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../api/rust-rewrite.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../api/rust-calculus.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../api/rust-rewrite.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../language-switcher.js"></script>
+
+
+    </div>
+    </body>
+</html>
