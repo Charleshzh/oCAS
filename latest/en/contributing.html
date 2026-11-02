@@ -248,8 +248,9 @@ version did not change, release-plz is a no-op.</p>
 <p><strong>Tag fan-out.</strong></p>
 <ul>
 <li><code>release.yml</code> validates the tag against the workspace version, dry-runs
-<code>cargo publish</code> for every crate, and attaches the C artifacts to the
-project-level GitHub Release.</li>
+<code>cargo publish</code> for every crate, composes the release body from the
+version's CHANGELOG section plus the auto-generated PR list, and attaches
+the C artifacts to the project-level GitHub Release.</li>
 <li><code>wheels.yml</code> builds the Python wheels and sdist with maturin and publishes
 to PyPI (pre-release tags go to TestPyPI); the <code>pypi</code> environment asks an
 owner to approve the publish job.</li>
