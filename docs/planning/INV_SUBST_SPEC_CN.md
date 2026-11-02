@@ -1,6 +1,7 @@
 # 反函数代换引擎（inverse-substitution engine）算法规格
 
 **版本**：oCAS 0.30.0（Wave 5）
+**0.31.0 状态注记（2026-11-02）**：M4 机制本身未变；0.31.0 已交付 `polylog(2,·)` 头与 Li₂ 归约（[POLYLOG_SPEC_CN.md](POLYLOG_SPEC_CN.md)），因此本文中「指数参数→polylog（0.31.0 领土）」一类拒绝面（如 `invhyp:bare` 的 00717/01681）仍待 0.31b 的 inverse-trig-hyper→Li₂ 交棒与更高核幂归约。
 **状态**：实现规格，不修改任何 Rust 代码（`ocas-calc/` 下的 W4 实现由另一分支
 并行进行，本文只写接口约定）
 **前置规格**：[MULTI_RADICAL_SPEC_CN.md](MULTI_RADICAL_SPEC_CN.md)（W4 多根式基

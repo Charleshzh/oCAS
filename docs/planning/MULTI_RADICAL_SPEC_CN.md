@@ -1,6 +1,7 @@
 # 多根式基归约（multi-radical-base）算法规格
 
 **版本**：oCAS 0.30.0（Wave 4）
+**0.31.0 状态注记（2026-11-02）**：MR 机制在 0.31.0 未变；同波 W6a 的 `integral/single_radical.rs` 已由分支安全偶代换修复 `rubi-00401` 错案并重新接线（净 +24 解 / 0 回归）。
 **状态**：实现规格，不修改任何 Rust 代码
 **前置规格**：[ALGEBRAIC_RT_SPEC_CN.md](ALGEBRAIC_RT_SPEC_CN.md)（证书根式层是其 §4 的
 直接消费者）、[LOGPART_RT_SPEC_CN.md](LOGPART_RT_SPEC_CN.md)（诚实拒绝与自证闭环体例）
