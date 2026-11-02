@@ -69,7 +69,7 @@ cbindgen = "0.29"
 criterion = "0.8"
 proptest = "1.6"
 mimalloc = "0.1"
-rand = "0.9"
+rand = "0.10"
 rand_xoshiro = "0.7"
 
 [profile.release]
