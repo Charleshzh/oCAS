@@ -87,6 +87,14 @@ Automated, CI-gated; the root `vX.Y.Z` tag is the release switch. One root
    crates.io and creates the root `vX.Y.Z` tag with the `RELEASE_PLZ_TOKEN` PAT
    (a tag pushed with `GITHUB_TOKEN` would not trigger downstream workflows).
    The tag step is idempotent and skips when the tag already exists.
+   **0.31.0 lesson:** the tag pushed by that step did not trigger
+   `release.yml`/`wheels.yml`/`docs.yml` (crates.io was already published). The
+   owner re-pushed the identical tag object with their own credentials, which
+   triggered all three. After every release, verify the tag-triggered runs
+   appear; if not, re-push the same tag (delete + push, temporarily disabling the
+   `protect-release-tags` ruleset via `PUT /repos/{owner}/{repo}/rulesets/{id}`
+   with `enforcement: disabled`, then restore `active`). The tag object SHA must
+   stay unchanged.
 3. The tag triggers `release.yml` (C artifacts on the GitHub Release),
    `wheels.yml` (5-platform wheels + sdist to PyPI; the `pypi` environment has
    required reviewers, so `publish-pypi` waits for an owner approval) and
@@ -215,6 +223,12 @@ LGPL 后端测试、maturin wheel + pytest + C 示例、严格 rustdoc、Miri；
 2. `release-plz.yml` 先等待该 commit 的 CI 绿（preflight），再发布 crates.io，并用
    `RELEASE_PLZ_TOKEN`（PAT）创建顶层 tag；用 `GITHUB_TOKEN` 推 tag 不会触发下游
    workflow。tag 步骤幂等（tag 已存在则跳过）。
+   **0.31.0 实测教训**：该步骤推送的 tag 未触发 `release.yml`/`wheels.yml`/`docs.yml`
+   （此时 crates.io 已发布）。owner 用自身凭据重推**同一 tag 对象**后三者才正常触发。
+   每次发布后必须核对 tag 触发的 run 是否出现；缺失时按此兜底重推（删除+重推；
+   删除前需临时禁用 `protect-release-tags` ruleset：
+   `PUT /repos/{owner}/{repo}/rulesets/{id}` 传 `enforcement: disabled`，完成后恢复
+   `active`）。tag 对象 SHA 必须保持不变。
 3. tag 触发 `release.yml`（C 产物）、`wheels.yml`（5 平台 wheel + sdist 到 PyPI；
    `pypi` environment 有 required reviewers，`publish-pypi` 会等待 owner 批准）、
    `docs.yml`（`/latest/{en,zh}/` 与冻结的 `/v<version>/{en,zh}/`）。
