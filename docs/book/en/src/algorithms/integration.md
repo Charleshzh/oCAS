@@ -31,7 +31,8 @@ wins. This chapter explains each layer and when the unevaluated
    `exp(I·x)` and re-integrated by Risch, then converted back to real
    form on a best-effort basis.
 6. **Special-function table** — non-elementary integrals with closed
-   forms in terms of `erf`, `Ei`, `Si`, `Ci`, Fresnel `S`/`C`, …
+   forms in terms of `erf`, `Ei`, `Si`, `Ci`, Fresnel `S`/`C`, the dilogarithm
+   `Li₂` (0.31.0, `polylog(2, ·)`), …
 7. **Rule-table engine** (0.27) — a self-contained standard-calculus rule
    library (families A–H: powers/binomials, exponentials/logarithms,
    trigonometry, hyperbolic, inverse trig/hyperbolic, rational
@@ -49,6 +50,14 @@ wins. This chapter explains each layer and when the unevaluated
    chain **after `binomial` and before `exp_log`**, so the single-base
    engines keep first claim on single-base shapes, and it declines
    honestly outside its fragment.
+9b. **Single-radical atomic-layer reduction** (0.30.0 experiment, wired in 0.31.0) —
+    affine-square slices, an even substitution and a reciprocal substitution, each
+    handed back to the chain. The `rubi-00401` branch-sign wrong answer is fixed by
+    the branch-safe even substitution (both sheets agree, x = ±0.6), and every
+    emission passes a two-sheet numeric gate (12 deterministic samples on both
+    signs, relative error ≤ 1e-6); a re-entrancy guard stops the substitution
+    cascade from re-entering the stage. The stage sits **after `multi_radical`
+    and before `exp_log`**.
 10. **Inverse-function substitution** (0.30.0) — the M4 mechanism at the
     **end of the `inverse_trig` dispatch order**: `u = F(w)` over 11 heads
     (`asin`/`acos`/`atan`/`asinh`/`acosh`/`atanh` plus

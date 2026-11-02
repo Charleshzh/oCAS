@@ -8,7 +8,7 @@
 配套文档：[COMPETITIVE_MATRIX_CN.md](COMPETITIVE_MATRIX_CN.md)（竞品能力矩阵）、
 [BENCHMARK_SUITE_CN.md](BENCHMARK_SUITE_CN.md)（基准测试套件）。
 
-> 最后评估：**0.26.0 @ 2026-08-06**（竞品版本重新核实：Symbolica 2.2.0（无更新）、
+> 最后评估：**0.31.0 @ 2026-11-02**（oCAS 侧逐版本更新；竞品版本最近一次全量核实为 2026-08-06：Symbolica 2.2.0（无更新）、
 > SymPy 1.14.0（无更新）、SageMath 10.9（2026-05-05）、FLINT 3.6.0（2026-06-29，
 > Kinoshita-Li 级数复合/padic_radix/subresultant 结式）、msolve 0.10.1（2026-07-08，
 > Gebauer-Möller 改进 + QQ 提升修复）、GiNaC 1.8.10（无更新）、mathcore 0.3.1

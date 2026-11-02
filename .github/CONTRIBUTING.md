@@ -221,6 +221,7 @@ Releases are automated and CI-gated; the root `vX.Y.Z` tag is the release switch
 1. Bump `workspace.package.version` and `CHANGELOG.md` on `main` yourself (12 publishable crates; `ocas-tests` is `publish = false`), then push. If the version did not change, release-plz is a no-op.
 2. The `release-plz` workflow waits for CI to be green on that exact commit (`preflight`), publishes the crates to crates.io in dependency order, and then creates the root `vX.Y.Z` tag. Tag creation needs the `RELEASE_PLZ_TOKEN` secret (a fine-grained PAT with `Contents: Read and write`); a tag pushed with the default `GITHUB_TOKEN` does not trigger the downstream workflows.
 3. The tag triggers `release.yml` (validates the tag against the workspace version, dry-runs packaging and attaches the C artifacts to the project-level GitHub Release), `wheels.yml` (builds wheels + sdist with maturin and publishes to PyPI; pre-release tags go to TestPyPI — note that the `pypi` environment asks an owner to approve the publish job), and `docs.yml` (publishes `/latest/{en,zh}/` plus a frozen `/v<version>/{en,zh}/` snapshot).
+   **0.31.0 tag-trigger check**: the tag pushed by the release-plz step did not trigger `release.yml`/`wheels.yml`/`docs.yml` in practice. After every release, verify that runs appear for the tag (`gh run list --commit <sha>`); if they do not, re-push the identical tag object with your own credentials — temporarily disable the `protect-release-tags` ruleset (`PUT /repos/{owner}/{repo}/rulesets/{id}` with `enforcement: disabled`), delete and re-push the tag, then restore `active`. The tag object SHA must stay unchanged.
 4. Manual fallback for a commit that is on `main` and green in CI:
    ```bash
    git tag -a vX.Y.Z -m "oCAS vX.Y.Z"
@@ -236,6 +237,7 @@ Releases are automated and CI-gated; the root `vX.Y.Z` tag is the release switch
 1. 自行在 `main` 上提升 `workspace.package.version` 并更新 `CHANGELOG.md`（12 个可发布 crate；`ocas-tests` 为 `publish = false`），然后 push。版本未变化时 release-plz 自然 no-op。
 2. `release-plz` workflow 先等待该提交的 CI 变绿（`preflight`），再按依赖序发布各 crate 到 crates.io，最后创建顶层 `vX.Y.Z` 标签。打标签需要 `RELEASE_PLZ_TOKEN` secret（具备 `Contents: Read and write` 权限的 fine-grained PAT）；用默认 `GITHUB_TOKEN` 推送的标签不会触发下游 workflow。
 3. 标签触发 `release.yml`（校验标签与工作区版本一致、做打包试运行，并把 C 绑定产物附加到项目级 GitHub Release）、`wheels.yml`（用 maturin 构建 wheel + sdist 并发布到 PyPI；预发布标签发到 TestPyPI——注意 `pypi` environment 会要求 owner 批准发布 job）以及 `docs.yml`（发布 `/latest/{en,zh}/` 与冻结的 `/v<version>/{en,zh}/` 版本快照）。
+   **0.31.0 tag 触发核验**：实测 release-plz 用 `RELEASE_PLZ_TOKEN` 推送的顶层 tag 未触发 `release.yml`/`wheels.yml`/`docs.yml`。每次发布后必须核对 tag 触发的 run 是否出现（`gh run list --commit <sha>`）；若缺失，用 owner 凭据重推**同一 tag 对象**——先临时禁用 `protect-release-tags` ruleset（`PUT /repos/{owner}/{repo}/rulesets/{id}` 传 `enforcement: disabled`），删除并重推 tag，然后恢复 `active`；tag 对象 SHA 必须保持不变。
 4. 手动兜底（对已在 `main` 上且 CI 通过的提交）：
    ```bash
    git tag -a vX.Y.Z -m "oCAS vX.Y.Z"

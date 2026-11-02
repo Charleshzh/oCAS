@@ -7,7 +7,7 @@
 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)（差距快照）的配套。英文版见
 [EVOLUTION_PLAN_EN.md](EVOLUTION_PLAN_EN.md)。
 
-> 最后修订：**2026-08-03（0.23.0 已发布；竞品全面调研完成；阶段 B+++ 规划为 0.24 积分广度 + 0.25 Gröbner 性能 + 0.26 线性代数）**
+> 最后修订：**2026-11-02（0.31.0 已发布：Li₂ 层 + W6a 接线；下一活动线 0.31b / 0.32.0）**
 
 ---
 
@@ -1415,7 +1415,7 @@ solved 370 → **371**、verified 343/371、`verify_mismatches = 0`、超时 12�
 ### 0.31.0 — 非初等层（拆为 0.31a / 0.31b；0.31a 已交付 2026-11-02）
 
 **目标**：补上今天**完全不可达**的一类：需要二重对数/Meijer G 的原函数
-（基线：122 例参考答案含 `polylog`，占未解 8.0%）。
+（基线：123 例参考答案含 `polylog`（2026-11-02 审计；旧值 122），占未解约 8.0%）。
 （依据：GENERAL_MECHANISM_FEASIBILITY_CN.md §3.6、§6 P3）
 
 **范围拆分（2026-10-24 规划复核）**
@@ -1424,7 +1424,7 @@ solved 370 → **371**、verified 343/371、`verify_mismatches = 0`、超时 12�
 W6a 分支修复 + 接线、Bronstein ch. 7–8 代数塔、`inverse-trig-hyper` 剩余拒绝面）
 量级约为 0.30.0 的 2–4 倍；历史同类估算两次高估 2–9 倍（多根式基估 222 例 →
 radical 实得 +33、W4a 整波 +46；反函数代换估 30–40 例 → 实得 +14，即 22/146），
-且「122 例 `polylog`」归因自 2026-09-12 后未再审计。故拆为：
+且「123 例 `polylog`」归因自 2026-09-12 后未再审计（2026-11-02 已审计）。故拆为：
 
 - **0.31a（可宣布切片）**：`polylog`/Li₂ 函数头 + 数值 oracle 核验、Li₂ 归约骨架、
   `rubi-00401` 分支修复后 `single_radical.rs` 接线复测 W6a 三门，外加两项验收物
@@ -1453,7 +1453,7 @@ radical 实得 +33、W4a 整波 +46；反函数代换估 30–40 例 → 实得 
 | 条目 | 归属 | 参考 | oCAS 落地位置 |
 |---|---|---|---|
 | `polylog`/`Li₂` 函数头 + oracle 数值核验 | 0.31a | 0.27.3 对 `Ei`/`Si`/`Ci` 的落地模式 | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
-| Li₂ 归约骨架（对数-有理积分） | 0.31a | Lewin 公式；Raab/Baddoura | `integral/special.rs` 或新模块（规格 `POLYLOG_SPEC_CN.md`） |
+| Li₂ 归约骨架（对数-有理积分） | 0.31a | Lewin 公式；Raab/Baddoura | `integral/polylog.rs`（A 类经 `integral/special.rs` 分派；规格 `POLYLOG_SPEC_CN.md`） |
 | `rubi-00401` 分支符号修复 + W6a 接线复测 | 0.31a | 0.30.0 W6a 试验 | `integral/single_radical.rs` + `integral/mod.rs` 接线点 |
 | Meijer G / Slater 展开（或 holonomic 路线） | 0.31b | SymPy `meijerg` | `ocas-calc::integral` 新模块（SPEC 待写） |
 | `ProvedNonElementary` 首次可用 | 0.31b | Singer 结构定理（工程化子集） | `Outcome` 第三值（SPEC 待写） |
@@ -1468,14 +1468,18 @@ radical 实得 +33、W4a 整波 +46；反函数代换估 30–40 例 → 实得 
 
 **验收**
 
-- [ ] `polylog`/`Li₂` 头 + 数值 oracle 核验落地（oracle 逐例通过率 100%）
-- [ ] Li₂ 归约骨架落地：可及题数与被拒题数分别入档
-- [ ] （0.30.0 承接）`rubi-00401` 分支符号错案修复，接线后复测 W6a 三门
-  （+29 解 / 0 回归 / 超时 12 持平 / 墙钟 ≤ 门）；`rubi-00401`
-  已有 pinned 回归测试（本次改进加入 `ocas-tests/tests/correctness/integral_verify.rs`）
-- [ ] 证书门保持；`verify_mismatches` 保持 0
+- [x] `polylog`/`Li₂` 头 + 数值 oracle 核验落地（oracle 逐例通过；网格误差 4.4e-16、
+  导数自检 6.0e-10）
+- [x] Li₂ 归约骨架落地：可及/被拒题数已入档（`integral/polylog.rs`；语料净 +3，
+  123 例归因见 POLYLOG SPEC §7）
+- [x] （0.30.0 承接）`rubi-00401` 分支符号错案修复，接线后复测 W6a 三门
+  （实测 **+24 解 / 0 回归 / 超时 13（≤14 硬门）/ 墙钟 472.6 s（≤538.5 s）**；
+  0.30.0 试验值 +29 未完全复现，原因见 ROADMAP）；`rubi-00401` 已有 pinned 回归测试
+  （`ocas-tests/tests/correctness/integral_verify.rs`，已收紧为必须 Verified）
+- [x] 证书门保持；`verify_mismatches` 保持 0、证书假阳性 0
 - [ ] 0.31b 移交：Meijer G、`ProvedNonElementary`、Bronstein ch. 7–8 代数塔、
   `inverse-trig-hyper` 剩余拒绝面各写 1 份 SPEC 并移入 0.32.0/0.33.0
+  （POLYLOG SPEC 已交付；0.31b 仍 0 份 SPEC）
 
 **风险**
 
@@ -1484,8 +1488,8 @@ radical 实得 +33、W4a 整波 +46；反函数代换估 30–40 例 → 实得 
   因此 0.31a 按「先头与 oracle、后归约、接线单独复测」的顺序交付
 - **`rubi-00401` 无 pinned 测试的缺口**：0.30.0 W6a 的分支符号错案此前只有散文引用；
   本次改进已加入 pinned 回归测试，后续同族分支错案按「先 pin 再修」处理
-- **SPEC 缺口**：0.31 当前 0 份专属 SPEC——本次改进新增 `POLYLOG_SPEC_CN.md` 骨架 1 份；
-  Meijer G、Bronstein 代数塔、`inverse-trig-hyper` 拒绝面仍为 0 份
+- **SPEC 状态**：0.31a 专属 SPEC `POLYLOG_SPEC_CN.md` 已交付（2026-11-02，含实现偏差记录）；
+  0.31b 的 Meijer G、Bronstein 代数塔、`inverse-trig-hyper` 拒绝面仍为 0 份
 - Meijer G 的 Mellin 表与 Slater 展开工作量大 → 先 Li₂ 后 Meijer（均属 0.31b）
 - 分支/定义域语义更复杂 → 形式证书与实值语义分别标注（POLYLOG SPEC 的偏差模板）
 

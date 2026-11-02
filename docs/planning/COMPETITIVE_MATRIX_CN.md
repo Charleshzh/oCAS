@@ -6,11 +6,12 @@
 > Numerica GitHub、mathcore crates.io
 > **评估基准**：oCAS 0.26.0（2026-08-04 发布）
 >
-> **快照说明（2026-10-24）**：本文档是 2026-08-06 的全量复测快照（oCAS 0.26.0）。
-> oCAS 0.27–0.30 在符号积分（Rubi 1892 子集 solved 370 → 451、证书率 0 → 48.8%）
-> 与代数扩张上的进展记录在 [BENCHMARK_RESULTS_CN.md](BENCHMARK_RESULTS_CN.md) 与
-> [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)；本矩阵的竞品数据与「Rubi 规则集仍未
-> 集成」这一主要差距结论不受影响。下次全量复测随 0.31 进行，届时同步版本行。
+> **快照说明（2026-11-02 更新）**：本文档是 2026-08-06 的全量复测快照（oCAS 0.26.0），
+> 矩阵单元格与竞品数据保持该快照口径不变。oCAS 0.27–0.31 的后续进展记录在
+> [BENCHMARK_RESULTS_CN.md](BENCHMARK_RESULTS_CN.md) 与 [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md)：
+> Rubi 1892 子集 solved 370 → 478、证书率 0 → 50.2%（0.31.0 起支持 `polylog(2,·)`/Li₂ 头，
+> 一般 polylog 仍不支持）。原计划「随 0.31 全量复测」未执行；下次全量竞品复测推迟到
+> 0.32.0 之后，届时同步版本行。竞品数据与「Rubi 规则集仍未集成」这一主要差距结论不受影响。
 
 ---
 

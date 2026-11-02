@@ -88,6 +88,13 @@ There is only one changelog — the root `CHANGELOG.md` (`release-plz.toml` sets
    - `docs.yml` rebuilds the bilingual mdBook and publishes both
      `/latest/{en,zh}/` and a frozen `/v<version>/{en,zh}/` snapshot to GitHub
      Pages.
+
+   **Tag-trigger check (0.31.0 experience).** The tag pushed by the release-plz
+   step did not trigger the downstream workflows in practice. After each release,
+   verify that runs appear for the tag (`gh run list --commit <sha>`); if they do
+   not, re-push the identical tag object with your own credentials (temporarily
+   disable the `protect-release-tags` ruleset, delete and re-push the tag, then
+   restore the ruleset; the tag object SHA must stay unchanged).
 3. **Manual fallback.** If the automation fails, tag a commit that is on
    `main` and green in CI:
 

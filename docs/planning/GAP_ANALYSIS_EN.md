@@ -6,7 +6,7 @@ milestone (0.1 → 1.0+) and the gap against the three reference systems:
 Python). It is a living document and must be refreshed at every version bump.
 For the Chinese edition, see [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md).
 
-> Last evaluated: **0.26.0 @ 2026-08-06** (competitor versions re-verified from
+> Last evaluated: **0.31.0 @ 2026-11-02** (oCAS side updated per release; competitor versions last re-verified 2026-08-06 from
 > authoritative sources: Symbolica 2.2.0 (unchanged), SymPy 1.14.0 (unchanged),
 > SageMath 10.9 (2026-05-05), FLINT 3.6.0 (2026-06-29; Kinoshita-Li series
 > composition, padic_radix, subresultant resultants), msolve 0.10.1 (2026-07-08;

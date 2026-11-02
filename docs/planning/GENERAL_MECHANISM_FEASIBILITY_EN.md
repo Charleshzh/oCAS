@@ -102,8 +102,9 @@ probes confirmed all of these decline, and SymPy itself returns `RootSum` for se
 ### 3.6 Gap 5: no non-elementary decision, and the function heads are missing
 
 - There is no Meijer-G / Li₂ reduction, and not even a `polylog`/`Li₂` function head.
-- **Measured: 122 unsolved cases (8.0%) have reference answers containing `polylog`** → unreachable
-  today, independently of mechanism quality.
+- **Measured: 123 unsolved cases (≈8.0%; 2026-11-02 audit, previous value 122) have reference
+  answers containing `polylog`** → 0.31.0 solves 3 of them (`rubi-00746`/`rubi-01004`/`rubi-00050`);
+  the rest are the unreachable surface recorded in the POLYLOG SPEC.
 - With no non-elementarity decision the engine cannot distinguish "proved non-elementary" from
   "I don't know"; the user sees the same `Integral(...)` for both.
 
@@ -116,13 +117,15 @@ modular arithmetic (MultiModular already exists) + parallel Risch + lazy series,
 
 ## 4. Component-by-component feasibility
 
+> The table below is the 2026-09-12 planning baseline (nothing delivered yet, so its numbers are "current" at that time); for the post-0.31.0 numbers see the measured blocks in §6.
+
 | Component | Theory maturity | oCAS foundation | Effort | Risk | Expected gain (measurable) |
 |---|---|---|---|---|---|
 | **Certificates + three-valued Outcome** | high (evaluation in a formal differential field) | tower normalisation + numeric oracle exist | **small** | low | hard invariant: wrong answers can no longer escape; provides the gate for every later step |
 | **Dependent-generator merging (regular tower)** | high (Trager regularisation) | tower + Trager factorisation exist | medium | medium (must return `Unknown` when dependency is undecidable) | the hyperbolic family, ~111 cases; unblocks the real problem the patch mechanisms were routed around |
 | **Complete the transcendental Risch (rational RDE solutions / coupled systems / log-part structure theorem)** | high (textbook pseudocode) | `rde.rs` + logarithmic-derivative identity exist | medium–large | medium | the exp/log families; the elementary part of the `exp-log` bucket (79/83 unsolved) |
 | **Algebraic extension integration (integral basis + algebraic Hermite + residues)** | high (ch. 7–8 + Trager) | Trager factorisation + resultants + algebraic-field GCD | **large** | medium–high | the radical bucket (356 unsolved) + the irreducible-denominator families |
-| **Non-elementary layer (Li₂/Meijer G + new heads + oracle)** | high (Slater/Lewin classics; SymPy as a reference) | the 0.27.3 "add the head + verify numerically first" pattern is proven | **large** | medium | the 122 `polylog` cases + the rest of `exp-log` + composite `special` shapes |
+| **Non-elementary layer (Li₂/Meijer G + new heads + oracle)** | high (Slater/Lewin classics; SymPy as a reference) | the 0.27.3 "add the head + verify numerically first" pattern is proven | **large** | medium | the 123 `polylog` cases + the rest of `exp-log` + composite `special` shapes |
 | **Performance (modular + parallel Risch)** | high | MultiModular exists | medium | low | timeouts and wall clock (currently 12 cases / 461 s) |
 | **Inverse-function substitution engine** | medium (rule-ified substitution classification, Rubi 4.x–5.x's idea) | new | large | medium | the `inverse-trig-hyper` bucket (138/146 unsolved) |
 | **Generality testing (proptest + certificates)** | high | proptest + oracle exist | small | low | a new metric `certified_rate`, targeted to stay exactly 1.0 |
@@ -203,8 +206,16 @@ item, together with W6a (`integral/single_radical.rs`: measured +29 solves / 0 r
 `rubi-00401` branch-sign wrong answer, timeouts 12 → 14 and wall clock 523 s, so the wiring was
 reverted and the module kept as an unwired asset), is folded into the **0.31** evaluation. Wording
 matches the ROADMAP 0.30.0 entry and CHANGELOG 0.30.0.
-| **P3** | **0.31.0** | Non-elementary layer (`polylog`/`Li₂` heads + oracle + Li₂/Meijer reductions + `ProvedNonElementary`) | the reachable part of the 122 `polylog` cases; the rest of `exp-log`; certificate gate holds |
+
+**0.31.0 update (2026-11-02)**: the W6a branch-sign wrong answer is fixed by the branch-safe even
+substitution and `single_radical.rs` is wired in again (net **+24 solves / 0 regressions**, timeouts
+13, wall clock 472.6 s); the Li₂ head/oracle/reduction shipped, solved 451 → 478 and
+`certified_rate` 48.8% → 50.2%; Meijer G, `ProvedNonElementary` and the remaining
+`inverse-trig-hyper` decline surface move to 0.31b.
+| **P3** | **0.31.0** | Non-elementary layer (`polylog`/`Li₂` heads + oracle + Li₂/Meijer reductions + `ProvedNonElementary`) | the reachable part of the 123 `polylog` cases; the rest of `exp-log`; certificate gate holds |
 | **P4** | **0.32.0** | Performance (modular + parallel Risch + lazy series) | wall clock no worse than the 0.28.0 baseline; timeout count falls |
+
+**P3 measured (0.31.0, 2026-11-02)**: the `polylog(2,·)` head + derivative/simplification + real-branch oracle + Li₂ reduction skeleton shipped (corpus net +3: `rubi-00746`/`rubi-01004`/`rubi-00050`), and the W6a wiring added a net +24; 1892 solved 451 → **478** (25.26%), `exp-log` 8 → **10/83**, `certified_rate` 48.8% → **50.2%**, 0 regressions, mismatches 0, timeouts 13 (≤14), wall clock 472.6 s (≤538.5 s), 0 certificate false positives. **Not delivered / deferred**: Meijer G, `ProvedNonElementary`, the remaining `inverse-trig-hyper` decline surface and the Bronstein algebraic tower → 0.31b (SPEC first, then 0.32.0/0.33.0); P3's "reachable part of 122" is corrected to 123 cases by the audit.
 
 Ordering rationale: P0 is a **zero-mathematical-risk prerequisite** that immediately yields the
 hard "correct" invariant; P1 reuses the most existing code; P2 reuses the Trager assets; P3 carries

@@ -9,7 +9,7 @@ cadence), [GAP_ANALYSIS_EN.md](GAP_ANALYSIS_EN.md) (current gap snapshot, in
 English), and [GAP_ANALYSIS_CN.md](GAP_ANALYSIS_CN.md) (Chinese gap snapshot).
 For the Chinese edition of this plan, see [EVOLUTION_PLAN_CN.md](EVOLUTION_PLAN_CN.md).
 
-> Last revised: **2026-07-30 (0.21.0 released: number theory & computational algebra stack — multi-modulus CRT + BPSW + integer factorization (rho/p−1/p+1/ECM) + discrete logarithms + number-theoretic functions + modular GCD (Brown univariate + multivariate multi-prime) + Python/C bindings; Phase B++ continues)**
+> Last revised: **2026-11-02 (0.31.0 released: Li₂ layer + W6a wiring; next line 0.31b / 0.32.0)**
 
 ---
 
@@ -1633,7 +1633,7 @@ therefore split:
 | Item | Cut | Reference | oCAS landing spot |
 |---|---|---|---|
 | `polylog`/`Li₂` heads + oracle evaluators | 0.31a | the 0.27.3 pattern for `Ei`/`Si`/`Ci` | `ocas-calc::integral::special` + `ocas-tests/src/integral_eval.rs` |
-| Li₂ reduction skeleton (logarithmic-rational integration) | 0.31a | Lewin's formulas; Raab/Baddoura | `integral/special.rs` or a new module (spec `POLYLOG_SPEC_CN.md`) |
+| Li₂ reduction skeleton (logarithmic-rational integration) | 0.31a | Lewin's formulas; Raab/Baddoura | `integral/polylog.rs` (A class dispatched from `integral/special.rs`; spec `POLYLOG_SPEC_CN.md`) |
 | `rubi-00401` branch-sign fix + W6a wiring re-measurement | 0.31a | the 0.30.0 W6a experiment | `integral/single_radical.rs` + the wiring point in `integral/mod.rs` |
 | Meijer G / Slater expansion (or the holonomic route) | 0.31b | SymPy `meijerg` | a new `ocas-calc::integral` module (SPEC pending) |
 | `ProvedNonElementary` available for the first time | 0.31b | Singer's structure theorems (engineered subset) | the third `Outcome` value (SPEC pending) |
@@ -1648,16 +1648,20 @@ therefore split:
 
 **Acceptance**
 
-- [ ] `polylog`/`Li₂` heads + numerical oracle evaluation land (100% per-case oracle pass)
-- [ ] Li₂ reduction skeleton lands: reachable and still-declined case counts recorded separately
-- [ ] (carried from 0.30.0) the `rubi-00401` branch-sign wrong answer is fixed and, after
-  wiring, the three W6a gates are re-measured (+29 solves / 0 regressions / timeouts flat
-  at 12 / wall clock within the gate); `rubi-00401` now has a pinned regression test
-  (added by this improvement in `ocas-tests/tests/correctness/integral_verify.rs`)
-- [ ] The certificate gate holds; `verify_mismatches` stays 0
+- [x] `polylog`/`Li₂` heads + numerical oracle evaluation land (100% per-case oracle pass;
+  grid error 4.4e-16, derivative self-check 6.0e-10)
+- [x] Li₂ reduction skeleton lands: reachable and still-declined case counts recorded
+  separately (`integral/polylog.rs`; corpus net +3, the 123-case audit is in POLYLOG SPEC §7)
+- [x] (carried from 0.30.0) the `rubi-00401` branch-sign wrong answer is fixed and, after
+  wiring, the three W6a gates are re-measured (**+24 solves / 0 regressions / timeouts 13
+  (≤14 hard cap) / wall clock 472.6 s (≤538.5 s)**; the 0.30.0 experiment's +29 was not
+  fully reproduced, see ROADMAP); `rubi-00401` now has a pinned regression test
+  (`ocas-tests/tests/correctness/integral_verify.rs`, tightened to "must verify")
+- [x] The certificate gate holds; `verify_mismatches` stays 0 and certificate false
+  positives stay 0
 - [ ] 0.31b handover: one SPEC each for Meijer G, `ProvedNonElementary`, the Bronstein
   ch. 7–8 algebraic tower and the remaining `inverse-trig-hyper` decline surface, then move
-  them to 0.32.0/0.33.0
+  them to 0.32.0/0.33.0 (POLYLOG SPEC delivered; 0.31b still has 0 SPECs)
 
 **Risks**
 
@@ -1669,9 +1673,9 @@ therefore split:
 - **The `rubi-00401` pinned-test gap**: the 0.30.0 W6a branch-sign wrong answer was
   documented in prose only; this improvement adds a pinned regression test, and follow-up
   branch wrong answers of the same family are pinned before they are fixed
-- **SPEC gap**: 0.31 currently has 0 dedicated SPECs — this improvement adds one skeleton
-  (`POLYLOG_SPEC_CN.md`); Meijer G, the Bronstein tower and the `inverse-trig-hyper`
-  decline surface still have none
+- **SPEC status**: the 0.31a dedicated SPEC (`POLYLOG_SPEC_CN.md`) is delivered
+  (2026-11-02, including its deviations record); Meijer G, the Bronstein tower and the
+  `inverse-trig-hyper` decline surface still have none for 0.31b
 - Meijer G needs a Mellin table and Slater expansion — substantial → Li₂ first, Meijer
   second (both in 0.31b)
 - Branch/domain semantics are more intricate → formal certificates and real-valued

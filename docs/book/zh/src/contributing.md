@@ -79,6 +79,12 @@ per-crate CHANGELOG，也不创建发版 PR）。
      标签发到 TestPyPI）；`pypi` environment 会要求 owner 批准发布 job。
    - `docs.yml` 重新构建双语 mdBook，并把 `/latest/{en,zh}/` 与冻结的
      `/v<version>/{en,zh}/` 版本快照部署到 GitHub Pages。
+
+   **tag 触发核验（0.31.0 实测）。** release-plz 用 `RELEASE_PLZ_TOKEN` 推送的顶层 tag
+   未触发下游 workflow。每次发布后必须核对 tag 触发的 run 是否出现
+   （`gh run list --commit <sha>`）；若缺失，用 owner 凭据重推**同一 tag 对象**
+   （临时禁用 `protect-release-tags` ruleset，删除并重推 tag 后恢复；tag 对象 SHA
+   必须保持不变）。
 3. **手动兜底。** 若自动化失败，请对已在 `main` 上且 CI 通过的提交打标签：
 
    ```bash
