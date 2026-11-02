@@ -80,8 +80,9 @@ There is only one changelog — the root `CHANGELOG.md` (`release-plz.toml` sets
    version did not change, release-plz is a no-op.
 2. **Tag fan-out.**
    - `release.yml` validates the tag against the workspace version, dry-runs
-     `cargo publish` for every crate, and attaches the C artifacts to the
-     project-level GitHub Release.
+     `cargo publish` for every crate, composes the release body from the
+     version's CHANGELOG section plus the auto-generated PR list, and attaches
+     the C artifacts to the project-level GitHub Release.
    - `wheels.yml` builds the Python wheels and sdist with maturin and publishes
      to PyPI (pre-release tags go to TestPyPI); the `pypi` environment asks an
      owner to approve the publish job.

@@ -74,7 +74,8 @@ per-crate CHANGELOG，也不创建发版 PR）。
    推送的标签不会触发下游 workflow。版本未变化时 release-plz 自然 no-op。
 2. **标签触发的下游流程。**
    - `release.yml` 校验标签与工作区版本一致，对每个 crate 做 `cargo publish`
-     试运行，并把 C 绑定产物附加到项目级 GitHub Release。
+     试运行，用版本对应的 CHANGELOG 段落 + 自动生成 PR 列表组合 release body，
+     并把 C 绑定产物附加到项目级 GitHub Release。
    - `wheels.yml` 用 maturin 构建 Python wheel 与 sdist 并发布到 PyPI（预发布
      标签发到 TestPyPI）；`pypi` environment 会要求 owner 批准发布 job。
    - `docs.yml` 重新构建双语 mdBook，并把 `/latest/{en,zh}/` 与冻结的

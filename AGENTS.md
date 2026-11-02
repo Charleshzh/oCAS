@@ -95,10 +95,12 @@ Automated, CI-gated; the root `vX.Y.Z` tag is the release switch. One root
    `protect-release-tags` ruleset via `PUT /repos/{owner}/{repo}/rulesets/{id}`
    with `enforcement: disabled`, then restore `active`). The tag object SHA must
    stay unchanged.
-3. The tag triggers `release.yml` (C artifacts on the GitHub Release),
-   `wheels.yml` (5-platform wheels + sdist to PyPI; the `pypi` environment has
-   required reviewers, so `publish-pypi` waits for an owner approval) and
-   `docs.yml` (`/latest/{en,zh}/` plus frozen `/v<version>/{en,zh}/` snapshots).
+3. The tag triggers `release.yml` (composes the release body from the
+   version's CHANGELOG section plus the auto-generated PR list, then attaches
+   the C artifacts to the GitHub Release), `wheels.yml` (5-platform wheels +
+   sdist to PyPI; the `pypi` environment has required reviewers, so
+   `publish-pypi` waits for an owner approval) and `docs.yml`
+   (`/latest/{en,zh}/` plus frozen `/v<version>/{en,zh}/` snapshots).
 4. Manual fallback after a green CI commit on `main`:
    `git tag -a vX.Y.Z -m "oCAS vX.Y.Z" && git push origin vX.Y.Z`.
    `v*` tags are protected by the `protect-release-tags` ruleset (creation is
@@ -229,7 +231,8 @@ LGPL 后端测试、maturin wheel + pytest + C 示例、严格 rustdoc、Miri；
    删除前需临时禁用 `protect-release-tags` ruleset：
    `PUT /repos/{owner}/{repo}/rulesets/{id}` 传 `enforcement: disabled`，完成后恢复
    `active`）。tag 对象 SHA 必须保持不变。
-3. tag 触发 `release.yml`（C 产物）、`wheels.yml`（5 平台 wheel + sdist 到 PyPI；
+3. tag 触发 `release.yml`（用 CHANGELOG 对应版本段落 + 自动生成 PR 列表组合
+   release body，再附加 C 产物）、`wheels.yml`（5 平台 wheel + sdist 到 PyPI；
    `pypi` environment 有 required reviewers，`publish-pypi` 会等待 owner 批准）、
    `docs.yml`（`/latest/{en,zh}/` 与冻结的 `/v<version>/{en,zh}/`）。
 4. 手工兜底（对已在 `main` 且 CI 通过的提交）：

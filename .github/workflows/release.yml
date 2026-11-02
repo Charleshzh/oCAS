@@ -50,6 +50,73 @@ jobs:
             fi
           fi
 
+  release-notes:
+    name: Compose release notes
+    runs-on: ubuntu-latest
+    needs: extract-version
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compose notes from CHANGELOG.md and the generated PR list
+        env:
+          VERSION: ${{ needs.extract-version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${VERSION}"
+          BASE="${VERSION%%-*}"
+          # Pull the matching version section out of the root CHANGELOG (the
+          # project keeps one bilingual changelog). A pre-release tag maps to
+          # its base version; a missing section falls back to generated notes.
+          python3 - "$BASE" <<'PY'
+          import re, sys
+          version = sys.argv[1]
+          text = open("CHANGELOG.md", encoding="utf-8").read()
+          match = re.search(rf"^## \[{re.escape(version)}\][^\n]*\n", text, re.M)
+          if not match:
+              print(f"no CHANGELOG section for {version}; using generated notes only")
+              open("changelog-section.md", "w", encoding="utf-8").write("")
+              sys.exit(0)
+          rest = text[match.end():]
+          nxt = re.search(r"^## \[", rest, re.M)
+          section = (rest[:nxt.start()] if nxt else rest).rstrip()
+          section = re.sub(r"\n-{3,}\s*$", "", section).strip()
+          open("changelog-section.md", "w", encoding="utf-8").write(section + "\n")
+          print(f"extracted {len(section)} chars from CHANGELOG for {version}")
+          PY
+          # GitHub's auto-generated notes list merged PRs only; the project
+          # releases from direct pushes, so that list is usually sparse. The
+          # curated CHANGELOG section goes first, the PR list is appended.
+          gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" -f tag_name="$TAG" --jq .body > generated-notes.md || true
+          if [ -s changelog-section.md ]; then
+            {
+              echo "## Highlights / 亮点（from CHANGELOG.md）"
+              echo
+              cat changelog-section.md
+              echo
+              if [ -s generated-notes.md ]; then
+                echo "---"
+                echo
+                cat generated-notes.md
+              fi
+            } > release-notes.md
+          else
+            cp generated-notes.md release-notes.md
+          fi
+          echo "release notes: $(wc -c < release-notes.md) bytes"
+
+      - name: Create or update the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ needs.extract-version.outputs.version }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file release-notes.md
+          else
+            gh release create "$TAG" --verify-tag --notes-file release-notes.md
+          fi
+
   publish-dry-run:
     name: Dry-run publish all crates
     runs-on: ubuntu-latest
@@ -108,7 +175,7 @@ jobs:
   build-c-bindings:
     name: Build C bindings (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
-    needs: [extract-version, publish-dry-run]
+    needs: [extract-version, publish-dry-run, release-notes]
     strategy:
       fail-fast: false
       matrix:
@@ -156,12 +223,13 @@ jobs:
           fi
 
       - name: Upload C bindings to release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ steps.package.outputs.artifact }}
-          # The project-level release notes are generated from the merged
-          # commits/PR labels (see .github/release.yml).
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The release is created by the `release-notes` job (curated
+          # CHANGELOG highlights + auto-generated PR list); this step only
+          # attaches the C artifacts.
+          gh release upload "v${{ needs.extract-version.outputs.version }}" "${{ steps.package.outputs.artifact }}" --clobber
 
   # NOTE: Python wheels are NOT built here. wheels.yml has its own
   # `on: push: tags: v*` trigger and runs independently. Publishing to

@@ -2,9 +2,10 @@
 #
 # The project releases from direct pushes to `main` (release-plz) rather than
 # through pull requests, so auto-generated notes only list merged PRs and will
-# normally be sparse. Curated highlights live in the root CHANGELOG.md; mirror
-# the relevant CHANGELOG section into the release body when a richer page is
-# wanted. This file only decides how *merged PRs* are grouped, by label.
+# normally be sparse. The release workflow (`.github/workflows/release.yml`)
+# therefore prepends the matching CHANGELOG.md section (curated highlights,
+# bilingual) and appends this generated PR list. This file only decides how
+# *merged PRs* are grouped, by label.
 #
 # Labels used below that do not exist yet are simply never matched; add them
 # when the corresponding area starts producing PRs (e.g. `integration`).
