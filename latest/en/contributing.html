@@ -257,6 +257,12 @@ owner to approve the publish job.</li>
 <code>/latest/{en,zh}/</code> and a frozen <code>/v&lt;version&gt;/{en,zh}/</code> snapshot to GitHub
 Pages.</li>
 </ul>
+<p><strong>Tag-trigger check (0.31.0 experience).</strong> The tag pushed by the release-plz
+step did not trigger the downstream workflows in practice. After each release,
+verify that runs appear for the tag (<code>gh run list --commit &lt;sha&gt;</code>); if they do
+not, re-push the identical tag object with your own credentials (temporarily
+disable the <code>protect-release-tags</code> ruleset, delete and re-push the tag, then
+restore the ruleset; the tag object SHA must stay unchanged).</p>
 </li>
 <li>
 <p><strong>Manual fallback.</strong> If the automation fails, tag a commit that is on

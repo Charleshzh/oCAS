@@ -183,7 +183,7 @@
 <p>oCAS uses a layered crate architecture: 13 workspace members from the low-level arena allocator up to the top-level language bindings, with dependencies strictly pointing downward. All coefficient domains (arbitrary-precision integers/rationals, finite fields, real balls, complex numbers, double-precision floats) are abstracted behind a unified <code>Domain</code> trait, and the polynomial algebra, Gröbner basis, symbolic calculus, and ODE solving modules share the same expression infrastructure.</p>
 <hr />
 <h2 id="version-feature-matrix"><a class="header" href="#version-feature-matrix">Version Feature Matrix</a></h2>
-<p>The table below lists the key features added in each oCAS release (0.1 → 0.30):</p>
+<p>The table below lists the key features added in each oCAS release (0.1 → 0.31):</p>
 <div class="table-wrapper"><table><thead><tr><th>Version</th><th>Date</th><th>Key additions</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>Workspace setup, arena allocator, unified error types, minimal C ABI example, cross-platform CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>Expression tree <code>Atom</code> (hash consing), parser based on <code>logos</code>/<code>chumsky</code>, normalizer</td></tr>
@@ -219,7 +219,7 @@
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>Integration-mechanism correctness foundation: symbolic certificate engine (structural/elementary-field layers with <code>I² = −1</code> reduction and dependent-atom merging, deterministic budgets), three-valued <code>Outcome</code> and <code>integrate_outcome</code> (exposed to Python/C), expression-level cycle detection (budget-aware entry keys plus a separate residue budget), regular-tower dependency merging, in-tower exact verification of Risch results (caught and contained a latent wrong answer), and a hyperbolic front-end disabled for its wall-clock cost; Rubi coverage 19.56% → 19.61% (371 solved, +1 newly solved / 0 regressed), mismatches 0, timeouts flat at 12, wall clock −6.0%; <code>certified_rate = 28.8%</code> (target 1.0 not met, recorded honestly)</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>Completing the transcendental Risch fragment: rational solutions of the Risch differential equation over the full rational fragment (weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions), Rothstein–Trager logarithmic part at every tower level (resultant by value interpolation, ℚ rational-root sieve with an exact completeness check, per-root gcd self-verified by <code>Πvᵢ == d1</code>), coupled-system infrastructure <code>integral/coupled.rs</code> (shipped unwired), random-tower proptests (every residue-free answer must certify; <code>certified_rate = 1.0</code> there); the latent exp-level Laurent-split wrong answer fixed; Rubi coverage 19.61% → 19.98% (378 solved, +7 newly solved / 0 regressed), verified 351/378, mismatches 0, timeouts flat at 12, wall clock 439.6 s, <code>certified_rate</code> 28.8% → 29.1%</td></tr>
 <tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>Algebraic extensions and inverse-function substitution: RT algebraic constant roots (base-level real/complex quadratics and biquadratic quartics <code>Az⁴+Bz²+C</code>, complex quadratics at tower levels, each self-verified in the extension), the certificate <strong>radical layer</strong> (<code>CertMethod::RadicalField</code>: <code>sqrt(S)</code> / <code>S^(p/q)</code> unified as <code>r^q = S</code> with triangular reduction), multi-radical-base reduction (<code>integral/multi_radical.rs</code>: MR-L Möbius rationalization, gated same-radicand merges, MR-G/R/I/P), and the inverse-function substitution engine (<code>integral/inverse_trig.rs</code> M4: 11 heads × affine arguments × integer kernel powers × polynomial weights); Rubi solved 378 → 451 (coverage 23.84%), verified 410/451, <code>certified_rate</code> 29.1% → 48.8% (220/451), mismatches 0, timeouts flat at 12, wall clock 489.5 s, 0 regressions, 0 certificate false positives; radical bucket 51 → 84, inverse-trig-hyper 8 → 22 (the ≥48/146 line not met, recorded honestly)</td></tr>
-<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>Dilogarithm (Li₂) layer and the W6a single-radical wiring: the <code>polylog(2, z)</code> head (order-preserving <code>normalize</code>, derivative table, simplification rules, real-branch f64 oracle with series/reflection/Landen/inversion) and the Li₂ reduction skeleton (<code>integral/polylog.rs</code>: A class by parts against <code>d/dz Li₂ = −log(1−z)/z</code>, B class log-rational integrals through the pole entry <code>∫log(u)/(u−β) du</code>, every emission gated by a local numeric self-check), plus the 0.30.0 Wave 6a single-radical stage re-wired after fixing the <code>rubi-00401</code> branch-sign wrong answer (branch-safe even substitution + two-sheet numeric gate + a re-entrancy guard); Rubi solved 451 → 478 (coverage 25.26%), verified 436/478, <code>certified_rate</code> 48.8% → 50.2% (240/478), mismatches 0, timeouts 12 → 13, wall clock 475.6/489.1 s (two same-tree runs, gate ≤538.5 s), 0 regressions, 0 certificate false positives; <code>exp-log</code> bucket 8 → 10/83</td></tr>
+<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>Dilogarithm (Li₂) layer and the W6a single-radical wiring: the <code>polylog(2, z)</code> head (order-preserving <code>normalize</code>, derivative table, simplification rules, real-branch f64 oracle with series/reflection/Landen/inversion) and the Li₂ reduction skeleton (<code>integral/polylog.rs</code>: A class by parts against <code>d/dz Li₂ = −log(1−z)/z</code>, B class log-rational integrals through the pole entry <code>∫log(u)/(u−β) du</code>, every emission gated by a local numeric self-check), plus the 0.30.0 Wave 6a single-radical stage re-wired after fixing the <code>rubi-00401</code> branch-sign wrong answer (branch-safe even substitution + two-sheet numeric gate + a re-entrancy guard); Rubi solved 451 → 478 (coverage 25.26%), verified 436/478, <code>certified_rate</code> 48.8% → 50.2% (240/478), mismatches 0, timeouts 12 → 13, wall clock 472.6/471.9 s (two same-tree runs, gate ≤538.5 s), 0 regressions, 0 certificate false positives; <code>exp-log</code> bucket 8 → 10/83</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -22961,7 +22961,8 @@ log/atan/atanh).</li>
 <code>exp(I·x)</code> and re-integrated by Risch, then converted back to real
 form on a best-effort basis.</li>
 <li><strong>Special-function table</strong> — non-elementary integrals with closed
-forms in terms of <code>erf</code>, <code>Ei</code>, <code>Si</code>, <code>Ci</code>, Fresnel <code>S</code>/<code>C</code>, …</li>
+forms in terms of <code>erf</code>, <code>Ei</code>, <code>Si</code>, <code>Ci</code>, Fresnel <code>S</code>/<code>C</code>, the dilogarithm
+<code>Li₂</code> (0.31.0, <code>polylog(2, ·)</code>), …</li>
 <li><strong>Rule-table engine</strong> (0.27) — a self-contained standard-calculus rule
 library (families A–H: powers/binomials, exponentials/logarithms,
 trigonometry, hyperbolic, inverse trig/hyperbolic, rational
@@ -22978,7 +22979,15 @@ same-radicand merges, conjugate / reciprocal / nested-radical
 substitutions, perfect-square sheet factors). The stage sits in the
 chain <strong>after <code>binomial</code> and before <code>exp_log</code></strong>, so the single-base
 engines keep first claim on single-base shapes, and it declines
-honestly outside its fragment.</li>
+honestly outside its fragment.
+9b. <strong>Single-radical atomic-layer reduction</strong> (0.30.0 experiment, wired in 0.31.0) —
+affine-square slices, an even substitution and a reciprocal substitution, each
+handed back to the chain. The <code>rubi-00401</code> branch-sign wrong answer is fixed by
+the branch-safe even substitution (both sheets agree, x = ±0.6), and every
+emission passes a two-sheet numeric gate (12 deterministic samples on both
+signs, relative error ≤ 1e-6); a re-entrancy guard stops the substitution
+cascade from re-entering the stage. The stage sits <strong>after <code>multi_radical</code>
+and before <code>exp_log</code></strong>.</li>
 <li><strong>Inverse-function substitution</strong> (0.30.0) — the M4 mechanism at the
 <strong>end of the <code>inverse_trig</code> dispatch order</strong>: <code>u = F(w)</code> over 11 heads
 (<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code> plus
@@ -25306,6 +25315,12 @@ owner to approve the publish job.</li>
 <code>/latest/{en,zh}/</code> and a frozen <code>/v&lt;version&gt;/{en,zh}/</code> snapshot to GitHub
 Pages.</li>
 </ul>
+<p><strong>Tag-trigger check (0.31.0 experience).</strong> The tag pushed by the release-plz
+step did not trigger the downstream workflows in practice. After each release,
+verify that runs appear for the tag (<code>gh run list --commit &lt;sha&gt;</code>); if they do
+not, re-push the identical tag object with your own credentials (temporarily
+disable the <code>protect-release-tags</code> ruleset, delete and re-push the tag, then
+restore the ruleset; the tag object SHA must stay unchanged).</p>
 </li>
 <li>
 <p><strong>Manual fallback.</strong> If the automation fails, tag a commit that is on

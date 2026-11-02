@@ -248,6 +248,11 @@ per-crate CHANGELOG，也不创建发版 PR）。</p>
 <li><code>docs.yml</code> 重新构建双语 mdBook，并把 <code>/latest/{en,zh}/</code> 与冻结的
 <code>/v&lt;version&gt;/{en,zh}/</code> 版本快照部署到 GitHub Pages。</li>
 </ul>
+<p><strong>tag 触发核验（0.31.0 实测）。</strong> release-plz 用 <code>RELEASE_PLZ_TOKEN</code> 推送的顶层 tag
+未触发下游 workflow。每次发布后必须核对 tag 触发的 run 是否出现
+（<code>gh run list --commit &lt;sha&gt;</code>）；若缺失，用 owner 凭据重推<strong>同一 tag 对象</strong>
+（临时禁用 <code>protect-release-tags</code> ruleset，删除并重推 tag 后恢复；tag 对象 SHA
+必须保持不变）。</p>
 </li>
 <li>
 <p><strong>手动兜底。</strong> 若自动化失败，请对已在 <code>main</code> 上且 CI 通过的提交打标签：</p>

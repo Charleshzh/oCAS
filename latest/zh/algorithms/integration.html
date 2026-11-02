@@ -200,8 +200,8 @@ log/atan/atanh）。</li>
 <code>MAX_RISCH_DEPTH = 16</code> 上限约束）。</li>
 <li><strong>三角重写</strong> —— <code>sin</code>/<code>cos</code>/<code>tan</code>/… 重写为 <code>exp(I·x)</code> 后由 Risch
 积分，再尽力转换回实数形式。</li>
-<li><strong>特殊函数表</strong> —— 具有 <code>erf</code>、<code>Ei</code>、<code>Si</code>、Ci、Fresnel <code>S</code>/<code>C</code> 等
-闭式的非初等积分。</li>
+<li><strong>特殊函数表</strong> —— 具有 <code>erf</code>、<code>Ei</code>、<code>Si</code>、<code>Ci</code>、Fresnel <code>S</code>/<code>C</code> 以及 0.31.0 的
+二重对数 <code>Li₂</code>（<code>polylog(2, ·)</code>）等闭式的非初等积分。</li>
 <li><strong>规则表引擎</strong>（0.27）—— 自研标准微积分规则（A–H 族：幂/二项式、
 指数/对数、三角、双曲、反三角/反双曲、有理拦截、根式、特殊形态），
 模板可含残项 <code>Integral(g, x)</code> 归约。可用
@@ -211,7 +211,12 @@ log/atan/atanh）。</li>
 <li><strong>多根式基归约</strong>（0.30.0）—— 含两个及以上不同根式基的被积函数在原子层
 有理化（MR-L 双仿射基 Möbius 有理化、带门同根合并、共轭/倒数/嵌套去根
 代换、完全平方片层因子）。该阶段在链中位于 <strong><code>binomial</code> 之后、
-<code>exp_log</code> 之前</strong>，单基引擎因此保持对单基形状的先占权；片段之外诚实拒绝。</li>
+<code>exp_log</code> 之前</strong>，单基引擎因此保持对单基形状的先占权；片段之外诚实拒绝。
+9b. <strong>单根式原子层归约</strong>（0.30.0 试验，0.31.0 接线）——仿射平方片层、偶代换与倒数代换，
+各自把替换形式交回积分链；<code>rubi-00401</code> 的分支符号错案由分支安全偶代换修复（正负两
+片层 x = ±0.6 一致），每次发射都过双片层数值门（12 个确定性采样点覆盖正负两片层，
+相对误差 ≤ 1e-6）；重入护栏阻止代换级联再次进入本阶段。该阶段位于
+<strong><code>multi_radical</code> 之后、<code>exp_log</code> 之前</strong>。</li>
 <li><strong>反函数代换</strong>（0.30.0）—— <code>inverse_trig</code> <strong>分派序末的 M4 机制</strong>：
 <code>u = F(w)</code> 覆盖 11 个头（<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code>
 以及 <code>acsc</code>/<code>asec</code>/<code>acoth</code>/<code>asech</code>/<code>acsch</code>）× 仿射变元 × 整数核幂 ×

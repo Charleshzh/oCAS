@@ -209,7 +209,8 @@ log/atan/atanh).</li>
 <code>exp(I·x)</code> and re-integrated by Risch, then converted back to real
 form on a best-effort basis.</li>
 <li><strong>Special-function table</strong> — non-elementary integrals with closed
-forms in terms of <code>erf</code>, <code>Ei</code>, <code>Si</code>, <code>Ci</code>, Fresnel <code>S</code>/<code>C</code>, …</li>
+forms in terms of <code>erf</code>, <code>Ei</code>, <code>Si</code>, <code>Ci</code>, Fresnel <code>S</code>/<code>C</code>, the dilogarithm
+<code>Li₂</code> (0.31.0, <code>polylog(2, ·)</code>), …</li>
 <li><strong>Rule-table engine</strong> (0.27) — a self-contained standard-calculus rule
 library (families A–H: powers/binomials, exponentials/logarithms,
 trigonometry, hyperbolic, inverse trig/hyperbolic, rational
@@ -226,7 +227,15 @@ same-radicand merges, conjugate / reciprocal / nested-radical
 substitutions, perfect-square sheet factors). The stage sits in the
 chain <strong>after <code>binomial</code> and before <code>exp_log</code></strong>, so the single-base
 engines keep first claim on single-base shapes, and it declines
-honestly outside its fragment.</li>
+honestly outside its fragment.
+9b. <strong>Single-radical atomic-layer reduction</strong> (0.30.0 experiment, wired in 0.31.0) —
+affine-square slices, an even substitution and a reciprocal substitution, each
+handed back to the chain. The <code>rubi-00401</code> branch-sign wrong answer is fixed by
+the branch-safe even substitution (both sheets agree, x = ±0.6), and every
+emission passes a two-sheet numeric gate (12 deterministic samples on both
+signs, relative error ≤ 1e-6); a re-entrancy guard stops the substitution
+cascade from re-entering the stage. The stage sits <strong>after <code>multi_radical</code>
+and before <code>exp_log</code></strong>.</li>
 <li><strong>Inverse-function substitution</strong> (0.30.0) — the M4 mechanism at the
 <strong>end of the <code>inverse_trig</code> dispatch order</strong>: <code>u = F(w)</code> over 11 heads
 (<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code> plus

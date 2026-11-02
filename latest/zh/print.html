@@ -183,7 +183,7 @@
 <p>oCAS 采用分层 crate 架构，从底层 arena 分配器到顶层语言绑定共 13 个 workspace 成员，依赖方向严格向下。所有系数域（任意精度整数/有理数、有限域、实数球、复数、双精度浮点）通过统一的 <code>Domain</code> trait 抽象，多项式代数、Gröbner 基、符号微积分、ODE 求解等模块共享同一表达式基础设施。</p>
 <hr />
 <h2 id="版本特性对照表"><a class="header" href="#版本特性对照表">版本特性对照表</a></h2>
-<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.30）：</p>
+<p>下表列出 oCAS 各版本的关键新增特性（0.1 → 0.31）：</p>
 <div class="table-wrapper"><table><thead><tr><th>版本</th><th>日期</th><th>关键新增</th></tr></thead><tbody>
 <tr><td><strong>0.1.0</strong></td><td>2026-06-29</td><td>工作空间搭建、Arena 分配器、统一错误类型、C ABI 最小示例、跨平台 CI</td></tr>
 <tr><td><strong>0.2.0</strong></td><td>2026-06-30</td><td>表达式树 <code>Atom</code>（hash consing）、基于 <code>logos</code>/<code>chumsky</code> 的解析器、规范化器</td></tr>
@@ -219,7 +219,7 @@
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>积分机制正确性地基：符号证书引擎（结构/初等域 + <code>I² = −1</code> 约化 + 依赖原子合并，确定性预算）、三值 <code>Outcome</code> 与 <code>integrate_outcome</code>（Python/C 同步暴露）、表达式级循环检测（预算感知入口键 + 独立残项预算）、正则塔依赖生成元合并、Risch 结果塔内精确校验（抓到并兜住一个潜伏错案）、双曲前端因墙钟代价默认关闭；Rubi 覆盖率 19.56% → 19.61%（371 solved，+1 新解 0 回归），mismatches 0，超时 12 持平，墙钟 −6.0%；<code>certified_rate = 28.8%</code>（目标 1.0 未达，如实记录）</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>超越 Risch 补全：Risch 微分方程的有理解（完整有理片段：弱规范化、法/特殊分母界、次数界、SPDE、抵消递归）、各塔层的 Rothstein–Trager 对数部分（结果式值插值、ℚ 有理根筛 + 完备性判定、逐根 gcd 经 <code>Πvᵢ == d1</code> 自证）、耦合微分系统基础设施 <code>integral/coupled.rs</code>（<strong>未挂接</strong>）、塔随机通用性测试（凡无残项答案必须过证书门，该族 <code>certified_rate = 1.0</code>）；修复指数层 Laurent 拆分的潜伏错案；Rubi 覆盖率 19.61% → 19.98%（378 solved，新解 7 / 回归 0）、verified 351/378、mismatches 0、超时 12 持平、墙钟 439.6 s，<code>certified_rate</code> 28.8% → 29.1%</td></tr>
 <tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>代数扩张与反函数代换：RT 代数常量根（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次因子，均在扩域内自证）、证书<strong>根式层</strong>（<code>CertMethod::RadicalField</code>：<code>sqrt(S)</code> / <code>S^(p/q)</code> 统一为 <code>r^q = S</code> 三角列约化）、多根式基归约（<code>integral/multi_radical.rs</code>：MR-L Möbius 有理化、带门同根合并、MR-G/R/I/P）、反函数代换引擎（<code>integral/inverse_trig.rs</code> M4：11 头 × 仿射变元 × 整数核幂 × 多项式权）；Rubi solved 378 → 451（coverage 23.84%）、verified 410/451、<code>certified_rate</code> 29.1% → 48.8%（220/451）、mismatches 0、超时 12 持平、墙钟 489.5 s、0 回归、证书假阳性 0；radical 桶 51 → 84、inverse-trig-hyper 8 → 22（≥48/146 口径未达，如实记录）</td></tr>
-<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>二重对数（Li₂）层与 W6a 单根式接线：<code>polylog(2, z)</code> 函数头（保序 <code>normalize</code>、导数表、化简规则、实值支 f64 oracle：级数/反射/Landen/反演）与 Li₂ 归约骨架（<code>integral/polylog.rs</code>：A 类按 <code>d/dz Li₂ = −log(1−z)/z</code> 分部，B 类对数-有理积分经极点条目 <code>∫log(u)/(u−β) du</code>，每个发射都过本地数值自检门），以及修复 <code>rubi-00401</code> 分支符号错案后重新接线的 0.30.0 Wave 6a 单根式阶段（分支安全的偶代换 + 双片层数值门 + 重入护栏）；Rubi solved 451 → 478（coverage 25.26%）、verified 436/478、<code>certified_rate</code> 48.8% → 50.2%（240/478）、mismatches 0、超时 12 → 13、墙钟 475.6/489.1 s（两次同树复跑，门 ≤538.5 s）、0 回归、证书假阳性 0；<code>exp-log</code> 桶 8 → 10/83</td></tr>
+<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>二重对数（Li₂）层与 W6a 单根式接线：<code>polylog(2, z)</code> 函数头（保序 <code>normalize</code>、导数表、化简规则、实值支 f64 oracle：级数/反射/Landen/反演）与 Li₂ 归约骨架（<code>integral/polylog.rs</code>：A 类按 <code>d/dz Li₂ = −log(1−z)/z</code> 分部，B 类对数-有理积分经极点条目 <code>∫log(u)/(u−β) du</code>，每个发射都过本地数值自检门），以及修复 <code>rubi-00401</code> 分支符号错案后重新接线的 0.30.0 Wave 6a 单根式阶段（分支安全的偶代换 + 双片层数值门 + 重入护栏）；Rubi solved 451 → 478（coverage 25.26%）、verified 436/478、<code>certified_rate</code> 48.8% → 50.2%（240/478）、mismatches 0、超时 12 → 13、墙钟 472.6/471.9 s（两次同树复跑，门 ≤538.5 s）、0 回归、证书假阳性 0；<code>exp-log</code> 桶 8 → 10/83</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -22963,8 +22963,8 @@ log/atan/atanh）。</li>
 <code>MAX_RISCH_DEPTH = 16</code> 上限约束）。</li>
 <li><strong>三角重写</strong> —— <code>sin</code>/<code>cos</code>/<code>tan</code>/… 重写为 <code>exp(I·x)</code> 后由 Risch
 积分，再尽力转换回实数形式。</li>
-<li><strong>特殊函数表</strong> —— 具有 <code>erf</code>、<code>Ei</code>、<code>Si</code>、Ci、Fresnel <code>S</code>/<code>C</code> 等
-闭式的非初等积分。</li>
+<li><strong>特殊函数表</strong> —— 具有 <code>erf</code>、<code>Ei</code>、<code>Si</code>、<code>Ci</code>、Fresnel <code>S</code>/<code>C</code> 以及 0.31.0 的
+二重对数 <code>Li₂</code>（<code>polylog(2, ·)</code>）等闭式的非初等积分。</li>
 <li><strong>规则表引擎</strong>（0.27）—— 自研标准微积分规则（A–H 族：幂/二项式、
 指数/对数、三角、双曲、反三角/反双曲、有理拦截、根式、特殊形态），
 模板可含残项 <code>Integral(g, x)</code> 归约。可用
@@ -22974,7 +22974,12 @@ log/atan/atanh）。</li>
 <li><strong>多根式基归约</strong>（0.30.0）—— 含两个及以上不同根式基的被积函数在原子层
 有理化（MR-L 双仿射基 Möbius 有理化、带门同根合并、共轭/倒数/嵌套去根
 代换、完全平方片层因子）。该阶段在链中位于 <strong><code>binomial</code> 之后、
-<code>exp_log</code> 之前</strong>，单基引擎因此保持对单基形状的先占权；片段之外诚实拒绝。</li>
+<code>exp_log</code> 之前</strong>，单基引擎因此保持对单基形状的先占权；片段之外诚实拒绝。
+9b. <strong>单根式原子层归约</strong>（0.30.0 试验，0.31.0 接线）——仿射平方片层、偶代换与倒数代换，
+各自把替换形式交回积分链；<code>rubi-00401</code> 的分支符号错案由分支安全偶代换修复（正负两
+片层 x = ±0.6 一致），每次发射都过双片层数值门（12 个确定性采样点覆盖正负两片层，
+相对误差 ≤ 1e-6）；重入护栏阻止代换级联再次进入本阶段。该阶段位于
+<strong><code>multi_radical</code> 之后、<code>exp_log</code> 之前</strong>。</li>
 <li><strong>反函数代换</strong>（0.30.0）—— <code>inverse_trig</code> <strong>分派序末的 M4 机制</strong>：
 <code>u = F(w)</code> 覆盖 11 个头（<code>asin</code>/<code>acos</code>/<code>atan</code>/<code>asinh</code>/<code>acosh</code>/<code>atanh</code>
 以及 <code>acsc</code>/<code>asec</code>/<code>acoth</code>/<code>asech</code>/<code>acsch</code>）× 仿射变元 × 整数核幂 ×
@@ -25140,6 +25145,11 @@ per-crate CHANGELOG，也不创建发版 PR）。</p>
 <li><code>docs.yml</code> 重新构建双语 mdBook，并把 <code>/latest/{en,zh}/</code> 与冻结的
 <code>/v&lt;version&gt;/{en,zh}/</code> 版本快照部署到 GitHub Pages。</li>
 </ul>
+<p><strong>tag 触发核验（0.31.0 实测）。</strong> release-plz 用 <code>RELEASE_PLZ_TOKEN</code> 推送的顶层 tag
+未触发下游 workflow。每次发布后必须核对 tag 触发的 run 是否出现
+（<code>gh run list --commit &lt;sha&gt;</code>）；若缺失，用 owner 凭据重推<strong>同一 tag 对象</strong>
+（临时禁用 <code>protect-release-tags</code> ruleset，删除并重推 tag 后恢复；tag 对象 SHA
+必须保持不变）。</p>
 </li>
 <li>
 <p><strong>手动兜底。</strong> 若自动化失败，请对已在 <code>main</code> 上且 CI 通过的提交打标签：</p>
