@@ -236,7 +236,14 @@ as sheet factors.</li>
 <li><strong>Heuristic techniques</strong> — integration by parts, trigonometric
 substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.</li>
 <li><strong>Bounded expansion retry</strong> (0.27.x) — products are distributed over
-sums (64-term budget) and integrated termwise.</li>
+sums (64-term budget) and integrated termwise.
+12b. <strong>Dilogarithm reduction</strong> (0.31.0) — the <code>log_rational</code> stage just before the
+heuristic: log-rational integrands <code>R(x)·log(A(x))</code> with an affine logarithm
+argument are reduced through the pole entry
+<code>∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)</code>. Integrands that already carry
+<code>polylog(2, u)</code> are handled in the <code>special</code> stage by parts against
+<code>d/du Li₂(u) = −log(1−u)/u</code>. Every emission passes a local numerical
+self-check; the fragment declines honestly outside it.</li>
 <li><strong>Unevaluated form</strong> — <code>Integral(expr, var)</code>.</li>
 </ol>
 <hr />
@@ -340,6 +347,7 @@ are answered directly (definitions match SymPy):</p>
 <tr><td><code>cosh(x)/x</code></td><td><code>Chi(x)</code></td></tr>
 <tr><td><code>sin(x²)</code></td><td><code>√(π/2)·fresnels(√(2/π)·x)</code></td></tr>
 <tr><td><code>cos(x²)</code></td><td><code>√(π/2)·fresnelc(√(2/π)·x)</code></td></tr>
+<tr><td><code>log(1−x)/x</code></td><td><code>−Li₂(x)</code> (head <code>polylog(2, ·)</code>, 0.31.0)</td></tr>
 </tbody></table>
 </div>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -352,6 +360,15 @@ let ctx = AtomArena::new(&amp;arena);
 // ∫ exp(-x^2) dx = (√π/2)·erf(x)
 let result = integrate(&amp;ctx, parse(&amp;ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
+<p><strong>Dilogarithm layer (0.31.0).</strong> <code>integral/polylog.rs</code> adds the first
+non-elementary function above the elementary special heads. The A class
+integrates integrands that already carry <code>polylog(2, u)</code> by parts against
+<code>d/du Li₂(u) = −log(1−u)/u</code>; the B class reduces log-rational integrands
+<code>R(x)·log(A(x))</code> with an affine logarithm argument through the pole entry
+<code>∫ log(u)/(u−β) du = log(u)·log(1−u/β) + Li₂(u/β)</code>. All candidates pass a
+local numerical self-check (real-domain samples, up to three parameter
+regimes) before they are emitted; shapes outside the fragment decline
+honestly.</p>
 <hr />
 <h2 id="fuel-bounded-integration"><a class="header" href="#fuel-bounded-integration">Fuel-bounded integration</a></h2>
 <p><code>integrate_with_fuel</code> wraps the same pipeline but threads a [<code>Fuel</code>] budget

@@ -219,6 +219,7 @@
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>Integration-mechanism correctness foundation: symbolic certificate engine (structural/elementary-field layers with <code>I² = −1</code> reduction and dependent-atom merging, deterministic budgets), three-valued <code>Outcome</code> and <code>integrate_outcome</code> (exposed to Python/C), expression-level cycle detection (budget-aware entry keys plus a separate residue budget), regular-tower dependency merging, in-tower exact verification of Risch results (caught and contained a latent wrong answer), and a hyperbolic front-end disabled for its wall-clock cost; Rubi coverage 19.56% → 19.61% (371 solved, +1 newly solved / 0 regressed), mismatches 0, timeouts flat at 12, wall clock −6.0%; <code>certified_rate = 28.8%</code> (target 1.0 not met, recorded honestly)</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>Completing the transcendental Risch fragment: rational solutions of the Risch differential equation over the full rational fragment (weak normalization, normal/special denominator bounds, degree bounds, SPDE, cancellation recursions), Rothstein–Trager logarithmic part at every tower level (resultant by value interpolation, ℚ rational-root sieve with an exact completeness check, per-root gcd self-verified by <code>Πvᵢ == d1</code>), coupled-system infrastructure <code>integral/coupled.rs</code> (shipped unwired), random-tower proptests (every residue-free answer must certify; <code>certified_rate = 1.0</code> there); the latent exp-level Laurent-split wrong answer fixed; Rubi coverage 19.61% → 19.98% (378 solved, +7 newly solved / 0 regressed), verified 351/378, mismatches 0, timeouts flat at 12, wall clock 439.6 s, <code>certified_rate</code> 28.8% → 29.1%</td></tr>
 <tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>Algebraic extensions and inverse-function substitution: RT algebraic constant roots (base-level real/complex quadratics and biquadratic quartics <code>Az⁴+Bz²+C</code>, complex quadratics at tower levels, each self-verified in the extension), the certificate <strong>radical layer</strong> (<code>CertMethod::RadicalField</code>: <code>sqrt(S)</code> / <code>S^(p/q)</code> unified as <code>r^q = S</code> with triangular reduction), multi-radical-base reduction (<code>integral/multi_radical.rs</code>: MR-L Möbius rationalization, gated same-radicand merges, MR-G/R/I/P), and the inverse-function substitution engine (<code>integral/inverse_trig.rs</code> M4: 11 heads × affine arguments × integer kernel powers × polynomial weights); Rubi solved 378 → 451 (coverage 23.84%), verified 410/451, <code>certified_rate</code> 29.1% → 48.8% (220/451), mismatches 0, timeouts flat at 12, wall clock 489.5 s, 0 regressions, 0 certificate false positives; radical bucket 51 → 84, inverse-trig-hyper 8 → 22 (the ≥48/146 line not met, recorded honestly)</td></tr>
+<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>Dilogarithm (Li₂) layer and the W6a single-radical wiring: the <code>polylog(2, z)</code> head (order-preserving <code>normalize</code>, derivative table, simplification rules, real-branch f64 oracle with series/reflection/Landen/inversion) and the Li₂ reduction skeleton (<code>integral/polylog.rs</code>: A class by parts against <code>d/dz Li₂ = −log(1−z)/z</code>, B class log-rational integrals through the pole entry <code>∫log(u)/(u−β) du</code>, every emission gated by a local numeric self-check), plus the 0.30.0 Wave 6a single-radical stage re-wired after fixing the <code>rubi-00401</code> branch-sign wrong answer (branch-safe even substitution + two-sheet numeric gate + a re-entrancy guard); Rubi solved 451 → 478 (coverage 25.26%), verified 436/478, <code>certified_rate</code> 48.8% → 50.2% (240/478), mismatches 0, timeouts 12 → 13, wall clock 475.6/489.1 s (two same-tree runs, gate ≤538.5 s), 0 regressions, 0 certificate false positives; <code>exp-log</code> bucket 8 → 10/83</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -336,7 +337,7 @@ dashed edges are optional dependencies):</p>
 </div>
 <hr />
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>oCAS is currently at version <strong>0.30.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
+<p>oCAS is currently at version <strong>0.31.0</strong>. The core symbolic engine, polynomial algebra, Gröbner bases and algebraic geometry, ODE solving, JIT evaluation, three-language bindings, and the correctness comparison framework are feature-complete. The roadmap to a stable 1.0 can be found in the
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_EN.md">roadmap</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <p>This chapter gets you up and running with oCAS in about 5 minutes. oCAS 0.24 supports three language interfaces: <strong>Rust</strong>, <strong>Python</strong>, and <strong>C/C++</strong>.</p>
@@ -5962,6 +5963,7 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <tr><td>$\frac{\cosh x}{x}$</td><td>$\text{Chi}(x)$</td><td>hyperbolic cosine integral</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnels}(\sqrt{2/\pi},x)$</td><td>Fresnel S integral (function name <code>fresnels</code>)</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnelc}(\sqrt{2/\pi},x)$</td><td>Fresnel C integral (function name <code>fresnelc</code>)</td></tr>
+<tr><td>$\frac{\log(1-x)}{x}$</td><td>$-\text{Li}_2(x)$</td><td>dilogarithm (function name <code>polylog(2, ·)</code>, 0.31.0)</td></tr>
 </tbody></table>
 </div>
 <p><strong>Matching strategy</strong>:</p>
@@ -5983,12 +5985,14 @@ $E_n = (e^{-u} - n E_{n+1})/u$;</li>
 $\text{Ei}(\pm u)$ plus elementary terms;</li>
 <li>polynomial $\times F(a + bx)^2$ for the six square-capable heads, via parts plus the Gaussian
 moment recursion (<code>erf</code>/<code>erfi</code>) or the coupled $F \cdot \cos/\sin$ recursion
-(<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>).</li>
+(<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>);</li>
 </ul>
 </li>
+<li><code>polylog</code> (0.31.0, <code>integral/polylog.rs</code>): the dilogarithm wave — see
+<a href="api/rust-calculus.html#dilogarithm-reduction-0310">Dilogarithm reduction</a> below.
+Every reduction chain carries a hard step budget (<code>MAX_SPECIAL_STEPS = 16</code>, <code>MAX_SPECIAL_DEG = 8</code>)
+and declines rather than guessing; no family ever emits an <code>Integral(...)</code> residue.</li>
 </ul>
-<p>Every reduction chain carries a hard step budget (<code>MAX_SPECIAL_STEPS = 16</code>, <code>MAX_SPECIAL_DEG = 8</code>)
-and declines rather than guessing; no family ever emits an <code>Integral(...)</code> residue.</p>
 <p><strong>Returns</strong>:</p>
 <ul>
 <li><code>Some(Atom)</code> — matched successfully; returns the antiderivative containing special functions</li>
@@ -5996,6 +6000,45 @@ and declines rather than guessing; no family ever emits an <code>Integral(...)</
 </ul>
 <p><strong>Design notes</strong>:</p>
 <p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>. The numerical verification oracle (<code>ocas-tests/src/integral_eval.rs</code>) implements every one of these heads, so solved results in this family are checked by differentiating the emitted form rather than by the absence of a residue.</p>
+<h3 id="dilogarithm-reduction-0310"><a class="header" href="#dilogarithm-reduction-0310">Dilogarithm reduction (0.31.0)</a></h3>
+<p><strong>Source</strong>: <code>ocas-calc/src/integral/polylog.rs</code> (specification: <code>docs/planning/POLYLOG_SPEC_CN.md</code>)</p>
+<p>The dilogarithm $\text{Li}<em>2(z) = \sum</em>{k \ge 1} z^k/k^2$ is the first non-elementary layer
+above the elementary special functions. The head is the ordinary function atom
+<code>polylog(2, z)</code> (two arguments; the order and the argument are order-sensitive in
+<code>normalize</code>), its derivative is $d/dz,\text{Li}_2(z) = -\log(1-z)/z$ (in <code>derivative.rs</code>),
+and the numerical oracle implements it on the real branch $z \le 1$ (series, Euler
+reflection, Landen transform, inversion), reporting <code>Domain</code> outside it.</p>
+<p>Two classes are implemented:</p>
+<ul>
+<li><strong>A class</strong> — the integrand already carries <code>polylog(2, u)</code> with <code>u</code> affine in $x$. Parts
+with the derivative table give
+$\int R,\text{Li}_2(u),dx = v,\text{Li}_2(u) + \int v,u',\log(1-u)/u,dx$ with
+$v = \int R$; the residual is a B-class integral. The weight $R$ must have a monomial
+primitive ($x^k$, $k \in {-2, 0, 1}$), otherwise the residual leaves the fragment.</li>
+<li><strong>B class</strong> — an elementary integrand $R(x)\log(A(x))$ whose antiderivative needs the
+dilogarithm. $\log A$ is split into a sum of $\log(\text{affine})$ terms plus a constant
+(<code>log</code> of a product / integer power / quotient; the real <code>ln|·|</code> convention makes the
+split differ only by an additive constant), and the substitution $u = A(x)$ reduces each
+term to one of the table entries:</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>Integral</th><th>Closed form</th></tr></thead><tbody>
+<tr><td>$\int \log(u)/u,du$</td><td>$\tfrac12 \log^2 u$</td></tr>
+<tr><td>$\int \log(u)/(u-\beta),du$</td><td>$\log u \cdot \log(1-u/\beta) + \text{Li}_2(u/\beta)$</td></tr>
+<tr><td>$\int u^m \log(u),du$, $m \ge 0$</td><td>$u^{m+1}\log u/(m+1) - u^{m+1}/(m+1)^2$</td></tr>
+<tr><td>$\int du/(\gamma+\delta u)$</td><td>$\log(\gamma+\delta u)/\delta$</td></tr>
+</tbody></table>
+</div>
+<p>The weight fragment is deliberately narrow: at most two linear denominator factors (each with
+exponent $-1$), a numerator of lower degree, and a monomial primitive for the A class. The
+<code>log_rational</code> stage runs just before the heuristic stage, so it only converts shapes every
+earlier stage declined.</p>
+<p><strong>Emission gate</strong>: no candidate is returned before a local f64 self-check — the numerical
+derivative of the candidate is compared with the integrand at deterministic samples (plus
+samples chosen so each <code>Li₂</code> argument sits inside the real branch), over up to three parameter
+regimes. A shape with fewer than two usable samples, or a gross disagreement, declines; the
+test oracle in <code>ocas-tests</code> remains the independent acceptance check. Budgets are
+deterministic (<code>MAX_POLYLOG_STEPS = 8</code>, terms ≤ 16, nodes ≤ 2000); the stage declines inside
+a parts scope and never emits a residue.</p>
 <p><strong>See also</strong>: <a href="api/rust-calculus.html#risch-algorithm">Risch algorithm</a>, <a href="api/rust-calculus.html#integrate">integrate</a></p>
 <hr />
 <h2 id="helper-functions-1"><a class="header" href="#helper-functions-1">Helper functions</a></h2>
@@ -6032,7 +6075,7 @@ and declines rather than guessing; no family ever emits an <code>Integral(...)</
 <li>The result of <code>integrate</code> passes through two simplification stages: first the default rewrite rules <code>default_rules</code> (algebraic identities such as $0 + x = x$, $1 \cdot x = x$, $x^1 = x$) for 20 steps, then <code>calculus_rules</code> for 10 steps, and finally <code>normalize</code> to canonical form</li>
 <li><code>diff</code> and <code>taylor</code> simplify with <code>calculus_rules</code> directly, then <code>normalize</code></li>
 </ul>
-<p><code>calculus_rules</code> (<code>rules.rs</code>) builds on <code>default_rules</code> and adds calculus-specific identities: <code>exp(0) → 1</code>, <code>log(1) → 0</code>, <code>sin(0) → 0</code>, <code>cos(0) → 1</code>, <code>tan(0) → 0</code>, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, etc.</p>
+<p><code>calculus_rules</code> (<code>rules.rs</code>) builds on <code>default_rules</code> and adds calculus-specific identities: <code>exp(0) → 1</code>, <code>log(1) → 0</code>, <code>sin(0) → 0</code>, <code>cos(0) → 1</code>, <code>tan(0) → 0</code>, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, plus the 0.31.0 dilogarithm entries <code>polylog(1, z) → -log(1-z)</code>, <code>polylog(2, 0) → 0</code> and <code>polylog(2, 1) → π²/6</code>.</p>
 <h3 id="depth-limits"><a class="header" href="#depth-limits">Depth limits</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Limit</th><th>Value</th><th>Purpose</th></tr></thead><tbody>
 <tr><td><code>MAX_DEPTH</code></td><td>8</td><td><code>integrate_raw</code> recursion depth</td></tr>
@@ -6051,6 +6094,7 @@ and declines rather than guessing; no family ever emits an <code>Integral(...)</
 │   ├── rde.rs          — Risch differential equation solver
 │   ├── trig.rs         — trig→exponential rewriting, realify
 │   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   ├── polylog.rs      — Li₂ (dilogarithm) A/B reduction + emission gate (0.31.0)
 │   └── tower/
 │       ├── build.rs    — differential field tower construction
 │       ├── elem.rs     — tower element types (KElem, KPoly, KRat)
@@ -20254,6 +20298,7 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <tr><td>$\cosh(x)/x$</td><td>$\text{Chi}(x)$</td><td>Hyperbolic cosine integral</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},S!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $S$</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},C!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $C$</td></tr>
+<tr><td>$\log(1-x)/x$</td><td>$-\text{Li}_2(x)$</td><td>Dilogarithm (<code>polylog(2, ·)</code>, 0.31.0)</td></tr>
 </tbody></table>
 </div>
 <p><strong>Matching logic</strong>: <code>special_integrate</code> decomposes the integrand into product factors and tries to match the following pattern families:</p>
@@ -20262,6 +20307,12 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <li><strong>Ei family</strong>: $e^x / x$, including the generalization $e^{cx}/x$</li>
 <li><strong>Si/Ci/Shi/Chi family</strong>: trigonometric or hyperbolic functions divided by $x$</li>
 <li><strong>Fresnel family</strong>: $\sin(x^2)$, $\cos(x^2)$</li>
+<li><strong>Dilogarithm</strong> (0.31.0, <code>integral/polylog.rs</code>): the A class (integrands carrying
+<code>polylog(2, u)</code>, $u$ affine) is integrated by parts against
+$d/du,\text{Li}_2(u) = -\log(1-u)/u$; the B class reduces log-rational integrands
+$R(x)\log(A(x))$ with affine logarithm arguments through the pole entry
+$\int \log(u)/(u-\beta),du = \log u\log(1-u/\beta) + \text{Li}_2(u/\beta)$. Emission is gated by a
+local numeric self-check.</li>
 </ul>
 <p>Note: these are <strong>not</strong> part of the Risch algorithm. After Risch proves "no elementary antiderivative exists", the special-function table provides a "suboptimal" answer.</p>
 <hr />
@@ -20299,6 +20350,7 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 │                    base_rde (Q[x]) + recursive tower
 ├── trig.rs        ← trigonometric ↔ complex-exponential rewrite (trig_to_exp / realify)
 ├── heuristic.rs   ← heuristics: parts / trig substitution / Weierstrass / Euler
+├── polylog.rs     ← dilogarithm (Li₂) A/B reduction + emission gate (0.31.0)
 └── special.rs     ← special-function table (erf, Ei, Si, Ci, Fresnel, etc.)
 </code></pre>
 <h3 id="execution-flow-of-the-risch-algorithm"><a class="header" href="#execution-flow-of-the-risch-algorithm">Execution Flow of the Risch Algorithm</a></h3>
@@ -22936,7 +22988,14 @@ as sheet factors.</li>
 <li><strong>Heuristic techniques</strong> — integration by parts, trigonometric
 substitution, Weierstrass $t = \tan(x/2)$, Euler substitutions.</li>
 <li><strong>Bounded expansion retry</strong> (0.27.x) — products are distributed over
-sums (64-term budget) and integrated termwise.</li>
+sums (64-term budget) and integrated termwise.
+12b. <strong>Dilogarithm reduction</strong> (0.31.0) — the <code>log_rational</code> stage just before the
+heuristic: log-rational integrands <code>R(x)·log(A(x))</code> with an affine logarithm
+argument are reduced through the pole entry
+<code>∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)</code>. Integrands that already carry
+<code>polylog(2, u)</code> are handled in the <code>special</code> stage by parts against
+<code>d/du Li₂(u) = −log(1−u)/u</code>. Every emission passes a local numerical
+self-check; the fragment declines honestly outside it.</li>
 <li><strong>Unevaluated form</strong> — <code>Integral(expr, var)</code>.</li>
 </ol>
 <hr />
@@ -23040,6 +23099,7 @@ are answered directly (definitions match SymPy):</p>
 <tr><td><code>cosh(x)/x</code></td><td><code>Chi(x)</code></td></tr>
 <tr><td><code>sin(x²)</code></td><td><code>√(π/2)·fresnels(√(2/π)·x)</code></td></tr>
 <tr><td><code>cos(x²)</code></td><td><code>√(π/2)·fresnelc(√(2/π)·x)</code></td></tr>
+<tr><td><code>log(1−x)/x</code></td><td><code>−Li₂(x)</code> (head <code>polylog(2, ·)</code>, 0.31.0)</td></tr>
 </tbody></table>
 </div>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -23052,6 +23112,15 @@ let ctx = AtomArena::new(&amp;arena);
 // ∫ exp(-x^2) dx = (√π/2)·erf(x)
 let result = integrate(&amp;ctx, parse(&amp;ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
+<p><strong>Dilogarithm layer (0.31.0).</strong> <code>integral/polylog.rs</code> adds the first
+non-elementary function above the elementary special heads. The A class
+integrates integrands that already carry <code>polylog(2, u)</code> by parts against
+<code>d/du Li₂(u) = −log(1−u)/u</code>; the B class reduces log-rational integrands
+<code>R(x)·log(A(x))</code> with an affine logarithm argument through the pole entry
+<code>∫ log(u)/(u−β) du = log(u)·log(1−u/β) + Li₂(u/β)</code>. All candidates pass a
+local numerical self-check (real-domain samples, up to three parameter
+regimes) before they are emitted; shapes outside the fragment decline
+honestly.</p>
 <hr />
 <h2 id="fuel-bounded-integration-1"><a class="header" href="#fuel-bounded-integration-1">Fuel-bounded integration</a></h2>
 <p><code>integrate_with_fuel</code> wraps the same pipeline but threads a [<code>Fuel</code>] budget

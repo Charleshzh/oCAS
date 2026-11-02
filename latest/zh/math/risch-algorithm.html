@@ -460,6 +460,7 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <tr><td>$\cosh(x)/x$</td><td>$\text{Chi}(x)$</td><td>双曲余弦积分</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},S!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $S$</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},C!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $C$</td></tr>
+<tr><td>$\log(1-x)/x$</td><td>$-\text{Li}_2(x)$</td><td>二重对数（<code>polylog(2, ·)</code>，0.31.0）</td></tr>
 </tbody></table>
 </div>
 <p><strong>匹配逻辑</strong>：<code>special_integrate</code> 将被积函数分解为乘积因子，尝试匹配以下模式族：</p>
@@ -468,6 +469,11 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <li><strong>Ei 族</strong>：$e^x / x$，含 $e^{cx}/x$ 推广</li>
 <li><strong>Si/Ci/Shi/Chi 族</strong>：三角或双曲函数除以 $x$</li>
 <li><strong>Fresnel 族</strong>：$\sin(x^2)$、$\cos(x^2)$</li>
+<li><strong>二重对数</strong>（0.31.0，<code>integral/polylog.rs</code>）：A 类（被积式含 <code>polylog(2, u)</code>，$u$ 仿射）
+按 $d/du,\text{Li}_2(u) = -\log(1-u)/u$ 分部；B 类把对数-有理被积式
+$R(x)\log(A(x))$（对数自变量仿射）经极点条目
+$\int \log(u)/(u-\beta),du = \log u\log(1-u/\beta) + \text{Li}_2(u/\beta)$ 归约。发射前有本地
+数值自检门。</li>
 </ul>
 <p>注意：这些<strong>不是</strong> Risch 算法的一部分。Risch 证明"不存在初等原函数"后，特殊函数表提供"次优"答案。</p>
 <hr />
@@ -505,43 +511,41 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 │                    base_rde (Q[x]) + 递归塔
 ├── trig.rs        ← 三角↔复指数重写（trig_to_exp / realify）
 ├── heuristic.rs   ← 启发式：分部积分 / 三角替换 / Weierstrass / Euler
+├── polylog.rs     ← 二重对数（Li₂）A/B 归约 + 发射门（0.31.0）
 └── special.rs     ← 特殊函数表（erf, Ei, Si, Ci, Fresnel 等）
-</code></pre>
-<h3 id="risch-算法的执行流程"><a class="header" href="#risch-算法的执行流程">Risch 算法的执行流程</a></h3>
-<p>以 $\int (x+1) e^x,dx$ 为例，追踪完整执行：</p>
-<ol>
-<li><strong>构建塔</strong>：<code>build_tower</code> 收集 $t_1 = \exp(x)$，塔为 $\mathbb{Q}(x) \subset \mathbb{Q}(x)(t_1)$。</li>
-<li><strong><code>risch_integrate</code></strong>：将被积函数转换为 $k_1(t_1)$ 中的有理函数：$(x+1) \cdot t_1$。</li>
-<li><strong><code>integrate_level(tower, level=1, f)</code></strong>：
-<ul>
-<li>分母为 1，无 Hermite 约化。</li>
-<li>多项式部分 $p(t_1) = (x+1) t_1$。</li>
-<li>调用 <code>integrate_kpoly_hyperexp</code>（因为 $t_1 = \exp(x)$）：
-<ul>
-<li>比较 $t_1^1$ 系数：$Da_1 + a_1 \cdot 1 = x + 1$</li>
-<li>递归调用 <code>rde_solve</code>：$a_1' + a_1 = x + 1$</li>
-<li>基域 <code>base_rde</code>：设 $a_1 = ax + b$，$a_1' = a$，$a + ax + b = x + 1$</li>
-<li>比较：$a = 1$，$a + b = 1 \Rightarrow b = 0$</li>
-<li>$a_1 = x$，验证：$x' + x = 1 + x = x + 1$ ✓</li>
-</ul>
-</li>
-<li>$t_1^0$ 系数为 0，$b_0 = 0$。</li>
-</ul>
-</li>
-<li><strong>结果组装</strong>：$q = x \cdot t_1$，转为原子：$x \cdot e^x$。</li>
-<li><strong>化简 + 归一化</strong>：返回 $x \cdot e^x$。</li>
-</ol>
-<p><strong>验证</strong>：$\frac{d}{dx}[x \cdot e^x] = e^x + x \cdot e^x = (x+1)e^x$ ✓</p>
-<h3 id="域元素的内部表示"><a class="header" href="#域元素的内部表示">域元素的内部表示</a></h3>
-<p>在塔中，域元素使用<strong>平坦多元稀疏多项式</strong>表示：</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// KElem: k = Q(x, t_1, ..., t_{n-1}) 中的元素
+
+### Risch 算法的执行流程
+
+以 $\int (x+1) e^x\,dx$ 为例，追踪完整执行：
+
+1. **构建塔**：`build_tower` 收集 $t_1 = \exp(x)$，塔为 $\mathbb{Q}(x) \subset \mathbb{Q}(x)(t_1)$。
+2. **`risch_integrate`**：将被积函数转换为 $k_1(t_1)$ 中的有理函数：$(x+1) \cdot t_1$。
+3. **`integrate_level(tower, level=1, f)`**：
+   - 分母为 1，无 Hermite 约化。
+   - 多项式部分 $p(t_1) = (x+1) t_1$。
+   - 调用 `integrate_kpoly_hyperexp`（因为 $t_1 = \exp(x)$）：
+     - 比较 $t_1^1$ 系数：$Da_1 + a_1 \cdot 1 = x + 1$
+     - 递归调用 `rde_solve`：$a_1' + a_1 = x + 1$
+     - 基域 `base_rde`：设 $a_1 = ax + b$，$a_1' = a$，$a + ax + b = x + 1$
+     - 比较：$a = 1$，$a + b = 1 \Rightarrow b = 0$
+     - $a_1 = x$，验证：$x' + x = 1 + x = x + 1$ ✓
+   - $t_1^0$ 系数为 0，$b_0 = 0$。
+4. **结果组装**：$q = x \cdot t_1$，转为原子：$x \cdot e^x$。
+5. **化简 + 归一化**：返回 $x \cdot e^x$。
+
+**验证**：$\frac{d}{dx}[x \cdot e^x] = e^x + x \cdot e^x = (x+1)e^x$ ✓
+
+### 域元素的内部表示
+
+在塔中，域元素使用**平坦多元稀疏多项式**表示：
+
+```rust
+// KElem: k = Q(x, t_1, ..., t_{n-1}) 中的元素
 struct KElem {
     num: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
     den: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
 }
-<span class="boring">}</span></code></pre></pre>
+</code></pre>
 <p>变量索引分配：<code>0</code> 对应 $x$，<code>1</code> 对应 $t_1$，…，<code>n-1</code> 对应 $t_{n-1}$。</p>
 <p><code>KPoly</code> 是关于顶层变量的稠密一元多项式，系数为 <code>KElem</code>：</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]

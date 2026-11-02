@@ -944,6 +944,7 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <tr><td>$\frac{\cosh x}{x}$</td><td>$\text{Chi}(x)$</td><td>hyperbolic cosine integral</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnels}(\sqrt{2/\pi},x)$</td><td>Fresnel S integral (function name <code>fresnels</code>)</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnelc}(\sqrt{2/\pi},x)$</td><td>Fresnel C integral (function name <code>fresnelc</code>)</td></tr>
+<tr><td>$\frac{\log(1-x)}{x}$</td><td>$-\text{Li}_2(x)$</td><td>dilogarithm (function name <code>polylog(2, ·)</code>, 0.31.0)</td></tr>
 </tbody></table>
 </div>
 <p><strong>Matching strategy</strong>:</p>
@@ -965,12 +966,14 @@ $E_n = (e^{-u} - n E_{n+1})/u$;</li>
 $\text{Ei}(\pm u)$ plus elementary terms;</li>
 <li>polynomial $\times F(a + bx)^2$ for the six square-capable heads, via parts plus the Gaussian
 moment recursion (<code>erf</code>/<code>erfi</code>) or the coupled $F \cdot \cos/\sin$ recursion
-(<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>).</li>
+(<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>);</li>
 </ul>
 </li>
+<li><code>polylog</code> (0.31.0, <code>integral/polylog.rs</code>): the dilogarithm wave — see
+<a href="#dilogarithm-reduction-0310">Dilogarithm reduction</a> below.
+Every reduction chain carries a hard step budget (<code>MAX_SPECIAL_STEPS = 16</code>, <code>MAX_SPECIAL_DEG = 8</code>)
+and declines rather than guessing; no family ever emits an <code>Integral(...)</code> residue.</li>
 </ul>
-<p>Every reduction chain carries a hard step budget (<code>MAX_SPECIAL_STEPS = 16</code>, <code>MAX_SPECIAL_DEG = 8</code>)
-and declines rather than guessing; no family ever emits an <code>Integral(...)</code> residue.</p>
 <p><strong>Returns</strong>:</p>
 <ul>
 <li><code>Some(Atom)</code> — matched successfully; returns the antiderivative containing special functions</li>
@@ -978,6 +981,45 @@ and declines rather than guessing; no family ever emits an <code>Integral(...)</
 </ul>
 <p><strong>Design notes</strong>:</p>
 <p>The special function definitions are consistent with SymPy, and the results can be cross-validated with <code>sympy.integrate</code>. The numerical verification oracle (<code>ocas-tests/src/integral_eval.rs</code>) implements every one of these heads, so solved results in this family are checked by differentiating the emitted form rather than by the absence of a residue.</p>
+<h3 id="dilogarithm-reduction-0310"><a class="header" href="#dilogarithm-reduction-0310">Dilogarithm reduction (0.31.0)</a></h3>
+<p><strong>Source</strong>: <code>ocas-calc/src/integral/polylog.rs</code> (specification: <code>docs/planning/POLYLOG_SPEC_CN.md</code>)</p>
+<p>The dilogarithm $\text{Li}<em>2(z) = \sum</em>{k \ge 1} z^k/k^2$ is the first non-elementary layer
+above the elementary special functions. The head is the ordinary function atom
+<code>polylog(2, z)</code> (two arguments; the order and the argument are order-sensitive in
+<code>normalize</code>), its derivative is $d/dz,\text{Li}_2(z) = -\log(1-z)/z$ (in <code>derivative.rs</code>),
+and the numerical oracle implements it on the real branch $z \le 1$ (series, Euler
+reflection, Landen transform, inversion), reporting <code>Domain</code> outside it.</p>
+<p>Two classes are implemented:</p>
+<ul>
+<li><strong>A class</strong> — the integrand already carries <code>polylog(2, u)</code> with <code>u</code> affine in $x$. Parts
+with the derivative table give
+$\int R,\text{Li}_2(u),dx = v,\text{Li}_2(u) + \int v,u',\log(1-u)/u,dx$ with
+$v = \int R$; the residual is a B-class integral. The weight $R$ must have a monomial
+primitive ($x^k$, $k \in {-2, 0, 1}$), otherwise the residual leaves the fragment.</li>
+<li><strong>B class</strong> — an elementary integrand $R(x)\log(A(x))$ whose antiderivative needs the
+dilogarithm. $\log A$ is split into a sum of $\log(\text{affine})$ terms plus a constant
+(<code>log</code> of a product / integer power / quotient; the real <code>ln|·|</code> convention makes the
+split differ only by an additive constant), and the substitution $u = A(x)$ reduces each
+term to one of the table entries:</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>Integral</th><th>Closed form</th></tr></thead><tbody>
+<tr><td>$\int \log(u)/u,du$</td><td>$\tfrac12 \log^2 u$</td></tr>
+<tr><td>$\int \log(u)/(u-\beta),du$</td><td>$\log u \cdot \log(1-u/\beta) + \text{Li}_2(u/\beta)$</td></tr>
+<tr><td>$\int u^m \log(u),du$, $m \ge 0$</td><td>$u^{m+1}\log u/(m+1) - u^{m+1}/(m+1)^2$</td></tr>
+<tr><td>$\int du/(\gamma+\delta u)$</td><td>$\log(\gamma+\delta u)/\delta$</td></tr>
+</tbody></table>
+</div>
+<p>The weight fragment is deliberately narrow: at most two linear denominator factors (each with
+exponent $-1$), a numerator of lower degree, and a monomial primitive for the A class. The
+<code>log_rational</code> stage runs just before the heuristic stage, so it only converts shapes every
+earlier stage declined.</p>
+<p><strong>Emission gate</strong>: no candidate is returned before a local f64 self-check — the numerical
+derivative of the candidate is compared with the integrand at deterministic samples (plus
+samples chosen so each <code>Li₂</code> argument sits inside the real branch), over up to three parameter
+regimes. A shape with fewer than two usable samples, or a gross disagreement, declines; the
+test oracle in <code>ocas-tests</code> remains the independent acceptance check. Budgets are
+deterministic (<code>MAX_POLYLOG_STEPS = 8</code>, terms ≤ 16, nodes ≤ 2000); the stage declines inside
+a parts scope and never emits a residue.</p>
 <p><strong>See also</strong>: <a href="#risch-algorithm">Risch algorithm</a>, <a href="#integrate">integrate</a></p>
 <hr />
 <h2 id="helper-functions"><a class="header" href="#helper-functions">Helper functions</a></h2>
@@ -1014,7 +1056,7 @@ and declines rather than guessing; no family ever emits an <code>Integral(...)</
 <li>The result of <code>integrate</code> passes through two simplification stages: first the default rewrite rules <code>default_rules</code> (algebraic identities such as $0 + x = x$, $1 \cdot x = x$, $x^1 = x$) for 20 steps, then <code>calculus_rules</code> for 10 steps, and finally <code>normalize</code> to canonical form</li>
 <li><code>diff</code> and <code>taylor</code> simplify with <code>calculus_rules</code> directly, then <code>normalize</code></li>
 </ul>
-<p><code>calculus_rules</code> (<code>rules.rs</code>) builds on <code>default_rules</code> and adds calculus-specific identities: <code>exp(0) → 1</code>, <code>log(1) → 0</code>, <code>sin(0) → 0</code>, <code>cos(0) → 1</code>, <code>tan(0) → 0</code>, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, etc.</p>
+<p><code>calculus_rules</code> (<code>rules.rs</code>) builds on <code>default_rules</code> and adds calculus-specific identities: <code>exp(0) → 1</code>, <code>log(1) → 0</code>, <code>sin(0) → 0</code>, <code>cos(0) → 1</code>, <code>tan(0) → 0</code>, $(-1) \cdot (-1) \to 1$, $1^x \to 1$, plus the 0.31.0 dilogarithm entries <code>polylog(1, z) → -log(1-z)</code>, <code>polylog(2, 0) → 0</code> and <code>polylog(2, 1) → π²/6</code>.</p>
 <h3 id="depth-limits"><a class="header" href="#depth-limits">Depth limits</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Limit</th><th>Value</th><th>Purpose</th></tr></thead><tbody>
 <tr><td><code>MAX_DEPTH</code></td><td>8</td><td><code>integrate_raw</code> recursion depth</td></tr>
@@ -1033,6 +1075,7 @@ and declines rather than guessing; no family ever emits an <code>Integral(...)</
 │   ├── rde.rs          — Risch differential equation solver
 │   ├── trig.rs         — trig→exponential rewriting, realify
 │   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   ├── polylog.rs      — Li₂ (dilogarithm) A/B reduction + emission gate (0.31.0)
 │   └── tower/
 │       ├── build.rs    — differential field tower construction
 │       ├── elem.rs     — tower element types (KElem, KPoly, KRat)

@@ -221,6 +221,7 @@
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>积分机制正确性地基：符号证书引擎（结构/初等域 + <code>I² = −1</code> 约化 + 依赖原子合并，确定性预算）、三值 <code>Outcome</code> 与 <code>integrate_outcome</code>（Python/C 同步暴露）、表达式级循环检测（预算感知入口键 + 独立残项预算）、正则塔依赖生成元合并、Risch 结果塔内精确校验（抓到并兜住一个潜伏错案）、双曲前端因墙钟代价默认关闭；Rubi 覆盖率 19.56% → 19.61%（371 solved，+1 新解 0 回归），mismatches 0，超时 12 持平，墙钟 −6.0%；<code>certified_rate = 28.8%</code>（目标 1.0 未达，如实记录）</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>超越 Risch 补全：Risch 微分方程的有理解（完整有理片段：弱规范化、法/特殊分母界、次数界、SPDE、抵消递归）、各塔层的 Rothstein–Trager 对数部分（结果式值插值、ℚ 有理根筛 + 完备性判定、逐根 gcd 经 <code>Πvᵢ == d1</code> 自证）、耦合微分系统基础设施 <code>integral/coupled.rs</code>（<strong>未挂接</strong>）、塔随机通用性测试（凡无残项答案必须过证书门，该族 <code>certified_rate = 1.0</code>）；修复指数层 Laurent 拆分的潜伏错案；Rubi 覆盖率 19.61% → 19.98%（378 solved，新解 7 / 回归 0）、verified 351/378、mismatches 0、超时 12 持平、墙钟 439.6 s，<code>certified_rate</code> 28.8% → 29.1%</td></tr>
 <tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>代数扩张与反函数代换：RT 代数常量根（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次因子，均在扩域内自证）、证书<strong>根式层</strong>（<code>CertMethod::RadicalField</code>：<code>sqrt(S)</code> / <code>S^(p/q)</code> 统一为 <code>r^q = S</code> 三角列约化）、多根式基归约（<code>integral/multi_radical.rs</code>：MR-L Möbius 有理化、带门同根合并、MR-G/R/I/P）、反函数代换引擎（<code>integral/inverse_trig.rs</code> M4：11 头 × 仿射变元 × 整数核幂 × 多项式权）；Rubi solved 378 → 451（coverage 23.84%）、verified 410/451、<code>certified_rate</code> 29.1% → 48.8%（220/451）、mismatches 0、超时 12 持平、墙钟 489.5 s、0 回归、证书假阳性 0；radical 桶 51 → 84、inverse-trig-hyper 8 → 22（≥48/146 口径未达，如实记录）</td></tr>
+<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>二重对数（Li₂）层与 W6a 单根式接线：<code>polylog(2, z)</code> 函数头（保序 <code>normalize</code>、导数表、化简规则、实值支 f64 oracle：级数/反射/Landen/反演）与 Li₂ 归约骨架（<code>integral/polylog.rs</code>：A 类按 <code>d/dz Li₂ = −log(1−z)/z</code> 分部，B 类对数-有理积分经极点条目 <code>∫log(u)/(u−β) du</code>，每个发射都过本地数值自检门），以及修复 <code>rubi-00401</code> 分支符号错案后重新接线的 0.30.0 Wave 6a 单根式阶段（分支安全的偶代换 + 双片层数值门 + 重入护栏）；Rubi solved 451 → 478（coverage 25.26%）、verified 436/478、<code>certified_rate</code> 48.8% → 50.2%（240/478）、mismatches 0、超时 12 → 13、墙钟 475.6/489.1 s（两次同树复跑，门 ≤538.5 s）、0 回归、证书假阳性 0；<code>exp-log</code> 桶 8 → 10/83</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -337,7 +338,7 @@
 </div>
 <hr />
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.30.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.31.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 
                     </main>

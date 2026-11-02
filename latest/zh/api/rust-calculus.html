@@ -932,6 +932,7 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <tr><td>$\frac{\cosh x}{x}$</td><td>$\text{Chi}(x)$</td><td>双曲余弦积分</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnels}(\sqrt{2/\pi},x)$</td><td>Fresnel S 积分（函数名 <code>fresnels</code>）</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnelc}(\sqrt{2/\pi},x)$</td><td>Fresnel C 积分（函数名 <code>fresnelc</code>）</td></tr>
+<tr><td>$\frac{\log(1-x)}{x}$</td><td>$-\text{Li}_2(x)$</td><td>二重对数（函数名 <code>polylog(2, ·)</code>，0.31.0）</td></tr>
 </tbody></table>
 </div>
 <p><strong>匹配策略</strong>：</p>
@@ -950,9 +951,11 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <li>$F(bx)/x^m$（$m \ge 2$，$F = \text{Ei}$ 或 $\text{Ei}(n, \cdot)$），递降终止于
 $\text{Ei}(\pm u)$ 加初等项；</li>
 <li>多项式 $\times F(a + bx)^2$（六个可平方的头），分部 + 高斯矩递推（<code>erf</code>/<code>erfi</code>）或
-$F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>）。</li>
+$F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>）；</li>
 </ul>
 </li>
+<li><code>polylog</code>（0.31.0，<code>integral/polylog.rs</code>）：二重对数波次，见下节
+<a href="#%E4%BA%8C%E9%87%8D%E5%AF%B9%E6%95%B0%E5%BD%92%E7%BA%A60310">二重对数归约</a>。</li>
 </ul>
 <p>每条归约链都带硬步数预算（<code>MAX_SPECIAL_STEPS = 16</code>、<code>MAX_SPECIAL_DEG = 8</code>），无法匹配时诚实拒绝，
 任何族都不会留下 <code>Integral(...)</code> 残项。</p>
@@ -965,6 +968,35 @@ $F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</co
 <p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。数值验证 oracle
 （<code>ocas-tests/src/integral_eval.rs</code>）已实现上述全部函数头，因此本族的「已解」结果是用
 「对发射形式求导」判定的，而不是靠「结果里没有 <code>Integral(</code>」这一字符串判据。</p>
+<h3 id="二重对数归约0310"><a class="header" href="#二重对数归约0310">二重对数归约（0.31.0）</a></h3>
+<p><strong>源码</strong>：<code>ocas-calc/src/integral/polylog.rs</code>（规格：<code>docs/planning/POLYLOG_SPEC_CN.md</code>）</p>
+<p>二重对数 $\text{Li}<em>2(z) = \sum</em>{k \ge 1} z^k/k^2$ 是初等特殊函数之上的第一层非初等函数。
+函数头即普通函数原子 <code>polylog(2, z)</code>（两参数；阶与自变量在 <code>normalize</code> 中保序），导数表
+给出 $d/dz,\text{Li}_2(z) = -\log(1-z)/z$（<code>derivative.rs</code>），数值 oracle 在实值支
+$z \le 1$ 上实现（级数 / Euler 反射 / Landen 变换 / 反演），域外返回 <code>Domain</code>。</p>
+<p>实现两类：</p>
+<ul>
+<li><strong>A 类</strong>：被积式本身含 <code>polylog(2, u)</code>（$u$ 仿射）。按导数表分部得
+$\int R,\text{Li}_2(u),dx = v,\text{Li}_2(u) + \int v,u',\log(1-u)/u,dx$（$v = \int R$），
+残项是 B 类积分。权重 $R$ 必须有单项式原函数（$x^k$，$k \in {-2, 0, 1}$），否则残项越界。</li>
+<li><strong>B 类</strong>：初等被积式 $R(x)\log(A(x))$，其原函数需二重对数。$\log A$ 拆成若干
+$\log(\text{仿射})$ 项加常数（乘积 / 整数幂 / 商；实值 <code>ln|·|</code> 约定下只差可并入积分常数的量），
+代入 $u = A(x)$ 后每项落到下表条目：</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>积分</th><th>闭式</th></tr></thead><tbody>
+<tr><td>$\int \log(u)/u,du$</td><td>$\tfrac12 \log^2 u$</td></tr>
+<tr><td>$\int \log(u)/(u-\beta),du$</td><td>$\log u \cdot \log(1-u/\beta) + \text{Li}_2(u/\beta)$</td></tr>
+<tr><td>$\int u^m \log(u),du$，$m \ge 0$</td><td>$u^{m+1}\log u/(m+1) - u^{m+1}/(m+1)^2$</td></tr>
+<tr><td>$\int du/(\gamma+\delta u)$</td><td>$\log(\gamma+\delta u)/\delta$</td></tr>
+</tbody></table>
+</div>
+<p>片段刻意收窄：分母至多两个线性因子（指数均为 $-1$）、分子次数更低；A 类要求单项式原函数。
+<code>log_rational</code> 阶段紧接启发式阶段之前运行，因此只把更早阶段全部拒绝的形状转化为解。</p>
+<p><strong>发射门</strong>：任何候选在返回前都先过本地 f64 自检——在确定性采样点（外加「让每个 <code>Li₂</code> 自变量
+落在实值支内」的采样）上把候选的数值导数与被积式比对，覆盖至多三组参数取值。可用采样点少于
+两个、或出现量级不符的偏离即拒绝；独立验收仍以 <code>ocas-tests</code> 的数值 oracle 为准。预算为确定性
+上限（<code>MAX_POLYLOG_STEPS = 8</code>、项数 ≤ 16、节点 ≤ 2000）；阶段在 parts 作用域内拒绝，且从不
+发射 <code>Integral</code> 残项。</p>
 <p><strong>参见</strong>：<a href="#risch-%E7%AE%97%E6%B3%95">Risch 算法</a>、<a href="#integrate">integrate</a></p>
 <hr />
 <h2 id="辅助函数"><a class="header" href="#辅助函数">辅助函数</a></h2>
@@ -1001,7 +1033,7 @@ $F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</co
 <li><code>integrate</code> 的结果经过两级化简：先用默认重写规则 <code>default_rules</code>（$0 + x = x$、$1 \cdot x = x$、$x^1 = x$ 等代数恒等式）化简 20 步，再用 <code>calculus_rules</code> 化简 10 步，最后 <code>normalize</code> 到规范形式</li>
 <li><code>diff</code> 与 <code>taylor</code> 直接使用 <code>calculus_rules</code> 化简后 <code>normalize</code></li>
 </ul>
-<p><code>calculus_rules</code>（<code>rules.rs</code>）以 <code>default_rules</code> 为基础，追加微积分专用恒等式：<code>exp(0) → 1</code>、<code>log(1) → 0</code>、<code>sin(0) → 0</code>、<code>cos(0) → 1</code>、<code>tan(0) → 0</code>、$(-1) \cdot (-1) \to 1$、$1^x \to 1$ 等。</p>
+<p><code>calculus_rules</code>（<code>rules.rs</code>）以 <code>default_rules</code> 为基础，追加微积分专用恒等式：<code>exp(0) → 1</code>、<code>log(1) → 0</code>、<code>sin(0) → 0</code>、<code>cos(0) → 1</code>、<code>tan(0) → 0</code>、$(-1) \cdot (-1) \to 1$、$1^x \to 1$，以及 0.31.0 的二重对数条目 <code>polylog(1, z) → -log(1-z)</code>、<code>polylog(2, 0) → 0</code>、<code>polylog(2, 1) → π²/6</code>。</p>
 <h3 id="深度限制-1"><a class="header" href="#深度限制-1">深度限制</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>限制</th><th>值</th><th>用途</th></tr></thead><tbody>
 <tr><td><code>MAX_DEPTH</code></td><td>8</td><td><code>integrate_raw</code> 递归深度</td></tr>
@@ -1020,8 +1052,8 @@ $F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</co
 │   ├── rde.rs          — Risch 微分方程求解器
 │   ├── trig.rs         — 三角→指数重写, realify
 │   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   ├── polylog.rs      — Li₂（二重对数）A/B 归约 + 发射门（0.31.0）
 │   └── tower/
-│       ├── build.rs    — 微分域塔构造
 │       ├── elem.rs     — 塔元素类型 (KElem, KPoly, KRat)
 │       └── convert.rs  — Atom ↔ 塔元素转换
 ├── series.rs           — taylor, substitute

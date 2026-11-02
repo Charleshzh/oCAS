@@ -219,7 +219,12 @@ log/atan/atanh）。</li>
 <li><strong>启发式技巧</strong> —— 分部积分、三角替换、Weierstrass $t = \tan(x/2)$、
 Euler 替换。</li>
 <li><strong>有界展开重试</strong>（0.27.x）—— 分配展开乘积为和式（项数预算 64）
-后逐项积分。</li>
+后逐项积分。
+12b. <strong>二重对数归约</strong>（0.31.0）——启发式之前的 <code>log_rational</code> 阶段：把对数-有理
+被积式 <code>R(x)·log(A(x))</code>（对数自变量仿射）经极点条目
+<code>∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)</code> 归约；被积式本身含
+<code>polylog(2, u)</code> 的形状在 <code>special</code> 阶段按 <code>d/du Li₂(u) = −log(1−u)/u</code> 分部处理。
+每次发射都过本地数值自检，片段外诚实拒绝。</li>
 <li><strong>未求值形式</strong> —— <code>Integral(expr, var)</code>。</li>
 </ol>
 <hr />
@@ -304,6 +309,7 @@ let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::n
 <tr><td><code>cosh(x)/x</code></td><td><code>Chi(x)</code></td></tr>
 <tr><td><code>sin(x²)</code></td><td><code>√(π/2)·fresnels(√(2/π)·x)</code></td></tr>
 <tr><td><code>cos(x²)</code></td><td><code>√(π/2)·fresnelc(√(2/π)·x)</code></td></tr>
+<tr><td><code>log(1−x)/x</code></td><td><code>−Li₂(x)</code>（函数头 <code>polylog(2, ·)</code>，0.31.0）</td></tr>
 </tbody></table>
 </div>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -316,6 +322,11 @@ let ctx = AtomArena::new(&amp;arena);
 // ∫ exp(-x^2) dx = (√π/2)·erf(x)
 let result = integrate(&amp;ctx, parse(&amp;ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
+<p><strong>二重对数层（0.31.0）</strong>：<code>integral/polylog.rs</code> 在初等特殊函数头之上加入第一层非初等函数。
+A 类对被积式已含 <code>polylog(2, u)</code> 的形状按 <code>d/du Li₂(u) = −log(1−u)/u</code> 分部；B 类把对数-有理
+被积式 <code>R(x)·log(A(x))</code>（对数自变量仿射）经极点条目
+<code>∫ log(u)/(u−β) du = log(u)·log(1−u/β) + Li₂(u/β)</code> 归约。所有候选在发射前都先过本地数值自检
+（实值域采样、至多三组参数取值），片段外的形状诚实拒绝。</p>
 <hr />
 <h2 id="fuel-受限积分"><a class="header" href="#fuel-受限积分">Fuel 受限积分</a></h2>
 <p><code>integrate_with_fuel</code> 包装同一管线，但将 [<code>Fuel</code>] 预算贯穿到两个积分后

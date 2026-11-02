@@ -219,6 +219,7 @@
 <tr><td><strong>0.28.0</strong></td><td>2026-09-13</td><td>积分机制正确性地基：符号证书引擎（结构/初等域 + <code>I² = −1</code> 约化 + 依赖原子合并，确定性预算）、三值 <code>Outcome</code> 与 <code>integrate_outcome</code>（Python/C 同步暴露）、表达式级循环检测（预算感知入口键 + 独立残项预算）、正则塔依赖生成元合并、Risch 结果塔内精确校验（抓到并兜住一个潜伏错案）、双曲前端因墙钟代价默认关闭；Rubi 覆盖率 19.56% → 19.61%（371 solved，+1 新解 0 回归），mismatches 0，超时 12 持平，墙钟 −6.0%；<code>certified_rate = 28.8%</code>（目标 1.0 未达，如实记录）</td></tr>
 <tr><td><strong>0.29.0</strong></td><td>2026-10-01</td><td>超越 Risch 补全：Risch 微分方程的有理解（完整有理片段：弱规范化、法/特殊分母界、次数界、SPDE、抵消递归）、各塔层的 Rothstein–Trager 对数部分（结果式值插值、ℚ 有理根筛 + 完备性判定、逐根 gcd 经 <code>Πvᵢ == d1</code> 自证）、耦合微分系统基础设施 <code>integral/coupled.rs</code>（<strong>未挂接</strong>）、塔随机通用性测试（凡无残项答案必须过证书门，该族 <code>certified_rate = 1.0</code>）；修复指数层 Laurent 拆分的潜伏错案；Rubi 覆盖率 19.61% → 19.98%（378 solved，新解 7 / 回归 0）、verified 351/378、mismatches 0、超时 12 持平、墙钟 439.6 s，<code>certified_rate</code> 28.8% → 29.1%</td></tr>
 <tr><td><strong>0.30.0</strong></td><td>2026-10-25</td><td>代数扩张与反函数代换：RT 代数常量根（基层实/复二次因子与双二次四次因子 <code>Az⁴+Bz²+C</code>，塔层复二次因子，均在扩域内自证）、证书<strong>根式层</strong>（<code>CertMethod::RadicalField</code>：<code>sqrt(S)</code> / <code>S^(p/q)</code> 统一为 <code>r^q = S</code> 三角列约化）、多根式基归约（<code>integral/multi_radical.rs</code>：MR-L Möbius 有理化、带门同根合并、MR-G/R/I/P）、反函数代换引擎（<code>integral/inverse_trig.rs</code> M4：11 头 × 仿射变元 × 整数核幂 × 多项式权）；Rubi solved 378 → 451（coverage 23.84%）、verified 410/451、<code>certified_rate</code> 29.1% → 48.8%（220/451）、mismatches 0、超时 12 持平、墙钟 489.5 s、0 回归、证书假阳性 0；radical 桶 51 → 84、inverse-trig-hyper 8 → 22（≥48/146 口径未达，如实记录）</td></tr>
+<tr><td><strong>0.31.0</strong></td><td>2026-11-02</td><td>二重对数（Li₂）层与 W6a 单根式接线：<code>polylog(2, z)</code> 函数头（保序 <code>normalize</code>、导数表、化简规则、实值支 f64 oracle：级数/反射/Landen/反演）与 Li₂ 归约骨架（<code>integral/polylog.rs</code>：A 类按 <code>d/dz Li₂ = −log(1−z)/z</code> 分部，B 类对数-有理积分经极点条目 <code>∫log(u)/(u−β) du</code>，每个发射都过本地数值自检门），以及修复 <code>rubi-00401</code> 分支符号错案后重新接线的 0.30.0 Wave 6a 单根式阶段（分支安全的偶代换 + 双片层数值门 + 重入护栏）；Rubi solved 451 → 478（coverage 25.26%）、verified 436/478、<code>certified_rate</code> 48.8% → 50.2%（240/478）、mismatches 0、超时 12 → 13、墙钟 475.6/489.1 s（两次同树复跑，门 ≤538.5 s）、0 回归、证书假阳性 0；<code>exp-log</code> 桶 8 → 10/83</td></tr>
 </tbody></table>
 </div>
 <hr />
@@ -335,7 +336,7 @@
 </div>
 <hr />
 <h2 id="项目状态"><a class="header" href="#项目状态">项目状态</a></h2>
-<p>oCAS 当前版本为 <strong>0.30.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
+<p>oCAS 当前版本为 <strong>0.31.0</strong>。核心符号引擎、多项式代数、Gröbner 基与代数几何、ODE 求解、JIT 求值、三语言绑定与正确性对比框架已达到功能完备。通往稳定 1.0 的路线见
 <a href="https://github.com/charleshzh/ocas/blob/main/docs/planning/ROADMAP_CN.md">路线图</a>。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="快速上手"><a class="header" href="#快速上手">快速上手</a></h1>
 <p>本章帮助你在 5 分钟内完成 oCAS 的安装与首次运行。oCAS 0.24 支持 <strong>Rust</strong>、<strong>Python</strong> 和 <strong>C/C++</strong> 三种语言接口。</p>
@@ -5941,6 +5942,7 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <tr><td>$\frac{\cosh x}{x}$</td><td>$\text{Chi}(x)$</td><td>双曲余弦积分</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnels}(\sqrt{2/\pi},x)$</td><td>Fresnel S 积分（函数名 <code>fresnels</code>）</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\pi/2},\text{fresnelc}(\sqrt{2/\pi},x)$</td><td>Fresnel C 积分（函数名 <code>fresnelc</code>）</td></tr>
+<tr><td>$\frac{\log(1-x)}{x}$</td><td>$-\text{Li}_2(x)$</td><td>二重对数（函数名 <code>polylog(2, ·)</code>，0.31.0）</td></tr>
 </tbody></table>
 </div>
 <p><strong>匹配策略</strong>：</p>
@@ -5959,9 +5961,11 @@ assert_eq!(result.unwrap().to_string(), "log(x)");
 <li>$F(bx)/x^m$（$m \ge 2$，$F = \text{Ei}$ 或 $\text{Ei}(n, \cdot)$），递降终止于
 $\text{Ei}(\pm u)$ 加初等项；</li>
 <li>多项式 $\times F(a + bx)^2$（六个可平方的头），分部 + 高斯矩递推（<code>erf</code>/<code>erfi</code>）或
-$F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>）。</li>
+$F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</code>/<code>Chi</code>）；</li>
 </ul>
 </li>
+<li><code>polylog</code>（0.31.0，<code>integral/polylog.rs</code>）：二重对数波次，见下节
+<a href="api/rust-calculus.html#%E4%BA%8C%E9%87%8D%E5%AF%B9%E6%95%B0%E5%BD%92%E7%BA%A60310">二重对数归约</a>。</li>
 </ul>
 <p>每条归约链都带硬步数预算（<code>MAX_SPECIAL_STEPS = 16</code>、<code>MAX_SPECIAL_DEG = 8</code>），无法匹配时诚实拒绝，
 任何族都不会留下 <code>Integral(...)</code> 残项。</p>
@@ -5974,6 +5978,35 @@ $F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</co
 <p>特殊函数定义与 SymPy 一致，结果可通过 <code>sympy.integrate</code> 交叉验证。数值验证 oracle
 （<code>ocas-tests/src/integral_eval.rs</code>）已实现上述全部函数头，因此本族的「已解」结果是用
 「对发射形式求导」判定的，而不是靠「结果里没有 <code>Integral(</code>」这一字符串判据。</p>
+<h3 id="二重对数归约0310"><a class="header" href="#二重对数归约0310">二重对数归约（0.31.0）</a></h3>
+<p><strong>源码</strong>：<code>ocas-calc/src/integral/polylog.rs</code>（规格：<code>docs/planning/POLYLOG_SPEC_CN.md</code>）</p>
+<p>二重对数 $\text{Li}<em>2(z) = \sum</em>{k \ge 1} z^k/k^2$ 是初等特殊函数之上的第一层非初等函数。
+函数头即普通函数原子 <code>polylog(2, z)</code>（两参数；阶与自变量在 <code>normalize</code> 中保序），导数表
+给出 $d/dz,\text{Li}_2(z) = -\log(1-z)/z$（<code>derivative.rs</code>），数值 oracle 在实值支
+$z \le 1$ 上实现（级数 / Euler 反射 / Landen 变换 / 反演），域外返回 <code>Domain</code>。</p>
+<p>实现两类：</p>
+<ul>
+<li><strong>A 类</strong>：被积式本身含 <code>polylog(2, u)</code>（$u$ 仿射）。按导数表分部得
+$\int R,\text{Li}_2(u),dx = v,\text{Li}_2(u) + \int v,u',\log(1-u)/u,dx$（$v = \int R$），
+残项是 B 类积分。权重 $R$ 必须有单项式原函数（$x^k$，$k \in {-2, 0, 1}$），否则残项越界。</li>
+<li><strong>B 类</strong>：初等被积式 $R(x)\log(A(x))$，其原函数需二重对数。$\log A$ 拆成若干
+$\log(\text{仿射})$ 项加常数（乘积 / 整数幂 / 商；实值 <code>ln|·|</code> 约定下只差可并入积分常数的量），
+代入 $u = A(x)$ 后每项落到下表条目：</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>积分</th><th>闭式</th></tr></thead><tbody>
+<tr><td>$\int \log(u)/u,du$</td><td>$\tfrac12 \log^2 u$</td></tr>
+<tr><td>$\int \log(u)/(u-\beta),du$</td><td>$\log u \cdot \log(1-u/\beta) + \text{Li}_2(u/\beta)$</td></tr>
+<tr><td>$\int u^m \log(u),du$，$m \ge 0$</td><td>$u^{m+1}\log u/(m+1) - u^{m+1}/(m+1)^2$</td></tr>
+<tr><td>$\int du/(\gamma+\delta u)$</td><td>$\log(\gamma+\delta u)/\delta$</td></tr>
+</tbody></table>
+</div>
+<p>片段刻意收窄：分母至多两个线性因子（指数均为 $-1$）、分子次数更低；A 类要求单项式原函数。
+<code>log_rational</code> 阶段紧接启发式阶段之前运行，因此只把更早阶段全部拒绝的形状转化为解。</p>
+<p><strong>发射门</strong>：任何候选在返回前都先过本地 f64 自检——在确定性采样点（外加「让每个 <code>Li₂</code> 自变量
+落在实值支内」的采样）上把候选的数值导数与被积式比对，覆盖至多三组参数取值。可用采样点少于
+两个、或出现量级不符的偏离即拒绝；独立验收仍以 <code>ocas-tests</code> 的数值 oracle 为准。预算为确定性
+上限（<code>MAX_POLYLOG_STEPS = 8</code>、项数 ≤ 16、节点 ≤ 2000）；阶段在 parts 作用域内拒绝，且从不
+发射 <code>Integral</code> 残项。</p>
 <p><strong>参见</strong>：<a href="api/rust-calculus.html#risch-%E7%AE%97%E6%B3%95">Risch 算法</a>、<a href="api/rust-calculus.html#integrate">integrate</a></p>
 <hr />
 <h2 id="辅助函数-1"><a class="header" href="#辅助函数-1">辅助函数</a></h2>
@@ -6010,7 +6043,7 @@ $F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</co
 <li><code>integrate</code> 的结果经过两级化简：先用默认重写规则 <code>default_rules</code>（$0 + x = x$、$1 \cdot x = x$、$x^1 = x$ 等代数恒等式）化简 20 步，再用 <code>calculus_rules</code> 化简 10 步，最后 <code>normalize</code> 到规范形式</li>
 <li><code>diff</code> 与 <code>taylor</code> 直接使用 <code>calculus_rules</code> 化简后 <code>normalize</code></li>
 </ul>
-<p><code>calculus_rules</code>（<code>rules.rs</code>）以 <code>default_rules</code> 为基础，追加微积分专用恒等式：<code>exp(0) → 1</code>、<code>log(1) → 0</code>、<code>sin(0) → 0</code>、<code>cos(0) → 1</code>、<code>tan(0) → 0</code>、$(-1) \cdot (-1) \to 1$、$1^x \to 1$ 等。</p>
+<p><code>calculus_rules</code>（<code>rules.rs</code>）以 <code>default_rules</code> 为基础，追加微积分专用恒等式：<code>exp(0) → 1</code>、<code>log(1) → 0</code>、<code>sin(0) → 0</code>、<code>cos(0) → 1</code>、<code>tan(0) → 0</code>、$(-1) \cdot (-1) \to 1$、$1^x \to 1$，以及 0.31.0 的二重对数条目 <code>polylog(1, z) → -log(1-z)</code>、<code>polylog(2, 0) → 0</code>、<code>polylog(2, 1) → π²/6</code>。</p>
 <h3 id="深度限制-1"><a class="header" href="#深度限制-1">深度限制</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>限制</th><th>值</th><th>用途</th></tr></thead><tbody>
 <tr><td><code>MAX_DEPTH</code></td><td>8</td><td><code>integrate_raw</code> 递归深度</td></tr>
@@ -6029,8 +6062,8 @@ $F \cdot \cos/\sin$ 耦合递推（<code>Si</code>/<code>Ci</code>/<code>Shi</co
 │   ├── rde.rs          — Risch 微分方程求解器
 │   ├── trig.rs         — 三角→指数重写, realify
 │   ├── special.rs      — erf/Ei/Si/Ci/Fresnel
+│   ├── polylog.rs      — Li₂（二重对数）A/B 归约 + 发射门（0.31.0）
 │   └── tower/
-│       ├── build.rs    — 微分域塔构造
 │       ├── elem.rs     — 塔元素类型 (KElem, KPoly, KRat)
 │       └── convert.rs  — Atom ↔ 塔元素转换
 ├── series.rs           — taylor, substitute
@@ -20283,6 +20316,7 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <tr><td>$\cosh(x)/x$</td><td>$\text{Chi}(x)$</td><td>双曲余弦积分</td></tr>
 <tr><td>$\sin(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},S!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $S$</td></tr>
 <tr><td>$\cos(x^2)$</td><td>$\sqrt{\frac{\pi}{2}},C!\left(\sqrt{\frac{2}{\pi}},x\right)$</td><td>Fresnel $C$</td></tr>
+<tr><td>$\log(1-x)/x$</td><td>$-\text{Li}_2(x)$</td><td>二重对数（<code>polylog(2, ·)</code>，0.31.0）</td></tr>
 </tbody></table>
 </div>
 <p><strong>匹配逻辑</strong>：<code>special_integrate</code> 将被积函数分解为乘积因子，尝试匹配以下模式族：</p>
@@ -20291,6 +20325,11 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 <li><strong>Ei 族</strong>：$e^x / x$，含 $e^{cx}/x$ 推广</li>
 <li><strong>Si/Ci/Shi/Chi 族</strong>：三角或双曲函数除以 $x$</li>
 <li><strong>Fresnel 族</strong>：$\sin(x^2)$、$\cos(x^2)$</li>
+<li><strong>二重对数</strong>（0.31.0，<code>integral/polylog.rs</code>）：A 类（被积式含 <code>polylog(2, u)</code>，$u$ 仿射）
+按 $d/du,\text{Li}_2(u) = -\log(1-u)/u$ 分部；B 类把对数-有理被积式
+$R(x)\log(A(x))$（对数自变量仿射）经极点条目
+$\int \log(u)/(u-\beta),du = \log u\log(1-u/\beta) + \text{Li}_2(u/\beta)$ 归约。发射前有本地
+数值自检门。</li>
 </ul>
 <p>注意：这些<strong>不是</strong> Risch 算法的一部分。Risch 证明"不存在初等原函数"后，特殊函数表提供"次优"答案。</p>
 <hr />
@@ -20328,43 +20367,41 @@ $$\frac{a}{u, v^m} = D!\left(\frac{-s}{(m-1), v^{m-1}}\right) + \frac{t + u \cdo
 │                    base_rde (Q[x]) + 递归塔
 ├── trig.rs        ← 三角↔复指数重写（trig_to_exp / realify）
 ├── heuristic.rs   ← 启发式：分部积分 / 三角替换 / Weierstrass / Euler
+├── polylog.rs     ← 二重对数（Li₂）A/B 归约 + 发射门（0.31.0）
 └── special.rs     ← 特殊函数表（erf, Ei, Si, Ci, Fresnel 等）
-</code></pre>
-<h3 id="risch-算法的执行流程"><a class="header" href="#risch-算法的执行流程">Risch 算法的执行流程</a></h3>
-<p>以 $\int (x+1) e^x,dx$ 为例，追踪完整执行：</p>
-<ol>
-<li><strong>构建塔</strong>：<code>build_tower</code> 收集 $t_1 = \exp(x)$，塔为 $\mathbb{Q}(x) \subset \mathbb{Q}(x)(t_1)$。</li>
-<li><strong><code>risch_integrate</code></strong>：将被积函数转换为 $k_1(t_1)$ 中的有理函数：$(x+1) \cdot t_1$。</li>
-<li><strong><code>integrate_level(tower, level=1, f)</code></strong>：
-<ul>
-<li>分母为 1，无 Hermite 约化。</li>
-<li>多项式部分 $p(t_1) = (x+1) t_1$。</li>
-<li>调用 <code>integrate_kpoly_hyperexp</code>（因为 $t_1 = \exp(x)$）：
-<ul>
-<li>比较 $t_1^1$ 系数：$Da_1 + a_1 \cdot 1 = x + 1$</li>
-<li>递归调用 <code>rde_solve</code>：$a_1' + a_1 = x + 1$</li>
-<li>基域 <code>base_rde</code>：设 $a_1 = ax + b$，$a_1' = a$，$a + ax + b = x + 1$</li>
-<li>比较：$a = 1$，$a + b = 1 \Rightarrow b = 0$</li>
-<li>$a_1 = x$，验证：$x' + x = 1 + x = x + 1$ ✓</li>
-</ul>
-</li>
-<li>$t_1^0$ 系数为 0，$b_0 = 0$。</li>
-</ul>
-</li>
-<li><strong>结果组装</strong>：$q = x \cdot t_1$，转为原子：$x \cdot e^x$。</li>
-<li><strong>化简 + 归一化</strong>：返回 $x \cdot e^x$。</li>
-</ol>
-<p><strong>验证</strong>：$\frac{d}{dx}[x \cdot e^x] = e^x + x \cdot e^x = (x+1)e^x$ ✓</p>
-<h3 id="域元素的内部表示"><a class="header" href="#域元素的内部表示">域元素的内部表示</a></h3>
-<p>在塔中，域元素使用<strong>平坦多元稀疏多项式</strong>表示：</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// KElem: k = Q(x, t_1, ..., t_{n-1}) 中的元素
+
+### Risch 算法的执行流程
+
+以 $\int (x+1) e^x\,dx$ 为例，追踪完整执行：
+
+1. **构建塔**：`build_tower` 收集 $t_1 = \exp(x)$，塔为 $\mathbb{Q}(x) \subset \mathbb{Q}(x)(t_1)$。
+2. **`risch_integrate`**：将被积函数转换为 $k_1(t_1)$ 中的有理函数：$(x+1) \cdot t_1$。
+3. **`integrate_level(tower, level=1, f)`**：
+   - 分母为 1，无 Hermite 约化。
+   - 多项式部分 $p(t_1) = (x+1) t_1$。
+   - 调用 `integrate_kpoly_hyperexp`（因为 $t_1 = \exp(x)$）：
+     - 比较 $t_1^1$ 系数：$Da_1 + a_1 \cdot 1 = x + 1$
+     - 递归调用 `rde_solve`：$a_1' + a_1 = x + 1$
+     - 基域 `base_rde`：设 $a_1 = ax + b$，$a_1' = a$，$a + ax + b = x + 1$
+     - 比较：$a = 1$，$a + b = 1 \Rightarrow b = 0$
+     - $a_1 = x$，验证：$x' + x = 1 + x = x + 1$ ✓
+   - $t_1^0$ 系数为 0，$b_0 = 0$。
+4. **结果组装**：$q = x \cdot t_1$，转为原子：$x \cdot e^x$。
+5. **化简 + 归一化**：返回 $x \cdot e^x$。
+
+**验证**：$\frac{d}{dx}[x \cdot e^x] = e^x + x \cdot e^x = (x+1)e^x$ ✓
+
+### 域元素的内部表示
+
+在塔中，域元素使用**平坦多元稀疏多项式**表示：
+
+```rust
+// KElem: k = Q(x, t_1, ..., t_{n-1}) 中的元素
 struct KElem {
     num: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
     den: SparseMultivariatePolynomial&lt;RationalDomain, Lex&gt;,
 }
-<span class="boring">}</span></code></pre></pre>
+</code></pre>
 <p>变量索引分配：<code>0</code> 对应 $x$，<code>1</code> 对应 $t_1$，…，<code>n-1</code> 对应 $t_{n-1}$。</p>
 <p><code>KPoly</code> 是关于顶层变量的稠密一元多项式，系数为 <code>KElem</code>：</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -22945,7 +22982,12 @@ log/atan/atanh）。</li>
 <li><strong>启发式技巧</strong> —— 分部积分、三角替换、Weierstrass $t = \tan(x/2)$、
 Euler 替换。</li>
 <li><strong>有界展开重试</strong>（0.27.x）—— 分配展开乘积为和式（项数预算 64）
-后逐项积分。</li>
+后逐项积分。
+12b. <strong>二重对数归约</strong>（0.31.0）——启发式之前的 <code>log_rational</code> 阶段：把对数-有理
+被积式 <code>R(x)·log(A(x))</code>（对数自变量仿射）经极点条目
+<code>∫log(u)/(u−β)du = log u·log(1−u/β) + Li₂(u/β)</code> 归约；被积式本身含
+<code>polylog(2, u)</code> 的形状在 <code>special</code> 阶段按 <code>d/du Li₂(u) = −log(1−u)/u</code> 分部处理。
+每次发射都过本地数值自检，片段外诚实拒绝。</li>
 <li><strong>未求值形式</strong> —— <code>Integral(expr, var)</code>。</li>
 </ol>
 <hr />
@@ -23030,6 +23072,7 @@ let result = integrate(&amp;ctx, parse(&amp;ctx, "x*exp(x)").unwrap(), Symbol::n
 <tr><td><code>cosh(x)/x</code></td><td><code>Chi(x)</code></td></tr>
 <tr><td><code>sin(x²)</code></td><td><code>√(π/2)·fresnels(√(2/π)·x)</code></td></tr>
 <tr><td><code>cos(x²)</code></td><td><code>√(π/2)·fresnelc(√(2/π)·x)</code></td></tr>
+<tr><td><code>log(1−x)/x</code></td><td><code>−Li₂(x)</code>（函数头 <code>polylog(2, ·)</code>，0.31.0）</td></tr>
 </tbody></table>
 </div>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -23042,6 +23085,11 @@ let ctx = AtomArena::new(&amp;arena);
 // ∫ exp(-x^2) dx = (√π/2)·erf(x)
 let result = integrate(&amp;ctx, parse(&amp;ctx, "exp(-x^2)").unwrap(), Symbol::new("x"));
 <span class="boring">}</span></code></pre></pre>
+<p><strong>二重对数层（0.31.0）</strong>：<code>integral/polylog.rs</code> 在初等特殊函数头之上加入第一层非初等函数。
+A 类对被积式已含 <code>polylog(2, u)</code> 的形状按 <code>d/du Li₂(u) = −log(1−u)/u</code> 分部；B 类把对数-有理
+被积式 <code>R(x)·log(A(x))</code>（对数自变量仿射）经极点条目
+<code>∫ log(u)/(u−β) du = log(u)·log(1−u/β) + Li₂(u/β)</code> 归约。所有候选在发射前都先过本地数值自检
+（实值域采样、至多三组参数取值），片段外的形状诚实拒绝。</p>
 <hr />
 <h2 id="fuel-受限积分-1"><a class="header" href="#fuel-受限积分-1">Fuel 受限积分</a></h2>
 <p><code>integrate_with_fuel</code> 包装同一管线，但将 [<code>Fuel</code>] 预算贯穿到两个积分后
