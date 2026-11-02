@@ -124,12 +124,12 @@ Automated, CI-gated; the root `vX.Y.Z` tag is the release switch. One root
   `CLAUDE.md`, or generated benchmark data (`ocas-tests/data/`).
 - Prefer evidence over assumption: check source, docs, or official references;
   cite file paths/line numbers when reporting findings.
-- Current release state: **0.31.0 prepared on `main`** (`Cargo.toml` + `CHANGELOG.md`
-  bumped; fast gate, clippy, fmt, `cargo deny`, consistency and the 198-case
-  correctness suite green; the 1892 corpus measured twice) and awaiting the
-  `release-plz` publish/tag run; 0.30.0 is the last fully published version
-  (crates.io / PyPI / GitHub Releases / docs, 2026-10-25); 0.28.0/0.29.0
-  backfilled. The pre-existing slow Gröbner proptest
+- Current release state: **0.31.0 released on 2026-11-02** — crates.io (12
+  crates), PyPI (5 wheels + sdist), GitHub Release with Linux/Windows C
+  artifacts, and docs `/latest/` + `/v0.31.0/` snapshots are all live; 0.30.0 was
+  the previous release (2026-10-25). Gates at release: solved 478 / exp-log
+  10/83 / mismatches 0 / 0 regressions / timeouts 13 / wall clock 472.6 s
+  (two same-tree runs). The pre-existing slow Gröbner proptest
   `groebner::multi_modular_matches_f5_random` is excluded from local full-gate
   runs and belongs to the issue #55 triage (it is untouched by 0.31.0). Next
   line: 0.31b (SPEC-first Meijer G / ProvedNonElementary / algebraic tower / the
@@ -243,12 +243,13 @@ LGPL 后端测试、maturin wheel + pytest + C 示例、严格 rustdoc、Miri；
 - 不要提交密钥、凭据、本地环境文件（`.cargo/config.toml`）、`CLAUDE.md` 或生成的
   基准数据（`ocas-tests/data/`）。
 - 以证据说话：查源码、文档或官方资料；汇报时给文件路径/行号。
-- 当前发布状态：**0.31.0 已在 `main` 上备妥**（`Cargo.toml` + `CHANGELOG.md` 已 bump；
-  fast gate、clippy、fmt、`cargo deny`、consistency 与 198 项 correctness 套件全绿；
-  1892 题库两次同树复跑已记录），等待 `release-plz` 发布/打 tag；最近一次全渠道发布版本为
-  0.30.0（crates.io/PyPI/GitHub Releases/文档，2026-10-25），0.28.0/0.29.0 已回填。
-  既有且与本版无关的慢测试 `groebner::multi_modular_matches_f5_random` 从本地 full gate
-  排除，归 issue #55 triage。下一条线：0.31b（SPEC 先行；Meijer G / ProvedNonElementary /
-  代数塔 / `inverse-trig-hyper` 中由 polylog 需求导致的拒绝面，移到 0.32/0.33）与
+- 当前发布状态：**0.31.0 已于 2026-11-02 发布**——crates.io（12 个 crate）、PyPI
+  （5 平台 wheel + sdist）、GitHub Release（Linux/Windows C 产物）与文档
+  `/latest/` + `/v0.31.0/` 快照均已上线；上一版为 0.30.0（2026-10-25）。发布时门禁：
+  solved 478 / exp-log 10/83 / mismatches 0 / 逐题回归 0 / 超时 13 /
+  墙钟 472.6 s（两次同树复跑）。既有且与本版无关的慢测试
+  `groebner::multi_modular_matches_f5_random` 从本地 full gate 排除，归 issue #55
+  triage。下一条线：0.31b（SPEC 先行；Meijer G / ProvedNonElementary / 代数塔 /
+  `inverse-trig-hyper` 中由 polylog 需求导致的拒绝面，移到 0.32/0.33）与
   0.32.0（复杂度/性能波）。
 - open issue：#55（`full-tests` 已知缺口跟踪）、#21（`paste` RUSTSEC 跟踪）。
